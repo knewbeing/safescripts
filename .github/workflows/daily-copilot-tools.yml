@@ -9,10 +9,6 @@ on:
         description: "Target repository (owner/repo). Skips round-robin selection."
         required: false
         type: string
-      token_secret_override:
-        description: "Secret name to use as token for repo_override (default: TARGET_REPO_TOKEN)."
-        required: false
-        type: string
 
 jobs:
   discover-and-install:
@@ -41,24 +37,29 @@ jobs:
           # Auto-provided. Used for GitHub Models API (AI) and trending scrape.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-          # ── Per-repo tokens ──────────────────────────────────────────────
-          # Each secret below corresponds to a "token_secret" value in repos.json.
-          # Add one line here whenever you add a new token_secret in repos.json.
-          # A PAT needs "repo" scope for the target org/account.
+          # ── Token convention: <ORG>_GITHUB_TOKEN ────────────────────────
+          # For each org/user in repos.json, create a secret named:
+          #   <ORG_OR_USER>_GITHUB_TOKEN  (uppercase, hyphens → underscores)
+          # Then declare it here. The code auto-derives the name from the repo owner.
           #
-          # Default token (used when no token_secret is specified in repos.json)
+          # Examples:
+          #   repo "your-org/x"    → secret YOUR_ORG_GITHUB_TOKEN
+          #   repo "some-user/y"   → secret SOME_USER_GITHUB_TOKEN
+          #
+          # Fallback (when no org-specific secret exists):
           TARGET_REPO_TOKEN: ${{ secrets.TARGET_REPO_TOKEN }}
-          # Additional org/account tokens:
-          TOKEN_ANOTHER_ORG: ${{ secrets.TOKEN_ANOTHER_ORG }}
-          TOKEN_SOME_USER:   ${{ secrets.TOKEN_SOME_USER }}
-          # TOKEN_YET_ANOTHER: ${{ secrets.TOKEN_YET_ANOTHER }}
+          #
+          # Add your org tokens below:
+          YOUR_ORG_GITHUB_TOKEN:     ${{ secrets.YOUR_ORG_GITHUB_TOKEN }}
+          ANOTHER_ORG_GITHUB_TOKEN:  ${{ secrets.ANOTHER_ORG_GITHUB_TOKEN }}
+          SOME_USER_GITHUB_TOKEN:    ${{ secrets.SOME_USER_GITHUB_TOKEN }}
+          # NEXT_ORG_GITHUB_TOKEN:   ${{ secrets.NEXT_ORG_GITHUB_TOKEN }}
 
-          # ── Manual-trigger overrides ─────────────────────────────────────
           REPO_OVERRIDE:         ${{ inputs.repo_override }}
-          TOKEN_SECRET_OVERRIDE: ${{ inputs.token_secret_override }}
           GITHUB_REPOSITORY:     ${{ github.repository }}
 
         run: python .github/scripts/main.py
+
 
 
 

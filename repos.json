@@ -1,18 +1,11 @@
 {
   "repositories": [
     "your-org/repo-a",
-    {
-      "repo": "another-org/repo-b",
-      "token_secret": "TOKEN_ANOTHER_ORG"
-    },
-    {
-      "repo": "some-user/repo-c",
-      "token_secret": "TOKEN_SOME_USER"
-    }
+    "another-org/repo-b",
+    "some-user/repo-c"
   ],
   "settings": {
     "max_trending_repos": 10,
-    "branch_prefix": "copilot-tools",
-    "default_token_secret": "TARGET_REPO_TOKEN"
+    "branch_prefix": "copilot-tools"
   }
 }
