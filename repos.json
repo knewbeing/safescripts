@@ -2,7 +2,7 @@
   "repositories": [
     {
       "repo": "knewbeing/org-memory",
-      "secret_name": "KNEWBEING_GITHUB_TOKEN"
+      "secret_name": "CALMRIPPLE_GITHUB_TOKEN"
     },
     {
       "repo": "cnjimbo/QuickTicket2Queue",
