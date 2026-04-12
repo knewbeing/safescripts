@@ -300,10 +300,10 @@ def main() -> None:
     # 无论 Trending 是否命中，都执行后续步骤（未命中时使用内置工具）
     from_defaults = not bool(matched)
     today = datetime.date.today().isoformat()
-    # 分支命名策略：使用“当前目标仓库名 + update-ai-tools + 日期”
-    # 示例：org-memory/update-ai-tools/2026-04-12
+    # 分支命名策略：使用“当前目标仓库名 + update-ai-tools”（不带日期）
+    # 示例：org-memory/update-ai-tools
     repo_slug = _branch_repo_slug(target_repo)
-    branch_name = f"{repo_slug}/update-ai-tools/{today}"
+    branch_name = f"{repo_slug}/update-ai-tools"
 
     with tempfile.TemporaryDirectory() as tmpdir:
         # 使用 PAT 拼接认证 URL，实现无交互 clone
