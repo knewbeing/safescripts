@@ -6,7 +6,7 @@
 
 操作流程：
   1. 将 AI 生成的 COPILOT_TOOLS.md 写入克隆目录
-  2. git add .github/ → commit → push
+  2. git add --all → commit → push
   3. 在目标仓库创建 PR（已有打开 PR 则复用）
   4. 启用 PR 自动合并（Squash，仓库需开启 Auto-merge）
 """
@@ -80,14 +80,25 @@ def _build_pr_body(
     from_defaults = summary["from_defaults"]
 
     rows = "\n".join(
-        "| {emoji} `{name}` | {t} | {action} |".format(
+        "| {emoji} `{name}` | {t} | {action} | `{path}` |".format(
             emoji={"instruction": "📋", "agent": "🤖", "skill": "⚡"}.get(t["type"], "📄"),
             name=t["name"],
             t=t["type"],
             action="🆕 新增" if t.get("_action") == "new" else "🔄 更新",
+            path=t.get("path", "") or "—",
         )
         for t in tools
-    ) or "| *(仅更新文档)* | — | — |"
+    ) or "| *(仅更新文档)* | — | — | — |"
+
+    changed_paths = sorted(
+        {
+            t.get("path", "")
+            for t in tools
+            if t.get("path")
+        }
+        | {".github/TOOLS_INDEX.md", ".github/COPILOT_TOOLS.md"}
+    )
+    changed_path_lines = "\n".join(f"- `{path}`" for path in changed_paths)
 
     source_note = "built-in recommended Copilot tools" if from_defaults else "GitHub trending repositories"
 
@@ -98,29 +109,25 @@ def _build_pr_body(
 
 ### 📦 Changed tools ({new_count} new · {updated_count} updated)
 
-| Tool | Type | Action |
-|------|------|--------|
+| Tool | Type | Action | Path |
+|------|------|--------|------|
 {rows}
 
 ### 🔍 Discovery process
 
-1. `scan_trending.py` — fetched GitHub Trending top-10 repos and scanned for Copilot tools
-2. `actions/ai-inference` (GPT-4.1-mini) — judged relevance for this repository
-3. `install_selected.py` — {"installed built-in recommended tools (no trending match)" if from_defaults else "installed/updated matching tools"}
-4. `actions/ai-inference` (GPT-4.1) — classified tools by category and generated **Chinese annotations**
-5. `apply_annotations.py` — wrote Chinese comment headers into tool files + created `.github/TOOLS_INDEX.md`
-6. `actions/ai-inference` (GPT-4.1) — generated `.github/COPILOT_TOOLS.md` usage docs
-7. `commit_pr.py` — committed changes and opened this PR with auto-merge enabled
+1. `prepare_target_repo.py` — exported target repository context for downstream AI steps
+2. `actions/ai-inference` + GitHub MCP — searched GitHub for promising AI tool repositories
+3. `scan_ai_candidates.py` — scanned AI-selected repositories for Copilot tools
+4. `actions/ai-inference` (GPT-4.1-mini) — judged relevance for this repository
+5. `install_selected.py` — {"installed built-in recommended tools (no trending match)" if from_defaults else "installed/updated matching tools"}
+6. `actions/ai-inference` (GPT-4.1) — classified tools by category and generated **Chinese annotations**
+7. `apply_annotations.py` — wrote Chinese comment headers into tool files + created `.github/TOOLS_INDEX.md`
+8. `actions/ai-inference` (GPT-4.1) — generated `.github/COPILOT_TOOLS.md` usage docs
+9. `commit_pr.py` — committed changes and opened this PR with auto-merge enabled
 
-### 📁 Changed directories
+### 📁 Changed files
 
-| Directory / File | Purpose |
-|-----------------|---------|
-| `.github/instructions/` | Language & framework-specific Copilot instructions（含中文注释头） |
-| `.github/agents/` | Custom Copilot agent definitions（含中文注释头） |
-| `.github/prompts/` | Reusable prompt templates / skills（含中文注释头） |
-| `.github/TOOLS_INDEX.md` | 🆕 AI 自动生成的中文分类索引 |
-| `.github/COPILOT_TOOLS.md` | AI-generated tool overview with usage instructions |
+{changed_path_lines}
 
 ### ✅ Review checklist
 
@@ -176,7 +183,7 @@ def main() -> None:
     readme_path.write_text(readme_content, encoding="utf-8")
 
     # ── Git: add → commit → push ────────────────────────────────────────
-    _git(["add", ".github/"])
+    _git(["add", "--all"])
 
     if not _has_staged_changes():
         logger.info("暂存区无变更（工具与文档均已是最新），退出。")

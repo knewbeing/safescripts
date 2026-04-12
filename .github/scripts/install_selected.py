@@ -1,7 +1,7 @@
-"""Step 3 of 5: 读取 AI 分析结果，安装工具到目标仓库 clone，扫描已安装工具输出文档数据。
+"""Step 5 of 9: 读取 AI 分析结果，安装工具到目标仓库 clone，扫描已安装工具输出文档数据。
 
 上游输入：
-  /tmp/ai_tools/candidates.json        — scan_trending.py 输出的候选列表
+  /tmp/ai_tools/candidates.json        — scan_ai_candidates.py 输出的候选列表
   /tmp/ai_tools/target_repo_info.json  — 目标仓库元数据
   AI_ANALYSIS env                      — actions/ai-inference analyze 步骤输出的 JSON
 
@@ -41,14 +41,6 @@ CLONE_DIR = Path("/tmp/target-repo-clone")
 BOT_EMAIL = "github-actions[bot]@users.noreply.github.com"
 BOT_NAME = "github-actions[bot]"
 
-# 工具类型 → .github/ 子目录
-_SCAN_DIRS: dict[str, str] = {
-    "instructions": "instruction",
-    "agents": "agent",
-    "prompts": "skill",
-}
-
-
 def _git(args: list[str], cwd: str = str(CLONE_DIR)) -> subprocess.CompletedProcess:
     return subprocess.run(["git", "-C", cwd, *args], check=True, capture_output=True)
 
@@ -73,31 +65,41 @@ def _build_branch_name(target_repo: str) -> str:
     return f"{slug}/update-ai-tools/{ts}-run-{run_id}-a{attempt}"
 
 
+def _classify_tool_path(path: str) -> str | None:
+    lowered = path.lower().replace("\\", "/")
+    parts = [part for part in lowered.split("/") if part]
+    filename = parts[-1] if parts else ""
+
+    if filename == "copilot-instructions.md" or ".instructions." in filename:
+        return "instruction"
+    if ".prompt." in filename:
+        return "skill"
+    if any(part in {"instructions", "instruction"} for part in parts):
+        return "instruction"
+    if any(part in {"agents", "agent"} for part in parts):
+        return "agent"
+    if any(part in {"prompts", "prompt", "skills", "skill"} for part in parts):
+        return "skill"
+    return None
+
+
 def _scan_installed(clone_dir: Path) -> list[dict]:
-    """扫描 clone_dir/.github/ 下所有已安装 .md 工具文件（同 organize_readme.py 逻辑）。"""
+    """扫描仓库内所有已安装工具文件。"""
     tools: list[dict] = []
-    github_dir = clone_dir / ".github"
 
-    root = github_dir / "copilot-instructions.md"
-    if root.exists():
-        tools.append({
-            "name": "copilot-instructions",
-            "type": "instruction",
-            "path": ".github/copilot-instructions.md",
-            "preview": root.read_text(encoding="utf-8")[:800],
-        })
-
-    for subdir, tool_type in _SCAN_DIRS.items():
-        sub = github_dir / subdir
-        if not sub.exists():
+    for f in sorted(clone_dir.rglob("*")):
+        if not f.is_file() or ".git" in f.parts:
             continue
-        for f in sorted(sub.glob("*.md")):
-            tools.append({
-                "name": f.name.split(".")[0],
-                "type": tool_type,
-                "path": str(f.relative_to(clone_dir)).replace("\\", "/"),
-                "preview": f.read_text(encoding="utf-8")[:800],
-            })
+        rel_path = str(f.relative_to(clone_dir)).replace("\\", "/")
+        tool_type = _classify_tool_path(rel_path)
+        if not tool_type:
+            continue
+        tools.append({
+            "name": f.name.split(".")[0],
+            "type": tool_type,
+            "path": rel_path,
+            "preview": f.read_text(encoding="utf-8")[:800],
+        })
     return tools
 
 
@@ -172,7 +174,7 @@ def main() -> None:
     _git(["config", "user.name", BOT_NAME])
     _git(["checkout", "-b", branch_name])
 
-    # ── 安装工具（安全约束由 install_tools.py 强制：仅 .md / 仅 .github/）──
+    # ── 安装工具（安全约束由 install_tools.py 强制：仅允许仓库内相对路径）──
     installed = install_tools(CLONE_DIR, tools_to_install)
     new_count = sum(1 for t in installed if t.get("_action") == "new")
     updated_count = sum(1 for t in installed if t.get("_action") == "updated")
@@ -189,7 +191,12 @@ def main() -> None:
         "updated_count": updated_count,
         "from_defaults": from_defaults,
         "installed_this_run": [
-            {"name": t["name"], "type": t["type"], "_action": t.get("_action")}
+            {
+                "name": t["name"],
+                "type": t["type"],
+                "path": t.get("path", ""),
+                "_action": t.get("_action"),
+            }
             for t in installed
         ],
         "all_tools": all_installed_tools,  # 供 readme 生成步骤使用（含文件预览）

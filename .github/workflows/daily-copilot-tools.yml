@@ -41,40 +41,47 @@ jobs:
   # ══════════════════════════════════════════════════════════════════
   # Job 2 · run  （matrix 并行，每个仓库独立运行）
   #
-  # 7 步流水线：
-  #   Step 1 · scan_trending.py
-  #             抓取 GitHub Trending → 扫描工具文件 → 写入 /tmp/ai_tools/
+  # 9 步流水线：
+  #   Step 1 · prepare_target_repo.py
+  #             读取目标仓库元数据并写入 /tmp/ai_tools/target_repo_info.json
+  #
+  #   Step 2 · actions/ai-inference (search-tool-repos + GitHub MCP)
+  #             AI 按目标库上下文主动搜索候选 AI 工具仓库
+  #             输出: response (JSON: {repos:[{full_name,reason}], strategy_summary})
+  #
+  #   Step 3 · scan_ai_candidates.py
+  #             扫描 AI 返回的候选仓库中的工具文件 → 写入 /tmp/ai_tools/candidates.json
   #             输出: has_candidates
   #
-  #   Step 2 · actions/ai-inference (analyze-relevance)
+  #   Step 4 · actions/ai-inference (analyze-relevance)
   #             GPT-4.1-mini 判断哪些工具与目标仓库相关
   #             输出: response (JSON: {selected_ids, reason})
   #             仅在 has_candidates==true 时执行
   #
-  #   Step 3 · install_selected.py
+  #   Step 5 · install_selected.py
   #             读取 AI_ANALYSIS → 安装工具到 clone → 写 installed_tools.json
   #             输出: has_installed, branch_name, new_count, updated_count
   #
-  #   Step 4 · actions/ai-inference (annotate-tools)        ← 新增
+  #   Step 6 · actions/ai-inference (annotate-tools)
   #             GPT-4.1 对所有工具进行分类并生成中文注释元数据
   #             输出: response (JSON: {tools:[{path,category,zh_*}], category_order})
   #             仅在 has_installed==true 时执行
   #
-  #   Step 5 · apply_annotations.py                         ← 新增
+  #   Step 7 · apply_annotations.py
   #             将中文注释写入各工具文件 + 生成 .github/TOOLS_INDEX.md
   #             + 刷新 installed_tools.json 的 preview 字段
   #             仅在 has_installed==true 时执行
   #
-  #   Step 6 · actions/ai-inference (generate-tools-readme)
+  #   Step 8 · actions/ai-inference (generate-tools-readme)
   #             GPT-4.1 生成 COPILOT_TOOLS.md 完整使用说明
   #             仅在 has_installed==true 时执行
   #
-  #   Step 7 · commit_pr.py
+  #   Step 9 · commit_pr.py
   #             写 COPILOT_TOOLS.md → commit → push → PR → auto-merge
   #             仅在 has_installed==true 时执行
   #
   # Token 注入链：
-  #   GITHUB_TOKEN        → Actions 自动令牌，用于 Trending 抓取 + GitHub API 查询
+  #   GITHUB_TOKEN        → Actions 自动令牌，用于 GitHub API 查询与工具扫描
   #   RESOLVED_ORG_TOKEN  → secrets[matrix.token_env_name]，跨 org PAT（clone/push/PR）
   #   TARGET_REPO_TOKEN   → 静态兜底 PAT（RESOLVED_ORG_TOKEN 为空时使用）
   #
@@ -110,18 +117,38 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r .github/scripts/requirements.txt
 
-      # ─── Step 1: 抓取 Trending + 扫描工具 ───────────────────────────────
-      - name: "① Scan GitHub Trending for Copilot tools"
-        id: scan
+      # ─── Step 1: 准备目标库上下文 ────────────────────────────────────────
+      - name: "① Prepare target repository context"
+        id: prepare
         env:
-          GITHUB_TOKEN:        ${{ secrets.GITHUB_TOKEN }}
           RESOLVED_ORG_TOKEN:  ${{ secrets[matrix.token_env_name] }}
           TARGET_REPO_TOKEN:   ${{ secrets.TARGET_REPO_TOKEN }}
           TARGET_REPO:         ${{ matrix.repo }}
-        run: python .github/scripts/scan_trending.py
+        run: python .github/scripts/prepare_target_repo.py
 
-      # ─── Step 2: AI 相关性分析 (actions/ai-inference) ───────────────────
-      - name: "② AI relevance analysis (GPT-4.1-mini)"
+      # ─── Step 2: AI 主动搜索候选工具库 (GitHub MCP) ─────────────────────
+      - name: "② AI search candidate tool repos"
+        id: repo_search
+        uses: actions/ai-inference@v1
+        with:
+          model: openai/gpt-4.1
+          prompt-file: .github/prompts/search-tool-repos.prompt.yml
+          file_input: |
+            target_repo_info: /tmp/ai_tools/target_repo_info.json
+          enable-github-mcp: true
+          github-mcp-token: ${{ secrets.TARGET_REPO_TOKEN }}
+          github-mcp-toolsets: repos
+
+      # ─── Step 3: 扫描 AI 返回的候选仓库工具文件 ─────────────────────────
+      - name: "③ Scan AI-selected tool repositories"
+        id: scan
+        env:
+          GITHUB_TOKEN:        ${{ secrets.GITHUB_TOKEN }}
+          AI_REPO_SEARCH:      ${{ steps.repo_search.outputs.response }}
+        run: python .github/scripts/scan_ai_candidates.py
+
+      # ─── Step 4: AI 相关性分析 (actions/ai-inference) ───────────────────
+      - name: "④ AI relevance analysis (GPT-4.1-mini)"
         id: analyze
         if: steps.scan.outputs.has_candidates == 'true'
         uses: actions/ai-inference@v1
@@ -132,8 +159,8 @@ jobs:
             candidates_json: /tmp/ai_tools/candidates.json
             target_repo_info: /tmp/ai_tools/target_repo_info.json
 
-      # ─── Step 3: 安装工具到目标仓库 ─────────────────────────────────────
-      - name: "③ Install selected tools into target repo"
+      # ─── Step 5: 安装工具到目标仓库 ─────────────────────────────────────
+      - name: "⑤ Install selected tools into target repo"
         id: install
         env:
           GITHUB_TOKEN:        ${{ secrets.GITHUB_TOKEN }}
@@ -146,8 +173,8 @@ jobs:
           AI_ANALYSIS:         ${{ steps.analyze.outputs.response }}
         run: python .github/scripts/install_selected.py
 
-      # ─── Step 4: AI 整理分类 + 生成中文注释元数据 ──────────────────────
-      - name: "④ AI organize categories & write Chinese annotations (GPT-4.1)"
+      # ─── Step 6: AI 整理分类 + 生成中文注释元数据 ──────────────────────
+      - name: "⑥ AI organize categories & write Chinese annotations (GPT-4.1)"
         id: annotate
         if: steps.install.outputs.has_installed == 'true'
         uses: actions/ai-inference@v1
@@ -157,15 +184,15 @@ jobs:
           file_input: |
             installed_tools_json: /tmp/ai_tools/installed_tools.json
 
-      # ─── Step 5: 应用中文注释 + 生成分类索引 TOOLS_INDEX.md ────────────
-      - name: "⑤ Apply Chinese annotations & generate TOOLS_INDEX.md"
+      # ─── Step 7: 应用中文注释 + 生成分类索引 TOOLS_INDEX.md ────────────
+      - name: "⑦ Apply Chinese annotations & generate TOOLS_INDEX.md"
         if: steps.install.outputs.has_installed == 'true'
         env:
           AI_ANNOTATIONS: ${{ steps.annotate.outputs.response }}
         run: python .github/scripts/apply_annotations.py
 
-      # ─── Step 6: AI 生成 COPILOT_TOOLS.md (actions/ai-inference) ────────
-      - name: "⑥ AI generate COPILOT_TOOLS.md (GPT-4.1)"
+      # ─── Step 8: AI 生成 COPILOT_TOOLS.md (actions/ai-inference) ────────
+      - name: "⑧ AI generate COPILOT_TOOLS.md (GPT-4.1)"
         id: readme
         if: steps.install.outputs.has_installed == 'true'
         uses: actions/ai-inference@v1
@@ -175,8 +202,8 @@ jobs:
           file_input: |
             installed_tools_json: /tmp/ai_tools/installed_tools.json
 
-      # ─── Step 7: Commit → Push → PR → Auto-merge ────────────────────────
-      - name: "⑦ Commit, push PR and enable auto-merge"
+      # ─── Step 9: Commit → Push → PR → Auto-merge ────────────────────────
+      - name: "⑨ Commit, push PR and enable auto-merge"
         if: steps.install.outputs.has_installed == 'true'
         env:
           RESOLVED_ORG_TOKEN:   ${{ secrets[matrix.token_env_name] }}

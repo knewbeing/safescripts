@@ -1,13 +1,11 @@
-"""下载并写入 Copilot 工具文件到目标仓库 .github 目录。
+"""下载并写入 Copilot 工具文件到目标仓库。
 
 支持两种来源：
   1. 网络下载（trending 仓库工具）：工具条目含 download_url，从 GitHub Raw 下载内容。
   2. 内置内容（默认推荐工具）：工具条目含 content 字段，直接写入，无需网络。
 
-强约束（安全与范围）：
-  - 仅允许写入 Markdown 文件（*.md）。
-  - 仅允许写入目标仓库的 .github/ 目录内。
-  - 拒绝任何可能导致写入 .github 之外的位置（含路径穿越）。
+安全约束：
+  - 拒绝路径穿越（目标路径必须位于 repo_dir 内）。
 
 安装策略：
   - 文件不存在 → 新建（记录为 "new"）
@@ -24,7 +22,7 @@ import requests
 
 logger = logging.getLogger(__name__)
 
-# 工具类型 → .github/ 子目录映射（trending 工具默认使用）
+# 工具类型 → 默认子目录映射（当工具未显式提供目标路径时使用）
 _TOOL_DIRS: dict[str, str] = {
     "instruction": ".github/instructions",
     "agent": ".github/agents",
@@ -39,11 +37,29 @@ _DEFAULT_SUFFIX: dict[str, str] = {
 }
 
 
-def _is_under_github(repo_dir: Path, candidate: Path) -> bool:
-    """检查 candidate 是否位于 repo_dir/.github 下。"""
-    github_root = (repo_dir / ".github").resolve(strict=False)
+def _is_under_repo(repo_dir: Path, candidate: Path) -> bool:
+    """检查 candidate 是否位于 repo_dir 下（防止路径穿越）。"""
     resolved = candidate.resolve(strict=False)
-    return resolved == github_root or github_root in resolved.parents
+    return resolved == repo_dir.resolve(strict=False) or repo_dir.resolve(strict=False) in resolved.parents
+
+
+def _safe_relative_path(raw_path: str) -> Path | None:
+    """规范化相对路径，拒绝绝对路径、盘符路径与路径穿越。"""
+    normalized = str(raw_path).strip().replace("\\", "/")
+    if not normalized or normalized.startswith("/"):
+        return None
+
+    parts: list[str] = []
+    for part in Path(normalized).parts:
+        if part in {"", "."}:
+            continue
+        if part == ".." or part.endswith(":"):
+            return None
+        parts.append(part)
+
+    if not parts:
+        return None
+    return Path(*parts)
 
 
 def _safe_tool_name(name: str) -> str:
@@ -102,28 +118,26 @@ def _install_one(repo_dir: Path, tool: dict) -> str | None:
         return None
 
     # ── 确定写入路径 ────────────────────────────────────────────────
+    explicit_path = tool.get("target_path") or tool.get("path")
+    if explicit_path:
+        safe_rel_path = _safe_relative_path(str(explicit_path))
+        if not safe_rel_path:
+            logger.warning("拒绝非法目标路径: %s", explicit_path)
+            return None
+        target = repo_dir / safe_rel_path
     # 特殊情况：根级 copilot-instructions.md
-    if raw_name == "copilot-instructions" and tool_type == "instruction":
+    elif raw_name == "copilot-instructions" and tool_type == "instruction":
         target = repo_dir / ".github" / "copilot-instructions.md"
     else:
-        # target_dir 字段由内置工具显式提供；trending 工具走 _TOOL_DIRS 默认值
+        # target_dir 字段由内置工具显式提供；其余工具走类型默认目录
         target_dir_rel = str(tool.get("target_dir") or _TOOL_DIRS.get(tool_type, ".github/instructions"))
         target_dir = repo_dir / target_dir_rel
-        if not _is_under_github(repo_dir, target_dir):
-            logger.warning("拒绝写入 .github 目录外路径: %s", target_dir_rel)
-            return None
         suffix = tool.get("suffix") or _resolve_suffix(tool)
-        if not str(suffix).lower().endswith(".md"):
-            logger.info("跳过非 Markdown 工具文件: %s (%s)", raw_name, suffix)
-            return None
         target = target_dir / f"{safe_name}{suffix}"
 
-    # 最终双重校验：只能写 .github 下的 markdown 文件
-    if target.suffix.lower() != ".md":
-        logger.info("跳过非 Markdown 目标文件: %s", target.name)
-        return None
-    if not _is_under_github(repo_dir, target):
-        logger.warning("拒绝写入 .github 目录外文件: %s", target)
+    # 防止路径穿越：目标必须在 repo_dir 内
+    if not _is_under_repo(repo_dir, target):
+        logger.warning("拒绝写入仓库目录外文件: %s", target)
         return None
 
     already_exists = target.exists()

@@ -1,16 +1,19 @@
 # repos-ai-tools-maintain
 
-Automatically discovers, evaluates, and installs **GitHub Copilot tools** (instructions, agents, skills) from the day's top-10 trending GitHub repositories into your own projects — then opens a pull request for human review.
+Automatically discovers, evaluates, and installs **GitHub Copilot tools** (instructions, agents, skills) by letting AI search GitHub for promising tool repositories from a prompt built from the target repo context — then opens a pull request for human review.
 
 ---
 
 ## How it works
 
 ```
-GitHub Trending (top 10)
+Prepare target repo context
         │
         ▼
-Scan each repo for Copilot tools
+AI searches GitHub for promising tool repositories
+        │
+        ▼
+Scan AI-selected candidate repos for Copilot tools
 (.github/instructions/, .github/agents/, .github/prompts/)
         │
         ▼
@@ -35,7 +38,7 @@ AI generates .github/COPILOT_TOOLS.md (categorised overview + usage guide)
 Commit → push branch → open Pull Request in target repo
 ```
 
-The workflow runs **daily at 02:00 UTC** and processes **all** repositories in `repos.json` (matrix parallel). You can also trigger it manually from the **Actions** tab.
+The workflow runs **daily at 02:00 UTC** and processes **all** repositories in `repos.json` (matrix parallel). For each target repo, it first exports repo context, then uses `actions/ai-inference` + GitHub MCP to search GitHub for likely AI tool repositories before scanning their Copilot assets. You can also trigger it manually from the **Actions** tab.
 
 ---
 
@@ -68,6 +71,7 @@ Create required secrets:
 - Optional per-owner PATs: e.g. `KNEWBEING_GITHUB_TOKEN`, `CNJIMBO_GITHUB_TOKEN` (used when `secret_name` or owner-derived key matches)
 
 > The workflow uses `actions/ai-inference@v1` + `GITHUB_TOKEN` (with `models: read` permission) for model calls.
+> GitHub MCP search additionally uses `TARGET_REPO_TOKEN` as the MCP token for repository search.
 
 ### 3. Let the workflow run
 
@@ -106,15 +110,17 @@ repos.json                        # List of target repositories + settings
   workflows/
     daily-copilot-tools.yml       # GitHub Actions workflow (daily cron)
   prompts/
+    search-tool-repos.prompt.yml   # AI 主动搜索候选工具仓库（GitHub MCP）
     analyze-relevance.prompt.yml  # AI relevance prompt (JSON output schema)
     annotate-tools.prompt.yml     # AI 中文分类注释提示词（JSON output schema）
     generate-tools-readme.prompt.yml # AI README generation prompt
   scripts/
-    scan_trending.py              # Step 1: trending scan + candidates export
-    install_selected.py           # Step 3: install selected/default tools
-    apply_annotations.py          # Step 5: write Chinese annotations + TOOLS_INDEX.md
-    commit_pr.py                  # Step 7: commit, push, PR, auto-merge
-    fetch_trending.py             # GitHub trending scraper + tool scanner
+    prepare_target_repo.py        # Step 1: export target repo context
+    scan_ai_candidates.py         # Step 3: scan AI-selected candidate repos
+    install_selected.py           # Step 5: install selected/default tools
+    apply_annotations.py          # Step 7: write Chinese annotations + TOOLS_INDEX.md
+    commit_pr.py                  # Step 9: commit, push, PR, auto-merge
+    fetch_trending.py             # Rule-based fallback discovery + tool scanner
     install_tools.py              # File download & installation
     github_api.py                 # GitHub REST API wrapper
     requirements.txt              # Python dependencies
