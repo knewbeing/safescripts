@@ -3,8 +3,8 @@
 鉴权方式：
   GitHub Copilot Chat Completions API 与 OpenAI SDK 完全兼容。
   端点：https://api.githubcopilot.com
-  Token：直接使用 GITHUB_TOKEN（仓库 owner 需拥有 GitHub Copilot 订阅）。
-  无需 GitHub Models 的额外权限，也无需 PAT。
+  Token：使用 COPILOT_TOKEN（PAT）。
+  说明：GitHub Actions 的 GITHUB_TOKEN（Server-to-Server）不支持此端点。
 """
 
 from __future__ import annotations
@@ -27,18 +27,18 @@ def analyze_tool_relevance(
     target_repo_info: dict,
     source_repo: dict,
     tools: list[dict],
-    github_token: str,
+    copilot_token: str,
 ) -> list[dict]:
     """判断 tools 中哪些与 target_repo 相关。
 
-    通过 GitHub Copilot API（GITHUB_TOKEN 鉴权）调用 GPT-4o-mini 做相关性判断。
+    通过 GitHub Copilot API（COPILOT_TOKEN 鉴权）调用 GPT-4o-mini 做相关性判断。
     出现任何 API 错误时返回空列表（不中断主流程）。
     """
     if not tools:
         return []
 
-    # 使用 GITHUB_TOKEN 直接访问 Copilot API，无需额外 secret
-    client = OpenAI(base_url=_COPILOT_ENDPOINT, api_key=github_token)
+    # 使用 COPILOT_TOKEN（PAT）访问 Copilot API
+    client = OpenAI(base_url=_COPILOT_ENDPOINT, api_key=copilot_token)
 
     target_desc = target_repo_info.get("description") or ""
     target_lang = target_repo_info.get("language") or ""

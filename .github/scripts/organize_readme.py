@@ -3,8 +3,8 @@
 鉴权方式：
   GitHub Copilot Chat Completions API 与 OpenAI SDK 完全兼容。
   端点：https://api.githubcopilot.com
-  Token：直接使用 GITHUB_TOKEN（仓库 owner 需拥有 GitHub Copilot 订阅）。
-  无需 GitHub Models 的额外权限，也无需 PAT。
+  Token：使用 COPILOT_TOKEN（PAT）。
+  说明：GitHub Actions 的 GITHUB_TOKEN（Server-to-Server）不支持此端点。
 """
 
 from __future__ import annotations
@@ -30,18 +30,18 @@ _SCAN_MAP: dict[str, str] = {
 }
 
 
-def organize_and_generate_readme(repo_dir: Path, github_token: str) -> None:
+def organize_and_generate_readme(repo_dir: Path, copilot_token: str) -> None:
     """扫描 repo_dir 中已安装的工具并写入 COPILOT_TOOLS.md。
 
-    使用 GitHub Copilot API（GITHUB_TOKEN 鉴权）调用 GPT-4o 生成分类文档。
+    使用 GitHub Copilot API（COPILOT_TOKEN 鉴权）调用 GPT-4o 生成分类文档。
     """
     tools = _scan_tools(repo_dir)
     if not tools:
         logger.info("未发现工具文件，跳过 README 生成")
         return
 
-    # 使用 GITHUB_TOKEN 直接访问 Copilot API，无需额外 secret
-    client = OpenAI(base_url=_COPILOT_ENDPOINT, api_key=github_token)
+    # 使用 COPILOT_TOKEN（PAT）访问 Copilot API
+    client = OpenAI(base_url=_COPILOT_ENDPOINT, api_key=copilot_token)
     content = _generate_with_ai(client, tools)
 
     readme = repo_dir / _README_PATH

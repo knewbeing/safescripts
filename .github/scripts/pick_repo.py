@@ -45,15 +45,15 @@ def parse_entry(entry: str | dict) -> tuple[str, str]:
 
     支持两种格式：
       - 字符串：  "owner/repo"
-      - 对象：    {"repo": "owner/repo", "token_secret": "MY_SECRET_KEY"}
-                  token_secret 缺省时自动推导
+      - 对象：    {"repo": "owner/repo", "secret_name": "MY_SECRET_KEY"}
+                  secret_name 缺省时自动推导
     """
     if isinstance(entry, str):
         repo = entry.strip()
         return repo, default_token_env_name(repo)
 
     repo = entry["repo"].strip()
-    # 优先使用显式配置的 token_secret，否则按 owner 自动推导
+    # 优先使用显式配置的 secret_name，否则按 owner 自动推导
     token_env = entry.get("secret_name") or default_token_env_name(repo)
     return repo, token_env
 

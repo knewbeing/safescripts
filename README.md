@@ -14,7 +14,7 @@ Scan each repo for Copilot tools
 (.github/instructions/, .github/agents/, .github/prompts/)
         │
         ▼
-AI analysis via GitHub Models (GPT-4o-mini)
+AI analysis via GitHub Copilot API (GPT-4o-mini)
 "Are these tools relevant to <target-repo>?"
         │
         ▼
@@ -27,7 +27,7 @@ AI generates .github/COPILOT_TOOLS.md (categorised overview)
 Commit → push branch → open Pull Request in target repo
 ```
 
-The workflow runs **daily at 02:00 UTC** and processes one repository from `repos.json` per day (round-robin by day-of-year). You can also trigger it manually from the **Actions** tab.
+The workflow runs **daily at 02:00 UTC** and processes **all** repositories in `repos.json` (matrix parallel). You can also trigger it manually from the **Actions** tab.
 
 ---
 
@@ -40,8 +40,8 @@ Edit `repos.json`:
 ```json
 {
   "repositories": [
-    "your-org/your-repo",
-    "another-org/another-repo"
+    { "repo": "your-org/your-repo", "secret_name": "YOUR_ORG_GITHUB_TOKEN" },
+    { "repo": "another-org/another-repo", "secret_name": "ANOTHER_ORG_GITHUB_TOKEN" }
   ],
   "settings": {
     "max_trending_repos": 10,
@@ -50,13 +50,17 @@ Edit `repos.json`:
 }
 ```
 
-### 2. Create `TARGET_REPO_TOKEN`
+`secret_name` is optional. If omitted, the workflow derives `<OWNER>_GITHUB_TOKEN` automatically.
 
-Generate a **Personal Access Token** (classic) with the `repo` scope and add it as a repository secret named `TARGET_REPO_TOKEN`.
+### 2. Create required secrets
 
-This token must have **write access** to every repository listed in `repos.json`.
+Generate PATs with proper scopes and add them to repository secrets:
 
-> The built-in `GITHUB_TOKEN` is used for GitHub Models API calls (AI analysis) and requires no extra setup.
+- `COPILOT_TOKEN`: PAT for calling `https://api.githubcopilot.com` (account must have GitHub Copilot)
+- `TARGET_REPO_TOKEN`: fallback PAT (`repo` scope) for cloning, pushing, and creating PRs in target repos
+- Optional per-owner PATs: e.g. `KNEWBEING_GITHUB_TOKEN`, `CNJIMBO_GITHUB_TOKEN` (used when `secret_name` or owner-derived key matches)
+
+> `GITHUB_TOKEN` is still used for read-only GitHub API calls (for example, trending/search fallback), not for Copilot API.
 
 ### 3. Let the workflow run
 
@@ -97,7 +101,7 @@ repos.json                        # List of target repositories + settings
   scripts/
     main.py                       # Orchestration entry point
     fetch_trending.py             # GitHub trending scraper + tool scanner
-    analyze_tools.py              # AI relevance analysis (GitHub Models)
+    analyze_tools.py              # AI relevance analysis (GitHub Copilot API)
     install_tools.py              # File download & installation
     organize_readme.py            # AI-generated COPILOT_TOOLS.md
     github_api.py                 # GitHub REST API wrapper
@@ -110,8 +114,10 @@ repos.json                        # List of target repositories + settings
 
 | Secret | Required | Purpose |
 |--------|----------|---------|
+| `COPILOT_TOKEN` | **Yes** | PAT for GitHub Copilot API calls (`api.githubcopilot.com`) |
 | `TARGET_REPO_TOKEN` | **Yes** | PAT (`repo` scope) for cloning, pushing, and creating PRs in target repos |
-| `GITHUB_TOKEN` | Auto | GitHub Models API for AI analysis; provided automatically by Actions |
+| `<OWNER>_GITHUB_TOKEN` or configured `secret_name` | Optional | Per-owner/per-repo PAT override; higher priority than `TARGET_REPO_TOKEN` |
+| `GITHUB_TOKEN` | Auto | Built-in workflow token for read-only GitHub API calls |
 
 ---
 
