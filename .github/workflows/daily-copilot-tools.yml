@@ -2,16 +2,26 @@ name: Daily Copilot Tools Discovery
 
 on:
   schedule:
-    - cron: "0 2 * * *" # Daily at 02:00 UTC
+    - cron: "0 2 * * *" # 每天 02:00 UTC 自动触发
   workflow_dispatch:
     inputs:
       repo_override:
-        description: "Target repository (owner/repo). Skips round-robin selection."
+        description: "手动指定目标仓库（owner/repo），跳过轮询逻辑。"
         required: false
         type: string
 
 jobs:
-  # ── Job 1: read repos.json, pick today's target, derive secret name ──
+  # ══════════════════════════════════════════════════════════════════
+  # Job 1 · setup
+  # 职责：选出今天的目标仓库，推导需要使用哪个 secret。
+  #
+  # 调用链：
+  #   pick_repo.py 读取 repos.json
+  #     → 按天轮询选出 target_repo（如 "another-org/my-repo"）
+  #     → 推导 token_env_name（如 "ANOTHER_ORG_GITHUB_TOKEN"）
+  #     → 写入 GITHUB_OUTPUT
+  #   outputs 声明让 run job 通过 needs.setup.outputs.* 读取这两个值
+  # ══════════════════════════════════════════════════════════════════
   setup:
     name: Pick target repository
     runs-on: ubuntu-latest
@@ -33,10 +43,36 @@ jobs:
       - name: Pick target repo & derive token secret name
         id: pick
         env:
+          # 手动触发时可通过此变量覆盖轮询结果
           REPO_OVERRIDE: ${{ inputs.repo_override }}
         run: python .github/scripts/pick_repo.py
 
-  # ── Job 2: dynamically inject the org token, then run the pipeline ──
+  # ══════════════════════════════════════════════════════════════════
+  # Job 2 · run
+  # 职责：执行完整的工具发现、安装、提 PR 流水线。
+  #
+  # 环境变量注入链：
+  #   GITHUB_TOKEN        → GitHub Actions 自动注入（只读，限本仓库）
+  #                         用途：GitHub Models API（AI 分析）、Trending 抓取
+  #
+  #   RESOLVED_ORG_TOKEN  → secrets[needs.setup.outputs.token_env_name]
+  #                         token_env_name 由 setup job 推导，如 ANOTHER_ORG_GITHUB_TOKEN
+  #                         secrets[expression] 是 GitHub Actions 的动态 secret 查找语法
+  #                         若该 secret 未注册，此变量为空字符串
+  #                         用途：clone 目标仓库、push 分支、创建 PR（需写权限）
+  #
+  #   TARGET_REPO_TOKEN   → secrets.TARGET_REPO_TOKEN（静态兜底）
+  #                         当 RESOLVED_ORG_TOKEN 为空时由 main.py 降级使用
+  #                         用途：同上（写权限）
+  #
+  #   TARGET_REPO         → needs.setup.outputs.target_repo
+  #                         由 setup job 传递，格式 "owner/repo"
+  #                         用途：main.py 的操作目标
+  #
+  #   GITHUB_REPOSITORY   → github.repository（GitHub Actions 内置上下文）
+  #                         本维护仓库自身的名称，格式 "owner/repo"
+  #                         用途：在 PR 描述中生成"由哪个仓库生成"的链接
+  # ══════════════════════════════════════════════════════════════════
   run:
     name: Discover & install Copilot tools
     needs: setup
@@ -60,28 +96,10 @@ jobs:
 
       - name: Run daily Copilot tools update
         env:
-          # Auto-provided. Used for GitHub Models API (AI) and trending scrape.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-          # Dynamically resolved org token.
-          # secrets[needs.setup.outputs.token_env_name] looks up the secret whose
-          # name was derived from the repo owner by pick_repo.py, e.g.:
-          #   "another-org/repo" → ANOTHER_ORG_GITHUB_TOKEN
-          # If that secret doesn't exist in this repo, the value is empty and
-          # main.py falls back to TARGET_REPO_TOKEN.
           RESOLVED_ORG_TOKEN: ${{ secrets[needs.setup.outputs.token_env_name] }}
-
-          # Fallback token when no org-specific secret is registered.
           TARGET_REPO_TOKEN: ${{ secrets.TARGET_REPO_TOKEN }}
-
-          # Target repo passed from the setup job — no REPO_OVERRIDE needed here.
           TARGET_REPO:       ${{ needs.setup.outputs.target_repo }}
-
           GITHUB_REPOSITORY: ${{ github.repository }}
-
         run: python .github/scripts/main.py
-
-
-
-
 
