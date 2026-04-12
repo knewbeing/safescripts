@@ -107,21 +107,25 @@ def _build_pr_body(
 1. `scan_trending.py` — fetched GitHub Trending top-10 repos and scanned for Copilot tools
 2. `actions/ai-inference` (GPT-4.1-mini) — judged relevance for this repository
 3. `install_selected.py` — {"installed built-in recommended tools (no trending match)" if from_defaults else "installed/updated matching tools"}
-4. `actions/ai-inference` (GPT-4.1) — generated `.github/COPILOT_TOOLS.md` usage docs
-5. `commit_pr.py` — committed changes and opened this PR with auto-merge enabled
+4. `actions/ai-inference` (GPT-4.1) — classified tools by category and generated **Chinese annotations**
+5. `apply_annotations.py` — wrote Chinese comment headers into tool files + created `.github/TOOLS_INDEX.md`
+6. `actions/ai-inference` (GPT-4.1) — generated `.github/COPILOT_TOOLS.md` usage docs
+7. `commit_pr.py` — committed changes and opened this PR with auto-merge enabled
 
 ### 📁 Changed directories
 
-| Directory | Purpose |
-|-----------|---------|
-| `.github/instructions/` | Language & framework-specific Copilot instructions |
-| `.github/agents/` | Custom Copilot agent definitions |
-| `.github/prompts/` | Reusable prompt templates (skills) |
+| Directory / File | Purpose |
+|-----------------|---------|
+| `.github/instructions/` | Language & framework-specific Copilot instructions（含中文注释头） |
+| `.github/agents/` | Custom Copilot agent definitions（含中文注释头） |
+| `.github/prompts/` | Reusable prompt templates / skills（含中文注释头） |
+| `.github/TOOLS_INDEX.md` | 🆕 AI 自动生成的中文分类索引 |
 | `.github/COPILOT_TOOLS.md` | AI-generated tool overview with usage instructions |
 
 ### ✅ Review checklist
 
-- [ ] Inspect each new/updated file for accuracy
+- [ ] 查看各工具文件头部的 `<!-- 中文注释 -->` 是否准确
+- [ ] 阅读 `.github/TOOLS_INDEX.md` 确认分类合理
 - [ ] Read `.github/COPILOT_TOOLS.md` for the full usage guide
 - [ ] Test tools with GitHub Copilot in VS Code
 - [ ] Remove any tools that don't fit your workflow

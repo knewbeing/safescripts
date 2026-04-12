@@ -14,14 +14,22 @@ Scan each repo for Copilot tools
 (.github/instructions/, .github/agents/, .github/prompts/)
         │
         ▼
-AI analysis via GitHub Models API (GPT-4.1-mini)
+AI relevance analysis via actions/ai-inference (GPT-4.1-mini)
 "Are these tools relevant to <target-repo>?"
         │
         ▼
 Install compatible tools into the target repo working copy
         │
         ▼
-AI generates .github/COPILOT_TOOLS.md (categorised overview)
+AI classify & annotate tools (GPT-4.1)
+→ 按功能分类 + 为每个工具生成中文注释元数据
+        │
+        ▼
+apply_annotations.py
+→ 写入 <!-- 中文注释头 --> + 生成 .github/TOOLS_INDEX.md
+        │
+        ▼
+AI generates .github/COPILOT_TOOLS.md (categorised overview + usage guide)
         │
         ▼
 Commit → push branch → open Pull Request in target repo
@@ -58,10 +66,8 @@ Create required secrets:
 
 - `TARGET_REPO_TOKEN`: fallback PAT (`repo` scope) for cloning, pushing, and creating PRs in target repos
 - Optional per-owner PATs: e.g. `KNEWBEING_GITHUB_TOKEN`, `CNJIMBO_GITHUB_TOKEN` (used when `secret_name` or owner-derived key matches)
-- Optional `COPILOT_TOKEN`: fallback PAT for GitHub Models (recommended secret name, needs `models:read`)
-- Optional `MODELS_TOKEN`: backward-compatible alias for `COPILOT_TOKEN`
 
-> The workflow uses `GITHUB_TOKEN` for GitHub Models by default (with `models: read` permission) and for read-only GitHub API calls.
+> The workflow uses `actions/ai-inference@v1` + `GITHUB_TOKEN` (with `models: read` permission) for model calls.
 
 ### 3. Let the workflow run
 
@@ -99,12 +105,17 @@ repos.json                        # List of target repositories + settings
 .github/
   workflows/
     daily-copilot-tools.yml       # GitHub Actions workflow (daily cron)
+  prompts/
+    analyze-relevance.prompt.yml  # AI relevance prompt (JSON output schema)
+    annotate-tools.prompt.yml     # AI 中文分类注释提示词（JSON output schema）
+    generate-tools-readme.prompt.yml # AI README generation prompt
   scripts/
-    main.py                       # Orchestration entry point
+    scan_trending.py              # Step 1: trending scan + candidates export
+    install_selected.py           # Step 3: install selected/default tools
+    apply_annotations.py          # Step 5: write Chinese annotations + TOOLS_INDEX.md
+    commit_pr.py                  # Step 7: commit, push, PR, auto-merge
     fetch_trending.py             # GitHub trending scraper + tool scanner
-    analyze_tools.py              # AI relevance analysis (GitHub Models API)
     install_tools.py              # File download & installation
-    organize_readme.py            # AI-generated COPILOT_TOOLS.md
     github_api.py                 # GitHub REST API wrapper
     requirements.txt              # Python dependencies
 ```
@@ -115,11 +126,9 @@ repos.json                        # List of target repositories + settings
 
 | Secret | Required | Purpose |
 |--------|----------|---------|
-| `COPILOT_TOKEN` | Optional | PAT fallback for GitHub Models API (`models.github.ai`, needs `models:read`) |
-| `MODELS_TOKEN` | Optional | Backward-compatible alias of `COPILOT_TOKEN` |
 | `TARGET_REPO_TOKEN` | **Yes** | PAT (`repo` scope) for cloning, pushing, and creating PRs in target repos |
 | `<OWNER>_GITHUB_TOKEN` or configured `secret_name` | Optional | Per-owner/per-repo PAT override; higher priority than `TARGET_REPO_TOKEN` |
-| `GITHUB_TOKEN` | Auto | Built-in token for GitHub Models + read-only GitHub API calls |
+| `GITHUB_TOKEN` | Auto | Built-in token for `actions/ai-inference` model calls + read-only GitHub API calls |
 
 ---
 
