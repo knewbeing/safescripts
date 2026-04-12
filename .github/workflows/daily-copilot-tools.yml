@@ -6,7 +6,11 @@ on:
   workflow_dispatch:
     inputs:
       repo_override:
-        description: "Target repository override (owner/repo). Skips round-robin selection."
+        description: "Target repository (owner/repo). Skips round-robin selection."
+        required: false
+        type: string
+      token_secret_override:
+        description: "Secret name to use as token for repo_override (default: TARGET_REPO_TOKEN)."
         required: false
         type: string
 
@@ -34,15 +38,27 @@ jobs:
 
       - name: Run daily Copilot tools update
         env:
-          # Auto-provided by GitHub Actions. Used for GitHub Models API (AI) and
-          # as fallback for trending scrape. Scoped to THIS repo only.
+          # Auto-provided. Used for GitHub Models API (AI) and trending scrape.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # PAT (repo scope) for cloning, pushing branches, and creating PRs in
-          # the external repositories listed in repos.json.
-          # One token is enough if it belongs to an account/org with access to all listed repos.
+
+          # ── Per-repo tokens ──────────────────────────────────────────────
+          # Each secret below corresponds to a "token_secret" value in repos.json.
+          # Add one line here whenever you add a new token_secret in repos.json.
+          # A PAT needs "repo" scope for the target org/account.
+          #
+          # Default token (used when no token_secret is specified in repos.json)
           TARGET_REPO_TOKEN: ${{ secrets.TARGET_REPO_TOKEN }}
-          REPO_OVERRIDE: ${{ inputs.repo_override }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
+          # Additional org/account tokens:
+          TOKEN_ANOTHER_ORG: ${{ secrets.TOKEN_ANOTHER_ORG }}
+          TOKEN_SOME_USER:   ${{ secrets.TOKEN_SOME_USER }}
+          # TOKEN_YET_ANOTHER: ${{ secrets.TOKEN_YET_ANOTHER }}
+
+          # ── Manual-trigger overrides ─────────────────────────────────────
+          REPO_OVERRIDE:         ${{ inputs.repo_override }}
+          TOKEN_SECRET_OVERRIDE: ${{ inputs.token_secret_override }}
+          GITHUB_REPOSITORY:     ${{ github.repository }}
+
         run: python .github/scripts/main.py
+
 
 

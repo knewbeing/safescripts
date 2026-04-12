@@ -34,15 +34,38 @@ _BOT_NAME = "github-actions[bot]"
 # ------------------------------------------------------------------ #
 
 
-def pick_target_repo() -> str:
-    """Round-robin repo selection based on day-of-year."""
+def _load_config() -> dict:
     with open(_REPOS_FILE) as fh:
-        config = json.load(fh)
+        return json.load(fh)
+
+
+def pick_target_repo() -> tuple[str, str]:
+    """Round-robin repo selection. Returns (repo_full_name, token_secret_name)."""
+    config = _load_config()
     entries: list = config.get("repositories", [])
     if not entries:
         raise SystemExit("❌  No repositories in repos.json. Add at least one entry.")
+    default_secret = config.get("settings", {}).get("default_token_secret", "TARGET_REPO_TOKEN")
+
     idx = (datetime.date.today().timetuple().tm_yday - 1) % len(entries)
-    return entries[idx]
+    entry = entries[idx]
+
+    if isinstance(entry, str):
+        return entry, default_secret
+    # Object form: {"repo": "org/name", "token_secret": "SECRET_NAME"}
+    return entry["repo"], entry.get("token_secret", default_secret)
+
+
+def resolve_token(secret_name: str) -> str:
+    """Read the env var *secret_name*. Raise SystemExit if missing or empty."""
+    value = os.environ.get(secret_name, "").strip()
+    if not value:
+        raise SystemExit(
+            f"❌  Secret '{secret_name}' is not set in the workflow environment.\n"
+            f"    Add it to repos.json and declare it in the workflow YAML env: block."
+        )
+    logger.info("Using token from secret '%s'", secret_name)
+    return value
 
 
 def _run(cmd: list[str], cwd: str | None = None) -> None:
@@ -126,15 +149,16 @@ def main() -> None:
     if not github_token:
         raise SystemExit("❌  GITHUB_TOKEN environment variable is required")
 
-    # TARGET_REPO_TOKEN is a PAT with repo scope, required to push branches
-    # and create PRs in external repos listed in repos.json.
-    target_token = os.environ.get("TARGET_REPO_TOKEN")
-    if not target_token:
-        raise SystemExit("❌  TARGET_REPO_TOKEN secret is required (PAT with repo scope)")
-
     repo_override = os.environ.get("REPO_OVERRIDE", "").strip()
-    target_repo = repo_override if repo_override else pick_target_repo()
-    logger.info("Target repository: %s", target_repo)
+
+    if repo_override:
+        target_repo = repo_override
+        secret_name = os.environ.get("TOKEN_SECRET_OVERRIDE", "").strip() or "TARGET_REPO_TOKEN"
+    else:
+        target_repo, secret_name = pick_target_repo()
+
+    target_token = resolve_token(secret_name)
+    logger.info("Target repository: %s  (token: %s)", target_repo, secret_name)
 
     api = GitHubAPI(target_token)
 
