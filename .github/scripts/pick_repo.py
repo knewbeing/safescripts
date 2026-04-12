@@ -1,21 +1,18 @@
-"""setup job 专用脚本：选出今天的目标仓库，并推导所需的 token secret 名称。
+"""setup job 专用脚本：读取 repos.json 中所有目标仓库，构建 matrix 供 run job 并行处理。
 
 调用链路：
   workflow setup job
       → 运行本脚本
-      → 将 target_repo / token_env_name 写入 GITHUB_OUTPUT
-      → run job 通过 needs.setup.outputs.* 读取这两个值
-      → workflow 用 secrets[token_env_name] 动态查找 secret 值
-      → 以环境变量 RESOLVED_ORG_TOKEN 注入 main.py
+      → 将所有仓库信息序列化为 JSON matrix 写入 GITHUB_OUTPUT
+      → run job 通过 strategy.matrix 并行为每个仓库独立运行一次流水线
 
 输出到 GITHUB_OUTPUT 的变量：
-  target_repo     — 目标仓库，如 "another-org/my-repo"
-  token_env_name  — 对应的 secret 名，如 "ANOTHER_ORG_GITHUB_TOKEN"
+  matrix  — JSON 数组，每项包含 repo（仓库名）和 token_env_name（secret 名）
+            示例：[{"repo":"org-a/r1","token_env_name":"ORG_A_GITHUB_TOKEN"}, ...]
 """
 
 from __future__ import annotations
 
-import datetime
 import json
 import os
 import sys
@@ -41,31 +38,34 @@ def main() -> None:
     with open(_REPOS_FILE) as fh:
         config = json.load(fh)
 
-    # 支持手动触发时通过 REPO_OVERRIDE 指定目标仓库，跳过轮询逻辑
+    # 支持手动触发时通过 REPO_OVERRIDE 只处理单个仓库（用于调试）
     repo_override = os.environ.get("REPO_OVERRIDE", "").strip()
     if repo_override:
-        target_repo = repo_override
+        entries = [repo_override]
     else:
-        # 按一年中的第几天轮询选取仓库，确保每天处理不同仓库
         entries: list = config.get("repositories", [])
         if not entries:
             sys.exit("❌  repos.json 中没有仓库，请至少添加一条记录。")
-        idx = (datetime.date.today().timetuple().tm_yday - 1) % len(entries)
-        target_repo = entries[idx]
 
-    # 推导该 org/user 对应的 secret 名（由 workflow 用于动态查找 secret 值）
-    token_env_name = org_token_env_name(target_repo)
+    # 构建 matrix 数组：每个仓库一项，包含仓库名和对应的 secret 名
+    matrix = [
+        {
+            "repo": repo,
+            "token_env_name": org_token_env_name(repo),
+        }
+        for repo in entries
+    ]
 
-    # 写入 GITHUB_OUTPUT → run job 可通过 needs.setup.outputs.* 读取
+    matrix_json = json.dumps(matrix, ensure_ascii=False)
+
+    # 写入 GITHUB_OUTPUT → run job 通过 fromJson(needs.setup.outputs.matrix) 读取
     github_output = os.environ.get("GITHUB_OUTPUT")
     if github_output:
         with open(github_output, "a") as fh:
-            fh.write(f"target_repo={target_repo}\n")
-            fh.write(f"token_env_name={token_env_name}\n")
+            fh.write(f"matrix={matrix_json}\n")
     else:
         # 本地测试时直接打印
-        print(f"target_repo={target_repo}")
-        print(f"token_env_name={token_env_name}")
+        print(f"matrix={matrix_json}")
 
 
 if __name__ == "__main__":
