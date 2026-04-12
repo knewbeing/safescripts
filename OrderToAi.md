@@ -1,6 +1,6 @@
-# 需求记录
+# OrderToAi — 会话需求记录
 
-本文档记录本次会话中用户提出的所有需求及其实现状态。
+本文档记录本次会话中用户向 AI 提出的所有需求及其实现状态。
 
 ---
 
@@ -129,6 +129,31 @@
 
 ---
 
+## 需求 10：配置文件重命名并对齐格式
+
+**描述**：将 `repos.json` 重命名为 `target-repos.json`，数组键名从 `repositories` 改为 `repos`，与 `ai-jobs-by-copilot-cli` 项目的 `target-repos.json` 格式保持一致。
+
+**实现**：
+- 创建 `target-repos.json`，使用 `repos` 数组、添加 `_comment`/`default_branch`/`description` 字段
+- 删除旧 `repos.json`
+- `pick_repo.py`：文件路径改为 `target-repos.json`，键名改为 `repos`
+- Workflow 和 README 中所有引用同步更新
+
+**状态**：✅ 已完成（commit `7d92fef`）
+
+---
+
+## 需求 11：暂时停用定时和 push 自动触发
+
+**描述**：暂时停用 workflow 的 schedule（每日定时）和 push（推送触发）事件，只保留手动触发（workflow_dispatch）。
+
+**实现**：
+- 注释掉 `schedule` 和 `push` 触发配置，仅保留 `workflow_dispatch`
+
+**状态**：✅ 已完成（commit `5de0336`）
+
+---
+
 ## 提交历史汇总
 
 | Commit | 描述 |
@@ -141,3 +166,6 @@
 | `9c55e20` | 分批工具列表避免 413 |
 | `52eb25c` | 添加 push 触发 workflow |
 | `71ead7a` | 分批注释 + 修复调试步骤 |
+| `02414b9` | 添加 REQUIREMENTS.md 需求文档 |
+| `7d92fef` | 重命名 repos.json → target-repos.json |
+| `5de0336` | 暂时停用定时和 push 触发 |
