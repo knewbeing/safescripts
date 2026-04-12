@@ -14,7 +14,7 @@ Scan each repo for Copilot tools
 (.github/instructions/, .github/agents/, .github/prompts/)
         │
         ▼
-AI analysis via GitHub Copilot API (GPT-4o-mini)
+AI analysis via GitHub Models API (GPT-4.1-mini)
 "Are these tools relevant to <target-repo>?"
         │
         ▼
@@ -54,13 +54,13 @@ Edit `repos.json`:
 
 ### 2. Create required secrets
 
-Generate PATs with proper scopes and add them to repository secrets:
+Create required secrets:
 
-- `COPILOT_TOKEN`: PAT for calling `https://api.githubcopilot.com` (account must have GitHub Copilot)
 - `TARGET_REPO_TOKEN`: fallback PAT (`repo` scope) for cloning, pushing, and creating PRs in target repos
 - Optional per-owner PATs: e.g. `KNEWBEING_GITHUB_TOKEN`, `CNJIMBO_GITHUB_TOKEN` (used when `secret_name` or owner-derived key matches)
+- Optional `MODELS_TOKEN`: fallback PAT for GitHub Models (needs `models:read`)
 
-> `GITHUB_TOKEN` is still used for read-only GitHub API calls (for example, trending/search fallback), not for Copilot API.
+> The workflow uses `GITHUB_TOKEN` for GitHub Models by default (with `models: read` permission) and for read-only GitHub API calls.
 
 ### 3. Let the workflow run
 
@@ -101,7 +101,7 @@ repos.json                        # List of target repositories + settings
   scripts/
     main.py                       # Orchestration entry point
     fetch_trending.py             # GitHub trending scraper + tool scanner
-    analyze_tools.py              # AI relevance analysis (GitHub Copilot API)
+    analyze_tools.py              # AI relevance analysis (GitHub Models API)
     install_tools.py              # File download & installation
     organize_readme.py            # AI-generated COPILOT_TOOLS.md
     github_api.py                 # GitHub REST API wrapper
@@ -114,10 +114,10 @@ repos.json                        # List of target repositories + settings
 
 | Secret | Required | Purpose |
 |--------|----------|---------|
-| `COPILOT_TOKEN` | **Yes** | PAT for GitHub Copilot API calls (`api.githubcopilot.com`) |
+| `MODELS_TOKEN` | Optional | PAT fallback for GitHub Models API (`models.github.ai`, needs `models:read`) |
 | `TARGET_REPO_TOKEN` | **Yes** | PAT (`repo` scope) for cloning, pushing, and creating PRs in target repos |
 | `<OWNER>_GITHUB_TOKEN` or configured `secret_name` | Optional | Per-owner/per-repo PAT override; higher priority than `TARGET_REPO_TOKEN` |
-| `GITHUB_TOKEN` | Auto | Built-in workflow token for read-only GitHub API calls |
+| `GITHUB_TOKEN` | Auto | Built-in token for GitHub Models + read-only GitHub API calls |
 
 ---
 

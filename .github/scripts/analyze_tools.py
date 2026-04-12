@@ -1,10 +1,10 @@
-"""使用 GitHub Copilot API 判断工具与目标仓库的相关性。
+"""使用 GitHub Models API 判断工具与目标仓库的相关性。
 
 鉴权方式：
-  GitHub Copilot Chat Completions API 与 OpenAI SDK 完全兼容。
-  端点：https://api.githubcopilot.com
-  Token：使用 COPILOT_TOKEN（PAT）。
-  说明：GitHub Actions 的 GITHUB_TOKEN（Server-to-Server）不支持此端点。
+  GitHub Models Inference API 与 OpenAI SDK 完全兼容。
+  端点：https://models.github.ai/inference
+  Token：优先使用 MODELS_TOKEN（可选 PAT），否则使用 GITHUB_TOKEN。
+  说明：token 需具备 models:read（fine-grained PAT / GitHub App token）。
 """
 
 from __future__ import annotations
@@ -16,10 +16,12 @@ from openai import OpenAI
 
 logger = logging.getLogger(__name__)
 
-# GitHub Copilot Chat Completions API 端点（OpenAI 兼容）
-_COPILOT_ENDPOINT = "https://api.githubcopilot.com"
+# GitHub Models Inference API 端点（OpenAI 兼容）
+_MODELS_ENDPOINT = "https://models.github.ai/inference"
+# REST API 版本头（GitHub Models 推荐）
+_API_VERSION = "2022-11-28"
 # 使用轻量模型做相关性判断，降低延迟和 token 消耗
-_MODEL = "gpt-4o-mini"
+_MODEL = "openai/gpt-4.1-mini"
 
 
 def analyze_tool_relevance(
@@ -27,18 +29,25 @@ def analyze_tool_relevance(
     target_repo_info: dict,
     source_repo: dict,
     tools: list[dict],
-    copilot_token: str,
+    models_token: str,
 ) -> list[dict]:
     """判断 tools 中哪些与 target_repo 相关。
 
-    通过 GitHub Copilot API（COPILOT_TOKEN 鉴权）调用 GPT-4o-mini 做相关性判断。
+    通过 GitHub Models API（models_token 鉴权）调用 GPT-4.1-mini 做相关性判断。
     出现任何 API 错误时返回空列表（不中断主流程）。
     """
     if not tools:
         return []
 
-    # 使用 COPILOT_TOKEN（PAT）访问 Copilot API
-    client = OpenAI(base_url=_COPILOT_ENDPOINT, api_key=copilot_token)
+    # 使用 GitHub Models（OpenAI 兼容）端点
+    client = OpenAI(
+        base_url=_MODELS_ENDPOINT,
+        api_key=models_token,
+        default_headers={
+            "X-GitHub-Api-Version": _API_VERSION,
+            "Accept": "application/vnd.github+json",
+        },
+    )
 
     target_desc = target_repo_info.get("description") or ""
     target_lang = target_repo_info.get("language") or ""

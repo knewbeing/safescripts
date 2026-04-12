@@ -54,12 +54,14 @@ jobs:
   # 环境变量注入链：
   #   GITHUB_TOKEN        → GitHub Actions 自动注入的临时安装令牌
   #                         作用域仅限本维护仓库，无法访问任何外部仓库
-  #                         用途：Trending 抓取兜底（GitHub Search API，只读）
+  #                         用途1：Trending 抓取兜底（GitHub Search API，只读）
+  #                         用途2：GitHub Models API（默认 AI 通道）
+  #                                需要 run job 申请 models: read 权限
   #
-  #   COPILOT_TOKEN       → 用于调用 GitHub Copilot API 的 PAT（OpenAI 兼容端点）
-  #                         端点：https://api.githubcopilot.com
-  #                         要求：该 PAT 所属账号已开通 GitHub Copilot
-  #                         说明：GITHUB_TOKEN（Server-to-Server）不支持此端点
+  #   MODELS_TOKEN        → （可选）GitHub Models 的 PAT 兜底
+  #                         端点：https://models.github.ai/inference
+  #                         要求：PAT 具备 models:read（fine-grained）或等效权限
+  #                         说明：若为空，main.py 自动回退使用 GITHUB_TOKEN
   #
   #   RESOLVED_ORG_TOKEN  → secrets[matrix.token_env_name]（动态 secret 查找）
   #                         token_env_name 由 pick_repo.py 推导：
@@ -79,9 +81,10 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     permissions:
-      # GITHUB_TOKEN 仅用于只读操作（Trending / GitHub API 查询）
+      # GITHUB_TOKEN 仅用于只读操作（Trending / GitHub API 查询 / GitHub Models）
       # 写操作（clone/push/PR）全部由 PAT（RESOLVED_ORG_TOKEN / TARGET_REPO_TOKEN）完成
       contents: read
+      models: read
 
     strategy:
       # 每个仓库独立运行，某个仓库失败不影响其他仓库继续执行
@@ -107,11 +110,13 @@ jobs:
 
       - name: Run Copilot tools update for ${{ matrix.repo }}
         env:
-          # GITHUB_TOKEN 仅用于 GitHub API 只读调用（Trending 抓取兜底）
+          # GITHUB_TOKEN 用于：
+          #   1) Trending 抓取兜底（GitHub Search API）
+          #   2) GitHub Models API（默认 AI 通道，需上方声明 models: read）
           GITHUB_TOKEN:        ${{ secrets.GITHUB_TOKEN }}
-          # COPILOT_TOKEN 用于 GitHub Copilot API（AI 相关性分析 + README 生成）
-          # 必须是 PAT（GITHUB_TOKEN 不支持 api.githubcopilot.com）
-          COPILOT_TOKEN:       ${{ secrets.COPILOT_TOKEN }}
+          # MODELS_TOKEN（可选）：GitHub Models API 的 PAT 兜底
+          # 为空时 main.py 自动使用 GITHUB_TOKEN
+          MODELS_TOKEN:        ${{ secrets.MODELS_TOKEN }}
           # 动态读取本 matrix item 对应 org 的 secret（由 pick_repo.py 推导名称）
           # 跨 org/user 时用于 clone/push/PR
           RESOLVED_ORG_TOKEN:  ${{ secrets[matrix.token_env_name] }}
