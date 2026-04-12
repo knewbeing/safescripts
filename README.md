@@ -38,7 +38,7 @@ Python + GitHub Models generate .github/COPILOT_TOOLS.md (categorised overview +
 Commit → push branch → open Pull Request in target repo
 ```
 
-The workflow runs **daily at 02:00 UTC** and processes **all** repositories in `repos.json` (matrix parallel). For each target repo, it first exports repo context, then uses Python scripts + GitHub Models to rank promising AI tool repositories before scanning their Copilot assets. You can also trigger it manually from the **Actions** tab.
+The workflow runs **daily at 02:00 UTC** and processes **all** repositories in `target-repos.json` (matrix parallel). For each target repo, it first exports repo context, then uses Python scripts + GitHub Models to rank promising AI tool repositories before scanning their Copilot assets. You can also trigger it manually from the **Actions** tab.
 
 ---
 
@@ -46,11 +46,11 @@ The workflow runs **daily at 02:00 UTC** and processes **all** repositories in `
 
 ### 1. Add your repositories
 
-Edit `repos.json`:
+Edit `target-repos.json`:
 
 ```json
 {
-  "repositories": [
+  "repos": [
     { "repo": "your-org/your-repo", "secret_name": "YOUR_ORG_GITHUB_TOKEN" },
     { "repo": "another-org/another-repo", "secret_name": "ANOTHER_ORG_GITHUB_TOKEN" }
   ],
@@ -105,7 +105,7 @@ Each automated PR includes:
 ## Project structure
 
 ```
-repos.json                        # List of target repositories + settings
+target-repos.json                 # List of target repositories + settings
 .github/
   workflows/
     daily-copilot-tools.yml       # GitHub Actions workflow (daily cron)

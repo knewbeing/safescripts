@@ -1,4 +1,4 @@
-"""setup job 专用脚本：读取 repos.json 中所有目标仓库，构建 matrix 供 run job 并行处理。
+"""setup job 专用脚本：读取 target-repos.json 中所有目标仓库，构建 matrix 供 run job 并行处理。
 
 调用链路：
   workflow setup job
@@ -6,7 +6,7 @@
       → 将所有仓库信息序列化为 JSON matrix 写入 GITHUB_OUTPUT
       → run job 通过 strategy.matrix 并行为每个仓库独立运行一次流水线
 
-repos.json 中 repositories 支持两种格式：
+target-repos.json 中 repos 支持两种格式：
   1. 字符串：直接写 "owner/repo"，token secret 名由 owner 自动推导
          "knewbeing/repo-a"  →  token_env_name = KNEWBEING_GITHUB_TOKEN
   2. 对象：显式指定 secret_name，适合同 owner 下多仓库共用一个 key
@@ -24,8 +24,8 @@ import os
 import sys
 from pathlib import Path
 
-# repos.json 位于仓库根目录（本文件在 .github/scripts/ 下，向上三级）
-_REPOS_FILE = Path(__file__).parent.parent.parent / "repos.json"
+# target-repos.json 位于仓库根目录（本文件在 .github/scripts/ 下，向上三级）
+_REPOS_FILE = Path(__file__).parent.parent.parent / "target-repos.json"
 
 
 def default_token_env_name(repo_full_name: str) -> str:
@@ -67,9 +67,9 @@ def main() -> None:
     if repo_override:
         raw_entries = [repo_override]
     else:
-        raw_entries: list = config.get("repositories", [])
+        raw_entries: list = config.get("repos", [])
         if not raw_entries:
-            sys.exit("❌  repos.json 中没有仓库，请至少添加一条记录。")
+            sys.exit("❌  target-repos.json 中没有仓库，请至少添加一条记录。")
 
     # 构建 matrix 数组：每个仓库一项，包含仓库名和对应的 secret 名
     matrix = [

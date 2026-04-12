@@ -17,7 +17,7 @@ on:
 jobs:
   # ══════════════════════════════════════════════════════════════════
   # Job 1 · setup
-  # 职责：读取 repos.json 中所有仓库，构建 matrix 供 run job 并行使用。
+  # 职责：读取 target-repos.json 中所有仓库，构建 matrix 供 run job 并行使用。
   # ══════════════════════════════════════════════════════════════════
   setup:
     name: Build repository matrix
@@ -36,7 +36,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Build matrix from repos.json
+      - name: Build matrix from target-repos.json
         id: pick
         env:
           REPO_OVERRIDE: ${{ inputs.repo_override }}

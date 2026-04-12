@@ -1,0 +1,33 @@
+{
+  "_comment": "AI 工具维护流水线配置文件。在 repos 数组中添加目标仓库。",
+  "settings": {
+    "max_trending_repos": 10,
+    "branch_prefix": "copilot-tools"
+  },
+  "repos": [
+    {
+      "repo": "knewbeing/org-memory",
+      "secret_name": "CALMRIPPLE_GITHUB_TOKEN",
+      "default_branch": "main",
+      "description": ""
+    },
+    {
+      "repo": "cnjimbo/QuickTicket2Queue",
+      "secret_name": "CNJIMBO_GITHUB_TOKEN",
+      "default_branch": "main",
+      "description": ""
+    },
+    {
+      "repo": "knewbeing/xorg-workflow",
+      "secret_name": "CNJIMBO_GITHUB_TOKEN",
+      "default_branch": "main",
+      "description": ""
+    },
+    {
+      "repo": "calmripple/calmripple.github.io",
+      "secret_name": "CALMRIPPLE_GITHUB_TOKEN",
+      "default_branch": "main",
+      "description": ""
+    }
+  ]
+}
