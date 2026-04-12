@@ -151,7 +151,6 @@ jobs:
         if: steps.scan.outputs.has_candidates == 'true'
         shell: bash
         run: |
-          set -euo pipefail
           echo "repo=${{ matrix.repo }}"
           echo "event=${{ github.event_name }}"
           echo "actor=${{ github.actor }}"
@@ -159,10 +158,10 @@ jobs:
           echo "repo_search_outcome=${{ steps.repo_search.outcome }}"
           echo "target_repo_info_exists=$(test -f /tmp/ai_tools/target_repo_info.json && echo yes || echo no)"
           echo "candidates_exists=$(test -f /tmp/ai_tools/candidates.json && echo yes || echo no)"
-          echo "target_repo_info_bytes=$(wc -c < /tmp/ai_tools/target_repo_info.json)"
-          echo "candidates_bytes=$(wc -c < /tmp/ai_tools/candidates.json)"
-          echo "target_repo_info_preview=$(head -c 200 /tmp/ai_tools/target_repo_info.json)"
-          echo "candidates_preview=$(head -c 200 /tmp/ai_tools/candidates.json)"
+          echo "target_repo_info_bytes=$(wc -c < /tmp/ai_tools/target_repo_info.json 2>/dev/null || echo 0)"
+          echo "candidates_bytes=$(wc -c < /tmp/ai_tools/candidates.json 2>/dev/null || echo 0)"
+          echo "target_repo_info_preview=$(head -c 200 /tmp/ai_tools/target_repo_info.json 2>/dev/null || echo '(missing)')"
+          echo "candidates_preview=$(head -c 200 /tmp/ai_tools/candidates.json 2>/dev/null || echo '(missing)')"
           echo "github_token_present=${{ secrets.GITHUB_TOKEN != '' }}"
           echo "target_repo_token_present=${{ secrets.TARGET_REPO_TOKEN != '' }}"
 
@@ -180,13 +179,14 @@ jobs:
         if: steps.scan.outputs.has_candidates == 'true'
         shell: bash
         run: |
-          set -euo pipefail
           echo "analyze_outcome=${{ steps.analyze.outcome }}"
           echo "has_candidates=${{ steps.scan.outputs.has_candidates }}"
           echo "model=openai/gpt-4.1-mini"
           echo "ai_analysis_present=$(test -f /tmp/ai_tools/ai_analysis.json && echo yes || echo no)"
-          test -f /tmp/ai_tools/ai_analysis.json && echo "ai_analysis_preview=$(head -c 200 /tmp/ai_tools/ai_analysis.json)"
-          echo "candidates_count_hint=$(grep -o '\"repo\":' /tmp/ai_tools/candidates.json | wc -l || true)"
+          if [ -f /tmp/ai_tools/ai_analysis.json ]; then
+            echo "ai_analysis_preview=$(head -c 200 /tmp/ai_tools/ai_analysis.json)"
+          fi
+          echo "candidates_count_hint=$(grep -o '\"repo\":' /tmp/ai_tools/candidates.json 2>/dev/null | wc -l || echo 0)"
 
       # ─── Step 5: 安装工具到目标仓库 ─────────────────────────────────────
       - name: "⑤ Install selected tools into target repo"
@@ -215,12 +215,13 @@ jobs:
         if: steps.install.outputs.has_installed == 'true'
         shell: bash
         run: |
-          set -euo pipefail
           echo "annotate_outcome=${{ steps.annotate.outcome }}"
           echo "installed_tools_exists=$(test -f /tmp/ai_tools/installed_tools.json && echo yes || echo no)"
-          echo "installed_tools_bytes=$(wc -c < /tmp/ai_tools/installed_tools.json)"
+          echo "installed_tools_bytes=$(wc -c < /tmp/ai_tools/installed_tools.json 2>/dev/null || echo 0)"
           echo "annotations_present=$(test -f /tmp/ai_tools/annotations.json && echo yes || echo no)"
-          test -f /tmp/ai_tools/annotations.json && echo "annotations_preview=$(head -c 200 /tmp/ai_tools/annotations.json)"
+          if [ -f /tmp/ai_tools/annotations.json ]; then
+            echo "annotations_preview=$(head -c 200 /tmp/ai_tools/annotations.json)"
+          fi
 
       # ─── Step 7: 应用中文注释 + 生成分类索引 TOOLS_INDEX.md ────────────
       - name: "⑦ Apply Chinese annotations & generate TOOLS_INDEX.md"
@@ -243,10 +244,9 @@ jobs:
         if: steps.install.outputs.has_installed == 'true'
         shell: bash
         run: |
-          set -euo pipefail
           echo "readme_outcome=${{ steps.readme.outcome }}"
           echo "installed_tools_exists=$(test -f /tmp/ai_tools/installed_tools.json && echo yes || echo no)"
-          echo "installed_tools_bytes=$(wc -c < /tmp/ai_tools/installed_tools.json)"
+          echo "installed_tools_bytes=$(wc -c < /tmp/ai_tools/installed_tools.json 2>/dev/null || echo 0)"
           echo "readme_content_present=$(test -f /tmp/ai_tools/readme_content.md && echo yes || echo no)"
 
       # ─── Step 9: Commit → Push → PR → Auto-merge ────────────────────────

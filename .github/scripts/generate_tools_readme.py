@@ -38,6 +38,12 @@ def main() -> None:
         logger.info("没有已安装工具，跳过 README 生成")
         return
 
+    # Trim preview to reduce token usage
+    for tool in all_tools:
+        preview = tool.get("preview", "")
+        if len(preview) > 400:
+            tool["preview"] = preview[:400]
+
     try:
         client, token_source = create_models_client()
         logger.info("Generating README with GitHub Models (%s, model=%s)", token_source, MODEL)

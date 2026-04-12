@@ -45,26 +45,53 @@ def main() -> None:
         logger.info("没有已安装工具，跳过注释生成")
         return
 
+    # Trim preview to reduce token usage
+    for tool in all_tools:
+        preview = tool.get("preview", "")
+        if len(preview) > 400:
+            tool["preview"] = preview[:400]
+
     try:
         client, token_source = create_models_client()
         logger.info("Generating Chinese annotations with GitHub Models (%s, model=%s)", token_source, MODEL)
-        raw = request_from_prompt(
-            client=client,
-            model=MODEL,
-            prompt_path=PROMPTS_DIR / "annotate-tools.prompt.yml",
-            variables={
-                "installed_tools_json": json.dumps(all_tools, ensure_ascii=False),
-            },
-        )
-        result = json.loads(raw)
     except Exception as exc:
-        log_models_error("Annotation generation", exc)
+        log_models_error("Annotation generation setup", exc)
         return
+
+    # Batch tools to stay under token limits
+    BATCH_SIZE = 15
+    batches = [all_tools[i:i + BATCH_SIZE] for i in range(0, len(all_tools), BATCH_SIZE)]
+    if len(batches) > 1:
+        logger.info("Splitting %d tools into %d batches", len(all_tools), len(batches))
+
+    all_annotated: list[dict] = []
+    all_categories: list[str] = []
+
+    for batch_idx, batch in enumerate(batches):
+        try:
+            raw = request_from_prompt(
+                client=client,
+                model=MODEL,
+                prompt_path=PROMPTS_DIR / "annotate-tools.prompt.yml",
+                variables={
+                    "installed_tools_json": json.dumps(batch, ensure_ascii=False),
+                },
+            )
+            result = json.loads(raw)
+        except Exception as exc:
+            log_models_error(f"Annotation generation (batch {batch_idx + 1}/{len(batches)})", exc)
+            continue
+
+        for item in result.get("tools", []):
+            all_annotated.append(item)
+        for cat in result.get("category_order", []):
+            if str(cat).strip() and str(cat) not in all_categories:
+                all_categories.append(str(cat))
 
     valid_paths = {str(tool.get("path", "")).replace("\\", "/") for tool in all_tools}
     filtered_tools: list[dict] = []
     seen_paths: set[str] = set()
-    for item in result.get("tools", []):
+    for item in all_annotated:
         path = str(item.get("path", "")).replace("\\", "/")
         if path not in valid_paths or path in seen_paths:
             continue
@@ -82,7 +109,7 @@ def main() -> None:
 
     payload = {
         "tools": filtered_tools,
-        "category_order": [str(item) for item in (result.get("category_order") or []) if str(item).strip()],
+        "category_order": all_categories if all_categories else ["通用助手"],
     }
     _write_result(payload)
     logger.info("Generated annotations for %d tool(s)", len(filtered_tools))
