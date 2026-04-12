@@ -34,20 +34,15 @@ jobs:
 
       - name: Run daily Copilot tools update
         env:
-          # Used for GitHub Models API (AI analysis) and trending scrape fallback.
+          # Auto-provided by GitHub Actions. Used for GitHub Models API (AI) and
+          # as fallback for trending scrape. Scoped to THIS repo only.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Optional: override which repo to process this run.
-          REPO_OVERRIDE: ${{ inputs.repo_override }}
-          # Passed through so PR bodies can link back to this workflow.
-          GITHUB_REPOSITORY: ${{ github.repository }}
-
-          # ----------------------------------------------------------------
-          # Per-repo tokens — add one line per secret used in repos.json.
-          # Secret name here must match the "token_secret" value in repos.json.
-          # ----------------------------------------------------------------
+          # PAT (repo scope) for cloning, pushing branches, and creating PRs in
+          # the external repositories listed in repos.json.
+          # One token is enough if it belongs to an account/org with access to all listed repos.
           TARGET_REPO_TOKEN: ${{ secrets.TARGET_REPO_TOKEN }}
-          TOKEN_ANOTHER_ORG_REPO_B: ${{ secrets.TOKEN_ANOTHER_ORG_REPO_B }}
-          # TOKEN_YET_ANOTHER_REPO: ${{ secrets.TOKEN_YET_ANOTHER_REPO }}
-
+          REPO_OVERRIDE: ${{ inputs.repo_override }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: python .github/scripts/main.py
+
 

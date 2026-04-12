@@ -34,37 +34,15 @@ _BOT_NAME = "github-actions[bot]"
 # ------------------------------------------------------------------ #
 
 
-def pick_target_repo() -> tuple[str, str]:
-    """Round-robin repo selection based on day-of-year.
-
-    Returns (repo_full_name, token_secret_name).
-    Supports both plain strings and {"repo": ..., "token_secret": ...} objects.
-    """
+def pick_target_repo() -> str:
+    """Round-robin repo selection based on day-of-year."""
     with open(_REPOS_FILE) as fh:
         config = json.load(fh)
     entries: list = config.get("repositories", [])
     if not entries:
         raise SystemExit("❌  No repositories in repos.json. Add at least one entry.")
-    default_secret = config.get("settings", {}).get("default_token_secret", "TARGET_REPO_TOKEN")
-
     idx = (datetime.date.today().timetuple().tm_yday - 1) % len(entries)
-    entry = entries[idx]
-
-    if isinstance(entry, str):
-        return entry, default_secret
-    return entry["repo"], entry.get("token_secret", default_secret)
-
-
-def resolve_target_token(secret_name: str, fallback: str) -> str:
-    """Read the env var named *secret_name*; fall back to *fallback*."""
-    value = os.environ.get(secret_name, "").strip()
-    if value:
-        logger.info("Using token from secret '%s'", secret_name)
-        return value
-    logger.warning(
-        "Secret '%s' not set in environment; falling back to GITHUB_TOKEN", secret_name
-    )
-    return fallback
+    return entries[idx]
 
 
 def _run(cmd: list[str], cwd: str | None = None) -> None:
@@ -148,16 +126,14 @@ def main() -> None:
     if not github_token:
         raise SystemExit("❌  GITHUB_TOKEN environment variable is required")
 
+    # TARGET_REPO_TOKEN is a PAT with repo scope, required to push branches
+    # and create PRs in external repos listed in repos.json.
+    target_token = os.environ.get("TARGET_REPO_TOKEN")
+    if not target_token:
+        raise SystemExit("❌  TARGET_REPO_TOKEN secret is required (PAT with repo scope)")
+
     repo_override = os.environ.get("REPO_OVERRIDE", "").strip()
-
-    if repo_override:
-        target_repo = repo_override
-        # For manual overrides, use TARGET_REPO_TOKEN or GITHUB_TOKEN
-        target_token = resolve_target_token("TARGET_REPO_TOKEN", github_token)
-    else:
-        target_repo, secret_name = pick_target_repo()
-        target_token = resolve_target_token(secret_name, github_token)
-
+    target_repo = repo_override if repo_override else pick_target_repo()
     logger.info("Target repository: %s", target_repo)
 
     api = GitHubAPI(target_token)
