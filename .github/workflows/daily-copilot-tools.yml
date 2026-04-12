@@ -11,10 +11,36 @@ on:
         type: string
 
 jobs:
-  discover-and-install:
-    name: Discover & install Copilot tools
+  # ── Job 1: read repos.json, pick today's target, derive secret name ──
+  setup:
+    name: Pick target repository
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      target_repo:    ${{ steps.pick.outputs.target_repo }}
+      token_env_name: ${{ steps.pick.outputs.token_env_name }}
 
+    steps:
+      - name: Checkout maintenance repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Pick target repo & derive token secret name
+        id: pick
+        env:
+          REPO_OVERRIDE: ${{ inputs.repo_override }}
+        run: python .github/scripts/pick_repo.py
+
+  # ── Job 2: dynamically inject the org token, then run the pipeline ──
+  run:
+    name: Discover & install Copilot tools
+    needs: setup
+    runs-on: ubuntu-latest
     permissions:
       contents: read
 
@@ -37,28 +63,24 @@ jobs:
           # Auto-provided. Used for GitHub Models API (AI) and trending scrape.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-          # ── Token convention: <ORG>_GITHUB_TOKEN ────────────────────────
-          # For each org/user in repos.json, create a secret named:
-          #   <ORG_OR_USER>_GITHUB_TOKEN  (uppercase, hyphens → underscores)
-          # Then declare it here. The code auto-derives the name from the repo owner.
-          #
-          # Examples:
-          #   repo "your-org/x"    → secret YOUR_ORG_GITHUB_TOKEN
-          #   repo "some-user/y"   → secret SOME_USER_GITHUB_TOKEN
-          #
-          # Fallback (when no org-specific secret exists):
-          TARGET_REPO_TOKEN: ${{ secrets.TARGET_REPO_TOKEN }}
-          #
-          # Add your org tokens below:
-          YOUR_ORG_GITHUB_TOKEN:     ${{ secrets.YOUR_ORG_GITHUB_TOKEN }}
-          ANOTHER_ORG_GITHUB_TOKEN:  ${{ secrets.ANOTHER_ORG_GITHUB_TOKEN }}
-          SOME_USER_GITHUB_TOKEN:    ${{ secrets.SOME_USER_GITHUB_TOKEN }}
-          # NEXT_ORG_GITHUB_TOKEN:   ${{ secrets.NEXT_ORG_GITHUB_TOKEN }}
+          # Dynamically resolved org token.
+          # secrets[needs.setup.outputs.token_env_name] looks up the secret whose
+          # name was derived from the repo owner by pick_repo.py, e.g.:
+          #   "another-org/repo" → ANOTHER_ORG_GITHUB_TOKEN
+          # If that secret doesn't exist in this repo, the value is empty and
+          # main.py falls back to TARGET_REPO_TOKEN.
+          RESOLVED_ORG_TOKEN: ${{ secrets[needs.setup.outputs.token_env_name] }}
 
-          REPO_OVERRIDE:         ${{ inputs.repo_override }}
-          GITHUB_REPOSITORY:     ${{ github.repository }}
+          # Fallback token when no org-specific secret is registered.
+          TARGET_REPO_TOKEN: ${{ secrets.TARGET_REPO_TOKEN }}
+
+          # Target repo passed from the setup job — no REPO_OVERRIDE needed here.
+          TARGET_REPO:       ${{ needs.setup.outputs.target_repo }}
+
+          GITHUB_REPOSITORY: ${{ github.repository }}
 
         run: python .github/scripts/main.py
+
 
 
 

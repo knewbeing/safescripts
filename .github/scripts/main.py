@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import datetime
-import json
 import logging
 import os
 import subprocess
@@ -23,8 +22,6 @@ from organize_readme import organize_and_generate_readme
 logging.basicConfig(level=logging.INFO, format="%(levelname)s  %(message)s")
 logger = logging.getLogger(__name__)
 
-_ROOT = Path(__file__).parent.parent.parent  # repo root
-_REPOS_FILE = _ROOT / "repos.json"
 _BOT_EMAIL = "github-actions[bot]@users.noreply.github.com"
 _BOT_NAME = "github-actions[bot]"
 
@@ -32,72 +29,6 @@ _BOT_NAME = "github-actions[bot]"
 # ------------------------------------------------------------------ #
 # Helpers                                                              #
 # ------------------------------------------------------------------ #
-
-
-def _load_config() -> dict:
-    with open(_REPOS_FILE) as fh:
-        return json.load(fh)
-
-
-def org_token_env_name(repo_full_name: str) -> str:
-    """Derive the conventional env-var name from the repo's owner.
-
-    Convention: <ORG_OR_USER>_GITHUB_TOKEN
-      - owner extracted from "owner/repo"
-      - uppercased, hyphens → underscores
-
-    Examples:
-      "my-org/repo"      → MY_ORG_GITHUB_TOKEN
-      "some-user/repo"   → SOME_USER_GITHUB_TOKEN
-      "MyOrg/repo"       → MYORG_GITHUB_TOKEN
-    """
-    owner = repo_full_name.split("/")[0]
-    return owner.upper().replace("-", "_") + "_GITHUB_TOKEN"
-
-
-def pick_target_repo() -> str:
-    """Round-robin repo selection based on day-of-year. Returns repo full name."""
-    config = _load_config()
-    entries: list = config.get("repositories", [])
-    if not entries:
-        raise SystemExit("❌  No repositories in repos.json. Add at least one entry.")
-    idx = (datetime.date.today().timetuple().tm_yday - 1) % len(entries)
-    return entries[idx]
-
-
-def resolve_token(repo_full_name: str) -> str:
-    """Resolve the access token for *repo_full_name*.
-
-    Lookup order:
-      1. <ORG>_GITHUB_TOKEN  (derived from owner name, the preferred convention)
-      2. TARGET_REPO_TOKEN   (explicit fallback / default secret)
-
-    Raises SystemExit with a helpful message if neither is set.
-    """
-    derived_name = org_token_env_name(repo_full_name)
-    value = os.environ.get(derived_name, "").strip()
-    if value:
-        logger.info("Token resolved from '%s' (org convention)", derived_name)
-        return value
-
-    fallback_name = "TARGET_REPO_TOKEN"
-    value = os.environ.get(fallback_name, "").strip()
-    if value:
-        logger.info(
-            "Token resolved from '%s' (fallback; add '%s' secret for explicit mapping)",
-            fallback_name,
-            derived_name,
-        )
-        return value
-
-    raise SystemExit(
-        f"❌  No token found for '{repo_full_name}'.\n"
-        f"    Expected env var '{derived_name}' (or fallback 'TARGET_REPO_TOKEN').\n"
-        f"    Steps:\n"
-        f"      1. Create a GitHub secret named '{derived_name}' (PAT with repo scope)\n"
-        f"      2. Add to workflow YAML env: block:\n"
-        f"           {derived_name}: ${{{{ secrets.{derived_name} }}}}"
-    )
 
 
 def _run(cmd: list[str], cwd: str | None = None) -> None:
@@ -181,10 +112,24 @@ def main() -> None:
     if not github_token:
         raise SystemExit("❌  GITHUB_TOKEN environment variable is required")
 
-    repo_override = os.environ.get("REPO_OVERRIDE", "").strip()
-    target_repo = repo_override if repo_override else pick_target_repo()
+    # TARGET_REPO and RESOLVED_ORG_TOKEN are injected by the setup job.
+    # RESOLVED_ORG_TOKEN is the secret value for the target repo's org/user,
+    # dynamically resolved in the workflow via secrets[token_env_name].
+    # TARGET_REPO_TOKEN is the fallback when no org-specific secret exists.
+    target_repo = os.environ.get("TARGET_REPO", "").strip()
+    if not target_repo:
+        raise SystemExit("❌  TARGET_REPO env var is missing (should be set by setup job)")
 
-    target_token = resolve_token(target_repo)
+    target_token = (
+        os.environ.get("RESOLVED_ORG_TOKEN", "").strip()
+        or os.environ.get("TARGET_REPO_TOKEN", "").strip()
+    )
+    if not target_token:
+        raise SystemExit(
+            f"❌  No token available for '{target_repo}'.\n"
+            f"    Add the org secret to this repo's Settings → Secrets and re-run."
+        )
+
     logger.info("Target repository: %s", target_repo)
 
     api = GitHubAPI(target_token)
