@@ -1,4 +1,14 @@
-"""Download and write Copilot tools into the target repo working directory."""
+"""下载并写入 Copilot 工具文件到目标仓库工作目录。
+
+支持两种来源：
+  1. 网络下载（trending 仓库工具）：工具条目含 download_url，从 GitHub Raw 下载内容。
+  2. 内置内容（默认推荐工具）：工具条目含 content 字段，直接写入，无需网络。
+
+安装策略：
+  - 文件不存在 → 新建（记录为 "new"）
+  - 文件已存在 → 覆盖更新（记录为 "updated"）
+  - 两种情况都计入返回列表，确保 COPILOT_TOOLS.md 重新生成时包含最新内容。
+"""
 
 from __future__ import annotations
 
@@ -9,14 +19,14 @@ import requests
 
 logger = logging.getLogger(__name__)
 
-# Maps tool type → target sub-directory within .github/
+# 工具类型 → .github/ 子目录映射（trending 工具默认使用）
 _TOOL_DIRS: dict[str, str] = {
     "instruction": ".github/instructions",
     "agent": ".github/agents",
     "skill": ".github/prompts",
 }
 
-# Maps tool type → filename suffix when the original lacks one
+# 工具类型 → 默认文件扩展名（当原始路径无扩展名时使用）
 _DEFAULT_SUFFIX: dict[str, str] = {
     "instruction": ".instructions.md",
     "agent": ".md",
@@ -25,59 +35,83 @@ _DEFAULT_SUFFIX: dict[str, str] = {
 
 
 def install_tools(repo_dir: Path, tools: list[dict]) -> list[dict]:
-    """Install *tools* into *repo_dir*. Returns the list of actually-installed tools."""
+    """安装/更新 *tools* 到 *repo_dir*。
+
+    返回实际写入（新增或更新）的工具列表，每个条目附加 ``_action`` 字段
+    （值为 ``"new"`` 或 ``"updated"``），便于 PR 描述区分变更类型。
+    """
     installed: list[dict] = []
     for tool in tools:
         try:
-            if _install_one(repo_dir, tool):
-                installed.append(tool)
+            action = _install_one(repo_dir, tool)
+            if action:
+                installed.append({**tool, "_action": action})
         except Exception as exc:
-            logger.error("Failed to install '%s': %s", tool.get("name"), exc)
+            logger.error("安装 '%s' 失败: %s", tool.get("name"), exc)
     return installed
 
 
-def _install_one(repo_dir: Path, tool: dict) -> bool:
-    """Download and write a single tool file. Returns True when written."""
+def _install_one(repo_dir: Path, tool: dict) -> str | None:
+    """写入单个工具文件。
+
+    Returns:
+        ``"new"``     — 文件新建
+        ``"updated"`` — 文件已存在，内容已更新
+        ``None``      — 跳过（无内容来源）
+    """
     tool_type = tool["type"]
     name = tool["name"]
     download_url = tool.get("download_url")
+    inline_content = tool.get("content")       # 内置工具直接提供内容
     source_repo = tool.get("source_repo", "unknown")
 
-    if not download_url:
-        return False
+    # 至少需要一种内容来源
+    if not download_url and inline_content is None:
+        return None
 
-    # Special-case: repo-level copilot-instructions.md
+    # ── 确定写入路径 ────────────────────────────────────────────────
+    # 特殊情况：根级 copilot-instructions.md
     if name == "copilot-instructions" and tool_type == "instruction":
         target = repo_dir / ".github" / "copilot-instructions.md"
     else:
-        target_dir = repo_dir / _TOOL_DIRS.get(tool_type, ".github/instructions")
+        # target_dir 字段由内置工具显式提供；trending 工具走 _TOOL_DIRS 默认值
+        target_dir_rel = tool.get("target_dir") or _TOOL_DIRS.get(tool_type, ".github/instructions")
+        target_dir = repo_dir / target_dir_rel
         target_dir.mkdir(parents=True, exist_ok=True)
-        suffix = _resolve_suffix(tool)
+        suffix = tool.get("suffix") or _resolve_suffix(tool)
         target = target_dir / f"{name}{suffix}"
 
-    if target.exists():
-        logger.info("Skip '%s': already present at %s", name, target)
-        return False
+    already_exists = target.exists()
 
-    resp = requests.get(download_url, timeout=30)
-    resp.raise_for_status()
-    content = resp.text
+    # ── 获取文件内容 ────────────────────────────────────────────────
+    if inline_content is not None:
+        # 内置工具：直接使用嵌入内容
+        content = inline_content
+    else:
+        # Trending 工具：从 GitHub Raw 下载
+        resp = requests.get(download_url, timeout=30)
+        resp.raise_for_status()
+        content = resp.text
+        # 追加来源注释（仅下载内容，内置工具自身已有说明）
+        attribution = f"<!-- Source: https://github.com/{source_repo} -->\n\n"
+        if not content.lstrip().startswith("<!--"):
+            content = attribution + content
 
-    # Prepend attribution comment
-    attribution = f"<!-- Source: https://github.com/{source_repo} -->\n\n"
-    if not content.lstrip().startswith("<!--"):
-        content = attribution + content
-
+    # ── 写入文件（覆盖已有内容，实现更新语义）──────────────────────
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(content, encoding="utf-8")
-    logger.info("Installed %s '%s' → %s", tool_type, name, target.relative_to(repo_dir))
-    return True
+
+    action = "updated" if already_exists else "new"
+    verb = "更新" if already_exists else "安装"
+    logger.info("%s %s '%s' → %s", verb, tool_type, name, target.relative_to(repo_dir))
+    return action
 
 
 def _resolve_suffix(tool: dict) -> str:
+    """从工具的原始文件路径推导扩展名，找不到时使用类型默认值。"""
     original = tool.get("path", "").split("/")[-1]
     if "." in original:
-        # Preserve the full extension (e.g. ".instructions.md", ".prompt.md")
+        # 保留完整扩展名，如 ".instructions.md"、".prompt.md"
         _, ext = original.split(".", 1)
         return f".{ext}"
     return _DEFAULT_SUFFIX.get(tool["type"], ".md")
