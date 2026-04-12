@@ -1,0 +1,7 @@
+{
+  "repositories": [],
+  "settings": {
+    "max_trending_repos": 10,
+    "branch_prefix": "copilot-tools"
+  }
+}
