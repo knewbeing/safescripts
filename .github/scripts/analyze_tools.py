@@ -1,4 +1,11 @@
-"""Use GitHub Models (GPT-4o-mini) to decide which tools are relevant to the target repo."""
+"""使用 GitHub Copilot API 判断工具与目标仓库的相关性。
+
+鉴权方式：
+  GitHub Copilot Chat Completions API 与 OpenAI SDK 完全兼容。
+  端点：https://api.githubcopilot.com
+  Token：直接使用 GITHUB_TOKEN（仓库 owner 需拥有 GitHub Copilot 订阅）。
+  无需 GitHub Models 的额外权限，也无需 PAT。
+"""
 
 from __future__ import annotations
 
@@ -9,8 +16,10 @@ from openai import OpenAI
 
 logger = logging.getLogger(__name__)
 
+# GitHub Copilot Chat Completions API 端点（OpenAI 兼容）
+_COPILOT_ENDPOINT = "https://api.githubcopilot.com"
+# 使用轻量模型做相关性判断，降低延迟和 token 消耗
 _MODEL = "gpt-4o-mini"
-_MODELS_ENDPOINT = "https://models.inference.ai.azure.com"
 
 
 def analyze_tool_relevance(
@@ -20,15 +29,16 @@ def analyze_tool_relevance(
     tools: list[dict],
     github_token: str,
 ) -> list[dict]:
-    """Return the subset of *tools* that are relevant to *target_repo*.
+    """判断 tools 中哪些与 target_repo 相关。
 
-    Uses GPT-4o-mini via the GitHub Models API for the judgement.
-    Falls back to an empty list on any API error.
+    通过 GitHub Copilot API（GITHUB_TOKEN 鉴权）调用 GPT-4o-mini 做相关性判断。
+    出现任何 API 错误时返回空列表（不中断主流程）。
     """
     if not tools:
         return []
 
-    client = OpenAI(base_url=_MODELS_ENDPOINT, api_key=github_token)
+    # 使用 GITHUB_TOKEN 直接访问 Copilot API，无需额外 secret
+    client = OpenAI(base_url=_COPILOT_ENDPOINT, api_key=github_token)
 
     target_desc = target_repo_info.get("description") or ""
     target_lang = target_repo_info.get("language") or ""

@@ -109,8 +109,15 @@ jobs:
 
       - name: Run Copilot tools update for ${{ matrix.repo }}
         env:
+          # GITHUB_TOKEN 用途（三合一，无需额外 secret）：
+          #   1. GitHub Copilot API 鉴权（AI 相关性分析 + README 生成）
+          #      端点：https://api.githubcopilot.com（OpenAI 兼容）
+          #      前提：本仓库 owner 拥有 GitHub Copilot 订阅
+          #   2. GitHub Trending 抓取兜底（Search API）
+          #   3. 同 org/user 场景下直接用于 clone/push/PR（无需 PAT）
           GITHUB_TOKEN:        ${{ secrets.GITHUB_TOKEN }}
           # 动态读取本 matrix item 对应 org 的 secret（由 pick_repo.py 推导名称）
+          # 跨 org/user 时用于 clone/push/PR
           RESOLVED_ORG_TOKEN:  ${{ secrets[matrix.token_env_name] }}
           # 兜底 token，RESOLVED_ORG_TOKEN 为空时使用
           TARGET_REPO_TOKEN:   ${{ secrets.TARGET_REPO_TOKEN }}
@@ -118,5 +125,4 @@ jobs:
           TARGET_REPO:         ${{ matrix.repo }}
           GITHUB_REPOSITORY:   ${{ github.repository }}
         run: python .github/scripts/main.py
-
 

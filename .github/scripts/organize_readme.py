@@ -1,4 +1,11 @@
-"""Scan installed Copilot tools and generate .github/COPILOT_TOOLS.md using AI."""
+"""扫描已安装的 Copilot 工具并使用 GitHub Copilot API 生成 .github/COPILOT_TOOLS.md。
+
+鉴权方式：
+  GitHub Copilot Chat Completions API 与 OpenAI SDK 完全兼容。
+  端点：https://api.githubcopilot.com
+  Token：直接使用 GITHUB_TOKEN（仓库 owner 需拥有 GitHub Copilot 订阅）。
+  无需 GitHub Models 的额外权限，也无需 PAT。
+"""
 
 from __future__ import annotations
 
@@ -10,8 +17,10 @@ from openai import OpenAI
 
 logger = logging.getLogger(__name__)
 
+# GitHub Copilot Chat Completions API 端点（OpenAI 兼容）
+_COPILOT_ENDPOINT = "https://api.githubcopilot.com"
+# 使用旗舰模型生成高质量的分类文档
 _MODEL = "gpt-4o"
-_MODELS_ENDPOINT = "https://models.inference.ai.azure.com"
 _README_PATH = ".github/COPILOT_TOOLS.md"
 
 _SCAN_MAP: dict[str, str] = {
@@ -22,13 +31,17 @@ _SCAN_MAP: dict[str, str] = {
 
 
 def organize_and_generate_readme(repo_dir: Path, github_token: str) -> None:
-    """Scan tools in *repo_dir* and write/update COPILOT_TOOLS.md."""
+    """扫描 repo_dir 中已安装的工具并写入 COPILOT_TOOLS.md。
+
+    使用 GitHub Copilot API（GITHUB_TOKEN 鉴权）调用 GPT-4o 生成分类文档。
+    """
     tools = _scan_tools(repo_dir)
     if not tools:
-        logger.info("No tools found; skipping README generation")
+        logger.info("未发现工具文件，跳过 README 生成")
         return
 
-    client = OpenAI(base_url=_MODELS_ENDPOINT, api_key=github_token)
+    # 使用 GITHUB_TOKEN 直接访问 Copilot API，无需额外 secret
+    client = OpenAI(base_url=_COPILOT_ENDPOINT, api_key=github_token)
     content = _generate_with_ai(client, tools)
 
     readme = repo_dir / _README_PATH
