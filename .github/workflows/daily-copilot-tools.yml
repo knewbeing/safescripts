@@ -14,13 +14,6 @@ jobs:
   # ══════════════════════════════════════════════════════════════════
   # Job 1 · setup
   # 职责：读取 repos.json 中所有仓库，构建 matrix 供 run job 并行使用。
-  #
-  # 调用链：
-  #   pick_repo.py 读取 repos.json 的全部仓库列表
-  #     → 为每个仓库推导 token_env_name（如 ANOTHER_ORG_GITHUB_TOKEN）
-  #     → 序列化为 JSON 数组写入 GITHUB_OUTPUT（变量名 matrix）
-  #   outputs.matrix 被 run job 的 strategy.matrix 消费
-  #   → run job 为每个仓库并行启动一个独立的 runner
   # ══════════════════════════════════════════════════════════════════
   setup:
     name: Build repository matrix
@@ -28,7 +21,6 @@ jobs:
     permissions:
       contents: read
     outputs:
-      # JSON 数组，格式：[{"repo":"org/name","token_env_name":"ORG_GITHUB_TOKEN"},...]
       matrix: ${{ steps.pick.outputs.matrix }}
 
     steps:
@@ -43,59 +35,58 @@ jobs:
       - name: Build matrix from repos.json
         id: pick
         env:
-          # 手动触发时可通过此变量只处理单个仓库（调试用）
           REPO_OVERRIDE: ${{ inputs.repo_override }}
         run: python .github/scripts/pick_repo.py
 
   # ══════════════════════════════════════════════════════════════════
   # Job 2 · run  （matrix 并行，每个仓库独立运行）
-  # 职责：为 matrix 中的每个仓库执行完整的工具发现、安装、提 PR 流水线。
   #
-  # 环境变量注入链：
-  #   GITHUB_TOKEN        → GitHub Actions 自动注入的临时安装令牌
-  #                         作用域仅限本维护仓库，无法访问任何外部仓库
-  #                         用途1：Trending 抓取兜底（GitHub Search API，只读）
-  #                         用途2：GitHub Models API（默认 AI 通道）
-  #                                需要 run job 申请 models: read 权限
+  # 5 步流水线：
+  #   Step 1 · scan_trending.py
+  #             抓取 GitHub Trending → 扫描工具文件 → 写入 /tmp/ai_tools/
+  #             输出: has_candidates
   #
-  #   COPILOT_TOKEN       → （可选）GitHub Models 的 PAT 兜底（推荐 secret 名）
-  #                         端点：https://models.github.ai/inference
-  #                         要求：PAT 具备 models:read（fine-grained）或等效权限
-  #                         说明：若为空，main.py 自动回退使用 GITHUB_TOKEN
-  #   MODELS_TOKEN        → 兼容旧配置（与 COPILOT_TOKEN 等价）
+  #   Step 2 · actions/ai-inference (analyze-relevance)
+  #             GPT-4.1-mini 判断哪些工具与目标仓库相关
+  #             输出: response (JSON: {selected_ids, reason})
+  #             仅在 has_candidates==true 时执行
   #
-  #   RESOLVED_ORG_TOKEN  → secrets[matrix.token_env_name]（动态 secret 查找）
-  #                         token_env_name 由 pick_repo.py 推导：
-  #                           "another-org/repo" → ANOTHER_ORG_GITHUB_TOKEN
-  #                         用途：clone/push/PR 目标仓库（任何外部仓库都需要 PAT）
-  #                         若该 secret 未注册，值为空字符串，降级到 TARGET_REPO_TOKEN
+  #   Step 3 · install_selected.py
+  #             读取 AI_ANALYSIS → 安装工具到 clone → 写 installed_tools.json
+  #             输出: has_installed, branch_name, new_count, updated_count
   #
-  #   TARGET_REPO_TOKEN   → secrets.TARGET_REPO_TOKEN（静态兜底 PAT）
-  #                         RESOLVED_ORG_TOKEN 为空时使用
+  #   Step 4 · actions/ai-inference (generate-tools-readme)
+  #             GPT-4.1 生成 COPILOT_TOOLS.md 完整内容
+  #             仅在 has_installed==true 时执行
   #
-  #   TARGET_REPO         → matrix.repo（当前处理的仓库，每个并行 runner 不同）
+  #   Step 5 · commit_pr.py
+  #             写 COPILOT_TOOLS.md → commit → push → PR → auto-merge
+  #             仅在 has_installed==true 时执行
   #
-  #   GITHUB_REPOSITORY   → github.repository（本维护仓库名，用于 PR 描述来源链接）
+  # Token 注入链：
+  #   GITHUB_TOKEN        → Actions 自动令牌，用于 Trending 抓取 + GitHub API 查询
+  #   RESOLVED_ORG_TOKEN  → secrets[matrix.token_env_name]，跨 org PAT（clone/push/PR）
+  #   TARGET_REPO_TOKEN   → 静态兜底 PAT（RESOLVED_ORG_TOKEN 为空时使用）
+  #
+  # AI 调用由 actions/ai-inference 原生处理（无需 COPILOT_TOKEN/MODELS_TOKEN）
   # ══════════════════════════════════════════════════════════════════
   run:
     name: "Update AI tools for ${{ matrix.repo }}"
     needs: setup
     runs-on: ubuntu-latest
     permissions:
-      # GITHUB_TOKEN 仅用于只读操作（Trending / GitHub API 查询 / GitHub Models）
-      # 写操作（clone/push/PR）全部由 PAT（RESOLVED_ORG_TOKEN / TARGET_REPO_TOKEN）完成
+      # contents:read — GITHUB_TOKEN 只读（Trending API 查询）
+      # models:read   — actions/ai-inference 需要此权限调用 GitHub Models
       contents: read
       models: read
 
     strategy:
-      # 每个仓库独立运行，某个仓库失败不影响其他仓库继续执行
       fail-fast: false
       matrix:
-        # fromJson 将 setup job 输出的 JSON 字符串还原为数组
-        # GitHub Actions 会为数组中的每个元素并行启动一个 runner
         include: ${{ fromJson(needs.setup.outputs.matrix) }}
 
     steps:
+      # ─── 准备环境 ────────────────────────────────────────────────────────
       - name: Checkout maintenance repo
         uses: actions/checkout@v4
 
@@ -109,27 +100,62 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r .github/scripts/requirements.txt
 
-      - name: Run update ai tools for ${{ matrix.repo }}
+      # ─── Step 1: 抓取 Trending + 扫描工具 ───────────────────────────────
+      - name: "① Scan GitHub Trending for Copilot tools"
+        id: scan
         env:
-          # GITHUB_TOKEN 用于：
-          #   1) Trending 抓取兜底（GitHub Search API）
-          #   2) GitHub Models API（默认 AI 通道，需上方声明 models: read）
           GITHUB_TOKEN:        ${{ secrets.GITHUB_TOKEN }}
-          # COPILOT_TOKEN（可选，推荐）：GitHub Models API 的 PAT 兜底
-          # MODELS_TOKEN（可选，兼容旧配置）：与 COPILOT_TOKEN 等价
-          # 两者都为空时 main.py 自动使用 GITHUB_TOKEN
-          COPILOT_TOKEN:       ${{ secrets.COPILOT_TOKEN }}
-          MODELS_TOKEN:        ${{ secrets.MODELS_TOKEN }}
-          # 动态读取本 matrix item 对应 org 的 secret（由 pick_repo.py 推导名称）
-          # 跨 org/user 时用于 clone/push/PR
           RESOLVED_ORG_TOKEN:  ${{ secrets[matrix.token_env_name] }}
-          # 兜底 token，RESOLVED_ORG_TOKEN 为空时使用
           TARGET_REPO_TOKEN:   ${{ secrets.TARGET_REPO_TOKEN }}
-          # 当前处理的目标仓库（由 matrix 注入，每个 runner 值不同）
           TARGET_REPO:         ${{ matrix.repo }}
-          GITHUB_REPOSITORY:   ${{ github.repository }}
-          # 安全约束（由 .github/scripts/install_tools.py 强制执行）：
-          #   1) 仅安装 Markdown（*.md）AI 工具文件
-          #   2) 仅允许写入目标仓库 .github/ 目录，不会写入 .github 之外
-        run: python .github/scripts/main.py
+        run: python .github/scripts/scan_trending.py
+
+      # ─── Step 2: AI 相关性分析 (actions/ai-inference) ───────────────────
+      - name: "② AI relevance analysis (GPT-4.1-mini)"
+        id: analyze
+        if: steps.scan.outputs.has_candidates == 'true'
+        uses: actions/ai-inference@v1
+        with:
+          model: openai/gpt-4.1-mini
+          prompt-file: .github/prompts/analyze-relevance.prompt.yml
+          file_input: |
+            candidates_json: /tmp/ai_tools/candidates.json
+            target_repo_info: /tmp/ai_tools/target_repo_info.json
+
+      # ─── Step 3: 安装工具到目标仓库 ─────────────────────────────────────
+      - name: "③ Install selected tools into target repo"
+        id: install
+        env:
+          GITHUB_TOKEN:        ${{ secrets.GITHUB_TOKEN }}
+          RESOLVED_ORG_TOKEN:  ${{ secrets[matrix.token_env_name] }}
+          TARGET_REPO_TOKEN:   ${{ secrets.TARGET_REPO_TOKEN }}
+          TARGET_REPO:         ${{ matrix.repo }}
+          GITHUB_RUN_ID:       ${{ github.run_id }}
+          GITHUB_RUN_ATTEMPT:  ${{ github.run_attempt }}
+          # steps.analyze がスキップされた場合は空文字列 → install_selected.py が兜底を使用
+          AI_ANALYSIS:         ${{ steps.analyze.outputs.response }}
+        run: python .github/scripts/install_selected.py
+
+      # ─── Step 4: AI 生成 COPILOT_TOOLS.md (actions/ai-inference) ────────
+      - name: "④ AI generate COPILOT_TOOLS.md (GPT-4.1)"
+        id: readme
+        if: steps.install.outputs.has_installed == 'true'
+        uses: actions/ai-inference@v1
+        with:
+          model: openai/gpt-4.1
+          prompt-file: .github/prompts/generate-tools-readme.prompt.yml
+          file_input: |
+            installed_tools_json: /tmp/ai_tools/installed_tools.json
+          response-file: /tmp/ai_tools/COPILOT_TOOLS.md
+
+      # ─── Step 5: Commit → Push → PR → Auto-merge ────────────────────────
+      - name: "⑤ Commit, push PR and enable auto-merge"
+        if: steps.install.outputs.has_installed == 'true'
+        env:
+          RESOLVED_ORG_TOKEN:   ${{ secrets[matrix.token_env_name] }}
+          TARGET_REPO_TOKEN:    ${{ secrets.TARGET_REPO_TOKEN }}
+          GITHUB_REPOSITORY:    ${{ github.repository }}
+          # response-file の出力パス（Step 4 がスキップの場合は空文字列→兜底テンプレ使用）
+          README_CONTENT_FILE:  ${{ steps.readme.outputs.response-file }}
+        run: python .github/scripts/commit_pr.py
 
