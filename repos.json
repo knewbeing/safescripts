@@ -1,8 +1,17 @@
 {
   "repositories": [
-    "knewbeing/org-memory",
-    "cnjimbo/QuickTicket2Queue",
-    "knewbeing/xorg-workflow"
+    {
+      "repo": "knewbeing/org-memory",
+      "token_secret": "KNEWBEING_GITHUB_TOKEN"
+    },
+    {
+      "repo": "cnjimbo/QuickTicket2Queue",
+      "token_secret": "CNJIMBO_GITHUB_TOKEN"
+    },
+    {
+      "repo": "knewbeing/xorg-workflow",
+      "token_secret": "KNEWBEING_GITHUB_TOKEN"
+    }
   ],
   "settings": {
     "max_trending_repos": 10,

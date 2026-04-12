@@ -6,6 +6,12 @@
       → 将所有仓库信息序列化为 JSON matrix 写入 GITHUB_OUTPUT
       → run job 通过 strategy.matrix 并行为每个仓库独立运行一次流水线
 
+repos.json 中 repositories 支持两种格式：
+  1. 字符串：直接写 "owner/repo"，token secret 名由 owner 自动推导
+         "knewbeing/repo-a"  →  token_env_name = KNEWBEING_GITHUB_TOKEN
+  2. 对象：显式指定 token_secret，适合同 owner 下多仓库共用一个 key
+         {"repo": "cnjimbo/repo-b", "token_secret": "CNJIMBO_GITHUB_TOKEN"}
+
 输出到 GITHUB_OUTPUT 的变量：
   matrix  — JSON 数组，每项包含 repo（仓库名）和 token_env_name（secret 名）
             示例：[{"repo":"org-a/r1","token_env_name":"ORG_A_GITHUB_TOKEN"}, ...]
@@ -22,8 +28,8 @@ from pathlib import Path
 _REPOS_FILE = Path(__file__).parent.parent.parent / "repos.json"
 
 
-def org_token_env_name(repo_full_name: str) -> str:
-    """根据仓库 owner 推导约定的 token 环境变量名。
+def default_token_env_name(repo_full_name: str) -> str:
+    """根据仓库 owner 推导约定的 token 环境变量名（无显式配置时使用）。
 
     规则：owner 转大写，连字符换下划线，拼接 _GITHUB_TOKEN
     示例：
@@ -34,6 +40,24 @@ def org_token_env_name(repo_full_name: str) -> str:
     return owner.upper().replace("-", "_") + "_GITHUB_TOKEN"
 
 
+def parse_entry(entry: str | dict) -> tuple[str, str]:
+    """解析 repositories 中的一项，返回 (repo_full_name, token_env_name)。
+
+    支持两种格式：
+      - 字符串：  "owner/repo"
+      - 对象：    {"repo": "owner/repo", "token_secret": "MY_SECRET_KEY"}
+                  token_secret 缺省时自动推导
+    """
+    if isinstance(entry, str):
+        repo = entry.strip()
+        return repo, default_token_env_name(repo)
+
+    repo = entry["repo"].strip()
+    # 优先使用显式配置的 token_secret，否则按 owner 自动推导
+    token_env = entry.get("token_secret") or default_token_env_name(repo)
+    return repo, token_env
+
+
 def main() -> None:
     with open(_REPOS_FILE) as fh:
         config = json.load(fh)
@@ -41,19 +65,19 @@ def main() -> None:
     # 支持手动触发时通过 REPO_OVERRIDE 只处理单个仓库（用于调试）
     repo_override = os.environ.get("REPO_OVERRIDE", "").strip()
     if repo_override:
-        entries = [repo_override]
+        raw_entries = [repo_override]
     else:
-        entries: list = config.get("repositories", [])
-        if not entries:
+        raw_entries: list = config.get("repositories", [])
+        if not raw_entries:
             sys.exit("❌  repos.json 中没有仓库，请至少添加一条记录。")
 
     # 构建 matrix 数组：每个仓库一项，包含仓库名和对应的 secret 名
     matrix = [
         {
             "repo": repo,
-            "token_env_name": org_token_env_name(repo),
+            "token_env_name": token_env_name,
         }
-        for repo in entries
+        for repo, token_env_name in (parse_entry(e) for e in raw_entries)
     ]
 
     matrix_json = json.dumps(matrix, ensure_ascii=False)
