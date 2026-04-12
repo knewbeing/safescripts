@@ -2,15 +2,15 @@
   "repositories": [
     {
       "repo": "knewbeing/org-memory",
-      "token_secret": "KNEWBEING_GITHUB_TOKEN"
+      "secret_name": "KNEWBEING_GITHUB_TOKEN"
     },
     {
       "repo": "cnjimbo/QuickTicket2Queue",
-      "token_secret": "CNJIMBO_GITHUB_TOKEN"
+      "secret_name": "CNJIMBO_GITHUB_TOKEN"
     },
     {
       "repo": "knewbeing/xorg-workflow",
-      "token_secret": "KNEWBEING_GITHUB_TOKEN"
+      "secret_name": "KNEWBEING_GITHUB_TOKEN"
     }
   ],
   "settings": {

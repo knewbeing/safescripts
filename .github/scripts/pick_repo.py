@@ -9,8 +9,8 @@
 repos.json 中 repositories 支持两种格式：
   1. 字符串：直接写 "owner/repo"，token secret 名由 owner 自动推导
          "knewbeing/repo-a"  →  token_env_name = KNEWBEING_GITHUB_TOKEN
-  2. 对象：显式指定 token_secret，适合同 owner 下多仓库共用一个 key
-         {"repo": "cnjimbo/repo-b", "token_secret": "CNJIMBO_GITHUB_TOKEN"}
+  2. 对象：显式指定 secret_name，适合同 owner 下多仓库共用一个 key
+         {"repo": "cnjimbo/repo-b", "secret_name": "CNJIMBO_GITHUB_TOKEN"}
 
 输出到 GITHUB_OUTPUT 的变量：
   matrix  — JSON 数组，每项包含 repo（仓库名）和 token_env_name（secret 名）
@@ -54,7 +54,7 @@ def parse_entry(entry: str | dict) -> tuple[str, str]:
 
     repo = entry["repo"].strip()
     # 优先使用显式配置的 token_secret，否则按 owner 自动推导
-    token_env = entry.get("token_secret") or default_token_env_name(repo)
+    token_env = entry.get("secret_name") or default_token_env_name(repo)
     return repo, token_env
 
 
