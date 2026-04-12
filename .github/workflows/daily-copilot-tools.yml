@@ -1,4 +1,4 @@
-name: Daily Copilot Tools Discovery
+name: Daily Copilot Tools Discovery - Update AI Tools
 
 on:
   schedule:
@@ -78,7 +78,7 @@ jobs:
   #   GITHUB_REPOSITORY   → github.repository（本维护仓库名，用于 PR 描述来源链接）
   # ══════════════════════════════════════════════════════════════════
   run:
-    name: "Process ${{ matrix.repo }}"
+    name: "Update AI tools for ${{ matrix.repo }}"
     needs: setup
     runs-on: ubuntu-latest
     permissions:
@@ -109,7 +109,7 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r .github/scripts/requirements.txt
 
-      - name: Run Copilot tools update for ${{ matrix.repo }}
+      - name: Run update ai tools for ${{ matrix.repo }}
         env:
           # GITHUB_TOKEN 用于：
           #   1) Trending 抓取兜底（GitHub Search API）

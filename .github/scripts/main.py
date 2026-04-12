@@ -68,6 +68,25 @@ def _has_staged_changes(tmpdir: str) -> bool:
     return result.returncode != 0  # 非零退出码 → 有变更
 
 
+def _branch_repo_slug(repo_full_name: str) -> str:
+    """从 owner/repo 提取 repo 名并转换为安全分支片段。"""
+    repo_name = repo_full_name.split("/", 1)[-1].strip().lower()
+    slug = "".join(ch if (ch.isalnum() or ch in "._-") else "-" for ch in repo_name)
+    slug = slug.strip(".-")
+    return slug or "target-repo"
+
+
+def _remote_branch_exists(tmpdir: str, branch_name: str) -> bool:
+    """检查远端 origin 上是否已存在指定分支。"""
+    result = subprocess.run(
+        ["git", "-C", tmpdir, "ls-remote", "--heads", "origin", branch_name],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return bool(result.stdout.strip())
+
+
 def _build_pr_body(installed: list[dict], target_repo: str, today: str, from_defaults: bool = False) -> str:
     # GITHUB_REPOSITORY 是本维护仓库自身的名称（owner/repo 格式），
     # GitHub Actions 会自动注入此变量，用于在 PR 描述中生成"来源"链接。
@@ -281,7 +300,10 @@ def main() -> None:
     # 无论 Trending 是否命中，都执行后续步骤（未命中时使用内置工具）
     from_defaults = not bool(matched)
     today = datetime.date.today().isoformat()
-    branch_name = f"copilot-tools/{today}"
+    # 分支命名策略：使用“当前目标仓库名 + update-ai-tools + 日期”
+    # 示例：org-memory/update-ai-tools/2026-04-12
+    repo_slug = _branch_repo_slug(target_repo)
+    branch_name = f"{repo_slug}/update-ai-tools/{today}"
 
     with tempfile.TemporaryDirectory() as tmpdir:
         # 使用 PAT 拼接认证 URL，实现无交互 clone
@@ -290,8 +312,17 @@ def main() -> None:
         _run(["git", "clone", "--depth=1", clone_url, tmpdir])
         _setup_git(tmpdir)
 
-        # 创建独立分支，避免直接修改默认分支
-        _git(["checkout", "-b", branch_name], tmpdir)
+        # 分支推送策略：
+        # 1) 远端不存在该分支：创建新分支并首次推送
+        # 2) 远端已存在该分支：基于远端分支检出并在其上继续更新
+        remote_branch_exists = _remote_branch_exists(tmpdir, branch_name)
+        if remote_branch_exists:
+            logger.info("远端分支已存在，基于该分支继续更新: %s", branch_name)
+            _git(["fetch", "origin", branch_name], tmpdir)
+            _git(["checkout", "-B", branch_name, f"origin/{branch_name}"], tmpdir)
+        else:
+            logger.info("远端分支不存在，创建新分支: %s", branch_name)
+            _git(["checkout", "-b", branch_name], tmpdir)
 
         repo_path = Path(tmpdir)
 
@@ -327,14 +358,17 @@ def main() -> None:
 
         tool_summary = f"{new_count} 新增, {updated_count} 更新" if installed else "仅更新文档"
         commit_msg = (
-            f"chore: update Copilot tools [{today}] ({tool_summary})\n\n"
+            f"chore: update ai tools [{today}] ({tool_summary})\n\n"
             f"{'Installed from built-in recommended tools' if from_defaults else 'Installed from GitHub trending'}\n\n"
             f"Co-authored-by: github-actions[bot] <{_BOT_EMAIL}>"
         )
         _git(["commit", "-m", commit_msg], tmpdir)
 
         logger.info("正在推送分支 '%s'…", branch_name)
-        _git(["push", "origin", branch_name], tmpdir)
+        if remote_branch_exists:
+            _git(["push", "origin", branch_name], tmpdir)
+        else:
+            _git(["push", "--set-upstream", "origin", branch_name], tmpdir)
 
         # 检查是否已有同名分支的 PR，避免重复创建
         if api.pr_exists(target_repo, branch_name, default_branch):
@@ -344,7 +378,7 @@ def main() -> None:
         # 使用 target_token 在目标仓库创建 PR
         pr = api.create_pr(
             repo=target_repo,
-            title=f"🤖 Copilot tools update [{today}]{'  (recommended defaults)' if from_defaults else ''}",
+            title=f"🤖 Update AI tools [{today}]{'  (recommended defaults)' if from_defaults else ''}",
             body=_build_pr_body(installed, target_repo, today, from_defaults=from_defaults),
             head=branch_name,
             base=default_branch,
