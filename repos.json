@@ -1,8 +1,8 @@
 {
   "repositories": [
-    "your-org/repo-a",
-    "another-org/repo-b",
-    "some-user/repo-c"
+    "knewbeing/org-memory",
+    "cnjimbo/QuickTicket2Queue",
+    "knewbeing/xorg-workflow"
   ],
   "settings": {
     "max_trending_repos": 10,

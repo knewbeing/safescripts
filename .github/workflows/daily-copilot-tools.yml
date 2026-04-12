@@ -52,38 +52,34 @@ jobs:
   # 职责：为 matrix 中的每个仓库执行完整的工具发现、安装、提 PR 流水线。
   #
   # 环境变量注入链：
-  #   GITHUB_TOKEN        → GitHub Actions 自动注入
-  #                         用途1：GitHub Models API（AI 分析）、Trending 抓取（只读）
-  #                         用途2：若目标仓库 owner 与本仓库 owner 相同，
-  #                                直接用于 clone/push/PR，无需额外 secret
-  #                                （需要 run job 声明 contents/pull-requests 写权限）
+  #   GITHUB_TOKEN        → GitHub Actions 自动注入的临时安装令牌
+  #                         作用域仅限本维护仓库，无法访问任何外部仓库
+  #                         用途1：GitHub Copilot API 鉴权（AI 分析 + 文档生成）
+  #                                端点：https://api.githubcopilot.com（OpenAI 兼容）
+  #                                前提：本仓库 owner 拥有 GitHub Copilot 订阅
+  #                         用途2：Trending 抓取兜底（GitHub Search API）
   #
-  #   RESOLVED_ORG_TOKEN  → secrets[matrix.token_env_name]
-  #                         matrix.token_env_name 由 pick_repo.py 推导，
-  #                         如 "another-org/repo" → ANOTHER_ORG_GITHUB_TOKEN
-  #                         secrets[expression] 是 GitHub Actions 动态 secret 查找语法
-  #                         若该 secret 未在本仓库注册，此变量为空字符串
-  #                         用途：跨 org/user 时 clone/push/PR（需写权限）
+  #   RESOLVED_ORG_TOKEN  → secrets[matrix.token_env_name]（动态 secret 查找）
+  #                         token_env_name 由 pick_repo.py 推导：
+  #                           "another-org/repo" → ANOTHER_ORG_GITHUB_TOKEN
+  #                         用途：clone/push/PR 目标仓库（任何外部仓库都需要 PAT）
+  #                         若该 secret 未注册，值为空字符串，降级到 TARGET_REPO_TOKEN
   #
-  #   TARGET_REPO_TOKEN   → secrets.TARGET_REPO_TOKEN（静态兜底）
-  #                         RESOLVED_ORG_TOKEN 为空时由 main.py 降级使用
+  #   TARGET_REPO_TOKEN   → secrets.TARGET_REPO_TOKEN（静态兜底 PAT）
+  #                         RESOLVED_ORG_TOKEN 为空时使用
   #
-  #   TARGET_REPO         → matrix.repo，当前 matrix item 的仓库名（owner/repo）
-  #                         用途：main.py 的操作目标
+  #   TARGET_REPO         → matrix.repo（当前处理的仓库，每个并行 runner 不同）
   #
-  #   GITHUB_REPOSITORY   → github.repository（GitHub Actions 内置上下文）
-  #                         本维护仓库自身名称，main.py 用于：
-  #                           1. 提取 owner 与目标仓库 owner 比较（同 org 判断）
-  #                           2. 在 PR 描述中生成来源链接
+  #   GITHUB_REPOSITORY   → github.repository（本维护仓库名，用于 PR 描述来源链接）
   # ══════════════════════════════════════════════════════════════════
   run:
     name: "Process ${{ matrix.repo }}"
     needs: setup
     runs-on: ubuntu-latest
     permissions:
-      # 同 org/user 场景下 GITHUB_TOKEN 需要写权限才能 push 分支和创建 PR
-      contents: write
-      pull-requests: write
+      # GITHUB_TOKEN 仅用于只读操作（Copilot AI API + Trending）
+      # 写操作（clone/push/PR）全部由 PAT（RESOLVED_ORG_TOKEN / TARGET_REPO_TOKEN）完成
+      contents: read
 
     strategy:
       # 每个仓库独立运行，某个仓库失败不影响其他仓库继续执行
