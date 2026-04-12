@@ -108,7 +108,7 @@ def main() -> None:
         candidates.append({"repo": repo, "tools": tools})
 
     (TMP_DIR / "candidates.json").write_text(
-        json.dumps(candidates, ensure_ascii=False, indent=2),
+        json.dumps(candidates, ensure_ascii=False, separators=(",", ":")),
         encoding="utf-8",
     )
     _write_output("has_candidates", "true" if candidates else "false")

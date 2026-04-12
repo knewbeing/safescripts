@@ -229,7 +229,7 @@ def main() -> None:
     refreshed_tools = [_refresh_preview(t, CLONE_DIR) for t in all_tools]
     summary["all_tools"] = refreshed_tools
     installed_path.write_text(
-        json.dumps(summary, ensure_ascii=False, indent=2),
+        json.dumps(summary, ensure_ascii=False, separators=(",", ":")),
         encoding="utf-8",
     )
     logger.info("✅  已更新 installed_tools.json（刷新注释后预览）")

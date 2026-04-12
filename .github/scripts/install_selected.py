@@ -203,7 +203,7 @@ def main() -> None:
     }
     TMP_DIR.mkdir(parents=True, exist_ok=True)
     (TMP_DIR / "installed_tools.json").write_text(
-        json.dumps(summary, ensure_ascii=False, indent=2),
+        json.dumps(summary, ensure_ascii=False, separators=(",", ":")),
         encoding="utf-8",
     )
 

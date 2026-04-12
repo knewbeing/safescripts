@@ -137,7 +137,6 @@ jobs:
             target_repo_info: /tmp/ai_tools/target_repo_info.json
           enable-github-mcp: true
           github-mcp-token: ${{ secrets.TARGET_REPO_TOKEN }}
-          github-mcp-toolsets: repos
 
       # ─── Step 3: 扫描 AI 返回的候选仓库工具文件 ─────────────────────────
       - name: "③ Scan AI-selected tool repositories"

@@ -40,7 +40,7 @@ def main() -> None:
         "default_branch": repo_info.get("default_branch", "main"),
     }
     (TMP_DIR / "target_repo_info.json").write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2),
+        json.dumps(payload, ensure_ascii=False, separators=(",", ":")),
         encoding="utf-8",
     )
 
