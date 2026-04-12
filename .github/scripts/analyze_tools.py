@@ -3,7 +3,7 @@
 鉴权方式：
   GitHub Models Inference API 与 OpenAI SDK 完全兼容。
   端点：https://models.github.ai/inference
-  Token：优先使用 MODELS_TOKEN（可选 PAT），否则使用 GITHUB_TOKEN。
+  Token：优先使用 COPILOT_TOKEN（可选 PAT），再回退 MODELS_TOKEN，最后使用 GITHUB_TOKEN。
   说明：token 需具备 models:read（fine-grained PAT / GitHub App token）。
 """
 

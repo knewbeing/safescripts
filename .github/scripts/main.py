@@ -132,8 +132,9 @@ def main() -> None:
     #                       用途1：GitHub API 只读调用（Trending 抓取兜底）。
     #                       用途2：GitHub Models API 默认鉴权（需 workflow 申请 models:read）。
     #
-    # MODELS_TOKEN        : （可选）GitHub Models API 的 PAT 兜底。
-    #                       为空时自动回退使用 GITHUB_TOKEN。
+    # COPILOT_TOKEN       : （可选，推荐）GitHub Models API 的 PAT 兜底。
+    # MODELS_TOKEN        : （可选，兼容旧配置）与 COPILOT_TOKEN 等价。
+    #                       当 COPILOT_TOKEN / MODELS_TOKEN 均为空时自动回退使用 GITHUB_TOKEN。
     #                       若提供 PAT，需具备 models:read（fine-grained）或等效权限。
     #
     # TARGET_REPO         : 由 matrix 注入，格式 "owner/repo"，本次处理的目标仓库。
@@ -155,7 +156,11 @@ def main() -> None:
     github_token = os.environ.get("GITHUB_TOKEN")
     if not github_token:
         raise SystemExit("❌  GITHUB_TOKEN 环境变量缺失（GitHub Actions 应自动注入）")
-    models_token = os.environ.get("MODELS_TOKEN", "").strip() or github_token
+    models_token = (
+        os.environ.get("COPILOT_TOKEN", "").strip()
+        or os.environ.get("MODELS_TOKEN", "").strip()
+        or github_token
+    )
 
     # TARGET_REPO 由 setup job 通过 GITHUB_OUTPUT 传递，再由 workflow env: 注入
     target_repo = os.environ.get("TARGET_REPO", "").strip()
@@ -223,7 +228,7 @@ def main() -> None:
 
     # ── 步骤 3：AI 相关性分析 ──────────────────────────────────────────
     # 调用 GitHub Models API (GPT-4.1-mini) 判断工具是否适合目标仓库
-    # 优先使用 MODELS_TOKEN，未配置时使用 GITHUB_TOKEN
+    # 优先使用 COPILOT_TOKEN，再回退 MODELS_TOKEN，最后使用 GITHUB_TOKEN
     logger.info("正在进行 AI 相关性分析…")
     matched: list[dict] = []
     for item in candidates:

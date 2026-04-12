@@ -58,10 +58,11 @@ jobs:
   #                         用途2：GitHub Models API（默认 AI 通道）
   #                                需要 run job 申请 models: read 权限
   #
-  #   MODELS_TOKEN        → （可选）GitHub Models 的 PAT 兜底
+  #   COPILOT_TOKEN       → （可选）GitHub Models 的 PAT 兜底（推荐 secret 名）
   #                         端点：https://models.github.ai/inference
   #                         要求：PAT 具备 models:read（fine-grained）或等效权限
   #                         说明：若为空，main.py 自动回退使用 GITHUB_TOKEN
+  #   MODELS_TOKEN        → 兼容旧配置（与 COPILOT_TOKEN 等价）
   #
   #   RESOLVED_ORG_TOKEN  → secrets[matrix.token_env_name]（动态 secret 查找）
   #                         token_env_name 由 pick_repo.py 推导：
@@ -114,8 +115,10 @@ jobs:
           #   1) Trending 抓取兜底（GitHub Search API）
           #   2) GitHub Models API（默认 AI 通道，需上方声明 models: read）
           GITHUB_TOKEN:        ${{ secrets.GITHUB_TOKEN }}
-          # MODELS_TOKEN（可选）：GitHub Models API 的 PAT 兜底
-          # 为空时 main.py 自动使用 GITHUB_TOKEN
+          # COPILOT_TOKEN（可选，推荐）：GitHub Models API 的 PAT 兜底
+          # MODELS_TOKEN（可选，兼容旧配置）：与 COPILOT_TOKEN 等价
+          # 两者都为空时 main.py 自动使用 GITHUB_TOKEN
+          COPILOT_TOKEN:       ${{ secrets.COPILOT_TOKEN }}
           MODELS_TOKEN:        ${{ secrets.MODELS_TOKEN }}
           # 动态读取本 matrix item 对应 org 的 secret（由 pick_repo.py 推导名称）
           # 跨 org/user 时用于 clone/push/PR

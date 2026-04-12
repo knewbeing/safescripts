@@ -58,7 +58,8 @@ Create required secrets:
 
 - `TARGET_REPO_TOKEN`: fallback PAT (`repo` scope) for cloning, pushing, and creating PRs in target repos
 - Optional per-owner PATs: e.g. `KNEWBEING_GITHUB_TOKEN`, `CNJIMBO_GITHUB_TOKEN` (used when `secret_name` or owner-derived key matches)
-- Optional `MODELS_TOKEN`: fallback PAT for GitHub Models (needs `models:read`)
+- Optional `COPILOT_TOKEN`: fallback PAT for GitHub Models (recommended secret name, needs `models:read`)
+- Optional `MODELS_TOKEN`: backward-compatible alias for `COPILOT_TOKEN`
 
 > The workflow uses `GITHUB_TOKEN` for GitHub Models by default (with `models: read` permission) and for read-only GitHub API calls.
 
@@ -114,7 +115,8 @@ repos.json                        # List of target repositories + settings
 
 | Secret | Required | Purpose |
 |--------|----------|---------|
-| `MODELS_TOKEN` | Optional | PAT fallback for GitHub Models API (`models.github.ai`, needs `models:read`) |
+| `COPILOT_TOKEN` | Optional | PAT fallback for GitHub Models API (`models.github.ai`, needs `models:read`) |
+| `MODELS_TOKEN` | Optional | Backward-compatible alias of `COPILOT_TOKEN` |
 | `TARGET_REPO_TOKEN` | **Yes** | PAT (`repo` scope) for cloning, pushing, and creating PRs in target repos |
 | `<OWNER>_GITHUB_TOKEN` or configured `secret_name` | Optional | Per-owner/per-repo PAT override; higher priority than `TARGET_REPO_TOKEN` |
 | `GITHUB_TOKEN` | Auto | Built-in token for GitHub Models + read-only GitHub API calls |
