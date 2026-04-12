@@ -11,6 +11,10 @@
     {
       "repo": "knewbeing/xorg-workflow",
       "secret_name": "KNEWBEING_GITHUB_TOKEN"
+    },
+    {
+      "repo": "calmripple/calmripple.github.io",
+      "secret_name": "CALMRIPPLE_GITHUB_TOKEN"
     }
   ],
   "settings": {
