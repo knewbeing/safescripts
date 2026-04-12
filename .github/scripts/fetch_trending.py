@@ -167,7 +167,8 @@ def _scan_directory(
             if item["type"] != "file":
                 continue
             name = item["name"]
-            if not any(name.endswith(ext) for ext in (".md", ".yml", ".yaml")):
+            # 仅采集 Markdown 工具文件，避免引入 YAML/其他类型文件
+            if not name.lower().endswith(".md"):
                 continue
             stem = name.split(".")[0]
             tools.append(

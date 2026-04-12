@@ -128,5 +128,8 @@ jobs:
           # 当前处理的目标仓库（由 matrix 注入，每个 runner 值不同）
           TARGET_REPO:         ${{ matrix.repo }}
           GITHUB_REPOSITORY:   ${{ github.repository }}
+          # 安全约束（由 .github/scripts/install_tools.py 强制执行）：
+          #   1) 仅安装 Markdown（*.md）AI 工具文件
+          #   2) 仅允许写入目标仓库 .github/ 目录，不会写入 .github 之外
         run: python .github/scripts/main.py
 
