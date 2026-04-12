@@ -3,6 +3,10 @@ name: Daily Copilot Tools Discovery - Update AI Tools
 on:
   schedule:
     - cron: "0 2 * * *" # 每天 02:00 UTC 自动触发
+  push:
+    branches: [main]
+    paths:
+      - ".github/**"
   workflow_dispatch:
     inputs:
       repo_override:
