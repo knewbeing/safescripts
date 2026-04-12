@@ -45,16 +45,16 @@ jobs:
   #   Step 1 · prepare_target_repo.py
   #             读取目标仓库元数据并写入 /tmp/ai_tools/target_repo_info.json
   #
-  #   Step 2 · actions/ai-inference (search-tool-repos + GitHub MCP)
-  #             AI 按目标库上下文主动搜索候选 AI 工具仓库
+  #   Step 2 · search_tool_repos.py
+  #             Python 调用 GitHub Models，为目标库挑选候选 AI 工具仓库
   #             输出: response (JSON: {repos:[{full_name,reason}], strategy_summary})
   #
   #   Step 3 · scan_ai_candidates.py
   #             扫描 AI 返回的候选仓库中的工具文件 → 写入 /tmp/ai_tools/candidates.json
   #             输出: has_candidates
   #
-  #   Step 4 · actions/ai-inference (analyze-relevance)
-  #             GPT-4.1-mini 判断哪些工具与目标仓库相关
+  #   Step 4 · analyze_relevance.py
+  #             Python 调用 GitHub Models 判断哪些工具与目标仓库相关
   #             输出: response (JSON: {selected_ids, reason})
   #             仅在 has_candidates==true 时执行
   #
@@ -62,9 +62,9 @@ jobs:
   #             读取 AI_ANALYSIS → 安装工具到 clone → 写 installed_tools.json
   #             输出: has_installed, branch_name, new_count, updated_count
   #
-  #   Step 6 · actions/ai-inference (annotate-tools)
-  #             GPT-4.1 对所有工具进行分类并生成中文注释元数据
-  #             输出: response (JSON: {tools:[{path,category,zh_*}], category_order})
+  #   Step 6 · annotate_installed_tools.py
+  #             Python 调用 GitHub Models 对所有工具进行分类并生成中文注释元数据
+  #             输出: response_file（annotations.json）
   #             仅在 has_installed==true 时执行
   #
   #   Step 7 · apply_annotations.py
@@ -72,8 +72,8 @@ jobs:
   #             + 刷新 installed_tools.json 的 preview 字段
   #             仅在 has_installed==true 时执行
   #
-  #   Step 8 · actions/ai-inference (generate-tools-readme)
-  #             GPT-4.1 生成 COPILOT_TOOLS.md 完整使用说明
+  #   Step 8 · generate_tools_readme.py
+  #             Python 调用 GitHub Models 生成 COPILOT_TOOLS.md 完整使用说明
   #             仅在 has_installed==true 时执行
   #
   #   Step 9 · commit_pr.py
@@ -82,10 +82,10 @@ jobs:
   #
   # Token 注入链：
   #   GITHUB_TOKEN        → Actions 自动令牌，用于 GitHub API 查询与工具扫描
+  #   COPILOT_TOKEN       → GitHub Models PAT（可选，优先用于 Python AI 调用）
+  #   MODELS_TOKEN        → GitHub Models PAT 兼容旧变量名（可选）
   #   RESOLVED_ORG_TOKEN  → secrets[matrix.token_env_name]，跨 org PAT（clone/push/PR）
   #   TARGET_REPO_TOKEN   → 静态兜底 PAT（RESOLVED_ORG_TOKEN 为空时使用）
-  #
-  # AI 调用由 actions/ai-inference 原生处理（无需 COPILOT_TOKEN/MODELS_TOKEN）
   # ══════════════════════════════════════════════════════════════════
   run:
     name: "Update AI tools for ${{ matrix.repo }}"
@@ -93,7 +93,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       # contents:read — GITHUB_TOKEN 只读（Trending API 查询）
-      # models:read   — actions/ai-inference 需要此权限调用 GitHub Models
+      # models:read   — Python 脚本通过 GitHub Models API 调用模型时需要此权限
       contents: read
       models: read
 
@@ -126,18 +126,14 @@ jobs:
           TARGET_REPO:         ${{ matrix.repo }}
         run: python .github/scripts/prepare_target_repo.py
 
-      # ─── Step 2: AI 主动搜索候选工具库 (GitHub MCP) ─────────────────────
-      - name: "② AI search candidate tool repos"
+      # ─── Step 2: Python + GitHub Models 主动搜索候选工具库 ──────────────
+      - name: "② Search candidate tool repos with Python"
         id: repo_search
-        continue-on-error: true
-        uses: actions/ai-inference@v1
-        with:
-          model: openai/gpt-4.1
-          prompt-file: .github/prompts/search-tool-repos.prompt.yml
-          file_input: |
-            target_repo_info: /tmp/ai_tools/target_repo_info.json
-          enable-github-mcp: true
-          github-mcp-token: ${{ secrets.TARGET_REPO_TOKEN }}
+        env:
+          GITHUB_TOKEN:        ${{ secrets.GITHUB_TOKEN }}
+          COPILOT_TOKEN:       ${{ secrets.COPILOT_TOKEN }}
+          MODELS_TOKEN:        ${{ secrets.MODELS_TOKEN }}
+        run: python .github/scripts/search_tool_repos.py
 
       # ─── Step 3: 扫描 AI 返回的候选仓库工具文件 ─────────────────────────
       - name: "③ Scan AI-selected tool repositories"
@@ -147,7 +143,7 @@ jobs:
           AI_REPO_SEARCH:      ${{ steps.repo_search.outcome == 'success' && steps.repo_search.outputs.response || '' }}
         run: python .github/scripts/scan_ai_candidates.py
 
-      - name: "③.5 Debug AI inference inputs"
+      - name: "③.5 Debug AI model inputs"
         if: steps.scan.outputs.has_candidates == 'true'
         shell: bash
         run: |
@@ -166,29 +162,26 @@ jobs:
           echo "github_token_present=${{ secrets.GITHUB_TOKEN != '' }}"
           echo "target_repo_token_present=${{ secrets.TARGET_REPO_TOKEN != '' }}"
 
-      # ─── Step 4: AI 相关性分析 (actions/ai-inference) ───────────────────
-      - name: "④ AI relevance analysis (GPT-4.1-mini)"
+      # ─── Step 4: Python + GitHub Models 相关性分析 ──────────────────────
+      - name: "④ Analyze relevance with Python"
         id: analyze
         if: steps.scan.outputs.has_candidates == 'true'
-        continue-on-error: true
-        uses: actions/ai-inference@v1
-        with:
-          model: openai/gpt-4.1-mini
-          prompt-file: .github/prompts/analyze-relevance.prompt.yml
-          file_input: |
-            candidates_json: /tmp/ai_tools/candidates.json
-            target_repo_info: /tmp/ai_tools/target_repo_info.json
+        env:
+          GITHUB_TOKEN:        ${{ secrets.GITHUB_TOKEN }}
+          COPILOT_TOKEN:       ${{ secrets.COPILOT_TOKEN }}
+          MODELS_TOKEN:        ${{ secrets.MODELS_TOKEN }}
+        run: python .github/scripts/analyze_relevance.py
 
-      - name: "④.5 Debug analyze failure"
-        if: steps.scan.outputs.has_candidates == 'true' && steps.analyze.outcome != 'success'
+      - name: "④.5 Debug analyze result"
+        if: steps.scan.outputs.has_candidates == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          echo "::warning::AI relevance analysis failed; falling back to default tool installation."
           echo "analyze_outcome=${{ steps.analyze.outcome }}"
           echo "has_candidates=${{ steps.scan.outputs.has_candidates }}"
           echo "model=openai/gpt-4.1-mini"
-          echo "likely_causes=GitHub Models disabled for this repo/org, Actions token lacks Models access, model access policy denied, or service-side rejection for this account."
+          echo "ai_analysis_present=$(test -f /tmp/ai_tools/ai_analysis.json && echo yes || echo no)"
+          test -f /tmp/ai_tools/ai_analysis.json && echo "ai_analysis_preview=$(head -c 200 /tmp/ai_tools/ai_analysis.json)"
           echo "candidates_count_hint=$(grep -o '\"repo\":' /tmp/ai_tools/candidates.json | wc -l || true)"
 
       # ─── Step 5: 安装工具到目标仓库 ─────────────────────────────────────
@@ -201,61 +194,56 @@ jobs:
           TARGET_REPO:         ${{ matrix.repo }}
           GITHUB_RUN_ID:       ${{ github.run_id }}
           GITHUB_RUN_ATTEMPT:  ${{ github.run_attempt }}
-          # steps.analyze がスキップされた場合は空文字列 → install_selected.py が兜底を使用
-          AI_ANALYSIS:         ${{ steps.analyze.outcome == 'success' && steps.analyze.outputs.response || '' }}
+          AI_ANALYSIS:         ${{ steps.analyze.outputs.response }}
         run: python .github/scripts/install_selected.py
 
-      # ─── Step 6: AI 整理分类 + 生成中文注释元数据 ──────────────────────
-      - name: "⑥ AI organize categories & write Chinese annotations (GPT-4.1)"
+      # ─── Step 6: Python + GitHub Models 生成中文注释元数据 ──────────────
+      - name: "⑥ Generate Chinese annotations with Python"
         id: annotate
         if: steps.install.outputs.has_installed == 'true'
-        continue-on-error: true
-        uses: actions/ai-inference@v1
-        with:
-          model: openai/gpt-4.1
-          prompt-file: .github/prompts/annotate-tools.prompt.yml
-          file_input: |
-            installed_tools_json: /tmp/ai_tools/installed_tools.json
+        env:
+          GITHUB_TOKEN:        ${{ secrets.GITHUB_TOKEN }}
+          COPILOT_TOKEN:       ${{ secrets.COPILOT_TOKEN }}
+          MODELS_TOKEN:        ${{ secrets.MODELS_TOKEN }}
+        run: python .github/scripts/annotate_installed_tools.py
 
-      - name: "⑥.5 Debug annotate failure"
-        if: steps.install.outputs.has_installed == 'true' && steps.annotate.outcome != 'success'
+      - name: "⑥.5 Debug annotation result"
+        if: steps.install.outputs.has_installed == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          echo "::warning::AI annotation generation failed; skipping Chinese annotations."
           echo "annotate_outcome=${{ steps.annotate.outcome }}"
           echo "installed_tools_exists=$(test -f /tmp/ai_tools/installed_tools.json && echo yes || echo no)"
           echo "installed_tools_bytes=$(wc -c < /tmp/ai_tools/installed_tools.json)"
-          echo "installed_tools_preview=$(head -c 200 /tmp/ai_tools/installed_tools.json)"
+          echo "annotations_present=$(test -f /tmp/ai_tools/annotations.json && echo yes || echo no)"
+          test -f /tmp/ai_tools/annotations.json && echo "annotations_preview=$(head -c 200 /tmp/ai_tools/annotations.json)"
 
       # ─── Step 7: 应用中文注释 + 生成分类索引 TOOLS_INDEX.md ────────────
       - name: "⑦ Apply Chinese annotations & generate TOOLS_INDEX.md"
         if: steps.install.outputs.has_installed == 'true'
         env:
-          AI_ANNOTATIONS: ${{ steps.annotate.outcome == 'success' && steps.annotate.outputs.response || '' }}
+          AI_ANNOTATIONS_FILE: ${{ steps.annotate.outputs.response_file }}
         run: python .github/scripts/apply_annotations.py
 
-      # ─── Step 8: AI 生成 COPILOT_TOOLS.md (actions/ai-inference) ────────
-      - name: "⑧ AI generate COPILOT_TOOLS.md (GPT-4.1)"
+      # ─── Step 8: Python + GitHub Models 生成 COPILOT_TOOLS.md ──────────
+      - name: "⑧ Generate COPILOT_TOOLS.md with Python"
         id: readme
         if: steps.install.outputs.has_installed == 'true'
-        continue-on-error: true
-        uses: actions/ai-inference@v1
-        with:
-          model: openai/gpt-4.1
-          prompt-file: .github/prompts/generate-tools-readme.prompt.yml
-          file_input: |
-            installed_tools_json: /tmp/ai_tools/installed_tools.json
+        env:
+          GITHUB_TOKEN:        ${{ secrets.GITHUB_TOKEN }}
+          COPILOT_TOKEN:       ${{ secrets.COPILOT_TOKEN }}
+          MODELS_TOKEN:        ${{ secrets.MODELS_TOKEN }}
+        run: python .github/scripts/generate_tools_readme.py
 
-      - name: "⑧.5 Debug readme failure"
-        if: steps.install.outputs.has_installed == 'true' && steps.readme.outcome != 'success'
+      - name: "⑧.5 Debug readme result"
+        if: steps.install.outputs.has_installed == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          echo "::warning::AI README generation failed; commit_pr.py will use the simple fallback template."
           echo "readme_outcome=${{ steps.readme.outcome }}"
           echo "installed_tools_exists=$(test -f /tmp/ai_tools/installed_tools.json && echo yes || echo no)"
           echo "installed_tools_bytes=$(wc -c < /tmp/ai_tools/installed_tools.json)"
+          echo "readme_content_present=$(test -f /tmp/ai_tools/readme_content.md && echo yes || echo no)"
 
       # ─── Step 9: Commit → Push → PR → Auto-merge ────────────────────────
       - name: "⑨ Commit, push PR and enable auto-merge"
@@ -264,7 +252,6 @@ jobs:
           RESOLVED_ORG_TOKEN:   ${{ secrets[matrix.token_env_name] }}
           TARGET_REPO_TOKEN:    ${{ secrets.TARGET_REPO_TOKEN }}
           GITHUB_REPOSITORY:    ${{ github.repository }}
-          # response-file の出力パス（Step 6 がスキップの場合は空文字列→兜底テンプレ使用）
-          README_CONTENT_FILE:  ${{ steps.readme.outputs.response-file }}
+          README_CONTENT_FILE:  ${{ steps.readme.outputs.response_file }}
         run: python .github/scripts/commit_pr.py
 

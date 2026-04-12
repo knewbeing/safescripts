@@ -1,9 +1,9 @@
-"""Step 5 of 9: 读取 AI 分析结果，安装工具到目标仓库 clone，扫描已安装工具输出文档数据。
+"""Step 5 of 9: 读取 Python AI 分析结果，安装工具到目标仓库 clone，扫描已安装工具输出文档数据。
 
 上游输入：
   /tmp/ai_tools/candidates.json        — scan_ai_candidates.py 输出的候选列表
   /tmp/ai_tools/target_repo_info.json  — 目标仓库元数据
-  AI_ANALYSIS env                      — actions/ai-inference analyze 步骤输出的 JSON
+  AI_ANALYSIS env                      — analyze_relevance.py 输出的 JSON
 
 输出文件：
   /tmp/target-repo-clone/              — 带有工具文件的克隆目录（持续到 commit_pr.py）
@@ -123,7 +123,7 @@ def main() -> None:
         default_branch = info.get("default_branch", "main")
 
     # ── 解析 AI 相关性分析结果 ──────────────────────────────────────────
-    # AI_ANALYSIS 是 actions/ai-inference 的 response 输出（JSON 文本）
+    # AI_ANALYSIS 是 analyze_relevance.py 的 JSON 输出
     ai_raw = os.environ.get("AI_ANALYSIS", "").strip()
     selected_ids: set[str] = set()
     if ai_raw:

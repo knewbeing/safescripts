@@ -1,8 +1,9 @@
-"""Step 4 of 7: 将 AI 生成的中文注释写入各工具文件，并生成分类索引 TOOLS_INDEX.md。
+"""Step 7 of 9: 将 Python AI 生成的中文注释写入各工具文件，并生成分类索引 TOOLS_INDEX.md。
 
 上游输入：
   /tmp/ai_tools/installed_tools.json  — install_selected.py 输出的工具摘要
-  AI_ANNOTATIONS env                  — actions/ai-inference annotate 步骤输出的 JSON
+  AI_ANNOTATIONS env                  — annotate_installed_tools.py 输出的 JSON
+  AI_ANNOTATIONS_FILE env             — annotate_installed_tools.py 输出的 JSON 文件路径
 
 本脚本操作：
   1. 解析 AI_ANNOTATIONS JSON，获取每个工具的中文元数据
@@ -165,7 +166,12 @@ def main() -> None:
         return
 
     # ── 解析 AI 注释结果 ────────────────────────────────────────────────
-    ai_raw = os.environ.get("AI_ANNOTATIONS", "").strip()
+    annotations_file = os.environ.get("AI_ANNOTATIONS_FILE", "").strip()
+    ai_raw = ""
+    if annotations_file and Path(annotations_file).exists():
+        ai_raw = Path(annotations_file).read_text(encoding="utf-8").strip()
+    if not ai_raw:
+        ai_raw = os.environ.get("AI_ANNOTATIONS", "").strip()
     if not ai_raw:
         logger.warning("AI_ANNOTATIONS 为空（步骤已跳过或 AI 调用失败），跳过注释写入")
         return

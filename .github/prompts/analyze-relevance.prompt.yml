@@ -3,12 +3,13 @@ messages:
     content: |
       You are an AI tools relevance judge for GitHub Copilot.
       Your job is to evaluate whether Copilot tool files (agents, instructions, prompts/skills)
-      from GitHub trending repositories are relevant and useful for the given target repository.
+      from a source repository are relevant and useful for the given target repository.
 
-      Copilot tools include:
-      - **instructions** (.github/instructions/*.md, .github/copilot-instructions.md)
-      - **agents** (.github/agents/*.agent.md)
-      - **skills / prompts** (.github/prompts/*.prompt.md)
+      Copilot tools include any file that provides:
+      - coding instructions, rules, or conventions
+      - agent definitions for automated workflows
+      - prompt templates, skills, or playbooks
+      - markdown-based guidance consumable by Copilot
 
       Relevance criteria:
       1. The tool's intent matches the target repo's tech stack, language, or domain.
@@ -25,24 +26,29 @@ messages:
       {{target_repo_info}}
       ```
 
-      ## Candidate Copilot tools (from GitHub Trending)
+      ## Source repository
 
       ```json
-      {{candidates_json}}
+      {{source_repo}}
+      ```
+
+      ## Available Copilot tools from this source
+
+      ```json
+      {{tool_choices}}
       ```
 
       For each tool, the `id` field is the unique identifier (format: `owner/repo::path`).
-      Candidate entries include metadata such as `type`, `name`, `path`, and source repository info.
 
       ## Task
 
-      Select up to **10** tools that are MOST relevant for the target repository.
+      Select tools that are MOST relevant for the target repository.
       Prefer quality over quantity. If nothing is relevant, return an empty `selected_ids`.
 
       Return JSON:
       ```json
       {
-        "selected_ids": ["owner/repo::.github/agents/example.agent.md", "..."],
+        "selected_ids": ["owner/repo::path/to/file", "..."],
         "reason": "Brief explanation of selection rationale (1-2 sentences)"
       }
       ```

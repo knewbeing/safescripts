@@ -10,21 +10,21 @@ Automatically discovers, evaluates, and installs **GitHub Copilot tools** (instr
 Prepare target repo context
         │
         ▼
-AI searches GitHub for promising tool repositories
+Python + GitHub Models ranks promising tool repositories
         │
         ▼
 Scan AI-selected candidate repos for Copilot tools
 (.github/instructions/, .github/agents/, .github/prompts/)
         │
         ▼
-AI relevance analysis via actions/ai-inference (GPT-4.1-mini)
+AI relevance analysis via Python + GitHub Models (GPT-4.1-mini)
 "Are these tools relevant to <target-repo>?"
         │
         ▼
 Install compatible tools into the target repo working copy
         │
         ▼
-AI classify & annotate tools (GPT-4.1)
+Python + GitHub Models classify & annotate tools (GPT-4.1)
 → 按功能分类 + 为每个工具生成中文注释元数据
         │
         ▼
@@ -32,13 +32,13 @@ apply_annotations.py
 → 写入 <!-- 中文注释头 --> + 生成 .github/TOOLS_INDEX.md
         │
         ▼
-AI generates .github/COPILOT_TOOLS.md (categorised overview + usage guide)
+Python + GitHub Models generate .github/COPILOT_TOOLS.md (categorised overview + usage guide)
         │
         ▼
 Commit → push branch → open Pull Request in target repo
 ```
 
-The workflow runs **daily at 02:00 UTC** and processes **all** repositories in `repos.json` (matrix parallel). For each target repo, it first exports repo context, then uses `actions/ai-inference` + GitHub MCP to search GitHub for likely AI tool repositories before scanning their Copilot assets. You can also trigger it manually from the **Actions** tab.
+The workflow runs **daily at 02:00 UTC** and processes **all** repositories in `repos.json` (matrix parallel). For each target repo, it first exports repo context, then uses Python scripts + GitHub Models to rank promising AI tool repositories before scanning their Copilot assets. You can also trigger it manually from the **Actions** tab.
 
 ---
 
@@ -70,8 +70,8 @@ Create required secrets:
 - `TARGET_REPO_TOKEN`: fallback PAT (`repo` scope) for cloning, pushing, and creating PRs in target repos
 - Optional per-owner PATs: e.g. `KNEWBEING_GITHUB_TOKEN`, `CNJIMBO_GITHUB_TOKEN` (used when `secret_name` or owner-derived key matches)
 
-> The workflow uses `actions/ai-inference@v1` + `GITHUB_TOKEN` (with `models: read` permission) for model calls.
-> GitHub MCP search additionally uses `TARGET_REPO_TOKEN` as the MCP token for repository search.
+> The workflow uses Python scripts + GitHub Models API for model calls.
+> `COPILOT_TOKEN` or `MODELS_TOKEN` is preferred; otherwise it falls back to `GITHUB_TOKEN` with `models: read`.
 
 ### 3. Let the workflow run
 
@@ -84,9 +84,9 @@ It fires automatically every morning. To test immediately:
 
 ## Tool types
 
-| Type | Target directory | Description |
-|------|-----------------|-------------|
-| **Instruction** | `.github/instructions/` | Language / framework-specific guidance files (also `.github/copilot-instructions.md`) |
+| Type | Common locations | Description |
+|------|------------------|-------------|
+| **Instruction** | `.github/instructions/`, `.github/copilot-instructions.md` | Language / framework-specific guidance files |
 | **Agent** | `.github/agents/` | Custom Copilot agent personas and workflows |
 | **Skill / Prompt** | `.github/prompts/` | Reusable prompt templates invoked as `/skill-name` |
 
@@ -110,11 +110,12 @@ repos.json                        # List of target repositories + settings
   workflows/
     daily-copilot-tools.yml       # GitHub Actions workflow (daily cron)
   prompts/
-    search-tool-repos.prompt.yml   # AI 主动搜索候选工具仓库（GitHub MCP）
-    analyze-relevance.prompt.yml  # AI relevance prompt (JSON output schema)
-    annotate-tools.prompt.yml     # AI 中文分类注释提示词（JSON output schema）
-    generate-tools-readme.prompt.yml # AI README generation prompt
   scripts/
+    ai_models.py                  # Shared GitHub Models client helper
+    search_tool_repos.py          # Step 2: rank candidate source repos with GitHub Models
+    analyze_relevance.py          # Step 4: select relevant tools with GitHub Models
+    annotate_installed_tools.py   # Step 6: generate Chinese annotations with GitHub Models
+    generate_tools_readme.py      # Step 8: generate COPILOT_TOOLS.md with GitHub Models
     prepare_target_repo.py        # Step 1: export target repo context
     scan_ai_candidates.py         # Step 3: scan AI-selected candidate repos
     install_selected.py           # Step 5: install selected/default tools
@@ -134,7 +135,9 @@ repos.json                        # List of target repositories + settings
 |--------|----------|---------|
 | `TARGET_REPO_TOKEN` | **Yes** | PAT (`repo` scope) for cloning, pushing, and creating PRs in target repos |
 | `<OWNER>_GITHUB_TOKEN` or configured `secret_name` | Optional | Per-owner/per-repo PAT override; higher priority than `TARGET_REPO_TOKEN` |
-| `GITHUB_TOKEN` | Auto | Built-in token for `actions/ai-inference` model calls + read-only GitHub API calls |
+| `COPILOT_TOKEN` | Optional | Preferred PAT for GitHub Models API calls from Python scripts |
+| `MODELS_TOKEN` | Optional | Legacy-compatible fallback PAT for GitHub Models API calls |
+| `GITHUB_TOKEN` | Auto | Built-in token for read-only GitHub API calls, and fallback GitHub Models auth when `models: read` is available |
 
 ---
 
