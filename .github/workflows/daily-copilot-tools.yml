@@ -129,6 +129,7 @@ jobs:
       # ─── Step 2: AI 主动搜索候选工具库 (GitHub MCP) ─────────────────────
       - name: "② AI search candidate tool repos"
         id: repo_search
+        continue-on-error: true
         uses: actions/ai-inference@v1
         with:
           model: openai/gpt-4.1
@@ -143,7 +144,7 @@ jobs:
         id: scan
         env:
           GITHUB_TOKEN:        ${{ secrets.GITHUB_TOKEN }}
-          AI_REPO_SEARCH:      ${{ steps.repo_search.outputs.response }}
+          AI_REPO_SEARCH:      ${{ steps.repo_search.outcome == 'success' && steps.repo_search.outputs.response || '' }}
         run: python .github/scripts/scan_ai_candidates.py
 
       # ─── Step 4: AI 相关性分析 (actions/ai-inference) ───────────────────
