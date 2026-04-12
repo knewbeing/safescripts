@@ -76,6 +76,15 @@ def _branch_repo_slug(repo_full_name: str) -> str:
     return slug or "target-repo"
 
 
+def _build_branch_name(target_repo: str) -> str:
+    """构建唯一分支名：repo/update-ai-tools/<UTC时间>-run-<run_id>-a<attempt>。"""
+    repo_slug = _branch_repo_slug(target_repo)
+    timestamp = datetime.datetime.utcnow().strftime("%Y%m%d-%H%M%S")
+    run_id = os.environ.get("GITHUB_RUN_ID", "local").strip() or "local"
+    run_attempt = os.environ.get("GITHUB_RUN_ATTEMPT", "1").strip() or "1"
+    return f"{repo_slug}/update-ai-tools/{timestamp}-run-{run_id}-a{run_attempt}"
+
+
 def _remote_branch_exists(tmpdir: str, branch_name: str) -> bool:
     """检查远端 origin 上是否已存在指定分支。"""
     result = subprocess.run(
@@ -300,10 +309,9 @@ def main() -> None:
     # 无论 Trending 是否命中，都执行后续步骤（未命中时使用内置工具）
     from_defaults = not bool(matched)
     today = datetime.date.today().isoformat()
-    # 分支命名策略：使用“当前目标仓库名 + update-ai-tools”（不带日期）
-    # 示例：org-memory/update-ai-tools
-    repo_slug = _branch_repo_slug(target_repo)
-    branch_name = f"{repo_slug}/update-ai-tools"
+    # 分支命名策略：带时间 + Action Run ID，避免重复冲突
+    # 示例：org-memory/update-ai-tools/20260412-120501-run-123456789-a1
+    branch_name = _build_branch_name(target_repo)
 
     with tempfile.TemporaryDirectory() as tmpdir:
         # 使用 PAT 拼接认证 URL，实现无交互 clone
@@ -370,20 +378,26 @@ def main() -> None:
         else:
             _git(["push", "--set-upstream", "origin", branch_name], tmpdir)
 
-        # 检查是否已有同名分支的 PR，避免重复创建
-        if api.pr_exists(target_repo, branch_name, default_branch):
-            logger.info("分支 '%s' 已存在 PR，跳过创建。", branch_name)
-            return
+        # 若已存在同分支 PR 则复用，否则创建新 PR
+        pr = api.get_open_pr(target_repo, branch_name, default_branch)
+        if pr:
+            logger.info("分支 '%s' 已存在打开中的 PR，复用: %s", branch_name, pr["html_url"])
+        else:
+            pr = api.create_pr(
+                repo=target_repo,
+                title=f"🤖 Update AI tools [{today}]{'  (recommended defaults)' if from_defaults else ''}",
+                body=_build_pr_body(installed, target_repo, today, from_defaults=from_defaults),
+                head=branch_name,
+                base=default_branch,
+            )
+            logger.info("✅  PR 已创建: %s", pr["html_url"])
 
-        # 使用 target_token 在目标仓库创建 PR
-        pr = api.create_pr(
-            repo=target_repo,
-            title=f"🤖 Update AI tools [{today}]{'  (recommended defaults)' if from_defaults else ''}",
-            body=_build_pr_body(installed, target_repo, today, from_defaults=from_defaults),
-            head=branch_name,
-            base=default_branch,
-        )
-        logger.info("✅  PR 已创建: %s", pr["html_url"])
+        # 推送后尝试为 PR 启用自动合并（仓库需已开启 Auto-merge）
+        pr_node_id = pr.get("node_id")
+        if pr_node_id and api.enable_pr_auto_merge(pr_node_id, merge_method="SQUASH"):
+            logger.info("✅  已启用 PR 自动合并: %s", pr["html_url"])
+        else:
+            logger.warning("⚠️  未能启用 PR 自动合并（请确认仓库开启了 Auto-merge 且 token 权限足够）")
 
 
 if __name__ == "__main__":

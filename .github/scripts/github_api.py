@@ -26,6 +26,22 @@ class GitHubAPI:
     def _post(self, path: str, **kwargs: Any) -> requests.Response:
         return requests.post(f"{BASE_URL}{path}", headers=self._headers, timeout=20, **kwargs)
 
+    def _graphql(self, query: str, variables: dict[str, Any]) -> dict[str, Any]:
+        """调用 GitHub GraphQL API。"""
+        resp = requests.post(
+            f"{BASE_URL}/graphql",
+            headers=self._headers,
+            json={"query": query, "variables": variables},
+            timeout=20,
+        )
+        resp.raise_for_status()
+        payload = resp.json()
+        errors = payload.get("errors") or []
+        if errors:
+            msg = "; ".join(err.get("message", "unknown GraphQL error") for err in errors)
+            raise RuntimeError(msg)
+        return payload.get("data") or {}
+
     # ------------------------------------------------------------------ #
     # Repository info                                                      #
     # ------------------------------------------------------------------ #
@@ -42,15 +58,19 @@ class GitHubAPI:
     # Pull requests                                                        #
     # ------------------------------------------------------------------ #
 
-    def pr_exists(self, repo: str, head_branch: str, base_branch: str) -> bool:
+    def get_open_pr(self, repo: str, head_branch: str, base_branch: str) -> dict | None:
         resp = self._get(
             f"/repos/{repo}/pulls",
             params={"head": head_branch, "base": base_branch, "state": "open"},
         )
         if resp.status_code == 404:
-            return False
+            return None
         resp.raise_for_status()
-        return len(resp.json()) > 0
+        prs = resp.json()
+        return prs[0] if prs else None
+
+    def pr_exists(self, repo: str, head_branch: str, base_branch: str) -> bool:
+        return self.get_open_pr(repo, head_branch, base_branch) is not None
 
     def create_pr(
         self, repo: str, title: str, body: str, head: str, base: str
@@ -63,3 +83,23 @@ class GitHubAPI:
         pr = resp.json()
         logger.info("PR created: %s", pr["html_url"])
         return pr
+
+    def enable_pr_auto_merge(self, pr_node_id: str, merge_method: str = "SQUASH") -> bool:
+        """为 PR 启用自动合并（仓库需开启 Auto-merge）。"""
+        mutation = """
+mutation EnableAutoMerge($pullRequestId: ID!, $mergeMethod: PullRequestMergeMethod!) {
+  enablePullRequestAutoMerge(
+    input: { pullRequestId: $pullRequestId, mergeMethod: $mergeMethod }
+  ) {
+    pullRequest { number }
+  }
+}
+"""
+        try:
+            self._graphql(
+                query=mutation,
+                variables={"pullRequestId": pr_node_id, "mergeMethod": merge_method},
+            )
+            return True
+        except Exception:
+            return False
