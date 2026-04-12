@@ -34,15 +34,37 @@ _BOT_NAME = "github-actions[bot]"
 # ------------------------------------------------------------------ #
 
 
-def pick_target_repo() -> str:
-    """Round-robin repo selection based on day-of-year."""
+def pick_target_repo() -> tuple[str, str]:
+    """Round-robin repo selection based on day-of-year.
+
+    Returns (repo_full_name, token_secret_name).
+    Supports both plain strings and {"repo": ..., "token_secret": ...} objects.
+    """
     with open(_REPOS_FILE) as fh:
         config = json.load(fh)
-    repos: list[str] = config.get("repositories", [])
-    if not repos:
+    entries: list = config.get("repositories", [])
+    if not entries:
         raise SystemExit("❌  No repositories in repos.json. Add at least one entry.")
-    idx = (datetime.date.today().timetuple().tm_yday - 1) % len(repos)
-    return repos[idx]
+    default_secret = config.get("settings", {}).get("default_token_secret", "TARGET_REPO_TOKEN")
+
+    idx = (datetime.date.today().timetuple().tm_yday - 1) % len(entries)
+    entry = entries[idx]
+
+    if isinstance(entry, str):
+        return entry, default_secret
+    return entry["repo"], entry.get("token_secret", default_secret)
+
+
+def resolve_target_token(secret_name: str, fallback: str) -> str:
+    """Read the env var named *secret_name*; fall back to *fallback*."""
+    value = os.environ.get(secret_name, "").strip()
+    if value:
+        logger.info("Using token from secret '%s'", secret_name)
+        return value
+    logger.warning(
+        "Secret '%s' not set in environment; falling back to GITHUB_TOKEN", secret_name
+    )
+    return fallback
 
 
 def _run(cmd: list[str], cwd: str | None = None) -> None:
@@ -126,10 +148,16 @@ def main() -> None:
     if not github_token:
         raise SystemExit("❌  GITHUB_TOKEN environment variable is required")
 
-    target_token = os.environ.get("TARGET_REPO_TOKEN") or github_token
     repo_override = os.environ.get("REPO_OVERRIDE", "").strip()
 
-    target_repo = repo_override if repo_override else pick_target_repo()
+    if repo_override:
+        target_repo = repo_override
+        # For manual overrides, use TARGET_REPO_TOKEN or GITHUB_TOKEN
+        target_token = resolve_target_token("TARGET_REPO_TOKEN", github_token)
+    else:
+        target_repo, secret_name = pick_target_repo()
+        target_token = resolve_target_token(secret_name, github_token)
+
     logger.info("Target repository: %s", target_repo)
 
     api = GitHubAPI(target_token)

@@ -15,8 +15,6 @@ jobs:
     name: Discover & install Copilot tools
     runs-on: ubuntu-latest
 
-    # This workflow only needs read access to THIS maintenance repo.
-    # Write access to target repos is provided via TARGET_REPO_TOKEN.
     permissions:
       contents: read
 
@@ -38,11 +36,18 @@ jobs:
         env:
           # Used for GitHub Models API (AI analysis) and trending scrape fallback.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # PAT with `repo` scope for reading/writing to target repositories.
-          # Required for cloning, pushing, and creating PRs in external repos.
-          TARGET_REPO_TOKEN: ${{ secrets.TARGET_REPO_TOKEN }}
           # Optional: override which repo to process this run.
           REPO_OVERRIDE: ${{ inputs.repo_override }}
           # Passed through so PR bodies can link back to this workflow.
           GITHUB_REPOSITORY: ${{ github.repository }}
+
+          # ----------------------------------------------------------------
+          # Per-repo tokens — add one line per secret used in repos.json.
+          # Secret name here must match the "token_secret" value in repos.json.
+          # ----------------------------------------------------------------
+          TARGET_REPO_TOKEN: ${{ secrets.TARGET_REPO_TOKEN }}
+          TOKEN_ANOTHER_ORG_REPO_B: ${{ secrets.TOKEN_ANOTHER_ORG_REPO_B }}
+          # TOKEN_YET_ANOTHER_REPO: ${{ secrets.TOKEN_YET_ANOTHER_REPO }}
+
         run: python .github/scripts/main.py
+
