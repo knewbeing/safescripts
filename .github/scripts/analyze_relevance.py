@@ -58,13 +58,16 @@ def main() -> None:
     selected_ids: list[str] = []
     reasons: list[str] = []
 
+    # Max tools per request to stay under gpt-4.1-mini 8k token limit
+    BATCH_SIZE = 30
+
     for item in candidates:
         repo = item.get("repo") or {}
         tools = item.get("tools") or []
         if not tools:
             continue
 
-        tool_choices = [
+        all_tool_choices = [
             {
                 "id": tool["id"],
                 "type": tool.get("type", ""),
@@ -74,32 +77,38 @@ def main() -> None:
             for tool in tools
         ]
 
-        try:
-            raw = request_from_prompt(
-                client=client,
-                model=MODEL,
-                prompt_path=PROMPTS_DIR / "analyze-relevance.prompt.yml",
-                variables={
-                    "target_repo_info": json.dumps(target_info, ensure_ascii=False),
-                    "source_repo": json.dumps(repo, ensure_ascii=False),
-                    "tool_choices": json.dumps(tool_choices, ensure_ascii=False),
-                },
-            )
-            result = json.loads(raw)
-        except Exception as exc:
-            log_models_error(f"Relevance analysis for {repo.get('full_name', 'unknown')}", exc)
-            continue
+        # Split into batches to avoid 413 Payload Too Large
+        batches = [all_tool_choices[i:i + BATCH_SIZE] for i in range(0, len(all_tool_choices), BATCH_SIZE)]
+        if len(batches) > 1:
+            logger.info("Splitting %d tools from %s into %d batches", len(all_tool_choices), repo.get("full_name", "?"), len(batches))
 
-        valid_ids = {tool["id"] for tool in tool_choices}
-        repo_selected = [
-            tool_id for tool_id in result.get("selected_ids", [])
-            if isinstance(tool_id, str) and tool_id in valid_ids and tool_id not in selected_ids
-        ]
-        selected_ids.extend(repo_selected)
+        for batch in batches:
+            try:
+                raw = request_from_prompt(
+                    client=client,
+                    model=MODEL,
+                    prompt_path=PROMPTS_DIR / "analyze-relevance.prompt.yml",
+                    variables={
+                        "target_repo_info": json.dumps(target_info, ensure_ascii=False),
+                        "source_repo": json.dumps(repo, ensure_ascii=False),
+                        "tool_choices": json.dumps(batch, ensure_ascii=False),
+                    },
+                )
+                result = json.loads(raw)
+            except Exception as exc:
+                log_models_error(f"Relevance analysis for {repo.get('full_name', 'unknown')} (batch of {len(batch)})", exc)
+                continue
 
-        reason = str(result.get("reason") or "").strip()
-        if repo_selected and reason:
-            reasons.append(f"{repo.get('full_name', 'unknown')}: {reason}")
+            valid_ids = {tool["id"] for tool in batch}
+            repo_selected = [
+                tool_id for tool_id in result.get("selected_ids", [])
+                if isinstance(tool_id, str) and tool_id in valid_ids and tool_id not in selected_ids
+            ]
+            selected_ids.extend(repo_selected)
+
+            reason = str(result.get("reason") or "").strip()
+            if repo_selected and reason:
+                reasons.append(f"{repo.get('full_name', 'unknown')}: {reason}")
 
     payload = {
         "selected_ids": selected_ids[:10],
