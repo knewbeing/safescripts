@@ -1,0 +1,67 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "issues": [
+    {
+      "description": "脚本未检测到任何网络请求行为，无数据外传风险。",
+      "location": "全脚本",
+      "recommendation": "无",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本未读取 document.cookie、localStorage、sessionStorage，未监听键盘输入事件，未访问浏览器指纹相关 API。",
+      "location": "全脚本",
+      "recommendation": "无",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本未使用 eval、new Function、setTimeout(string)、innerHTML 执行远程内容，且无 @require 或动态加载远程脚本。",
+      "location": "全脚本",
+      "recommendation": "无",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本未声明 @grant 权限，且代码中未使用任何 GM_* API，权限申请合理。",
+      "location": "元数据与代码",
+      "recommendation": "无",
+      "severity": "HIGH",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本未调用敏感 API，如 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等。",
+      "location": "全脚本",
+      "recommendation": "无",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "脚本代码结构清晰，无明显混淆、base64 解码或字符串拼接执行特征。",
+      "location": "全脚本",
+      "recommendation": "无",
+      "severity": "MEDIUM",
+      "type": "代码混淆"
+    },
+    {
+      "description": "脚本无 @require 加载外部依赖，避免供应链风险。",
+      "location": "元数据",
+      "recommendation": "无",
+      "severity": "LOW",
+      "type": "外部依赖"
+    }
+  ],
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "SAFE",
+  "script_name": "搜索结果自动加序号",
+  "summary": "该脚本仅在指定搜索引擎页面为搜索结果添加序号，未涉及任何网络请求、用户数据读取或远程代码执行，权限申请合理，无敏感 API 调用，代码无混淆且无外部依赖，整体安全性高。",
+  "analyzed_at": "2026-04-15T19:08:49.131695+00:00",
+  "slug": "ResultCounter"
+}

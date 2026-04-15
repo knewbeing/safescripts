@@ -1,21 +1,7 @@
 # 托管脚本列表
 
-暂无托管脚本。请在 `target-repos.json` 的 `userscripts` 数组中添加脚本地址，流水线将在下次运行时自动同步。
+共 **0** 个脚本　　最后更新：2026-04-15 19:09 UTC
 
-## 如何添加脚本
+以下脚本由用户在 `target-repos.json` 中配置，每天自动同步最新版本并分析安全性。
 
-编辑项目根目录的 `target-repos.json`：
-
-```json
-{
-  "userscripts": [
-    "https://raw.githubusercontent.com/owner/repo/main/script.user.js",
-    "https://github.com/owner/repo/blob/main/script.user.js"
-  ]
-}
-```
-
-支持的 URL 格式：
-- GitHub Raw 地址（`raw.githubusercontent.com`）
-- GitHub Blob 地址（自动转换为 Raw）
-- GreasyFork 脚本地址
+> 暂无托管脚本。请在 `target-repos.json` 的 `userscripts` 数组中添加脚本地址。
