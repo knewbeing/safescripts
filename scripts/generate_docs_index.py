@@ -20,6 +20,8 @@ DOCS_DISCOVERED = REPO_ROOT / "docs" / "discovered"
 DOCS_MANAGED.mkdir(parents=True, exist_ok=True)
 DOCS_DISCOVERED.mkdir(parents=True, exist_ok=True)
 
+RISK_ORDER_SAFE_FIRST = ["SAFE", "LOW", "MEDIUM", "HIGH", "CRITICAL", "UNKNOWN"]
+
 RISK_BADGE = {
     "SAFE": "🟢",
     "LOW": "🟡",
@@ -57,31 +59,45 @@ def load_scripts(scripts_dir: Path) -> list[dict]:
     return entries
 
 
-def _risk_issues_md(entry: dict, max_issues: int = 3) -> str:
-    """为有风险的脚本生成简短的关键风险列表（用于索引表格）。"""
+def _risk_issues_md(entry: dict) -> str:
+    """为每个脚本生成内联风险说明（安全时显示摘要，有风险时显示详细问题）。"""
     risk = entry.get("risk_level", "UNKNOWN")
-    if risk in ("SAFE", "LOW", "UNKNOWN"):
-        return entry.get("security_summary", "待分析")[:50] or "待分析"
-
     issues = entry.get("security_issues", [])
+    summary = entry.get("security_summary", "") or ""
+
+    if risk in ("SAFE", "UNKNOWN"):
+        return summary[:80] + "…" if len(summary) > 80 else (summary or "无已知风险")
+
+    if risk == "LOW":
+        return summary[:80] + "…" if len(summary) > 80 else (summary or "低风险")
+
+    # MEDIUM / HIGH / CRITICAL — 显示具体问题
     sev_order = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
+    sev_icon = {"CRITICAL": "⛔", "HIGH": "🔴", "MEDIUM": "🟠", "LOW": "🟡"}
+
     top = sorted(
-        [i for i in issues if i.get("severity") in ("CRITICAL", "HIGH", "MEDIUM")],
+        [i for i in issues if isinstance(i, dict)],
         key=lambda x: sev_order.get(x.get("severity", "LOW"), 9),
-    )[:max_issues]
+    )[:4]
 
-    if not top:
-        summary = entry.get("security_summary", "")
-        return summary[:60] + "…" if len(summary) > 60 else summary or "待分析"
+    if top:
+        parts = []
+        for issue in top:
+            icon = sev_icon.get(issue.get("severity", ""), "⚠️")
+            itype = issue.get("type", "")
+            desc = (issue.get("description", "") or "")[:60]
+            if desc and not desc.endswith("…"):
+                desc = desc + "…" if len(issue.get("description", "")) > 60 else desc
+            parts.append(f"{icon}**{itype}**: {desc}")
+        return "<br>".join(parts)
 
-    sev_icon = {"CRITICAL": "⛔", "HIGH": "🔴", "MEDIUM": "🟠"}
-    parts = []
-    for issue in top:
-        icon = sev_icon.get(issue.get("severity", ""), "⚠️")
-        itype = issue.get("type", "")
-        desc = issue.get("description", "")[:40]
-        parts.append(f"{icon}**{itype}**：{desc}…")
-    return "<br>".join(parts)
+    return summary[:80] + "…" if len(summary) > 80 else (summary or "存在风险")
+
+
+def _sort_entries_safe_first(entries: list[dict]) -> list[dict]:
+    """将脚本按安全等级从安全到危险排序。"""
+    order = {r: i for i, r in enumerate(RISK_ORDER_SAFE_FIRST)}
+    return sorted(entries, key=lambda e: order.get(e.get("risk_level", "UNKNOWN"), 99))
 
 
 def render_managed_index(entries: list[dict]) -> str:
@@ -89,9 +105,7 @@ def render_managed_index(entries: list[dict]) -> str:
     lines = [
         "# 托管脚本",
         "",
-        f"> 共 **{len(entries)}** 个脚本　·　最后更新：{now}",
-        "",
-        "以下脚本由 `target-repos.json` 配置，每天自动同步并分析安全性。",
+        f"> 共 **{len(entries)}** 个脚本　·　{now}　·　由 `target-repos.json` 配置，每天自动同步安全分析",
         "",
     ]
 
@@ -99,29 +113,22 @@ def render_managed_index(entries: list[dict]) -> str:
         lines += ["> 暂无托管脚本，请在 `target-repos.json` 的 `userscripts` 数组中添加脚本地址。", ""]
         return "\n".join(lines)
 
-    risk_order = ["CRITICAL", "HIGH", "MEDIUM", "LOW", "SAFE", "UNKNOWN"]
-    grouped: dict[str, list[dict]] = {r: [] for r in risk_order}
-    for e in entries:
-        grouped.setdefault(e.get("risk_level", "UNKNOWN"), []).append(e)
+    lines += ["| 风险 | 脚本 | 版本 | 适用网站 | 风险说明 |",
+              "|:----:|:-----|:----:|:---------|:---------|"]
 
-    for risk in risk_order:
-        group = grouped.get(risk, [])
-        if not group:
-            continue
+    for e in _sort_entries_safe_first(entries):
+        slug = e.get("slug", "")
+        summary = e.get("summary", {})
+        name = summary.get("zh_name") or e.get("name", slug)
+        version = e.get("version", "?")
+        sites = summary.get("applicable_sites", [])
+        sites_str = "、".join(sites[:2]) + ("…" if len(sites) > 2 else "") if sites else "通用"
+        risk = e.get("risk_level", "UNKNOWN")
         badge = RISK_BADGE.get(risk, "⬜")
-        lines += [f"## {badge} {risk}", ""]
-        lines += ["| 脚本 | 版本 | 适用网站 | 安全说明 |", "|:-----|:----:|:---------|:---------|"]
-        for e in group:
-            slug = e.get("slug", "")
-            summary = e.get("summary", {})
-            name = summary.get("zh_name") or e.get("name", slug)
-            version = e.get("version", "?")
-            sites = summary.get("applicable_sites", [])
-            sites_str = "、".join(sites[:2]) + ("…" if len(sites) > 2 else "") if sites else "通用"
-            risk_md = _risk_issues_md(e)
-            lines.append(f"| [{name}](./{slug}) | {version} | {sites_str} | {risk_md} |")
-        lines.append("")
+        risk_md = _risk_issues_md(e)
+        lines.append(f"| {badge}{risk} | [{name}](./{slug}) | {version} | {sites_str} | {risk_md} |")
 
+    lines.append("")
     return "\n".join(lines)
 
 
@@ -130,11 +137,9 @@ def render_discovered_index(entries: list[dict]) -> str:
     lines = [
         "# 发现的热门脚本",
         "",
-        f"> 共 **{len(entries)}** 个脚本　·　最后发现：{now}",
+        f"> 共 **{len(entries)}** 个脚本　·　{now}",
         "",
-        "SafeScripts 每天从 GitHub、GreasyFork、Gitee、GitLab、OpenUserJS 自动发现并分析。",
-        "重点收录对**项目经理、产品经理、程序员、架构师**有提效价值的脚本。",
-        "可将脚本地址加入 `target-repos.json` 持续跟踪。",
+        "每天从 GitHub、GreasyFork、Gitee、GitLab 自动发现。重点收录对**PM/PdM/Dev/Arch**有提效价值的脚本。",
         "",
     ]
 
@@ -142,63 +147,48 @@ def render_discovered_index(entries: list[dict]) -> str:
         lines += ["> 暂无发现的脚本，等待下次自动运行。", ""]
         return "\n".join(lines)
 
-    risk_order = ["CRITICAL", "HIGH", "MEDIUM", "LOW", "SAFE", "UNKNOWN"]
-    grouped: dict[str, list[dict]] = {r: [] for r in risk_order}
-    for e in entries:
-        grouped.setdefault(e.get("risk_level", "UNKNOWN"), []).append(e)
-
     platform_labels = {
-        "github": "GitHub", "greasyfork": "GreasyFork",
-        "gitee": "Gitee", "gitlab": "GitLab", "openuserjs": "OpenUserJS",
+        "github": "GH", "greasyfork": "GF",
+        "gitee": "Gitee", "gitlab": "GL", "openuserjs": "OUJS",
+    }
+    platform_urls_tpl = {
+        "github": "https://github.com/{repo}",
+        "gitee": "https://gitee.com/{repo}",
+        "gitlab": "https://gitlab.com/{repo}",
     }
 
-    for risk in risk_order:
-        group = grouped.get(risk, [])
-        if not group:
-            continue
+    lines += ["| 风险 | 脚本 | 来源 | 平台 | 风险说明 |",
+              "|:----:|:-----|:-----|:----:|:---------|"]
+
+    for e in _sort_entries_safe_first(entries):
+        slug = e.get("slug", "")
+        summary = e.get("summary", {})
+        name = summary.get("zh_name") or e.get("name", slug)
+        repo = e.get("source_repo", "") or e.get("repo", "")
+        platform = e.get("platform", "github")
+        plabel = platform_labels.get(platform, platform or "GH")
+
+        # 构建来源链接
+        if platform in platform_urls_tpl:
+            purl = platform_urls_tpl[platform].format(repo=repo)
+        else:
+            purl = e.get("source_url", "")
+        repo_short = repo.split("/")[-1] if "/" in repo else (repo or "")
+
+        # 安装量（GreasyFork）
+        install = e.get("install_count")
+        ic_suffix = ""
+        if install and install > 1000:
+            ic_suffix = f" {install//1000}k↓" if install < 1_000_000 else f" {install//1_000_000}M↓"
+
+        repo_link = f"[{repo_short}{ic_suffix}]({purl})" if repo_short and purl else (repo_short or "—")
+
+        risk = e.get("risk_level", "UNKNOWN")
         badge = RISK_BADGE.get(risk, "⬜")
-        lines += [f"## {badge} {risk}", ""]
-        lines += ["| 脚本 | 来源 | 平台 | 适用角色 | 安全说明 |",
-                  "|:-----|:-----|:----:|:--------:|:---------|"]
-        for e in group:
-            slug = e.get("slug", "")
-            summary = e.get("summary", {})
-            name = summary.get("zh_name") or e.get("name", slug)
-            repo = e.get("source_repo", "")
-            platform = e.get("platform", "github")
-            plabel = platform_labels.get(platform, platform or "GitHub")
-            platform_urls = {
-                "github": f"https://github.com/{repo}",
-                "gitee": f"https://gitee.com/{repo}",
-                "gitlab": f"https://gitlab.com/{repo}",
-                "greasyfork": e.get("source_url", ""),
-                "openuserjs": e.get("source_url", ""),
-            }
-            purl = platform_urls.get(platform, "")
-            repo_short = repo.split("/")[-1] if "/" in repo else repo
-            repo_link = f"[{repo_short}]({purl})" if repo_short and purl else (repo_short or "—")
+        risk_md = _risk_issues_md(e)
+        lines.append(f"| {badge}{risk} | [{name}](./{slug}) | {repo_link} | {plabel} | {risk_md} |")
 
-            # 安装量（GreasyFork/OpenUserJS）
-            install = e.get("install_count")
-            if install and install > 1000:
-                ic = f" {install//1000}k↓" if install < 1_000_000 else f" {install//1000000}M↓"
-                repo_link = repo_link + ic
-
-            # 适用角色
-            target_roles = e.get("target_roles", "") or ""
-            roles_short = target_roles[:15] + "…" if len(target_roles) > 15 else target_roles
-            if not roles_short:
-                # 从 AI reason 或类别提示推断
-                category_hint = e.get("category_hint", "")
-                if category_hint:
-                    roles_short = category_hint[:15]
-                else:
-                    roles_short = "通用"
-
-            risk_md = _risk_issues_md(e)
-            lines.append(f"| [{name}](./{slug}) | {repo_link} | {plabel} | {roles_short} | {risk_md} |")
-        lines.append("")
-
+    lines.append("")
     return "\n".join(lines)
 
 

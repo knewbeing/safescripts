@@ -258,9 +258,14 @@ def search_greasyfork(max_per_sort: int = 25) -> list[dict]:
         ("notion", "Notion 增强"),
         ("confluence", "Confluence 工具"),
         ("productivity", "生产力工具"),
+        ("gitlab", "GitLab 增强"),
+        ("code review", "代码审查工具"),
+        ("devops", "DevOps 工具"),
+        ("project management", "项目管理工具"),
+        ("api", "API 开发工具"),
     ]
     for q, label in pro_queries:
-        url = f"https://greasyfork.org/scripts.json?q={urllib.parse.quote(q)}&sort=total_installs&per_page=10"
+        url = f"https://greasyfork.org/scripts.json?q={urllib.parse.quote(q)}&sort=total_installs&per_page=15"
         scripts = _get_json(url)
         if not isinstance(scripts, list):
             time.sleep(1)
@@ -497,7 +502,7 @@ def build_candidate_list(
         result.append(item)
 
     print(f"  Total unique candidates: {len(result)}", flush=True)
-    return result[:120]  # 最多给 AI 120 个候选
+    return result[:200]  # 最多给 AI 200 个候选
 
 
 # ── 元数据解析 ─────────────────────────────────────────────────────────────────
@@ -650,13 +655,13 @@ def main() -> None:
     repo_items = search_userscript_repos(token)
 
     print("\n[GreasyFork]", flush=True)
-    gf_items = search_greasyfork(max_per_sort=25)
+    gf_items = search_greasyfork(max_per_sort=50)
 
     print("\n[Gitee]", flush=True)
-    gitee_items = search_gitee(max_repos=5)
+    gitee_items = search_gitee(max_repos=10)
 
     print("\n[GitLab]", flush=True)
-    gitlab_items = search_gitlab(max_repos=5)
+    gitlab_items = search_gitlab(max_repos=10)
 
     print("\n[OpenUserJS]", flush=True)
     openuserjs_items = search_openuserjs()
