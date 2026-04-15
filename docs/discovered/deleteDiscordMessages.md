@@ -4,7 +4,7 @@ title: Discord消息批量删除助手
 
 # Discord消息批量删除助手
 
-`消息管理`  `批量删除`  `Discord`  `聊天清理`  `用户脚本`
+`Discord`  `消息管理`  `批量删除`  `聊天清理`  `用户脚本`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/deleteDiscordMessages.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
@@ -12,7 +12,7 @@ title: Discord消息批量删除助手
 
 ## 功能介绍
 
-该脚本可以帮助用户批量删除Discord频道或私信中的所有消息。使用后，用户可以快速清理聊天记录，节省手动删除的时间。操作简单，适合需要大量删除消息的用户。
+该脚本可以帮助用户批量删除Discord频道或私信中的所有消息。安装后，用户可以快速清理聊天记录，节省手动删除的时间。操作简单，适合需要大量清理消息的Discord用户。
 
 ## 适用网站
 
@@ -22,16 +22,16 @@ title: Discord消息批量删除助手
 
 ## 使用方法
 
-1. 安装脚本后打开Discord网页版。
-2. 进入任意频道或私信页面。
+1. 安装脚本后打开Discord官网或频道页面。
+2. 进入需要清理消息的频道或私信窗口。
 3. 使用脚本提供的界面或按钮开始批量删除消息。
-4. 等待脚本自动完成消息清理。
+4. 等待脚本自动完成消息删除操作。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `none` | 不需要额外权限，脚本直接在网页中运行。 |
+| `none` | 脚本不需要额外权限，直接在网页上运行。 |
 
 ## 安全分析
 

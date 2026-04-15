@@ -14,25 +14,26 @@
   "require": [],
   "metadata_raw": "// @name  智友邦论坛美化\n// @version  1.0.2\n// @author  X.I.U\n// @description  精简多余内容、样式优化、宽屏显示\n// @icon  http://bbs.zhiyoo.net/favicon.ico\n// @match  *://bbs.zhiyoo.net/*\n// @license  GPL-3.0 License\n// @run-at  document-start\n// @namespace  https://greasyfork.org/scripts/412361\n// @supportURL  https://github.com/XIU2/UserScript\n// @homepageURL  https://github.com/XIU2/UserScript",
   "sha256": "7d4045401fda52d8034659af235c9253a3e9d24f215c459cb81c4d6716081ea3",
-  "discovered_at": "2026-04-15T19:07:11.796290+00:00",
-  "ai_reason": "针对智友邦论坛的美化脚本，解决论坛界面杂乱问题，持续维护，完整元数据，适合中文论坛用户。",
-  "is_new": true,
+  "discovered_at": "2026-04-15T19:11:59.634009+00:00",
+  "ai_reason": "针对智友邦论坛的界面美化，提升用户体验，持续维护，完整元数据，中文网站，实用性强。",
+  "is_new": false,
   "summary": {
     "applicable_sites": [
       "智友邦论坛"
     ],
-    "description": "本脚本用于美化智友邦论坛页面，去除多余内容，优化页面样式，并实现宽屏显示。它隐藏了侧边栏和底部区域，使主体内容更宽敞。帖子标题和图片显示效果也进行了调整，提升浏览体验。",
+    "description": "本脚本用于美化智友邦论坛页面，去除多余广告和侧边栏，优化页面样式，提升阅读体验。它支持宽屏显示，使内容区域更宽敞，帖子标题和图片显示更清晰。安装后自动生效，无需额外操作。",
     "permissions": [],
     "tags": [
       "网页美化",
       "论坛优化",
-      "页面简洁",
+      "页面精简",
       "宽屏显示",
-      "用户脚本"
+      "阅读体验提升"
     ],
     "usage": [
-      "安装脚本管理器（如Tampermonkey）",
-      "在智友邦论坛页面打开，脚本自动生效，无需额外操作"
+      "安装脚本后，访问智友邦论坛页面。",
+      "脚本自动隐藏广告和侧边栏，调整页面布局。",
+      "帖子标题和图片样式将自动优化，无需手动设置。"
     ],
     "zh_name": "智友邦论坛美化"
   }
