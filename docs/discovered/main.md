@@ -4,7 +4,7 @@ title: GitHub 中文化插件
 
 # GitHub 中文化插件
 
-`界面中文化`  `GitHub`  `翻译`  `用户脚本`  `开发者工具`
+`GitHub`  `中文化`  `界面翻译`  `用户脚本`  `开发者工具`  `翻译辅助`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/main.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
@@ -12,7 +12,7 @@ title: GitHub 中文化插件
 
 ## 功能介绍
 
-本脚本将 GitHub 及其相关子站点的部分菜单和内容翻译成中文，提升中文用户的使用体验。支持自动翻译简介和界面元素，部分内容实时更新。用户可通过菜单命令管理翻译功能。
+本脚本将 GitHub 及其相关子站点的部分菜单和内容翻译成中文，提升中文用户的使用体验。支持自动翻译简介和界面文本，部分内容实时更新。用户可通过菜单命令进行配置和通知管理。
 
 ## 适用网站
 
@@ -24,21 +24,21 @@ title: GitHub 中文化插件
 
 ## 使用方法
 
-1. 安装 Tampermonkey 或其他支持 UserScript 的扩展。
+1. 安装 Tampermonkey 或其他支持的用户脚本管理器。
 2. 导入并启用本脚本。
-3. 访问 GitHub 或相关子站点，界面自动显示中文。
-4. 通过浏览器扩展菜单管理翻译设置和功能。
+3. 访问 GitHub 或其相关子站点，界面自动显示中文。
+4. 通过脚本菜单命令调整翻译设置或查看通知。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `GM_xmlhttpRequest` | 允许脚本发送跨域网络请求，用于调用翻译接口。 |
-| `GM_getValue` | 允许脚本读取本地存储的设置和数据。 |
-| `GM_setValue` | 允许脚本保存设置和数据到本地存储。 |
-| `GM_registerMenuCommand` | 允许脚本注册自定义菜单命令，方便用户操作。 |
-| `GM_unregisterMenuCommand` | 允许脚本注销已注册的菜单命令。 |
-| `GM_notification` | 允许脚本显示桌面通知，提示翻译状态等信息。 |
+| `GM_xmlhttpRequest` | 用于发送跨域请求获取翻译内容。 |
+| `GM_getValue` | 用于读取脚本的本地配置和状态。 |
+| `GM_setValue` | 用于保存脚本的本地配置和状态。 |
+| `GM_registerMenuCommand` | 用于注册右键菜单命令，方便用户操作。 |
+| `GM_unregisterMenuCommand` | 用于注销右键菜单命令。 |
+| `GM_notification` | 用于显示桌面通知提醒用户。 |
 
 ## 安全分析
 
