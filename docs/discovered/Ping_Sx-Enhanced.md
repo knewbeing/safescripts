@@ -4,7 +4,7 @@ title: Ping.Sx增强
 
 # Ping.Sx增强
 
-`网页增强`  `复制工具`  `IP管理`  `Ping.Sx`  `浏览器脚本`  `用户脚本`
+`网页增强`  `IP复制`  `Ping.Sx`  `快捷操作`  `用户脚本`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/Ping_Sx-Enhanced.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
@@ -12,7 +12,7 @@ title: Ping.Sx增强
 
 ## 功能介绍
 
-本脚本为Ping.Sx网站提供增强功能，支持一键复制页面中的所有IP地址。点击IP链接时不会跳转，而是直接复制IP，避免误操作。右键点击页面右侧空白区域可快速返回页面顶部，提升浏览体验。
+该脚本为Ping.Sx网站提供增强功能，支持一键复制页面上的所有IP地址。点击IP链接时不会跳转，而是直接复制IP，提升操作便捷性。右键点击页面右侧空白区域可快速返回页面顶部。
 
 ## 适用网站
 
@@ -24,26 +24,26 @@ title: Ping.Sx增强
 
 1. 安装Tampermonkey或其他支持UserScript的扩展。
 2. 安装本脚本后访问Ping.Sx的ping、dig或check-port页面。
-3. 点击页面上的复制按钮即可一键复制所有IP地址。
-4. 点击IP链接时会直接复制IP而非跳转。
-5. 右键点击页面右侧空白区域可快速回到页面顶部。
+3. 点击页面上的IP地址即可复制该IP，而非跳转。
+4. 使用菜单切换复制的IP分隔格式（换行或逗号）。
+5. 右键点击页面右侧空白区域快速返回顶部。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `GM_setClipboard` | 允许脚本将文本复制到剪贴板，方便一键复制IP地址。 |
+| `GM_setClipboard` | 允许脚本将内容复制到剪贴板，方便一键复制IP地址。 |
 | `GM_registerMenuCommand` | 允许脚本在用户脚本菜单中注册自定义命令，方便切换复制格式等设置。 |
-| `GM_unregisterMenuCommand` | 允许脚本注销之前注册的菜单命令，保证菜单命令更新及时。 |
+| `GM_unregisterMenuCommand` | 允许脚本注销已注册的菜单命令，便于更新菜单项。 |
 | `GM_getValue` | 允许脚本读取本地存储的设置数据，保存用户偏好。 |
-| `GM_setValue` | 允许脚本保存设置数据到本地存储，保持用户偏好。 |
-| `window.onurlchange` | 允许监听浏览器地址变化，确保脚本在单页应用中正常工作。 |
+| `GM_setValue` | 允许脚本写入本地存储，保存用户的配置选项。 |
+| `window.onurlchange` | 允许脚本监听页面URL变化，适应单页应用的动态内容更新。 |
 
 ## 安全分析
 
 **风险等级**：🟢 SAFE　　**分析时间**：2026-04-15
 
-> 该脚本主要功能为页面元素操作和剪贴板复制，未涉及任何网络请求或用户隐私数据采集，代码无远程执行风险，权限申请合理且均有使用，未加载外部依赖，整体安全性良好。
+> 该脚本主要功能为页面内复制 IP 地址、清理链接及快捷回到顶部，未涉及任何网络请求或用户隐私数据采集，权限申请合理且均有使用，代码无远程执行风险，整体安全性高。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -53,39 +53,39 @@ title: Ping.Sx增强
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本中未发现任何网络请求相关代码，如 GM_xmlhttpRequest、fetch、XMLHttpRequest 或 navigator.sendBeacon，且无数据上报行为。  
-> 位置：全脚本  
+> 脚本中未发现任何网络请求行为，未向第三方服务器发送数据。  
+> 位置：整体代码  
 > 建议：无需修改，保持无外传行为。
 
 **⛔ CRITICAL** — 隐私采集  
-> 脚本未读取 document.cookie、localStorage、sessionStorage，也未监听键盘输入事件，未访问表单字段值，且无浏览器指纹相关 API 使用。  
-> 位置：全脚本  
-> 建议：无需修改，保持无隐私采集行为。
+> 脚本未读取 document.cookie、localStorage、sessionStorage，也未监听键盘输入事件，未访问浏览器指纹相关 API。  
+> 位置：整体代码  
+> 建议：无需修改，保持隐私安全。
 
 **🔴 HIGH** — 远程代码执行  
 > 脚本未使用 eval、new Function、setTimeout(string)、innerHTML 执行远程内容，也未通过 @require 或动态 script 标签加载远程 JS。  
-> 位置：全脚本  
-> 建议：无需修改，避免远程代码执行风险。
+> 位置：整体代码  
+> 建议：无远程代码执行风险，保持代码安全。
 
 **🔴 HIGH** — 权限滥用  
 > 脚本申请了 GM_setClipboard、GM_registerMenuCommand、GM_unregisterMenuCommand、GM_getValue、GM_setValue、window.onurlchange 权限，实际代码中均有使用，权限申请合理。  
-> 位置：元数据与代码  
-> 建议：保持权限申请与使用一致，避免多余权限。
+> 位置：元数据与代码权限使用  
+> 建议：权限申请与使用匹配，无滥用。
 
 **🟠 MEDIUM** — 敏感 API 调用  
 > 脚本未调用 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API（除 GM_setClipboard 外）等敏感 API。  
-> 位置：全脚本  
-> 建议：无需修改，保持敏感 API 使用最小化。
+> 位置：整体代码  
+> 建议：无敏感 API 滥用风险。
 
 **🟠 MEDIUM** — 代码混淆  
-> 脚本代码结构清晰，无明显混淆、base64 解码或字符串拼接执行特征。  
-> 位置：全脚本  
-> 建议：保持代码清晰，避免混淆。
+> 代码结构清晰，无明显混淆、base64 解码执行或字符串拼接执行特征。  
+> 位置：整体代码  
+> 建议：保持代码清晰，便于安全审计。
 
 **🟡 LOW** — 外部依赖  
-> 脚本未通过 @require 加载任何外部依赖库，所有代码均为内嵌，避免供应链风险。  
+> 脚本未通过 @require 加载任何外部依赖库。  
 > 位置：元数据  
-> 建议：如需引入外部库，建议使用可信 CDN 并固定版本。
+> 建议：无外部依赖风险。
 
 ---
 

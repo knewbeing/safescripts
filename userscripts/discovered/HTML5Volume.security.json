@@ -15,7 +15,7 @@
     {
       "description": "脚本未读取 document.cookie、localStorage（除非用于存储音量设置）、sessionStorage，也未监听键盘输入事件，未访问浏览器指纹相关API。",
       "location": "全脚本",
-      "recommendation": "确认 localStorage 用于存储音量设置，且无敏感信息采集。",
+      "recommendation": "无需操作。",
       "severity": "CRITICAL",
       "type": "隐私采集"
     },
@@ -27,14 +27,14 @@
       "type": "远程代码执行"
     },
     {
-      "description": "脚本申请了 GM_registerMenuCommand、GM_unregisterMenuCommand、GM_openInTab、GM_getValue、GM_setValue、GM_notification 权限，且代码中均有使用，未发现权限滥用。",
+      "description": "脚本申请了 GM_registerMenuCommand、GM_unregisterMenuCommand、GM_openInTab、GM_getValue、GM_setValue、GM_notification 权限，且代码中均有合理使用，未发现权限滥用。",
       "location": "元数据与代码",
       "recommendation": "无需操作。",
       "severity": "HIGH",
       "type": "权限滥用"
     },
     {
-      "description": "脚本未调用 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等敏感 API。",
+      "description": "脚本未调用敏感 API，如 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等。",
       "location": "全脚本",
       "recommendation": "无需操作。",
       "severity": "MEDIUM",
@@ -57,16 +57,13 @@
   ],
   "privacy_collection": {
     "details": [
-      "使用 localStorage 存储当前音量设置",
-      "未监听键盘输入事件",
-      "未读取 document.cookie 和 sessionStorage",
-      "未访问浏览器指纹相关 API"
+      "使用 localStorage 存储当前音量值（html5_xiu_currentVolume）用于功能实现，不涉及敏感隐私数据。"
     ],
     "detected": true
   },
   "risk_level": "LOW",
   "script_name": "HTML5 Video Audio Default Volume",
-  "summary": "该脚本主要功能为调整 HTML5 视频音频默认音量，并支持各网站分别记忆音量。未发现数据外传、隐私敏感信息采集、远程代码执行及权限滥用等安全风险。使用 localStorage 存储音量设置属于正常功能需求，风险较低。整体代码清晰，无混淆或恶意行为。",
-  "analyzed_at": "2026-04-15T19:26:10.478295+00:00",
+  "summary": "该脚本主要功能为调整 HTML5 视频音频默认音量，支持各网站分别记忆音量设置。代码中未发现任何数据外传、隐私敏感信息采集、远程代码执行或权限滥用风险。仅使用 localStorage 存储音量相关数据，属于正常功能需求。整体安全性较高，风险等级为低。",
+  "analyzed_at": "2026-04-15T19:32:08.541113+00:00",
   "slug": "HTML5Volume"
 }

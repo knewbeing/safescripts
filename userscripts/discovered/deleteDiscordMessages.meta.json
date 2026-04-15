@@ -18,19 +18,19 @@
   "require": [],
   "metadata_raw": "// @name  Undiscord\n// @description  Delete all messages in a Discord channel or DM (Bulk deletion)\n// @version  5.2.6\n// @author  victornpb\n// @homepageURL  https://github.com/victornpb/undiscord\n// @supportURL  https://github.com/victornpb/undiscord/discussions\n// @match  https://*.discord.com/app\n// @match  https://*.discord.com/channels/*\n// @match  https://*.discord.com/login\n// @license  MIT\n// @namespace  https://github.com/victornpb/deleteDiscordMessages\n// @icon  https://victornpb.github.io/undiscord/images/icon128.png\n// @downloadURL  https://raw.githubusercontent.com/victornpb/undiscord/master/deleteDiscordMessages.user.js\n// @contributionURL  https://www.buymeacoffee.com/vitim\n// @grant  none\n// @attribution  Original project (https://github.com/victornpb/undiscord)",
   "sha256": "43ea6bddffb269d8094cbb97759f6e8a4e154f7e673fea8c864c057b5f83d1b4",
-  "discovered_at": "2026-04-15T19:24:14.885748+00:00",
-  "ai_reason": "中高 Stars（6509），持续维护，解决 Discord 批量删除消息痛点，功能完整，适合 Discord 用户。",
+  "discovered_at": "2026-04-15T19:30:20.806044+00:00",
+  "ai_reason": "批量删除 Discord 消息，解决用户痛点，功能明确，维护活跃，流行度较高。",
   "is_new": false,
   "summary": {
     "applicable_sites": [
       "Discord官网",
       "Discord频道页面",
-      "Discord登录页"
+      "Discord登录页面"
     ],
-    "description": "该脚本可以帮助用户批量删除Discord频道或私信中的所有消息。安装后，用户可以快速清理聊天记录，节省手动删除的时间。适用于需要管理大量消息的Discord用户。",
+    "description": "该脚本可以帮助用户批量删除Discord频道或私信中的所有消息。使用后，用户可以快速清理聊天记录，节省手动删除的时间。适用于Discord网页版，操作简单方便。",
     "permissions": [
       {
-        "explanation": "脚本不需要额外权限即可运行。",
+        "explanation": "脚本不需要额外权限，直接在网页上运行。",
         "grant": "none"
       }
     ],
@@ -42,10 +42,10 @@
       "用户脚本"
     ],
     "usage": [
-      "安装脚本后，打开Discord网页版并登录账号。",
-      "进入需要清理消息的频道或私信窗口。",
-      "使用脚本提供的界面或按钮执行批量删除操作。",
-      "等待脚本自动删除频道或私信中的所有消息。"
+      "安装Tampermonkey或类似的用户脚本管理器。",
+      "导入并启用该脚本。",
+      "打开Discord网页版并进入目标频道或私信。",
+      "使用脚本提供的界面批量删除消息。"
     ],
     "zh_name": "Discord消息批量删除助手"
   }

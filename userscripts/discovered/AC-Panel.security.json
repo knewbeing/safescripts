@@ -11,7 +11,7 @@
   },
   "risk_level": "SAFE",
   "script_name": "AC-baidu： 啊猫-操作面板",
-  "summary": "该脚本仅在指定页面插入一个简单的Vue组件面板，未发现任何网络请求、用户数据采集、远程代码执行或权限滥用行为。@require加载的VueEntry.js来源于GreasyFork官方更新地址，可信且版本固定。整体代码清晰，无混淆或敏感API调用，安全性良好。",
-  "analyzed_at": "2026-04-15T19:25:54.387316+00:00",
+  "summary": "该脚本仅在指定页面插入一个简单的Vue组件面板，未发现任何网络请求、用户数据采集、远程代码执行或权限滥用行为。@require加载的VueEntry.js来源于GreasyFork官方更新地址，可信且版本固定。整体代码清晰无混淆，未调用敏感API，安全性高。",
+  "analyzed_at": "2026-04-15T19:31:52.778709+00:00",
   "slug": "AC-Panel"
 }

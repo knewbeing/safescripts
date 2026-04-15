@@ -23,8 +23,8 @@
   "require": [],
   "metadata_raw": "// @name  Ping.Sx enhancement\n// @name:zh-CN  Ping.Sx 增强\n// @name:zh-TW  Ping.Sx 增強\n// @version  1.0.3\n// @author  X.I.U\n// @description  Copy all IPs with one click, clean IP links (click Copy instead of Jump), and quickly go back to the top (blank space on both sides of the right click).\n// @description:zh-CN  一键复制所有 IP、清理 IP 链接（点击复制而不是跳转）、快捷回到顶部（右键两侧空白处）\n// @description:zh-TW  一鍵複製所有 IP、清理 IP 鏈接（點擊複製而不是跳轉）、快捷回到頂部（右鍵兩側空白處）\n// @match  https://ping.sx/ping*\n// @match  https://ping.sx/dig*\n// @match  https://ping.sx/check-port*\n// @icon  data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAD7klEQVR4nO3WWYxfcxQH8M9//LWzdJuWaVMaI6WKKtKOfacVGuHFgy3E8iARDyKWBBEJ8SC2Jy9EeKCSqpoiBJF22k6JbdBqqqilqe4z05ol0xkP5/zz/6dPY3iQuN/kl3vv755z7lm+5/wuBQoUKFCgQIECBQoU+L+iNAb5OpRzHY5xGI8D2PMPfKlDK+qxNe2NyqHa+4k4EkdgWq6paM41GZNSrilXQ16/wE3YN8YAjsKKtH0NNo5GqVxzP6Ia9QHsQmM63IAJuSZmIBPS8UZMwfcYGKPzMA/z8Sl+G61SbQDzcbkoXxmnp7GVeX8+hrEM36bOqamzMeWm4rq0tRefYD36MRsXCJqMYAPeR3faOltQshO9KXsW9uMtQdMLU7+E7/BRbTBPpeEe/Jn33ViKP/J5BOsEzeCZ3HtEcPcVDGIH+kRPLEnZJ1J2qOb6XCarPoM5iGtxI7annTszsMcO0R9M3xC0WJ0vlmYWO/N5G+7Go5nJ3ThF0GetoM0loko9mdk2XIr7RR9VMnxr7j+QtjahBcfjd+zES5m4Llym2qdn1ujfJ2g+WJcvW3EifsFDeE2VJi/jedFg/Wl8D47DXEG5DZmR/YIqD4vp9HQGPCODPg1Xir4ZTCf6cn+6oODN6fQ9+DCTOF3QsqLfVPM9cEsKLhMlnSSoMoBFKXNDyqwQI+/2fH4dh+Xe9fhaUKE3ZZrxdn5wdcr/kLovpu1n87lX9M4w7sh3zVie+h2pvznl36vLaM9J4bWCY7NxAn4WzQLn1sgM47x8XpPGFuf9ItEbE3Bx6l2Bz3F1BtVVo9sk6HEQD+KF9OmqTGab6KMvU/82fJX6H5cFBxeKxl2fL9oy8g9EMzXjDEGhdYLXCzNjnWJCvSro0iHoNSLOhv5MSivuzeQsSdnPBP/niqq8gTm4S/TMSZn5IRyT+q0Z3G6sqRMTZSfaVQ+PyWm8PbM9TZwL7VmRlgysXZSzC4+nzOJ8/6RoyHWCIt1Zne25144tgt+bxKjcjW/wJn7MRHSKiu5L/R2pvxIbS2KEjUvHh7Js48Xo6s3KlEXjDefqFw03oNpIpdSbkjK7BC1KqoddT8rX57s+1V+RQdWDsCG/Wdkr5/cGD9UviTlbOUxmZ4bGZRa3pbMV1Gd1urAgHdibH+zI/Rli/M0SFW0SvyZb8I6g1r+GsuBfC37CTNFYU9OZNtHg9aIfmvCrKOVMUeZ5YhwuF9meg2MzkJPFaF4lqNdolD9po0UJF4msNIlG6UiHN4vZXemBVeK3oXK4VUZnhQaz8K74KWsRFDo6ZRekva25/nOoE9T6u7/nBQoUKFCgQIECBQoUKDBm/AXKhRvkgr+Z+wAAAABJRU5ErkJggg==\n// @grant  GM_setClipboard\n// @grant  GM_registerMenuCommand\n// @grant  GM_unregisterMenuCommand\n// @grant  GM_getValue\n// @grant  GM_setValue\n// @grant  window.onurlchange\n// @license  GPL-3.0 License\n// @run-at  document-end\n// @namespace  https://github.com/XIU2/UserScript\n// @supportURL  https://github.com/XIU2/UserScript",
   "sha256": "f6bd72023d95ba5ac9037d81405973aebc0ee2e2c16b025c95dce17c4a722746",
-  "discovered_at": "2026-04-15T19:23:58.707039+00:00",
-  "ai_reason": "高 Stars（9553），持续维护，针对 Ping.sx 网站增强功能，中文描述，解决特定用户痛点。",
+  "discovered_at": "2026-04-15T19:30:05.675475+00:00",
+  "ai_reason": "针对 ping.sx 网站的增强脚本，支持中文，功能实用，持续维护。",
   "is_new": false,
   "summary": {
     "applicable_sites": [
@@ -32,10 +32,10 @@
       "Ping.Sx网站的dig页面",
       "Ping.Sx网站的check-port页面"
     ],
-    "description": "本脚本为Ping.Sx网站提供增强功能，支持一键复制页面中的所有IP地址。点击IP链接时不会跳转，而是直接复制IP，避免误操作。右键点击页面右侧空白区域可快速返回页面顶部，提升浏览体验。",
+    "description": "该脚本为Ping.Sx网站提供增强功能，支持一键复制页面上的所有IP地址。点击IP链接时不会跳转，而是直接复制IP，提升操作便捷性。右键点击页面右侧空白区域可快速返回页面顶部。",
     "permissions": [
       {
-        "explanation": "允许脚本将文本复制到剪贴板，方便一键复制IP地址。",
+        "explanation": "允许脚本将内容复制到剪贴板，方便一键复制IP地址。",
         "grant": "GM_setClipboard"
       },
       {
@@ -43,7 +43,7 @@
         "grant": "GM_registerMenuCommand"
       },
       {
-        "explanation": "允许脚本注销之前注册的菜单命令，保证菜单命令更新及时。",
+        "explanation": "允许脚本注销已注册的菜单命令，便于更新菜单项。",
         "grant": "GM_unregisterMenuCommand"
       },
       {
@@ -51,28 +51,27 @@
         "grant": "GM_getValue"
       },
       {
-        "explanation": "允许脚本保存设置数据到本地存储，保持用户偏好。",
+        "explanation": "允许脚本写入本地存储，保存用户的配置选项。",
         "grant": "GM_setValue"
       },
       {
-        "explanation": "允许监听浏览器地址变化，确保脚本在单页应用中正常工作。",
+        "explanation": "允许脚本监听页面URL变化，适应单页应用的动态内容更新。",
         "grant": "window.onurlchange"
       }
     ],
     "tags": [
       "网页增强",
-      "复制工具",
-      "IP管理",
+      "IP复制",
       "Ping.Sx",
-      "浏览器脚本",
+      "快捷操作",
       "用户脚本"
     ],
     "usage": [
       "安装Tampermonkey或其他支持UserScript的扩展。",
       "安装本脚本后访问Ping.Sx的ping、dig或check-port页面。",
-      "点击页面上的复制按钮即可一键复制所有IP地址。",
-      "点击IP链接时会直接复制IP而非跳转。",
-      "右键点击页面右侧空白区域可快速回到页面顶部。"
+      "点击页面上的IP地址即可复制该IP，而非跳转。",
+      "使用菜单切换复制的IP分隔格式（换行或逗号）。",
+      "右键点击页面右侧空白区域快速返回顶部。"
     ],
     "zh_name": "Ping.Sx增强"
   }
