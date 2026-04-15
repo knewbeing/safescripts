@@ -1,0 +1,29 @@
+/* Tampermonkey 安装按钮 */
+.tm-install-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: var(--vp-c-brand-1);
+  color: var(--vp-c-white) !important;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  text-decoration: none !important;
+  transition: background 0.2s, transform 0.1s;
+  margin: 12px 0;
+}
+
+.tm-install-btn:hover {
+  background: var(--vp-c-brand-2);
+  transform: translateY(-1px);
+}
+
+.tm-install-btn:active {
+  transform: translateY(0);
+}
+
+/* 风险等级徽章颜色增强 */
+.vp-doc table td:first-child code {
+  font-size: 13px;
+}

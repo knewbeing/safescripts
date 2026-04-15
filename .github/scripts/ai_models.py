@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import logging
 import os
 from pathlib import Path
 from typing import Any
@@ -12,11 +11,8 @@ import yaml
 
 from openai import OpenAI
 
-logger = logging.getLogger(__name__)
-
 MODELS_ENDPOINT = "https://models.github.ai/inference"
 API_VERSION = "2022-11-28"
-PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts"
 
 
 def resolve_models_token() -> tuple[str, str]:
@@ -41,78 +37,11 @@ def create_models_client() -> tuple[OpenAI, str]:
     return client, source
 
 
-def request_json(
-    *,
-    client: OpenAI,
-    model: str,
-    system_prompt: str,
-    user_prompt: str,
-    temperature: float = 0.1,
-    max_tokens: int = 1000,
-) -> dict[str, Any]:
-    response = client.chat.completions.create(
-        model=model,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
-        temperature=temperature,
-        max_tokens=max_tokens,
-        response_format={"type": "json_object"},
-    )
-    content = response.choices[0].message.content or "{}"
-    return json.loads(content)
-
-
-def request_text(
-    *,
-    client: OpenAI,
-    model: str,
-    system_prompt: str,
-    user_prompt: str,
-    temperature: float = 0.3,
-    max_tokens: int = 4000,
-) -> str:
-    response = client.chat.completions.create(
-        model=model,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
-        temperature=temperature,
-        max_tokens=max_tokens,
-    )
-    return (response.choices[0].message.content or "").strip()
-
-
-def log_models_error(context: str, exc: Exception) -> None:
-    status_code = getattr(exc, "status_code", None)
-    response = getattr(exc, "response", None)
-    if status_code is None and response is not None:
-        status_code = getattr(response, "status_code", None)
-
-    if status_code is not None:
-        logger.error("%s failed with HTTP %s: %s", context, status_code, exc)
-    else:
-        logger.error("%s failed: %s", context, exc)
-
-
-# ---------------------------------------------------------------------------
-# Prompt YAML loader
-# ---------------------------------------------------------------------------
-
 def load_prompt(
     prompt_path: str | Path,
     variables: dict[str, str] | None = None,
 ) -> dict[str, Any]:
-    """Load a ``.prompt.yml`` file and return structured prompt data.
-
-    Returns a dict with keys:
-      * ``messages``        – list[dict] ready for OpenAI chat completions
-      * ``temperature``     – float
-      * ``max_tokens``      – int
-      * ``response_format`` – dict | None  (OpenAI-compatible)
-    """
+    """Load a ``.prompt.yml`` file and return structured prompt data."""
     path = Path(prompt_path)
     data = yaml.safe_load(path.read_text(encoding="utf-8"))
 

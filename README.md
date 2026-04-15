@@ -1,146 +1,118 @@
-# repos-ai-tools-maintain
+# SafeScripts
 
-Automatically discovers, evaluates, and installs **GitHub Copilot tools** (instructions, agents, skills) by letting AI search GitHub for promising tool repositories from a prompt built from the target repo context — then opens a pull request for human review.
-
----
-
-## How it works
-
-```
-Prepare target repo context
-        │
-        ▼
-Python + GitHub Models ranks promising tool repositories
-        │
-        ▼
-Scan AI-selected candidate repos for Copilot tools
-(.github/instructions/, .github/agents/, .github/prompts/)
-        │
-        ▼
-AI relevance analysis via Python + GitHub Models (GPT-4.1-mini)
-"Are these tools relevant to <target-repo>?"
-        │
-        ▼
-Install compatible tools into the target repo working copy
-        │
-        ▼
-Python + GitHub Models classify & annotate tools (GPT-4.1)
-→ 按功能分类 + 为每个工具生成中文注释元数据
-        │
-        ▼
-apply_annotations.py
-→ 写入 <!-- 中文注释头 --> + 生成 .github/TOOLS_INDEX.md
-        │
-        ▼
-Python + GitHub Models generate .github/COPILOT_TOOLS.md (categorised overview + usage guide)
-        │
-        ▼
-Commit → push branch → open Pull Request in target repo
-```
-
-The workflow runs **daily at 02:00 UTC** and processes **all** repositories in `target-repos.json` (matrix parallel). For each target repo, it first exports repo context, then uses Python scripts + GitHub Models to rank promising AI tool repositories before scanning their Copilot assets. You can also trigger it manually from the **Actions** tab.
+Tampermonkey 脚本安全管理站 —— 自动同步、AI 安全分析、一键安装。
 
 ---
 
-## Quick setup
+## 功能概览
 
-### 1. Add your repositories
+| 功能 | 说明 |
+|------|------|
+| **自动同步** | 读取 `target-repos.json` 中的脚本地址，每天自动拉取最新版本 |
+| **AI 摘要** | 调用 GitHub Models API 生成中文功能介绍、使用说明和权限解释 |
+| **安全分析** | 7 维度安全检查（数据外传、隐私采集、远程执行等），按风险等级分类展示 |
+| **热门发现** | 每天从 GitHub 搜索流行 Tampermonkey 脚本，AI 筛选后展示在独立页面 |
+| **一键安装** | 每个脚本页面提供直接安装到 Tampermonkey 的链接 |
+| **自动部署** | 所有步骤完成后自动构建 VitePress 并部署到 GitHub Pages |
 
-Edit `target-repos.json`:
+---
+
+## 项目结构
+
+```
+.github/
+  workflows/
+    userscripts-pipeline.yml   ← 主流水线（每天 02:00 UTC）
+  scripts/
+    ai_models.py               ← GitHub Models API 共享客户端
+  prompts/
+    summarize-userscript.prompt.yml        ← 脚本摘要提示词
+    analyze-userscript-security.prompt.yml ← 安全分析提示词
+    discover-userscripts.prompt.yml        ← 热门发现筛选提示词
+
+scripts/
+  fetch_managed_scripts.py     ← 拉取托管脚本
+  summarize_userscript.py      ← AI 生成中文摘要 + 文档页
+  analyze_userscript_security.py ← 安全分析 + 更新文档
+  discover_popular_scripts.py  ← 发现热门脚本
+  generate_docs_index.py       ← 生成总览索引页
+
+userscripts/
+  managed/    ← 托管脚本本体（*.user.js）+ 元数据（*.meta.json）+ 安全报告（*.security.json）
+  discovered/ ← 自动发现的脚本
+
+docs/         ← VitePress 文档站点（自动生成）
+  managed/    ← 托管脚本文档页
+  discovered/ ← 发现脚本文档页
+
+target-repos.json   ← 配置文件
+```
+
+---
+
+## 快速开始
+
+### 1. 添加要跟踪的脚本
+
+编辑 `target-repos.json`：
 
 ```json
 {
-  "repos": [
-    { "repo": "your-org/your-repo", "secret_name": "YOUR_ORG_GITHUB_TOKEN" },
-    { "repo": "another-org/another-repo", "secret_name": "ANOTHER_ORG_GITHUB_TOKEN" }
-  ],
-  "settings": {
-    "max_trending_repos": 10,
-    "branch_prefix": "copilot-tools"
-  }
+  "userscripts": [
+    "https://raw.githubusercontent.com/owner/repo/main/script.user.js",
+    "https://github.com/owner/repo/blob/main/script.user.js"
+  ]
 }
 ```
 
-`secret_name` is optional. If omitted, the workflow derives `<OWNER>_GITHUB_TOKEN` automatically.
+支持 GitHub Raw 地址、GitHub Blob 地址（自动转换）。
 
-### 2. Create required secrets
+### 2. 配置 GitHub Secrets
 
-Create required secrets:
+| 密钥名 | 说明 |
+|--------|------|
+| `COPILOT_TOKEN` | 拥有 GitHub Models API 访问权限的 PAT |
 
-- `TARGET_REPO_TOKEN`: fallback PAT (`repo` scope) for cloning, pushing, and creating PRs in target repos
-- Optional per-owner PATs: e.g. `KNEWBEING_GITHUB_TOKEN`, `CNJIMBO_GITHUB_TOKEN` (used when `secret_name` or owner-derived key matches)
+> `GITHUB_TOKEN` 由 Actions 自动提供，无需手动配置。
 
-> The workflow uses Python scripts + GitHub Models API for model calls.
-> `COPILOT_TOKEN` or `MODELS_TOKEN` is preferred; otherwise it falls back to `GITHUB_TOKEN` with `models: read`.
+### 3. 配置 GitHub Pages
 
-### 3. Let the workflow run
+在仓库 **Settings → Pages** 中将 Source 设为 **GitHub Actions**。
 
-It fires automatically every morning. To test immediately:
+### 4. 运行流水线
 
-- Go to **Actions → Daily Copilot Tools Discovery → Run workflow**
-- Optionally enter a `repo_override` (e.g. `my-org/my-repo`) to target a specific repo this run.
-
----
-
-## Tool types
-
-| Type | Common locations | Description |
-|------|------------------|-------------|
-| **Instruction** | `.github/instructions/`, `.github/copilot-instructions.md` | Language / framework-specific guidance files |
-| **Agent** | `.github/agents/` | Custom Copilot agent personas and workflows |
-| **Skill / Prompt** | `.github/prompts/` | Reusable prompt templates invoked as `/skill-name` |
+通过 **Actions → UserScripts Pipeline → Run workflow** 手动触发，
+或等待每天 02:00 UTC 自动执行。
 
 ---
 
-## What the PR contains
-
-Each automated PR includes:
-
-- Newly discovered tool files in the directories above
-- `.github/COPILOT_TOOLS.md` — AI-generated categorised overview with usage instructions
-- A PR description listing every tool, its source repo, and the discovery rationale
-
----
-
-## Project structure
+## 流水线步骤
 
 ```
-target-repos.json                 # List of target repositories + settings
-.github/
-  workflows/
-    daily-copilot-tools.yml       # GitHub Actions workflow (daily cron)
-  prompts/
-  scripts/
-    ai_models.py                  # Shared GitHub Models client helper
-    search_tool_repos.py          # Step 2: rank candidate source repos with GitHub Models
-    analyze_relevance.py          # Step 4: select relevant tools with GitHub Models
-    annotate_installed_tools.py   # Step 6: generate Chinese annotations with GitHub Models
-    generate_tools_readme.py      # Step 8: generate COPILOT_TOOLS.md with GitHub Models
-    prepare_target_repo.py        # Step 1: export target repo context
-    scan_ai_candidates.py         # Step 3: scan AI-selected candidate repos
-    install_selected.py           # Step 5: install selected/default tools
-    apply_annotations.py          # Step 7: write Chinese annotations + TOOLS_INDEX.md
-    commit_pr.py                  # Step 9: commit, push, PR, auto-merge
-    fetch_trending.py             # Rule-based fallback discovery + tool scanner
-    install_tools.py              # File download & installation
-    github_api.py                 # GitHub REST API wrapper
-    requirements.txt              # Python dependencies
+① 同步托管脚本（fetch_managed_scripts.py）
+       ↓
+② AI 生成摘要（summarize_userscript.py）
+       ↓
+③ 安全分析 - 托管脚本（analyze_userscript_security.py MODE=managed）
+       ↓
+④ 发现热门脚本（discover_popular_scripts.py）
+       ↓
+⑤ 安全分析 - 发现脚本（analyze_userscript_security.py MODE=discovered）
+       ↓
+⑥ 构建 VitePress（pnpm docs:build）
+       ↓
+⑦ 部署到 GitHub Pages
 ```
 
 ---
 
-## Secrets reference
+## 安全风险等级
 
-| Secret | Required | Purpose |
-|--------|----------|---------|
-| `TARGET_REPO_TOKEN` | **Yes** | PAT (`repo` scope) for cloning, pushing, and creating PRs in target repos |
-| `<OWNER>_GITHUB_TOKEN` or configured `secret_name` | Optional | Per-owner/per-repo PAT override; higher priority than `TARGET_REPO_TOKEN` |
-| `COPILOT_TOKEN` | Optional | Preferred PAT for GitHub Models API calls from Python scripts |
-| `MODELS_TOKEN` | Optional | Legacy-compatible fallback PAT for GitHub Models API calls |
-| `GITHUB_TOKEN` | Auto | Built-in token for read-only GitHub API calls, and fallback GitHub Models auth when `models: read` is available |
+| 等级 | 图标 | 含义 |
+|------|------|------|
+| SAFE | 🟢 | 未检测到任何风险 |
+| LOW | 🟡 | 轻微问题，了解后可安全使用 |
+| MEDIUM | 🟠 | 值得关注，建议审查后使用 |
+| HIGH | 🔴 | 重大风险，谨慎使用 |
+| CRITICAL | ⛔ | 严重安全问题，不建议安装 |
 
----
-
-## License
-
-MIT

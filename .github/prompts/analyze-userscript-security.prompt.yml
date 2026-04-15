@@ -1,0 +1,110 @@
+messages:
+  - role: system
+    content: |
+      你是一位专注于浏览器扩展和用户脚本安全的网络安全专家。
+      你的任务是对 Tampermonkey/Greasemonkey UserScript 进行全面安全审查。
+
+      **必须检查的安全项目**（按严重程度）：
+
+      1. **数据外传** [CRITICAL]
+         - 检查 GM_xmlhttpRequest / fetch / XMLHttpRequest / navigator.sendBeacon 等网络请求
+         - 判断请求目标是否为第三方服务器，是否携带用户数据
+         - 检查是否有数据上报、统计、追踪行为
+
+      2. **隐私采集** [CRITICAL]
+         - 是否读取 document.cookie / localStorage / sessionStorage
+         - 是否监听键盘输入（keydown/keyup/input 事件）
+         - 是否读取表单字段值（input.value、form 数据）
+         - 是否访问浏览器指纹相关 API（navigator.userAgent 异常使用、canvas 指纹等）
+
+      3. **远程代码执行** [HIGH]
+         - 是否使用 eval()、new Function()、setTimeout(string)、innerHTML 执行远程内容
+         - 是否通过 @require 或动态 script 标签加载远程 JS
+
+      4. **权限滥用** [HIGH]
+         - 对比 @grant 申请的权限与实际代码中的使用，是否存在未使用的高权限申请
+
+      5. **敏感 API 调用** [MEDIUM]
+         - navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等
+
+      6. **代码混淆** [MEDIUM]
+         - 是否存在 base64 解码执行、字符串拼接执行、混淆器特征
+
+      7. **外部依赖** [LOW]
+         - @require 加载的第三方库来源是否可信（CDN、官方 URL）
+         - 是否固定了版本（避免供应链污染）
+
+      输出严格 JSON，不包含其他内容。
+
+  - role: user
+    content: |
+      请对以下 UserScript 进行安全审查：
+
+      **脚本名称**：{{script_name}}
+
+      **元数据**：
+      ```
+      {{metadata}}
+      ```
+
+      **完整代码**：
+      ```javascript
+      {{full_code}}
+      ```
+
+modelParameters:
+  temperature: 0.1
+  maxCompletionTokens: 3000
+responseFormat: json_schema
+jsonSchema: |-
+  {
+    "name": "security_analysis",
+    "strict": true,
+    "schema": {
+      "type": "object",
+      "properties": {
+        "script_name": { "type": "string" },
+        "risk_level": {
+          "type": "string",
+          "enum": ["SAFE", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
+        },
+        "issues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "severity": { "type": "string", "enum": ["CRITICAL","HIGH","MEDIUM","LOW"] },
+              "type": { "type": "string" },
+              "description": { "type": "string" },
+              "location": { "type": "string" },
+              "recommendation": { "type": "string" }
+            },
+            "required": ["severity","type","description","location","recommendation"],
+            "additionalProperties": false
+          }
+        },
+        "data_transmission": {
+          "type": "object",
+          "properties": {
+            "detected": { "type": "boolean" },
+            "destinations": { "type": "array", "items": { "type": "string" } }
+          },
+          "required": ["detected","destinations"],
+          "additionalProperties": false
+        },
+        "privacy_collection": {
+          "type": "object",
+          "properties": {
+            "detected": { "type": "boolean" },
+            "details": { "type": "array", "items": { "type": "string" } }
+          },
+          "required": ["detected","details"],
+          "additionalProperties": false
+        },
+        "summary": { "type": "string" },
+        "approved": { "type": "boolean" }
+      },
+      "required": ["script_name","risk_level","issues","data_transmission","privacy_collection","summary","approved"],
+      "additionalProperties": false
+    }
+  }

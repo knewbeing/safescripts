@@ -1,0 +1,15 @@
+{
+  "name": "safescripts-docs",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Tampermonkey 脚本安全发现、分析与管理站点",
+  "scripts": {
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
+  },
+  "devDependencies": {
+    "vitepress": "^1.6.3"
+  },
+  "packageManager": "pnpm@10.33.0"
+}
