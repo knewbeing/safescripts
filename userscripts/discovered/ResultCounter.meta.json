@@ -1,5 +1,6 @@
 {
   "slug": "ResultCounter",
+  "platform": "github",
   "source_url": "https://raw.githubusercontent.com/langren1353/GM_script/75950f3060eab08874180f6ab428465e2b63afb4/ResultCounter.user.js",
   "source_repo": "langren1353/GM_script",
   "raw_url": "https://raw.githubusercontent.com/langren1353/GM_script/75950f3060eab08874180f6ab428465e2b63afb4/ResultCounter.user.js",
@@ -26,38 +27,12 @@
   "require": [],
   "metadata_raw": "// @name  搜索结果自动加序号\n// @author  burningall\n// @description  给百度\\谷歌\\必应等搜索结果加上序号\n// @version  2017.7.21\n// @include  *www.baidu.com*\n// @include  *news.baidu.com*\n// @include  *zhidao.baidu.com*\n// @include  *wenku.baidu.com*\n// @include  *v.baidu.com*\n// @include  *tieba.baidu.com/f/search/*\n// @include  *image.baidu.com*\n// @include  *www.google.com*\n// @include  *cn.bing.com*\n// @include  *www.sogou.com*\n// @include  *www.so.com*\n// @include  *www.youdao.com*\n// @include  *bbs.kafan.cn*\n// @contributionURL  troy450409405@gmail.com\n// @namespace  https://greasyfork.org/zh-CN/users/3400-axetroy\n// @note  Edit from axetroy 感谢axetroy大神的脚本，我只是基于大神的脚本，进行了简单的修复",
   "sha256": "15121dd49cc9c2ea8a758cd86862282103373d4eab3222105cd21399495d87dd",
-  "discovered_at": "2026-04-15T19:31:24.318543+00:00",
-  "ai_reason": "为百度、谷歌等搜索结果自动加序号，提升搜索体验，中文友好，持续维护。",
+  "discovered_at": "2026-04-15T21:04:31.732263+00:00",
+  "ai_reason": "",
+  "target_roles": "",
   "is_new": false,
-  "summary": {
-    "applicable_sites": [
-      "百度搜索",
-      "百度新闻",
-      "百度知道",
-      "百度文库",
-      "百度视频",
-      "百度贴吧搜索",
-      "百度图片",
-      "谷歌搜索",
-      "必应搜索",
-      "搜狗搜索",
-      "360搜索",
-      "有道搜索",
-      "卡饭论坛"
-    ],
-    "description": "本脚本会在百度、谷歌、必应等多个搜索引擎及相关网站的搜索结果前自动添加序号，方便用户快速识别和定位搜索条目。安装后无需额外操作，打开搜索结果页面即可看到序号显示。支持多种主流搜索平台，提升浏览搜索结果的效率。",
-    "permissions": [],
-    "tags": [
-      "搜索结果增强",
-      "序号标记",
-      "多搜索引擎支持",
-      "浏览器辅助",
-      "用户体验提升"
-    ],
-    "usage": [
-      "安装脚本后，打开支持的搜索引擎或相关网站。",
-      "在搜索结果页面，自动为每条搜索结果添加序号，无需手动操作。"
-    ],
-    "zh_name": "搜索结果自动加序号"
-  }
+  "install_count": null,
+  "good_ratings": null,
+  "bad_ratings": null,
+  "summary": {}
 }

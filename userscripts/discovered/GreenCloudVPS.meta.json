@@ -1,0 +1,28 @@
+{
+  "slug": "GreenCloudVPS",
+  "platform": "github",
+  "source_url": "https://raw.githubusercontent.com/langren1353/GM_script/75950f3060eab08874180f6ab428465e2b63afb4/GreenCloudVPS.user.js",
+  "source_repo": "langren1353/GM_script",
+  "raw_url": "https://raw.githubusercontent.com/langren1353/GM_script/75950f3060eab08874180f6ab428465e2b63afb4/GreenCloudVPS.user.js",
+  "filename": "GreenCloudVPS.user.js",
+  "name": "GreenCloudVPS",
+  "version": "0.1",
+  "description": "try to take over the world!",
+  "match": [
+    "https://greencloudvps.com/*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  GreenCloudVPS\n// @namespace  http://tampermonkey.net/\n// @version  0.1\n// @description  try to take over the world!\n// @author  You\n// @include  https://greencloudvps.com/*\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=greencloudvps.com\n// @grant  none",
+  "sha256": "bf9e479d88f8125948ae08fb54df670409555954cb5105fb521050a150726f50",
+  "discovered_at": "2026-04-15T21:04:29.898128+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": null,
+  "good_ratings": null,
+  "bad_ratings": null,
+  "summary": {}
+}

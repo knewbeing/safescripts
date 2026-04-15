@@ -1,61 +1,38 @@
 ---
-title: ChatGPT/Grok聊天导出为Markdown
+title: Export ChatGPT/Gemini/Grok conversations as Markdown
 ---
 
-# ChatGPT/Grok聊天导出为Markdown
+# Export ChatGPT/Gemini/Grok conversations as Markdown
 
-`聊天记录导出`  `Markdown格式`  `ChatGPT`  `Grok`  `Typora`  `文本保存`
+
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/Export_ChatGPTGeminiGrok_conversations_as_Markdown.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**1.1.1**　　发现时间：**2026-04-15**　　来源：[GreasyFork](https://greasyfork.org/scripts/543471-export-chatgpt-gemini-grok-conversations-as-markdown) <Badge type="tip" text="GreasyFork" />　　安装量：**31,705**　　评分：👍3 / 👎2
+> 版本：**1.1.1**　　发现时间：**2026-04-15**　　来源：[GreasyFork](https://greasyfork.org/scripts/543471-export-chatgpt-gemini-grok-conversations-as-markdown) <Badge type="tip" text="GreasyFork" />　　安装量：**31,716**　　评分：👍3 / 👎2
 
 ## 功能介绍
 
-本脚本可以将 ChatGPT、Grok 和 Gemini 网站上的聊天记录导出为标准的 Markdown 格式。导出的文件可以在 Typora 等 Markdown 编辑器中准确打开和查看。方便用户保存和管理聊天内容。
+
 
 ## 适用网站
 
-- ChatGPT官网
-- Grok官网
-- Gemini官网
+- 通用
 
 ## 使用方法
 
-1. 安装脚本后，打开 ChatGPT、Grok 或 Gemini 网站。
-2. 在页面菜单或脚本菜单中选择导出聊天记录为 Markdown。
-3. 保存导出的 Markdown 文件到本地。
-4. 使用 Typora 等 Markdown 编辑器打开查看聊天内容。
+- 请参阅脚本说明
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `GM_registerMenuCommand` | 添加自定义菜单命令，方便用户操作导出功能。 |
-| `GM_openInTab` | 在新标签页打开链接，便于查看导出结果或相关页面。 |
-| `GM.openInTab` | 在新标签页打开链接，便于查看导出结果或相关页面。 |
-| `GM_addStyle` | 添加自定义样式，优化页面显示效果。 |
-| `GM_setValue` | 存储用户设置或数据，保持导出配置。 |
-| `GM_getValue` | 读取用户设置或数据，恢复导出配置。 |
-| `GM_xmlhttpRequest` | 发送跨域请求，获取必要数据或资源。 |
+| — | 无特殊权限 |
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**分析时间**：2026-04-15
-
-> The script exports chat history from specified websites to Markdown format without transmitting data externally or collecting sensitive user information. It does not perform remote code execution or use sensitive APIs. However, it requests GM_xmlhttpRequest permission which is not used, suggesting permission over-privilege. Overall, the script is low risk but can improve by removing unused permissions.
-
-| 检查项 | 结果 |
-|--------|------|
-| 数据外传 | ✅ 未检测到 |
-| 隐私采集 | ✅ 未检测到 |
-
-### 发现的问题
-
-**🔴 HIGH** — Permissions Misuse  
-> Script requests GM_xmlhttpRequest permission but does not use it in the code, indicating unnecessary high privilege grant.  
-> 位置：@grant directives  
-> 建议：Remove unused GM_xmlhttpRequest grant to minimize permissions.
+::: info 等待分析
+安全分析将在下次流水线运行时自动更新。
+:::
 
 ---
 

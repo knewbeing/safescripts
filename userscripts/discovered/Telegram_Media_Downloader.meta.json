@@ -2,7 +2,7 @@
   "slug": "Telegram_Media_Downloader",
   "platform": "greasyfork",
   "source_url": "https://greasyfork.org/scripts/446342-telegram-media-downloader",
-  "source_repo": "greasyfork/446342",
+  "source_repo": "446342",
   "raw_url": "https://update.greasyfork.org/scripts/446342/Telegram%20Media%20Downloader.user.js",
   "filename": "Telegram_Media_Downloader.user.js",
   "name": "Telegram Media Downloader",
@@ -17,36 +17,12 @@
   "require": [],
   "metadata_raw": "// @name  Telegram Media Downloader\n// @name:en  Telegram Media Downloader\n// @name:zh-CN  Telegram 受限图片视频下载器\n// @name:zh-TW  Telegram 受限圖片影片下載器\n// @name:ru  Telegram: загрузчик медиафайлов\n// @version  1.212\n// @namespace  https://github.com/Neet-Nestor/Telegram-Media-Downloader\n// @description  Download images, GIFs, videos, and voice messages on the Telegram webapp from private channels that disable downloading and restrict saving content\n// @description:en  Download images, GIFs, videos, and voice messages on the Telegram webapp from private channels that disable downloading and restrict saving content\n// @description:ru  Загружайте изображения, GIF-файлы, видео и голосовые сообщения в веб-приложении Telegram из частных каналов, которые отключили загрузку и ограничили сохранение контента\n// @description:zh-CN  从禁止下载的Telegram频道中下载图片、视频及语音消息\n// @description:zh-TW  從禁止下載的 Telegram 頻道中下載圖片、影片及語音訊息\n// @author  Nestor Qin\n// @license  GNU GPLv3\n// @website  https://github.com/Neet-Nestor/Telegram-Media-Downloader\n// @match  https://web.telegram.org/*\n// @match  https://webk.telegram.org/*\n// @match  https://webz.telegram.org/*\n// @icon  https://img.icons8.com/color/452/telegram-app--v5.png\n// @downloadURL  https://update.greasyfork.org/scripts/446342/Telegram%20Media%20Downloader.user.js\n// @updateURL  https://update.greasyfork.org/scripts/446342/Telegram%20Media%20Downloader.meta.js",
   "sha256": "af88c87c0b79128610074e32a48169f66611175289a3b9c29a45a47850f2723c",
-  "discovered_at": "2026-04-15T20:23:04.965462+00:00",
+  "discovered_at": "2026-04-15T21:05:27.492809+00:00",
   "ai_reason": "",
+  "target_roles": "",
   "is_new": false,
-  "install_count": 200868,
+  "install_count": 200877,
   "good_ratings": 188,
   "bad_ratings": 43,
-  "summary": {
-    "applicable_sites": [
-      "Telegram网页版"
-    ],
-    "description": "该脚本允许用户在Telegram网页版中下载私密频道中被禁止下载的图片、GIF、视频和语音消息。它绕过了频道的下载限制，方便用户保存内容。安装后，用户可以直接在网页上获取受限媒体文件。",
-    "permissions": [
-      {
-        "explanation": "允许脚本在网页中执行，访问页面内容。",
-        "grant": "无明确@grant，默认无特殊权限"
-      }
-    ],
-    "tags": [
-      "下载工具",
-      "Telegram",
-      "私密频道",
-      "媒体保存",
-      "网页增强"
-    ],
-    "usage": [
-      "安装Tampermonkey或类似用户脚本管理器。",
-      "在管理器中添加并启用该脚本。",
-      "打开Telegram网页版并登录账号。",
-      "进入私密频道，点击媒体文件旁的下载按钮保存内容。"
-    ],
-    "zh_name": "Telegram受限图片视频下载器"
-  }
+  "summary": {}
 }

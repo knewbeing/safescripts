@@ -114,5 +114,35 @@
       "ok": true
     },
     "issues": []
+  },
+  {
+    "run_id": "24478165524",
+    "run_number": 13,
+    "timestamp": "2026-04-15T21:10:01.475526+00:00",
+    "success": true,
+    "managed": {
+      "total": 5,
+      "with_security": 5,
+      "risk": {
+        "MEDIUM": 4,
+        "SAFE": 1
+      }
+    },
+    "discovered": {
+      "total": 24,
+      "with_security": 22,
+      "risk": {
+        "SAFE": 9,
+        "LOW": 6,
+        "CRITICAL": 1,
+        "MEDIUM": 4,
+        "HIGH": 2
+      }
+    },
+    "pages": {
+      "status": 200,
+      "ok": true
+    },
+    "issues": []
   }
 ]

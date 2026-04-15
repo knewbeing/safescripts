@@ -1,0 +1,94 @@
+{
+  "slug": "GithubEnhanced-High-Speed-Download",
+  "source_url": "https://github.com/XIU2/UserScript/blob/master/GithubEnhanced-High-Speed-Download.user.js",
+  "raw_url": "https://raw.githubusercontent.com/XIU2/UserScript/master/GithubEnhanced-High-Speed-Download.user.js",
+  "filename": "GithubEnhanced-High-Speed-Download.user.js",
+  "name": "Github Enhancement - High Speed Download",
+  "version": "2.6.37",
+  "description": "High-speed download of Git Clone/SSH, Release, Raw, Code(ZIP) and other files (Based on public welfare), project list file quick download (☁)",
+  "match": [
+    "*://github.com/*",
+    "*://hub.whtrys.space/*",
+    "*://dgithub.xyz/*",
+    "*://kkgithub.com/*",
+    "*://github.site/*",
+    "*://github.store/*",
+    "*://bgithub.xyz/*"
+  ],
+  "grant": [
+    "GM_registerMenuCommand",
+    "GM_unregisterMenuCommand",
+    "GM_openInTab",
+    "GM_getValue",
+    "GM_setValue",
+    "GM_notification",
+    "GM_setClipboard",
+    "window.onurlchange"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Github Enhancement - High Speed Download\n// @name:zh-CN  Github 增强 - 高速下载\n// @name:zh-TW  Github 增強 - 高速下載\n// @name:ru  Улучшение GitHub – быстрое скачивание\n// @version  2.6.37\n// @author  X.I.U\n// @description  High-speed download of Git Clone/SSH, Release, Raw, Code(ZIP) and other files (Based on public welfare), project list file quick download (☁)\n// @description:zh-CN  高速下载 Git Clone/SSH、Release、Raw、Code(ZIP) 等文件 (公益加速)、项目列表单文件快捷下载 (☁)\n// @description:zh-TW  高速下載 Git Clone/SSH、Release、Raw、Code(ZIP) 等文件 (公益加速)、項目列表單文件快捷下載 (☁)\n// @description:ru  Высокоскоростная загрузка Git Clone/SSH, выпусков, изначальных файлов, кода (ZIP) и других файлов (на основе общественного благосостояния), быстрая загрузка файлов из списка проектов (☁)\n// @match  *://github.com/*\n// @match  *://hub.whtrys.space/*\n// @match  *://dgithub.xyz/*\n// @match  *://kkgithub.com/*\n// @match  *://github.site/*\n// @match  *://github.store/*\n// @match  *://bgithub.xyz/*\n// @icon  data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAACEUExURUxpcRgWFhsYGBgWFhcWFh8WFhoYGBgWFiUlJRcVFRkWFhgVFRgWFhgVFRsWFhgWFigeHhkWFv////////////r6+h4eHv///xcVFfLx8SMhIUNCQpSTk/r6+jY0NCknJ97e3ru7u+fn51BOTsPCwqGgoISDg6empmpoaK2srNDQ0FhXV3eXcCcAAAAXdFJOUwCBIZXMGP70BuRH2Ze/LpIMUunHkpQR34sfygAAAVpJREFUOMt1U+magjAMDAVb5BDU3W25b9T1/d9vaYpQKDs/rF9nSNJkArDA9ezQZ8wPbc8FE6eAiQUsOO1o19JolFibKCdHGHC0IJezOMD5snx/yE+KOYYr42fPSufSZyazqDoseTPw4lGJNOu6LBXVUPBG3lqYAOv/5ZwnNUfUifzBt8gkgfgINmjxOpgqUA147QWNaocLniqq3QsSVbQHNp45N/BAwoYQz9oUJEiE4GMGfoBSMj5gjeWRIMMqleD/CAzUHFqTLyjOA5zjNnwa4UCEZ2YK3khEcBXHjVBtEFeIZ6+NxYbPqWp1DLKV42t6Ujn2ydyiPi9nX0TTNAkVVZ/gozsl6FbrktkwaVvL2TRK0C8Ca7Hck7f5OBT6FFbLATkL2ugV0tm0RLM9fedDvhWstl8Wp9AFDjFX7yOY/lJrv8AkYuz7fuP8dv9izCYH+x3/LBnj9fYPBTpJDNzX+7cAAAAASUVORK5CYII=\n// @grant  GM_registerMenuCommand\n// @grant  GM_unregisterMenuCommand\n// @grant  GM_openInTab\n// @grant  GM_getValue\n// @grant  GM_setValue\n// @grant  GM_notification\n// @grant  GM_setClipboard\n// @grant  window.onurlchange\n// @sandbox  JavaScript\n// @license  GPL-3.0 License\n// @run-at  document-end\n// @namespace  https://greasyfork.org/scripts/412245\n// @supportURL  https://github.com/XIU2/UserScript\n// @homepageURL  https://github.com/XIU2/UserScript",
+  "sha256": "e39d81af546e81978a66c1bb980ca67f7e3af6630ea1116b0ec2bbf857939b4c",
+  "updated_at": "2026-04-15T21:01:12.383084+00:00",
+  "is_new": true,
+  "summary": {
+    "applicable_sites": [
+      "GitHub",
+      "hub.whtrys.space",
+      "dgithub.xyz",
+      "kkgithub.com",
+      "github.site",
+      "github.store",
+      "bgithub.xyz"
+    ],
+    "description": "该脚本为GitHub提供高速下载功能，支持Git Clone/SSH、Release、Raw文件及代码压缩包等多种文件类型的快速下载。它利用公益加速源提升下载速度，并支持项目列表中的单文件快捷下载。安装后可显著提升GitHub相关资源的下载效率。",
+    "permissions": [
+      {
+        "explanation": "添加自定义菜单命令，方便用户操作脚本功能",
+        "grant": "GM_registerMenuCommand"
+      },
+      {
+        "explanation": "移除已注册的菜单命令，管理菜单项",
+        "grant": "GM_unregisterMenuCommand"
+      },
+      {
+        "explanation": "在新标签页打开链接，用于快速访问下载地址",
+        "grant": "GM_openInTab"
+      },
+      {
+        "explanation": "读取脚本存储的数据，保存用户设置",
+        "grant": "GM_getValue"
+      },
+      {
+        "explanation": "保存数据到脚本存储，保持用户配置",
+        "grant": "GM_setValue"
+      },
+      {
+        "explanation": "显示桌面通知，提醒下载状态或操作结果",
+        "grant": "GM_notification"
+      },
+      {
+        "explanation": "将内容复制到剪贴板，方便用户粘贴下载链接等信息",
+        "grant": "GM_setClipboard"
+      },
+      {
+        "explanation": "监听URL变化，动态响应页面内容变化",
+        "grant": "window.onurlchange"
+      }
+    ],
+    "tags": [
+      "GitHub增强",
+      "高速下载",
+      "文件管理",
+      "公益加速",
+      "项目下载",
+      "用户脚本"
+    ],
+    "usage": [
+      "安装脚本后访问GitHub相关页面。",
+      "在页面菜单或脚本菜单中选择高速下载选项。",
+      "根据需要选择下载方式（Git Clone、Release、Raw等）。",
+      "脚本自动使用公益加速源加快下载速度。"
+    ],
+    "zh_name": "GitHub增强 - 高速下载"
+  }
+}

@@ -42,9 +42,9 @@ title: GitHub 中文化插件
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：76/100　　**分析时间**：2026-04-15
+**风险等级**：🟠 MEDIUM　　**安全评分**：84/100　　**分析时间**：2026-04-15
 
-> 该脚本主要功能为翻译 GitHub 页面内容，使用 GM_xmlhttpRequest 向第三方翻译服务发送文本数据，存在一定的数据外传风险。未发现隐私采集、远程代码执行、代码混淆及 DOM XSS 风险。权限申请合理，供应链风险较低。综合评估风险等级为中等，建议用户知悉数据上传行为。
+> 该脚本主要功能为翻译 GitHub 页面内容，使用 GM_xmlhttpRequest 向可信第三方翻译服务发送文本，存在一定数据外传风险，但未发现敏感隐私数据采集或远程代码执行风险。代码未混淆，DOM 操作安全，权限申请合理，供应链风险较低。综合评估安全等级为中等，建议用户确认翻译服务的隐私政策并谨慎使用。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -59,48 +59,48 @@ title: GitHub 中文化插件
 
 **⛔ CRITICAL** — 数据外传  
 > 脚本使用 GM_xmlhttpRequest 向第三方翻译服务 fanyi.iflyrec.com 发送用户页面内容进行翻译，存在数据外传风险。  
-> 位置：GM_xmlhttpRequest 请求部分  
-> 建议：确认发送的数据是否包含敏感信息，若无敏感数据风险较低；若包含敏感数据，建议增加用户提示或避免自动上传。
+> 位置：GM_xmlhttpRequest 调用处  
+> 建议：确认发送的数据不包含敏感信息，且用户知情同意。限制请求范围，避免泄露隐私。
 
 **⛔ CRITICAL** — 隐私采集  
 > 脚本读取并使用 GM_getValue 和 GM_setValue 存储配置，但未发现读取 document.cookie/localStorage/sessionStorage/IndexedDB 等敏感隐私数据。  
-> 位置：配置读取部分  
-> 建议：无隐私采集行为，保持当前实现即可。
+> 位置：GM_getValue/GM_setValue 调用处  
+> 建议：保持不读取敏感隐私数据，避免隐私泄露。
 
 **🔴 HIGH** — 远程代码执行  
-> 脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险函数，且 @require 指定的远程脚本有固定版本号参数，未发现动态加载远程脚本。  
-> 位置：整体代码  
-> 建议：保持当前安全实践，避免动态执行不可信代码。
+> 脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险函数。  
+> 位置：代码整体  
+> 建议：继续避免使用动态代码执行函数。
 
 **🔴 HIGH** — 代码混淆  
-> 脚本代码未发现明显的混淆特征，如 base64 解码执行、字符串数组索引映射、大量 unicode 编码或高度压缩单行代码。  
-> 位置：整体代码  
-> 建议：代码保持清晰易读，有助于安全审计。
+> 脚本未发现明显代码混淆特征，如 base64 解码执行、字符串数组映射、大量 unicode 编码或高度压缩代码。  
+> 位置：代码整体  
+> 建议：保持代码清晰，便于安全审计。
 
 **🔴 HIGH** — DOM XSS / 注入  
-> 脚本未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未使用 document.write 插入不可信内容，也未操作 iframe src 为 javascript: 协议。  
-> 位置：整体代码  
-> 建议：继续避免不安全的 DOM 操作，防止 XSS 风险。
+> 脚本未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未使用 document.write 插入不可信内容，未操作 iframe src 为 javascript: 协议。  
+> 位置：代码整体  
+> 建议：继续避免 DOM XSS 风险。
 
 **🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_xmlhttpRequest、GM_getValue、GM_setValue、GM_registerMenuCommand、GM_unregisterMenuCommand、GM_notification 权限，实际代码中均有使用，未发现权限滥用。  
+> 脚本申请了 GM_xmlhttpRequest、GM_getValue、GM_setValue、GM_registerMenuCommand、GM_unregisterMenuCommand、GM_notification 权限，均有合理使用。  
 > 位置：元数据 @grant 部分  
-> 建议：保持权限申请与实际使用一致，避免申请未使用的高权限。
+> 建议：避免申请未使用的高权限。
 
 **🟠 MEDIUM** — 敏感 API 调用  
-> 脚本未使用 navigator.geolocation、RTCPeerConnection、MediaDevices 等敏感 API，未读取剪贴板内容，未滥用 Notification API。  
-> 位置：整体代码  
-> 建议：继续避免调用敏感 API，保护用户隐私。
+> 脚本未使用 navigator.geolocation、RTCPeerConnection、MediaDevices 等敏感 API，未读取剪贴板，未滥用 Notification API。  
+> 位置：代码整体  
+> 建议：继续避免敏感 API 滥用。
 
 **🟠 MEDIUM** — 供应链风险  
-> @require 加载的第三方库来源于 GitHub 官方 raw.githubusercontent.com，且带有版本号参数，版本固定，供应链风险较低。  
-> 位置：元数据 @require 部分  
-> 建议：保持使用可信来源并固定版本，防止供应链污染。
+> 脚本 @require 加载的第三方库来源可信（GitHub raw 内容），且固定了版本号参数，降低供应链风险。  
+> 位置：@require 元数据  
+> 建议：继续使用可信来源并固定版本。
 
 **🟡 LOW** — ClickJacking / iframe 风险  
-> 脚本未修改页面 frame 保护策略，未创建隐藏 iframe，ClickJacking 风险较低。  
-> 位置：整体代码  
-> 建议：继续保持良好实践，避免引入 iframe 风险。
+> 脚本未修改页面 frame 保护策略，未创建隐藏 iframe，降低 ClickJacking 风险。  
+> 位置：代码整体  
+> 建议：继续避免 ClickJacking 风险。
 
 ---
 

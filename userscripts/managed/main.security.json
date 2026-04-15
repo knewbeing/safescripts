@@ -11,79 +11,85 @@
   "issues": [
     {
       "description": "脚本使用 GM_xmlhttpRequest 向第三方翻译服务 fanyi.iflyrec.com 发送用户页面内容进行翻译，存在数据外传风险。",
-      "location": "GM_xmlhttpRequest 请求部分",
-      "recommendation": "确认发送的数据是否包含敏感信息，若无敏感数据风险较低；若包含敏感数据，建议增加用户提示或避免自动上传。",
+      "location": "GM_xmlhttpRequest 调用处",
+      "recommendation": "确认发送的数据不包含敏感信息，且用户知情同意。限制请求范围，避免泄露隐私。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
       "description": "脚本读取并使用 GM_getValue 和 GM_setValue 存储配置，但未发现读取 document.cookie/localStorage/sessionStorage/IndexedDB 等敏感隐私数据。",
-      "location": "配置读取部分",
-      "recommendation": "无隐私采集行为，保持当前实现即可。",
+      "location": "GM_getValue/GM_setValue 调用处",
+      "recommendation": "保持不读取敏感隐私数据，避免隐私泄露。",
       "severity": "CRITICAL",
       "type": "隐私采集"
     },
     {
-      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险函数，且 @require 指定的远程脚本有固定版本号参数，未发现动态加载远程脚本。",
-      "location": "整体代码",
-      "recommendation": "保持当前安全实践，避免动态执行不可信代码。",
+      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险函数。",
+      "location": "代码整体",
+      "recommendation": "继续避免使用动态代码执行函数。",
       "severity": "HIGH",
       "type": "远程代码执行"
     },
     {
-      "description": "脚本代码未发现明显的混淆特征，如 base64 解码执行、字符串数组索引映射、大量 unicode 编码或高度压缩单行代码。",
-      "location": "整体代码",
-      "recommendation": "代码保持清晰易读，有助于安全审计。",
+      "description": "脚本未发现明显代码混淆特征，如 base64 解码执行、字符串数组映射、大量 unicode 编码或高度压缩代码。",
+      "location": "代码整体",
+      "recommendation": "保持代码清晰，便于安全审计。",
       "severity": "HIGH",
       "type": "代码混淆"
     },
     {
-      "description": "脚本未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未使用 document.write 插入不可信内容，也未操作 iframe src 为 javascript: 协议。",
-      "location": "整体代码",
-      "recommendation": "继续避免不安全的 DOM 操作，防止 XSS 风险。",
+      "description": "脚本未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未使用 document.write 插入不可信内容，未操作 iframe src 为 javascript: 协议。",
+      "location": "代码整体",
+      "recommendation": "继续避免 DOM XSS 风险。",
       "severity": "HIGH",
       "type": "DOM XSS / 注入"
     },
     {
-      "description": "脚本申请了 GM_xmlhttpRequest、GM_getValue、GM_setValue、GM_registerMenuCommand、GM_unregisterMenuCommand、GM_notification 权限，实际代码中均有使用，未发现权限滥用。",
+      "description": "脚本申请了 GM_xmlhttpRequest、GM_getValue、GM_setValue、GM_registerMenuCommand、GM_unregisterMenuCommand、GM_notification 权限，均有合理使用。",
       "location": "元数据 @grant 部分",
-      "recommendation": "保持权限申请与实际使用一致，避免申请未使用的高权限。",
+      "recommendation": "避免申请未使用的高权限。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "脚本未使用 navigator.geolocation、RTCPeerConnection、MediaDevices 等敏感 API，未读取剪贴板内容，未滥用 Notification API。",
-      "location": "整体代码",
-      "recommendation": "继续避免调用敏感 API，保护用户隐私。",
+      "description": "脚本未使用 navigator.geolocation、RTCPeerConnection、MediaDevices 等敏感 API，未读取剪贴板，未滥用 Notification API。",
+      "location": "代码整体",
+      "recommendation": "继续避免敏感 API 滥用。",
       "severity": "MEDIUM",
       "type": "敏感 API 调用"
     },
     {
-      "description": "@require 加载的第三方库来源于 GitHub 官方 raw.githubusercontent.com，且带有版本号参数，版本固定，供应链风险较低。",
-      "location": "元数据 @require 部分",
-      "recommendation": "保持使用可信来源并固定版本，防止供应链污染。",
+      "description": "脚本 @require 加载的第三方库来源可信（GitHub raw 内容），且固定了版本号参数，降低供应链风险。",
+      "location": "@require 元数据",
+      "recommendation": "继续使用可信来源并固定版本。",
       "severity": "MEDIUM",
       "type": "供应链风险"
     },
     {
-      "description": "脚本未修改页面 frame 保护策略，未创建隐藏 iframe，ClickJacking 风险较低。",
-      "location": "整体代码",
-      "recommendation": "继续保持良好实践，避免引入 iframe 风险。",
+      "description": "脚本未修改页面 frame 保护策略，未创建隐藏 iframe，降低 ClickJacking 风险。",
+      "location": "代码整体",
+      "recommendation": "继续避免 ClickJacking 风险。",
       "severity": "LOW",
       "type": "ClickJacking / iframe 风险"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [],
+    "details": [
+      "使用 GM_getValue 和 GM_setValue 存储配置，无读取 document.cookie/localStorage/sessionStorage/IndexedDB",
+      "未监听键盘输入事件，无 keylogger 行为",
+      "未读取表单字段值",
+      "未访问浏览器指纹相关 API",
+      "未读取剪贴板内容"
+    ],
     "detected": false
   },
   "risk_level": "MEDIUM",
   "script_name": "GitHub 中文化插件",
-  "security_score": 76,
-  "summary": "该脚本主要功能为翻译 GitHub 页面内容，使用 GM_xmlhttpRequest 向第三方翻译服务发送文本数据，存在一定的数据外传风险。未发现隐私采集、远程代码执行、代码混淆及 DOM XSS 风险。权限申请合理，供应链风险较低。综合评估风险等级为中等，建议用户知悉数据上传行为。",
+  "security_score": 84,
+  "summary": "该脚本主要功能为翻译 GitHub 页面内容，使用 GM_xmlhttpRequest 向可信第三方翻译服务发送文本，存在一定数据外传风险，但未发现敏感隐私数据采集或远程代码执行风险。代码未混淆，DOM 操作安全，权限申请合理，供应链风险较低。综合评估安全等级为中等，建议用户确认翻译服务的隐私政策并谨慎使用。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-04-15T20:56:00.863951+00:00",
+  "analyzed_at": "2026-04-15T21:02:31.836681+00:00",
   "slug": "main"
 }

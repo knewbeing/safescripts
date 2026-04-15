@@ -4,7 +4,7 @@ title: 智谱 GLM Coding 特惠订购抢购助手
 
 # 智谱 GLM Coding 特惠订购抢购助手
 
-`抢购助手`  `按钮解禁`  `库存绕过`  `前端修改`  `智谱 GLM Coding`  `购物辅助`
+
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/智谱_GLM_Coding_特惠订购抢购助手.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
@@ -12,18 +12,15 @@ title: 智谱 GLM Coding 特惠订购抢购助手
 
 ## 功能介绍
 
-本脚本用于解除智谱 GLM Coding 订购页面中购买按钮的禁用状态，使按钮看起来可点击。它通过修改页面前端数据，绕过售罄限制，提升抢购体验，但不改变后台实际库存和逻辑。适合想尝试抢购但按钮被禁用的用户使用。
+
 
 ## 适用网站
 
-- 智谱官网
-- 智谱 GLM Coding 订购页面
+- 通用
 
 ## 使用方法
 
-1. 安装脚本后，打开智谱官网或 GLM Coding 订购页面。
-2. 页面加载时，脚本自动解除购买按钮禁用状态。
-3. 此时按钮显示为可点击，用户可尝试下单。
+- 请参阅脚本说明
 
 ## 权限说明
 
@@ -33,51 +30,9 @@ title: 智谱 GLM Coding 特惠订购抢购助手
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**分析时间**：2026-04-15
-
-> 该脚本主要通过劫持 JSON.parse、fetch 和 XMLHttpRequest 来修改页面返回的售罄状态数据，实现前端按钮可点击效果。未发现任何数据外传、隐私采集、远程代码执行或权限滥用行为，代码清晰无混淆，且无外部依赖。整体安全风险极低。
-
-| 检查项 | 结果 |
-|--------|------|
-| 数据外传 | ✅ 未检测到 |
-| 隐私采集 | ✅ 未检测到 |
-
-### 发现的问题
-
-**⛔ CRITICAL** — 数据外传  
-> 脚本中没有使用 GM_xmlhttpRequest、fetch、XMLHttpRequest 发送数据到第三方服务器，所有网络请求均为拦截和修改响应数据，未发现数据外传行为。  
-> 位置：全脚本  
-> 建议：确认无数据外传，保持当前实现。
-
-**⛔ CRITICAL** — 隐私采集  
-> 脚本未读取 document.cookie、localStorage、sessionStorage，也未监听键盘输入事件，未访问表单字段值，未调用浏览器指纹相关 API。  
-> 位置：全脚本  
-> 建议：无隐私采集行为，符合隐私保护要求。
-
-**🔴 HIGH** — 远程代码执行  
-> 脚本未使用 eval、new Function、setTimeout(string)、innerHTML 执行远程代码，也未通过 @require 或动态 script 标签加载远程 JS。  
-> 位置：全脚本  
-> 建议：无远程代码执行风险。
-
-**🔴 HIGH** — 权限滥用  
-> 脚本声明 @grant none，且代码中未使用任何 GM_* 权限接口，权限申请与实际使用一致，无权限滥用。  
-> 位置：元数据与代码  
-> 建议：保持权限声明与实际使用一致。
-
-**🟠 MEDIUM** — 敏感 API 调用  
-> 脚本未调用 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等敏感 API。  
-> 位置：全脚本  
-> 建议：无敏感 API 调用风险。
-
-**🟠 MEDIUM** — 代码混淆  
-> 脚本代码清晰，无 base64 解码执行、字符串拼接执行或混淆特征。  
-> 位置：全脚本  
-> 建议：代码可读性良好，无混淆风险。
-
-**🟡 LOW** — 外部依赖  
-> 脚本未使用 @require 加载任何外部依赖库。  
-> 位置：元数据  
-> 建议：无外部依赖风险。
+::: info 等待分析
+安全分析将在下次流水线运行时自动更新。
+:::
 
 ---
 
