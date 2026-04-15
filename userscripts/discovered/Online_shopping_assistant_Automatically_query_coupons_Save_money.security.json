@@ -11,71 +11,60 @@
     {
       "description": "脚本使用了 GM_xmlhttpRequest 进行网络请求，且 @connect 指定了第三方服务器 oversea.mimixiaoke.com 和 jtmate.com，存在向第三方服务器发送数据的风险。",
       "location": "全局网络请求",
-      "recommendation": "确认请求内容是否包含用户敏感数据，若包含则需明确告知用户并限制数据范围。避免向不可信服务器发送敏感信息。",
+      "recommendation": "确认请求内容是否包含用户敏感数据，若包含则需明确告知用户并限制数据范围，避免隐私泄露。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本申请了大量 GM_* 权限，包括 GM_xmlhttpRequest、GM_setValue、GM_getValue、GM_setClipboard 等，可能用于读取和存储用户数据，存在隐私采集风险。",
-      "location": "元数据权限声明及代码中相关调用",
-      "recommendation": "审查代码中是否有读取 document.cookie、localStorage、监听键盘事件或读取表单数据的行为，若无则应减少权限申请。",
-      "severity": "CRITICAL",
-      "type": "隐私采集"
-    },
-    {
-      "description": "脚本中存在 @connect 指向的第三方服务器，且标注了 antifeature 为 referral-link，可能存在通过网络请求进行用户行为追踪或推广链接注入的行为。",
-      "location": "元数据及网络请求",
-      "recommendation": "详细分析网络请求内容，确认是否存在用户行为数据上报或推广链接注入，必要时移除相关功能。",
-      "severity": "CRITICAL",
-      "type": "数据外传"
-    },
-    {
-      "description": "脚本未显示使用 eval、new Function、setTimeout(string) 等远程代码执行相关函数，且未见 @require 加载远程脚本。",
-      "location": "代码主体",
-      "recommendation": "继续保持不使用远程代码执行，避免安全风险。",
-      "severity": "HIGH",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "脚本申请了较多高权限，但部分权限如 GM_download、GM_setClipboard 等是否被实际使用需进一步确认。",
-      "location": "元数据权限声明",
-      "recommendation": "核查实际代码中权限使用情况，移除未使用的高权限申请，减少权限滥用风险。",
+      "description": "脚本申请了大量 GM_* 权限，包括 GM_xmlhttpRequest、GM_setClipboard、GM_getValue 等，需确认实际代码是否全部使用，避免权限滥用。",
+      "location": "元数据 @grant 权限声明",
+      "recommendation": "审查代码中实际调用的权限接口，移除未使用的高权限申请。",
       "severity": "HIGH",
       "type": "权限滥用"
     },
     {
-      "description": "脚本未见使用敏感 API 如 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API（除 GM_setClipboard）等。",
-      "location": "代码主体",
-      "recommendation": "无特别风险，继续监控敏感 API 使用。",
+      "description": "脚本元数据中声明了 @antifeature referral-link，可能存在自动插入推广链接行为，属于用户利益相关的潜在风险。",
+      "location": "元数据 @antifeature",
+      "recommendation": "确认推广链接行为是否透明且用户可控，避免强制推广或隐蔽行为。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本匹配了大量购物平台网址，可能会读取页面内容，包括表单字段、cookie 等，需确认是否有读取 document.cookie、localStorage、sessionStorage 或监听键盘事件等隐私采集行为。",
+      "location": "脚本主体（未提供完整代码）",
+      "recommendation": "检查代码中是否有访问 cookie/localStorage/sessionStorage，监听键盘输入，读取表单字段等行为，若有需评估隐私风险。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本未提供完整代码，无法确认是否存在 eval、new Function、动态加载远程脚本等远程代码执行风险。",
+      "location": "脚本主体（未提供完整代码）",
+      "recommendation": "检查代码中是否存在 eval、new Function、setTimeout(string)、innerHTML 执行远程内容，或通过 @require 或动态 script 标签加载远程 JS。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本申请了 GM_setClipboard 权限，需确认是否合理使用剪贴板操作，避免恶意篡改用户剪贴板内容。",
+      "location": "元数据 @grant 权限声明",
+      "recommendation": "确认剪贴板操作用途合理且用户知情。",
       "severity": "MEDIUM",
       "type": "敏感 API 调用"
     },
     {
-      "description": "脚本代码未见明显混淆特征，如 base64 解码执行或复杂字符串拼接。",
-      "location": "代码主体",
-      "recommendation": "保持代码清晰，避免混淆带来的安全隐患。",
-      "severity": "MEDIUM",
-      "type": "代码混淆"
-    },
-    {
-      "description": "脚本未见 @require 加载第三方库，@connect 指向的服务器非主流 CDN，存在供应链风险。",
-      "location": "元数据 @connect",
-      "recommendation": "确认第三方服务器的安全性和可信度，避免供应链攻击。",
+      "description": "脚本 @require 未声明第三方库，外部依赖风险较低。",
+      "location": "元数据 @require",
+      "recommendation": "无。",
       "severity": "LOW",
       "type": "外部依赖"
     }
   ],
   "privacy_collection": {
-    "details": [
-      "申请了 GM_setValue、GM_getValue 等存储权限，可能存储用户数据。",
-      "存在网络请求，可能采集用户行为数据。",
-      "未见监听键盘事件或读取 document.cookie、localStorage 的代码片段。"
-    ],
-    "detected": true
+    "details": [],
+    "detected": false
   },
-  "risk_level": "CRITICAL",
+  "risk_level": "HIGH",
   "script_name": "Online shopping assistant & Automatically query coupons & Save money",
-  "summary": "该脚本申请了大量高权限，且通过 GM_xmlhttpRequest 向第三方服务器 oversea.mimixiaoke.com 和 jtmate.com 发送请求，存在数据外传风险。脚本可能采集用户隐私数据并进行上报，且标注了 referral-link 反特征，存在推广或追踪行为。未发现远程代码执行和明显代码混淆，但权限申请较多且部分权限使用情况不明。建议开发者减少权限申请，明确告知用户数据使用情况，避免向不可信服务器发送敏感信息。",
-  "analyzed_at": "2026-04-15T20:26:08.845207+00:00",
+  "summary": "该脚本申请了大量权限，且存在向第三方服务器 oversea.mimixiaoke.com 和 jtmate.com 发送数据的行为，且声明了推广链接特性，存在较高的数据外传和隐私采集风险。由于未提供完整代码，无法完全排查远程代码执行和隐私采集细节，建议谨慎使用并进一步审查完整代码。",
+  "analyzed_at": "2026-04-15T20:33:38.956053+00:00",
   "slug": "Online_shopping_assistant_Automatically_query_coupons_Save_money"
 }

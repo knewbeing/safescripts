@@ -1,5 +1,6 @@
 {
   "slug": "AC-Panel",
+  "platform": "github",
   "source_url": "https://raw.githubusercontent.com/langren1353/GM_script/75950f3060eab08874180f6ab428465e2b63afb4/AC-Panel.user.js",
   "source_repo": "langren1353/GM_script",
   "raw_url": "https://raw.githubusercontent.com/langren1353/GM_script/75950f3060eab08874180f6ab428465e2b63afb4/AC-Panel.user.js",
@@ -18,32 +19,34 @@
   ],
   "metadata_raw": "// @name  AC-baidu： 啊猫-操作面板\n// @description  用于快速操作和显示的一个面板\n// @author  AC\n// @create  2024-12-12\n// @lastmodified  2024-03-07\n// @version  1.0\n// @include  https://zhibo2.90dao.com/\n// @namespace  gm.com\n// @copyright  2024, AC\n// @note  2024.12.12-V1.0 初始化第一版\n// @run-at  document-end\n// @grant  GM_setClipboard\n// @require  https://update.greasyfork.org/scripts/503097/1424938/VueEntry.js",
   "sha256": "b417995ea2decb97bfbe53554e395085ecabbe4417507aa84fbf38756a04d9e8",
-  "discovered_at": "2026-04-15T19:31:32.386739+00:00",
-  "ai_reason": "快速操作面板，提升特定网站使用效率，中文说明，持续维护。",
+  "discovered_at": "2026-04-15T20:32:09.307448+00:00",
+  "ai_reason": "",
   "is_new": false,
+  "install_count": null,
+  "good_ratings": null,
+  "bad_ratings": null,
   "summary": {
     "applicable_sites": [
-      "90dao直播平台"
+      "90直播网"
     ],
-    "description": "本脚本在90dao直播平台页面底部添加一个操作面板，方便用户快速查看和操作。面板显示一个可点击按钮，点击后计数器会增加，实时显示当前计数。适合需要简单交互和数据展示的场景。",
+    "description": "本脚本在90直播网页面添加一个操作面板，方便用户快速查看和操作。面板显示一个可点击按钮，点击后数字计数会增加，方便进行简单交互。",
     "permissions": [
       {
-        "explanation": "允许脚本将内容复制到剪贴板，方便快速复制信息。",
+        "explanation": "允许脚本将内容复制到剪贴板。",
         "grant": "GM_setClipboard"
       }
     ],
     "tags": [
       "操作面板",
-      "数据展示",
       "交互增强",
-      "直播平台",
-      "剪贴板操作"
+      "网页工具",
+      "直播网站",
+      "简易计数"
     ],
     "usage": [
-      "安装脚本后，打开90dao直播平台首页。",
-      "页面底部会自动出现一个操作面板。",
-      "点击面板中的按钮，计数器数字会增加。",
-      "可根据需要使用面板进行快速操作和查看信息。"
+      "安装脚本后打开90直播网首页。",
+      "页面底部会出现一个操作面板。",
+      "点击面板上的按钮，数字计数会增加。"
     ],
     "zh_name": "啊猫操作面板"
   }

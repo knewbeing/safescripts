@@ -42,54 +42,49 @@ title: 旁路全部短链接
 
 **风险等级**：🟠 MEDIUM　　**分析时间**：2026-04-15
 
-> The script requests network resources from trusted third-party domains for updates and icons, and uses GM_xmlhttpRequest and GM_setClipboard which may handle user data. No direct privacy invasive data collection such as cookie or form reading or keyboard event listening is detected. No remote code execution or permission abuse is found. External dependencies are from trusted sources with version pinning. Overall, the script poses a medium security risk primarily due to network requests and clipboard access.
+> The script requests multiple permissions and uses GM_xmlhttpRequest indicating network communication with third-party servers, which poses a critical data transmission risk. No explicit privacy-invasive behaviors like cookie or storage reading or keyboard event listening were detected. No remote code execution or dynamic script injection was found. Permissions requested appear consistent with functionality. External dependencies are from trusted sources with fixed versions. Overall, the script has a medium risk level primarily due to potential data transmission.
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：https://update.greasyfork.org, https://i.ibb.co） |
+| 数据外传 | ❌ 检测到（目标：third-party domains potentially contacted via GM_xmlhttpRequest） |
 | 隐私采集 | ✅ 未检测到 |
 
 ### 发现的问题
 
 **⛔ CRITICAL** — Data Transmission  
-> Script uses GM_xmlhttpRequest and @require to load remote resources from greasyfork.org and i.ibb.co, which are third-party domains. However, these are standard update and icon URLs and do not appear to transmit user data.  
-> 位置：@require and GM_xmlhttpRequest usage in script  
-> 建议：Verify the trustworthiness of the @require URL and monitor network requests to ensure no sensitive user data is transmitted.
-
-**⛔ CRITICAL** — Data Transmission  
-> Script reads and modifies clipboard via GM_setClipboard, which may access user clipboard data.  
-> 位置：GM_setClipboard usage  
-> 建议：Ensure clipboard data is handled securely and not sent to external servers.
+> The script uses GM_xmlhttpRequest to perform network requests which may send user data to third-party servers. The exact endpoints and data sent are not fully visible in the provided snippet, but the presence of GM_xmlhttpRequest indicates potential data transmission.  
+> 位置：Script code using GM_xmlhttpRequest  
+> 建议：Review all network requests to ensure no sensitive user data is sent to untrusted third-party servers. Limit requests to trusted domains only.
 
 **⛔ CRITICAL** — Privacy Collection  
-> Script does not explicitly read document.cookie, localStorage, or sessionStorage, nor does it listen to keyboard events or access form input values.  
-> 位置：Code analysis  
-> 建议：No action needed as no privacy invasive data collection detected.
+> The script reads and manipulates document content to bypass shortlinks and ads, but no explicit reading of document.cookie, localStorage, or sessionStorage was found in the visible code. No event listeners for keyboard input were detected in the snippet.  
+> 位置：Script main code  
+> 建议：Verify that no hidden or obfuscated code reads cookies, storage, or listens to keyboard events to protect user privacy.
 
 **🔴 HIGH** — Remote Code Execution  
-> No use of eval(), new Function(), setTimeout(string), or dynamic script injection detected.  
-> 位置：Code analysis  
-> 建议：No action needed.
+> The script does not use eval(), new Function(), or setTimeout with string arguments in the visible code. No dynamic script injection or remote code loading besides the @require from a known GreasyFork URL was detected.  
+> 位置：Script main code and metadata  
+> 建议：Avoid dynamic code execution and loading scripts from untrusted sources to prevent remote code execution risks.
 
 **🔴 HIGH** — Permission Abuse  
-> @grant permissions include GM_setValue, GM_getValue, GM_addStyle, GM_openInTab, GM_setClipboard, GM_xmlhttpRequest, window.onurlchange, GM_registerMenuCommand. All appear to be used appropriately in the script context.  
-> 位置：@grant metadata vs code usage  
-> 建议：No excessive permissions detected.
+> The script requests multiple @grant permissions including GM_xmlhttpRequest, GM_setClipboard, GM_openInTab, GM_registerMenuCommand, GM_setValue, GM_getValue, GM_addStyle, and window.onurlchange. The usage of these permissions appears consistent with the script's functionality to bypass shortlinks, open tabs, and manage settings.  
+> 位置：Script metadata and code  
+> 建议：Ensure all granted permissions are necessary and used appropriately to minimize permission abuse.
 
 **🟠 MEDIUM** — Sensitive API Call  
-> No sensitive APIs such as navigator.geolocation, RTCPeerConnection, MediaDevices, or Clipboard API (except GM_setClipboard) are used.  
-> 位置：Code analysis  
-> 建议：No action needed.
+> No usage of sensitive APIs like navigator.geolocation, RTCPeerConnection, MediaDevices, or Clipboard API (except GM_setClipboard which is a granted permission) was detected in the visible code.  
+> 位置：Script main code  
+> 建议：Monitor usage of sensitive APIs to prevent privacy leaks.
 
 **🟠 MEDIUM** — Code Obfuscation  
-> No evidence of code obfuscation, base64 decoding, or string concatenation for code execution found.  
-> 位置：Code analysis  
-> 建议：No action needed.
+> No obvious code obfuscation, base64 decoding, or string concatenation for code execution was found in the visible code.  
+> 位置：Script main code  
+> 建议：Maintain code transparency to facilitate security reviews.
 
 **🟡 LOW** — External Dependency  
-> @require loads MonkeyConfig Mod.js from greasyfork.org with a fixed version number, which is a trusted source and version pinning reduces supply chain risk.  
-> 位置：@require metadata  
-> 建议：Maintain version pinning and verify source trustworthiness.
+> The script @require loads MonkeyConfig Mod.js from a GreasyFork update URL, which is a known and trusted source. The version is fixed by the URL path containing a specific script ID and version number, reducing supply chain risks.  
+> 位置：Script metadata @require  
+> 建议：Continue to use fixed versions from trusted sources for external dependencies.
 
 ---
 

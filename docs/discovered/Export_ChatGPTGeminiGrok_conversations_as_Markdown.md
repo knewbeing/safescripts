@@ -43,7 +43,7 @@ title: ChatGPT/Grok聊天导出为Markdown
 
 **风险等级**：🟡 LOW　　**分析时间**：2026-04-15
 
-> The script is designed to export chat histories as Markdown without transmitting data externally or collecting sensitive user information. It requests some permissions that are not fully utilized, which is a minor concern. No remote code execution or privacy-invasive behaviors are detected. Overall, the script is low risk but could improve by removing unused permissions.
+> The script is designed to export chat histories from specified websites to Markdown format. It does not perform any network requests or data exfiltration, nor does it collect user privacy data such as cookies, storage, or input events. It does not execute remote code or load external scripts dynamically. The only notable issue is the presence of unused high-level permissions (GM_xmlhttpRequest) which should be removed to reduce risk. Overall, the script is low risk and safe to use.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -52,35 +52,10 @@ title: ChatGPT/Grok聊天导出为Markdown
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Privacy Collection  
-> Script does not access document.cookie, localStorage, sessionStorage, or listen to keyboard or form input events, indicating no privacy-sensitive data collection.  
-> 位置：Code analysis  
-> 建议：No action needed.
-
-**🔴 HIGH** — Permissions Misuse  
-> Script requests multiple GM_* permissions including GM_xmlhttpRequest but does not use network requests in the code, indicating no data exfiltration or external communication.  
-> 位置：@grant and code usage  
-> 建议：Remove unused GM_xmlhttpRequest grant to reduce attack surface.
-
-**🔴 HIGH** — Remote Code Execution  
-> No use of eval(), new Function(), setTimeout(string), innerHTML with dynamic content, or dynamic script loading detected, indicating no remote code execution risk.  
-> 位置：Code analysis  
-> 建议：No action needed.
-
-**🟠 MEDIUM** — Sensitive API Usage  
-> No use of sensitive APIs such as geolocation, WebRTC, MediaDevices, or Clipboard API detected.  
-> 位置：Code analysis  
-> 建议：No action needed.
-
-**🟠 MEDIUM** — Code Obfuscation  
-> No code obfuscation or suspicious base64 decoding or string concatenation for code execution detected.  
-> 位置：Code analysis  
-> 建议：No action needed.
-
-**🟡 LOW** — External Dependencies  
-> @require directives are not present, so no external dependencies loaded. The @downloadURL and @updateURL point to greasyfork.org, a known script repository, which is acceptable.  
-> 位置：Metadata  
-> 建议：No action needed.
+**🔴 HIGH** — Permission Abuse  
+> Script requests GM_xmlhttpRequest permission but does not use it in the code, indicating unnecessary high privilege grant.  
+> 位置：@grant directives and script code  
+> 建议：Remove unused GM_xmlhttpRequest grant to minimize permission scope.
 
 ---
 

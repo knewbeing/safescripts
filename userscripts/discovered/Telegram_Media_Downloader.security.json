@@ -10,51 +10,51 @@
   },
   "issues": [
     {
-      "description": "The script performs fetch requests to Telegram's own domains to download media content. No evidence of data being sent to third-party servers or user data leakage was found.",
+      "description": "Script performs fetch requests to Telegram's own domains to download media content. No evidence of data being sent to third-party servers or user data leakage.",
       "location": "Function tel_download_video, fetch calls",
-      "recommendation": "Ensure that all network requests are strictly limited to Telegram domains and no user data is sent elsewhere.",
+      "recommendation": "Ensure fetch requests are only made to trusted Telegram domains and do not include sensitive user data in requests.",
       "severity": "CRITICAL",
-      "type": "Data Transmission"
+      "type": "Data External Transmission"
     },
     {
-      "description": "The script does not access document.cookie, localStorage, sessionStorage, nor does it listen to keyboard events or read form inputs. No browser fingerprinting APIs are used.",
-      "location": "Entire script",
-      "recommendation": "No action needed as no privacy-invasive data collection detected.",
+      "description": "Script reads no cookies, localStorage, or sessionStorage. No event listeners for keyboard input or form data reading detected. No suspicious fingerprinting API usage found.",
+      "location": "Global script scope and event listeners",
+      "recommendation": "No action needed as no privacy invasive data collection detected.",
       "severity": "CRITICAL",
       "type": "Privacy Collection"
     },
     {
-      "description": "No usage of eval(), new Function(), setTimeout(string), or innerHTML with untrusted content was found. No remote scripts are loaded via @require or dynamic script tags.",
+      "description": "No usage of eval(), new Function(), setTimeout(string), or innerHTML with untrusted content detected. No dynamic script injection or @require of remote scripts found.",
       "location": "Entire script",
-      "recommendation": "Maintain current practice of avoiding remote code execution.",
+      "recommendation": "Maintain current practice of avoiding remote code execution vectors.",
       "severity": "HIGH",
       "type": "Remote Code Execution"
     },
     {
-      "description": "The script does not declare any @grant permissions, so no permission misuse is detected.",
+      "description": "No @grant directives found in metadata, so no permission over-privilege detected.",
       "location": "Metadata block",
       "recommendation": "No action needed.",
       "severity": "HIGH",
       "type": "Permission Abuse"
     },
     {
-      "description": "No sensitive APIs such as navigator.geolocation, RTCPeerConnection, MediaDevices, or Clipboard API are used.",
+      "description": "No usage of sensitive APIs such as navigator.geolocation, RTCPeerConnection, MediaDevices, or Clipboard API detected.",
       "location": "Entire script",
       "recommendation": "No action needed.",
       "severity": "MEDIUM",
       "type": "Sensitive API Usage"
     },
     {
-      "description": "No code obfuscation or suspicious base64 decoding or string concatenation for code execution is present.",
+      "description": "No evidence of code obfuscation, base64 decoding, or suspicious string concatenation for code execution found.",
       "location": "Entire script",
       "recommendation": "No action needed.",
       "severity": "MEDIUM",
       "type": "Code Obfuscation"
     },
     {
-      "description": "No @require directives are used, so no external dependencies are loaded.",
+      "description": "No external @require dependencies found in metadata, all code is self-contained. URLs used for update and download are from greasyfork.org, a known script repository.",
       "location": "Metadata block",
-      "recommendation": "No action needed.",
+      "recommendation": "Ensure update URLs are from trusted sources and monitor for supply chain risks.",
       "severity": "LOW",
       "type": "External Dependencies"
     }
@@ -65,7 +65,7 @@
   },
   "risk_level": "LOW",
   "script_name": "Telegram Media Downloader",
-  "summary": "The script is designed to download media from Telegram webapp by fetching media content directly from Telegram's own servers. It does not collect or transmit user data to third parties, nor does it use privacy-invasive APIs or remote code execution. No permission misuse or suspicious code patterns are detected. Overall, the script poses low security and privacy risks.",
-  "analyzed_at": "2026-04-15T20:26:33.726931+00:00",
+  "summary": "The script is designed to download media from Telegram webapp private channels by fetching media content directly from Telegram's own domains. It does not collect or transmit user data to third parties, nor does it use privacy-invasive APIs or remote code execution techniques. No permission over-privilege or suspicious external dependencies are present. Overall, the script poses a low security risk.",
+  "analyzed_at": "2026-04-15T20:35:02.345661+00:00",
   "slug": "Telegram_Media_Downloader"
 }

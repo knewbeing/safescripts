@@ -35,7 +35,7 @@ title: Telegram受限图片视频下载器
 
 **风险等级**：🟡 LOW　　**分析时间**：2026-04-15
 
-> The script is designed to download media from Telegram webapp by fetching media content directly from Telegram's own servers. It does not collect or transmit user data to third parties, nor does it use privacy-invasive APIs or remote code execution. No permission misuse or suspicious code patterns are detected. Overall, the script poses low security and privacy risks.
+> The script is designed to download media from Telegram webapp private channels by fetching media content directly from Telegram's own domains. It does not collect or transmit user data to third parties, nor does it use privacy-invasive APIs or remote code execution techniques. No permission over-privilege or suspicious external dependencies are present. Overall, the script poses a low security risk.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -44,40 +44,40 @@ title: Telegram受限图片视频下载器
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Transmission  
-> The script performs fetch requests to Telegram's own domains to download media content. No evidence of data being sent to third-party servers or user data leakage was found.  
+**⛔ CRITICAL** — Data External Transmission  
+> Script performs fetch requests to Telegram's own domains to download media content. No evidence of data being sent to third-party servers or user data leakage.  
 > 位置：Function tel_download_video, fetch calls  
-> 建议：Ensure that all network requests are strictly limited to Telegram domains and no user data is sent elsewhere.
+> 建议：Ensure fetch requests are only made to trusted Telegram domains and do not include sensitive user data in requests.
 
 **⛔ CRITICAL** — Privacy Collection  
-> The script does not access document.cookie, localStorage, sessionStorage, nor does it listen to keyboard events or read form inputs. No browser fingerprinting APIs are used.  
-> 位置：Entire script  
-> 建议：No action needed as no privacy-invasive data collection detected.
+> Script reads no cookies, localStorage, or sessionStorage. No event listeners for keyboard input or form data reading detected. No suspicious fingerprinting API usage found.  
+> 位置：Global script scope and event listeners  
+> 建议：No action needed as no privacy invasive data collection detected.
 
 **🔴 HIGH** — Remote Code Execution  
-> No usage of eval(), new Function(), setTimeout(string), or innerHTML with untrusted content was found. No remote scripts are loaded via @require or dynamic script tags.  
+> No usage of eval(), new Function(), setTimeout(string), or innerHTML with untrusted content detected. No dynamic script injection or @require of remote scripts found.  
 > 位置：Entire script  
-> 建议：Maintain current practice of avoiding remote code execution.
+> 建议：Maintain current practice of avoiding remote code execution vectors.
 
 **🔴 HIGH** — Permission Abuse  
-> The script does not declare any @grant permissions, so no permission misuse is detected.  
+> No @grant directives found in metadata, so no permission over-privilege detected.  
 > 位置：Metadata block  
 > 建议：No action needed.
 
 **🟠 MEDIUM** — Sensitive API Usage  
-> No sensitive APIs such as navigator.geolocation, RTCPeerConnection, MediaDevices, or Clipboard API are used.  
+> No usage of sensitive APIs such as navigator.geolocation, RTCPeerConnection, MediaDevices, or Clipboard API detected.  
 > 位置：Entire script  
 > 建议：No action needed.
 
 **🟠 MEDIUM** — Code Obfuscation  
-> No code obfuscation or suspicious base64 decoding or string concatenation for code execution is present.  
+> No evidence of code obfuscation, base64 decoding, or suspicious string concatenation for code execution found.  
 > 位置：Entire script  
 > 建议：No action needed.
 
 **🟡 LOW** — External Dependencies  
-> No @require directives are used, so no external dependencies are loaded.  
+> No external @require dependencies found in metadata, all code is self-contained. URLs used for update and download are from greasyfork.org, a known script repository.  
 > 位置：Metadata block  
-> 建议：No action needed.
+> 建议：Ensure update URLs are from trusted sources and monitor for supply chain risks.
 
 ---
 

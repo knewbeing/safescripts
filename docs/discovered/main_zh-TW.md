@@ -4,7 +4,7 @@ title: GitHub 繁体中文化插件
 
 # GitHub 繁体中文化插件
 
-`界面本地化`  `繁体中文`  `GitHub`  `翻译`  `用户脚本`
+`GitHub`  `界面中文化`  `繁体中文`  `翻译`  `用户脚本`  `网页增强`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/main_zh-TW.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
@@ -12,7 +12,7 @@ title: GitHub 繁体中文化插件
 
 ## 功能介绍
 
-本脚本将 GitHub 网站界面部分菜单和内容翻译成繁体中文，提升使用者的本地化体验。支持在多个 GitHub 相关子站点自动应用繁体中文界面。通过自动监测页面变化，实时更新翻译内容。
+本脚本将 GitHub 网站界面中的部分菜单和内容翻译为繁体中文，提升使用者的阅读体验。支持多种 GitHub 相关子站点，自动检测页面变化并实时更新翻译内容。用户可通过脚本菜单进行配置和管理。
 
 ## 适用网站
 
@@ -24,26 +24,27 @@ title: GitHub 繁体中文化插件
 
 ## 使用方法
 
-1. 安装脚本后，访问 GitHub 及其相关子站点。
-2. 脚本会自动将页面部分菜单和内容翻译为繁体中文。
-3. 如需调整设置，可通过浏览器扩展的用户脚本菜单进行操作。
+1. 安装 Tampermonkey 或其他支持的用户脚本管理器。
+2. 导入并启用本脚本。
+3. 访问 GitHub 及相关子站点，界面自动显示繁体中文。
+4. 通过脚本菜单调整翻译设置或查看帮助信息。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `GM_xmlhttpRequest` | 允许脚本发送跨域请求获取翻译数据或更新内容。 |
-| `GM_getValue` | 允许脚本读取本地存储的设置和数据。 |
-| `GM_setValue` | 允许脚本保存设置和数据到本地存储。 |
-| `GM_registerMenuCommand` | 允许脚本注册菜单命令，方便用户操作脚本功能。 |
-| `GM_unregisterMenuCommand` | 允许脚本注销已注册的菜单命令。 |
-| `GM_notification` | 允许脚本发送桌面通知提醒用户。 |
+| `GM_xmlhttpRequest` | 允许脚本发送跨域网络请求，用于获取翻译数据或更新内容。 |
+| `GM_getValue` | 允许脚本读取本地存储的配置信息，保存用户设置。 |
+| `GM_setValue` | 允许脚本写入本地存储，用于保存用户的翻译偏好和配置。 |
+| `GM_registerMenuCommand` | 允许脚本在菜单中注册自定义命令，方便用户操作脚本功能。 |
+| `GM_unregisterMenuCommand` | 允许脚本注销已注册的菜单命令，管理菜单项。 |
+| `GM_notification` | 允许脚本发送桌面通知，提醒用户脚本状态或更新信息。 |
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**分析时间**：2026-04-15
+**风险等级**：🟡 LOW　　**分析时间**：2026-04-15
 
-> 该脚本主要用于 GitHub 界面中文化，未发现隐私采集和远程代码执行风险。存在向第三方服务器 fanyi.iflyrec.com 发送请求的可能，需确认是否涉及用户数据外传。权限申请合理，代码清晰无混淆，外部依赖可信。综合评估风险等级为中等。
+> 该脚本主要用于 GitHub 界面中文化，未发现明显的隐私采集和远程代码执行风险。存在向第三方服务器 fanyi.iflyrec.com 发送请求的可能，需确认是否涉及用户数据传输。权限申请合理，外部依赖可信，整体风险较低。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -53,39 +54,39 @@ title: GitHub 繁体中文化插件
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本使用了 GM_xmlhttpRequest 权限，并且在元数据中声明了 @connect fanyi.iflyrec.com，表明可能向该第三方服务器发送请求。代码中未显示具体请求细节，但存在潜在数据外传风险。  
-> 位置：元数据和权限声明  
-> 建议：确认脚本是否确实向第三方服务器发送用户数据，若无必要应移除相关权限和连接声明。
+> 脚本使用了 GM_xmlhttpRequest 权限并声明了 @connect fanyi.iflyrec.com，表明可能向该第三方服务器发送请求。代码中未见明显发送用户敏感数据的行为，但存在潜在数据上报风险。  
+> 位置：元数据及权限声明  
+> 建议：确认脚本是否确实需要向第三方服务器发送数据，避免无必要的数据外传。
 
 **⛔ CRITICAL** — 隐私采集  
-> 脚本中未发现对 document.cookie、localStorage、sessionStorage 的读取操作，也未监听键盘输入事件，未访问浏览器指纹相关 API。  
-> 位置：完整代码分析  
-> 建议：无隐私采集行为，继续保持。
+> 脚本未检测到对 document.cookie、localStorage、sessionStorage 的访问，也未监听键盘事件或读取表单字段值。  
+> 位置：完整代码  
+> 建议：无建议，隐私采集行为未发现。
 
 **🔴 HIGH** — 远程代码执行  
-> 脚本未使用 eval、new Function、setTimeout(string) 等远程代码执行相关函数，也未动态加载远程脚本，@require 指向的远程脚本来源可信且固定版本。  
-> 位置：完整代码和元数据  
-> 建议：无远程代码执行风险。
+> 脚本未使用 eval、new Function、setTimeout(string) 等远程代码执行相关函数，也未动态加载远程脚本。  
+> 位置：完整代码  
+> 建议：无建议，远程代码执行风险低。
 
 **🔴 HIGH** — 权限滥用  
-> 脚本申请了 GM_xmlhttpRequest、GM_getValue、GM_setValue、GM_registerMenuCommand、GM_unregisterMenuCommand、GM_notification 权限，代码中合理使用这些权限，未发现未使用的高权限申请。  
-> 位置：元数据和代码权限使用  
-> 建议：权限申请合理，无滥用。
+> 脚本申请了 GM_xmlhttpRequest、GM_getValue、GM_setValue、GM_registerMenuCommand、GM_unregisterMenuCommand、GM_notification 权限，代码中使用了 GM_getValue，未见其他权限滥用。  
+> 位置：元数据及权限声明  
+> 建议：确认所有申请权限均有实际用途，避免权限滥用。
 
 **🟠 MEDIUM** — 敏感 API 调用  
-> 脚本未使用 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等敏感 API。  
-> 位置：完整代码分析  
-> 建议：无敏感 API 调用风险。
+> 脚本未使用敏感 API，如 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等。  
+> 位置：完整代码  
+> 建议：无建议。
 
 **🟠 MEDIUM** — 代码混淆  
-> 代码结构清晰，无明显混淆、base64 解码或字符串拼接执行特征。  
-> 位置：完整代码分析  
-> 建议：代码保持清晰，便于审计。
+> 代码结构清晰，未见明显混淆或 base64 解码执行等混淆特征。  
+> 位置：完整代码  
+> 建议：无建议。
 
 **🟡 LOW** — 外部依赖  
-> @require 加载的第三方库来自 GitHub 官方 raw 内容，且版本固定，来源可信。  
+> @require 加载的第三方库来自 GitHub 官方 raw 内容，版本固定，来源可信。  
 > 位置：元数据  
-> 建议：继续使用可信来源并固定版本。
+> 建议：无建议。
 
 ---
 

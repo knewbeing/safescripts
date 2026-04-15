@@ -38,49 +38,54 @@ title: EasyTube V3 — YouTube广告跳过与高清视频下载
 
 **风险等级**：🟠 MEDIUM　　**分析时间**：2026-04-15
 
-> The script performs network requests to third-party servers for SponsorBlock API and video download services, which constitutes data transmission risk. However, it does not collect sensitive user data such as cookies, form inputs, or keyboard events. No remote code execution or permission abuse detected. Overall, the script poses a medium security risk primarily due to data transmission to external servers.
+> The script implements YouTube ad skipping, SponsorBlock integration, quality forcing, and video downloading via external services. It uses GM_xmlhttpRequest to communicate with several third-party endpoints and stores user preferences persistently. No direct privacy-invasive behaviors like cookie reading or keyboard logging are detected. No dynamic code execution or permission abuse is found. The main risk is data transmission to external servers which should be transparent and limited to non-sensitive data.
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：https://sponsor.ajay.app/api/skipSegments, https://co.wuk.sh, https://cobalt.api.timelessnesses.me, https://api.cobalt.tools） |
-| 隐私采集 | ✅ 未检测到 |
+| 隐私采集 | ❌ 检测到（Uses GM_setValue and GM_getValue to store user toggle settings (ad skipping, SponsorBlock, quality)., No access to document.cookie, localStorage, sessionStorage detected., No keyboard event listeners or form input reading detected.） |
 
 ### 发现的问题
 
 **⛔ CRITICAL** — Data Transmission  
-> The script uses GM_xmlhttpRequest to send requests to third-party servers including sponsor.ajay.app, co.wuk.sh, cobalt.api.timelessnesses.me, and api.cobalt.tools. These requests may include user data or usage statistics related to SponsorBlock segments and video downloads.  
+> The script uses GM_xmlhttpRequest to communicate with third-party servers including sponsor.ajay.app, co.wuk.sh, cobalt.api.timelessnesses.me, and api.cobalt.tools. These requests may involve user data such as video IDs or usage statistics for SponsorBlock and download features.  
 > 位置：GM_xmlhttpRequest calls to @connect domains  
-> 建议：Ensure that no sensitive personal data is sent in requests. Provide transparency about data usage and obtain user consent if necessary.
+> 建议：Ensure that no sensitive personal data is sent and that the endpoints are trustworthy. Provide transparency to users about data sent.
 
 **⛔ CRITICAL** — Privacy Collection  
-> The script reads and writes persistent settings using GM_setValue and GM_getValue but does not appear to access document.cookie, localStorage, or sessionStorage, nor does it listen to keyboard events or access form inputs.  
-> 位置：Code analysis of storage and event listeners  
-> 建议：No action needed as no privacy-invasive data collection detected.
+> The script reads and writes persistent state via GM_setValue and GM_getValue to remember user toggle settings such as ad skipping, SponsorBlock usage, and quality forcing.  
+> 位置：GM_setValue and GM_getValue usage  
+> 建议：Verify that stored data does not include sensitive personal information and is securely handled.
+
+**⛔ CRITICAL** — Privacy Collection  
+> The script does not appear to read document.cookie, localStorage, sessionStorage, nor does it listen to keyboard events or access form inputs.  
+> 位置：Code analysis  
+> 建议：No action needed.
 
 **🔴 HIGH** — Remote Code Execution  
-> No use of eval(), new Function(), setTimeout(string), or dynamic script injection detected in the provided code snippet. No @require directives loading remote scripts found.  
+> No use of eval(), new Function(), setTimeout(string), or innerHTML with remote content detected in the provided code snippet.  
 > 位置：Code analysis  
 > 建议：Continue to avoid dynamic code execution from untrusted sources.
 
 **🔴 HIGH** — Permission Abuse  
-> The script requests GM_xmlhttpRequest, GM_setValue, GM_getValue, and GM_addStyle permissions, all of which are used appropriately in the code. No excessive or unused permissions detected.  
-> 位置：@grant directives vs code usage  
+> The script requests @grant permissions GM_addStyle, GM_xmlhttpRequest, GM_setValue, GM_getValue which are all used appropriately in the code. No unused high permissions detected.  
+> 位置：@grant declarations vs usage  
 > 建议：No action needed.
 
 **🟠 MEDIUM** — Sensitive API Call  
-> No usage of sensitive APIs such as navigator.geolocation, RTCPeerConnection, MediaDevices, or Clipboard API detected in the provided code snippet.  
+> No sensitive APIs such as navigator.geolocation, RTCPeerConnection, MediaDevices, or Clipboard API are used in the provided code snippet.  
 > 位置：Code analysis  
 > 建议：No action needed.
 
 **🟠 MEDIUM** — Code Obfuscation  
-> No evidence of code obfuscation, base64 decoding, or suspicious string concatenation detected in the provided code snippet.  
+> No evidence of code obfuscation, base64 decoding, or suspicious string concatenation for execution found in the provided code snippet.  
 > 位置：Code analysis  
 > 建议：Maintain code transparency for security and maintainability.
 
-**🟡 LOW** — External Dependencies  
-> The script does not use @require to load external libraries; all external dependencies are accessed via GM_xmlhttpRequest to known domains. The domains appear to be related to the script author or known services. No version pinning applies as no external libraries are loaded via @require.  
-> 位置：@require and @connect directives  
-> 建议：Verify the trustworthiness of connected domains and monitor for supply chain risks.
+**🟡 LOW** — External Dependency  
+> The script connects to multiple external domains via @connect for SponsorBlock API and Cobalt download services. These domains appear to be specific service endpoints rather than general CDN or third-party libraries. No @require directives are used.  
+> 位置：@connect directives and network requests  
+> 建议：Ensure these external services are trustworthy and monitor for supply chain risks.
 
 ---
 

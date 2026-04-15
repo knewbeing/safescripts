@@ -2,72 +2,88 @@
   "approved": true,
   "data_transmission": {
     "destinations": [
-      "greasyfork.org"
+      "greasyfork.org",
+      "update.greasyfork.org"
     ],
     "detected": true
   },
   "issues": [
     {
-      "description": "The script uses GM_xmlhttpRequest and GM_download which can send network requests potentially to third-party servers. The updateURL and downloadURL point to greasyfork.org, a known script hosting site. No evidence found of user data being sent to unknown third-party servers.",
-      "location": "@grant and metadata URLs",
-      "recommendation": "Ensure that network requests are only made to trusted domains and no sensitive user data is transmitted without explicit user consent.",
+      "description": "脚本使用了GM_xmlhttpRequest权限，可能用于网络请求。需要确认请求目标是否为第三方服务器以及是否携带用户数据。",
+      "location": "@grant GM_xmlhttpRequest",
+      "recommendation": "审查所有网络请求代码，确保请求仅发送到可信服务器且不泄露用户隐私。",
       "severity": "CRITICAL",
-      "type": "Data Transmission"
+      "type": "数据外传"
     },
     {
-      "description": "The script accesses GM_setValue, GM_getValue, GM_deleteValue which may store user preferences locally but no indication of reading sensitive cookies or storage data.",
-      "location": "@grant and code usage",
-      "recommendation": "Avoid accessing or transmitting sensitive user data such as cookies or form inputs unless necessary and with user consent.",
+      "description": "脚本申请了GM_setClipboard权限，可能涉及剪贴板操作，需确认是否有敏感数据写入剪贴板。",
+      "location": "@grant GM_setClipboard",
+      "recommendation": "确认剪贴板操作不会泄露用户隐私或敏感信息。",
       "severity": "CRITICAL",
-      "type": "Privacy Collection"
+      "type": "数据外传"
     },
     {
-      "description": "The script does not use eval(), new Function(), or dynamic script injection from remote sources. No @require directives found that load remote scripts.",
-      "location": "Code analysis",
-      "recommendation": "Maintain no use of remote code execution functions to prevent injection attacks.",
-      "severity": "HIGH",
-      "type": "Remote Code Execution"
+      "description": "脚本申请了unsafeWindow权限，可能访问页面上下文，需确认是否读取或篡改敏感数据。",
+      "location": "@grant unsafeWindow",
+      "recommendation": "审查unsafeWindow的使用，避免访问或泄露敏感信息。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
     },
     {
-      "description": "The script requests multiple GM_* permissions including GM_xmlhttpRequest, GM_download, GM_setClipboard, GM_addElement, unsafeWindow. These are consistent with the script's functionality (downloading videos, clipboard access, UI enhancements). No unused high permissions detected.",
-      "location": "@grant directives vs code usage",
-      "recommendation": "Review permissions periodically to ensure no excessive privileges are requested.",
-      "severity": "HIGH",
-      "type": "Permission Abuse"
+      "description": "脚本申请了GM_setValue、GM_getValue、GM_deleteValue权限，涉及本地存储操作，需确认存储内容不包含敏感信息。",
+      "location": "@grant GM_setValue, GM_getValue, GM_deleteValue",
+      "recommendation": "确认本地存储数据安全且不包含敏感信息。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
     },
     {
-      "description": "No usage of sensitive APIs like navigator.geolocation, RTCPeerConnection, MediaDevices, or Clipboard API detected beyond GM_setClipboard which is granted explicitly.",
-      "location": "Code analysis",
-      "recommendation": "Monitor usage of sensitive APIs to avoid privacy leaks.",
+      "description": "脚本申请了GM_openInTab和GM.openInTab权限，可能打开新标签页，需确认不会被用于钓鱼或恶意跳转。",
+      "location": "@grant GM_openInTab, GM.openInTab",
+      "recommendation": "确认打开的新标签页链接安全且可信。",
       "severity": "MEDIUM",
-      "type": "Sensitive API Call"
+      "type": "敏感API调用"
     },
     {
-      "description": "No signs of code obfuscation or base64 decoding for execution found in the provided code snippet.",
-      "location": "Code analysis",
-      "recommendation": "Keep code readable and avoid obfuscation to facilitate security audits.",
+      "description": "脚本申请了GM_addElement权限，可能动态添加元素，需确认不会注入恶意脚本。",
+      "location": "@grant GM_addElement",
+      "recommendation": "审查动态元素添加代码，避免XSS风险。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本申请了GM_download权限，涉及文件下载，需确认下载内容安全且来源可信。",
+      "location": "@grant GM_download",
+      "recommendation": "确认下载文件安全，避免恶意文件。",
       "severity": "MEDIUM",
-      "type": "Code Obfuscation"
+      "type": "敏感API调用"
     },
     {
-      "description": "The external dependencies (updateURL and downloadURL) point to greasyfork.org, a reputable open-source script repository. No @require directives found, so no external JS libraries loaded.",
-      "location": "Metadata URLs and @require directives",
-      "recommendation": "Use fixed versions and trusted sources for any external dependencies to prevent supply chain attacks.",
+      "description": "脚本申请了GM_registerMenuCommand权限，允许注册菜单命令，需确认不会误导用户执行危险操作。",
+      "location": "@grant GM_registerMenuCommand",
+      "recommendation": "确认菜单命令安全且明确。",
       "severity": "LOW",
-      "type": "External Dependencies"
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本申请了GM_addStyle权限，用于添加样式，风险较低。",
+      "location": "@grant GM_addStyle",
+      "recommendation": "无特殊风险。",
+      "severity": "LOW",
+      "type": "权限滥用"
     }
   ],
   "privacy_collection": {
     "details": [
-      "No evidence of reading document.cookie, localStorage, or sessionStorage.",
-      "No event listeners for keyboard input events detected.",
-      "No access to form input values or browser fingerprinting APIs detected."
+      "脚本可能访问document.cookie、localStorage、sessionStorage用于功能实现。",
+      "脚本可能监听键盘事件以实现快捷键功能。",
+      "脚本可能读取表单字段值以增强用户体验。",
+      "脚本可能访问navigator.userAgent等浏览器指纹相关API。"
     ],
-    "detected": false
+    "detected": true
   },
-  "risk_level": "LOW",
+  "risk_level": "MEDIUM",
   "script_name": "YouTube Improvements – Layout & Video Enhancer",
-  "summary": "The script requests multiple permissions consistent with its functionality, including network requests and clipboard access. Network requests are made only to known trusted domains (greasyfork.org) for updates and downloads. No evidence of user data exfiltration, privacy-invasive data collection, or remote code execution was found. No excessive permissions or code obfuscation detected. Overall, the script appears low risk but users should remain cautious about permissions granted.",
-  "analyzed_at": "2026-04-15T20:26:49.627098+00:00",
+  "summary": "该脚本为YouTube提供多项增强功能，申请了多项权限，包括网络请求、本地存储、剪贴板操作等。存在数据外传和隐私采集的可能，需重点审查网络请求目标和数据处理逻辑。未发现明显远程代码执行风险，但需注意动态元素添加和下载功能的安全性。整体风险等级为中等，建议用户谨慎使用并关注更新。",
+  "analyzed_at": "2026-04-15T20:35:21.465962+00:00",
   "slug": "YouTube_Improvements_Layout_Video_Enhancer"
 }
