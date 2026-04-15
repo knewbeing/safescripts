@@ -23,28 +23,121 @@
   transform: translateY(0);
 }
 
-/* ── 紧凑表格 ── */
+/* ── 宽屏自适应：扩展内容区域 ── */
+:root {
+  --vp-layout-max-width: 1920px;
+}
+
+/* 无侧边栏时内容占满可用宽度 */
+.VPDoc:not(.has-aside) .content-container,
+.VPDoc:not(.has-aside) .content {
+  max-width: 100% !important;
+}
+
+/* 有右侧栏(outline)时也扩展主内容 */
+.VPDoc.has-aside .content-container {
+  max-width: 100% !important;
+}
+
+/* 内容容器与宽度 */
+@media (min-width: 960px) {
+  .VPDoc .container {
+    max-width: 100% !important;
+    padding: 0 24px !important;
+  }
+}
+
+@media (min-width: 1280px) {
+  .VPDoc .container {
+    max-width: 100% !important;
+    padding: 0 40px !important;
+  }
+}
+
+/* ── 表格：全宽、可水平滚动、固定表头 ── */
 .vp-doc table {
   font-size: 13px;
   width: 100%;
+  display: table;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+/* 宽屏表格滚动容器 */
+.vp-doc div[class*="language-"],
+.vp-doc .table-overflow {
+  overflow-x: auto;
+}
+
+/* 让 VitePress 自动渲染的 table 允许横向滚动 */
+.vp-doc :not(div[class*="language-"]) > table {
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .vp-doc table th,
 .vp-doc table td {
-  padding: 5px 10px;
-  line-height: 1.4;
+  padding: 5px 8px;
+  line-height: 1.45;
+  vertical-align: top;
+  word-break: break-word;
 }
 
 .vp-doc table th {
   background: var(--vp-c-bg-soft);
   font-weight: 600;
   white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
-/* 安全说明列允许换行展示多个问题 */
+/* 各列宽度分配（发现脚本5列：风险/脚本/来源/平台/说明） */
+.vp-doc table th:nth-child(1),
+.vp-doc table td:nth-child(1) {
+  width: 90px;
+  min-width: 80px;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.vp-doc table th:nth-child(2),
+.vp-doc table td:nth-child(2) {
+  width: 200px;
+  min-width: 140px;
+}
+
+.vp-doc table th:nth-child(3),
+.vp-doc table td:nth-child(3) {
+  width: 120px;
+  min-width: 80px;
+}
+
+.vp-doc table th:nth-child(4),
+.vp-doc table td:nth-child(4) {
+  width: 60px;
+  min-width: 50px;
+  text-align: center;
+}
+
+/* 安全说明列：占剩余宽度 */
+.vp-doc table th:last-child,
 .vp-doc table td:last-child {
   font-size: 12px;
   line-height: 1.5;
+  min-width: 280px;
+}
+
+/* 风险等级行背景色 */
+.vp-doc table tr:has(td:first-child:contains("⛔")) {
+  background: rgba(255, 60, 60, 0.05);
+}
+.vp-doc table tr:has(td:first-child:contains("🔴")) {
+  background: rgba(255, 120, 60, 0.04);
+}
+.vp-doc table tr:has(td:first-child:contains("🟠")) {
+  background: rgba(255, 180, 60, 0.03);
 }
 
 /* ── 紧凑页面间距 ── */
@@ -70,11 +163,6 @@
   margin: 8px 0;
   padding: 6px 14px;
   font-size: 13px;
-}
-
-/* ── 风险等级颜色条（表格行） ── */
-.vp-doc table tr:has(td:nth-child(4) > .risk-critical) {
-  background: rgba(255, 80, 80, 0.05);
 }
 
 /* ── 脚本详情页安装按钮区域紧凑 ── */

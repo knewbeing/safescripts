@@ -57,9 +57,7 @@ export default defineConfig({
       provider: 'local',
     },
 
-    outline: {
-      label: '本页目录',
-    },
+    outline: false,
 
     docFooter: {
       prev: '上一页',

@@ -66,10 +66,10 @@ def _risk_issues_md(entry: dict) -> str:
     summary = entry.get("security_summary", "") or ""
 
     if risk in ("SAFE", "UNKNOWN"):
-        return summary[:80] + "…" if len(summary) > 80 else (summary or "无已知风险")
+        return summary[:120] + "…" if len(summary) > 120 else (summary or "无已知风险")
 
     if risk == "LOW":
-        return summary[:80] + "…" if len(summary) > 80 else (summary or "低风险")
+        return summary[:120] + "…" if len(summary) > 120 else (summary or "低风险")
 
     # MEDIUM / HIGH / CRITICAL — 显示具体问题
     sev_order = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
@@ -78,20 +78,20 @@ def _risk_issues_md(entry: dict) -> str:
     top = sorted(
         [i for i in issues if isinstance(i, dict)],
         key=lambda x: sev_order.get(x.get("severity", "LOW"), 9),
-    )[:4]
+    )[:5]
 
     if top:
         parts = []
         for issue in top:
             icon = sev_icon.get(issue.get("severity", ""), "⚠️")
             itype = issue.get("type", "")
-            desc = (issue.get("description", "") or "")[:60]
-            if desc and not desc.endswith("…"):
-                desc = desc + "…" if len(issue.get("description", "")) > 60 else desc
+            desc = (issue.get("description", "") or "")[:80]
+            if len(issue.get("description", "")) > 80:
+                desc += "…"
             parts.append(f"{icon}**{itype}**: {desc}")
         return "<br>".join(parts)
 
-    return summary[:80] + "…" if len(summary) > 80 else (summary or "存在风险")
+    return summary[:120] + "…" if len(summary) > 120 else (summary or "存在风险")
 
 
 def _sort_entries_safe_first(entries: list[dict]) -> list[dict]:
@@ -103,6 +103,11 @@ def _sort_entries_safe_first(entries: list[dict]) -> list[dict]:
 def render_managed_index(entries: list[dict]) -> str:
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     lines = [
+        "---",
+        "aside: false",
+        "outline: false",
+        "---",
+        "",
         "# 托管脚本",
         "",
         f"> 共 **{len(entries)}** 个脚本　·　{now}　·　由 `target-repos.json` 配置，每天自动同步安全分析",
@@ -135,6 +140,11 @@ def render_managed_index(entries: list[dict]) -> str:
 def render_discovered_index(entries: list[dict]) -> str:
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     lines = [
+        "---",
+        "aside: false",
+        "outline: false",
+        "---",
+        "",
         "# 发现的热门脚本",
         "",
         f"> 共 **{len(entries)}** 个脚本　·　{now}",
