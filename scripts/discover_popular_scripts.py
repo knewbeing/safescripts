@@ -145,13 +145,11 @@ def search_userscript_repos(token: str) -> list[dict]:
             print(f"  GitHub topic search ({topic}) failed: {exc}", flush=True)
         time.sleep(1)
 
-    # 专业工具关键词搜索
+    # 专业工具关键词搜索 — 可能被 GitHub 限速，失败时跳过
     pro_keywords = [
         '"==UserScript==" github enhancement',
         '"==UserScript==" jira productivity',
         '"==UserScript==" confluence userscript',
-        '"==UserScript==" notion enhancer',
-        '"==UserScript==" gitlab enhancement',
     ]
     for kw in pro_keywords:
         try:
@@ -160,9 +158,13 @@ def search_userscript_repos(token: str) -> list[dict]:
             for f in data.get("items", []):
                 f["repo_stars"] = f.get("repository", {}).get("stargazers_count", 0)
                 candidates.append(f)
-            time.sleep(1)
+            time.sleep(2)  # 更长的间隔避免限速
         except Exception as exc:
-            print(f"  GitHub kw search failed: {exc}", flush=True)
+            if "403" in str(exc) or "rate" in str(exc).lower():
+                print(f"  GitHub kw search rate-limited, skipping: {kw[:30]}", flush=True)
+            else:
+                print(f"  GitHub kw search failed: {exc}", flush=True)
+            time.sleep(3)
 
     print(f"  GitHub repo topic search: {len(candidates)} file candidates", flush=True)
     return candidates
@@ -232,6 +234,7 @@ def search_greasyfork(max_per_sort: int = 25) -> list[dict]:
                 "platform": "greasyfork",
                 "file_name": code_url.rstrip("/").split("/")[-1],
                 "repo": str(sid),
+                "source_repo": str(sid),
                 "stars": s.get("total_installs", 0),   # 用安装量代替 stars
                 "install_count": s.get("total_installs", 0),
                 "good_ratings": s.get("good_ratings", 0),
@@ -240,7 +243,7 @@ def search_greasyfork(max_per_sort: int = 25) -> list[dict]:
                 "download_url": code_url,
                 "source_url": s.get("url", f"https://greasyfork.org/scripts/{sid}"),
                 "script_name": s.get("name", ""),
-                "description": s.get("description", ""),
+                "description": s.get("description") or "",
                 "metadata_preview": _fetch_preview(code_url),
             })
             time.sleep(0.3)
@@ -274,6 +277,7 @@ def search_greasyfork(max_per_sort: int = 25) -> list[dict]:
                 "platform": "greasyfork",
                 "file_name": code_url.rstrip("/").split("/")[-1],
                 "repo": str(sid),
+                "source_repo": str(sid),
                 "stars": s.get("total_installs", 0),
                 "install_count": s.get("total_installs", 0),
                 "good_ratings": s.get("good_ratings", 0),
@@ -282,7 +286,7 @@ def search_greasyfork(max_per_sort: int = 25) -> list[dict]:
                 "download_url": code_url,
                 "source_url": s.get("url", f"https://greasyfork.org/scripts/{sid}"),
                 "script_name": s.get("name", ""),
-                "description": s.get("description", ""),
+                "description": s.get("description") or "",
                 "category_hint": label,
                 "metadata_preview": _fetch_preview(code_url),
             })
@@ -681,10 +685,10 @@ def main() -> None:
             "good_ratings": c.get("good_ratings"),
             "pushed_at": c.get("pushed_at", ""),
             "download_url": c.get("download_url", ""),
-            "category_hint": c.get("category_hint", ""),
-            "script_name": c.get("script_name", ""),
-            "description": c.get("description", "")[:100],
-            "metadata_preview": c.get("metadata_preview", "")[:400],
+            "category_hint": c.get("category_hint") or "",
+            "script_name": c.get("script_name") or "",
+            "description": (c.get("description") or "")[:100],
+            "metadata_preview": (c.get("metadata_preview") or "")[:400],
         }
         for c in candidates[:100]
     ]

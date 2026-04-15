@@ -7,8 +7,7 @@
   "userscripts": [
     "https://github.com/MiPoNianYou/UserScripts/blob/main/Scripts/Password-Revealer.user.js",
     "https://github.com/maboloshi/github-chinese/blob/gh-pages/main.user.js",
-    "https://github.com/XIU2/UserScript/blob/master/GoodTwitter2.user.js",
-    "https://greasyfork.org/scripts/412245-github-issue-link-status/code/GitHub%20Issue%20Link%20Status.user.js",
-    "https://greasyfork.org/scripts/460718-refined-github-sse/code/Refined%20GitHub%20(SSE).user.js"
+    "https://github.com/XIU2/UserScript/blob/master/GithubEnhanced-High-Speed-Download.user.js",
+    "https://update.greasyfork.org/scripts/412245/GitHub%20Issue%20Link%20Status.user.js"
   ]
 }
