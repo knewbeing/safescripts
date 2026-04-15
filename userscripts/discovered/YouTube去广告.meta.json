@@ -1,0 +1,28 @@
+{
+  "slug": "YouTube去广告",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/459541-youtube-adb",
+  "source_repo": "459541",
+  "raw_url": "https://update.greasyfork.org/scripts/459541/YouTube%E5%8E%BB%E5%B9%BF%E5%91%8A.user.js",
+  "filename": "YouTube去广告.user.js",
+  "name": "youtube-adb",
+  "version": "6.21",
+  "description": "A script to remove YouTube ads, including static ads and video ads, without interfering with the network and ensuring safety.",
+  "match": [
+    "*://*.youtube.com/*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  youtube-adb\n// @name:zh-CN  YouTube去广告\n// @name:zh-TW  YouTube去廣告\n// @name:zh-HK  YouTube去廣告\n// @name:zh-MO  YouTube去廣告\n// @namespace  https://github.com/iamfugui/youtube-adb\n// @version  6.21\n// @description  A script to remove YouTube ads, including static ads and video ads, without interfering with the network and ensuring safety.\n// @description:zh-CN  脚本用于移除YouTube广告，包括静态广告和视频广告。不会干扰网络，安全。\n// @description:zh-TW  腳本用於移除 YouTube 廣告，包括靜態廣告和視頻廣告。不會干擾網路，安全。\n// @description:zh-HK  腳本用於移除 YouTube 廣告，包括靜態廣告和視頻廣告。不會干擾網路，安全。\n// @description:zh-MO  腳本用於移除 YouTube 廣告，包括靜態廣告和視頻廣告。不會干擾網路，安全。\n// @match  *://*.youtube.com/*\n// @exclude  *://accounts.youtube.com/*\n// @exclude  *://www.youtube.com/live_chat_replay*\n// @exclude  *://www.youtube.com/persist_identity*\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=YouTube.com\n// @grant  none\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/459541/YouTube%E5%8E%BB%E5%B9%BF%E5%91%8A.user.js\n// @updateURL  https://update.greasyfork.org/scripts/459541/YouTube%E5%8E%BB%E5%B9%BF%E5%91%8A.meta.js",
+  "sha256": "9758d2bbac03f3fefbc1fe534fd6a9c6fcbee81fbdcb0566ea998c92133a131f",
+  "discovered_at": "2026-04-15T21:34:49.324406+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 296735,
+  "good_ratings": 151,
+  "bad_ratings": 27,
+  "summary": {}
+}

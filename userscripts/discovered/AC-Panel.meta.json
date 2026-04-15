@@ -19,7 +19,7 @@
   ],
   "metadata_raw": "// @name  AC-baidu： 啊猫-操作面板\n// @description  用于快速操作和显示的一个面板\n// @author  AC\n// @create  2024-12-12\n// @lastmodified  2024-03-07\n// @version  1.0\n// @include  https://zhibo2.90dao.com/\n// @namespace  gm.com\n// @copyright  2024, AC\n// @note  2024.12.12-V1.0 初始化第一版\n// @run-at  document-end\n// @grant  GM_setClipboard\n// @require  https://update.greasyfork.org/scripts/503097/1424938/VueEntry.js",
   "sha256": "b417995ea2decb97bfbe53554e395085ecabbe4417507aa84fbf38756a04d9e8",
-  "discovered_at": "2026-04-15T21:15:41.354226+00:00",
+  "discovered_at": "2026-04-15T21:30:42.628342+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,

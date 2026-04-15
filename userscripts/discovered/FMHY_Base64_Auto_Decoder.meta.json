@@ -1,0 +1,36 @@
+{
+  "slug": "FMHY_Base64_Auto_Decoder",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/485772-fmhy-base64-auto-decoder",
+  "source_repo": "485772",
+  "raw_url": "https://update.greasyfork.org/scripts/485772/FMHY%20Base64%20Auto%20Decoder.user.js",
+  "filename": "FMHY_Base64_Auto_Decoder.user.js",
+  "name": "FMHY Base64 Auto Decoder",
+  "version": "2.5",
+  "description": "Decode base64-encoded links in some pastebins and make URLs clickable",
+  "match": [
+    "*://rentry.co/*",
+    "*://rentry.org/*",
+    "*://pastes.fmhy.net/*",
+    "*://bin.disroot.org/?*#*",
+    "*://privatebin.net/?*#*",
+    "*://textbin.xyz/?*#*",
+    "*://bin.idrix.fr/?*#*",
+    "*://privatebin.rinuploads.org/?*#*",
+    "*://pastebin.com/*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  FMHY Base64 Auto Decoder\n// @version  2.5\n// @author  Rust1667\n// @description  Decode base64-encoded links in some pastebins and make URLs clickable\n// @match  *://rentry.co/*\n// @match  *://rentry.org/*\n// @match  *://pastes.fmhy.net/*\n// @match  *://bin.disroot.org/?*#*\n// @match  *://privatebin.net/?*#*\n// @match  *://textbin.xyz/?*#*\n// @match  *://bin.idrix.fr/?*#*\n// @match  *://privatebin.rinuploads.org/?*#*\n// @match  *://pastebin.com/*\n// @grant  none\n// @icon  https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://fmhy.net&size=64\n// @namespace  https://greasyfork.org/users/980489\n// @downloadURL  https://update.greasyfork.org/scripts/485772/FMHY%20Base64%20Auto%20Decoder.user.js\n// @updateURL  https://update.greasyfork.org/scripts/485772/FMHY%20Base64%20Auto%20Decoder.meta.js",
+  "sha256": "70eb484ee46e8054fd1cf8b493a71b66f403b5be3755d474a49f71302f635200",
+  "discovered_at": "2026-04-15T21:33:42.003338+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 28364,
+  "good_ratings": 7,
+  "bad_ratings": 2,
+  "summary": {}
+}

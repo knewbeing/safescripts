@@ -1,0 +1,34 @@
+{
+  "slug": "CAI_Custom_Chat_Bubbles_Bypass_Chat_Limit_Unlock_edit_message_button",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/569906-c-ai-custom-chat-bubbles-bypass-chat-limit-unlock-edit-message-button",
+  "source_repo": "569906",
+  "raw_url": "https://update.greasyfork.org/scripts/569906/CAI%20Custom%20Chat%20Bubbles%20%2B%20Bypass%20Chat%20Limit%20%28Unlock%20edit%20message%20button%29.user.js",
+  "filename": "CAI_Custom_Chat_Bubbles_Bypass_Chat_Limit_Unlock_edit_message_button.user.js",
+  "name": "C.AI Custom Chat Bubbles + Bypass Chat Limit (Unlock edit message button)",
+  "version": "1.3.2-stable",
+  "description": "Customizes character.ai chat bubbles with lots of styles, themed input box for a more aesthetic experience, and custom background. Added Bypass Chat limit feature in Advanced Option",
+  "match": [
+    "https://character.ai/*",
+    "https://www.character.ai/*"
+  ],
+  "grant": [
+    "GM_setValue",
+    "GM_getValue",
+    "GM_xmlhttpRequest",
+    "GM_addStyle"
+  ],
+  "require": [
+    "https://unpkg.com/turndown@7.1.3/lib/turndown.browser.umd.js"
+  ],
+  "metadata_raw": "// @name  C.AI Custom Chat Bubbles + Bypass Chat Limit (Unlock edit message button)\n// @namespace  https://miku.us.kg/\n// @version  1.3.2-stable\n// @description  Customizes character.ai chat bubbles with lots of styles, themed input box for a more aesthetic experience, and custom background. Added Bypass Chat limit feature in Advanced Option\n// @author  @redsus.vn on Discord\n// @match  https://character.ai/*\n// @match  https://www.character.ai/*\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=character.ai\n// @require  https://unpkg.com/turndown@7.1.3/lib/turndown.browser.umd.js\n// @grant  GM_setValue\n// @grant  GM_getValue\n// @grant  GM_xmlhttpRequest\n// @grant  GM_addStyle\n// @connect  translate.googleapis.com\n// @license  MIT\n// @run-at  document-start\n// @downloadURL  https://update.greasyfork.org/scripts/569906/CAI%20Custom%20Chat%20Bubbles%20%2B%20Bypass%20Chat%20Limit%20%28Unlock%20edit%20message%20button%29.user.js\n// @updateURL  https://update.greasyfork.org/scripts/569906/CAI%20Custom%20Chat%20Bubbles%20%2B%20Bypass%20Chat%20Limit%20%28Unlock%20edit%20message%20button%29.meta.js",
+  "sha256": "1ea7ae8608647b8260799fee40c09908d156be4fdb0a890fc3aa9f670404433d",
+  "discovered_at": "2026-04-15T21:34:45.612214+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 3831,
+  "good_ratings": 4,
+  "bad_ratings": 6,
+  "summary": {}
+}

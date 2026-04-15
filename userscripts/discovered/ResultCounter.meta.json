@@ -27,7 +27,7 @@
   "require": [],
   "metadata_raw": "// @name  搜索结果自动加序号\n// @author  burningall\n// @description  给百度\\谷歌\\必应等搜索结果加上序号\n// @version  2017.7.21\n// @include  *www.baidu.com*\n// @include  *news.baidu.com*\n// @include  *zhidao.baidu.com*\n// @include  *wenku.baidu.com*\n// @include  *v.baidu.com*\n// @include  *tieba.baidu.com/f/search/*\n// @include  *image.baidu.com*\n// @include  *www.google.com*\n// @include  *cn.bing.com*\n// @include  *www.sogou.com*\n// @include  *www.so.com*\n// @include  *www.youdao.com*\n// @include  *bbs.kafan.cn*\n// @contributionURL  troy450409405@gmail.com\n// @namespace  https://greasyfork.org/zh-CN/users/3400-axetroy\n// @note  Edit from axetroy 感谢axetroy大神的脚本，我只是基于大神的脚本，进行了简单的修复",
   "sha256": "15121dd49cc9c2ea8a758cd86862282103373d4eab3222105cd21399495d87dd",
-  "discovered_at": "2026-04-15T21:16:36.723607+00:00",
+  "discovered_at": "2026-04-15T21:31:38.180291+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,

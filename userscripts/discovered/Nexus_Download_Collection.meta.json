@@ -1,0 +1,34 @@
+{
+  "slug": "Nexus_Download_Collection",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/483337-nexus-download-collection",
+  "source_repo": "483337",
+  "raw_url": "https://update.greasyfork.org/scripts/483337/Nexus%20Download%20Collection.user.js",
+  "filename": "Nexus_Download_Collection.user.js",
+  "name": "Nexus Download Collection",
+  "version": "0.9.9",
+  "description": "Download every mods of a collection in a single click",
+  "match": [
+    "https://www.nexusmods.com/*"
+  ],
+  "grant": [
+    "GM.xmlHttpRequest",
+    "GM_xmlhttpRequest",
+    "GM_setValue",
+    "GM_getValue",
+    "GM.setValue",
+    "GM.getValue",
+    "GM_addStyle"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Nexus Download Collection\n// @namespace  NDC\n// @version  0.9.9\n// @description  Download every mods of a collection in a single click\n// @author  Drigtime\n// @match  https://www.nexusmods.com/*\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=nexusmods.com\n// @compatible  chrome\n// @compatible  edge\n// @compatible  firefox\n// @compatible  safari\n// @compatible  brave\n// @grant  GM.xmlHttpRequest\n// @grant  GM_xmlhttpRequest\n// @grant  GM_setValue\n// @grant  GM_getValue\n// @grant  GM.setValue\n// @grant  GM.getValue\n// @grant  GM_addStyle\n// @connect  nexusmods.com\n// @downloadURL  https://update.greasyfork.org/scripts/483337/Nexus%20Download%20Collection.user.js\n// @updateURL  https://update.greasyfork.org/scripts/483337/Nexus%20Download%20Collection.meta.js",
+  "sha256": "0185e543bfc13cea0bb7a35e99cdb0aebc28db21267089bb2c6b491c2a139fcd",
+  "discovered_at": "2026-04-15T21:37:43.500551+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 17311,
+  "good_ratings": 79,
+  "bad_ratings": 4,
+  "summary": {}
+}

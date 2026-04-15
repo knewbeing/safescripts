@@ -1,0 +1,30 @@
+{
+  "slug": "Undiscord_20",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/569218-undiscord-2-0",
+  "source_repo": "569218",
+  "raw_url": "https://update.greasyfork.org/scripts/569218/Undiscord%2020.user.js",
+  "filename": "Undiscord_20.user.js",
+  "name": "Undiscord 2.0",
+  "version": "5.2.6",
+  "description": "Delete all messages in a Discord channel or DM (Bulk deletion)",
+  "match": [
+    "https://*.discord.com/app",
+    "https://*.discord.com/channels/*",
+    "https://*.discord.com/login"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Undiscord 2.0\n// @description  Delete all messages in a Discord channel or DM (Bulk deletion)\n// @version  5.2.6\n// @author  victornpb\n// @homepageURL  https://github.com/victornpb/undiscord\n// @supportURL  https://github.com/victornpb/undiscord/discussions\n// @match  https://*.discord.com/app\n// @match  https://*.discord.com/channels/*\n// @match  https://*.discord.com/login\n// @license  MIT\n// @namespace  https://github.com/victornpb/deleteDiscordMessages\n// @icon  https://victornpb.github.io/undiscord/images/icon128.png\n// @contributionURL  https://www.buymeacoffee.com/vitim\n// @grant  none\n// @attribution  Original project (https://github.com/victornpb/undiscord)\n// @downloadURL  https://update.greasyfork.org/scripts/569218/Undiscord%2020.user.js\n// @updateURL  https://update.greasyfork.org/scripts/569218/Undiscord%2020.meta.js",
+  "sha256": "3e75bcff041c27aadc3e18d8b3a20765671cbf8b3c9678bf4f5193a9736ad059",
+  "discovered_at": "2026-04-15T21:34:43.699627+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 2303,
+  "good_ratings": 1,
+  "bad_ratings": 0,
+  "summary": {}
+}
