@@ -1,5 +1,5 @@
 ---
-title: FF Scouter V2
+title: "FF Scouter V2"
 ---
 
 # FF Scouter V2

@@ -1,5 +1,5 @@
 ---
-title: Nexus Download Collection
+title: "Nexus Download Collection"
 ---
 
 # Nexus Download Collection

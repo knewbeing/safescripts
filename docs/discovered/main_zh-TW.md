@@ -1,5 +1,5 @@
 ---
-title: GitHub 中文化插件（繁體版）
+title: "GitHub 中文化插件（繁體版）"
 ---
 
 # GitHub 中文化插件（繁體版）

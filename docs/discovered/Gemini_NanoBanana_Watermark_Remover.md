@@ -1,5 +1,5 @@
 ---
-title: Gemini NanoBanana Watermark Remover
+title: "Gemini NanoBanana Watermark Remover"
 ---
 
 # Gemini NanoBanana Watermark Remover

@@ -1,5 +1,5 @@
 ---
-title: Undiscord
+title: "Undiscord"
 ---
 
 # Undiscord

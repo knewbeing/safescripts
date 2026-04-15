@@ -27,7 +27,7 @@
   ],
   "metadata_raw": "// @name  GitHub 中文化插件\n// @namespace  https://github.com/maboloshi/github-chinese\n// @description  中文化 GitHub 界面的部分菜单及内容。原作者为楼教主(http://www.52cik.com/)。\n// @copyright  2021, 沙漠之子 (https://maboloshi.github.io/Blog)\n// @icon  https://github.githubassets.com/pinned-octocat.svg\n// @version  1.9.2-2026-04-08\n// @author  沙漠之子\n// @license  GPL-3.0\n// @match  https://github.com/*\n// @match  https://skills.github.com/*\n// @match  https://gist.github.com/*\n// @match  https://www.githubstatus.com/*\n// @require  https://greasyfork.org/scripts/435207-github-%E4%B8%AD%E6%96%87%E5%8C%96%E6%8F%92%E4%BB%B6-%E4%B8%AD%E6%96%87%E8%AF%8D%E5%BA%93%E8%A7%84%E5%88%99/code/GitHub%20%E4%B8%AD%E6%96%87%E5%8C%96%E6%8F%92%E4%BB%B6%20-%20%E4%B8%AD%E6%96%87%E8%AF%8D%E5%BA%93%E8%A7%84%E5%88%99.js?v1.9.2-2026-04-08\n// @run-at  document-end\n// @grant  GM_xmlhttpRequest\n// @grant  GM_getValue\n// @grant  GM_setValue\n// @grant  GM_registerMenuCommand\n// @grant  GM_unregisterMenuCommand\n// @grant  GM_notification\n// @connect  www.iflyrec.com\n// @supportURL  https://github.com/maboloshi/github-chinese/issues",
   "sha256": "b1492eb97a4325a87a413d08aae3595cc47122a4bbafc8106cf4516d5cbc2755",
-  "discovered_at": "2026-04-15T21:29:40.082605+00:00",
+  "discovered_at": "2026-04-15T21:51:18.084337+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,

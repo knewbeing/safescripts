@@ -1,5 +1,5 @@
 ---
-title: Online shopping assistant & Automatically query coupons & Save money
+title: "Online shopping assistant & Automatically query coupons & Save money"
 ---
 
 # Online shopping assistant & Automatically query coupons & Save money

@@ -1,5 +1,5 @@
 ---
-title: Ping.Sx enhancement
+title: "Ping.Sx enhancement"
 ---
 
 # Ping.Sx enhancement

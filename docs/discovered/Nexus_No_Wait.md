@@ -1,5 +1,5 @@
 ---
-title: Nexus No Wait ++
+title: "Nexus No Wait ++"
 ---
 
 # Nexus No Wait ++

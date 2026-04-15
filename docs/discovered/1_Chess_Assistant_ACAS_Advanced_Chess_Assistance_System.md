@@ -1,5 +1,5 @@
 ---
-title: 🏆 [#1 Chess Assistant] A.C.A.S (Advanced Chess Assistance System)
+title: "🏆 [#1 Chess Assistant] A.C.A.S (Advanced Chess Assistance System)"
 ---
 
 # 🏆 [#1 Chess Assistant] A.C.A.S (Advanced Chess Assistance System)

@@ -17,7 +17,7 @@
   "require": [],
   "metadata_raw": "// @name  AC-有道取词+翻译-库文件\n// @description  库文件，不能直接调用的\n// @version  1.8\n// @namespace  youdao\n// @author  AC\n// @include  *\n// @icon  https://gitee.com/remixAC/GM_script/raw/master/images/head.jpg\n// @run-at  document-end\n// @connect  xbaidu.ntaow.com\n// @grant  GM_xmlhttpRequest\n// @note  V1.0 2019-02-21 用于跟随搜狗的API更新",
   "sha256": "ac531634d5be1b24efb47a49d0f0d316018c59870f496a415274a37acbc671a3",
-  "discovered_at": "2026-04-15T21:30:44.621777+00:00",
+  "discovered_at": "2026-04-15T21:52:22.692013+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,

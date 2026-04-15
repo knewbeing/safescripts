@@ -1,5 +1,5 @@
 ---
-title: K-Bot | Kahoot Answer Viewer & Auto-Answer Cheat Mod Menu (Working 2026)
+title: "K-Bot | Kahoot Answer Viewer & Auto-Answer Cheat Mod Menu (Working 2026)"
 ---
 
 # K-Bot | Kahoot Answer Viewer & Auto-Answer Cheat Mod Menu (Working 2026)

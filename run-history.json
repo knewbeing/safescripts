@@ -206,5 +206,37 @@
     "issues": [
       "⚠️ 仅 22/50 个发现脚本有安全检查"
     ]
+  },
+  {
+    "run_id": "24480133266",
+    "run_number": 16,
+    "timestamp": "2026-04-15T22:07:46.125843+00:00",
+    "success": true,
+    "managed": {
+      "total": 5,
+      "with_security": 5,
+      "risk": {
+        "MEDIUM": 4,
+        "SAFE": 1
+      }
+    },
+    "discovered": {
+      "total": 50,
+      "with_security": 22,
+      "risk": {
+        "SAFE": 9,
+        "LOW": 6,
+        "CRITICAL": 1,
+        "MEDIUM": 4,
+        "HIGH": 2
+      }
+    },
+    "pages": {
+      "status": 200,
+      "ok": true
+    },
+    "issues": [
+      "⚠️ 仅 22/50 个发现脚本有安全检查"
+    ]
   }
 ]

@@ -1,5 +1,5 @@
 ---
-title: EasyTube V3 — Ad Skip, SponsorBlock & HD Download⬇️🚀
+title: "EasyTube V3 — Ad Skip, SponsorBlock & HD Download⬇️🚀"
 ---
 
 # EasyTube V3 — Ad Skip, SponsorBlock & HD Download⬇️🚀

@@ -1,5 +1,5 @@
 ---
-title: BEST Cheat for Chess.com (NEW Stockfish 18.0.5 to 9.0, No Anti-Ban)
+title: "BEST Cheat for Chess.com (NEW Stockfish 18.0.5 to 9.0, No Anti-Ban)"
 ---
 
 # BEST Cheat for Chess.com (NEW Stockfish 18.0.5 to 9.0, No Anti-Ban)

@@ -1,5 +1,5 @@
 ---
-title: AC-baidu： 优化百度、搜狗、谷歌搜索结果之重定向 lite
+title: "AC-baidu： 优化百度、搜狗、谷歌搜索结果之重定向 lite"
 ---
 
 # AC-baidu： 优化百度、搜狗、谷歌搜索结果之重定向 lite

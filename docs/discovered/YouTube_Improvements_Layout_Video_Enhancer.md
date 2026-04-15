@@ -1,5 +1,5 @@
 ---
-title: YouTube Improvements – Layout & Video Enhancer
+title: "YouTube Improvements – Layout & Video Enhancer"
 ---
 
 # YouTube Improvements – Layout & Video Enhancer

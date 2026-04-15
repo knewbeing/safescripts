@@ -1,5 +1,5 @@
 ---
-title: C.AI Custom Chat Bubbles + Bypass Chat Limit (Unlock edit message button)
+title: "C.AI Custom Chat Bubbles + Bypass Chat Limit (Unlock edit message button)"
 ---
 
 # C.AI Custom Chat Bubbles + Bypass Chat Limit (Unlock edit message button)

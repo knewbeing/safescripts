@@ -1,5 +1,5 @@
 ---
-title: Undiscord 2.0
+title: "Undiscord 2.0"
 ---
 
 # Undiscord 2.0

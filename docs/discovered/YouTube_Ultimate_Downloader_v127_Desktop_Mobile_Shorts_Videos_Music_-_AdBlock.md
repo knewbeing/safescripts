@@ -1,5 +1,5 @@
 ---
-title: YouTube™ Ultimate Downloader v12.7 👑🌍 — Desktop & Mobile | Shorts, Videos & Music 🔥 - AdBlock 🛡️🚫
+title: "YouTube™ Ultimate Downloader v12.7 👑🌍 — Desktop & Mobile | Shorts, Videos & Music 🔥 - AdBlock 🛡️🚫"
 ---
 
 # YouTube™ Ultimate Downloader v12.7 👑🌍 — Desktop & Mobile | Shorts, Videos & Music 🔥 - AdBlock 🛡️🚫

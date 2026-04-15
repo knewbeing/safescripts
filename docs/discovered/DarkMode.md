@@ -1,5 +1,5 @@
 ---
-title: Dark Mode
+title: "Dark Mode"
 ---
 
 # Dark Mode

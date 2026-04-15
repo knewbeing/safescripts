@@ -1,5 +1,5 @@
 ---
-title: CheatGuessr | GeoGuessr Cheat
+title: "CheatGuessr | GeoGuessr Cheat"
 ---
 
 # CheatGuessr | GeoGuessr Cheat
