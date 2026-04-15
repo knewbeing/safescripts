@@ -269,11 +269,20 @@ jobs:
       - name: Regenerate index pages
         run: python scripts/generate_docs_index.py
 
+      - name: "⑨ Write run history (repo memory)"
+        continue-on-error: true
+        env:
+          GITHUB_RUN_ID:     ${{ github.run_id }}
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          pip install requests -q
+          python scripts/write_run_history.py || true
+
       - name: Commit updated files
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add userscripts/ docs/managed/ docs/discovered/ || true
+          git add userscripts/ docs/managed/ docs/discovered/ docs/status/ run-history.json || true
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else

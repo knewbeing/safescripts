@@ -14,6 +14,7 @@ export default defineConfig({
       { text: '首页', link: '/' },
       { text: '托管脚本', link: '/managed/' },
       { text: '发现脚本', link: '/discovered/' },
+      { text: '运行历史', link: '/status/' },
     ],
 
     sidebar: {
@@ -30,6 +31,14 @@ export default defineConfig({
           text: '发现脚本',
           items: [
             { text: '脚本总览', link: '/discovered/' },
+          ],
+        },
+      ],
+      '/status/': [
+        {
+          text: '运行历史',
+          items: [
+            { text: '运行记录', link: '/status/' },
           ],
         },
       ],
