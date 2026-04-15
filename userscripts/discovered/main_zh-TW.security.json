@@ -1,0 +1,69 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [
+      "fanyi.iflyrec.com"
+    ],
+    "detected": true
+  },
+  "issues": [
+    {
+      "description": "脚本使用了 GM_xmlhttpRequest 权限，并且在元数据中声明了 @connect fanyi.iflyrec.com，表明可能向该第三方服务器发送请求。代码中未显示具体请求细节，但存在潜在数据外传风险。",
+      "location": "元数据和权限声明",
+      "recommendation": "确认脚本是否确实向第三方服务器发送用户数据，若无必要应移除相关权限和连接声明。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本中未发现对 document.cookie、localStorage、sessionStorage 的读取操作，也未监听键盘输入事件，未访问浏览器指纹相关 API。",
+      "location": "完整代码分析",
+      "recommendation": "无隐私采集行为，继续保持。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本未使用 eval、new Function、setTimeout(string) 等远程代码执行相关函数，也未动态加载远程脚本，@require 指向的远程脚本来源可信且固定版本。",
+      "location": "完整代码和元数据",
+      "recommendation": "无远程代码执行风险。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本申请了 GM_xmlhttpRequest、GM_getValue、GM_setValue、GM_registerMenuCommand、GM_unregisterMenuCommand、GM_notification 权限，代码中合理使用这些权限，未发现未使用的高权限申请。",
+      "location": "元数据和代码权限使用",
+      "recommendation": "权限申请合理，无滥用。",
+      "severity": "HIGH",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本未使用 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等敏感 API。",
+      "location": "完整代码分析",
+      "recommendation": "无敏感 API 调用风险。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "代码结构清晰，无明显混淆、base64 解码或字符串拼接执行特征。",
+      "location": "完整代码分析",
+      "recommendation": "代码保持清晰，便于审计。",
+      "severity": "MEDIUM",
+      "type": "代码混淆"
+    },
+    {
+      "description": "@require 加载的第三方库来自 GitHub 官方 raw 内容，且版本固定，来源可信。",
+      "location": "元数据",
+      "recommendation": "继续使用可信来源并固定版本。",
+      "severity": "LOW",
+      "type": "外部依赖"
+    }
+  ],
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "MEDIUM",
+  "script_name": "GitHub 中文化插件（繁體版）",
+  "summary": "该脚本主要用于 GitHub 界面中文化，未发现隐私采集和远程代码执行风险。存在向第三方服务器 fanyi.iflyrec.com 发送请求的可能，需确认是否涉及用户数据外传。权限申请合理，代码清晰无混淆，外部依赖可信。综合评估风险等级为中等。",
+  "analyzed_at": "2026-04-15T20:27:34.080518+00:00",
+  "slug": "main_zh-TW"
+}

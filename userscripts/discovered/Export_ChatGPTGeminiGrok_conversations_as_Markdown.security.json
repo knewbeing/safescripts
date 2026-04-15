@@ -6,11 +6,46 @@
   },
   "issues": [
     {
-      "description": "Script requests GM_xmlhttpRequest permission but does not use it in the code, indicating unnecessary high privilege grant.",
-      "location": "@grant directives and script code",
-      "recommendation": "Remove unused GM_xmlhttpRequest grant to minimize permissions.",
+      "description": "Script requests multiple GM_* permissions including GM_xmlhttpRequest but does not use network requests in the code, indicating no data exfiltration or external communication.",
+      "location": "@grant and code usage",
+      "recommendation": "Remove unused GM_xmlhttpRequest grant to reduce attack surface.",
       "severity": "HIGH",
-      "type": "Permission Abuse"
+      "type": "Permissions Misuse"
+    },
+    {
+      "description": "Script does not access document.cookie, localStorage, sessionStorage, or listen to keyboard or form input events, indicating no privacy-sensitive data collection.",
+      "location": "Code analysis",
+      "recommendation": "No action needed.",
+      "severity": "CRITICAL",
+      "type": "Privacy Collection"
+    },
+    {
+      "description": "No use of eval(), new Function(), setTimeout(string), innerHTML with dynamic content, or dynamic script loading detected, indicating no remote code execution risk.",
+      "location": "Code analysis",
+      "recommendation": "No action needed.",
+      "severity": "HIGH",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "No use of sensitive APIs such as geolocation, WebRTC, MediaDevices, or Clipboard API detected.",
+      "location": "Code analysis",
+      "recommendation": "No action needed.",
+      "severity": "MEDIUM",
+      "type": "Sensitive API Usage"
+    },
+    {
+      "description": "No code obfuscation or suspicious base64 decoding or string concatenation for code execution detected.",
+      "location": "Code analysis",
+      "recommendation": "No action needed.",
+      "severity": "MEDIUM",
+      "type": "Code Obfuscation"
+    },
+    {
+      "description": "@require directives are not present, so no external dependencies loaded. The @downloadURL and @updateURL point to greasyfork.org, a known script repository, which is acceptable.",
+      "location": "Metadata",
+      "recommendation": "No action needed.",
+      "severity": "LOW",
+      "type": "External Dependencies"
     }
   ],
   "privacy_collection": {
@@ -19,7 +54,7 @@
   },
   "risk_level": "LOW",
   "script_name": "Export ChatGPT/Gemini/Grok conversations as Markdown",
-  "summary": "The script exports chat history from specified websites to Markdown format without transmitting data externally or collecting sensitive user information. It does not perform remote code execution or use sensitive APIs. However, it requests GM_xmlhttpRequest permission which is not used, constituting permission overreach. No privacy-invasive behaviors or data exfiltration detected.",
-  "analyzed_at": "2026-04-15T20:09:59.087970+00:00",
+  "summary": "The script is designed to export chat histories as Markdown without transmitting data externally or collecting sensitive user information. It requests some permissions that are not fully utilized, which is a minor concern. No remote code execution or privacy-invasive behaviors are detected. Overall, the script is low risk but could improve by removing unused permissions.",
+  "analyzed_at": "2026-04-15T20:25:38.630637+00:00",
   "slug": "Export_ChatGPTGeminiGrok_conversations_as_Markdown"
 }

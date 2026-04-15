@@ -37,7 +37,7 @@ title: Discord消息批量删除助手
 
 **风险等级**：🟢 SAFE　　**分析时间**：2026-04-15
 
-> 该 UserScript 未发现任何数据外传和隐私采集行为，未使用远程代码执行手段，权限申请合理且无滥用，未调用敏感 API，代码未混淆且无外部依赖，整体安全性良好。
+> 该 UserScript 未检测到任何数据外传和隐私采集行为，未使用远程代码执行方式，权限申请合理且无滥用，未调用敏感 API，代码无混淆，且无外部依赖。整体安全性良好。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -47,39 +47,39 @@ title: Discord消息批量删除助手
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本未使用任何网络请求接口（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、navigator.sendBeacon），无数据外传行为。  
+> 脚本未检测到任何网络请求相关代码，如 GM_xmlhttpRequest、fetch、XMLHttpRequest 或 navigator.sendBeacon，且 @grant 为 none，说明无数据外传行为。  
 > 位置：全脚本  
-> 建议：无需修改，保持无外传行为。
+> 建议：确认无隐式网络请求，确保无数据上传。
 
 **⛔ CRITICAL** — 隐私采集  
-> 脚本未读取 document.cookie、localStorage、sessionStorage，未监听键盘事件，也未访问浏览器指纹相关API。  
+> 脚本未读取 document.cookie、localStorage、sessionStorage，也未监听键盘事件或读取表单字段，未访问浏览器指纹相关 API。  
 > 位置：全脚本  
-> 建议：无需修改，保持不采集用户隐私。
+> 建议：保持不采集用户隐私数据，避免监听敏感事件。
 
 **🔴 HIGH** — 远程代码执行  
-> 脚本未使用 eval、new Function、setTimeout(string)、innerHTML 执行远程代码，也未通过 @require 或动态 script 标签加载远程 JS。  
+> 脚本未使用 eval、new Function、setTimeout(string) 等远程代码执行方式，且无 @require 加载远程脚本。  
 > 位置：全脚本  
-> 建议：无远程代码执行风险，保持代码安全。
+> 建议：避免动态执行不可信代码。
 
 **🔴 HIGH** — 权限滥用  
-> 脚本声明 @grant none，且代码中未使用任何 GM_* 权限接口，权限申请合理，无滥用。  
-> 位置：元数据与代码  
-> 建议：无需修改。
+> @grant 声明为 none，且脚本未使用任何高权限 API，权限申请合理，无滥用。  
+> 位置：元数据  
+> 建议：保持权限最小化原则。
 
 **🟠 MEDIUM** — 敏感 API 调用  
-> 脚本未调用敏感 API，如 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等。  
+> 脚本未调用 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等敏感 API。  
 > 位置：全脚本  
-> 建议：无需修改。
+> 建议：避免调用敏感 API 以保护用户隐私。
 
 **🟠 MEDIUM** — 代码混淆  
-> 脚本代码未发现明显混淆特征，代码结构清晰，未使用 base64 解码执行或字符串拼接执行。  
+> 脚本代码未发现明显混淆特征，无 base64 解码执行或复杂字符串拼接执行。  
 > 位置：全脚本  
 > 建议：保持代码清晰，便于安全审计。
 
 **🟡 LOW** — 外部依赖  
-> 脚本未使用 @require 加载任何外部依赖，所有代码均内嵌，避免供应链风险。  
+> 脚本无 @require 加载外部依赖，所有资源均为官方或可信来源。  
 > 位置：元数据  
-> 建议：无需修改。
+> 建议：确保外部依赖来源可信且版本固定。
 
 ---
 

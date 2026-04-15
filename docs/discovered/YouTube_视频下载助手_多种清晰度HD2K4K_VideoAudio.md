@@ -39,7 +39,7 @@ title: YouTube视频下载助手
 
 **风险等级**：🔴 HIGH　　**分析时间**：2026-04-15
 
-> 该脚本主要功能为在YouTube页面插入下载按钮，点击后跳转至第三方下载站点。存在数据外传风险，因跳转至第三方域名。未发现隐私采集行为。存在权限滥用，申请了GM_xmlhttpRequest但未使用。无远程代码执行风险，外部依赖可信。建议确认第三方站点安全性，移除未使用权限。
+> 该脚本主要功能为在YouTube页面插入下载按钮，点击后跳转至第三方域名进行视频下载。存在用户视频URL外传至第三方域名的风险，且申请了未使用的GM_xmlhttpRequest权限。未发现隐私采集、远程代码执行及敏感API调用行为。建议开发者明确告知用户数据外传情况，并清理未使用权限以降低风险。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -49,27 +49,27 @@ title: YouTube视频下载助手
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本通过点击下载按钮时，构造并打开了一个指向第三方域名（saveanyyoutube.com）的新窗口，存在数据外传风险。  
+> 脚本通过点击下载按钮时，将当前YouTube视频页面的URL替换域名为第三方域名（saveanyyoutube.com）并打开新窗口，存在用户数据（视频URL）外传风险。  
 > 位置：createDownloadButton函数中的downloadButton点击事件处理器  
-> 建议：确认第三方域名的安全性和隐私政策，避免传输敏感用户数据。
+> 建议：建议明确告知用户数据将被发送至第三方域名，或避免自动跳转第三方域名以保护用户隐私。
 
 **⛔ CRITICAL** — 隐私采集  
-> 脚本未检测到对document.cookie、localStorage、sessionStorage的访问，也未监听键盘输入事件或读取表单字段值，未访问浏览器指纹相关API。  
+> 脚本未检测到对document.cookie、localStorage、sessionStorage的读取，也未监听键盘输入事件，未访问浏览器指纹相关API。  
 > 位置：全局代码  
 > 建议：无
 
 **🔴 HIGH** — 远程代码执行  
-> 脚本未使用eval、new Function、setTimeout字符串参数或innerHTML执行远程代码，@require加载的sweetalert2来自可信CDN且固定版本。  
-> 位置：全局代码及@require元数据  
+> 脚本未使用eval、new Function、setTimeout字符串形式执行代码，也未动态加载远程脚本，@require的第三方库为官方CDN且版本固定。  
+> 位置：全局代码  
 > 建议：无
 
 **🔴 HIGH** — 权限滥用  
 > 脚本申请了GM_xmlhttpRequest权限，但代码中未检测到使用该API的调用，存在权限滥用风险。  
-> 位置：元数据@grant与代码实现对比  
-> 建议：移除未使用的GM_xmlhttpRequest权限申请，减少权限面。
+> 位置：元数据@grant和代码不匹配  
+> 建议：建议移除未使用的GM_xmlhttpRequest权限申请，减少权限暴露。
 
 **🟠 MEDIUM** — 敏感API调用  
-> 脚本未使用敏感API如navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API。  
+> 脚本未调用敏感API如navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API。  
 > 位置：全局代码  
 > 建议：无
 
@@ -79,7 +79,7 @@ title: YouTube视频下载助手
 > 建议：无
 
 **🟡 LOW** — 外部依赖  
-> @require加载的sweetalert2来自jsdelivr官方CDN，版本固定为11，来源可信。  
+> @require加载的sweetalert2库来自官方jsdelivr CDN，且指定了版本号，可信且安全。  
 > 位置：元数据@require  
 > 建议：无
 

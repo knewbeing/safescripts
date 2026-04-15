@@ -1,5 +1,6 @@
 {
   "slug": "main",
+  "platform": "github",
   "source_url": "https://raw.githubusercontent.com/maboloshi/github-chinese/2635cb959e88c263108a99e022b3ddd5e9818838/main.user.js",
   "source_repo": "maboloshi/github-chinese",
   "raw_url": "https://raw.githubusercontent.com/maboloshi/github-chinese/2635cb959e88c263108a99e022b3ddd5e9818838/main.user.js",
@@ -27,18 +28,21 @@
   ],
   "metadata_raw": "// @name  GitHub 中文化插件\n// @namespace  https://github.com/maboloshi/github-chinese\n// @description  中文化 GitHub 界面的部分菜单及内容。原作者为楼教主(http://www.52cik.com/)。\n// @copyright  2021, 沙漠之子 (https://maboloshi.github.io/Blog)\n// @icon  https://github.githubassets.com/pinned-octocat.svg\n// @version  1.9.3-2026-04-12\n// @author  沙漠之子\n// @license  GPL-3.0\n// @match  https://github.com/*\n// @match  https://skills.github.com/*\n// @match  https://gist.github.com/*\n// @match  https://education.github.com/*\n// @match  https://www.githubstatus.com/*\n// @require  https://raw.githubusercontent.com/maboloshi/github-chinese/gh-pages/locals.js?v1.9.3-2026-04-12\n// @run-at  document-start\n// @grant  GM_xmlhttpRequest\n// @grant  GM_getValue\n// @grant  GM_setValue\n// @grant  GM_registerMenuCommand\n// @grant  GM_unregisterMenuCommand\n// @grant  GM_notification\n// @connect  fanyi.iflyrec.com\n// @supportURL  https://github.com/maboloshi/github-chinese/issues",
   "sha256": "109b2bb16aa7d21e499017a3cdcda35b9418c118f98235e6b0fffa8a61465dc7",
-  "discovered_at": "2026-04-15T19:29:56.464727+00:00",
-  "ai_reason": "极高 Stars，持续维护，完整元数据，中文化 GitHub 界面，实用性强，适合中文用户。",
+  "discovered_at": "2026-04-15T20:22:38.449608+00:00",
+  "ai_reason": "",
   "is_new": false,
+  "install_count": null,
+  "good_ratings": null,
+  "bad_ratings": null,
   "summary": {
     "applicable_sites": [
       "GitHub主站",
-      "GitHub技能站",
+      "GitHub技能页面",
       "GitHub Gist",
-      "GitHub教育站",
-      "GitHub状态页"
+      "GitHub教育页面",
+      "GitHub状态页面"
     ],
-    "description": "该脚本将GitHub及其相关子站点的部分菜单和内容翻译成中文，提升中文用户的使用体验。它支持自动翻译简介等文本内容，并允许用户自定义部分翻译功能。脚本运行于页面加载初期，确保界面尽可能早地显示中文。",
+    "description": "本脚本将GitHub及其相关子站点的部分菜单和内容翻译成中文，提升中文用户的使用体验。它支持自动翻译页面简介和菜单项，并可通过配置选择是否启用正则表达式匹配和描述翻译。脚本运行于页面加载初期，确保界面尽可能早地显示中文。",
     "permissions": [
       {
         "explanation": "允许脚本发送跨域网络请求，用于调用翻译接口。",
@@ -61,22 +65,22 @@
         "grant": "GM_unregisterMenuCommand"
       },
       {
-        "explanation": "允许脚本显示桌面通知，提示翻译状态或错误。",
+        "explanation": "允许脚本发送桌面通知，提醒用户翻译状态等信息。",
         "grant": "GM_notification"
       }
     ],
     "tags": [
       "界面中文化",
-      "翻译",
-      "GitHub",
+      "GitHub增强",
+      "翻译工具",
       "用户脚本",
-      "网页增强"
+      "开发辅助"
     ],
     "usage": [
-      "安装Tampermonkey或其他支持UserScript的浏览器扩展。",
+      "安装Tampermonkey或其他支持UserScript的扩展。",
       "导入并启用本脚本。",
-      "访问GitHub及相关子站点时，界面部分内容将自动显示为中文。",
-      "可通过脚本菜单调整翻译相关设置。"
+      "访问GitHub及相关子站点，界面菜单和部分内容将自动显示为中文。",
+      "可通过脚本菜单调整翻译设置或查看帮助信息。"
     ],
     "zh_name": "GitHub 中文化插件"
   }

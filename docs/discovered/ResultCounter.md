@@ -45,7 +45,7 @@ title: 搜索结果自动加序号
 
 **风险等级**：🟢 SAFE　　**分析时间**：2026-04-15
 
-> 该脚本仅在指定搜索引擎页面为搜索结果添加序号，通过 DOM 操作实现，无任何网络请求或用户数据读取行为。未发现远程代码执行、权限滥用、隐私采集或敏感 API 调用等安全风险，整体安全性良好。
+> 该脚本仅在指定搜索引擎页面为搜索结果添加序号，通过 DOM 操作实现，无任何网络请求或用户数据采集行为，未使用敏感权限或危险 API，代码清晰无混淆，整体安全性高。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -55,39 +55,39 @@ title: 搜索结果自动加序号
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本未检测到任何网络请求相关代码，未使用 GM_xmlhttpRequest、fetch、XMLHttpRequest 或 navigator.sendBeacon 等接口。  
+> 脚本未检测到任何网络请求行为，无数据外传风险。  
 > 位置：全脚本  
-> 建议：无需修改，确认无数据外传行为。
+> 建议：无
 
 **⛔ CRITICAL** — 隐私采集  
-> 脚本未读取 document.cookie、localStorage、sessionStorage，也未监听键盘输入事件，未访问表单字段值或浏览器指纹相关 API。  
+> 脚本未读取 document.cookie、localStorage、sessionStorage，未监听键盘输入事件，未访问浏览器指纹相关 API，未读取表单字段值。  
 > 位置：全脚本  
-> 建议：无需修改，确认无隐私采集行为。
+> 建议：无
 
 **🔴 HIGH** — 远程代码执行  
-> 脚本未使用 eval、new Function、setTimeout(string)、innerHTML 执行远程内容，也未通过 @require 或动态 script 标签加载远程 JS。  
+> 脚本未使用 eval、new Function、setTimeout(string)、innerHTML 执行远程内容，未通过 @require 或动态 script 标签加载远程 JS。  
 > 位置：全脚本  
-> 建议：无远程代码执行风险。
+> 建议：无
 
 **🔴 HIGH** — 权限滥用  
-> 脚本未声明 @grant 权限，且代码中未使用任何 GM_* API，权限申请与使用匹配，无权限滥用。  
-> 位置：元数据与代码  
-> 建议：无权限滥用风险。
+> 脚本未声明 @grant 权限，且代码中未使用任何 GM_* API，权限申请合理。  
+> 位置：元数据及代码  
+> 建议：无
 
 **🟠 MEDIUM** — 敏感 API 调用  
-> 脚本未调用 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等敏感 API。  
+> 脚本未调用敏感 API，如 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等。  
 > 位置：全脚本  
-> 建议：无敏感 API 调用风险。
+> 建议：无
 
 **🟠 MEDIUM** — 代码混淆  
 > 脚本代码结构清晰，无明显混淆、base64 解码或字符串拼接执行特征。  
 > 位置：全脚本  
-> 建议：无混淆风险。
+> 建议：无
 
 **🟡 LOW** — 外部依赖  
 > 脚本未使用 @require 加载任何外部依赖。  
 > 位置：元数据  
-> 建议：无外部依赖风险。
+> 建议：无
 
 ---
 

@@ -25,7 +25,7 @@
   "require": [],
   "metadata_raw": "// @name  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:zh-CN  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:zh-TW  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:ar  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:bg  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:cs  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:da  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:de  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:el  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:en  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:eo  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:es  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:es-419  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:fi  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:fr  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:fr-CA  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:he  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:hr  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:hu  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:id  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:it  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:ja  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:ka  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:ko  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:nb  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:nl  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:pl  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:pt-BR  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:ro  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:ru  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:sv  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:th  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:tr  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:uk  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:ug  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @name:vi  Export ChatGPT/Gemini/Grok conversations as Markdown\n// @description  Export chat history from ChatGPT and Grok websites to normal format as Markdown, which can be opened via typora exactly.\n// @description:zh-CN  将 ChatGPT 和 Grok 网站的聊天记录导出为普通 Markdown 格式，可在 Typora 中准确打开。\n// @description:zh-TW  將 ChatGPT 和 Grok 網站的聊天記錄導出為普通 Markdown 格式，可於 Typora 中精確打開。\n// @description:ar  تصدير محفوظات الدردشة من موقعي ChatGPT و Grok إلى تنسيق Markdown عادي يمكن فتحه عبر Typora بدقة.\n// @description:bg  Експортиране на историята на чатовете от уебсайтовете ChatGPT и Grok в обикновен Markdown формат, който може да се отвори точно чрез Typora.\n// @description:cs  Exportovat historii chatu z webů ChatGPT a Grok do obyčejného formátu Markdown, který lze přesně otevřít v Typora.\n// @description:da  Eksportér chat‑historik fra ChatGPT- og Grok‑websteder til normalt Markdown‑format, som kan åbnes præcist i Typora.\n// @description:de  Exportiere den Chatverlauf von den ChatGPT‑ und Grok‑Websites in ein normales Markdown‑Format, das exakt in Typora geöffnet werden kann.\n// @description:el  Εξαγωγή του ιστορικού συνομιλίας από τις ιστοσελίδες ChatGPT και Grok σε απλό μορφότυπο Markdown, που μπορεί να ανοιχτεί ακριβώς με το Typora.\n// @description:en  Export chat history from ChatGPT and Grok websites to normal format as Markdown, which can be opened via typora exactly.\n// @description:eo  Eksporti babilhistorion de ChatGPT- kaj Grok‑retejoj al norma Markdown‑formato, kiu povas esti malfermita ĝuste en Typora.\n// @description:es  Exportar el historial de chat de los sitios web ChatGPT y Grok a un formato normal Markdown, que se pueda abrir exactamente con Typora.\n// @description:es-419  Exportar el historial de chat de los sitios web ChatGPT y Grok a un formato normal Markdown, que se pueda abrir exactamente con Typora.\n// @description:fi  Vie ChatGPT:n ja Grok-verkkosivustojen chätähistoria tavalliseen Markdown‑muotoon, jonka Typora avaa täsmälleen oikein.\n// @description:fr  Exporter l’historique de discussion des sites ChatGPT et Grok vers un format Markdown normal, pouvant être ouvert exactement avec Typora.\n// @description:fr-CA  Exporter l’historique des conversations des sites ChatGPT et Grok dans un format Markdown standard, pouvant être ouvert précisément avec Typora.\n// @description:he  ייצוא היסטוריית הצ'אט מאתרי ChatGPT ו‑Grok לפורמט Markdown רגיל, שניתן לפתוח ב‑Typora בדיוק.\n// @description:hr  Izvezi povijest razgovora s web‑mjesta ChatGPT i Grok u obični Markdown format, koji se točno može otvoriti u Typora.\n// @description:hu  A ChatGPT és Grok webhelyek csevegési előzményeinek exportálása normál Markdown formátumba, amely pontosan megnyitható a Typora segítségével.\n// @description:id  Ekspor riwayat obrolan dari situs web ChatGPT dan Grok ke format Markdown biasa, yang bisa dibuka persis dengan Typora.\n// @description:it  Esporta la cronologia della chat dai siti ChatGPT e Grok in formato Markdown normale, che può essere aperto esattamente con Typora.\n// @description:ja  ChatGPT と Grok のウェブサイトからチャット履歴を通常の Markdown 形式にエクスポートし、Typora で正確に開けるようにします。\n// @description:ka  ChatGPT და Grok ვებსაიტების ჩატის ისტორიის ექსპორტი ნორმალურ Markdown ფორმატში, რომელიც Typora-ში ზუსტად იხსნება.\n// @description:ko  ChatGPT 및 Grok 웹사이트의 채팅 기록을 일반 Markdown 형식으로 내보내 Typora에서 정확하게 열 수 있습니다.\n// @description:nb  Eksporter chattehistorikk fra ChatGPT- og Grok-nettsteder til vanlig Markdown-format, som kan åpnes nøyaktig i Typora.\n// @description:nl  Exporteer de chatgeschiedenis van de ChatGPT- en Grok-websites naar normaal Markdown‑formaat, dat precies met Typora geopend kan worden.\n// @description:pl  Eksportuj historię czatów ze stron ChatGPT i Grok do zwykłego formatu Markdown, który można dokładnie otworzyć w Typora.\n// @description:pt-BR  Exporte o histórico de conversa dos sites ChatGPT e Grok para um formato Markdown normal, que possa ser aberto exatamente via Typora.\n// @description:ro  Exportă istoricul conversației de pe site‑urile ChatGPT și Grok într‑un format Markdown normal, care poate fi deschis exact în Typora.\n// @description:ru  Экспорт истории чата с сайтов ChatGPT и Grok в обычный формат Markdown, который можно точно открыть в Typora.\n// @description:sv  Exportera chatthistorik från ChatGPT- och Grok-webbplatser till vanligt Markdown-format, som kan öppnas exakt i Typora.\n// @description:th  ส่งออกประวัติแชทจากเว็บไซต์ ChatGPT และ Grok ไปยังรูปแบบ Markdown ปกติ ซึ่งสามารถเปิดได้อย่างถูกต้องผ่าน Typora\n// @description:tr  ChatGPT ve Grok web sitelerinden sohbet geçmişini normal Markdown formatına aktarın; Typora ile tam olarak açılabilir.\n// @description:uk  Експортувати історію чату з веб‑сайтів ChatGPT і Grok у звичайний формат Markdown, який точно відкривається в Typora.\n// @description:ug  ChatGPT ۋە Grok تور بەتلىرىدىكى چەت تارىخنى ئادەتتىكى Markdown فورماتىغا چىقارسىڭىز بولىدۇ، بۇنى Typora قوشۇلمىسىدە تولۇق ئاچىشقا بولىدۇ.\n// @description:vi  Xuất lịch sử trò chuyện từ các trang ChatGPT và Grok sang định dạng Markdown bình thường, có thể mở chính xác bằng Typora.\n// @namespace  Elior_Chatgpt_XX\n// @version  1.1.1\n// @author  Elior\n// @icon  data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAkZJREFUWEfNV8tSwzAMtPtFlKFMbm2/rO2XEW4ZygBfVMO6lkdWLFtpe6CXwMSWVqvVI94t+D29DDvv3YFd2aW/Rzy9d+94fn1MR6tZbzm43gxvzjlyZrkCMCcLkCaA59fhGEIRsck5P9QDogK4JeoGuvH7PO1r72cAUp5B+cN/Ibj9z+cU9UK/GYD1ZggP98wMfp+nwmfxj5H2MQR3okigE9hfoJUiHRmARXAkKKRptbpWxeXiRoBJ97coxR4YLswMoEc9XaoArQqsFxClIgLoHf7rAdGJOJdTwRpUZIUz5b3TBB1tRgCt6LlyCYBwgM5Ya1LRQUtXYMG3oodzAES+0dXIGC4KwzkN3B7d11jAexUARZnYKaKJF6/UxjQk2g8QILVfqo4EXCvtUUaSKxZRsmhmAOggVQNXPk9RAqfq4CYAMgVKhXB2mgCq9Ij8aSnIjOE8aYXrQDA5a7JgoApAaCCXFoyj+UhhcV1w9feEqKYgtdc4PLjiNbqTUwRTsCUDERToIiQAeLJWm7chGKZWnCdbqgzOwF0AKH9wwMsrBLfl5YdGpKWgpQGA8635L/PHh0itEfGeQVpplWEE0GnFvXaa54HsGbDbW25iK04A1KWTZsHSQdTbLYhN0zjWFsuKk9rUrC5YxTg2juTYCyBA2fNJlLVqqXmvLiS9VEhDVIZUHXInaOyV9ZWMLvQ2o3sX1uZSalHuPQBMazljYvHnmJV2fu7/fppxlIaltRa8+jlmZkBaZR8h2/Su+DxPAyx/tFj08gu12CtmhuPs2AAAAABJRU5ErkJggg==\n// @include  *://chatgpt.com/*\n// @include  *://grok.com/*\n// @include  *://gemini.google.com/*\n// @license  MIT\n// @run-at  document-idle\n// @grant  GM_registerMenuCommand\n// @grant  GM_openInTab\n// @grant  GM.openInTab\n// @grant  GM_addStyle\n// @grant  GM_setValue\n// @grant  GM_getValue\n// @grant  GM_xmlhttpRequest\n// @downloadURL  https://update.greasyfork.org/scripts/543471/Export%20ChatGPTGeminiGrok%20conversations%20as%20Markdown.user.js\n// @updateURL  https://update.greasyfork.org/scripts/543471/Export%20ChatGPTGeminiGrok%20conversations%20as%20Markdown.meta.js",
   "sha256": "39f4072ec0259a8cd3f45310d6461b80f0597314c0a15c37861d6772ba972c3c",
-  "discovered_at": "2026-04-15T20:08:24.333008+00:00",
+  "discovered_at": "2026-04-15T20:23:25.320863+00:00",
   "ai_reason": "",
   "is_new": false,
   "install_count": 31705,
@@ -37,34 +37,34 @@
       "Grok官网",
       "Gemini官网"
     ],
-    "description": "本脚本可以将 ChatGPT、Grok 和 Gemini 网站上的聊天记录导出为标准的 Markdown 格式。导出的文件可以直接用 Typora 等 Markdown 编辑器准确打开和查看。方便用户保存和管理聊天内容。",
+    "description": "本脚本可以将 ChatGPT、Grok 和 Gemini 网站上的聊天记录导出为标准的 Markdown 格式。导出的文件可以在 Typora 等 Markdown 编辑器中准确打开和查看。方便用户保存和管理聊天内容。",
     "permissions": [
       {
-        "explanation": "添加菜单命令，方便用户操作导出功能。",
+        "explanation": "添加自定义菜单命令，方便用户操作导出功能。",
         "grant": "GM_registerMenuCommand"
       },
       {
-        "explanation": "在新标签页打开链接，方便查看导出结果。",
+        "explanation": "在新标签页打开链接，便于查看导出结果或相关页面。",
         "grant": "GM_openInTab"
       },
       {
-        "explanation": "在新标签页打开链接，方便查看导出结果（兼容新版API）。",
+        "explanation": "在新标签页打开链接，便于查看导出结果或相关页面。",
         "grant": "GM.openInTab"
       },
       {
-        "explanation": "添加自定义样式，优化导出界面显示。",
+        "explanation": "添加自定义样式，优化页面显示效果。",
         "grant": "GM_addStyle"
       },
       {
-        "explanation": "存储和读取用户设置或导出数据。",
+        "explanation": "存储用户设置或数据，保持导出配置。",
         "grant": "GM_setValue"
       },
       {
-        "explanation": "存储和读取用户设置或导出数据。",
+        "explanation": "读取用户设置或数据，恢复导出配置。",
         "grant": "GM_getValue"
       },
       {
-        "explanation": "发送跨域请求，获取聊天数据或相关资源。",
+        "explanation": "发送跨域请求，获取必要数据或资源。",
         "grant": "GM_xmlhttpRequest"
       }
     ],
@@ -73,15 +73,15 @@
       "Markdown格式",
       "ChatGPT",
       "Grok",
-      "Gemini",
-      "Typora"
+      "Typora",
+      "文本保存"
     ],
     "usage": [
       "安装脚本后，打开 ChatGPT、Grok 或 Gemini 网站。",
-      "在页面菜单或脚本菜单中找到导出聊天记录的选项。",
-      "点击导出按钮，生成 Markdown 格式的聊天记录文件。",
-      "使用 Typora 等 Markdown 编辑器打开导出的文件，查看完整聊天内容。"
+      "在页面菜单或脚本菜单中选择导出聊天记录为 Markdown。",
+      "保存导出的 Markdown 文件到本地。",
+      "使用 Typora 等 Markdown 编辑器打开查看聊天内容。"
     ],
-    "zh_name": "ChatGPT/Grok聊天记录导出为Markdown"
+    "zh_name": "ChatGPT/Grok聊天导出为Markdown"
   }
 }

@@ -4,7 +4,7 @@ title: YouTube改进 – 布局与视频增强
 
 # YouTube改进 – 布局与视频增强
 
-`视频增强`  `布局优化`  `视频下载`  `截图工具`  `主题切换`  `快进控制`
+`视频增强`  `布局优化`  `主题切换`  `视频下载`  `截图功能`  `快进控制`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/YouTube_Improvements_Layout_Video_Enhancer.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
@@ -12,7 +12,7 @@ title: YouTube改进 – 布局与视频增强
 
 ## 功能介绍
 
-本脚本为YouTube提供多项实用功能，包括优化视频详情页布局，支持视频下载和截图，提供深色/浅色主题切换，以及视频快进控制等，提升观看体验。
+本脚本为YouTube提供多项实用增强功能，包括优化视频详情页布局，支持视频下载和截图，提供深色与浅色主题切换，以及视频快进控制等。使用后可提升观看体验和操作便捷性。
 
 ## 适用网站
 
@@ -21,80 +21,75 @@ title: YouTube改进 – 布局与视频增强
 ## 使用方法
 
 1. 安装脚本后打开YouTube网站。
-2. 在视频详情页享受优化的布局和增强功能。
-3. 使用菜单或按钮进行视频下载、截图等操作。
-4. 通过切换按钮切换深色或浅色主题。
-5. 使用快进控制更方便地调整播放进度。
+2. 在视频详情页享受优化布局和新增功能。
+3. 使用菜单或页面按钮进行视频下载、截图等操作。
+4. 通过脚本提供的开关切换深色或浅色主题。
+5. 使用快进控制按钮快速调整视频播放进度。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `GM_registerMenuCommand` | 添加自定义菜单命令，方便操作脚本功能。 |
+| `GM_registerMenuCommand` | 添加自定义菜单命令，方便用户操作脚本功能。 |
 | `GM_openInTab` | 在新标签页打开链接或页面。 |
-| `GM.openInTab` | 在新标签页打开链接或页面（兼容写法）。 |
-| `GM_addStyle` | 添加自定义样式，调整页面布局和外观。 |
+| `GM.openInTab` | 在新标签页打开链接或页面（新版API）。 |
+| `GM_addStyle` | 添加自定义样式，调整页面外观。 |
 | `GM_setValue` | 保存脚本设置或数据。 |
 | `GM_getValue` | 读取脚本保存的设置或数据。 |
 | `GM_deleteValue` | 删除保存的设置或数据。 |
-| `GM_xmlhttpRequest` | 发送跨域请求，获取视频数据等。 |
-| `unsafeWindow` | 访问页面的全局变量和函数，增强脚本功能。 |
+| `GM_xmlhttpRequest` | 发送跨域网络请求，获取视频或相关数据。 |
+| `unsafeWindow` | 访问页面的全局变量和函数，增强脚本与页面交互。 |
 | `GM_download` | 下载视频或文件到本地。 |
 | `GM_setClipboard` | 复制文本到剪贴板，方便分享或保存。 |
-| `GM_addElement` | 动态添加页面元素，增强界面交互。 |
+| `GM_addElement` | 动态添加页面元素，增强页面功能。 |
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**分析时间**：2026-04-15
+**风险等级**：🟡 LOW　　**分析时间**：2026-04-15
 
-> 该脚本为 YouTube 提供多项增强功能，涉及视频下载、截图、主题切换等。脚本会访问本地存储和监听键盘事件，且使用了 GM_xmlhttpRequest 和 GM_download 进行网络请求和文件下载。未发现远程代码执行和权限滥用风险。建议确认所有网络请求目标可信，避免上传敏感数据。整体风险等级为中等。
+> The script requests multiple permissions consistent with its functionality, including network requests and clipboard access. Network requests are made only to known trusted domains (greasyfork.org) for updates and downloads. No evidence of user data exfiltration, privacy-invasive data collection, or remote code execution was found. No excessive permissions or code obfuscation detected. Overall, the script appears low risk but users should remain cautious about permissions granted.
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：greasyfork.org） |
-| 隐私采集 | ❌ 检测到（访问 localStorage 和 sessionStorage 存储用户设置, 监听键盘事件（keydown、keyup、input）实现快捷键功能） |
+| 隐私采集 | ✅ 未检测到 |
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本使用了 GM_xmlhttpRequest 和 GM_download 等权限，可能会向第三方服务器发送请求或下载视频文件。需要确认请求目标是否为可信服务器，且无用户敏感数据上传。  
-> 位置：代码中使用 GM_xmlhttpRequest、GM_download  
-> 建议：确认所有网络请求目标为可信服务器，避免上传用户敏感数据。
+**⛔ CRITICAL** — Data Transmission  
+> The script uses GM_xmlhttpRequest and GM_download which can send network requests potentially to third-party servers. The updateURL and downloadURL point to greasyfork.org, a known script hosting site. No evidence found of user data being sent to unknown third-party servers.  
+> 位置：@grant and metadata URLs  
+> 建议：Ensure that network requests are only made to trusted domains and no sensitive user data is transmitted without explicit user consent.
 
-**⛔ CRITICAL** — 隐私采集  
-> 脚本读取和操作了 localStorage 和 sessionStorage，用于存储用户设置。  
-> 位置：代码中访问 localStorage、sessionStorage  
-> 建议：确保不存储敏感信息，避免泄露用户隐私。
+**⛔ CRITICAL** — Privacy Collection  
+> The script accesses GM_setValue, GM_getValue, GM_deleteValue which may store user preferences locally but no indication of reading sensitive cookies or storage data.  
+> 位置：@grant and code usage  
+> 建议：Avoid accessing or transmitting sensitive user data such as cookies or form inputs unless necessary and with user consent.
 
-**⛔ CRITICAL** — 隐私采集  
-> 脚本监听了键盘事件（keydown、keyup、input）以实现快捷键和输入功能。  
-> 位置：代码中监听键盘事件  
-> 建议：避免监听敏感输入内容，如密码等。
+**🔴 HIGH** — Remote Code Execution  
+> The script does not use eval(), new Function(), or dynamic script injection from remote sources. No @require directives found that load remote scripts.  
+> 位置：Code analysis  
+> 建议：Maintain no use of remote code execution functions to prevent injection attacks.
 
-**🔴 HIGH** — 权限滥用  
-> 脚本通过 @grant 申请了多个权限，包括 GM_xmlhttpRequest、GM_download、GM_setClipboard、unsafeWindow 等，实际代码中均有使用。  
-> 位置：元数据 @grant 权限声明与代码使用情况  
-> 建议：权限申请合理，无明显滥用。
+**🔴 HIGH** — Permission Abuse  
+> The script requests multiple GM_* permissions including GM_xmlhttpRequest, GM_download, GM_setClipboard, GM_addElement, unsafeWindow. These are consistent with the script's functionality (downloading videos, clipboard access, UI enhancements). No unused high permissions detected.  
+> 位置：@grant directives vs code usage  
+> 建议：Review permissions periodically to ensure no excessive privileges are requested.
 
-**🔴 HIGH** — 远程代码执行  
-> 脚本未使用 eval、new Function、setTimeout(string) 等远程代码执行方式，也未动态加载远程脚本。  
-> 位置：代码中无远程代码执行相关调用  
-> 建议：保持代码安全，避免动态执行不可信代码。
+**🟠 MEDIUM** — Sensitive API Call  
+> No usage of sensitive APIs like navigator.geolocation, RTCPeerConnection, MediaDevices, or Clipboard API detected beyond GM_setClipboard which is granted explicitly.  
+> 位置：Code analysis  
+> 建议：Monitor usage of sensitive APIs to avoid privacy leaks.
 
-**🟠 MEDIUM** — 敏感 API 调用  
-> 脚本使用了 Clipboard API（GM_setClipboard）用于复制功能。  
-> 位置：代码中使用 GM_setClipboard  
-> 建议：确保复制内容安全，避免泄露用户隐私。
+**🟠 MEDIUM** — Code Obfuscation  
+> No signs of code obfuscation or base64 decoding for execution found in the provided code snippet.  
+> 位置：Code analysis  
+> 建议：Keep code readable and avoid obfuscation to facilitate security audits.
 
-**🟠 MEDIUM** — 代码混淆  
-> 代码未发现明显混淆或 base64 解码执行等混淆特征。  
-> 位置：代码整体  
-> 建议：保持代码清晰，便于安全审计。
-
-**🟡 LOW** — 外部依赖  
-> @require 未声明外部依赖，所有代码均内置，避免供应链风险。  
-> 位置：元数据 @require  
-> 建议：继续保持依赖来源可信和版本固定。
+**🟡 LOW** — External Dependencies  
+> The external dependencies (updateURL and downloadURL) point to greasyfork.org, a reputable open-source script repository. No @require directives found, so no external JS libraries loaded.  
+> 位置：Metadata URLs and @require directives  
+> 建议：Use fixed versions and trusted sources for any external dependencies to prevent supply chain attacks.
 
 ---
 

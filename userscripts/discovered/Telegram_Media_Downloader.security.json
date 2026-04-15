@@ -2,60 +2,61 @@
   "approved": true,
   "data_transmission": {
     "destinations": [
-      "https://update.greasyfork.org",
-      "https://img.icons8.com"
+      "web.telegram.org",
+      "webk.telegram.org",
+      "webz.telegram.org"
     ],
     "detected": true
   },
   "issues": [
     {
-      "description": "脚本中使用了 fetch 进行网络请求，目标为 Telegram 官方域名（web.telegram.org 等）和更新服务器（update.greasyfork.org），未发现向第三方服务器发送用户数据的行为。",
-      "location": "代码中 fetch 请求部分",
-      "recommendation": "确认所有请求均为官方或可信服务器，避免向未知第三方服务器发送数据。",
+      "description": "The script performs fetch requests to Telegram's own domains to download media content. No evidence of data being sent to third-party servers or user data leakage was found.",
+      "location": "Function tel_download_video, fetch calls",
+      "recommendation": "Ensure that all network requests are strictly limited to Telegram domains and no user data is sent elsewhere.",
       "severity": "CRITICAL",
-      "type": "数据外传"
+      "type": "Data Transmission"
     },
     {
-      "description": "脚本未读取 document.cookie、localStorage、sessionStorage，也未监听键盘输入事件或读取表单字段值。",
-      "location": "全脚本",
-      "recommendation": "无建议，隐私采集行为未发现。",
+      "description": "The script does not access document.cookie, localStorage, sessionStorage, nor does it listen to keyboard events or read form inputs. No browser fingerprinting APIs are used.",
+      "location": "Entire script",
+      "recommendation": "No action needed as no privacy-invasive data collection detected.",
       "severity": "CRITICAL",
-      "type": "隐私采集"
+      "type": "Privacy Collection"
     },
     {
-      "description": "脚本未使用 eval、new Function、setTimeout(string) 等远程代码执行相关函数，也未通过 @require 或动态 script 标签加载远程 JS。",
-      "location": "全脚本",
-      "recommendation": "保持代码安全，避免动态执行不可信代码。",
+      "description": "No usage of eval(), new Function(), setTimeout(string), or innerHTML with untrusted content was found. No remote scripts are loaded via @require or dynamic script tags.",
+      "location": "Entire script",
+      "recommendation": "Maintain current practice of avoiding remote code execution.",
       "severity": "HIGH",
-      "type": "远程代码执行"
+      "type": "Remote Code Execution"
     },
     {
-      "description": "脚本未声明 @grant 权限，且代码中未使用 GM_* 等特殊权限接口，权限申请与使用匹配，无滥用。",
-      "location": "元数据与代码",
-      "recommendation": "无建议。",
+      "description": "The script does not declare any @grant permissions, so no permission misuse is detected.",
+      "location": "Metadata block",
+      "recommendation": "No action needed.",
       "severity": "HIGH",
-      "type": "权限滥用"
+      "type": "Permission Abuse"
     },
     {
-      "description": "脚本未调用 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等敏感 API。",
-      "location": "全脚本",
-      "recommendation": "无建议。",
+      "description": "No sensitive APIs such as navigator.geolocation, RTCPeerConnection, MediaDevices, or Clipboard API are used.",
+      "location": "Entire script",
+      "recommendation": "No action needed.",
       "severity": "MEDIUM",
-      "type": "敏感 API 调用"
+      "type": "Sensitive API Usage"
     },
     {
-      "description": "代码结构清晰，无明显混淆、base64 解码或字符串拼接执行特征。",
-      "location": "全脚本",
-      "recommendation": "保持代码可读性，避免混淆带来的安全隐患。",
+      "description": "No code obfuscation or suspicious base64 decoding or string concatenation for code execution is present.",
+      "location": "Entire script",
+      "recommendation": "No action needed.",
       "severity": "MEDIUM",
-      "type": "代码混淆"
+      "type": "Code Obfuscation"
     },
     {
-      "description": "脚本未使用 @require 加载外部依赖，所有资源均来自官方或可信来源（GitHub、Greasy Fork、icons8）。",
-      "location": "元数据",
-      "recommendation": "确保外部资源来源可信且版本固定，防止供应链攻击。",
+      "description": "No @require directives are used, so no external dependencies are loaded.",
+      "location": "Metadata block",
+      "recommendation": "No action needed.",
       "severity": "LOW",
-      "type": "外部依赖"
+      "type": "External Dependencies"
     }
   ],
   "privacy_collection": {
@@ -64,7 +65,7 @@
   },
   "risk_level": "LOW",
   "script_name": "Telegram Media Downloader",
-  "summary": "该脚本主要功能为从 Telegram 官方网页下载受限媒体内容，未发现向第三方服务器发送用户数据或采集用户隐私的行为。代码未使用远程代码执行手段，权限申请合理，且无敏感 API 调用和代码混淆。外部资源来源可信。整体风险较低。",
-  "analyzed_at": "2026-04-15T20:11:52.765795+00:00",
+  "summary": "The script is designed to download media from Telegram webapp by fetching media content directly from Telegram's own servers. It does not collect or transmit user data to third parties, nor does it use privacy-invasive APIs or remote code execution. No permission misuse or suspicious code patterns are detected. Overall, the script poses low security and privacy risks.",
+  "analyzed_at": "2026-04-15T20:26:33.726931+00:00",
   "slug": "Telegram_Media_Downloader"
 }

@@ -11,53 +11,53 @@
   },
   "issues": [
     {
-      "description": "The script uses GM_xmlhttpRequest to communicate with third-party servers including sponsor.ajay.app, co.wuk.sh, cobalt.api.timelessnesses.me, and api.cobalt.tools. These requests may involve user data such as video IDs or usage statistics for SponsorBlock and download features.",
+      "description": "The script uses GM_xmlhttpRequest to send requests to third-party servers including sponsor.ajay.app, co.wuk.sh, cobalt.api.timelessnesses.me, and api.cobalt.tools. These requests may include user data or usage statistics related to SponsorBlock segments and video downloads.",
       "location": "GM_xmlhttpRequest calls to @connect domains",
-      "recommendation": "Ensure that no sensitive personal data is sent and that the endpoints are trustworthy. Provide transparency about data usage to users.",
+      "recommendation": "Ensure that no sensitive personal data is sent in requests. Provide transparency about data usage and obtain user consent if necessary.",
       "severity": "CRITICAL",
       "type": "Data Transmission"
     },
     {
-      "description": "The script reads and writes persistent settings via GM_setValue and GM_getValue but does not access document.cookie, localStorage, sessionStorage, or listen to keyboard input events. It does not appear to collect form data or use browser fingerprinting APIs.",
-      "location": "Code usage of GM_setValue/GM_getValue and absence of cookie/localStorage access",
+      "description": "The script reads and writes persistent settings using GM_setValue and GM_getValue but does not appear to access document.cookie, localStorage, or sessionStorage, nor does it listen to keyboard events or access form inputs.",
+      "location": "Code analysis of storage and event listeners",
       "recommendation": "No action needed as no privacy-invasive data collection detected.",
       "severity": "CRITICAL",
       "type": "Privacy Collection"
     },
     {
       "description": "No use of eval(), new Function(), setTimeout(string), or dynamic script injection detected in the provided code snippet. No @require directives loading remote scripts found.",
-      "location": "Script code",
-      "recommendation": "Continue to avoid dynamic code execution to maintain security.",
+      "location": "Code analysis",
+      "recommendation": "Continue to avoid dynamic code execution from untrusted sources.",
       "severity": "HIGH",
       "type": "Remote Code Execution"
     },
     {
       "description": "The script requests GM_xmlhttpRequest, GM_setValue, GM_getValue, and GM_addStyle permissions, all of which are used appropriately in the code. No excessive or unused permissions detected.",
-      "location": "@grant directives and code usage",
+      "location": "@grant directives vs code usage",
       "recommendation": "No action needed.",
       "severity": "HIGH",
       "type": "Permission Abuse"
     },
     {
       "description": "No usage of sensitive APIs such as navigator.geolocation, RTCPeerConnection, MediaDevices, or Clipboard API detected in the provided code snippet.",
-      "location": "Script code",
+      "location": "Code analysis",
       "recommendation": "No action needed.",
       "severity": "MEDIUM",
       "type": "Sensitive API Call"
     },
     {
-      "description": "No evidence of code obfuscation, base64 decoding, or suspicious string concatenation for code execution found in the provided snippet.",
-      "location": "Script code",
-      "recommendation": "Maintain code clarity and avoid obfuscation to facilitate audits.",
+      "description": "No evidence of code obfuscation, base64 decoding, or suspicious string concatenation detected in the provided code snippet.",
+      "location": "Code analysis",
+      "recommendation": "Maintain code transparency for security and maintainability.",
       "severity": "MEDIUM",
       "type": "Code Obfuscation"
     },
     {
-      "description": "The script does not use @require to load external libraries. The @connect domains are known services related to SponsorBlock and Cobalt download services, which appear to be legitimate and fixed URLs without version ambiguity.",
-      "location": "@connect and @require directives",
-      "recommendation": "Verify the trustworthiness of these external services periodically.",
+      "description": "The script does not use @require to load external libraries; all external dependencies are accessed via GM_xmlhttpRequest to known domains. The domains appear to be related to the script author or known services. No version pinning applies as no external libraries are loaded via @require.",
+      "location": "@require and @connect directives",
+      "recommendation": "Verify the trustworthiness of connected domains and monitor for supply chain risks.",
       "severity": "LOW",
-      "type": "External Dependency"
+      "type": "External Dependencies"
     }
   ],
   "privacy_collection": {
@@ -66,7 +66,7 @@
   },
   "risk_level": "MEDIUM",
   "script_name": "EasyTube V3 — Ad Skip, SponsorBlock & HD Download⬇️🚀",
-  "summary": "The script performs network requests to third-party servers for SponsorBlock API and video download services, which constitutes data transmission of usage-related information. It does not collect sensitive user data such as cookies, form inputs, or fingerprinting information. No remote code execution or permission abuse is detected. The external dependencies are limited to known service endpoints without dynamic script loading. Overall, the script poses a medium security risk primarily due to data transmission to third-party servers.",
-  "analyzed_at": "2026-04-15T20:09:55.395900+00:00",
+  "summary": "The script performs network requests to third-party servers for SponsorBlock API and video download services, which constitutes data transmission risk. However, it does not collect sensitive user data such as cookies, form inputs, or keyboard events. No remote code execution or permission abuse detected. Overall, the script poses a medium security risk primarily due to data transmission to external servers.",
+  "analyzed_at": "2026-04-15T20:25:32.428786+00:00",
   "slug": "EasyTube_V3_Ad_Skip_SponsorBlock_HD_Download"
 }

@@ -1,0 +1,69 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [
+      "www.iflyrec.com"
+    ],
+    "detected": true
+  },
+  "issues": [
+    {
+      "description": "脚本声明了GM_xmlhttpRequest权限和@connect www.iflyrec.com，但代码中未发现实际使用GM_xmlhttpRequest或其他网络请求发送数据到该第三方服务器，存在潜在数据外传风险。",
+      "location": "元数据和脚本主体",
+      "recommendation": "确认脚本是否确实需要访问www.iflyrec.com，若无必要应移除相关权限和@connect声明。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本未发现读取document.cookie、localStorage、sessionStorage，未监听键盘事件，也未访问浏览器指纹相关API，未读取表单字段值，隐私采集行为未发现。",
+      "location": "脚本主体",
+      "recommendation": "无",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本未使用eval、new Function、setTimeout字符串参数、innerHTML执行远程代码，且@require加载的远程脚本来自greasyfork.org可信源，未发现远程代码执行风险。",
+      "location": "脚本主体和元数据@require",
+      "recommendation": "无",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本申请了GM_xmlhttpRequest权限，但代码中未实际使用该权限，存在权限滥用风险。",
+      "location": "元数据和脚本主体",
+      "recommendation": "移除未使用的GM_xmlhttpRequest权限申请。",
+      "severity": "HIGH",
+      "type": "权限滥用"
+    },
+    {
+      "description": "未发现使用navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API等敏感API。",
+      "location": "脚本主体",
+      "recommendation": "无",
+      "severity": "MEDIUM",
+      "type": "敏感API调用"
+    },
+    {
+      "description": "未发现代码混淆、base64解码执行或字符串拼接执行等混淆特征。",
+      "location": "脚本主体",
+      "recommendation": "无",
+      "severity": "MEDIUM",
+      "type": "代码混淆"
+    },
+    {
+      "description": "@require加载的第三方库来自greasyfork.org，属于可信来源，且版本号固定，符合安全要求。",
+      "location": "元数据@require",
+      "recommendation": "无",
+      "severity": "LOW",
+      "type": "外部依赖"
+    }
+  ],
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "MEDIUM",
+  "script_name": "GitHub 中文化插件",
+  "summary": "该脚本主要用于GitHub界面中文化，未发现隐私采集行为和远程代码执行风险。存在声明了GM_xmlhttpRequest权限和@connect www.iflyrec.com，但代码中未实际使用网络请求，存在潜在数据外传风险和权限滥用。@require依赖来源可信且版本固定。建议开发者确认是否需要访问第三方服务器，若无必要应移除相关权限和连接声明以降低风险。",
+  "analyzed_at": "2026-04-15T20:27:23.967418+00:00",
+  "slug": "main_greasyfork"
+}

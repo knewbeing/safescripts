@@ -42,7 +42,7 @@ title: 旁路全部短链接
 
 **风险等级**：🟠 MEDIUM　　**分析时间**：2026-04-15
 
-> The script is designed to bypass shortlink services and includes multiple permissions to perform its functions. It makes network requests to trusted update and resource servers but does not appear to transmit user data to unknown third parties. No privacy-invasive behaviors such as cookie or form data reading or keyboard event listening were detected. No dynamic code execution or suspicious obfuscation is present. Permissions requested align with the script's functionality. Overall, the script poses a medium security risk primarily due to network requests and broad permissions but no critical privacy violations or remote code execution risks were found.
+> The script requests network resources from trusted third-party domains for updates and icons, and uses GM_xmlhttpRequest and GM_setClipboard which may handle user data. No direct privacy invasive data collection such as cookie or form reading or keyboard event listening is detected. No remote code execution or permission abuse is found. External dependencies are from trusted sources with version pinning. Overall, the script poses a medium security risk primarily due to network requests and clipboard access.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -52,39 +52,44 @@ title: 旁路全部短链接
 ### 发现的问题
 
 **⛔ CRITICAL** — Data Transmission  
-> The script uses GM_xmlhttpRequest and @require to load external resources from greasyfork.org and i.ibb.co. These are third-party domains but are commonly used for script updates and icons. No evidence of user data being sent to unknown third-party servers.  
-> 位置：@require and GM_xmlhttpRequest usage  
-> 建议：Verify the trustworthiness of the external resources and monitor network requests to ensure no sensitive data is leaked.
+> Script uses GM_xmlhttpRequest and @require to load remote resources from greasyfork.org and i.ibb.co, which are third-party domains. However, these are standard update and icon URLs and do not appear to transmit user data.  
+> 位置：@require and GM_xmlhttpRequest usage in script  
+> 建议：Verify the trustworthiness of the @require URL and monitor network requests to ensure no sensitive user data is transmitted.
+
+**⛔ CRITICAL** — Data Transmission  
+> Script reads and modifies clipboard via GM_setClipboard, which may access user clipboard data.  
+> 位置：GM_setClipboard usage  
+> 建议：Ensure clipboard data is handled securely and not sent to external servers.
 
 **⛔ CRITICAL** — Privacy Collection  
-> No evidence found that the script reads document.cookie, localStorage, sessionStorage, or listens to keyboard input events. No access to form fields or browser fingerprinting APIs detected.  
-> 位置：Script code  
-> 建议：Ensure no future code additions introduce privacy-invasive behaviors.
-
-**🔴 HIGH** — Permissions Abuse  
-> The script requests multiple high-level permissions such as GM_setValue, GM_getValue, GM_addStyle, GM_openInTab, GM_setClipboard, GM_xmlhttpRequest, GM_registerMenuCommand, and window.onurlchange. The code uses these permissions appropriately for its functionality (bypassing shortlinks, opening tabs, clipboard operations, etc.). No unused or excessive permissions detected.  
-> 位置：@grant metadata and script code  
-> 建议：Maintain minimal required permissions and review periodically.
+> Script does not explicitly read document.cookie, localStorage, or sessionStorage, nor does it listen to keyboard events or access form input values.  
+> 位置：Code analysis  
+> 建议：No action needed as no privacy invasive data collection detected.
 
 **🔴 HIGH** — Remote Code Execution  
-> The script does not use eval(), new Function(), setTimeout(string), or innerHTML to execute remote code. The @require script is loaded from a trusted source with a fixed version number, reducing risk of supply chain attacks.  
-> 位置：Script code and @require metadata  
-> 建议：Continue avoiding dynamic code execution and ensure @require URLs are from trusted sources with fixed versions.
+> No use of eval(), new Function(), setTimeout(string), or dynamic script injection detected.  
+> 位置：Code analysis  
+> 建议：No action needed.
+
+**🔴 HIGH** — Permission Abuse  
+> @grant permissions include GM_setValue, GM_getValue, GM_addStyle, GM_openInTab, GM_setClipboard, GM_xmlhttpRequest, window.onurlchange, GM_registerMenuCommand. All appear to be used appropriately in the script context.  
+> 位置：@grant metadata vs code usage  
+> 建议：No excessive permissions detected.
 
 **🟠 MEDIUM** — Sensitive API Call  
-> No usage of sensitive APIs such as navigator.geolocation, RTCPeerConnection, MediaDevices, or Clipboard API beyond GM_setClipboard which is granted and used legitimately.  
-> 位置：Script code and @grant metadata  
-> 建议：Monitor usage of sensitive APIs to prevent abuse.
+> No sensitive APIs such as navigator.geolocation, RTCPeerConnection, MediaDevices, or Clipboard API (except GM_setClipboard) are used.  
+> 位置：Code analysis  
+> 建议：No action needed.
 
 **🟠 MEDIUM** — Code Obfuscation  
-> No signs of code obfuscation, base64 decoding, or suspicious string concatenation for code execution found in the script.  
-> 位置：Script code  
-> 建议：Maintain code transparency for easier security audits.
+> No evidence of code obfuscation, base64 decoding, or string concatenation for code execution found.  
+> 位置：Code analysis  
+> 建议：No action needed.
 
 **🟡 LOW** — External Dependency  
-> The external dependency @require is loaded from greasyfork.org with a fixed version number, which is a trusted source for user scripts. The icon is loaded from i.ibb.co, a common image hosting service. No other external dependencies detected.  
-> 位置：@require and @icon metadata  
-> 建议：Continue to use trusted sources and fixed versions for dependencies.
+> @require loads MonkeyConfig Mod.js from greasyfork.org with a fixed version number, which is a trusted source and version pinning reduces supply chain risk.  
+> 位置：@require metadata  
+> 建议：Maintain version pinning and verify source trustworthiness.
 
 ---
 

@@ -1,0 +1,86 @@
+{
+  "slug": "main_zh-TW",
+  "platform": "github",
+  "source_url": "https://raw.githubusercontent.com/maboloshi/github-chinese/2635cb959e88c263108a99e022b3ddd5e9818838/main_zh-TW.user.js",
+  "source_repo": "maboloshi/github-chinese",
+  "raw_url": "https://raw.githubusercontent.com/maboloshi/github-chinese/2635cb959e88c263108a99e022b3ddd5e9818838/main_zh-TW.user.js",
+  "filename": "main_zh-TW.user.js",
+  "name": "GitHub 中文化插件（繁體版）",
+  "version": "1.9.3-2026-04-12",
+  "description": "中文化 GitHub 界面的部分菜單及內容。原作者為樓教主(http://www.52cik.com/)。",
+  "match": [
+    "https://github.com/*",
+    "https://skills.github.com/*",
+    "https://gist.github.com/*",
+    "https://education.github.com/*",
+    "https://www.githubstatus.com/*"
+  ],
+  "grant": [
+    "GM_xmlhttpRequest",
+    "GM_getValue",
+    "GM_setValue",
+    "GM_registerMenuCommand",
+    "GM_unregisterMenuCommand",
+    "GM_notification"
+  ],
+  "require": [
+    "https://raw.githubusercontent.com/maboloshi/github-chinese/gh-pages/locals_zh-TW.js?v1.9.3-2026-04-12"
+  ],
+  "metadata_raw": "// @name  GitHub 中文化插件（繁體版）\n// @namespace  https://github.com/maboloshi/github-chinese\n// @description  中文化 GitHub 界面的部分菜單及內容。原作者為樓教主(http://www.52cik.com/)。\n// @copyright  2021, 沙漠之子 (https://maboloshi.github.io/Blog)\n// @icon  https://github.githubassets.com/pinned-octocat.svg\n// @version  1.9.3-2026-04-12\n// @author  沙漠之子\n// @license  GPL-3.0\n// @match  https://github.com/*\n// @match  https://skills.github.com/*\n// @match  https://gist.github.com/*\n// @match  https://education.github.com/*\n// @match  https://www.githubstatus.com/*\n// @require  https://raw.githubusercontent.com/maboloshi/github-chinese/gh-pages/locals_zh-TW.js?v1.9.3-2026-04-12\n// @run-at  document-start\n// @grant  GM_xmlhttpRequest\n// @grant  GM_getValue\n// @grant  GM_setValue\n// @grant  GM_registerMenuCommand\n// @grant  GM_unregisterMenuCommand\n// @grant  GM_notification\n// @connect  fanyi.iflyrec.com\n// @supportURL  https://github.com/maboloshi/github-chinese/issues",
+  "sha256": "dcd93cead4ae87ffb798f7068d95651c2313a2702a39f1092cf56afe907c8d77",
+  "discovered_at": "2026-04-15T20:22:45.274985+00:00",
+  "ai_reason": "",
+  "is_new": true,
+  "install_count": null,
+  "good_ratings": null,
+  "bad_ratings": null,
+  "summary": {
+    "applicable_sites": [
+      "GitHub",
+      "GitHub Skills",
+      "GitHub Gist",
+      "GitHub Education",
+      "GitHub Status"
+    ],
+    "description": "本脚本将 GitHub 网站界面部分菜单和内容翻译成繁体中文，提升使用者的本地化体验。支持在多个 GitHub 相关子站点自动应用繁体中文界面。通过自动监测页面变化，实时更新翻译内容。",
+    "permissions": [
+      {
+        "explanation": "允许脚本发送跨域请求获取翻译数据或更新内容。",
+        "grant": "GM_xmlhttpRequest"
+      },
+      {
+        "explanation": "允许脚本读取本地存储的设置和数据。",
+        "grant": "GM_getValue"
+      },
+      {
+        "explanation": "允许脚本保存设置和数据到本地存储。",
+        "grant": "GM_setValue"
+      },
+      {
+        "explanation": "允许脚本注册菜单命令，方便用户操作脚本功能。",
+        "grant": "GM_registerMenuCommand"
+      },
+      {
+        "explanation": "允许脚本注销已注册的菜单命令。",
+        "grant": "GM_unregisterMenuCommand"
+      },
+      {
+        "explanation": "允许脚本发送桌面通知提醒用户。",
+        "grant": "GM_notification"
+      }
+    ],
+    "tags": [
+      "界面本地化",
+      "繁体中文",
+      "GitHub",
+      "翻译",
+      "用户脚本"
+    ],
+    "usage": [
+      "安装脚本后，访问 GitHub 及其相关子站点。",
+      "脚本会自动将页面部分菜单和内容翻译为繁体中文。",
+      "如需调整设置，可通过浏览器扩展的用户脚本菜单进行操作。"
+    ],
+    "zh_name": "GitHub 繁体中文化插件"
+  }
+}
