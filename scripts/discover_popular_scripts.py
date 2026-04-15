@@ -597,8 +597,10 @@ def render_doc(slug: str, meta_entry: dict, summary: dict) -> str:
         bad = meta_entry.get("bad_ratings", 0)
         stats_extra = f"　　安装量：**{installs:,}**　　评分：👍{good} / 👎{bad}"
 
+    # YAML title must be quoted to handle colons, special chars
+    safe_name = name.replace('"', '\\"')
     return f"""---
-title: {name}
+title: "{safe_name}"
 ---
 
 # {name}

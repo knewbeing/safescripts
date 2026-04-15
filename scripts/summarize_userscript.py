@@ -72,8 +72,10 @@ def render_doc(slug: str, meta: dict, summary: dict) -> str:
     updated = meta.get("updated_at", "")[:10]
     version = meta.get("version", "unknown")
 
+    # YAML title must be quoted to handle colons, special chars
+    safe_name = name.replace('"', '\\"')
     return f"""---
-title: {name}
+title: "{safe_name}"
 ---
 
 # {name}
