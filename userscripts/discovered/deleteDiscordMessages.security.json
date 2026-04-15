@@ -6,51 +6,51 @@
   },
   "issues": [
     {
-      "description": "脚本未使用任何网络请求API（如GM_xmlhttpRequest、fetch、XMLHttpRequest、navigator.sendBeacon等），不存在数据外传行为。",
+      "description": "脚本未使用任何网络请求API（如GM_xmlhttpRequest、fetch、XMLHttpRequest等），无数据外传行为。",
       "location": "全脚本",
       "recommendation": "无需修改，保持无外传行为。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本未读取document.cookie、localStorage、sessionStorage，也未监听键盘事件或读取表单字段值，未访问浏览器指纹相关API。",
+      "description": "脚本未读取document.cookie、localStorage、sessionStorage，也未监听键盘事件或读取表单字段值，无隐私采集行为。",
       "location": "全脚本",
-      "recommendation": "无需修改，保持不采集用户隐私。",
+      "recommendation": "无需修改，保持无隐私采集行为。",
       "severity": "CRITICAL",
       "type": "隐私采集"
     },
     {
-      "description": "脚本未使用eval、new Function、setTimeout字符串参数或innerHTML执行远程代码，也未通过@require或动态script标签加载远程JS。",
+      "description": "脚本未使用eval、new Function、setTimeout字符串参数或动态加载远程脚本，无远程代码执行风险。",
       "location": "全脚本",
-      "recommendation": "无远程代码执行风险，保持当前实现。",
+      "recommendation": "无需修改，避免引入远程代码执行。",
       "severity": "HIGH",
       "type": "远程代码执行"
     },
     {
-      "description": "脚本声明@grant none，且代码中未使用任何高权限API，权限申请合理无滥用。",
+      "description": "脚本未申请任何权限（@grant none），且代码中未使用任何高权限API，无权限滥用。",
       "location": "元数据与代码",
-      "recommendation": "无权限滥用风险。",
+      "recommendation": "无需修改，权限申请合理。",
       "severity": "HIGH",
       "type": "权限滥用"
     },
     {
-      "description": "脚本未调用navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API等敏感API。",
+      "description": "脚本未调用敏感API如navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API等。",
       "location": "全脚本",
-      "recommendation": "无敏感API调用风险。",
+      "recommendation": "无需修改，避免调用敏感API。",
       "severity": "MEDIUM",
       "type": "敏感API调用"
     },
     {
-      "description": "脚本代码未发现base64解码执行、字符串拼接执行或明显混淆特征，代码结构清晰。",
+      "description": "脚本代码未发现明显混淆特征，无base64解码执行或字符串拼接执行。",
       "location": "全脚本",
-      "recommendation": "无混淆风险。",
+      "recommendation": "无需修改，保持代码清晰。",
       "severity": "MEDIUM",
       "type": "代码混淆"
     },
     {
-      "description": "脚本未使用@require加载任何外部依赖库，所有代码均内嵌，且元数据中外部资源均为官方或可信来源。",
+      "description": "脚本未通过@require加载任何外部依赖，所有代码均为本地定义。",
       "location": "元数据",
-      "recommendation": "保持依赖来源可信，避免引入不明第三方库。",
+      "recommendation": "无需修改，避免引入不可信依赖。",
       "severity": "LOW",
       "type": "外部依赖"
     }
@@ -61,7 +61,7 @@
   },
   "risk_level": "SAFE",
   "script_name": "Undiscord",
-  "summary": "该UserScript未发现任何数据外传、隐私采集、远程代码执行或权限滥用行为，代码结构清晰且无混淆，外部依赖可信。整体安全风险极低，可放心使用。",
-  "analyzed_at": "2026-04-15T19:09:01.490167+00:00",
+  "summary": "该UserScript未发现任何数据外传、隐私采集、远程代码执行或权限滥用行为，代码清晰且无混淆，未加载外部依赖，整体安全性高。",
+  "analyzed_at": "2026-04-15T19:26:50.130396+00:00",
   "slug": "deleteDiscordMessages"
 }

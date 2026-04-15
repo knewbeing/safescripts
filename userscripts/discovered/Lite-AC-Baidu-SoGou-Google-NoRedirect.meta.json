@@ -24,35 +24,36 @@
   "require": [],
   "metadata_raw": "// @name  AC-baidu： 优化百度、搜狗、谷歌搜索结果之重定向 lite\n// @icon  https://coding.net/u/zb227/p/zbImg/git/raw/master/img0/icon.jpg\n// @grant  GM_xmlhttpRequest\n// @author  AC\n// @create  2015-11-25\n// @run-at  document-start\n// @version  11.0\n// @connect  www.baidu.com\n// @include  http://www.baidu.com/*\n// @include  https://www.baidu.com/*\n// @include  http://www.sogou.com/*\n// @include  https://www.sogou.com/*\n// @include  /^https?://\\w+.bing.com/.*/\n// @include  /^https?\\:\\/\\/encrypted.google.[^\\/]+/\n// @include  /^https?\\:\\/\\/www.google.[^\\/]+/\n// @include  https://*.zhidao.baidu.com/*\n// @include  https://zhidao.baidu.com/*\n// @home-url  https://greasyfork.org/zh-TW/scripts/30504\n// @namespace  1353464539@qq.com\n// @copyright  2017, AC\n// @description  1.繞過百度、搜狗搜索結果中的自己的跳轉鏈接，直接訪問原始網頁-反正都能看懂\n// @lastmodified  2019-05-22\n// @feedback-url  https://greasyfork.org/zh-TW/scripts/30504\n// @note  2019.05.22-V11.0 诈尸，修复一直弹窗的问题，这个版本的基本上不会更新了，但是处理Baidu和搜狗的重定向功能算是完善的\n// @note  2017.06.25-V10.0 修复上次更新导致的百度知道的老问题的出现\n// @note  2017.06.24-V9.8 更新了bing上的图片favicon地址;并且尽量减少了MO触发次数，避免页面卡顿;修复搜狗的重定向问题\n// @note  2017.06.23-V9.7 上传错了~重新来，顺带处理了谷歌favicon问题\n// @note  2017.06.23-V9.6 修复了谷歌重定向的问题~~我的锅\n// @note  2017.06.11-V9.5 不再使用DOM方式来监听页面了，使用timer+MO来处理，极大减少了cpu占用时间和瞬时网速占用\n// @note  2017.05.26-V9.4 恢复favicon模式，现在这个脚本基本上全了，有需要以后再说\n// @note  2017.05.15-V9.3 暂时移除百度右边侧栏的广告移除模式，准备下次优化好了再继续\n// @note  2017.05.12-V9.2 暂时移除谷歌的安全搜索模式，因为很复杂的原因\n// @note  2017.05.12-V9.1 暂时移除Favicon的显示，因为这样就杂了，有需要的人自己去装这个脚本吧，保留百度去广告\n// @note  2017.05.12-V9.0 集合了去重定向+去广告+Favicon显示\n// @note  2017.05.12-V8.7 集合了去广告的脚本，以前的那个去广告的脚本就不用了\n// @note  2017.05.12-V8.6 修复谷歌安全搜索的BUG V2\n// @note  2017.05.12-V8.4 新增：默认屏蔽谷歌的安全搜索功能\n// @note  2017.05.05-V8.3 修复include范围太小导致的百度知道的屏蔽问题\n// @note  2017.05.04-V8.2 终于修复了百度知道图片替换了文字的这个大BUG; 顺便处理了superapi.zhidao.baidu.com; 新增谷歌搜索结果重定向去除\n// @note  2017.05.04-V8.1 终于修复了百度知道图片替换了文字的这个大BUG，顺便处理了superapi.zhidao.baidu.com\n// @note  2017.05.04-V8.0 终于修复了百度知道图片替换了文字的这个大BUG，待测试\n// @note  2017.03.28-V7.6 修复在ViolentMonkey上的不支持的问题\n// @note  2017.03.28-V7.5 尝试修复chrome上的问题\n// @note  2017.03.21-V7.4 尝试处理Edge上不支持的问题，结果发现是Edge本身的TamperMonkey支持有问题\n// @note  2017.03.19-V7.3 修复打开百度之后再次点击“百度一下”导致的无法更新重定向问题\n// @note  2017.03.19-V7.2 未知原因chrome的MutationObserver无法使用了，继续回归以前的DOMNodeInserted\n// @note  2017.02.17-V7.0 修复搜狗的搜索结果重定向问题+改个名字\n// @note  2017.02.17-V6.9 修复搜狗的搜索结果重定向问题\n// @note  2016.12.10-V6.8 ***\n// @note  2016.10.27-V6.7 修复了以前的重复请求，现在的请求数应该小了很多，网络也就不卡了，感觉萌萌哒\n// @note  2016.04.24-V6.6 恢复以前的版本，因为兼容性问题\n// @note  2015.12.01-V5.0 加入搜狗的支持，但是支出不是很好\n// @note  2015.11.25-V2.0 优化，已经是真实地址的不再尝试获取\n// @note  2015.11.25-V1.0 完成去掉百度重定向的功能",
   "sha256": "66c99058c2cd50153c4c933c69864162d2a5bca3e7de657be0211b241f4aade7",
-  "discovered_at": "2026-04-15T19:18:49.038334+00:00",
-  "ai_reason": "优化百度、搜狗、谷歌搜索结果的重定向，提升搜索体验，仓库活跃，元数据完整，中文说明，实用性强。",
+  "discovered_at": "2026-04-15T19:25:22.292746+00:00",
+  "ai_reason": "中 Stars（6047），持续维护，优化百度、搜狗、谷歌搜索结果重定向，提升搜索体验，中文描述，实用性强。",
   "is_new": false,
   "summary": {
     "applicable_sites": [
-      "百度",
-      "搜狗",
-      "必应",
-      "谷歌",
+      "百度搜索",
+      "搜狗搜索",
+      "必应搜索",
+      "谷歌搜索",
       "百度知道"
     ],
-    "description": "本脚本自动绕过百度、搜狗、谷歌等搜索引擎结果中的跳转链接，直接访问目标网页，提升浏览速度和体验。它还修复了搜索结果中的重定向问题，减少页面卡顿。适合经常使用这些搜索引擎的用户。",
+    "description": "本脚本自动绕过百度、搜狗、谷歌等搜索引擎结果中的跳转链接，直接访问目标网页，提升浏览速度和体验。它还修复了部分搜索结果页面的重定向问题，减少页面卡顿。适合经常使用这些搜索引擎的用户。",
     "permissions": [
       {
-        "explanation": "允许脚本发送跨域网络请求，用于获取真实链接地址。",
+        "explanation": "允许脚本发送跨域网络请求以获取真实链接地址。",
         "grant": "GM_xmlhttpRequest"
       }
     ],
     "tags": [
-      "搜索引擎优化",
+      "搜索优化",
       "去重定向",
-      "提升浏览体验",
-      "百度",
-      "谷歌",
-      "搜狗"
+      "网页加速",
+      "浏览器脚本",
+      "广告屏蔽",
+      "搜索引擎"
     ],
     "usage": [
       "安装脚本后，访问百度、搜狗、谷歌等支持的网站。",
-      "搜索时，点击搜索结果将直接跳转到真实网页，无需经过跳转页面。"
+      "搜索结果中的链接将自动跳过中间重定向，直接打开目标网页。",
+      "无需额外操作，脚本自动生效。"
     ],
     "zh_name": "百度搜狗谷歌搜索结果重定向优化"
   }

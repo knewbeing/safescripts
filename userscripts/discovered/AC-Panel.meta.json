@@ -18,32 +18,31 @@
   ],
   "metadata_raw": "// @name  AC-baidu： 啊猫-操作面板\n// @description  用于快速操作和显示的一个面板\n// @author  AC\n// @create  2024-12-12\n// @lastmodified  2024-03-07\n// @version  1.0\n// @include  https://zhibo2.90dao.com/\n// @namespace  gm.com\n// @copyright  2024, AC\n// @note  2024.12.12-V1.0 初始化第一版\n// @run-at  document-end\n// @grant  GM_setClipboard\n// @require  https://update.greasyfork.org/scripts/503097/1424938/VueEntry.js",
   "sha256": "b417995ea2decb97bfbe53554e395085ecabbe4417507aa84fbf38756a04d9e8",
-  "discovered_at": "2026-04-15T19:18:52.617524+00:00",
-  "ai_reason": "快速操作面板，提升特定网站操作效率，仓库活跃，元数据完整，有中文说明，实用性较强。",
+  "discovered_at": "2026-04-15T19:25:25.826041+00:00",
+  "ai_reason": "中 Stars（6047），持续维护，提供快速操作面板，适用特定直播网站，中文描述，功能实用。",
   "is_new": false,
   "summary": {
     "applicable_sites": [
-      "90道直播平台"
+      "90dao直播平台"
     ],
-    "description": "本脚本在90道直播平台页面添加一个操作面板，方便用户快速执行操作和查看数据。面板内含一个按钮，点击后会增加计数显示，提升交互体验。支持一键复制功能，方便用户快速复制内容。",
+    "description": "本脚本在90dao直播平台页面添加一个操作面板，方便用户快速查看和操作。面板显示一个消息和计数器，用户点击按钮即可增加计数。通过简单交互提升使用体验。",
     "permissions": [
       {
-        "explanation": "允许脚本将内容复制到剪贴板，方便用户快速复制信息。",
+        "explanation": "允许脚本将内容复制到剪贴板。",
         "grant": "GM_setClipboard"
       }
     ],
     "tags": [
       "操作面板",
-      "交互增强",
-      "复制功能",
       "直播平台",
-      "数据展示"
+      "交互增强",
+      "Vue框架",
+      "剪贴板"
     ],
     "usage": [
-      "安装脚本后，打开90道直播平台首页。",
-      "页面底部会出现一个操作面板，显示初始信息。",
-      "点击面板中的按钮，计数会自动增加。",
-      "需要复制内容时，使用面板提供的复制功能。"
+      "安装脚本后，打开90dao直播平台首页。",
+      "页面底部会出现一个操作面板，显示消息和计数器。",
+      "点击面板上的按钮，计数器数字会增加。"
     ],
     "zh_name": "啊猫操作面板"
   }
