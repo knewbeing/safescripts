@@ -105,8 +105,8 @@ def render_discovered_index(entries: list[dict]) -> str:
         "",
         f"共 **{len(entries)}** 个脚本　　最后发现：{now}",
         "",
-        "以下脚本由 SafeScripts 自动从 GitHub 发现，经 AI 筛选并安全分析。",
-        "如需使用，可将脚本地址添加到 `target-repos.json` 的 `userscripts` 数组中进行持续跟踪。",
+        "以下脚本由 SafeScripts 自动从 GitHub、GreasyFork、Gitee、GitLab 发现，经 AI 筛选并安全分析。",
+        "如需持续跟踪某个脚本，可将其地址添加到 `target-repos.json` 的 `userscripts` 数组中。",
         "",
     ]
 
@@ -125,17 +125,30 @@ def render_discovered_index(entries: list[dict]) -> str:
             continue
         badge = RISK_BADGE.get(risk, "⬜")
         lines += [f"## {badge} {risk}", ""]
-        lines += ["| 脚本 | 来源仓库 | 适用网站 | 发现时间 |", "|------|----------|----------|----------|"]
+        lines += ["| 脚本 | 来源仓库 | 平台 | 适用网站 | 发现时间 |", "|------|----------|------|----------|----------|"]
         for e in group:
             slug = e.get("slug", "")
             summary = e.get("summary", {})
             name = summary.get("zh_name") or e.get("name", slug)
             repo = e.get("source_repo", "")
+            platform = e.get("platform", "github")
             sites = summary.get("applicable_sites", []) if isinstance(summary, dict) else []
             sites_str = "、".join(sites[:2]) + ("…" if len(sites) > 2 else "") if sites else "通用"
             discovered = e.get("discovered_at", "")[:10]
-            repo_link = f"[{repo}](https://github.com/{repo})" if repo else "—"
-            lines.append(f"| [{name}](./{slug}) | {repo_link} | {sites_str} | {discovered} |")
+            platform_labels = {
+                "github": "GitHub", "greasyfork": "GreasyFork",
+                "gitee": "Gitee", "gitlab": "GitLab",
+            }
+            plabel = platform_labels.get(platform, platform)
+            platform_urls = {
+                "github": f"https://github.com/{repo}",
+                "gitee": f"https://gitee.com/{repo}",
+                "gitlab": f"https://gitlab.com/{repo}",
+                "greasyfork": e.get("source_url", ""),
+            }
+            purl = platform_urls.get(platform, "")
+            repo_link = f"[{repo}]({purl})" if repo and purl else (repo or "—")
+            lines.append(f"| [{name}](./{slug}) | {repo_link} | {plabel} | {sites_str} | {discovered} |")
         lines.append("")
 
     return "\n".join(lines)

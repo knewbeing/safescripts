@@ -1,5 +1,5 @@
 {
-  "_comment": "SafeScripts 配置文件：在 userscripts 数组中添加要跟踪的 Tampermonkey 脚本地址。",
+  "_comment": "SafeScripts 配置文件：在 userscripts 数组中添加要跟踪的 Tampermonkey 脚本地址。支持 GitHub blob URL、Gitee blob URL、GitLab blob URL、GreasyFork code URL 以及 raw 直链。",
   "settings": {
     "max_discovered": 10,
     "ai_model": "openai/gpt-4.1-mini"

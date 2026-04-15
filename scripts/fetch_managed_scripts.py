@@ -35,15 +35,33 @@ TMP_DIR.mkdir(parents=True, exist_ok=True)
 # ── URL 规范化 ────────────────────────────────────────────────────────────────
 
 def normalize_url(url: str) -> str:
-    """将 GitHub blob URL 转换为 raw URL。"""
-    # https://github.com/owner/repo/blob/branch/path -> raw URL
-    m = re.match(
-        r"https://github\.com/([^/]+)/([^/]+)/blob/([^/]+)/(.+)",
-        url,
-    )
+    """将各平台的 blob/页面 URL 转换为可直接下载的 raw URL。"""
+    # GitHub blob → raw
+    m = re.match(r"https://github\.com/([^/]+)/([^/]+)/blob/([^/]+)/(.+)", url)
     if m:
         owner, repo, branch, path = m.groups()
         return f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{path}"
+
+    # Gitee blob → raw
+    m = re.match(r"https://gitee\.com/([^/]+)/([^/]+)/blob/([^/]+)/(.+)", url)
+    if m:
+        owner, repo, branch, path = m.groups()
+        return f"https://gitee.com/{owner}/{repo}/raw/{branch}/{path}"
+
+    # GitLab blob → raw
+    m = re.match(r"https://gitlab\.com/(.+)/-/blob/([^/]+)/(.+)", url)
+    if m:
+        namespace, branch, path = m.groups()
+        return f"https://gitlab.com/{namespace}/-/raw/{branch}/{path}"
+
+    # GreasyFork 脚本页面 → code URL（从 /scripts/431 → /scripts/431/code/...）
+    # 实际 code_url 形如 https://greasyfork.org/scripts/431/code/xxx.user.js
+    # 如果用户填的是页面 URL，尝试附加 /code 路径
+    m = re.match(r"https://greasyfork\.org/(?:[a-z-]+/)?scripts/(\d+)/?$", url)
+    if m:
+        # 无法直接转换，保留原样，下载时会失败并提示用户使用 code_url
+        pass
+
     return url
 
 
