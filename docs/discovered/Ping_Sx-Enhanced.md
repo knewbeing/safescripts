@@ -43,7 +43,7 @@ title: Ping.Sx增强
 
 **风险等级**：🟢 SAFE　　**分析时间**：2026-04-15
 
-> 该脚本主要功能为页面内复制 IP 地址、清理链接及快捷回到顶部，未涉及任何网络请求或用户隐私数据采集，权限申请合理且均有使用，代码无远程执行风险，整体安全性高。
+> 该脚本功能单一，主要实现页面内 IP 地址复制和链接清理功能。未发现任何数据外传、隐私采集、远程代码执行或权限滥用行为。代码结构清晰，无混淆或外部依赖，整体安全性高。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -60,30 +60,30 @@ title: Ping.Sx增强
 **⛔ CRITICAL** — 隐私采集  
 > 脚本未读取 document.cookie、localStorage、sessionStorage，也未监听键盘输入事件，未访问浏览器指纹相关 API。  
 > 位置：整体代码  
-> 建议：无需修改，保持隐私安全。
+> 建议：无需修改，保护用户隐私。
 
 **🔴 HIGH** — 远程代码执行  
-> 脚本未使用 eval、new Function、setTimeout(string)、innerHTML 执行远程内容，也未通过 @require 或动态 script 标签加载远程 JS。  
+> 脚本未使用 eval、new Function、setTimeout(string) 等远程代码执行方式，也未通过 @require 或动态 script 标签加载远程 JS。  
 > 位置：整体代码  
-> 建议：无远程代码执行风险，保持代码安全。
+> 建议：保持代码安全，避免远程代码执行风险。
 
 **🔴 HIGH** — 权限滥用  
-> 脚本申请了 GM_setClipboard、GM_registerMenuCommand、GM_unregisterMenuCommand、GM_getValue、GM_setValue、window.onurlchange 权限，实际代码中均有使用，权限申请合理。  
-> 位置：元数据与代码权限使用  
-> 建议：权限申请与使用匹配，无滥用。
+> 脚本申请的 @grant 权限均有实际使用，未发现权限滥用。  
+> 位置：元数据与代码  
+> 建议：保持权限申请与实际使用一致，避免多余权限。
 
 **🟠 MEDIUM** — 敏感 API 调用  
-> 脚本未调用 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API（除 GM_setClipboard 外）等敏感 API。  
+> 脚本未调用敏感 API，如 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API（除 GM_setClipboard 外）等。  
 > 位置：整体代码  
-> 建议：无敏感 API 滥用风险。
+> 建议：无敏感 API 调用风险。
 
 **🟠 MEDIUM** — 代码混淆  
 > 代码结构清晰，无明显混淆、base64 解码执行或字符串拼接执行特征。  
 > 位置：整体代码  
-> 建议：保持代码清晰，便于安全审计。
+> 建议：保持代码可读性，避免混淆。
 
 **🟡 LOW** — 外部依赖  
-> 脚本未通过 @require 加载任何外部依赖库。  
+> 脚本未使用 @require 加载任何外部依赖，所有代码均为内嵌。  
 > 位置：元数据  
 > 建议：无外部依赖风险。
 

@@ -39,7 +39,7 @@ title: 密码显示助手
 
 **风险等级**：🟢 SAFE　　**分析时间**：2026-04-15
 
-> 该脚本为密码显示助手，功能仅限于本地修改密码输入框显示方式。未发现任何数据外传、隐私采集、远程代码执行或权限滥用行为。代码清晰，无混淆，且无外部依赖。整体安全性高，风险等级为安全。
+> 该 UserScript 主要功能为密码输入框内容显示切换，未涉及任何网络请求或数据外传行为，也未采集用户隐私信息。代码未使用远程代码执行方式，权限申请合理且均被使用。无敏感 API 调用及代码混淆，外部依赖安全可信。整体安全性高，无明显安全风险。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -49,39 +49,39 @@ title: 密码显示助手
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本未检测到任何网络请求行为，未向第三方服务器发送数据。  
+> 脚本未检测到任何网络请求相关代码，如 GM_xmlhttpRequest、fetch、XMLHttpRequest 或 navigator.sendBeacon，且无数据上报行为。  
 > 位置：全脚本  
-> 建议：无需修改，保持无外传行为。
+> 建议：确认无外部数据传输，确保用户数据不被泄露。
 
 **⛔ CRITICAL** — 隐私采集  
-> 脚本未访问 document.cookie、localStorage、sessionStorage，也未监听键盘输入事件，未读取表单字段值，未使用浏览器指纹相关API。  
+> 脚本未访问 document.cookie、localStorage、sessionStorage，也未监听键盘事件或读取表单字段值。  
 > 位置：全脚本  
-> 建议：无需修改，保持隐私保护。
+> 建议：无隐私采集行为，符合隐私保护要求。
 
 **🔴 HIGH** — 远程代码执行  
-> 脚本未使用 eval、new Function、setTimeout(string)、innerHTML 执行远程内容，且未通过 @require 或动态 script 标签加载远程 JS。  
+> 脚本未使用 eval、new Function、setTimeout(string) 等远程代码执行方式，且未通过 @require 或动态 script 标签加载远程 JS。  
 > 位置：全脚本  
-> 建议：无需修改，避免远程代码执行风险。
+> 建议：保持代码安全，避免远程代码执行风险。
 
 **🔴 HIGH** — 权限滥用  
-> 脚本申请的权限（GM_getValue, GM_setValue, GM_registerMenuCommand, GM_unregisterMenuCommand, GM_addStyle）均被合理使用，无权限滥用。  
+> 脚本申请的权限（GM_getValue、GM_setValue、GM_registerMenuCommand、GM_unregisterMenuCommand、GM_addStyle）均被合理使用，无权限滥用。  
 > 位置：元数据及代码  
-> 建议：无需修改，权限申请合理。
+> 建议：权限申请合理，无需调整。
 
 **🟠 MEDIUM** — 敏感 API 调用  
-> 脚本未调用敏感API如 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API。  
+> 脚本未调用敏感 API，如 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API。  
 > 位置：全脚本  
-> 建议：无需修改，避免敏感API滥用。
+> 建议：无敏感 API 调用风险。
 
 **🟠 MEDIUM** — 代码混淆  
-> 脚本代码结构清晰，无明显混淆、base64解码或字符串拼接执行特征。  
+> 脚本代码结构清晰，无明显混淆、base64 解码或字符串拼接执行特征。  
 > 位置：全脚本  
-> 建议：保持代码清晰，避免混淆。
+> 建议：代码可读性良好，便于安全审计。
 
 **🟡 LOW** — 外部依赖  
-> 脚本未使用 @require 加载任何外部依赖库。  
+> 脚本未通过 @require 加载任何外部依赖库，且图标资源来源可信（GitHub 用户脚本仓库）。  
 > 位置：元数据  
-> 建议：无需修改，避免供应链风险。
+> 建议：外部依赖安全，版本固定。
 
 ---
 

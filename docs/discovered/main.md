@@ -44,7 +44,7 @@ title: GitHub 中文化插件
 
 **风险等级**：🟠 MEDIUM　　**分析时间**：2026-04-15
 
-> 该脚本主要功能为中文化 GitHub 界面，使用了第三方翻译服务进行文本翻译，存在将页面文本上传至第三方服务器的风险。未发现隐私采集、远程代码执行或权限滥用等严重安全问题。建议用户注意上传内容的隐私性，开发者应明确告知用户数据上传行为。
+> 该脚本主要功能为本地翻译 GitHub 页面内容，依赖讯飞听见翻译服务进行文本翻译，存在将用户文本发送至第三方服务器的风险。未发现隐私采集、远程代码执行及权限滥用等严重安全问题。建议用户知晓数据外传风险并提供关闭翻译功能选项。整体代码清晰，依赖来源可信。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -54,39 +54,39 @@ title: GitHub 中文化插件
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本使用 GM_xmlhttpRequest 发送 POST 请求到第三方翻译服务 https://fanyi.iflyrec.com，可能会上传页面文本内容进行翻译，存在数据外传风险。  
+> 脚本使用 GM_xmlhttpRequest 向第三方翻译服务 fanyi.iflyrec.com 发送用户文本内容进行翻译，存在数据外传风险。  
 > 位置：代码中 CONFIG.TRANS_ENGINES.iflyrec 配置及相关请求调用  
-> 建议：确认上传的文本内容不包含敏感信息，或提供用户明确告知和选择。避免上传隐私数据。
+> 建议：确认用户文本数据是否包含敏感信息，建议告知用户并提供关闭翻译功能选项。限制请求内容，避免上传隐私数据。
 
 **⛔ CRITICAL** — 隐私采集  
-> 脚本读取并使用 GM_getValue 存储配置，但未发现读取 document.cookie、localStorage、sessionStorage，未监听键盘事件，未访问浏览器指纹相关 API。  
-> 位置：代码中 GM_getValue 调用及无相关隐私采集代码  
-> 建议：无特别隐私采集行为，保持当前状态。
+> 脚本读取 GM_getValue 存储的配置项，但未发现监听键盘输入事件或读取 document.cookie/localStorage/sessionStorage。  
+> 位置：代码中 GM_getValue 调用  
+> 建议：无直接隐私采集行为，继续保持。
 
 **🔴 HIGH** — 远程代码执行  
-> 脚本未使用 eval、new Function、setTimeout(string) 等远程代码执行方式，@require 加载的远程脚本来源可信且为固定版本。  
+> 脚本未使用 eval、new Function、setTimeout(string) 等远程代码执行方式，@require 依赖来源可信且固定版本。  
 > 位置：@require https://raw.githubusercontent.com/maboloshi/github-chinese/gh-pages/locals.js?v1.9.3-2026-04-12  
-> 建议：继续保持远程依赖的可信和版本固定，避免动态执行代码。
+> 建议：保持依赖来源可信和版本固定，避免动态执行远程代码。
 
 **🔴 HIGH** — 权限滥用  
-> 脚本申请了 GM_xmlhttpRequest、GM_getValue、GM_setValue、GM_registerMenuCommand、GM_unregisterMenuCommand、GM_notification 权限，代码中均有合理使用，无明显权限滥用。  
-> 位置：元数据 @grant 权限声明及代码中对应调用  
-> 建议：保持权限申请与实际使用一致，避免申请未使用的高权限。
+> 脚本申请了 GM_xmlhttpRequest 权限，且实际使用中确实调用了该权限，权限申请合理。  
+> 位置：@grant GM_xmlhttpRequest  
+> 建议：权限申请与使用匹配，无滥用。
 
 **🟠 MEDIUM** — 敏感 API 调用  
-> 脚本未检测到使用敏感 API 如 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API。  
-> 位置：代码中无相关调用  
-> 建议：无敏感 API 使用，保持当前状态。
+> 未发现使用敏感 API 如 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等。  
+> 位置：代码整体  
+> 建议：无敏感 API 调用风险。
 
 **🟠 MEDIUM** — 代码混淆  
 > 代码未发现明显混淆、base64 解码执行或字符串拼接执行特征。  
-> 位置：完整代码分析  
-> 建议：保持代码清晰，避免混淆增加审计难度。
+> 位置：代码整体  
+> 建议：代码清晰，便于审计。
 
 **🟡 LOW** — 外部依赖  
-> @require 加载的第三方库来自 GitHub 官方 raw 内容，版本通过查询参数固定，来源可信。  
+> @require 依赖来自 GitHub 官方 raw 内容，版本通过 URL 参数固定，来源可信。  
 > 位置：@require https://raw.githubusercontent.com/maboloshi/github-chinese/gh-pages/locals.js?v1.9.3-2026-04-12  
-> 建议：继续使用可信来源并固定版本，防范供应链攻击。
+> 建议：继续使用可信来源并固定版本，防止供应链攻击。
 
 ---
 

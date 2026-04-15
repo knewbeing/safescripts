@@ -1,0 +1,55 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [
+      "https://update.greasyfork.org",
+      "https://i.ibb.co"
+    ],
+    "detected": true
+  },
+  "issues": [
+    {
+      "description": "The script uses GM_xmlhttpRequest and @require to load external resources from update.greasyfork.org, which is a third-party server. This may involve data transmission outside the user's domain.",
+      "location": "@require and GM_xmlhttpRequest usage in script",
+      "recommendation": "Ensure that the external resources are from trusted sources and do not leak sensitive user data. Avoid unnecessary data transmission to third-party servers.",
+      "severity": "CRITICAL",
+      "type": "Data Transmission"
+    },
+    {
+      "description": "The script reads and manipulates clipboard via GM_setClipboard, which may access sensitive user data.",
+      "location": "GM_setClipboard usage",
+      "recommendation": "Verify that clipboard data is handled securely and not sent to external servers without user consent.",
+      "severity": "CRITICAL",
+      "type": "Privacy Collection"
+    },
+    {
+      "description": "The script requests multiple high-level permissions such as GM_xmlhttpRequest, GM_setClipboard, GM_openInTab, GM_registerMenuCommand, but the actual code usage is not fully visible in the snippet. Potential permission over-privilege may exist.",
+      "location": "@grant declarations",
+      "recommendation": "Review actual code usage to ensure all granted permissions are necessary and justified.",
+      "severity": "HIGH",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "The script loads external dependency MonkeyConfig Mod.js from a third-party URL without version pinning, which may pose supply chain risks.",
+      "location": "@require https://update.greasyfork.org/scripts/528923/1588272/MonkeyConfig%20Mod.js",
+      "recommendation": "Pin exact versions and verify the integrity of external dependencies to avoid supply chain attacks.",
+      "severity": "LOW",
+      "type": "External Dependency"
+    }
+  ],
+  "privacy_collection": {
+    "details": [
+      "Uses GM_setClipboard which can access clipboard data",
+      "No explicit reading of document.cookie, localStorage, sessionStorage detected in provided snippet",
+      "No explicit keyboard event listeners detected in provided snippet",
+      "No explicit form field value reading detected in provided snippet",
+      "No explicit browser fingerprinting APIs usage detected in provided snippet"
+    ],
+    "detected": true
+  },
+  "risk_level": "HIGH",
+  "script_name": "Bypass All Shortlinks",
+  "summary": "The script bypasses shortlink services and automates navigation and downloads. It uses network requests to third-party servers and accesses clipboard data, which poses critical risks of data transmission and privacy collection. It also requests multiple high-level permissions and loads external dependencies without version pinning. Overall, the script carries a high security risk and requires careful review before use.",
+  "analyzed_at": "2026-04-15T19:57:07.203187+00:00",
+  "slug": "Bypass_All_Shortlinks"
+}

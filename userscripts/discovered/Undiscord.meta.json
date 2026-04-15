@@ -1,0 +1,55 @@
+{
+  "slug": "Undiscord",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/406540-undiscord",
+  "source_repo": "greasyfork/406540",
+  "raw_url": "https://update.greasyfork.org/scripts/406540/Undiscord.user.js",
+  "filename": "Undiscord.user.js",
+  "name": "Undiscord",
+  "version": "5.2.6",
+  "description": "Delete all messages in a Discord channel or DM (Bulk deletion)",
+  "match": [
+    "https://*.discord.com/app",
+    "https://*.discord.com/channels/*",
+    "https://*.discord.com/login"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Undiscord\n// @description  Delete all messages in a Discord channel or DM (Bulk deletion)\n// @version  5.2.6\n// @author  victornpb\n// @homepageURL  https://github.com/victornpb/undiscord\n// @supportURL  https://github.com/victornpb/undiscord/discussions\n// @match  https://*.discord.com/app\n// @match  https://*.discord.com/channels/*\n// @match  https://*.discord.com/login\n// @license  MIT\n// @namespace  https://github.com/victornpb/deleteDiscordMessages\n// @icon  https://victornpb.github.io/undiscord/images/icon128.png\n// @contributionURL  https://www.buymeacoffee.com/vitim\n// @grant  none\n// @attribution  Original project (https://github.com/victornpb/undiscord)\n// @downloadURL  https://update.greasyfork.org/scripts/406540/Undiscord.user.js\n// @updateURL  https://update.greasyfork.org/scripts/406540/Undiscord.meta.js",
+  "sha256": "4d42ecae318125986cd6932f249a13c1e9ebe318135cdaac49761d7fb9be4317",
+  "discovered_at": "2026-04-15T19:55:13.799816+00:00",
+  "ai_reason": "",
+  "is_new": true,
+  "install_count": 552892,
+  "good_ratings": 50,
+  "bad_ratings": 8,
+  "summary": {
+    "applicable_sites": [
+      "Discord官网",
+      "Discord频道页面",
+      "Discord登录页面"
+    ],
+    "description": "该脚本可以帮助用户批量删除Discord频道或私信中的所有消息。使用后，用户可以快速清理聊天记录，节省手动删除的时间。适合需要清理大量消息的Discord用户。",
+    "permissions": [
+      {
+        "explanation": "脚本不需要额外权限即可运行。",
+        "grant": "none"
+      }
+    ],
+    "tags": [
+      "Discord",
+      "消息管理",
+      "批量删除",
+      "聊天清理",
+      "用户脚本"
+    ],
+    "usage": [
+      "安装脚本后，打开Discord网页版并登录账号。",
+      "进入需要清理消息的频道或私信页面。",
+      "根据脚本界面提示操作，批量删除该频道或私信中的消息。"
+    ],
+    "zh_name": "Discord消息批量删除助手"
+  }
+}

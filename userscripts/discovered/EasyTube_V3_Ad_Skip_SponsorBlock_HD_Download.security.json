@@ -1,0 +1,72 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [
+      "https://sponsor.ajay.app/api/skipSegments",
+      "https://co.wuk.sh",
+      "https://cobalt.api.timelessnesses.me",
+      "https://api.cobalt.tools"
+    ],
+    "detected": true
+  },
+  "issues": [
+    {
+      "description": "The script uses GM_xmlhttpRequest to communicate with third-party servers including sponsor.ajay.app, co.wuk.sh, cobalt.api.timelessnesses.me, and api.cobalt.tools. These requests may transmit user-related data such as video IDs or usage statistics to these external endpoints.",
+      "location": "GM_xmlhttpRequest calls to @connect domains",
+      "recommendation": "Ensure that no sensitive or personally identifiable information is sent. Review privacy policies of these endpoints and inform users about data transmission.",
+      "severity": "CRITICAL",
+      "type": "Data Transmission"
+    },
+    {
+      "description": "The script reads and writes persistent settings using GM_setValue and GM_getValue but does not explicitly access document.cookie, localStorage, or sessionStorage. No event listeners for keyboard input or form data reading were found. No browser fingerprinting APIs usage detected.",
+      "location": "Script code analysis",
+      "recommendation": "No immediate action needed, but maintain transparency about stored settings and ensure no sensitive data is stored without user consent.",
+      "severity": "CRITICAL",
+      "type": "Privacy Collection"
+    },
+    {
+      "description": "No usage of eval(), new Function(), setTimeout(string), or innerHTML with dynamic content was detected. No @require directives or dynamic script tag injections for remote code loading found.",
+      "location": "Script code analysis",
+      "recommendation": "Continue to avoid dynamic code execution from untrusted sources to maintain security.",
+      "severity": "HIGH",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "The script requests GM_xmlhttpRequest, GM_setValue, GM_getValue, and GM_addStyle permissions, all of which are used appropriately in the code. No unused or excessive permissions detected.",
+      "location": "@grant directives and script usage",
+      "recommendation": "No action needed.",
+      "severity": "HIGH",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "No usage of sensitive APIs such as navigator.geolocation, RTCPeerConnection, MediaDevices, or Clipboard API was found in the script.",
+      "location": "Script code analysis",
+      "recommendation": "No action needed.",
+      "severity": "MEDIUM",
+      "type": "Sensitive API Call"
+    },
+    {
+      "description": "No evidence of code obfuscation, base64 decoding, or suspicious string concatenation for code execution was found.",
+      "location": "Script code analysis",
+      "recommendation": "Maintain code clarity and avoid obfuscation to facilitate security audits.",
+      "severity": "MEDIUM",
+      "type": "Code Obfuscation"
+    },
+    {
+      "description": "The script does not use @require to load external libraries. The @connect domains are known public endpoints related to the script's functionality. No version pinning applies as no external libraries are loaded.",
+      "location": "@require and @connect directives",
+      "recommendation": "Ensure the external endpoints remain trustworthy and monitor for any supply chain risks.",
+      "severity": "LOW",
+      "type": "External Dependency"
+    }
+  ],
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "MEDIUM",
+  "script_name": "EasyTube V3 — Ad Skip, SponsorBlock & HD Download⬇️🚀",
+  "summary": "The script performs network requests to several third-party endpoints to fetch SponsorBlock segments and download video content via Cobalt instances. It stores user toggle settings persistently but does not collect sensitive user input or browser fingerprinting data. No remote code execution or permission abuse detected. Overall, the main risk is data transmission to external servers, which is expected for its functionality but requires user awareness.",
+  "analyzed_at": "2026-04-15T19:57:23.327721+00:00",
+  "slug": "EasyTube_V3_Ad_Skip_SponsorBlock_HD_Download"
+}

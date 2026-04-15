@@ -6,64 +6,67 @@
   },
   "issues": [
     {
-      "description": "脚本未检测到任何网络请求行为，无数据外传风险。",
+      "description": "脚本未检测到任何网络请求相关代码，未进行数据外传。",
       "location": "全脚本",
-      "recommendation": "无需操作。",
+      "recommendation": "确认脚本不包含任何网络请求，确保无数据外传风险。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
       "description": "脚本未读取 document.cookie、localStorage（除非用于存储音量设置）、sessionStorage，也未监听键盘输入事件，未访问浏览器指纹相关API。",
       "location": "全脚本",
-      "recommendation": "无需操作。",
+      "recommendation": "确认脚本仅使用 localStorage 存储音量设置，且无敏感隐私数据采集。",
       "severity": "CRITICAL",
       "type": "隐私采集"
     },
     {
-      "description": "脚本未使用 eval、new Function、setTimeout(string)、innerHTML 执行远程代码，也未通过 @require 或动态 script 标签加载远程 JS。",
+      "description": "脚本未使用 eval、new Function、setTimeout(string)、innerHTML 执行远程内容，也未通过 @require 或动态 script 标签加载远程 JS。",
       "location": "全脚本",
-      "recommendation": "无需操作。",
+      "recommendation": "保持代码执行安全，避免远程代码执行风险。",
       "severity": "HIGH",
       "type": "远程代码执行"
     },
     {
-      "description": "脚本申请了 GM_registerMenuCommand、GM_unregisterMenuCommand、GM_openInTab、GM_getValue、GM_setValue、GM_notification 权限，且代码中均有合理使用，未发现权限滥用。",
+      "description": "脚本申请了多个 GM_* 权限，且代码中使用了 GM_registerMenuCommand、GM_unregisterMenuCommand、GM_openInTab、GM_getValue、GM_setValue 等，权限申请与使用匹配，无滥用。",
       "location": "元数据与代码",
-      "recommendation": "无需操作。",
+      "recommendation": "保持权限申请与实际使用一致，避免申请未使用的高权限。",
       "severity": "HIGH",
       "type": "权限滥用"
     },
     {
-      "description": "脚本未调用敏感 API，如 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等。",
+      "description": "脚本未调用 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等敏感 API。",
       "location": "全脚本",
-      "recommendation": "无需操作。",
+      "recommendation": "无敏感 API 调用风险。",
       "severity": "MEDIUM",
       "type": "敏感 API 调用"
     },
     {
       "description": "脚本代码清晰，无明显混淆、base64 解码执行或字符串拼接执行特征。",
       "location": "全脚本",
-      "recommendation": "无需操作。",
+      "recommendation": "保持代码清晰，避免混淆带来的安全隐患。",
       "severity": "MEDIUM",
       "type": "代码混淆"
     },
     {
       "description": "脚本未通过 @require 加载任何外部依赖库。",
       "location": "元数据",
-      "recommendation": "无需操作。",
+      "recommendation": "如未来添加依赖，确保来源可信且固定版本。",
       "severity": "LOW",
       "type": "外部依赖"
     }
   ],
   "privacy_collection": {
     "details": [
-      "使用 localStorage 存储当前音量值（html5_xiu_currentVolume）用于功能实现，不涉及敏感隐私数据。"
+      "使用 localStorage 存储音量设置数据",
+      "未读取 document.cookie 或 sessionStorage",
+      "未监听键盘输入事件",
+      "未访问浏览器指纹相关 API"
     ],
     "detected": true
   },
   "risk_level": "LOW",
   "script_name": "HTML5 Video Audio Default Volume",
-  "summary": "该脚本主要功能为调整 HTML5 视频音频默认音量，支持各网站分别记忆音量设置。代码中未发现任何数据外传、隐私敏感信息采集、远程代码执行或权限滥用风险。仅使用 localStorage 存储音量相关数据，属于正常功能需求。整体安全性较高，风险等级为低。",
-  "analyzed_at": "2026-04-15T19:32:08.541113+00:00",
+  "summary": "该脚本主要功能为调整 HTML5 视频音频默认音量，支持各网站分别记忆音量设置。代码中未发现任何网络请求或数据外传行为，未采集敏感隐私信息，也未使用远程代码执行手段。权限申请合理且与代码使用匹配。整体代码清晰，无混淆或恶意特征。风险等级评估为低。",
+  "analyzed_at": "2026-04-15T19:57:39.201324+00:00",
   "slug": "HTML5Volume"
 }

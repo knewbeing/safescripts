@@ -8,50 +8,50 @@
   },
   "issues": [
     {
-      "description": "脚本使用了GM_xmlhttpRequest向www.baidu.com发起GET请求，用于获取重定向的真实地址。请求仅限于@connect声明的www.baidu.com，未发现向第三方服务器发送用户数据的行为。",
-      "location": "resetURL函数内的GM_xmlhttpRequest调用",
-      "recommendation": "确认请求内容不包含敏感用户数据，且请求目标可信。",
+      "description": "脚本使用了GM_xmlhttpRequest向www.baidu.com发起GET请求，用于获取重定向的真实地址。请求仅限于百度域名，未发现向第三方服务器发送用户数据的行为。",
+      "location": "resetURL函数中GM_xmlhttpRequest调用",
+      "recommendation": "确认请求仅用于获取重定向地址，避免携带敏感用户数据。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本未读取document.cookie、localStorage、sessionStorage，未监听键盘输入事件，也未访问浏览器指纹相关API。",
-      "location": "整体代码",
+      "description": "脚本未读取document.cookie、localStorage、sessionStorage，未监听键盘事件，也未访问浏览器指纹相关API。",
+      "location": "整体代码审查",
       "recommendation": "无",
       "severity": "CRITICAL",
       "type": "隐私采集"
     },
     {
       "description": "脚本未使用eval、new Function、setTimeout字符串形式执行代码，也未通过@require或动态script标签加载远程JS。",
-      "location": "整体代码",
+      "location": "整体代码审查",
       "recommendation": "无",
       "severity": "HIGH",
       "type": "远程代码执行"
     },
     {
-      "description": "脚本申请了GM_xmlhttpRequest权限，且代码中确实使用了该权限，未发现未使用的高权限申请。",
-      "location": "元数据与代码权限声明",
+      "description": "脚本申请了GM_xmlhttpRequest权限，且代码中确实使用该权限，权限申请与使用匹配，无滥用。",
+      "location": "元数据与代码中GM_xmlhttpRequest使用",
       "recommendation": "无",
       "severity": "HIGH",
       "type": "权限滥用"
     },
     {
       "description": "脚本未调用navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API等敏感API。",
-      "location": "整体代码",
+      "location": "整体代码审查",
       "recommendation": "无",
       "severity": "MEDIUM",
       "type": "敏感API调用"
     },
     {
-      "description": "代码结构清晰，未发现明显的代码混淆、base64解码执行或字符串拼接执行等混淆特征。",
-      "location": "整体代码",
+      "description": "代码未发现明显混淆、base64解码执行或字符串拼接执行的特征。",
+      "location": "整体代码审查",
       "recommendation": "无",
       "severity": "MEDIUM",
       "type": "代码混淆"
     },
     {
-      "description": "脚本未通过@require加载外部依赖，@icon和@home-url均为可信来源。",
-      "location": "元数据",
+      "description": "脚本未通过@require加载外部依赖，且仅使用内置API和GM_xmlhttpRequest。",
+      "location": "元数据与代码审查",
       "recommendation": "无",
       "severity": "LOW",
       "type": "外部依赖"
@@ -63,7 +63,7 @@
   },
   "risk_level": "LOW",
   "script_name": "AC-baidu： 优化百度、搜狗、谷歌搜索结果之重定向 lite",
-  "summary": "该脚本主要功能为去除百度、搜狗、谷歌等搜索引擎的重定向，直接访问真实链接。使用了GM_xmlhttpRequest向百度服务器请求真实地址，未发现向第三方服务器发送用户数据的行为。未采集用户隐私信息，未使用远程代码执行手段，权限申请合理，代码无混淆，外部依赖可信。整体风险较低。",
-  "analyzed_at": "2026-04-15T19:32:16.967039+00:00",
+  "summary": "该脚本主要通过GM_xmlhttpRequest向百度服务器请求真实重定向地址，未向第三方服务器发送用户数据，未采集用户隐私信息，也未执行远程代码。权限申请合理，代码无混淆，未依赖外部库。整体风险较低。",
+  "analyzed_at": "2026-04-15T19:57:45.674234+00:00",
   "slug": "Lite-AC-Baidu-SoGou-Google-NoRedirect"
 }

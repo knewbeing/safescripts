@@ -1,0 +1,81 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [
+      "oversea.mimixiaoke.com",
+      "jtmate.com"
+    ],
+    "detected": true
+  },
+  "issues": [
+    {
+      "description": "脚本使用了 GM_xmlhttpRequest 权限，且 @connect 指定了第三方域名 oversea.mimixiaoke.com 和 jtmate.com，存在向第三方服务器发送请求的行为，可能会上传用户数据或进行追踪。",
+      "location": "@connect 和 GM_xmlhttpRequest",
+      "recommendation": "确认请求的具体内容和数据是否包含敏感用户信息，若无必要应避免向第三方服务器发送请求。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本申请了大量 GM_* 权限，包括 GM_setClipboard，GM_xmlhttpRequest，GM_download 等，权限较高，需确认是否全部使用且合理。",
+      "location": "@grant",
+      "recommendation": "核查代码中是否实际使用了所有申请的权限，避免权限滥用。",
+      "severity": "HIGH",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本元数据中声明了 @antifeature 为 referral-link，存在推广或返利链接的行为，可能涉及用户隐私和利益相关。",
+      "location": "@antifeature",
+      "recommendation": "用户应知晓该行为，开发者应明确告知并合理使用。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本匹配了大量购物平台网址，可能会读取页面内容、表单数据等，需确认是否有读取 document.cookie、localStorage、sessionStorage 或监听键盘输入等行为。",
+      "location": "代码逻辑（未提供完整代码）",
+      "recommendation": "审查代码中是否有读取用户敏感数据或监听用户输入的行为，避免隐私泄露。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本未提供完整代码，无法完全确认是否存在远程代码执行风险，如 eval、new Function、动态加载远程脚本等。",
+      "location": "代码逻辑（未提供完整代码）",
+      "recommendation": "完整代码审查，重点检查动态代码执行和远程脚本加载。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本未提供完整代码，无法确认是否调用敏感 API，如 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等。",
+      "location": "代码逻辑（未提供完整代码）",
+      "recommendation": "检查是否调用敏感 API，避免未经用户同意的权限使用。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "脚本未提供完整代码，无法确认是否存在代码混淆或 base64 解码执行等混淆特征。",
+      "location": "代码逻辑（未提供完整代码）",
+      "recommendation": "检查代码是否存在混淆，确保代码透明易审。",
+      "severity": "MEDIUM",
+      "type": "代码混淆"
+    },
+    {
+      "description": "脚本 @require 未见第三方库加载，@connect 指定的第三方服务器来源未知，存在一定供应链风险。",
+      "location": "@connect",
+      "recommendation": "确认第三方服务器的可信度，避免供应链攻击。",
+      "severity": "LOW",
+      "type": "外部依赖"
+    }
+  ],
+  "privacy_collection": {
+    "details": [
+      "存在 @antifeature referral-link，可能涉及推广返利行为。",
+      "匹配大量购物平台，可能读取页面内容、表单数据。",
+      "申请了 GM_setClipboard 权限，可能操作剪贴板。"
+    ],
+    "detected": true
+  },
+  "risk_level": "CRITICAL",
+  "script_name": "Online shopping assistant & Automatically query coupons & Save money",
+  "summary": "该脚本申请了较多高权限，且存在向第三方服务器 oversea.mimixiaoke.com 和 jtmate.com 发送请求的行为，可能上传用户数据或进行追踪。同时声明了 referral-link 反特征，存在推广返利行为。匹配大量购物平台，可能读取用户隐私数据。未提供完整代码，无法排除远程代码执行和敏感 API 调用风险。综合评估风险等级为 CRITICAL，建议谨慎使用并进一步审查完整代码。",
+  "analyzed_at": "2026-04-15T19:57:56.400717+00:00",
+  "slug": "Online_shopping_assistant_Automatically_query_coupons_Save_money"
+}

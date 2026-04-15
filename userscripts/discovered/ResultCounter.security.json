@@ -8,49 +8,49 @@
     {
       "description": "脚本未检测到任何网络请求相关代码，未进行数据外传。",
       "location": "全脚本",
-      "recommendation": "确认无网络请求代码，确保无数据外传风险。",
+      "recommendation": "无",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
       "description": "脚本未读取 document.cookie、localStorage、sessionStorage，未监听键盘输入事件，未读取表单字段值，未访问浏览器指纹相关 API。",
       "location": "全脚本",
-      "recommendation": "确认无隐私数据采集行为，保护用户隐私。",
+      "recommendation": "无",
       "severity": "CRITICAL",
       "type": "隐私采集"
     },
     {
       "description": "脚本未使用 eval、new Function、setTimeout(string)、innerHTML 执行远程内容，未通过 @require 或动态 script 标签加载远程 JS。",
       "location": "全脚本",
-      "recommendation": "避免使用动态代码执行，防止远程代码注入风险。",
+      "recommendation": "无",
       "severity": "HIGH",
       "type": "远程代码执行"
     },
     {
-      "description": "脚本未声明 @grant 权限，且代码中未使用 GM_* 等特殊权限接口，权限申请合理。",
+      "description": "脚本未声明 @grant 权限，且代码中未使用任何 GM_* API，权限申请合理，无滥用。",
       "location": "元数据与代码",
-      "recommendation": "保持权限最小化原则，避免申请未使用的高权限。",
+      "recommendation": "无",
       "severity": "HIGH",
       "type": "权限滥用"
     },
     {
       "description": "脚本未调用 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等敏感 API。",
       "location": "全脚本",
-      "recommendation": "无敏感 API 调用风险。",
+      "recommendation": "无",
       "severity": "MEDIUM",
       "type": "敏感 API 调用"
     },
     {
       "description": "脚本代码结构清晰，无明显混淆、base64 解码或字符串拼接执行特征。",
       "location": "全脚本",
-      "recommendation": "保持代码清晰，便于安全审计。",
+      "recommendation": "无",
       "severity": "MEDIUM",
       "type": "代码混淆"
     },
     {
-      "description": "脚本未使用 @require 加载任何外部依赖库。",
+      "description": "脚本未使用 @require 加载任何外部依赖。",
       "location": "元数据",
-      "recommendation": "如未来添加依赖，建议使用可信来源并固定版本。",
+      "recommendation": "无",
       "severity": "LOW",
       "type": "外部依赖"
     }
@@ -61,7 +61,7 @@
   },
   "risk_level": "SAFE",
   "script_name": "搜索结果自动加序号",
-  "summary": "该脚本仅对搜索结果页面 DOM 进行操作，给搜索结果添加序号，无任何网络请求、隐私数据采集或远程代码执行行为，权限申请合理，代码无混淆，整体安全性高。",
-  "analyzed_at": "2026-04-15T19:32:32.971729+00:00",
+  "summary": "该脚本仅在指定搜索引擎页面为搜索结果添加序号，未进行任何数据外传或隐私采集行为，也未使用远程代码执行或敏感权限，代码清晰无混淆，整体安全性高。",
+  "analyzed_at": "2026-04-15T19:58:08.304846+00:00",
   "slug": "ResultCounter"
 }

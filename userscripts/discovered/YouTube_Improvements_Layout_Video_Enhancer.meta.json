@@ -1,0 +1,109 @@
+{
+  "slug": "YouTube_Improvements_Layout_Video_Enhancer",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/560618-youtube-improvements-layout-video-enhancer",
+  "source_repo": "greasyfork/560618",
+  "raw_url": "https://update.greasyfork.org/scripts/560618/YouTube%20Improvements%20%E2%80%93%20Layout%20%20Video%20Enhancer.user.js",
+  "filename": "YouTube_Improvements_Layout_Video_Enhancer.user.js",
+  "name": "YouTube Improvements – Layout & Video Enhancer",
+  "version": "1.1.4",
+  "description": "A userscript that enhances YouTube with multiple useful features: optimized video details layout, video downloading, screenshot capture, dark/light theme toggle, fast-forward controls, and more.",
+  "match": [
+    "*://*.youtube.com/**"
+  ],
+  "grant": [
+    "GM_registerMenuCommand",
+    "GM_openInTab",
+    "GM.openInTab",
+    "GM_addStyle",
+    "GM_setValue",
+    "GM_getValue",
+    "GM_deleteValue",
+    "GM_xmlhttpRequest",
+    "unsafeWindow",
+    "GM_download",
+    "GM_setClipboard",
+    "GM_addElement"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  YouTube Improvements – Layout & Video Enhancer\n// @name:zh-CN  YouTube 改进 – 布局与视频增强\n// @name:zh-TW  YouTube 改進 – 版面與影片增強\n// @name:ar  تحسينات YouTube – تحسين التخطيط والفيديو\n// @name:bg  Подобрения за YouTube – Оформление и видео подобрения\n// @name:cs  Vylepšení YouTube – Rozvržení a vylepšení videa\n// @name:da  YouTube-forbedringer – Layout- og videoforbedring\n// @name:de  YouTube-Verbesserungen – Layout- und Video-Optimierung\n// @name:el  Βελτιώσεις YouTube – Διάταξη και ενίσχυση βίντεο\n// @name:en  YouTube Improvements – Layout & Video Enhancer\n// @name:eo  YouTube-Plibonigoj – Aranĝo kaj Video-Plibonigilo\n// @name:es  Mejoras de YouTube – Diseño y mejora de video\n// @name:es-419  Mejoras de YouTube – Diseño y mejora de video\n// @name:fi  YouTube-parannukset – Asettelu ja videon tehostus\n// @name:fr  Améliorations YouTube – Mise en page et amélioration vidéo\n// @name:fr-CA  Améliorations YouTube – Mise en page et amélioration vidéo\n// @name:he  שיפורי YouTube – פריסה ושיפור וידאו\n// @name:hr  YouTube poboljšanja – Izgled i poboljšanje videa\n// @name:hu  YouTube fejlesztések – Elrendezés és videó javítása\n// @name:id  Peningkatan YouTube – Tata letak & peningkat video\n// @name:it  Miglioramenti di YouTube – Layout e potenziamento video\n// @name:ja  YouTube 改善 – レイアウトと動画強化\n// @name:ka  YouTube-ის გაუმჯობესებები – განლაგება და ვიდეოს გაძლიერება\n// @name:ko  YouTube 개선 – 레이아웃 및 동영상 향상\n// @name:nb  YouTube-forbedringer – Layout og videoforbedring\n// @name:nl  YouTube-verbeteringen – Lay-out en videoverbetering\n// @name:pl  Ulepszenia YouTube – Układ i ulepszanie wideo\n// @name:pt-BR  Melhorias do YouTube – Layout e aprimoramento de vídeo\n// @name:ro  Îmbunătățiri YouTube – Aspect și îmbunătățire video\n// @name:ru  Улучшения YouTube – Макет и улучшение видео\n// @name:sv  YouTube-förbättringar – Layout och videoförbättring\n// @name:th  การปรับปรุง YouTube – เลย์เอาต์และการเพิ่มประสิทธิภาพวิดีโอ\n// @name:tr  YouTube İyileştirmeleri – Düzen ve video geliştirme\n// @name:uk  Покращення YouTube – Макет і покращення відео\n// @name:ug  YouTube ياخشىلىنىشى – ئورۇنلاشتۇرۇش ۋە سىن كۈچەيتىش\n// @name:vi  Cải tiến YouTube – Bố cục và tăng cường video\n// @description  A userscript that enhances YouTube with multiple useful features: optimized video details layout, video downloading, screenshot capture, dark/light theme toggle, fast-forward controls, and more.\n// @description:zh-CN  一个用于增强 YouTube 的用户脚本，提供多项实用功能，包括：优化的视频详情页布局、视频下载、视频截图、深色/浅色主题切换、视频快进控制等。\n// @description:zh-TW  一個用於強化 YouTube 的使用者腳本，提供多項實用功能，包括：優化的影片詳細頁面配置、影片下載、影片截圖、深色／淺色主題切換、影片快轉控制等。\n// @description:ar  سكريبت مستخدم يعزز تجربة YouTube من خلال عدة ميزات مفيدة، بما في ذلك: تخطيط محسّن لصفحة تفاصيل الفيديو، تنزيل الفيديو، التقاط لقطات شاشة، التبديل بين الوضع الداكن والفاتح، التحكم في التقديم السريع، والمزيد.\n// @description:bg  Потребителски скрипт, който подобрява YouTube с множество полезни функции, включително: оптимизиран изглед на страницата с детайли на видеото, изтегляне на видеа, екранни снимки, превключване между тъмен и светъл режим, бързо превъртане и други.\n// @description:cs  Uživatelský skript, který vylepšuje YouTube pomocí řady užitečných funkcí, včetně: optimalizovaného rozvržení stránky s podrobnostmi o videu, stahování videí, snímků obrazovky, přepínání tmavého/světlého režimu, ovládání rychlého přetáčení a dalších.\n// @description:da  Et brugerscript, der forbedrer YouTube med flere nyttige funktioner, herunder: optimeret layout af videoens detaljeside, videonedlastning, skærmbilleder, skift mellem mørkt/lyst tema, hurtig fremadspoling og mere.\n// @description:de  Ein Userskript, das YouTube mit mehreren nützlichen Funktionen erweitert, darunter: optimiertes Layout der Videodetailseite, Videodownloads, Screenshot-Erfassung, Umschaltung zwischen Dunkel- und Hellmodus, Schnellvorlauf-Steuerung und mehr.\n// @description:el  Ένα userscript που βελτιώνει το YouTube με πολλές χρήσιμες λειτουργίες, όπως: βελτιστοποιημένη διάταξη σελίδας λεπτομερειών βίντεο, λήψη βίντεο, στιγμιότυπα οθόνης, εναλλαγή σκοτεινού/φωτεινού θέματος, έλεγχος γρήγορης προώθησης και άλλα.\n// @description:eo  Uzantskripto kiu plibonigas YouTube per pluraj utilaj funkcioj, inkluzive de: optimumigita aranĝo de la videodetala paĝo, elŝuto de videoj, ekranfotoj, ŝanĝo inter malhela/luma temo, rapida antaŭeniro kaj pli.\n// @description:es  Un script de usuario que mejora YouTube con múltiples funciones útiles, incluyendo: diseño optimizado de la página de detalles del vídeo, descarga de vídeos, capturas de pantalla, cambio entre tema oscuro/claro, controles de avance rápido y más.\n// @description:fi  Käyttäjäskripti, joka parantaa YouTubea useilla hyödyllisillä ominaisuuksilla, mukaan lukien: optimoitu videon tietosivun asettelu, videon lataus, kuvakaappaukset, tumman/vaalean teeman vaihto, pikakelaus ja muuta.\n// @description:fr  Un script utilisateur qui améliore YouTube avec de nombreuses fonctionnalités utiles, notamment : mise en page optimisée de la page de détails vidéo, téléchargement de vidéos, captures d’écran, bascule entre thème sombre/clair, contrôles d’avance rapide, et plus encore.\n// @description:fr-CA  Un script utilisateur qui améliore YouTube grâce à plusieurs fonctionnalités utiles, dont : une mise en page optimisée de la page des détails vidéo, le téléchargement de vidéos, des captures d’écran, le mode sombre/clair, le contrôle de l’avance rapide, et plus.\n// @description:he  סקריפט משתמש שמשפר את YouTube באמצעות מגוון תכונות שימושיות, כולל: פריסת דף פרטי וידאו מותאמת, הורדת וידאו, צילום מסך, מעבר בין מצב כהה/בהיר, שליטה בהאצה קדימה ועוד.\n// @description:hr  Korisnički skript koji poboljšava YouTube s više korisnih značajki, uključujući: optimizirani izgled stranice s detaljima videa, preuzimanje videa, snimke zaslona, prebacivanje između tamne/svijetle teme, brzo premotavanje i više.\n// @description:hu  Egy felhasználói szkript, amely számos hasznos funkcióval bővíti a YouTube-ot, beleértve: az optimalizált videórészletek oldalelrendezést, videóletöltést, képernyőképeket, sötét/világos téma váltást, gyors előretekerést és egyebeket.\n// @description:id  Script pengguna yang meningkatkan YouTube dengan berbagai fitur berguna, termasuk: tata letak halaman detail video yang dioptimalkan, unduhan video, tangkapan layar, pengalihan tema gelap/terang, kontrol percepatan, dan lainnya.\n// @description:it  Uno script utente che migliora YouTube con diverse funzionalità utili, tra cui: layout ottimizzato della pagina dei dettagli del video, download dei video, acquisizione di screenshot, cambio tema scuro/chiaro, controlli di avanzamento rapido e altro.\n// @description:ja  YouTube を強化するユーザースクリプトで、動画詳細ページの最適化されたレイアウト、動画のダウンロード、スクリーンショット取得、ダーク／ライトテーマ切替、早送り操作などの便利な機能を提供します。\n// @description:ka  მომხმარებლის სკრიპტი, რომელიც YouTube-ს აუმჯობესებს მრავალ სასარგებლო ფუნქციით, მათ შორის: ვიდეოს დეტალების გვერდის ოპტიმიზებული განლაგება, ვიდეოების ჩამოტვირთვა, ეკრანის გადაღება, ღია/ბნელი თემის გადართვა, სწრაფი წინ წაწევის კონტროლი და სხვა.\n// @description:ko  YouTube를 다양한 유용한 기능으로 개선하는 사용자 스크립트로, 최적화된 비디오 상세 페이지 레이아웃, 비디오 다운로드, 스크린샷 캡처, 다크/라이트 테마 전환, 빠른 앞으로 감기 제어 등을 제공합니다.\n// @description:nb  Et brukerskript som forbedrer YouTube med flere nyttige funksjoner, inkludert: optimalisert layout for videodetaljsiden, videonedlasting, skjermbilder, bytte mellom mørkt/lyst tema, hurtigspoling og mer.\n// @description:nl  Een gebruikersscript dat YouTube verbetert met meerdere nuttige functies, waaronder: een geoptimaliseerde lay-out van de videodetailpagina, videodownloads, screenshots, schakelen tussen donker/licht thema, snel vooruitspoelen en meer.\n// @description:pl  Skrypt użytkownika, który usprawnia YouTube dzięki wielu przydatnym funkcjom, w tym: zoptymalizowanemu układowi strony szczegółów wideo, pobieraniu filmów, zrzutom ekranu, przełączaniu trybu ciemnego/jasnego, szybkiemu przewijaniu i innym.\n// @description:pt-BR  Um script de usuário que aprimora o YouTube com vários recursos úteis, incluindo: layout otimizado da página de detalhes do vídeo, download de vídeos, captura de telas, alternância entre tema escuro/claro, controles de avanço rápido e muito mais.\n// @description:ro  Un script de utilizator care îmbunătățește YouTube cu mai multe funcții utile, inclusiv: un layout optimizat al paginii cu detalii video, descărcare video, capturi de ecran, comutare temă întunecată/luminoasă, control de derulare rapidă și altele.\n// @description:ru  Пользовательский скрипт, расширяющий возможности YouTube с помощью множества полезных функций, включая: оптимизированный макет страницы с деталями видео, загрузку видео, создание скриншотов, переключение тёмной/светлой темы, управление быстрой перемоткой и многое другое.\n// @description:sv  Ett användarskript som förbättrar YouTube med flera användbara funktioner, inklusive: optimerad layout för videodetaljsidan, videonedladdning, skärmbilder, växling mellan mörkt/ljust tema, snabbspolningskontroller och mer.\n// @description:th  สคริปต์ผู้ใช้ที่ช่วยปรับปรุง YouTube ด้วยฟีเจอร์ที่มีประโยชน์หลายรายการ ได้แก่ เลย์เอาต์หน้ารายละเอียดวิดีโอที่ปรับให้เหมาะสม การดาวน์โหลดวิดีโอ การจับภาพหน้าจอ การสลับธีมมืด/สว่าง การควบคุมการกรอไปข้างหน้า และอื่นๆ\n// @description:tr  YouTube'u birden fazla faydalı özellikle geliştiren bir kullanıcı betiği: optimize edilmiş video detay sayfası düzeni, video indirme, ekran görüntüsü alma, karanlık/açık tema geçişi, hızlı ileri sarma kontrolleri ve daha fazlası.\n// @description:uk  Користувацький скрипт, що покращує YouTube за допомогою багатьох корисних функцій, зокрема: оптимізованого макета сторінки з деталями відео, завантаження відео, знімків екрана, перемикання темної/світлої теми, керування швидким перемотуванням та іншого.\n// @description:ug  YouTube نى كۆپلىگەن پايدىلىق ئىقتىدارلار بىلەن كۈچەيتىدىغان ئىشلەتكۈچى سكرىپتى، بۇلار: ۋىدىئو تەپسىلات بەتنىڭ ئوپتىماللاشتۇرۇلغان تۈزۈلىشى، ۋىدىئو چۈشۈرۈش، سكرىنشات ئېلىش، قارا/ئاق تېما ئالماشتۇرۇش، تېز ئالغا سۈرۈش كونتروللىرى ۋە باشقىلار.\n// @description:vi  Một userscript giúp nâng cao YouTube với nhiều tính năng hữu ích, bao gồm: bố cục trang chi tiết video được tối ưu hóa, tải video, chụp ảnh màn hình, chuyển đổi chủ đề tối/sáng, điều khiển tua nhanh và nhiều tính năng khác.\n// @namespace  open_source_thalrien_youtube\n// @version  1.1.4\n// @author  Thalrien.vx,CY Fung\n// @icon  data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACsAAAAgCAYAAACLmoEDAAABo0lEQVR4AdSXAZKDIBAEiR878zL1Zbmf5aY3txaWpqKyWCS1I4jotiMi6VLh75lSv1eFqdIKNks8qv7I9FR9JQE89mrr/KzNc5HXpOsuYgGrE0cd9eSD6n0mVauG5yKvCR7kWWdYNSoSnfxYCyU8g8C4kdcw0A6OtgD3jgHoF6x62I7KVsNe4k6umsWtUmZcA2P2W2DnYZDdQLPVHmd/AvB+A67x8RLAfuy0o8N0S0mRplTxFwVriKJlCqwGDGzoCwawpIh3GVhzJXoj2lFSxEFXg/WbF60PjeLhUR0WaICR6kXAl8AK0oMpDvn+ofISWD7pki89T7/Q1WEFyZgF9DSk218NFkhJEbdGBvb0GPI7zkvRsZzDyfBlJ7B5rtP1DBLQ4ke+BRIFi4vVIB08CvaQk578aAls0UR9NGFJf2BLzr/y3KnTZzB0NqhJ7842PxRk6miwVORIyw6bmQYr0CTgu0prVNlKYOBdbHyyl/9uaZQUCWhEZ3QFPHlc5AYS0Wb5Z2dt738jWlb5iM7opraV1J2ncVhb11IbeVzkniGVx+IPAAD///H503IAAAAGSURBVAMApvWIs8xfbPkAAAAASUVORK5CYII=\n// @include  *://*.youtube.com/**\n// @exclude  /^https?://\\w+\\.youtube\\.com\\/live_chat.*$/\n// @exclude  /^https?://\\S+\\.(txt|png|jpg|jpeg|gif|xml|svg|manifest|log|ini)[^\\/]*$/\n// @antifeature  referral-link\n// @license  MIT\n// @run-at  document-start\n// @grant  GM_registerMenuCommand\n// @grant  GM_openInTab\n// @grant  GM.openInTab\n// @grant  GM_addStyle\n// @grant  GM_setValue\n// @grant  GM_getValue\n// @grant  GM_deleteValue\n// @grant  GM_xmlhttpRequest\n// @grant  unsafeWindow\n// @grant  GM_download\n// @grant  GM_setClipboard\n// @grant  GM_addElement\n// @downloadURL  https://update.greasyfork.org/scripts/560618/YouTube%20Improvements%20%E2%80%93%20Layout%20%20Video%20Enhancer.user.js\n// @updateURL  https://update.greasyfork.org/scripts/560618/YouTube%20Improvements%20%E2%80%93%20Layout%20%20Video%20Enhancer.meta.js",
+  "sha256": "4a0f8b898d5c7421bb6e6d60afe5d2f54acf91999b425a9b5a4ca92bfacfa56d",
+  "discovered_at": "2026-04-15T19:54:42.750609+00:00",
+  "ai_reason": "",
+  "is_new": true,
+  "install_count": 28050,
+  "good_ratings": 16,
+  "bad_ratings": 8,
+  "summary": {
+    "applicable_sites": [
+      "YouTube"
+    ],
+    "description": "该脚本为YouTube提供多项实用增强功能，包括优化视频详情页的布局，支持视频下载和截图，允许用户切换深色与浅色主题，并提供视频快进控制等。使用后，观看体验更加便捷和个性化。",
+    "permissions": [
+      {
+        "explanation": "添加自定义菜单命令，方便用户操作脚本功能。",
+        "grant": "GM_registerMenuCommand"
+      },
+      {
+        "explanation": "在新标签页打开链接或页面。",
+        "grant": "GM_openInTab"
+      },
+      {
+        "explanation": "在新标签页打开链接或页面（新版API）。",
+        "grant": "GM.openInTab"
+      },
+      {
+        "explanation": "添加自定义样式，调整页面布局和外观。",
+        "grant": "GM_addStyle"
+      },
+      {
+        "explanation": "保存脚本设置或数据。",
+        "grant": "GM_setValue"
+      },
+      {
+        "explanation": "读取脚本保存的设置或数据。",
+        "grant": "GM_getValue"
+      },
+      {
+        "explanation": "删除脚本保存的数据。",
+        "grant": "GM_deleteValue"
+      },
+      {
+        "explanation": "发送跨域请求，获取视频或相关数据。",
+        "grant": "GM_xmlhttpRequest"
+      },
+      {
+        "explanation": "访问页面的全局变量和函数，增强脚本与页面的交互。",
+        "grant": "unsafeWindow"
+      },
+      {
+        "explanation": "下载视频或文件到本地。",
+        "grant": "GM_download"
+      },
+      {
+        "explanation": "复制文本到剪贴板，方便分享或保存。",
+        "grant": "GM_setClipboard"
+      },
+      {
+        "explanation": "动态添加页面元素，增强页面功能。",
+        "grant": "GM_addElement"
+      }
+    ],
+    "tags": [
+      "视频增强",
+      "布局优化",
+      "主题切换",
+      "视频下载",
+      "截图功能",
+      "快进控制"
+    ],
+    "usage": [
+      "安装脚本后，访问YouTube网站。",
+      "在视频详情页体验优化后的布局和功能。",
+      "使用菜单或页面按钮下载视频或截图。",
+      "切换深色/浅色主题，调整观看风格。",
+      "使用快进控制更方便地浏览视频内容。"
+    ],
+    "zh_name": "YouTube改进 – 布局与视频增强"
+  }
+}
