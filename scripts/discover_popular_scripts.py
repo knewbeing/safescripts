@@ -2,17 +2,19 @@
 discover_popular_scripts.py
 ────────────────────────────
 从多个平台搜索流行 Tampermonkey 脚本：
-  - GitHub（Search API + Topics）
-  - GreasyFork（安装量 + 评分排行）
-  - Gitee（星标多的 userscript 仓库）
+  - GitHub（Search API + Topics + 专业工具话题）
+  - GreasyFork（安装量 + 评分 + 分类搜索）
+  - Gitee（星标多的 userscript 仓库 + 中文生产力关键词）
   - GitLab（星标多的 userscript 仓库）
+  - OpenUserJS（热门脚本）
+
+重点搜集对以下角色有价值的脚本：
+  - 项目经理（PM）：Jira/Confluence/Trello/Linear 增强
+  - 产品经理（PdM）：Figma/Notion/ProductBoard 增强
+  - 程序员（Dev）：GitHub/GitLab/StackOverflow/VSCode Web 增强
+  - 架构师（Arch）：draw.io/Miro/GitHub 代码分析增强
 
 调用 AI 筛选最值得推荐的脚本，下载并生成 docs/discovered/*.md 文档页面。
-
-输出：
-  userscripts/discovered/<slug>.user.js
-  userscripts/discovered/<slug>.meta.json
-  /tmp/userscripts/discovered_changed.json
 """
 
 from __future__ import annotations
@@ -112,7 +114,13 @@ def search_userscript_files(token: str) -> list[dict]:
 
 def search_userscript_repos(token: str) -> list[dict]:
     candidates = []
-    for topic in ("tampermonkey", "userscript", "greasemonkey"):
+    # 基础 userscript 话题
+    base_topics = ("tampermonkey", "userscript", "greasemonkey")
+    # 专业工具话题 — 对 PM/Dev/Arch 高价值
+    pro_topics = ("github-enhancement", "github-userscript", "productivity-tools")
+    all_topics = base_topics + pro_topics
+
+    for topic in all_topics:
         try:
             data = github_api(
                 f"/search/repositories?q=topic:{topic}&sort=stars&per_page=10",
@@ -136,6 +144,26 @@ def search_userscript_repos(token: str) -> list[dict]:
         except Exception as exc:
             print(f"  GitHub topic search ({topic}) failed: {exc}", flush=True)
         time.sleep(1)
+
+    # 专业工具关键词搜索
+    pro_keywords = [
+        '"==UserScript==" github enhancement',
+        '"==UserScript==" jira productivity',
+        '"==UserScript==" confluence userscript',
+        '"==UserScript==" notion enhancer',
+        '"==UserScript==" gitlab enhancement',
+    ]
+    for kw in pro_keywords:
+        try:
+            q = urllib.parse.quote(f'extension:user.js {kw}')
+            data = github_api(f"/search/code?q={q}&sort=indexed&per_page=10", token)
+            for f in data.get("items", []):
+                f["repo_stars"] = f.get("repository", {}).get("stargazers_count", 0)
+                candidates.append(f)
+            time.sleep(1)
+        except Exception as exc:
+            print(f"  GitHub kw search failed: {exc}", flush=True)
+
     print(f"  GitHub repo topic search: {len(candidates)} file candidates", flush=True)
     return candidates
 
@@ -175,7 +203,7 @@ def _build_github_candidates(items: list[dict]) -> list[dict]:
 # ── GreasyFork ─────────────────────────────────────────────────────────────────
 
 def search_greasyfork(max_per_sort: int = 25) -> list[dict]:
-    """从 GreasyFork 获取安装量和评分最高的脚本。"""
+    """从 GreasyFork 获取安装量和评分最高的脚本，并按专业分类额外搜索。"""
     candidates: list[dict] = []
     seen_ids: set[int] = set()
 
@@ -203,7 +231,7 @@ def search_greasyfork(max_per_sort: int = 25) -> list[dict]:
             candidates.append({
                 "platform": "greasyfork",
                 "file_name": code_url.rstrip("/").split("/")[-1],
-                "repo": f"greasyfork/{sid}",
+                "repo": str(sid),
                 "stars": s.get("total_installs", 0),   # 用安装量代替 stars
                 "install_count": s.get("total_installs", 0),
                 "good_ratings": s.get("good_ratings", 0),
@@ -220,18 +248,106 @@ def search_greasyfork(max_per_sort: int = 25) -> list[dict]:
         print(f"  GreasyFork ({sort_by}): collected {len(candidates)} so far", flush=True)
         time.sleep(2)
 
+    # 专业工具分类搜索（按关键词）
+    pro_queries = [
+        ("github", "GitHub 增强脚本"),
+        ("jira", "Jira 效率工具"),
+        ("notion", "Notion 增强"),
+        ("confluence", "Confluence 工具"),
+        ("productivity", "生产力工具"),
+    ]
+    for q, label in pro_queries:
+        url = f"https://greasyfork.org/scripts.json?q={urllib.parse.quote(q)}&sort=total_installs&per_page=10"
+        scripts = _get_json(url)
+        if not isinstance(scripts, list):
+            time.sleep(1)
+            continue
+        for s in scripts:
+            sid = s.get("id")
+            if sid in seen_ids:
+                continue
+            seen_ids.add(sid)
+            code_url = s.get("code_url", "")
+            if not code_url:
+                continue
+            candidates.append({
+                "platform": "greasyfork",
+                "file_name": code_url.rstrip("/").split("/")[-1],
+                "repo": str(sid),
+                "stars": s.get("total_installs", 0),
+                "install_count": s.get("total_installs", 0),
+                "good_ratings": s.get("good_ratings", 0),
+                "bad_ratings": s.get("bad_ratings", 0),
+                "pushed_at": s.get("updated_at", ""),
+                "download_url": code_url,
+                "source_url": s.get("url", f"https://greasyfork.org/scripts/{sid}"),
+                "script_name": s.get("name", ""),
+                "description": s.get("description", ""),
+                "category_hint": label,
+                "metadata_preview": _fetch_preview(code_url),
+            })
+            time.sleep(0.3)
+        print(f"  GreasyFork [{label}]: {len(scripts)} results", flush=True)
+        time.sleep(1)
+
     print(f"  GreasyFork total: {len(candidates)} candidates", flush=True)
+    return candidates
+
+
+def search_openuserjs() -> list[dict]:
+    """从 OpenUserJS 获取热门脚本（通过 GitHub API 搜索 openuserjs.org）。"""
+    candidates: list[dict] = []
+    # OpenUserJS 实际上在 GitHub 上维护脚本；通过 GreasyFork 替代搜索已覆盖大部分
+    # 这里抓取 OpenUserJS 的 RSS/JSON 端点
+    url = "https://openuserjs.org/api/scripts?order=installs&limit=20"
+    data = _get_json(url)
+    if not isinstance(data, list):
+        # 尝试备用端点
+        url2 = "https://openuserjs.org/api/scripts?order=rating&limit=20"
+        data = _get_json(url2)
+    if not isinstance(data, list):
+        print("  OpenUserJS: no data from API", flush=True)
+        return candidates
+
+    for s in data:
+        script_url = s.get("script", {}).get("url") or s.get("url", "")
+        name = s.get("script", {}).get("name") or s.get("name", "")
+        if not script_url:
+            continue
+        # 构造 raw URL
+        raw_url = script_url.replace("https://openuserjs.org/scripts/", "")
+        if not raw_url.endswith(".user.js"):
+            user, script_name = raw_url.split("/", 1) if "/" in raw_url else ("", raw_url)
+            raw_url = f"https://openuserjs.org/install/{user}/{script_name}.user.js" if user else ""
+        if not raw_url:
+            continue
+        candidates.append({
+            "platform": "openuserjs",
+            "file_name": raw_url.split("/")[-1],
+            "repo": s.get("author", {}).get("name", "") + "/" + name if s.get("author") else name,
+            "stars": s.get("installs", 0),
+            "install_count": s.get("installs", 0),
+            "pushed_at": s.get("updatedAt", ""),
+            "download_url": raw_url,
+            "source_url": f"https://openuserjs.org/scripts/{raw_url.split('/install/')[-1]}",
+            "script_name": name,
+            "metadata_preview": _fetch_preview(raw_url),
+        })
+        time.sleep(0.2)
+    print(f"  OpenUserJS: {len(candidates)} candidates", flush=True)
     return candidates
 
 
 # ── Gitee ──────────────────────────────────────────────────────────────────────
 
 def search_gitee(max_repos: int = 5) -> list[dict]:
-    """从 Gitee 搜索热门 userscript 仓库，提取 .user.js 文件。"""
+    """从 Gitee 搜索热门 userscript 仓库，含中文生产力工具关键词。"""
     candidates: list[dict] = []
     seen_urls: set[str] = set()
 
-    for keyword in ("tampermonkey", "userscript"):
+    # 基础 + 中文生产力工具关键词
+    keywords = ("tampermonkey", "userscript", "油猴脚本", "效率工具")
+    for keyword in keywords:
         url = (
             f"https://gitee.com/api/v5/search/repositories"
             f"?q={urllib.parse.quote(keyword)}&type=Public"
@@ -250,7 +366,6 @@ def search_gitee(max_repos: int = 5) -> list[dict]:
             full_name = repo.get("full_name", "")
             default_branch = repo.get("default_branch", "master")
 
-            # 列出仓库根目录
             contents = _get_json(f"https://gitee.com/api/v5/repos/{full_name}/contents/")
             if not isinstance(contents, list):
                 time.sleep(0.5)
@@ -354,6 +469,7 @@ def build_candidate_list(
     greasyfork: list[dict],
     gitee: list[dict],
     gitlab: list[dict],
+    openuserjs: list[dict] | None = None,
 ) -> list[dict]:
     """合并所有来源候选，去重，限制总数。"""
     managed_urls = get_managed_urls()
@@ -367,8 +483,9 @@ def build_candidate_list(
             seen_urls.add(dl)
             result.append(item)
 
-    # GreasyFork、Gitee、GitLab（直接格式化好的）
-    for item in greasyfork + gitee + gitlab:
+    # GreasyFork、Gitee、GitLab、OpenUserJS（直接格式化好的）
+    extra = greasyfork + gitee + gitlab + (openuserjs or [])
+    for item in extra:
         dl = item.get("download_url", "")
         if not dl or dl in seen_urls or dl in managed_urls:
             continue
@@ -376,7 +493,7 @@ def build_candidate_list(
         result.append(item)
 
     print(f"  Total unique candidates: {len(result)}", flush=True)
-    return result[:100]  # 最多给 AI 100 个候选
+    return result[:120]  # 最多给 AI 120 个候选
 
 
 # ── 元数据解析 ─────────────────────────────────────────────────────────────────
@@ -537,8 +654,11 @@ def main() -> None:
     print("\n[GitLab]", flush=True)
     gitlab_items = search_gitlab(max_repos=5)
 
+    print("\n[OpenUserJS]", flush=True)
+    openuserjs_items = search_openuserjs()
+
     candidates = build_candidate_list(
-        file_items + repo_items, gf_items, gitee_items, gitlab_items
+        file_items + repo_items, gf_items, gitee_items, gitlab_items, openuserjs_items
     )
 
     if not candidates:
@@ -561,9 +681,12 @@ def main() -> None:
             "good_ratings": c.get("good_ratings"),
             "pushed_at": c.get("pushed_at", ""),
             "download_url": c.get("download_url", ""),
+            "category_hint": c.get("category_hint", ""),
+            "script_name": c.get("script_name", ""),
+            "description": c.get("description", "")[:100],
             "metadata_preview": c.get("metadata_preview", "")[:400],
         }
-        for c in candidates[:80]
+        for c in candidates[:100]
     ]
 
     try:
@@ -643,8 +766,9 @@ def main() -> None:
             "sha256": new_hash,
             "discovered_at": datetime.now(timezone.utc).isoformat(),
             "ai_reason": item.get("reason", ""),
+            "target_roles": item.get("target_roles", ""),
             "is_new": old_hash == "",
-            # GreasyFork 额外字段
+            # GreasyFork/OpenUserJS 额外字段
             "install_count": item.get("install_count"),
             "good_ratings": item.get("good_ratings"),
             "bad_ratings": item.get("bad_ratings"),

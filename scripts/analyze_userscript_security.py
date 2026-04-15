@@ -43,27 +43,37 @@ def build_security_block(result: dict) -> str:
     badge = RISK_BADGE.get(risk, risk)
     summary = result.get("summary", "")
     analyzed_at = result.get("analyzed_at", "")[:10]
+    score = result.get("security_score")
     issues = sorted(result.get("issues", []), key=lambda x: SEVERITY_ORDER.get(x.get("severity", "LOW"), 99))
     data_tx = result.get("data_transmission", {})
     privacy = result.get("privacy_collection", {})
 
+    score_str = f"　　**安全评分**：{int(score)}/100" if score is not None else ""
     lines = [
         "## 安全分析",
         "",
-        f"**风险等级**：{badge}　　**分析时间**：{analyzed_at}",
+        f"**风险等级**：{badge}{score_str}　　**分析时间**：{analyzed_at}",
         "",
         f"> {summary}",
         "",
     ]
 
-    # 数据外传 & 隐私采集速览
-    dt_icon = "✅ 未检测到" if not data_tx.get("detected") else f"❌ 检测到（目标：{', '.join(data_tx.get('destinations', []))}）"
+    # 全面检查结果速览
+    dt_icon = "✅ 未检测到" if not data_tx.get("detected") else f"❌ 检测到（目标：{', '.join(data_tx.get('destinations', [])[:3])}）"
     pv_icon = "✅ 未检测到" if not privacy.get("detected") else f"❌ 检测到（{', '.join(privacy.get('details', [])[:3])}）"
+    ob_icon = "❌ 检测到" if result.get("obfuscation_detected") else "✅ 未检测到"
+    ws_icon = "⚠️ 使用" if result.get("websocket_usage") else "✅ 未使用"
+    xss_icon = "❌ 存在风险" if result.get("dom_xss_risk") else "✅ 未检测到"
+    sc_icon = "⚠️ 存在风险" if result.get("supply_chain_risk") else "✅ 可信"
     lines += [
         "| 检查项 | 结果 |",
         "|--------|------|",
         f"| 数据外传 | {dt_icon} |",
         f"| 隐私采集 | {pv_icon} |",
+        f"| 代码混淆 | {ob_icon} |",
+        f"| WebSocket/SSE | {ws_icon} |",
+        f"| DOM XSS 风险 | {xss_icon} |",
+        f"| 供应链风险 | {sc_icon} |",
         "",
     ]
 
@@ -122,14 +132,21 @@ def analyze_script(client, slug: str, script_file: Path, meta_file: Path, doc_fi
             variables={
                 "script_name": script_name,
                 "metadata": metadata_raw,
-                "full_code": code[:8000],  # 限制 token
+                "full_code": code[:10000],  # 增加到 10k 以分析更完整
             },
-            max_tokens=3000,
+            max_tokens=4000,
         )
         result = json.loads(raw)
     except Exception as exc:
         print(f"    ✗ AI call failed: {exc}", flush=True)
         return
+
+    # 为新字段设置默认值（兼容旧格式）
+    result.setdefault("security_score", None)
+    result.setdefault("obfuscation_detected", False)
+    result.setdefault("websocket_usage", False)
+    result.setdefault("dom_xss_risk", False)
+    result.setdefault("supply_chain_risk", False)
 
     result["analyzed_at"] = datetime.now(timezone.utc).isoformat()
     result["slug"] = slug

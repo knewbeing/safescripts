@@ -7,32 +7,59 @@ messages:
       **必须检查的安全项目**（按严重程度）：
 
       1. **数据外传** [CRITICAL]
-         - 检查 GM_xmlhttpRequest / fetch / XMLHttpRequest / navigator.sendBeacon 等网络请求
-         - 判断请求目标是否为第三方服务器，是否携带用户数据
-         - 检查是否有数据上报、统计、追踪行为
+         - 检查 GM_xmlhttpRequest / fetch / XMLHttpRequest / navigator.sendBeacon / WebSocket / EventSource(SSE) 等网络请求
+         - 判断请求目标是否为第三方服务器，是否携带用户数据、页面内容或 Cookie
+         - 检查是否有数据上报、统计、追踪、推送行为
+         - 检查 WebSocket 连接是否向外部服务器发送用户行为数据
 
       2. **隐私采集** [CRITICAL]
-         - 是否读取 document.cookie / localStorage / sessionStorage
-         - 是否监听键盘输入（keydown/keyup/input 事件）
-         - 是否读取表单字段值（input.value、form 数据）
-         - 是否访问浏览器指纹相关 API（navigator.userAgent 异常使用、canvas 指纹等）
+         - 是否读取 document.cookie / localStorage / sessionStorage / IndexedDB
+         - 是否监听键盘输入（keydown/keyup/input 事件）并外传（keylogger 模式：监听+网络请求组合）
+         - 是否读取表单字段值（input.value、form 数据、密码框）
+         - 是否访问浏览器指纹相关 API（navigator.userAgent 异常使用、canvas 指纹、AudioContext 指纹等）
+         - 是否读取剪贴板内容（navigator.clipboard.readText）
 
       3. **远程代码执行** [HIGH]
-         - 是否使用 eval()、new Function()、setTimeout(string)、innerHTML 执行远程内容
-         - 是否通过 @require 或动态 script 标签加载远程 JS
+         - 是否使用 eval()、new Function()、setTimeout(string)、setInterval(string)
+         - 是否通过 innerHTML / outerHTML 插入外部脚本或执行 JS
+         - 是否通过 @require 或动态 script 标签加载远程 JS（未固定版本哈希）
+         - 是否使用 document.write() 插入脚本内容
 
-      4. **权限滥用** [HIGH]
+      4. **代码混淆** [HIGH]
+         - 是否存在 atob()/btoa() 解码执行（base64 混淆）
+         - 是否存在字符串数组 + 索引映射（混淆器特征）
+         - 是否存在大量 \uXXXX 编码的字符串（unicode 混淆）
+         - 是否存在高度压缩的单行代码（minified + obfuscated）
+
+      5. **DOM XSS / 注入** [HIGH]
+         - 是否将用户输入或 URL 参数直接插入 innerHTML/outerHTML 而未转义
+         - 是否通过 document.write() 插入不可信内容
+         - 是否操作 iframe src 为 javascript: 协议
+
+      6. **权限滥用** [MEDIUM]
          - 对比 @grant 申请的权限与实际代码中的使用，是否存在未使用的高权限申请
+         - 是否申请了 GM_openInTab / GM_download 等可能被滥用的权限
 
-      5. **敏感 API 调用** [MEDIUM]
-         - navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等
+      7. **敏感 API 调用** [MEDIUM]
+         - navigator.geolocation、RTCPeerConnection（可泄露真实 IP）、MediaDevices（摄像头/麦克风）
+         - Clipboard API（读取剪贴板）、Notification API（可能被滥用发送通知）
 
-      6. **代码混淆** [MEDIUM]
-         - 是否存在 base64 解码执行、字符串拼接执行、混淆器特征
+      8. **供应链风险** [MEDIUM]
+         - @require 加载的第三方库来源是否可信（非官方 CDN、未知域名）
+         - 是否固定了版本哈希（避免供应链污染，如 @require https://cdn.xxx.com/jquery.min.js）
+         - 是否从可变 URL 加载代码（如 @require https://example.com/latest.js）
 
-      7. **外部依赖** [LOW]
-         - @require 加载的第三方库来源是否可信（CDN、官方 URL）
-         - 是否固定了版本（避免供应链污染）
+      9. **ClickJacking / iframe 风险** [LOW]
+         - 是否修改页面的 frame 保护策略
+         - 是否创建隐藏的 iframe 用于数据提取
+
+      **安全评分规则**（0-100，100 为最安全）：
+      - 基础分 100，按以下规则扣分：
+        - 每个 CRITICAL 问题 -25（最多扣到 0）
+        - 每个 HIGH 问题 -15
+        - 每个 MEDIUM 问题 -8
+        - 每个 LOW 问题 -3
+      - 最低分为 0
 
       输出严格 JSON，不包含其他内容。
 
@@ -54,7 +81,7 @@ messages:
 
 modelParameters:
   temperature: 0.1
-  maxCompletionTokens: 3000
+  maxCompletionTokens: 4000
 responseFormat: json_schema
 jsonSchema: |-
   {
@@ -68,6 +95,7 @@ jsonSchema: |-
           "type": "string",
           "enum": ["SAFE", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
         },
+        "security_score": { "type": "number" },
         "issues": {
           "type": "array",
           "items": {
@@ -101,10 +129,19 @@ jsonSchema: |-
           "required": ["detected","details"],
           "additionalProperties": false
         },
+        "obfuscation_detected": { "type": "boolean" },
+        "websocket_usage": { "type": "boolean" },
+        "dom_xss_risk": { "type": "boolean" },
+        "supply_chain_risk": { "type": "boolean" },
         "summary": { "type": "string" },
         "approved": { "type": "boolean" }
       },
-      "required": ["script_name","risk_level","issues","data_transmission","privacy_collection","summary","approved"],
+      "required": [
+        "script_name","risk_level","security_score","issues",
+        "data_transmission","privacy_collection",
+        "obfuscation_detected","websocket_usage","dom_xss_risk","supply_chain_risk",
+        "summary","approved"
+      ],
       "additionalProperties": false
     }
   }

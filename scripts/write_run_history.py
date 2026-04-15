@@ -60,6 +60,8 @@ def evaluate_success(managed: dict, discovered: dict, pages: dict) -> tuple[bool
         issues.append("❌ 未发现任何脚本")
     elif discovered["with_security"] == 0:
         issues.append("⚠️ 发现脚本无安全检查结果")
+    elif discovered["with_security"] < discovered["total"] // 2:
+        issues.append(f"⚠️ 仅 {discovered['with_security']}/{discovered['total']} 个发现脚本有安全检查")
     # 3. Pages 检查
     if not pages["ok"]:
         issues.append(f"❌ GitHub Pages 不可访问 (HTTP {pages['status']})")
@@ -89,9 +91,19 @@ def render_status_page(history: list) -> str:
         lines += ["> 暂无运行记录。", ""]
         return "\n".join(lines)
 
+    # 趋势统计
+    recent = history[-10:]
+    success_rate = sum(1 for r in recent if r.get("success")) / len(recent) * 100
+    total_scripts = history[-1].get("discovered", {}).get("total", 0) + history[-1].get("managed", {}).get("total", 0)
+    lines += [
+        f"> 最近 {len(recent)} 次运行成功率：**{success_rate:.0f}%** &nbsp;｜&nbsp; "
+        f"当前脚本总数：**{total_scripts}** 个",
+        "",
+    ]
+
     lines += ["| # | 时间 | 结果 | 托管 | 发现 | Pages | 问题 |",
               "|:-:|:-----|:----:|:----:|:----:|:-----:|:-----|"]
-    for rec in reversed(history[-30:]):  # 最近 30 条
+    for rec in reversed(history[-30:]):
         num = rec.get("run_number", "?")
         ts = rec.get("timestamp", "")[:16].replace("T", " ")
         success = rec.get("success", False)
@@ -116,9 +128,18 @@ def render_status_page(history: list) -> str:
         f"- **结果**：{'✅ 成功' if latest.get('success') else '❌ 失败'}",
         f"- **Pages**：[{PAGES_URL}]({PAGES_URL}) — HTTP {latest.get('pages', {}).get('status', '?')}",
         "",
-        "### 风险分布（发现脚本）",
+        "### 脚本数量趋势",
         "",
     ]
+    # 展示最近5次的脚本数量变化
+    for rec in history[-5:]:
+        d_total = rec.get("discovered", {}).get("total", 0)
+        m_total = rec.get("managed", {}).get("total", 0)
+        ts_short = rec.get("timestamp", "")[:10]
+        lines.append(f"- `{ts_short}` 运行 #{rec.get('run_number','?')}：托管 {m_total} + 发现 {d_total} = **{m_total+d_total}** 个")
+    lines.append("")
+
+    lines += ["### 风险分布（发现脚本）", ""]
     risk = latest.get("discovered", {}).get("risk", {})
     for level in ["CRITICAL", "HIGH", "MEDIUM", "LOW", "SAFE", "UNKNOWN"]:
         cnt = risk.get(level, 0)

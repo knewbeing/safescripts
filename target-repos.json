@@ -1,10 +1,14 @@
 {
-  "_comment": "SafeScripts 配置文件：在 userscripts 数组中添加要跟踪的 Tampermonkey 脚本地址。支持 GitHub blob URL、Gitee blob URL、GitLab blob URL、GreasyFork code URL 以及 raw 直链。",
+  "_comment": "SafeScripts 配置文件：在 userscripts 数组中添加要跟踪的 Tampermonkey 脚本地址。支持 GitHub blob URL、Gitee blob URL、GitLab blob URL、GreasyFork code URL 以及 raw 直链。重点收集对 PM/PdM/Dev/Arch 有提效价值的脚本。",
   "settings": {
-    "max_discovered": 10,
+    "max_discovered": 20,
     "ai_model": "openai/gpt-4.1-mini"
   },
   "userscripts": [
-    "https://github.com/MiPoNianYou/UserScripts/blob/main/Scripts/Password-Revealer.user.js"
+    "https://github.com/MiPoNianYou/UserScripts/blob/main/Scripts/Password-Revealer.user.js",
+    "https://github.com/maboloshi/github-chinese/blob/gh-pages/main.user.js",
+    "https://github.com/XIU2/UserScript/blob/master/GoodTwitter2.user.js",
+    "https://greasyfork.org/scripts/412245-github-issue-link-status/code/GitHub%20Issue%20Link%20Status.user.js",
+    "https://greasyfork.org/scripts/460718-refined-github-sse/code/Refined%20GitHub%20(SSE).user.js"
   ]
 }

@@ -132,7 +132,8 @@ def render_discovered_index(entries: list[dict]) -> str:
         "",
         f"> 共 **{len(entries)}** 个脚本　·　最后发现：{now}",
         "",
-        "SafeScripts 每天从 GitHub、GreasyFork、Gitee、GitLab 自动发现并分析。",
+        "SafeScripts 每天从 GitHub、GreasyFork、Gitee、GitLab、OpenUserJS 自动发现并分析。",
+        "重点收录对**项目经理、产品经理、程序员、架构师**有提效价值的脚本。",
         "可将脚本地址加入 `target-repos.json` 持续跟踪。",
         "",
     ]
@@ -146,35 +147,56 @@ def render_discovered_index(entries: list[dict]) -> str:
     for e in entries:
         grouped.setdefault(e.get("risk_level", "UNKNOWN"), []).append(e)
 
+    platform_labels = {
+        "github": "GitHub", "greasyfork": "GreasyFork",
+        "gitee": "Gitee", "gitlab": "GitLab", "openuserjs": "OpenUserJS",
+    }
+
     for risk in risk_order:
         group = grouped.get(risk, [])
         if not group:
             continue
         badge = RISK_BADGE.get(risk, "⬜")
         lines += [f"## {badge} {risk}", ""]
-        lines += ["| 脚本 | 来源 | 平台 | 安全说明 |", "|:-----|:-----|:----:|:---------|"]
+        lines += ["| 脚本 | 来源 | 平台 | 适用角色 | 安全说明 |",
+                  "|:-----|:-----|:----:|:--------:|:---------|"]
         for e in group:
             slug = e.get("slug", "")
             summary = e.get("summary", {})
             name = summary.get("zh_name") or e.get("name", slug)
             repo = e.get("source_repo", "")
             platform = e.get("platform", "github")
-            platform_labels = {
-                "github": "GitHub", "greasyfork": "GreasyFork",
-                "gitee": "Gitee", "gitlab": "GitLab",
-            }
             plabel = platform_labels.get(platform, platform or "GitHub")
             platform_urls = {
                 "github": f"https://github.com/{repo}",
                 "gitee": f"https://gitee.com/{repo}",
                 "gitlab": f"https://gitlab.com/{repo}",
                 "greasyfork": e.get("source_url", ""),
+                "openuserjs": e.get("source_url", ""),
             }
             purl = platform_urls.get(platform, "")
             repo_short = repo.split("/")[-1] if "/" in repo else repo
             repo_link = f"[{repo_short}]({purl})" if repo_short and purl else (repo_short or "—")
+
+            # 安装量（GreasyFork/OpenUserJS）
+            install = e.get("install_count")
+            if install and install > 1000:
+                ic = f" {install//1000}k↓" if install < 1_000_000 else f" {install//1000000}M↓"
+                repo_link = repo_link + ic
+
+            # 适用角色
+            target_roles = e.get("target_roles", "") or ""
+            roles_short = target_roles[:15] + "…" if len(target_roles) > 15 else target_roles
+            if not roles_short:
+                # 从 AI reason 或类别提示推断
+                category_hint = e.get("category_hint", "")
+                if category_hint:
+                    roles_short = category_hint[:15]
+                else:
+                    roles_short = "通用"
+
             risk_md = _risk_issues_md(e)
-            lines.append(f"| [{name}](./{slug}) | {repo_link} | {plabel} | {risk_md} |")
+            lines.append(f"| [{name}](./{slug}) | {repo_link} | {plabel} | {roles_short} | {risk_md} |")
         lines.append("")
 
     return "\n".join(lines)

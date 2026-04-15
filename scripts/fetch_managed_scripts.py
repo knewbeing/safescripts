@@ -54,9 +54,11 @@ def normalize_url(url: str) -> str:
         namespace, branch, path = m.groups()
         return f"https://gitlab.com/{namespace}/-/raw/{branch}/{path}"
 
+    # GreasyFork code URL (直接 code URL，可下载) — 保留原样
+    if re.match(r"https://greasyfork\.org/scripts/\d+/code/.+\.user\.js$", url):
+        return url
+
     # GreasyFork 脚本页面 → code URL（从 /scripts/431 → /scripts/431/code/...）
-    # 实际 code_url 形如 https://greasyfork.org/scripts/431/code/xxx.user.js
-    # 如果用户填的是页面 URL，尝试附加 /code 路径
     m = re.match(r"https://greasyfork\.org/(?:[a-z-]+/)?scripts/(\d+)/?$", url)
     if m:
         # 无法直接转换，保留原样，下载时会失败并提示用户使用 code_url
@@ -100,10 +102,22 @@ def get_first(meta: dict[str, list[str]], key: str, default: str = "") -> str:
 
 # ── 下载 ─────────────────────────────────────────────────────────────────────
 
-def download(url: str) -> bytes:
-    req = urllib.request.Request(url, headers={"User-Agent": "SafeScripts/1.0"})
-    with urllib.request.urlopen(req, timeout=30) as r:
-        return r.read()
+def download(url: str, retries: int = 3) -> bytes:
+    """带重试逻辑的下载函数。"""
+    import time
+    last_exc: Exception | None = None
+    for attempt in range(retries):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "SafeScripts/1.0"})
+            with urllib.request.urlopen(req, timeout=30) as r:
+                return r.read()
+        except Exception as exc:
+            last_exc = exc
+            if attempt < retries - 1:
+                wait = 2 ** attempt
+                print(f"  ⚠ Download attempt {attempt+1} failed ({exc}), retrying in {wait}s...", flush=True)
+                time.sleep(wait)
+    raise last_exc  # type: ignore
 
 
 # ── 主流程 ────────────────────────────────────────────────────────────────────
