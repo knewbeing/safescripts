@@ -23,7 +23,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 # ── 路径常量 ─────────────────────────────────────────────────────────────────
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[1]
 CONFIG_FILE = REPO_ROOT / "target-repos.json"
 MANAGED_DIR = REPO_ROOT / "userscripts" / "managed"
 TMP_DIR = Path("/tmp/userscripts")
