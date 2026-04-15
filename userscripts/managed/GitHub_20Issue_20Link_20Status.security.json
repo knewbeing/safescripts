@@ -1,0 +1,117 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [
+      "https://gh.h233.eu.org",
+      "https://rapidgit.jjda.de5.net",
+      "https://gh.ddlc.top",
+      "https://gh-proxy.org",
+      "https://cdn.gh-proxy.org",
+      "https://edgeone.gh-proxy.org",
+      "https://cors.isteed.cc",
+      "https://ghproxy.it",
+      "https://github.boki.moe",
+      "https://gh-proxy.net",
+      "https://gh.jasonzeng.dev",
+      "https://gh.monlor.com",
+      "https://fastgit.cc",
+      "https://github.tbedu.top",
+      "https://firewall.lxstd.org",
+      "https://github.ednovas.xyz",
+      "https://ghfile.geekertao.top",
+      "https://ghp.keleyaa.com",
+      "https://gh.chjina.com",
+      "https://ghpxy.hwinzniej.top",
+      "https://cdn.crashmc.com",
+      "https://git.yylx.win",
+      "https://gitproxy.mrhjx.cn",
+      "https://ghproxy.cxkpro.top",
+      "https://gh.xxooo.cf",
+      "https://github.limoruirui.com",
+      "https://gh.idayer.com",
+      "https://gh.llkk.cc",
+      "https://down.npee.cn",
+      "https://raw.ihtw.moe",
+      "https://xget.xi-xu.me",
+      "https://gh.nxnow.top",
+      "https://gh.zwy.one",
+      "https://ghproxy.monkeyray.net",
+      "https://gh.xx9527.cn",
+      "https://ghfast.top",
+      "https://wget.la"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "脚本中存在大量访问第三方公益加速节点的网络请求，可能会将用户请求的 GitHub 资源通过这些第三方代理服务器转发，存在数据外传风险。",
+      "location": "脚本中定义的 download_url_us 数组及相关网络请求部分",
+      "recommendation": "确认所有第三方节点的安全性和隐私政策，避免敏感数据泄露。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本申请了多个 GM_* 权限，但部分权限如 GM_openInTab 未在代码中明显使用，存在权限滥用风险。",
+      "location": "元数据 @grant 部分",
+      "recommendation": "清理未使用的权限申请，减少权限滥用风险。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本未发现使用 eval、new Function、setTimeout(string) 等远程代码执行风险函数。",
+      "location": "代码整体",
+      "recommendation": "保持代码安全，避免动态执行不可信代码。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本代码未见明显混淆或压缩，代码结构清晰。",
+      "location": "代码整体",
+      "recommendation": "保持代码可读性，避免混淆带来的安全隐患。",
+      "severity": "HIGH",
+      "type": "代码混淆"
+    },
+    {
+      "description": "脚本未发现直接将用户输入或 URL 参数插入 innerHTML/outerHTML 的行为，DOM XSS 风险较低。",
+      "location": "代码整体",
+      "recommendation": "继续避免不安全的 DOM 操作。",
+      "severity": "HIGH",
+      "type": "DOM XSS / 注入"
+    },
+    {
+      "description": "脚本未发现访问 document.cookie、localStorage、sessionStorage、IndexedDB 等隐私敏感数据的行为。",
+      "location": "代码整体",
+      "recommendation": "继续遵守隐私保护原则。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本未发现监听键盘事件或读取剪贴板等敏感操作。",
+      "location": "代码整体",
+      "recommendation": "继续避免敏感隐私采集行为。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本 @require 未使用，未加载第三方库，供应链风险较低。",
+      "location": "元数据 @require 部分",
+      "recommendation": "继续避免加载不可信第三方库。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "MEDIUM",
+  "script_name": "Github Enhancement - High Speed Download",
+  "security_score": 76,
+  "summary": "该脚本主要功能为通过多个第三方公益加速节点实现 GitHub 文件的高速下载，存在数据外传风险，因请求会经过多个第三方代理服务器。未发现隐私采集、远程代码执行、代码混淆及 DOM XSS 风险。部分权限申请未被使用，存在权限滥用风险。供应链风险较低。综合评估安全等级为中等，建议用户谨慎使用并关注第三方节点的安全性。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-04-15T20:54:37.851382+00:00",
+  "slug": "GitHub_20Issue_20Link_20Status"
+}

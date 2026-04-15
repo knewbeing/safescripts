@@ -1,0 +1,48 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [
+      "dav.jianguoyun.com",
+      "localhost",
+      "*"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "脚本使用了 GM_xmlhttpRequest 和 GM.xmlHttpRequest 进行网络请求，连接目标包括第三方服务器（如 dav.jianguoyun.com）和任意地址（*），存在数据外传风险。",
+      "location": "@grant 和 @connect 元数据声明",
+      "recommendation": "限制连接目标域名，避免向不可信服务器发送用户数据。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本申请了大量 GM_* 权限，但部分权限如 GM_addElement、GM.registerMenuCommand 可能未被充分利用，存在权限滥用风险。",
+      "location": "@grant 元数据声明",
+      "recommendation": "审查实际代码使用的权限，移除未使用的高权限申请。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本通过 @connect 允许连接任意域名，存在供应链风险，可能被利用进行远程代码注入或数据泄露。",
+      "location": "@connect 元数据声明",
+      "recommendation": "限制 @connect 域名，避免使用通配符 *。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "MEDIUM",
+  "script_name": "🏷️ UTags - Add usertags to links",
+  "security_score": 69,
+  "summary": "该脚本存在数据外传风险，因其允许向任意服务器发送网络请求，可能导致用户数据泄露。未检测到隐私采集、远程代码执行或 DOM XSS 风险。权限申请较多，部分权限可能未被使用，存在权限滥用风险。@connect 使用通配符存在供应链风险。建议限制连接域名和精简权限申请以提升安全性。",
+  "supply_chain_risk": true,
+  "websocket_usage": false,
+  "analyzed_at": "2026-04-15T20:55:48.859564+00:00",
+  "slug": "Refined_20GitHub_20_SSE_"
+}
