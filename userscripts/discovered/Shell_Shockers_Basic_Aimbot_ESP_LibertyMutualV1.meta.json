@@ -20,7 +20,7 @@
   ],
   "metadata_raw": "// @name  Shell Shockers Basic Aimbot + ESP: LibertyMutualV1\n// @namespace  https://github.com/onlypuppy7/LibertyMutualShellShockers/\n// @license  GPL-3.0\n// @version  1.4.2\n// @author  onlypuppy7\n// @description  UPDATED FOR 0.50.0! Fed up of a popular script injecting ads into your game? Need a simple script to modify or use? FOSS ESP, Tracers and Aimbot. Hold right mouse button to aimlock.\n// @match  https://shellshock.io/*\n// @grant  unsafeWindows\n// @run-at  document-start\n// @icon  https://github.com/onlypuppy7/LibertyMutualShellShockers/blob/main/scripticon.jpg?raw=true\n// @require  https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js\n// @require  https://cdn.jsdelivr.net/npm/babylonjs@7.15.0/babylon.min.js\n// @downloadURL  https://update.greasyfork.org/scripts/484168/Shell%20Shockers%20Basic%20Aimbot%20%2B%20ESP%3A%20LibertyMutualV1.user.js\n// @updateURL  https://update.greasyfork.org/scripts/484168/Shell%20Shockers%20Basic%20Aimbot%20%2B%20ESP%3A%20LibertyMutualV1.meta.js",
   "sha256": "bdda88e9e8af123bef4fe0dcdfb48c4dcfd7c85c735624befc2c685b39f70cc9",
-  "discovered_at": "2026-04-15T21:58:22.357607+00:00",
+  "discovered_at": "2026-04-15T22:22:00.134410+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,

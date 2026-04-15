@@ -8,7 +8,7 @@ title: "🏆 [#1 Chess Assistant] A.C.A.S (Advanced Chess Assistance System)"
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/1_Chess_Assistant_ACAS_Advanced_Chess_Assistance_System.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**2.4.2**　　发现时间：**2026-04-15**　　来源：[GreasyFork](https://greasyfork.org/scripts/459137-1-chess-assistant-a-c-a-s-advanced-chess-assistance-system) <Badge type="tip" text="GreasyFork" />　　安装量：**54,616**　　评分：👍33 / 👎6
+> 版本：**2.4.2**　　发现时间：**2026-04-15**　　来源：[GreasyFork](https://greasyfork.org/scripts/459137-1-chess-assistant-a-c-a-s-advanced-chess-assistance-system) <Badge type="tip" text="GreasyFork" />　　安装量：**54,619**　　评分：👍33 / 👎6
 
 ## 功能介绍
 

@@ -8,7 +8,7 @@ title: "All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/All-in-One_Video_Downloader_HD_YouTube_TikTok_Instagram_X_More.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**1.0.5**　　发现时间：**2026-04-15**　　来源：[GreasyFork](https://greasyfork.org/scripts/563321-all-in-one-video-downloader-hd-youtube-tiktok-instagram-x-more) <Badge type="tip" text="GreasyFork" />　　安装量：**17,500**　　评分：👍6 / 👎5
+> 版本：**1.0.5**　　发现时间：**2026-04-15**　　来源：[GreasyFork](https://greasyfork.org/scripts/563321-all-in-one-video-downloader-hd-youtube-tiktok-instagram-x-more) <Badge type="tip" text="GreasyFork" />　　安装量：**17,513**　　评分：👍6 / 👎5
 
 ## 功能介绍
 

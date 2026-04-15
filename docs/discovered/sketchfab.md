@@ -8,7 +8,7 @@ title: "sketchfab"
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/sketchfab.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**2.1**　　发现时间：**2026-04-15**　　来源：[GreasyFork](https://greasyfork.org/scripts/492877-sketchfab) <Badge type="tip" text="GreasyFork" />　　安装量：**19,659**　　评分：👍15 / 👎6
+> 版本：**2.1**　　发现时间：**2026-04-15**　　来源：[GreasyFork](https://greasyfork.org/scripts/492877-sketchfab) <Badge type="tip" text="GreasyFork" />　　安装量：**19,660**　　评分：👍15 / 👎6
 
 ## 功能介绍
 

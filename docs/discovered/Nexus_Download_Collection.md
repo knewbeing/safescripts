@@ -8,7 +8,7 @@ title: "Nexus Download Collection"
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/Nexus_Download_Collection.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**0.9.9**　　发现时间：**2026-04-15**　　来源：[GreasyFork](https://greasyfork.org/scripts/483337-nexus-download-collection) <Badge type="tip" text="GreasyFork" />　　安装量：**17,311**　　评分：👍79 / 👎4
+> 版本：**0.9.9**　　发现时间：**2026-04-15**　　来源：[GreasyFork](https://greasyfork.org/scripts/483337-nexus-download-collection) <Badge type="tip" text="GreasyFork" />　　安装量：**17,312**　　评分：👍79 / 👎4
 
 ## 功能介绍
 

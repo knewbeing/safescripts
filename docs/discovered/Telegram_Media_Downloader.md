@@ -8,7 +8,7 @@ title: "Telegram Media Downloader"
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/Telegram_Media_Downloader.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**1.212**　　发现时间：**2026-04-15**　　来源：[GreasyFork](https://greasyfork.org/scripts/446342-telegram-media-downloader) <Badge type="tip" text="GreasyFork" />　　安装量：**200,877**　　评分：👍188 / 👎43
+> 版本：**1.212**　　发现时间：**2026-04-15**　　来源：[GreasyFork](https://greasyfork.org/scripts/446342-telegram-media-downloader) <Badge type="tip" text="GreasyFork" />　　安装量：**200,889**　　评分：👍188 / 👎43
 
 ## 功能介绍
 

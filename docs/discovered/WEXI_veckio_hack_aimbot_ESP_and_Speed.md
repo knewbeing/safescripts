@@ -8,7 +8,7 @@ title: "WEXI veck.io hack aimbot, ESP and Speed"
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/WEXI_veckio_hack_aimbot_ESP_and_Speed.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**1.2**　　发现时间：**2026-04-15**　　来源：[GreasyFork](https://greasyfork.org/scripts/573903-wexi-veck-io-hack-aimbot-esp-and-speed) <Badge type="tip" text="GreasyFork" />　　安装量：**113**　　评分：👍0 / 👎0
+> 版本：**1.2**　　发现时间：**2026-04-15**　　来源：[GreasyFork](https://greasyfork.org/scripts/573903-wexi-veck-io-hack-aimbot-esp-and-speed) <Badge type="tip" text="GreasyFork" />　　安装量：**117**　　评分：👍0 / 👎0
 
 ## 功能介绍
 

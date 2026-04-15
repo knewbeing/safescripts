@@ -19,7 +19,7 @@
   "require": [],
   "metadata_raw": "// @name  Undiscord\n// @description  Delete all messages in a Discord channel or DM (Bulk deletion)\n// @version  5.2.6\n// @author  victornpb\n// @homepageURL  https://github.com/victornpb/undiscord\n// @supportURL  https://github.com/victornpb/undiscord/discussions\n// @match  https://*.discord.com/app\n// @match  https://*.discord.com/channels/*\n// @match  https://*.discord.com/login\n// @license  MIT\n// @namespace  https://github.com/victornpb/deleteDiscordMessages\n// @icon  https://victornpb.github.io/undiscord/images/icon128.png\n// @downloadURL  https://raw.githubusercontent.com/victornpb/undiscord/master/deleteDiscordMessages.user.js\n// @contributionURL  https://www.buymeacoffee.com/vitim\n// @grant  none\n// @attribution  Original project (https://github.com/victornpb/undiscord)",
   "sha256": "43ea6bddffb269d8094cbb97759f6e8a4e154f7e673fea8c864c057b5f83d1b4",
-  "discovered_at": "2026-04-15T21:52:19.027228+00:00",
+  "discovered_at": "2026-04-15T22:15:57.013815+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,

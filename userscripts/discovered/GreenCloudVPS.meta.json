@@ -17,7 +17,7 @@
   "require": [],
   "metadata_raw": "// @name  GreenCloudVPS\n// @namespace  http://tampermonkey.net/\n// @version  0.1\n// @description  try to take over the world!\n// @author  You\n// @include  https://greencloudvps.com/*\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=greencloudvps.com\n// @grant  none",
   "sha256": "bf9e479d88f8125948ae08fb54df670409555954cb5105fb521050a150726f50",
-  "discovered_at": "2026-04-15T21:52:24.345372+00:00",
+  "discovered_at": "2026-04-15T22:16:02.061140+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,

@@ -1,0 +1,28 @@
+{
+  "slug": "Blooket_Coin_and_Token_Hacker",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/516991-blooket-coin-and-token-hacker",
+  "source_repo": "516991",
+  "raw_url": "https://update.greasyfork.org/scripts/516991/Blooket%20Coin%20and%20Token%20Hacker.user.js",
+  "filename": "Blooket_Coin_and_Token_Hacker.user.js",
+  "name": "Blooket Coin and Token Hacker",
+  "version": "1.0",
+  "description": "Add coins and tokens to your Blooket account",
+  "match": [
+    "https://dashboard.blooket.com/market"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Blooket Coin and Token Hacker\n// @namespace  http://tampermonkey.net/\n// @version  1.0\n// @description  Add coins and tokens to your Blooket account\n// @author  You\n// @match  https://dashboard.blooket.com/market\n// @grant  none\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/516991/Blooket%20Coin%20and%20Token%20Hacker.user.js\n// @updateURL  https://update.greasyfork.org/scripts/516991/Blooket%20Coin%20and%20Token%20Hacker.meta.js",
+  "sha256": "94f205fc28b9af1fb52cdd6dc490dde783a9078f8f032dc50e222f85b16a6686",
+  "discovered_at": "2026-04-15T22:23:01.398000+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 10496,
+  "good_ratings": 1,
+  "bad_ratings": 4,
+  "summary": {}
+}

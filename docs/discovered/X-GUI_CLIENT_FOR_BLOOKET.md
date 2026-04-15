@@ -8,7 +8,7 @@ title: "X-GUI CLIENT FOR BLOOKET"
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/X-GUI_CLIENT_FOR_BLOOKET.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**6.10x**　　发现时间：**2026-04-15**　　来源：[GreasyFork](https://greasyfork.org/scripts/553301-x-gui-client-for-blooket) <Badge type="tip" text="GreasyFork" />　　安装量：**7,125**　　评分：👍14 / 👎3
+> 版本：**6.10x**　　发现时间：**2026-04-15**　　来源：[GreasyFork](https://greasyfork.org/scripts/553301-x-gui-client-for-blooket) <Badge type="tip" text="GreasyFork" />　　安装量：**7,134**　　评分：👍14 / 👎3
 
 ## 功能介绍
 

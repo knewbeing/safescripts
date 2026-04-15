@@ -22,11 +22,11 @@
   ],
   "metadata_raw": "// @name  sketchfab\n// @version  2.1\n// @description  download sketchfab models\n// @author  Kvali\n// @match  https://sketchfab.com/*\n// @require  https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js\n// @require  https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.0.2/jszip-utils.min.js\n// @require  https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.js\n// @run-at  document-start\n// @grant  unsafeWindow\n// @grant  GM_download\n// @namespace  https://greasyfork.org/users/956968\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/492877/sketchfab.user.js\n// @updateURL  https://update.greasyfork.org/scripts/492877/sketchfab.meta.js",
   "sha256": "f05bc4b4e73ad6765c6f67ab07799d3b224d083ffbdad07a933e394a46e719df",
-  "discovered_at": "2026-04-15T21:58:24.214328+00:00",
+  "discovered_at": "2026-04-15T22:22:03.620440+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 19659,
+  "install_count": 19660,
   "good_ratings": 15,
   "bad_ratings": 6,
   "summary": {}
