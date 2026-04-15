@@ -3,15 +3,15 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 10px 20px;
+  padding: 8px 18px;
   background: var(--vp-c-brand-1);
   color: var(--vp-c-white) !important;
-  border-radius: 8px;
+  border-radius: 6px;
   font-weight: 600;
-  font-size: 15px;
+  font-size: 14px;
   text-decoration: none !important;
   transition: background 0.2s, transform 0.1s;
-  margin: 12px 0;
+  margin: 8px 0;
 }
 
 .tm-install-btn:hover {
@@ -23,7 +23,66 @@
   transform: translateY(0);
 }
 
-/* 风险等级徽章颜色增强 */
-.vp-doc table td:first-child code {
+/* ── 紧凑表格 ── */
+.vp-doc table {
   font-size: 13px;
+  width: 100%;
+}
+
+.vp-doc table th,
+.vp-doc table td {
+  padding: 5px 10px;
+  line-height: 1.4;
+}
+
+.vp-doc table th {
+  background: var(--vp-c-bg-soft);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* 安全说明列允许换行展示多个问题 */
+.vp-doc table td:last-child {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* ── 紧凑页面间距 ── */
+.vp-doc h1 {
+  margin-top: 16px !important;
+  margin-bottom: 8px !important;
+  font-size: 1.6rem !important;
+}
+
+.vp-doc h2 {
+  margin-top: 20px !important;
+  margin-bottom: 6px !important;
+  font-size: 1.15rem !important;
+  border-top: 1px solid var(--vp-c-divider);
+  padding-top: 12px !important;
+}
+
+.vp-doc p {
+  margin: 6px 0;
+}
+
+.vp-doc blockquote {
+  margin: 8px 0;
+  padding: 6px 14px;
+  font-size: 13px;
+}
+
+/* ── 风险等级颜色条（表格行） ── */
+.vp-doc table tr:has(td:nth-child(4) > .risk-critical) {
+  background: rgba(255, 80, 80, 0.05);
+}
+
+/* ── 脚本详情页安装按钮区域紧凑 ── */
+.vp-doc .custom-block {
+  margin: 8px 0;
+  padding: 10px 14px;
+}
+
+.vp-doc .custom-block p {
+  margin: 0;
 }

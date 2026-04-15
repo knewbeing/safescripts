@@ -35,7 +35,6 @@ def load_scripts(scripts_dir: Path) -> list[dict]:
     for meta_file in sorted(scripts_dir.glob("*.meta.json")):
         try:
             data = json.loads(meta_file.read_text(encoding="utf-8"))
-            # 读取安全分析结果
             slug = data.get("slug", meta_file.stem)
             security_file = scripts_dir / f"{slug}.security.json"
             if security_file.exists():
@@ -43,35 +42,63 @@ def load_scripts(scripts_dir: Path) -> list[dict]:
                     sec = json.loads(security_file.read_text(encoding="utf-8"))
                     data["risk_level"] = sec.get("risk_level", "UNKNOWN")
                     data["security_summary"] = sec.get("summary", "")
+                    data["security_issues"] = sec.get("issues", [])
+                    data["data_transmission"] = sec.get("data_transmission", {})
+                    data["privacy_collection"] = sec.get("privacy_collection", {})
                 except Exception:
                     data["risk_level"] = "UNKNOWN"
+                    data["security_issues"] = []
             else:
                 data["risk_level"] = "UNKNOWN"
+                data["security_issues"] = []
             entries.append(data)
         except Exception as exc:
             print(f"  ✗ Failed to load {meta_file}: {exc}")
     return entries
 
 
+def _risk_issues_md(entry: dict, max_issues: int = 3) -> str:
+    """为有风险的脚本生成简短的关键风险列表（用于索引表格）。"""
+    risk = entry.get("risk_level", "UNKNOWN")
+    if risk in ("SAFE", "LOW", "UNKNOWN"):
+        return entry.get("security_summary", "待分析")[:50] or "待分析"
+
+    issues = entry.get("security_issues", [])
+    sev_order = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
+    top = sorted(
+        [i for i in issues if i.get("severity") in ("CRITICAL", "HIGH", "MEDIUM")],
+        key=lambda x: sev_order.get(x.get("severity", "LOW"), 9),
+    )[:max_issues]
+
+    if not top:
+        summary = entry.get("security_summary", "")
+        return summary[:60] + "…" if len(summary) > 60 else summary or "待分析"
+
+    sev_icon = {"CRITICAL": "⛔", "HIGH": "🔴", "MEDIUM": "🟠"}
+    parts = []
+    for issue in top:
+        icon = sev_icon.get(issue.get("severity", ""), "⚠️")
+        itype = issue.get("type", "")
+        desc = issue.get("description", "")[:40]
+        parts.append(f"{icon}**{itype}**：{desc}…")
+    return "<br>".join(parts)
+
+
 def render_managed_index(entries: list[dict]) -> str:
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     lines = [
-        "# 托管脚本列表",
+        "# 托管脚本",
         "",
-        f"共 **{len(entries)}** 个脚本　　最后更新：{now}",
+        f"> 共 **{len(entries)}** 个脚本　·　最后更新：{now}",
         "",
-        "以下脚本由用户在 `target-repos.json` 中配置，每天自动同步最新版本并分析安全性。",
+        "以下脚本由 `target-repos.json` 配置，每天自动同步并分析安全性。",
         "",
     ]
 
     if not entries:
-        lines += [
-            "> 暂无托管脚本。请在 `target-repos.json` 的 `userscripts` 数组中添加脚本地址。",
-            "",
-        ]
+        lines += ["> 暂无托管脚本，请在 `target-repos.json` 的 `userscripts` 数组中添加脚本地址。", ""]
         return "\n".join(lines)
 
-    # 按风险等级分组
     risk_order = ["CRITICAL", "HIGH", "MEDIUM", "LOW", "SAFE", "UNKNOWN"]
     grouped: dict[str, list[dict]] = {r: [] for r in risk_order}
     for e in entries:
@@ -83,16 +110,16 @@ def render_managed_index(entries: list[dict]) -> str:
             continue
         badge = RISK_BADGE.get(risk, "⬜")
         lines += [f"## {badge} {risk}", ""]
-        lines += ["| 脚本 | 版本 | 适用网站 | 安全摘要 |", "|------|------|----------|----------|"]
+        lines += ["| 脚本 | 版本 | 适用网站 | 安全说明 |", "|:-----|:----:|:---------|:---------|"]
         for e in group:
             slug = e.get("slug", "")
             summary = e.get("summary", {})
             name = summary.get("zh_name") or e.get("name", slug)
             version = e.get("version", "?")
             sites = summary.get("applicable_sites", [])
-            sites_str = "、".join(sites[:3]) + ("…" if len(sites) > 3 else "") if sites else "通用"
-            sec_summary = e.get("security_summary", "待分析")[:40]
-            lines.append(f"| [{name}](./{slug}) | {version} | {sites_str} | {sec_summary} |")
+            sites_str = "、".join(sites[:2]) + ("…" if len(sites) > 2 else "") if sites else "通用"
+            risk_md = _risk_issues_md(e)
+            lines.append(f"| [{name}](./{slug}) | {version} | {sites_str} | {risk_md} |")
         lines.append("")
 
     return "\n".join(lines)
@@ -103,10 +130,10 @@ def render_discovered_index(entries: list[dict]) -> str:
     lines = [
         "# 发现的热门脚本",
         "",
-        f"共 **{len(entries)}** 个脚本　　最后发现：{now}",
+        f"> 共 **{len(entries)}** 个脚本　·　最后发现：{now}",
         "",
-        "以下脚本由 SafeScripts 自动从 GitHub、GreasyFork、Gitee、GitLab 发现，经 AI 筛选并安全分析。",
-        "如需持续跟踪某个脚本，可将其地址添加到 `target-repos.json` 的 `userscripts` 数组中。",
+        "SafeScripts 每天从 GitHub、GreasyFork、Gitee、GitLab 自动发现并分析。",
+        "可将脚本地址加入 `target-repos.json` 持续跟踪。",
         "",
     ]
 
@@ -125,21 +152,18 @@ def render_discovered_index(entries: list[dict]) -> str:
             continue
         badge = RISK_BADGE.get(risk, "⬜")
         lines += [f"## {badge} {risk}", ""]
-        lines += ["| 脚本 | 来源仓库 | 平台 | 适用网站 | 发现时间 |", "|------|----------|------|----------|----------|"]
+        lines += ["| 脚本 | 来源 | 平台 | 安全说明 |", "|:-----|:-----|:----:|:---------|"]
         for e in group:
             slug = e.get("slug", "")
             summary = e.get("summary", {})
             name = summary.get("zh_name") or e.get("name", slug)
             repo = e.get("source_repo", "")
             platform = e.get("platform", "github")
-            sites = summary.get("applicable_sites", []) if isinstance(summary, dict) else []
-            sites_str = "、".join(sites[:2]) + ("…" if len(sites) > 2 else "") if sites else "通用"
-            discovered = e.get("discovered_at", "")[:10]
             platform_labels = {
                 "github": "GitHub", "greasyfork": "GreasyFork",
                 "gitee": "Gitee", "gitlab": "GitLab",
             }
-            plabel = platform_labels.get(platform, platform)
+            plabel = platform_labels.get(platform, platform or "GitHub")
             platform_urls = {
                 "github": f"https://github.com/{repo}",
                 "gitee": f"https://gitee.com/{repo}",
@@ -147,8 +171,10 @@ def render_discovered_index(entries: list[dict]) -> str:
                 "greasyfork": e.get("source_url", ""),
             }
             purl = platform_urls.get(platform, "")
-            repo_link = f"[{repo}]({purl})" if repo and purl else (repo or "—")
-            lines.append(f"| [{name}](./{slug}) | {repo_link} | {plabel} | {sites_str} | {discovered} |")
+            repo_short = repo.split("/")[-1] if "/" in repo else repo
+            repo_link = f"[{repo_short}]({purl})" if repo_short and purl else (repo_short or "—")
+            risk_md = _risk_issues_md(e)
+            lines.append(f"| [{name}](./{slug}) | {repo_link} | {plabel} | {risk_md} |")
         lines.append("")
 
     return "\n".join(lines)
