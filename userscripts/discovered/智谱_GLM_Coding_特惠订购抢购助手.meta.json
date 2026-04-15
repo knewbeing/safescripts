@@ -19,10 +19,10 @@
   "require": [],
   "metadata_raw": "// @name  智谱 GLM Coding 特惠订购抢购助手\n// @name:en  智谱 GLM Coding 特惠订购抢购助手\n// @namespace  http://tampermonkey.net/\n// @version  6.3.8\n// @description  用于在前端代码中去除按钮的disabled属性，使其在界面上显示为可点击状态。这仅影响前端表现，不改变后端逻辑。\n// @description:en  用于在前端代码中去除按钮的disabled属性，使其在界面上显示为可点击状态。这仅影响前端表现，不改变后端逻辑。modifying the front-end code to remove the `disabled` attribute from the purchase button\n// @author  YourName\n// @match  *://www.bigmodel.cn/*\n// @match  https://www.bigmodel.cn/glm-coding\n// @match  https://bigmodel.cn/glm-coding*\n// @run-at  document-start\n// @grant  none\n// @buy  me a coff   邀请链接,邀请码新购，下单立减5%金额 https://www.bigmodel.cn/glm-coding?ic=EVDHUUYDNB\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/571507/%E6%99%BA%E8%B0%B1%20GLM%20Coding%20%E7%89%B9%E6%83%A0%E8%AE%A2%E8%B4%AD%E6%8A%A2%E8%B4%AD%E5%8A%A9%E6%89%8B.user.js\n// @updateURL  https://update.greasyfork.org/scripts/571507/%E6%99%BA%E8%B0%B1%20GLM%20Coding%20%E7%89%B9%E6%83%A0%E8%AE%A2%E8%B4%AD%E6%8A%A2%E8%B4%AD%E5%8A%A9%E6%89%8B.meta.js",
   "sha256": "0605254a5a6f9f65b938b497dbab4e819c38f660bee1f97fc4120af27947f55f",
-  "discovered_at": "2026-04-15T19:54:59.771393+00:00",
+  "discovered_at": "2026-04-15T20:08:14.494288+00:00",
   "ai_reason": "",
-  "is_new": true,
-  "install_count": 1269,
+  "is_new": false,
+  "install_count": 1271,
   "good_ratings": 1,
   "bad_ratings": 0,
   "summary": {
@@ -30,19 +30,19 @@
       "智谱官网",
       "智谱 GLM Coding 订购页面"
     ],
-    "description": "本脚本用于在智谱 GLM Coding 订购页面自动解除购买按钮的禁用状态，使按钮看起来可点击。它通过修改页面前端数据，绕过售罄限制，提升抢购成功率。脚本仅改变前端显示，不影响后台实际库存和订单逻辑。",
+    "description": "本脚本用于解除智谱 GLM Coding 订购页面中购买按钮的禁用状态，使按钮看起来可点击。它通过修改页面前端数据，将售罄状态改为有货，提升抢购体验，但不改变后台实际库存。",
     "permissions": [],
     "tags": [
       "抢购助手",
       "按钮解禁",
-      "前端修改",
-      "智谱 GLM Coding",
-      "购物辅助"
+      "库存修改",
+      "前端优化",
+      "智谱 GLM Coding"
     ],
     "usage": [
-      "安装脚本后，打开智谱 GLM Coding 相关页面。",
+      "安装脚本后，打开智谱 GLM Coding 订购页面。",
       "页面加载时，脚本自动解除购买按钮禁用状态。",
-      "此时按钮显示为可点击，用户可尝试下单。"
+      "此时按钮显示为可点击，提升抢购成功率。"
     ],
     "zh_name": "智谱 GLM Coding 特惠订购抢购助手"
   }

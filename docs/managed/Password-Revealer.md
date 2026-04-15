@@ -39,7 +39,7 @@ title: 密码显示助手
 
 **风险等级**：🟢 SAFE　　**分析时间**：2026-04-15
 
-> 该 UserScript 主要功能为密码输入框内容显示切换，未涉及任何网络请求或数据外传行为，也未采集用户隐私信息。代码未使用远程代码执行方式，权限申请合理且均被使用。无敏感 API 调用及代码混淆，外部依赖安全可信。整体安全性高，无明显安全风险。
+> 该脚本为密码显示辅助工具，未发现任何数据外传或隐私采集行为，代码无远程执行风险，权限申请合理，未调用敏感 API，代码未混淆且无外部依赖，整体安全性良好。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -49,39 +49,39 @@ title: 密码显示助手
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本未检测到任何网络请求相关代码，如 GM_xmlhttpRequest、fetch、XMLHttpRequest 或 navigator.sendBeacon，且无数据上报行为。  
+> 脚本未检测到任何网络请求行为，未向第三方服务器发送数据。  
 > 位置：全脚本  
-> 建议：确认无外部数据传输，确保用户数据不被泄露。
+> 建议：保持无外传行为，确保未来版本继续避免未经用户同意的数据上传。
 
 **⛔ CRITICAL** — 隐私采集  
-> 脚本未访问 document.cookie、localStorage、sessionStorage，也未监听键盘事件或读取表单字段值。  
+> 脚本未读取 document.cookie、localStorage、sessionStorage，也未监听键盘输入事件，未访问浏览器指纹相关 API。  
 > 位置：全脚本  
-> 建议：无隐私采集行为，符合隐私保护要求。
+> 建议：继续保持不采集用户隐私数据，避免增加隐私风险。
 
 **🔴 HIGH** — 远程代码执行  
-> 脚本未使用 eval、new Function、setTimeout(string) 等远程代码执行方式，且未通过 @require 或动态 script 标签加载远程 JS。  
+> 脚本未使用 eval、new Function、setTimeout(string) 等远程代码执行方式，也未通过 @require 或动态 script 标签加载远程 JS。  
 > 位置：全脚本  
-> 建议：保持代码安全，避免远程代码执行风险。
+> 建议：保持代码执行安全，避免动态执行不可信代码。
 
 **🔴 HIGH** — 权限滥用  
-> 脚本申请的权限（GM_getValue、GM_setValue、GM_registerMenuCommand、GM_unregisterMenuCommand、GM_addStyle）均被合理使用，无权限滥用。  
-> 位置：元数据及代码  
-> 建议：权限申请合理，无需调整。
+> 脚本申请的权限（GM_getValue, GM_setValue, GM_registerMenuCommand, GM_unregisterMenuCommand, GM_addStyle）均有实际使用，未发现权限滥用。  
+> 位置：元数据与代码  
+> 建议：权限申请合理，避免申请未使用的高权限。
 
 **🟠 MEDIUM** — 敏感 API 调用  
-> 脚本未调用敏感 API，如 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API。  
+> 脚本未调用 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等敏感 API。  
 > 位置：全脚本  
-> 建议：无敏感 API 调用风险。
+> 建议：如无必要，继续避免调用敏感 API 以降低风险。
 
 **🟠 MEDIUM** — 代码混淆  
-> 脚本代码结构清晰，无明显混淆、base64 解码或字符串拼接执行特征。  
+> 脚本代码结构清晰，未发现 base64 解码执行、字符串拼接执行或明显混淆特征。  
 > 位置：全脚本  
-> 建议：代码可读性良好，便于安全审计。
+> 建议：保持代码可读性，避免混淆带来的安全隐患。
 
 **🟡 LOW** — 外部依赖  
-> 脚本未通过 @require 加载任何外部依赖库，且图标资源来源可信（GitHub 用户脚本仓库）。  
+> 脚本未通过 @require 加载任何外部依赖，所有代码均内嵌，且图标资源来自可信 GitHub 用户脚本仓库。  
 > 位置：元数据  
-> 建议：外部依赖安全，版本固定。
+> 建议：继续使用可信来源，避免供应链攻击。
 
 ---
 

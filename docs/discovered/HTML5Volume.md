@@ -39,49 +39,49 @@ title: HTML5视频音频默认音量
 
 **风险等级**：🟡 LOW　　**分析时间**：2026-04-15
 
-> 该脚本主要功能为调整 HTML5 视频音频默认音量，支持各网站分别记忆音量设置。代码中未发现任何网络请求或数据外传行为，未采集敏感隐私信息，也未使用远程代码执行手段。权限申请合理且与代码使用匹配。整体代码清晰，无混淆或恶意特征。风险等级评估为低。
+> 该脚本主要功能为调整 HTML5 视频音频默认音量，并支持为不同网站分别记忆音量设置。代码中未发现任何网络请求行为，无数据外传风险。隐私采集方面仅使用 localStorage 存储音量设置，未采集敏感用户数据。未使用远程代码执行手段，权限申请合理且均有使用。未调用敏感 API，代码无混淆，且无外部依赖。整体安全风险较低。
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ✅ 未检测到 |
-| 隐私采集 | ❌ 检测到（使用 localStorage 存储音量设置数据, 未读取 document.cookie 或 sessionStorage, 未监听键盘输入事件） |
+| 隐私采集 | ❌ 检测到（使用 localStorage 存储当前音量设置, 未监听键盘输入事件, 未读取 document.cookie 或 sessionStorage） |
 
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本未检测到任何网络请求相关代码，未进行数据外传。  
+> 脚本未检测到任何网络请求行为，无数据外传风险。  
 > 位置：全脚本  
-> 建议：确认脚本不包含任何网络请求，确保无数据外传风险。
+> 建议：无需操作。
 
 **⛔ CRITICAL** — 隐私采集  
 > 脚本未读取 document.cookie、localStorage（除非用于存储音量设置）、sessionStorage，也未监听键盘输入事件，未访问浏览器指纹相关API。  
 > 位置：全脚本  
-> 建议：确认脚本仅使用 localStorage 存储音量设置，且无敏感隐私数据采集。
+> 建议：确认 localStorage 用于存储音量设置，非敏感数据采集。
 
 **🔴 HIGH** — 远程代码执行  
-> 脚本未使用 eval、new Function、setTimeout(string)、innerHTML 执行远程内容，也未通过 @require 或动态 script 标签加载远程 JS。  
+> 脚本未使用 eval、new Function、setTimeout(string)、innerHTML 执行远程代码，也未通过 @require 或动态 script 标签加载远程 JS。  
 > 位置：全脚本  
-> 建议：保持代码执行安全，避免远程代码执行风险。
+> 建议：无需操作。
 
 **🔴 HIGH** — 权限滥用  
-> 脚本申请了多个 GM_* 权限，且代码中使用了 GM_registerMenuCommand、GM_unregisterMenuCommand、GM_openInTab、GM_getValue、GM_setValue 等，权限申请与使用匹配，无滥用。  
+> 脚本申请了 GM_registerMenuCommand、GM_unregisterMenuCommand、GM_openInTab、GM_getValue、GM_setValue、GM_notification 权限，且代码中均有对应调用，权限申请合理。  
 > 位置：元数据与代码  
-> 建议：保持权限申请与实际使用一致，避免申请未使用的高权限。
+> 建议：无需操作。
 
 **🟠 MEDIUM** — 敏感 API 调用  
 > 脚本未调用 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等敏感 API。  
 > 位置：全脚本  
-> 建议：无敏感 API 调用风险。
+> 建议：无需操作。
 
 **🟠 MEDIUM** — 代码混淆  
 > 脚本代码清晰，无明显混淆、base64 解码执行或字符串拼接执行特征。  
 > 位置：全脚本  
-> 建议：保持代码清晰，避免混淆带来的安全隐患。
+> 建议：无需操作。
 
 **🟡 LOW** — 外部依赖  
 > 脚本未通过 @require 加载任何外部依赖库。  
 > 位置：元数据  
-> 建议：如未来添加依赖，确保来源可信且固定版本。
+> 建议：无需操作。
 
 ---
 

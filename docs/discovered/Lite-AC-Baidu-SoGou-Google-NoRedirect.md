@@ -38,7 +38,7 @@ title: 百度搜狗谷歌搜索结果重定向优化
 
 **风险等级**：🟡 LOW　　**分析时间**：2026-04-15
 
-> 该脚本主要通过GM_xmlhttpRequest向百度服务器请求真实重定向地址，未向第三方服务器发送用户数据，未采集用户隐私信息，也未执行远程代码。权限申请合理，代码无混淆，未依赖外部库。整体风险较低。
+> 该脚本主要用于去除百度、搜狗、谷歌等搜索引擎的重定向，直接访问真实链接。脚本通过GM_xmlhttpRequest向百度官方域名请求数据，未发现向第三方服务器发送用户数据的行为。未采集用户隐私信息，也未执行远程代码或滥用权限。整体风险较低。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -48,38 +48,38 @@ title: 百度搜狗谷歌搜索结果重定向优化
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本使用了GM_xmlhttpRequest向www.baidu.com发起GET请求，用于获取重定向的真实地址。请求仅限于百度域名，未发现向第三方服务器发送用户数据的行为。  
-> 位置：resetURL函数中GM_xmlhttpRequest调用  
-> 建议：确认请求仅用于获取重定向地址，避免携带敏感用户数据。
+> 脚本使用了GM_xmlhttpRequest向www.baidu.com发起GET请求，用于获取重定向的真实地址。请求目标为百度官方域名，未发现向第三方服务器发送用户数据的行为。  
+> 位置：resetURL函数内的GM_xmlhttpRequest调用  
+> 建议：确认请求仅用于获取重定向真实地址，避免发送敏感用户数据。
 
 **⛔ CRITICAL** — 隐私采集  
-> 脚本未读取document.cookie、localStorage、sessionStorage，未监听键盘事件，也未访问浏览器指纹相关API。  
-> 位置：整体代码审查  
+> 脚本未读取document.cookie、localStorage、sessionStorage，未监听键盘输入事件，也未访问浏览器指纹相关API。  
+> 位置：全局代码  
 > 建议：无
 
 **🔴 HIGH** — 远程代码执行  
-> 脚本未使用eval、new Function、setTimeout字符串形式执行代码，也未通过@require或动态script标签加载远程JS。  
-> 位置：整体代码审查  
+> 脚本未使用eval、new Function、setTimeout(string)、innerHTML执行远程代码，也未通过@require或动态script标签加载远程JS。  
+> 位置：全局代码  
 > 建议：无
 
 **🔴 HIGH** — 权限滥用  
-> 脚本申请了GM_xmlhttpRequest权限，且代码中确实使用该权限，权限申请与使用匹配，无滥用。  
-> 位置：元数据与代码中GM_xmlhttpRequest使用  
+> 脚本申请了GM_xmlhttpRequest权限，且代码中确实使用了该权限，权限申请与使用匹配，无滥用。  
+> 位置：元数据与代码  
 > 建议：无
 
 **🟠 MEDIUM** — 敏感API调用  
 > 脚本未调用navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API等敏感API。  
-> 位置：整体代码审查  
+> 位置：全局代码  
 > 建议：无
 
 **🟠 MEDIUM** — 代码混淆  
-> 代码未发现明显混淆、base64解码执行或字符串拼接执行的特征。  
-> 位置：整体代码审查  
+> 脚本代码结构清晰，无明显混淆、base64解码执行或字符串拼接执行特征。  
+> 位置：全局代码  
 > 建议：无
 
 **🟡 LOW** — 外部依赖  
-> 脚本未通过@require加载外部依赖，且仅使用内置API和GM_xmlhttpRequest。  
-> 位置：元数据与代码审查  
+> 脚本未通过@require加载外部依赖，所有功能均为内嵌代码实现。  
+> 位置：元数据  
 > 建议：无
 
 ---

@@ -9,73 +9,74 @@
   },
   "issues": [
     {
-      "description": "脚本使用了 GM_xmlhttpRequest 权限，且 @connect 指定了第三方域名 oversea.mimixiaoke.com 和 jtmate.com，存在向第三方服务器发送请求的行为，可能会上传用户数据或进行追踪。",
-      "location": "@connect 和 GM_xmlhttpRequest",
-      "recommendation": "确认请求的具体内容和数据是否包含敏感用户信息，若无必要应避免向第三方服务器发送请求。",
+      "description": "脚本使用了GM_xmlhttpRequest权限，且@connect声明了第三方域名oversea.mimixiaoke.com和jtmate.com，存在向第三方服务器发送请求的行为，可能会上传用户数据或进行数据统计。",
+      "location": "@connect和@grant声明部分",
+      "recommendation": "确认这些第三方服务器的安全性和隐私政策，避免上传敏感用户数据。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本申请了大量 GM_* 权限，包括 GM_setClipboard，GM_xmlhttpRequest，GM_download 等，权限较高，需确认是否全部使用且合理。",
-      "location": "@grant",
-      "recommendation": "核查代码中是否实际使用了所有申请的权限，避免权限滥用。",
+      "description": "脚本声明了大量权限，包括GM_xmlhttpRequest、GM_setClipboard等，但未提供完整代码，无法确认是否存在未使用的高权限申请。",
+      "location": "@grant声明部分",
+      "recommendation": "检查实际代码使用的权限，移除未使用的高权限申请。",
       "severity": "HIGH",
       "type": "权限滥用"
     },
     {
-      "description": "脚本元数据中声明了 @antifeature 为 referral-link，存在推广或返利链接的行为，可能涉及用户隐私和利益相关。",
-      "location": "@antifeature",
-      "recommendation": "用户应知晓该行为，开发者应明确告知并合理使用。",
+      "description": "脚本元数据中声明了@antifeature为referral-link，可能存在推广或返利链接，涉及用户隐私和利益。",
+      "location": "@antifeature声明",
+      "recommendation": "用户需谨慎使用，确认返利链接的合法性和安全性。",
       "severity": "CRITICAL",
       "type": "隐私采集"
     },
     {
-      "description": "脚本匹配了大量购物平台网址，可能会读取页面内容、表单数据等，需确认是否有读取 document.cookie、localStorage、sessionStorage 或监听键盘输入等行为。",
-      "location": "代码逻辑（未提供完整代码）",
-      "recommendation": "审查代码中是否有读取用户敏感数据或监听用户输入的行为，避免隐私泄露。",
+      "description": "脚本匹配了大量购物平台网址，可能会读取页面内容、表单字段等信息，但未提供完整代码，无法确认是否监听键盘输入或读取cookie等敏感信息。",
+      "location": "@match和@include声明部分",
+      "recommendation": "审查完整代码，确认是否存在隐私采集行为。",
       "severity": "CRITICAL",
       "type": "隐私采集"
     },
     {
-      "description": "脚本未提供完整代码，无法完全确认是否存在远程代码执行风险，如 eval、new Function、动态加载远程脚本等。",
-      "location": "代码逻辑（未提供完整代码）",
-      "recommendation": "完整代码审查，重点检查动态代码执行和远程脚本加载。",
+      "description": "脚本未提供完整代码，无法确认是否存在远程代码执行风险，如eval、new Function、动态加载远程脚本等。",
+      "location": "代码主体",
+      "recommendation": "审查完整代码，排查远程代码执行风险。",
       "severity": "HIGH",
       "type": "远程代码执行"
     },
     {
-      "description": "脚本未提供完整代码，无法确认是否调用敏感 API，如 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等。",
-      "location": "代码逻辑（未提供完整代码）",
-      "recommendation": "检查是否调用敏感 API，避免未经用户同意的权限使用。",
+      "description": "脚本未提供完整代码，无法确认是否调用敏感API如navigator.geolocation、MediaDevices等。",
+      "location": "代码主体",
+      "recommendation": "审查完整代码，确认敏感API调用情况。",
       "severity": "MEDIUM",
-      "type": "敏感 API 调用"
+      "type": "敏感API调用"
     },
     {
-      "description": "脚本未提供完整代码，无法确认是否存在代码混淆或 base64 解码执行等混淆特征。",
-      "location": "代码逻辑（未提供完整代码）",
-      "recommendation": "检查代码是否存在混淆，确保代码透明易审。",
+      "description": "脚本未提供完整代码，无法确认是否存在代码混淆或base64解码执行等混淆特征。",
+      "location": "代码主体",
+      "recommendation": "审查完整代码，确认代码可读性和安全性。",
       "severity": "MEDIUM",
       "type": "代码混淆"
     },
     {
-      "description": "脚本 @require 未见第三方库加载，@connect 指定的第三方服务器来源未知，存在一定供应链风险。",
-      "location": "@connect",
-      "recommendation": "确认第三方服务器的可信度，避免供应链攻击。",
+      "description": "脚本@require未声明第三方库，@connect声明的第三方域名来源未知，存在一定供应链风险。",
+      "location": "@connect声明部分",
+      "recommendation": "确认第三方域名的可信度和安全性，避免供应链攻击。",
       "severity": "LOW",
       "type": "外部依赖"
     }
   ],
   "privacy_collection": {
     "details": [
-      "存在 @antifeature referral-link，可能涉及推广返利行为。",
-      "匹配大量购物平台，可能读取页面内容、表单数据。",
-      "申请了 GM_setClipboard 权限，可能操作剪贴板。"
+      "可能读取页面表单字段和内容",
+      "可能监听键盘输入事件（未确认）",
+      "可能读取cookie/localStorage（未确认）",
+      "存在@antifeature为referral-link，涉及用户隐私和利益"
     ],
     "detected": true
   },
   "risk_level": "CRITICAL",
   "script_name": "Online shopping assistant & Automatically query coupons & Save money",
-  "summary": "该脚本申请了较多高权限，且存在向第三方服务器 oversea.mimixiaoke.com 和 jtmate.com 发送请求的行为，可能上传用户数据或进行追踪。同时声明了 referral-link 反特征，存在推广返利行为。匹配大量购物平台，可能读取用户隐私数据。未提供完整代码，无法排除远程代码执行和敏感 API 调用风险。综合评估风险等级为 CRITICAL，建议谨慎使用并进一步审查完整代码。",
-  "analyzed_at": "2026-04-15T19:57:56.400717+00:00",
+  "summary": "该脚本声明了大量购物平台匹配规则和高权限，且存在向第三方服务器oversea.mimixiaoke.com和jtmate.com发送请求的行为，可能上传用户数据或进行数据统计。同时声明了@antifeature为referral-link，存在推广返利风险。由于未提供完整代码，无法完全确认是否存在远程代码执行、敏感API调用和隐私采集等行为。综合判断，该脚本存在较高安全风险，建议用户谨慎使用，并要求开发者提供完整代码以便进一步审查。",
+  "analyzed_at": "2026-04-15T20:10:27.056066+00:00",
   "slug": "Online_shopping_assistant_Automatically_query_coupons_Save_money"
 }

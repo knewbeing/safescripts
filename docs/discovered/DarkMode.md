@@ -40,7 +40,7 @@ title: 护眼模式
 
 **风险等级**：🟢 SAFE　　**分析时间**：2026-04-15
 
-> 该脚本为护眼模式脚本，未发现任何数据外传、隐私采集、远程代码执行等安全风险。权限申请合理且符合实际使用。代码无混淆，未加载外部依赖，整体安全性良好。
+> 该脚本为护眼模式实现，未发现任何数据外传、隐私采集、远程代码执行或权限滥用行为，代码清晰无混淆，未加载外部依赖，整体安全性良好。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -52,37 +52,37 @@ title: 护眼模式
 **⛔ CRITICAL** — 数据外传  
 > 脚本未检测到任何网络请求相关代码，未发现数据外传行为。  
 > 位置：全脚本  
-> 建议：无需操作。
+> 建议：确认脚本不进行任何外部数据传输，确保用户数据安全。
 
 **⛔ CRITICAL** — 隐私采集  
-> 脚本未读取 document.cookie、localStorage、sessionStorage，未监听键盘输入事件，未访问浏览器指纹相关API。  
+> 脚本未读取 document.cookie、localStorage、sessionStorage，未监听键盘事件，也未访问浏览器指纹相关API。  
 > 位置：全脚本  
-> 建议：无需操作。
+> 建议：继续保持不采集用户隐私数据，避免侵犯用户隐私。
 
 **🔴 HIGH** — 远程代码执行  
-> 脚本未使用 eval、new Function、setTimeout(string) 等远程代码执行相关函数，且未通过 @require 或动态 script 标签加载远程 JS。  
+> 脚本未使用 eval、new Function、setTimeout(string) 等远程代码执行方式，也未通过 @require 或动态 script 标签加载远程JS。  
 > 位置：全脚本  
-> 建议：无需操作。
+> 建议：避免使用动态代码执行，确保代码安全可控。
 
 **🔴 HIGH** — 权限滥用  
-> 脚本申请了 GM_registerMenuCommand、GM_unregisterMenuCommand、GM_openInTab、GM_getValue、GM_setValue、GM_notification 权限，代码中均有对应调用，权限申请合理。  
+> 脚本申请了多个 GM_* 权限，且代码中均有对应使用，未发现权限滥用。  
 > 位置：元数据与代码  
-> 建议：无需操作。
+> 建议：确保权限申请与实际使用匹配，避免申请不必要的高权限。
 
 **🟠 MEDIUM** — 敏感 API 调用  
-> 脚本未调用 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等敏感 API。  
+> 脚本未调用 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等敏感API。  
 > 位置：全脚本  
-> 建议：无需操作。
+> 建议：避免调用敏感API，保护用户安全。
 
 **🟠 MEDIUM** — 代码混淆  
-> 脚本代码未发现明显混淆特征，代码结构清晰，变量命名合理。  
+> 脚本代码未发现明显混淆特征，无 base64 解码执行或复杂字符串拼接执行。  
 > 位置：全脚本  
-> 建议：无需操作。
+> 建议：保持代码清晰，便于安全审计。
 
 **🟡 LOW** — 外部依赖  
-> 脚本未通过 @require 加载任何外部依赖库。  
+> 脚本未通过 @require 加载任何外部依赖，所有代码均为本地实现。  
 > 位置：元数据  
-> 建议：无需操作。
+> 建议：如需依赖第三方库，建议使用可信CDN并固定版本。
 
 ---
 

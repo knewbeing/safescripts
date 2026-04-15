@@ -89,65 +89,76 @@
   "require": [],
   "metadata_raw": "// @name  Online shopping assistant & Automatically query coupons & Save money\n// @name:ar  مساعد التسوق عبر الإنترنت & الاستعلام عن القسائم تلقائيًا & توفير المال\n// @name:bg  Онлайн асистент за пазаруване & Автоматично търсене на купони & Спестяване на пари\n// @name:ckb  یارمەتی کڕینی ئۆنلاین & داواکاری خۆکارانەی کوپۆنەکان & پارە پاشەکەوتکردن\n// @name:cs  Online nákupní asistent & Automatické vyhledávání kupónů & Šetřete peníze\n// @name:da  Online shoppingassistent & Automatisk søgning efter kuponer & Spar penge\n// @name:de  Online-Shopping-Assistent & Automatische Gutscheinsuche & Geld sparen\n// @name:el  Βοηθός διαδικτυακών αγορών & Αυτόματη αναζήτηση κουπονιών & Εξοικονόμηση χρημάτων\n// @name:en  Online shopping assistant & Automatically query coupons & Save money\n// @name:eo  Reta aĉethelpilo & Aŭtomata kuponserĉado & Ŝparu monon\n// @name:es  Asistente de compras online & Búsqueda automática de cupones & Ahorrar dinero\n// @name:es-419  Asistente de compras en línea & Consulta automática de cupones & Ahorra dinero\n// @name:fi  Verkkokauppa-avustaja & Automaattinen kuponkihaku & Säästä rahaa\n// @name:fr  Assistant de shopping en ligne & Recherche automatique de coupons & Économiser de l'argent\n// @name:fr-CA  Assistant d'achat en ligne & Recherche automatique de coupons & Économiser de l'argent\n// @name:he  עוזר קניות אונליין & חיפוש קופונים אוטומטי & לחסוך כסף\n// @name:hr  Internetski asistent za kupovinu & Automatsko pretraživanje kupona & Uštedite novac\n// @name:hu  Online vásárlási asszisztens & Kuponok automatikus lekérdezése & Pénzmegtakarítás\n// @name:id  Asisten belanja online & Pencarian kupon otomatis & Hemat uang\n// @name:it  Assistente per lo shopping online & Ricerca automatica di coupon & Risparmiare denaro\n// @name:ja  オンラインショッピングアシスタント & クーポンの自動検索 & 節約\n// @name:ka  ონლაინ შოპინგ ასისტენტი & ავტომატური კუპონის ძიება & დაზოგეთ ფული\n// @name:ko  온라인 쇼핑 도우미 & 쿠폰 자동 검색 & 돈 절약\n// @name:nb  Online shoppingassistent & Automatisk kupongsøk & Spar penger\n// @name:nl  Online winkelassistent & Automatisch coupons opzoeken & Geld besparen\n// @name:pl  Asystent zakupów online & Automatyczne wyszukiwanie kuponów & Oszczędzaj pieniądze\n// @name:pt-BR  Assistente de compras online & Pesquisa automática de cupons & Economize dinheiro\n// @name:ro  Asistent de cumpărături online & Căutare automată de cupoane & Economisiți bani\n// @name:ru  Помощник для онлайн-покупок & Автоматический поиск купонов & Экономия денег\n// @name:sk  Online nákupný asistent & Automatické vyhľadávanie kupónov & Šetrite peniaze\n// @name:sr  Асистент за онлајн куповину & Аутоматско претраживање купона & Уштедите новац\n// @name:sv  Online shoppingassistent & Automatisk kupongsökning & Spara pengar\n// @name:th  ผู้ช่วยช้อปปิ้งออนไลน์ & ค้นหาคูปองอัตโนมัติ & ประหยัดเงิน\n// @name:tr  Çevrimiçi alışveriş asistanı & Otomatik kupon sorgulama & Para tasarrufu\n// @name:uk  Помічник для онлайн-шопінгу & Автоматичний пошук купонів & Економія грошей\n// @name:ug  تور سودا سېتىۋېلىش ياردەمچىسى & ئاپتوماتىك كۇپون ئىزدەش & پۇل تېجەش\n// @name:vi  Trợ lý mua sắm trực tuyến & Tự động tìm kiếm mã giảm giá & Tiết kiệm tiền\n// @description  Automatically search for coupons on popular shopping platforms to help you find the best deals on the products you need, without overspending. Currently supports: Aliexpress, Lazada, eBay, Amazon, and more.\n// @description:ar  البحث التلقائي عن القسائم على منصات التسوق الشهيرة لمساعدتك في العثور على أفضل العروض للمنتجات التي تحتاجها، دون إنفاق مبالغ زائدة. يدعم حاليًا: علي إكسبرس، لازادا، إيباي، أمازون والمزيد.\n// @description:bg  Автоматично търсене на купони на популярни търговски платформи, за да ви помогне да намерите най-добрите оферти за продуктите, от които се нуждаете, без да харчите прекалено много. В момента поддържа: Aliexpress, Lazada, eBay, Amazon и други.\n// @description:ckb  داواکاری خۆکارانەی کوپۆنەکان لە سەردەمی فەرەشەکانەوە بۆ یارمەتی کردنی تۆ لە دۆزینەوەی باشترین بەرهەمهاتەکان بۆ بەرهەمی پێویستەکانت، بێ گەورە کردنی ھەزەرەکان. ئیشکراوی ئێستا: Aliexpress، Lazada، eBay، Amazon و زۆرتر.\n// @description:cs  Automatické vyhledávání kupónů na populárních nákupních platformách, které vám pomohou najít nejlepší nabídky pro produkty, které potřebujete, aniž byste přeplatili. Momentálně podporuje: Aliexpress, Lazada, eBay, Amazon a další.\n// @description:da  Automatisk søgning efter kuponer på populære shoppingplatforme, der hjælper dig med at finde de bedste tilbud på de produkter, du har brug for, uden at bruge for meget. Understøtter i øjeblikket: Aliexpress, Lazada, eBay, Amazon og mere.\n// @description:de  Automatisches Suchen nach Gutscheinen auf beliebten Shopping-Plattformen, um Ihnen zu helfen, die besten Angebote für die Produkte zu finden, die Sie benötigen, ohne zu viel auszugeben. Unterstützt derzeit: Aliexpress, Lazada, eBay, Amazon und mehr.\n// @description:el  Αυτόματη αναζήτηση κουπονιών σε δημοφιλείς πλατφόρμες αγορών για να σας βοηθήσει να βρείτε τις καλύτερες προσφορές για τα προϊόντα που χρειάζεστε, χωρίς να ξοδέψετε υπερβολικά. Υποστηρίζει αυτή τη στιγμή: Aliexpress, Lazada, eBay, Amazon και άλλα.\n// @description:en  Automatically search for coupons on popular shopping platforms to help you find the best deals on the products you need, without overspending. Currently supports: Aliexpress, Lazada, eBay, Amazon, and more.\n// @description:eo  Aŭtomate serĉi kuponojn en popularaj aĉetplatformoj por helpi vin trovi la plej bonajn oferton por la produktoj, kiujn vi bezonas, sen tro elspezi. Nuntempe subtenas: Aliexpress, Lazada, eBay, Amazon kaj aliaj.\n// @description:es  Buscar automáticamente cupones en plataformas de compras populares para ayudarte a encontrar las mejores ofertas de los productos que necesitas, sin gastar de más. Actualmente es compatible con: Aliexpress, Lazada, eBay, Amazon y más.\n// @description:es-419  Buscar automáticamente cupones en plataformas de compras populares para ayudarte a encontrar las mejores ofertas de los productos que necesitas, sin gastar de más. Actualmente es compatible con: Aliexpress, Lazada, eBay, Amazon y más.\n// @description:fi  Automaattinen kuponkien haku suosituilla ostosalustoilla auttaaksesi löytämään parhaat tarjoukset tarvitsemasi tuotteista ilman, että käytät liikaa rahaa. Tällä hetkellä tuetaan: Aliexpress, Lazada, eBay, Amazon ja muita.\n// @description:fr  Recherche automatique de coupons sur des plateformes de shopping populaires pour vous aider à trouver les meilleures offres sur les produits dont vous avez besoin, sans trop dépenser. Actuellement pris en charge : Aliexpress, Lazada, eBay, Amazon et plus.\n// @description:fr-CA  Recherche automatique de coupons sur des plateformes de shopping populaires pour vous aider à trouver les meilleures offres sur les produits dont vous avez besoin, sans trop dépenser. Actuellement pris en charge : Aliexpress, Lazada, eBay, Amazon et plus.\n// @description:he  חיפוש אוטומטי של קופונים בפלטפורמות קניות פופולריות כדי לעזור לך למצוא את ההצעות הטובות ביותר למוצרים שאתה צריך, מבלי להוציא יותר מדי. כרגע תומך ב: Aliexpress, Lazada, eBay, Amazon ועוד.\n// @description:hr  Automatsko pretraživanje kupona na popularnim shopping platformama kako bi vam pomoglo da pronađete najbolje ponude za proizvode koje trebate, bez prekomjernog trošenja. Trenutno podržava: Aliexpress, Lazada, eBay, Amazon i još mnogo toga.\n// @description:hu  Automatikus kupon keresés népszerű vásárlási platformokon, hogy segítsen megtalálni a legjobb ajánlatokat a szükséges termékekhez, anélkül, hogy túl sokat költene. Jelenleg támogatja: Aliexpress, Lazada, eBay, Amazon és mások.\n// @description:id  Cari kupon secara otomatis di platform belanja populer untuk membantu Anda menemukan penawaran terbaik untuk produk yang Anda butuhkan, tanpa membelanjakan terlalu banyak. Saat ini mendukung: Aliexpress, Lazada, eBay, Amazon, dan lainnya.\n// @description:it  Cerca automaticamente i coupon su piattaforme di shopping popolari per aiutarti a trovare le migliori offerte sui prodotti di cui hai bisogno, senza spendere troppo. Attualmente supporta: Aliexpress, Lazada, eBay, Amazon e altro.\n// @description:ja  人気のショッピングプラットフォームでクーポンを自動的に検索し、必要な製品の最良の取引を見つけるのに役立ちます。無駄遣いを防ぎます。現在対応しているプラットフォーム: Aliexpress、Lazada、eBay、Amazon など。\n// @description:ka  პოპულარული შოპინგ პლატფორმებზე ავტომატური კუპონის ძიება, რათა დაგეხმაროთ საუკეთესო შეთავაზებების პოვნაში თქვენთვის საჭირო პროდუქციისთვის, ზედმეტი ხარჯების გარეშე. ამჟამად მხარდაჭერილია: Aliexpress, Lazada, eBay, Amazon და სხვა.\n// @description:ko  인기 쇼핑 플랫폼에서 자동으로 쿠폰을 검색하여 필요한 제품에 대한 최상의 거래를 찾는 데 도움을 줍니다. 과도한 지출 없이. 현재 지원되는 플랫폼: Aliexpress, Lazada, eBay, Amazon 등.\n// @description:nb  Automatisk søk etter kuponger på populære shoppingplattformer for å hjelpe deg med å finne de beste tilbudene på produktene du trenger, uten å bruke for mye. Støtter for øyeblikket: Aliexpress, Lazada, eBay, Amazon og mer.\n// @description:nl  Automatisch zoeken naar coupons op populaire winkelplatforms om je te helpen de beste aanbiedingen te vinden voor de producten die je nodig hebt, zonder te veel uit te geven. Ondersteunt momenteel: Aliexpress, Lazada, eBay, Amazon en meer.\n// @description:pl  Automatyczne wyszukiwanie kuponów na popularnych platformach zakupowych, które pomogą Ci znaleźć najlepsze oferty na produkty, których potrzebujesz, bez przepłacania. Obecnie obsługiwane: Aliexpress, Lazada, eBay, Amazon i inne.\n// @description:pt-BR  Buscar automaticamente cupons nas plataformas de compras populares para ajudá-lo a encontrar as melhores ofertas nos produtos que você precisa, sem gastar demais. Atualmente suporta: Aliexpress, Lazada, eBay, Amazon e mais.\n// @description:ro  Căutare automată de cupoane pe platformele populare de cumpărături pentru a te ajuta să găsești cele mai bune oferte la produsele de care ai nevoie, fără a cheltui prea mult. În prezent suportă: Aliexpress, Lazada, eBay, Amazon și altele.\n// @description:ru  Автоматический поиск купонов на популярных торговых платформах, чтобы помочь вам найти лучшие предложения на необходимые товары, не переплачивая. В настоящее время поддерживает: Aliexpress, Lazada, eBay, Amazon и другие.\n// @description:sk  Automatické vyhľadávanie kupónov na populárnych nákupných platformách, ktoré vám pomôžu nájsť najlepšie ponuky na produkty, ktoré potrebujete, bez zbytočných výdavkov. Momentálne podporuje: Aliexpress, Lazada, eBay, Amazon a ďalšie.\n// @description:sr  Аутоматско претраживање купона на популарним платформама за куповину како би вам помогло да пронађете најбоље понуде за производе који су вам потребни, без претераног трошења. Тренутно подржава: Aliexpress, Lazada, eBay, Amazon и остало.\n// @description:sv  Automatiskt söka efter kuponger på populära shoppingplattformar för att hjälpa dig att hitta de bästa erbjudandena på de produkter du behöver, utan att överskrida budgeten. För närvarande stöds: Aliexpress, Lazada, eBay, Amazon och fler.\n// @description:th  ค้นหาคูปองอัตโนมัติในแพลตฟอร์มช็อปปิ้งยอดนิยมเพื่อช่วยให้คุณค้นหาข้อเสนอที่ดีที่สุดสำหรับสินค้าที่คุณต้องการโดยไม่ต้องใช้จ่ายเกินไป ขณะนี้รองรับ: Aliexpress, Lazada, eBay, Amazon และอื่นๆ\n// @description:tr  Popüler alışveriş platformlarında otomatik olarak kupon arayarak, ihtiyacınız olan ürünler için en iyi fırsatları bulmanıza yardımcı olur, fazla harcama yapmadan. Şu anda desteklenenler: Aliexpress, Lazada, eBay, Amazon ve daha fazlası.\n// @description:uk  Автоматичний пошук купонів на популярних торгових платформах, щоб допомогти вам знайти найкращі пропозиції на товари, які вам потрібні, без зайвих витрат. Наразі підтримується: Aliexpress, Lazada, eBay, Amazon та інші.\n// @description:ug  پاپۇلار سودا سېتىش پلاتفورمالىرىدا ئاپتوماتىك كۇپون ئىزدەش ئارقىلىق، پەقەت مۇھتاج بولغان مەھسۇلاتلارغا ئەڭ ياخشى پەقەتلەرنى تاپشۇرۇشقا ياردەم بېرىدۇ، ھىچ بىر ئاشىق پۇل چىقارماي. ھازىر كۆرسىتىلىدىغان: Aliexpress، Lazada، eBay، Amazon ۋە باشقا.\n// @description:vi  Tìm kiếm tự động mã giảm giá trên các nền tảng mua sắm phổ biến để giúp bạn tìm được những ưu đãi tốt nhất cho sản phẩm bạn cần, mà không phải chi tiêu quá mức. Hiện tại hỗ trợ: Aliexpress, Lazada, eBay, Amazon và nhiều hơn nữa.\n// @namespace  Thaddeus_ecommerce_NameScope\n// @version  1.1.11\n// @author  Thaddeus310,PeterParker\n// @icon  data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAABAZJREFUWEetl1lME1EUhv+htbaISamoVTC0WrcgASOSlFCpuEfRmPigicaghgeXRI2JiTy4xVfikzExLvhkJGpiTYi4FUQeDMEG3CXp4FpQaEW0LKWjd2Camemdxep96EzSc+/5zn/PPecOg78Ypb7LXgbccdEU7/i7nzwZcI3k2VSx+4TeZRk9hst8F09wYMSONacx4E7qAVEFSMWxnEwLRBHA47v0CIAgMb+uPT0DoV8DmtEvnmLHs96Q2M7/uGLXctrEJADRPic5X5czF/Uf36lCEOd2Swae9YWS7Dgwy5srKvl8EUYSgMd3iVMKUUkBvcr8UTRJCQkATXYtvUnEZMgkV5smgUgApJpwJPoZRHLpnqtyixMzAaAmvZYKqfz/uGIX75v/oUVfVlMN49QpMGTZUllfMmfo1Tt0ucvBuleIkm+sTvAAtOgPtlVjQiSOaPck5M+0pAwxOO0reuNRXO3fKAEgCxIVGKW933bjGKZO5jASNiPPNillgLqOMIqLR1BnWJMEQI4lFcD6IYgt7bUozIsi0GTGHFPqCnSZf2B69ih8g0Vo82yRB+JnaEdvU9s5zI6+hyE+CoNRsSzoUmU0NpbnwR4LHhRXIjLLKamQVICq9lPYup7V5UCPEWNyIPjyMw73HKUC8CGKq9l/B8jwIhhooQGAKMAJzoWnHOD+DRvYThP2HJU0GMXgie1Q2IKJmVE4XMNgNAD4rqekAFmsoW4uvvT0Yee+Xn5BrVFfa0dsxIV5BR2Yv/Q75Fsg8kVPQrkC9dc9WLB6B5zWKi3f/P+NDxchO/8IjN+rxhQQ5YCz0C3uHfoAGm67YbS5UV5aowug9sISxAbN2H3gCW8v3gLz/PxE7yA9gRnv/2QbEkOuwJuADd04Bq7vCsrKn2tCBEP70Rn4hlVrryUBiI8hD0ArxbRTcPfOdpizbMjNOq+aB43NGxBPcyErfgv5pV2qAHwpJhbyckwD6GOdCHzcDAPeItfeQIUgzoncQ6HWRPTyLRAUEFoytR0r1YGO5lx8jnhgySkENzB+sxpmAZODT7TRmBE/2RcoKemEzRFMbBXtGErasVwFtUJElHjdOg0/M5xIM8aQlp6DWH8IsYEvKHD1I9MRhMUakeSJHIB6IRnPBb4m6KmEBISMwYgVZmsEFms4ybFAIQOgX8kEY9KcqtpPef9rLxBVQt/e05J7KPVaXj1w5tHKhZ2ax02vgVCIzrRsOHSl5uZZ8TzFD5MXTx3heSbWqteJmt3bYUckr5jNpNmofprdaynye9Nby/4Fwv+rqHFVSavkI0eXAmKjVEA+xaaz2YbuygmLIfkSkgej6+tYmERAyPtM47cC8hS2iEgs2HQMu05uLb0v2Wc1BX8DMGUKxDW5sRoAAAAASUVORK5CYII=\n// @match  *://*/*\n// @include  /^https:\\/\\/([\\w-]+\\.)?aliexpress\\.(ru|us|com)\\/*/\n// @include  /^https:\\/\\/([\\w-]+\\.)?lazada\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?shopee\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?banggood\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?amazon\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?ebay\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?bestbuy\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?airbaltic\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?edureka\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?ranavat\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?alibaba\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?wish\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?ticketmaster\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?wilson\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?wilsonsleather\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?pictarine\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?suiteness\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?treatwell\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?trip\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?samsung\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?daraz\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?wildberries\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?shopee\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?walmart\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?temu\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?noon\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?ozon\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?allegro\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?rakuten\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?zalando\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?shein\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?expedia\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?booking\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?agoda\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?hotels\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?hoteis\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?hoteles\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?tripadvisor\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?skyscanner\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?target\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?etsy\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?nike\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?adidas\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?meesho\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?abritel\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?bookabach\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?fewo-direkt\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?stayz\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?mercadolibre\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?magazineluiza\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?wildberries\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?zalando\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?daraz\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?advertiser\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?namshi\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?sivvi\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?vrbo\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?wotif\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?ajio\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?flipkart\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?myntra\\.[\\w.-]+([/?#].*)?$/\n// @include  /^https:\\/\\/([\\w-]+\\.)?kraken\\.[\\w.-]+([/?#].*)?$/\n// @include  *://www.jtmate.com/mid/merge**\n// @exclude  *://www.lazada.com/*\n// @exclude  *://shopee.com/*\n// @connect  oversea.mimixiaoke.com\n// @connect  jtmate.com\n// @license  MIT\n// @run-at  document-idle\n// @antifeature  referral-link\n// @grant  GM_registerMenuCommand\n// @grant  GM_openInTab\n// @grant  GM.openInTab\n// @grant  GM_addStyle\n// @grant  GM_setValue\n// @grant  GM_getValue\n// @grant  GM_deleteValue\n// @grant  GM_xmlhttpRequest\n// @grant  GM_download\n// @grant  GM_setClipboard\n// @downloadURL  https://update.greasyfork.org/scripts/512700/Online%20shopping%20assistant%20%20Automatically%20query%20coupons%20%20Save%20money.user.js\n// @updateURL  https://update.greasyfork.org/scripts/512700/Online%20shopping%20assistant%20%20Automatically%20query%20coupons%20%20Save%20money.meta.js",
   "sha256": "641763d8b25709efdc8dfcf1b041c8d68f51a7586494c42c095f6c056338a794",
-  "discovered_at": "2026-04-15T19:55:23.558064+00:00",
+  "discovered_at": "2026-04-15T20:08:40.522590+00:00",
   "ai_reason": "",
-  "is_new": true,
-  "install_count": 63096,
+  "is_new": false,
+  "install_count": 63100,
   "good_ratings": 11,
   "bad_ratings": 1,
   "summary": {
     "applicable_sites": [
-      "阿里巴巴旗下购物平台（如Aliexpress）",
+      "阿里巴巴国际站（Aliexpress）",
       "Lazada",
       "Shopee",
       "Banggood",
       "亚马逊（Amazon）",
       "eBay",
       "BestBuy",
-      "Wish",
-      "MercadoLibre",
-      "Flipkart",
-      "Walmart",
-      "Shein",
-      "Booking",
-      "Agoda",
-      "TripAdvisor",
-      "Skyscanner",
-      "Nike",
-      "Adidas",
-      "Zalando",
       "Daraz",
+      "Wildberries",
+      "Walmart",
       "Temu",
       "Noon",
       "Ozon",
+      "Allegro",
       "Rakuten",
-      "Etsy",
+      "Zalando",
+      "Shein",
+      "Expedia",
+      "Booking",
+      "Agoda",
+      "Hotels",
+      "TripAdvisor",
+      "Skyscanner",
       "Target",
+      "Etsy",
+      "Nike",
+      "Adidas",
+      "Flipkart",
+      "Myntra",
+      "MercadoLibre",
+      "Magazineluiza",
+      "Namshi",
+      "Ajio",
       "Meesho",
       "Vrbo",
-      "Expedia",
-      "Namshi",
-      "Sivvi",
-      "Ajio",
-      "Myntra",
-      "Wilson Leather",
-      "Ticketmaster",
-      "Wildberries",
-      "Magazineluiza",
+      "Wotif",
       "Abritel",
       "Bookabach",
       "Fewo-direkt",
       "Stayz",
+      "Wilson",
+      "Wilson's Leather",
+      "Pictarine",
+      "Suiteness",
+      "Treatwell",
+      "Trip",
+      "AirBaltic",
+      "Edureka",
+      "Ranavat",
+      "Ticketmaster",
+      "Advertiser",
+      "Kraken",
       "Jtmate"
     ],
-    "description": "本脚本自动在多个热门购物平台上搜索优惠券，帮助用户找到所需商品的最佳折扣，避免多花冤枉钱。支持包括Aliexpress、Lazada、eBay、Amazon等多个知名电商网站。安装后，脚本会在访问支持的网站时自动查询优惠信息，提升购物体验。",
+    "description": "本脚本自动在多个热门购物平台上搜索优惠券，帮助您找到所需商品的最佳折扣，避免多花冤枉钱。支持包括阿里巴巴国际站、Lazada、eBay、亚马逊等多家电商平台。安装后，购物时自动查询优惠券，提升购物体验并节省开支。",
     "permissions": [
       {
         "explanation": "添加自定义菜单命令，方便用户操作脚本功能。",
         "grant": "GM_registerMenuCommand"
       },
       {
-        "explanation": "在新标签页打开链接，方便查看优惠详情。",
+        "explanation": "在新标签页打开链接，方便查看优惠信息。",
         "grant": "GM_openInTab"
       },
       {
@@ -159,11 +170,11 @@
         "grant": "GM_addStyle"
       },
       {
-        "explanation": "存储数据，保存用户设置或缓存信息。",
+        "explanation": "存储脚本数据，保存用户设置和缓存。",
         "grant": "GM_setValue"
       },
       {
-        "explanation": "读取存储的数据，获取用户设置或缓存信息。",
+        "explanation": "读取存储的数据，获取用户设置和缓存。",
         "grant": "GM_getValue"
       },
       {
@@ -171,15 +182,15 @@
         "grant": "GM_deleteValue"
       },
       {
-        "explanation": "发送跨域请求，获取优惠券信息。",
+        "explanation": "跨域请求优惠券数据，获取最新优惠信息。",
         "grant": "GM_xmlhttpRequest"
       },
       {
-        "explanation": "下载文件，可能用于保存优惠券或相关数据。",
+        "explanation": "下载文件，可能用于保存优惠券或相关资源。",
         "grant": "GM_download"
       },
       {
-        "explanation": "复制内容到剪贴板，方便用户使用优惠码。",
+        "explanation": "复制内容到剪贴板，方便分享优惠券代码。",
         "grant": "GM_setClipboard"
       }
     ],
@@ -188,14 +199,14 @@
       "优惠券自动查询",
       "省钱",
       "电商平台",
-      "跨平台支持",
+      "购物优惠",
       "自动化工具"
     ],
     "usage": [
       "安装脚本后，访问支持的购物网站。",
-      "在商品页面，脚本自动搜索并显示可用优惠券。",
-      "点击优惠券链接即可查看或复制优惠码。",
-      "根据提示使用优惠券，享受折扣省钱。"
+      "浏览商品时，脚本自动搜索并显示可用优惠券。",
+      "点击优惠券链接或复制优惠码进行使用。",
+      "通过菜单命令管理脚本设置和功能。"
     ],
     "zh_name": "在线购物优惠券助手"
   }

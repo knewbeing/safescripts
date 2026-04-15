@@ -22,17 +22,17 @@
   ],
   "metadata_raw": "// @name  YouTube 视频下载助手｜多种清晰度HD/2K/4K🔥｜Video&Audio 📥\n// @name:en  YouTube Video Downloader | HD Quality Options | Video&Audio 📥\n// @name:ja  YouTube動画ダウンローダー｜HD高画質｜ビデオ＆オーディオ 📥\n// @name:es  Descargador de YouTube | Alta Calidad HD | Video y Audio 📥\n// @name:pt  Baixador de YouTube | Qualidade HD | Vídeo e Áudio 📥\n// @namespace  http://tampermonkey.net/\n// @version  1.5.1\n// @description  YouTube视频下载神器，支持1080P/2K高清视频下载，支持字幕下载，支持视频/音频分离下载，支持短视频下载，完全免费无广告\n// @description:en  Download YouTube videos in HD(1080P/2K), subtitles support, video/audio separate download, shorts download, completely free & no ads\n// @description:ja  YouTubeビデオをHD(1080P/2K)でダウンロード、字幕対応、ビデオ/オーディオ分離ダウンロード、ショート動画対応、完全無料＆広告なし\n// @description:es  Descarga videos de YouTube en HD(1080P/2K), soporte de subtítulos, descarga separada de video/audio, descarga de shorts, completamente gratis y sin anuncios\n// @description:pt  Baixe vídeos do YouTube em HD(1080P/2K), suporte a legendas, download separado de vídeo/áudio, download de shorts, totalmente gratuito e sem anúncios\n// @author  YouhouLab\n// @license  MIT\n// @match  *://*.youtube.com/*\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=youtube.com\n// @grant  GM_addStyle\n// @grant  GM_xmlhttpRequest\n// @grant  GM_getValue\n// @grant  GM_setValue\n// @connect  www.ssyoutube.com\n// @run-at  document-start\n// @supportURL  https://saveany.cn\n// @supportURL  https://addyoutube.com\n// @require  https://cdn.jsdelivr.net/npm/sweetalert2@11\n// @compatible  chrome\n// @compatible  firefox\n// @compatible  opera\n// @compatible  edge\n// @compatible  safari\n// @keywords  youtube, download, video, audio, subtitle, shorts, hd, 1080p, 2k, free, no ads, addyoutube, 油管, 视频下载, 字幕下载, 高清视频, 免费下载, 无广告, YouTube下载器, 短视频下载, ユーチューブ, ダウンロード, 動画保存, 字幕, 高画質, 無料, 유튜브, 다운로드, 동영상, 자막, 고화질, 무료\n// @downloadURL  https://update.greasyfork.org/scripts/521434/YouTube%20%E8%A7%86%E9%A2%91%E4%B8%8B%E8%BD%BD%E5%8A%A9%E6%89%8B%EF%BD%9C%E5%A4%9A%E7%A7%8D%E6%B8%85%E6%99%B0%E5%BA%A6HD2K4K%F0%9F%94%A5%EF%BD%9CVideoAudio%20%F0%9F%93%A5.user.js\n// @updateURL  https://update.greasyfork.org/scripts/521434/YouTube%20%E8%A7%86%E9%A2%91%E4%B8%8B%E8%BD%BD%E5%8A%A9%E6%89%8B%EF%BD%9C%E5%A4%9A%E7%A7%8D%E6%B8%85%E6%99%B0%E5%BA%A6HD2K4K%F0%9F%94%A5%EF%BD%9CVideoAudio%20%F0%9F%93%A5.meta.js",
   "sha256": "4050a68d0c0af35e2c6f7465ca173501cc7209a06acca99e5ce75621eed4bf86",
-  "discovered_at": "2026-04-15T19:56:32.935751+00:00",
+  "discovered_at": "2026-04-15T20:08:50.345706+00:00",
   "ai_reason": "",
-  "is_new": true,
-  "install_count": 36722,
+  "is_new": false,
+  "install_count": 36726,
   "good_ratings": 22,
   "bad_ratings": 8,
   "summary": {
     "applicable_sites": [
       "YouTube"
     ],
-    "description": "这款脚本可以帮助用户免费下载YouTube上的高清视频，支持1080P、2K甚至4K清晰度。它还能下载视频字幕，并支持视频和音频分开保存，还能下载短视频（Shorts）。整个过程无广告，使用简单方便。",
+    "description": "这是一款免费的YouTube视频下载助手，支持下载1080P、2K等多种高清画质的视频。它还能下载视频字幕，支持视频和音频分离下载，还能下载YouTube短视频（Shorts）。使用过程中无广告，操作简单方便。",
     "permissions": [
       {
         "explanation": "用于向页面添加自定义样式，使下载按钮美观易用",
@@ -43,11 +43,11 @@
         "grant": "GM_xmlhttpRequest"
       },
       {
-        "explanation": "用于保存用户设置或状态信息",
+        "explanation": "用于存储和读取用户设置或缓存数据",
         "grant": "GM_getValue"
       },
       {
-        "explanation": "用于存储用户设置或状态信息",
+        "explanation": "用于保存用户设置或缓存数据",
         "grant": "GM_setValue"
       }
     ],
@@ -56,14 +56,15 @@
       "YouTube",
       "高清视频",
       "字幕下载",
-      "短视频",
+      "短视频下载",
       "免费无广告"
     ],
     "usage": [
       "安装脚本后打开YouTube网站",
-      "在视频页面会自动显示下载按钮",
-      "点击按钮选择所需清晰度和格式下载",
-      "支持下载字幕和分离音视频文件"
+      "在视频播放页面会自动显示下载按钮",
+      "点击下载按钮选择所需清晰度和格式",
+      "选择是否下载字幕或分离音视频",
+      "等待下载完成即可保存视频"
     ],
     "zh_name": "YouTube视频下载助手"
   }
