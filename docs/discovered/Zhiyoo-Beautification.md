@@ -4,7 +4,7 @@ title: 智友邦论坛美化
 
 # 智友邦论坛美化
 
-`页面美化`  `广告屏蔽`  `宽屏显示`  `论坛优化`  `阅读体验提升`
+
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/Zhiyoo-Beautification.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
@@ -12,16 +12,15 @@ title: 智友邦论坛美化
 
 ## 功能介绍
 
-本脚本用于美化智友邦论坛页面，自动隐藏多余广告和侧边栏内容，优化页面样式，提升阅读体验。它还支持宽屏显示，使帖子内容更宽敞，图片显示更合理。安装后即可自动生效，无需额外操作。
+
 
 ## 适用网站
 
-- 智友邦论坛
+- 通用
 
 ## 使用方法
 
-1. 安装脚本后，访问智友邦论坛页面。
-2. 脚本自动隐藏多余内容并调整页面样式，无需手动操作。
+- 请参阅脚本说明
 
 ## 权限说明
 
