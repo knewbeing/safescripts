@@ -4,6 +4,7 @@ export default defineConfig({
   lang: 'zh-CN',
   title: 'SafeScripts',
   description: 'Tampermonkey 脚本安全发现、分析与管理站点',
+  base: '/safescripts/',
 
   themeConfig: {
     logo: '🛡️',
