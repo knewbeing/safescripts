@@ -38,7 +38,7 @@ title: 百度搜狗谷歌搜索结果重定向优化
 
 **风险等级**：🟡 LOW　　**分析时间**：2026-04-15
 
-> 该脚本主要通过GM_xmlhttpRequest向百度服务器请求真实跳转地址，未发现向第三方服务器发送用户数据的行为。未采集用户隐私信息，也未执行远程代码。权限申请合理，无敏感API滥用，代码无混淆，且无外部依赖。整体风险较低。
+> 该脚本主要通过GM_xmlhttpRequest请求百度服务器获取真实跳转地址，未发现向第三方服务器发送用户数据的行为。未采集用户隐私信息，无远程代码执行风险，权限申请合理，无敏感API滥用，代码清晰无混淆，无外部依赖。整体风险较低。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -49,37 +49,37 @@ title: 百度搜狗谷歌搜索结果重定向优化
 
 **⛔ CRITICAL** — 数据外传  
 > 脚本使用了GM_xmlhttpRequest向www.baidu.com发起GET请求，用于获取重定向的真实地址。请求仅限于@connect声明的www.baidu.com，未发现向第三方服务器发送用户数据的行为。  
-> 位置：resetURL函数内GM_xmlhttpRequest调用处  
+> 位置：resetURL函数中GM_xmlhttpRequest调用  
 > 建议：确认请求内容不包含敏感用户数据，且请求目标可信。
 
 **⛔ CRITICAL** — 隐私采集  
-> 脚本未读取document.cookie、localStorage、sessionStorage，未监听键盘输入事件，也未访问浏览器指纹相关API。  
-> 位置：全局代码  
+> 脚本未读取document.cookie、localStorage、sessionStorage，未监听键盘事件，未访问表单字段值，也未使用浏览器指纹相关API。  
+> 位置：整体代码分析  
 > 建议：无
 
 **🔴 HIGH** — 远程代码执行  
 > 脚本未使用eval、new Function、setTimeout字符串形式执行代码，也未通过@require或动态script标签加载远程JS。  
-> 位置：全局代码  
+> 位置：整体代码分析  
 > 建议：无
 
 **🔴 HIGH** — 权限滥用  
-> 脚本申请了GM_xmlhttpRequest权限，且代码中确实使用了该权限，权限申请与使用匹配，无滥用。  
-> 位置：元数据与代码  
+> 脚本申请了GM_xmlhttpRequest权限，且代码中确实使用了该权限，未发现权限滥用。  
+> 位置：元数据与代码权限使用对比  
 > 建议：无
 
 **🟠 MEDIUM** — 敏感API调用  
 > 未发现使用navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API等敏感API。  
-> 位置：全局代码  
+> 位置：整体代码分析  
 > 建议：无
 
 **🟠 MEDIUM** — 代码混淆  
-> 代码结构清晰，无明显混淆、base64解码或字符串拼接执行特征。  
-> 位置：全局代码  
+> 代码未见明显混淆，未使用base64解码执行或字符串拼接执行代码。  
+> 位置：整体代码分析  
 > 建议：无
 
 **🟡 LOW** — 外部依赖  
-> 未使用@require加载外部依赖，所有功能均为内嵌代码。  
-> 位置：元数据  
+> @require未使用，脚本无外部依赖。  
+> 位置：元数据与代码分析  
 > 建议：无
 
 ---

@@ -7,10 +7,10 @@
   "issues": [
     {
       "description": "Script requests GM_xmlhttpRequest permission but does not use it in the code, indicating unnecessary high privilege grant.",
-      "location": "@grant directives and script code",
-      "recommendation": "Remove unused GM_xmlhttpRequest grant to minimize permission scope.",
+      "location": "@grant directives",
+      "recommendation": "Remove unused GM_xmlhttpRequest grant to minimize permissions.",
       "severity": "HIGH",
-      "type": "Permission Abuse"
+      "type": "Permissions Misuse"
     }
   ],
   "privacy_collection": {
@@ -19,7 +19,7 @@
   },
   "risk_level": "LOW",
   "script_name": "Export ChatGPT/Gemini/Grok conversations as Markdown",
-  "summary": "The script is designed to export chat histories from specified websites to Markdown format. It does not perform any network requests or data exfiltration, nor does it collect user privacy data such as cookies, storage, or input events. It does not execute remote code or load external scripts dynamically. The only notable issue is the presence of unused high-level permissions (GM_xmlhttpRequest) which should be removed to reduce risk. Overall, the script is low risk and safe to use.",
-  "analyzed_at": "2026-04-15T20:33:13.541500+00:00",
+  "summary": "The script exports chat history from specified websites to Markdown format without transmitting data externally or collecting sensitive user information. It does not perform remote code execution or use sensitive APIs. However, it requests GM_xmlhttpRequest permission which is not used, suggesting permission over-privilege. Overall, the script is low risk but can improve by removing unused permissions.",
+  "analyzed_at": "2026-04-15T20:41:28.876353+00:00",
   "slug": "Export_ChatGPTGeminiGrok_conversations_as_Markdown"
 }

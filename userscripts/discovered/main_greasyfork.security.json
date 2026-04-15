@@ -6,55 +6,32 @@
   },
   "issues": [
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限和 @connect www.iflyrec.com，但代码中未发现任何网络请求行为，存在权限滥用风险。",
+      "description": "脚本申请了 GM_xmlhttpRequest 权限，但代码中未发现任何网络请求调用，存在权限滥用风险。",
       "location": "元数据和主脚本",
-      "recommendation": "移除未使用的 GM_xmlhttpRequest 权限和无用的 @connect 域名，减少权限暴露。",
+      "recommendation": "移除未使用的 GM_xmlhttpRequest 权限申请，减少权限暴露。",
       "severity": "HIGH",
       "type": "权限滥用"
     },
     {
-      "description": "脚本未读取 document.cookie、localStorage、sessionStorage，也未监听键盘输入事件，未访问浏览器指纹相关 API，隐私采集行为未发现。",
-      "location": "主脚本",
-      "recommendation": "无",
-      "severity": "CRITICAL",
-      "type": "隐私采集"
-    },
-    {
-      "description": "脚本未使用 eval、new Function、setTimeout(string)、innerHTML 执行远程代码，也未通过 @require 或动态 script 标签加载远程 JS（@require 指向可信 GreasyFork），无远程代码执行风险。",
-      "location": "主脚本及元数据",
-      "recommendation": "无",
-      "severity": "HIGH",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "脚本未调用敏感 API 如 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等。",
-      "location": "主脚本",
-      "recommendation": "无",
-      "severity": "MEDIUM",
-      "type": "敏感 API 调用"
-    },
-    {
-      "description": "代码结构清晰，无明显混淆、base64 解码执行或字符串拼接执行特征。",
-      "location": "主脚本",
-      "recommendation": "无",
-      "severity": "MEDIUM",
-      "type": "代码混淆"
-    },
-    {
-      "description": "@require 加载的第三方库来源于 GreasyFork，可信且版本固定。",
+      "description": "脚本元数据中声明了 @connect www.iflyrec.com，但代码中未发现任何向该域名发起请求的行为，存在权限滥用风险。",
       "location": "元数据",
-      "recommendation": "无",
-      "severity": "LOW",
-      "type": "外部依赖"
+      "recommendation": "确认是否需要访问该域名，若无必要应移除 @connect 声明。",
+      "severity": "HIGH",
+      "type": "权限滥用"
     }
   ],
   "privacy_collection": {
-    "details": [],
+    "details": [
+      "未发现读取 document.cookie、localStorage、sessionStorage 的代码。",
+      "未监听键盘输入事件（keydown/keyup/input）。",
+      "未读取表单字段值。",
+      "未访问浏览器指纹相关 API。"
+    ],
     "detected": false
   },
   "risk_level": "LOW",
   "script_name": "GitHub 中文化插件",
-  "summary": "该脚本主要用于翻译 GitHub 界面文本，无数据外传和隐私采集行为。存在未使用的 GM_xmlhttpRequest 权限和 @connect 域名，建议移除以降低权限风险。整体代码无远程代码执行和敏感 API 调用风险，外部依赖可信，风险等级为低。",
-  "analyzed_at": "2026-04-15T20:35:49.555670+00:00",
+  "summary": "该脚本主要用于翻译 GitHub 页面内容，无网络请求行为，不采集用户隐私数据。存在权限滥用问题，申请了未使用的 GM_xmlhttpRequest 权限及无实际请求的 @connect 域名声明。代码未发现远程代码执行、敏感 API 调用及明显混淆。@require 来源为 GreasyFork，可信且固定版本。总体风险较低，但建议清理无用权限。",
+  "analyzed_at": "2026-04-15T20:43:07.116223+00:00",
   "slug": "main_greasyfork"
 }

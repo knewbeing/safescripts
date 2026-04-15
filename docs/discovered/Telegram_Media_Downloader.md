@@ -35,49 +35,49 @@ title: Telegram受限图片视频下载器
 
 **风险等级**：🟡 LOW　　**分析时间**：2026-04-15
 
-> The script is designed to download media from Telegram webapp private channels by fetching media content directly from Telegram's own domains. It does not collect or transmit user data to third parties, nor does it use privacy-invasive APIs or remote code execution techniques. No permission over-privilege or suspicious external dependencies are present. Overall, the script poses a low security risk.
+> 该脚本主要功能为在 Telegram Web 应用中下载受限的媒体文件。经审查，脚本未发现任何数据外传、隐私采集或远程代码执行行为，且无权限滥用和敏感API调用。代码未混淆且无外部依赖，整体安全性较高。建议继续保持最小权限原则，避免引入不必要的外部依赖。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：web.telegram.org, webk.telegram.org, webz.telegram.org） |
+| 数据外传 | ✅ 未检测到 |
 | 隐私采集 | ✅ 未检测到 |
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data External Transmission  
-> Script performs fetch requests to Telegram's own domains to download media content. No evidence of data being sent to third-party servers or user data leakage.  
-> 位置：Function tel_download_video, fetch calls  
-> 建议：Ensure fetch requests are only made to trusted Telegram domains and do not include sensitive user data in requests.
+**⛔ CRITICAL** — 数据外传  
+> 脚本未检测到任何网络请求向第三方服务器发送数据，也未发现用户数据被上传或上报。  
+> 位置：全脚本  
+> 建议：继续保持不向第三方服务器发送用户数据，确保用户隐私安全。
 
-**⛔ CRITICAL** — Privacy Collection  
-> Script reads no cookies, localStorage, or sessionStorage. No event listeners for keyboard input or form data reading detected. No suspicious fingerprinting API usage found.  
-> 位置：Global script scope and event listeners  
-> 建议：No action needed as no privacy invasive data collection detected.
+**⛔ CRITICAL** — 隐私采集  
+> 脚本未读取 document.cookie、localStorage、sessionStorage，也未监听键盘输入事件，也未访问浏览器指纹相关API。  
+> 位置：全脚本  
+> 建议：无隐私采集行为，符合隐私保护要求。
 
-**🔴 HIGH** — Remote Code Execution  
-> No usage of eval(), new Function(), setTimeout(string), or innerHTML with untrusted content detected. No dynamic script injection or @require of remote scripts found.  
-> 位置：Entire script  
-> 建议：Maintain current practice of avoiding remote code execution vectors.
+**🔴 HIGH** — 远程代码执行  
+> 脚本未使用 eval、new Function、setTimeout(string) 等远程代码执行相关API，也未通过 @require 或动态 script 标签加载远程JS。  
+> 位置：全脚本  
+> 建议：避免使用动态代码执行，防止远程代码注入风险。
 
-**🔴 HIGH** — Permission Abuse  
-> No @grant directives found in metadata, so no permission over-privilege detected.  
-> 位置：Metadata block  
-> 建议：No action needed.
+**🔴 HIGH** — 权限滥用  
+> 脚本未声明 @grant 权限，且代码中未使用任何 GM_* API，权限申请与实际使用一致，无权限滥用。  
+> 位置：元数据与代码  
+> 建议：保持权限最小化原则，避免申请未使用的高权限。
 
-**🟠 MEDIUM** — Sensitive API Usage  
-> No usage of sensitive APIs such as navigator.geolocation, RTCPeerConnection, MediaDevices, or Clipboard API detected.  
-> 位置：Entire script  
-> 建议：No action needed.
+**🟠 MEDIUM** — 敏感 API 调用  
+> 脚本未调用 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等敏感API。  
+> 位置：全脚本  
+> 建议：无敏感API调用，降低潜在风险。
 
-**🟠 MEDIUM** — Code Obfuscation  
-> No evidence of code obfuscation, base64 decoding, or suspicious string concatenation for code execution found.  
-> 位置：Entire script  
-> 建议：No action needed.
+**🟠 MEDIUM** — 代码混淆  
+> 脚本代码结构清晰，无明显混淆、base64解码或字符串拼接执行特征。  
+> 位置：全脚本  
+> 建议：保持代码可读性，避免混淆带来的安全隐患。
 
-**🟡 LOW** — External Dependencies  
-> No external @require dependencies found in metadata, all code is self-contained. URLs used for update and download are from greasyfork.org, a known script repository.  
-> 位置：Metadata block  
-> 建议：Ensure update URLs are from trusted sources and monitor for supply chain risks.
+**🟡 LOW** — 外部依赖  
+> 脚本未使用 @require 加载任何外部依赖，所有代码均为本地实现。  
+> 位置：元数据  
+> 建议：如需引入外部库，建议使用可信CDN并固定版本。
 
 ---
 

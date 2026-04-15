@@ -4,7 +4,7 @@ title: GitHub 中文化插件
 
 # GitHub 中文化插件
 
-`中文化`  `GitHub`  `界面翻译`  `用户脚本`  `实时翻译`  `开发辅助`
+`中文翻译`  `GitHub`  `界面优化`  `用户脚本`  `实时翻译`  `开发者工具`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/main_greasyfork.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
@@ -12,38 +12,38 @@ title: GitHub 中文化插件
 
 ## 功能介绍
 
-本脚本将 GitHub 网站的部分菜单和内容翻译成中文，提升中文用户的使用体验。它会自动检测页面变化并实时替换界面文本。支持 GitHub 主站、技能页面、Gist 以及状态页。
+本脚本将GitHub网站的部分菜单和内容翻译成中文，提升中文用户的使用体验。它自动检测页面变化并实时替换英文文本为中文。支持GitHub主站、Gist及相关子站点。
 
 ## 适用网站
 
-- GitHub
-- GitHub Skills
+- GitHub主站
+- GitHub技能页面
 - GitHub Gist
-- GitHub 状态页
+- GitHub状态页
 
 ## 使用方法
 
-1. 安装 Tampermonkey 或其他支持的用户脚本管理器。
-2. 在脚本市场或源码页面安装本脚本。
-3. 访问 GitHub 及相关页面时，界面会自动显示中文翻译。
-4. 可通过脚本菜单进行相关设置和更新操作。
+1. 安装Tampermonkey或其他支持UserScript的扩展。
+2. 导入并启用本脚本。
+3. 访问GitHub及相关页面时，界面自动显示中文。
+4. 如需调整设置，可通过脚本菜单进行操作。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `GM_xmlhttpRequest` | 用于发送跨域请求获取翻译数据或更新内容。 |
-| `GM_getValue` | 用于读取脚本的本地存储设置。 |
-| `GM_setValue` | 用于保存脚本的本地存储设置。 |
-| `GM_registerMenuCommand` | 用于在脚本菜单中注册自定义命令，方便用户操作。 |
-| `GM_unregisterMenuCommand` | 用于注销已注册的菜单命令。 |
-| `GM_notification` | 用于显示桌面通知提醒用户。 |
+| `GM_xmlhttpRequest` | 允许脚本发送跨域网络请求以获取翻译数据。 |
+| `GM_getValue` | 允许脚本读取本地存储的设置和数据。 |
+| `GM_setValue` | 允许脚本保存设置和数据到本地存储。 |
+| `GM_registerMenuCommand` | 允许脚本在菜单中注册自定义命令，方便用户操作。 |
+| `GM_unregisterMenuCommand` | 允许脚本注销之前注册的菜单命令。 |
+| `GM_notification` | 允许脚本发送桌面通知提醒用户。 |
 
 ## 安全分析
 
 **风险等级**：🟡 LOW　　**分析时间**：2026-04-15
 
-> 该脚本主要用于翻译 GitHub 界面文本，无数据外传和隐私采集行为。存在未使用的 GM_xmlhttpRequest 权限和 @connect 域名，建议移除以降低权限风险。整体代码无远程代码执行和敏感 API 调用风险，外部依赖可信，风险等级为低。
+> 该脚本主要用于翻译 GitHub 页面内容，无网络请求行为，不采集用户隐私数据。存在权限滥用问题，申请了未使用的 GM_xmlhttpRequest 权限及无实际请求的 @connect 域名声明。代码未发现远程代码执行、敏感 API 调用及明显混淆。@require 来源为 GreasyFork，可信且固定版本。总体风险较低，但建议清理无用权限。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -52,35 +52,15 @@ title: GitHub 中文化插件
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 隐私采集  
-> 脚本未读取 document.cookie、localStorage、sessionStorage，也未监听键盘输入事件，未访问浏览器指纹相关 API，隐私采集行为未发现。  
-> 位置：主脚本  
-> 建议：无
+**🔴 HIGH** — 权限滥用  
+> 脚本申请了 GM_xmlhttpRequest 权限，但代码中未发现任何网络请求调用，存在权限滥用风险。  
+> 位置：元数据和主脚本  
+> 建议：移除未使用的 GM_xmlhttpRequest 权限申请，减少权限暴露。
 
 **🔴 HIGH** — 权限滥用  
-> 脚本申请了 GM_xmlhttpRequest 权限和 @connect www.iflyrec.com，但代码中未发现任何网络请求行为，存在权限滥用风险。  
-> 位置：元数据和主脚本  
-> 建议：移除未使用的 GM_xmlhttpRequest 权限和无用的 @connect 域名，减少权限暴露。
-
-**🔴 HIGH** — 远程代码执行  
-> 脚本未使用 eval、new Function、setTimeout(string)、innerHTML 执行远程代码，也未通过 @require 或动态 script 标签加载远程 JS（@require 指向可信 GreasyFork），无远程代码执行风险。  
-> 位置：主脚本及元数据  
-> 建议：无
-
-**🟠 MEDIUM** — 敏感 API 调用  
-> 脚本未调用敏感 API 如 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等。  
-> 位置：主脚本  
-> 建议：无
-
-**🟠 MEDIUM** — 代码混淆  
-> 代码结构清晰，无明显混淆、base64 解码执行或字符串拼接执行特征。  
-> 位置：主脚本  
-> 建议：无
-
-**🟡 LOW** — 外部依赖  
-> @require 加载的第三方库来源于 GreasyFork，可信且版本固定。  
+> 脚本元数据中声明了 @connect www.iflyrec.com，但代码中未发现任何向该域名发起请求的行为，存在权限滥用风险。  
 > 位置：元数据  
-> 建议：无
+> 建议：确认是否需要访问该域名，若无必要应移除 @connect 声明。
 
 ---
 

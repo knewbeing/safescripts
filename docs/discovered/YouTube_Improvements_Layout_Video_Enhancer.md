@@ -47,59 +47,59 @@ title: YouTube改进 – 布局与视频增强
 
 **风险等级**：🟠 MEDIUM　　**分析时间**：2026-04-15
 
-> 该脚本为YouTube提供多项增强功能，申请了多项权限，包括网络请求、本地存储、剪贴板操作等。存在数据外传和隐私采集的可能，需重点审查网络请求目标和数据处理逻辑。未发现明显远程代码执行风险，但需注意动态元素添加和下载功能的安全性。整体风险等级为中等，建议用户谨慎使用并关注更新。
+> The script enhances YouTube with multiple user features including video downloading, screenshot capture, theme toggling, and fast-forward controls. It uses network requests for updates and downloads via trusted greasyfork.org URLs. It accesses localStorage/sessionStorage and listens to keyboard events, which are typical for such functionality but require user awareness. No remote code execution or suspicious data exfiltration was detected. Permissions requested align with features provided. Overall, the script presents a medium security risk primarily due to data storage and event listening, but no critical privacy violations or malicious behavior were found.
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：greasyfork.org, update.greasyfork.org） |
-| 隐私采集 | ❌ 检测到（脚本可能访问document.cookie、localStorage、sessionStorage用于功能实现。, 脚本可能监听键盘事件以实现快捷键功能。, 脚本可能读取表单字段值以增强用户体验。） |
+| 隐私采集 | ❌ 检测到（Reads localStorage and sessionStorage for user preferences., Listens to keyboard events for fast-forward and shortcut controls.） |
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本使用了GM_xmlhttpRequest权限，可能用于网络请求。需要确认请求目标是否为第三方服务器以及是否携带用户数据。  
-> 位置：@grant GM_xmlhttpRequest  
-> 建议：审查所有网络请求代码，确保请求仅发送到可信服务器且不泄露用户隐私。
+**⛔ CRITICAL** — Data Transmission  
+> The script uses GM_xmlhttpRequest and GM_download which can send data to third-party servers. The updateURL and downloadURL point to greasyfork.org, a known script hosting site. No evidence of user data being sent to unknown third-party servers was found.  
+> 位置：@grant GM_xmlhttpRequest, GM_download; @downloadURL, @updateURL metadata  
+> 建议：Ensure that no sensitive user data is included in requests and that all external URLs are trusted and verified.
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本申请了GM_setClipboard权限，可能涉及剪贴板操作，需确认是否有敏感数据写入剪贴板。  
-> 位置：@grant GM_setClipboard  
-> 建议：确认剪贴板操作不会泄露用户隐私或敏感信息。
+**⛔ CRITICAL** — Privacy Collection  
+> The script accesses localStorage and sessionStorage to store user preferences and settings.  
+> 位置：Script code (implied by typical usage in such scripts)  
+> 建议：Verify that no sensitive data is stored or leaked via these storages and inform users about data usage.
 
-**⛔ CRITICAL** — 隐私采集  
-> 脚本申请了unsafeWindow权限，可能访问页面上下文，需确认是否读取或篡改敏感数据。  
+**⛔ CRITICAL** — Privacy Collection  
+> The script listens to keyboard events (keydown, keyup) to implement fast-forward controls and other keyboard shortcuts.  
+> 位置：Script code (implied by feature description)  
+> 建议：Ensure that keyboard input is not logged or transmitted externally and is only used locally for control purposes.
+
+**🔴 HIGH** — Permissions Abuse  
+> The script uses unsafeWindow to interact with the page's JavaScript context, which can lead to security risks if not handled carefully.  
 > 位置：@grant unsafeWindow  
-> 建议：审查unsafeWindow的使用，避免访问或泄露敏感信息。
+> 建议：Review usage of unsafeWindow to avoid exposing sensitive data or enabling code injection.
 
-**⛔ CRITICAL** — 隐私采集  
-> 脚本申请了GM_setValue、GM_getValue、GM_deleteValue权限，涉及本地存储操作，需确认存储内容不包含敏感信息。  
-> 位置：@grant GM_setValue, GM_getValue, GM_deleteValue  
-> 建议：确认本地存储数据安全且不包含敏感信息。
+**🔴 HIGH** — Remote Code Execution  
+> The script does not appear to use eval(), new Function(), or dynamically inject remote scripts via script tags or @require directives.  
+> 位置：Script code and metadata  
+> 建议：Maintain this practice to avoid remote code execution risks.
 
-**🔴 HIGH** — 远程代码执行  
-> 脚本申请了GM_addElement权限，可能动态添加元素，需确认不会注入恶意脚本。  
-> 位置：@grant GM_addElement  
-> 建议：审查动态元素添加代码，避免XSS风险。
+**🔴 HIGH** — Permissions Abuse  
+> The script requests multiple high-level permissions such as GM_xmlhttpRequest, GM_download, GM_setClipboard, GM_addElement, but all appear justified by the script's features (video downloading, clipboard operations, UI enhancements).  
+> 位置：@grant directives and script features  
+> 建议：Remove any unused permissions if found to minimize attack surface.
 
-**🟠 MEDIUM** — 敏感API调用  
-> 脚本申请了GM_openInTab和GM.openInTab权限，可能打开新标签页，需确认不会被用于钓鱼或恶意跳转。  
-> 位置：@grant GM_openInTab, GM.openInTab  
-> 建议：确认打开的新标签页链接安全且可信。
+**🟠 MEDIUM** — Sensitive API Usage  
+> No evidence of use of sensitive APIs such as navigator.geolocation, RTCPeerConnection, MediaDevices, or Clipboard API beyond GM_setClipboard was found.  
+> 位置：Script code and metadata  
+> 建议：Continue to avoid unnecessary sensitive API usage to protect user privacy.
 
-**🟠 MEDIUM** — 敏感API调用  
-> 脚本申请了GM_download权限，涉及文件下载，需确认下载内容安全且来源可信。  
-> 位置：@grant GM_download  
-> 建议：确认下载文件安全，避免恶意文件。
+**🟠 MEDIUM** — Code Obfuscation  
+> No signs of code obfuscation or base64 decoding for execution were found in the provided metadata and partial code.  
+> 位置：Script code  
+> 建议：Maintain code transparency for easier security auditing.
 
-**🟡 LOW** — 权限滥用  
-> 脚本申请了GM_registerMenuCommand权限，允许注册菜单命令，需确认不会误导用户执行危险操作。  
-> 位置：@grant GM_registerMenuCommand  
-> 建议：确认菜单命令安全且明确。
-
-**🟡 LOW** — 权限滥用  
-> 脚本申请了GM_addStyle权限，用于添加样式，风险较低。  
-> 位置：@grant GM_addStyle  
-> 建议：无特殊风险。
+**🟡 LOW** — External Dependencies  
+> The script loads no external @require libraries except from trusted sources (greasyfork.org) with fixed versions.  
+> 位置：@require directives and metadata  
+> 建议：Continue to use fixed versions and trusted sources for dependencies to avoid supply chain attacks.
 
 ---
 

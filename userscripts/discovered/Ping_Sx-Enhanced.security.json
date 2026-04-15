@@ -6,49 +6,49 @@
   },
   "issues": [
     {
-      "description": "脚本中未发现任何网络请求行为，未向第三方服务器发送数据。",
-      "location": "整体代码",
-      "recommendation": "无需修改，保持无外传行为。",
+      "description": "脚本中未发现任何网络请求行为，未使用 GM_xmlhttpRequest、fetch、XMLHttpRequest 或 navigator.sendBeacon 等接口。",
+      "location": "全脚本",
+      "recommendation": "确认无外传行为，保持当前实现。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本未读取 document.cookie、localStorage、sessionStorage，未监听键盘输入事件，也未访问浏览器指纹相关 API。",
-      "location": "整体代码",
-      "recommendation": "无需修改，保持隐私安全。",
+      "description": "脚本未读取 document.cookie、localStorage、sessionStorage，也未监听键盘输入事件，未访问浏览器指纹相关 API。",
+      "location": "全脚本",
+      "recommendation": "无隐私采集行为，符合隐私保护要求。",
       "severity": "CRITICAL",
       "type": "隐私采集"
     },
     {
-      "description": "脚本未使用 eval、new Function、setTimeout(string)、innerHTML 执行远程代码，也未通过 @require 或动态 script 标签加载远程 JS。",
-      "location": "整体代码",
-      "recommendation": "无远程代码执行风险，保持当前实现。",
+      "description": "脚本未使用 eval、new Function、setTimeout(string) 等远程代码执行相关危险函数，也未通过 @require 或动态 script 标签加载远程 JS。",
+      "location": "全脚本",
+      "recommendation": "保持当前安全的代码执行方式。",
       "severity": "HIGH",
       "type": "远程代码执行"
     },
     {
-      "description": "@grant 权限申请与实际代码使用基本匹配，未发现未使用的高权限申请。",
+      "description": "脚本申请了 GM_setClipboard、GM_registerMenuCommand、GM_unregisterMenuCommand、GM_getValue、GM_setValue、window.onurlchange 权限，实际代码中均有使用，权限申请合理。",
       "location": "元数据与代码",
-      "recommendation": "保持权限申请与实际需求一致，避免多余权限。",
+      "recommendation": "权限申请与使用匹配，无滥用。",
       "severity": "HIGH",
       "type": "权限滥用"
     },
     {
-      "description": "脚本未调用敏感 API，如 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API（除 GM_setClipboard 外）等。",
-      "location": "整体代码",
-      "recommendation": "无敏感 API 滥用风险。",
+      "description": "脚本未调用 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API（除 GM_setClipboard 外）等敏感 API。",
+      "location": "全脚本",
+      "recommendation": "无敏感 API 调用风险。",
       "severity": "MEDIUM",
       "type": "敏感 API 调用"
     },
     {
-      "description": "代码结构清晰，无明显混淆、base64 解码或字符串拼接执行代码。",
-      "location": "整体代码",
+      "description": "脚本代码结构清晰，无明显混淆、base64 解码执行或字符串拼接执行特征。",
+      "location": "全脚本",
       "recommendation": "保持代码清晰，便于安全审计。",
       "severity": "MEDIUM",
       "type": "代码混淆"
     },
     {
-      "description": "无 @require 加载外部依赖，所有代码均为本地实现。",
+      "description": "脚本未通过 @require 加载任何外部依赖库。",
       "location": "元数据",
       "recommendation": "无外部依赖风险。",
       "severity": "LOW",
@@ -61,7 +61,7 @@
   },
   "risk_level": "SAFE",
   "script_name": "Ping.Sx enhancement",
-  "summary": "该脚本主要功能为页面内复制 IP 地址、清理链接和快捷回到顶部，未涉及任何网络请求或用户隐私数据采集，代码无远程执行风险，权限申请合理，整体安全性高。",
-  "analyzed_at": "2026-04-15T20:33:45.941033+00:00",
+  "summary": "该脚本功能为增强 Ping.Sx 网站的用户体验，主要实现复制 IP、清理链接和快捷回到顶部功能。代码中无任何网络请求或数据外传行为，也未采集用户隐私信息。未使用远程代码执行相关危险函数，权限申请合理且均有使用。无敏感 API 调用和代码混淆，且无外部依赖。整体安全性高，风险等级为 SAFE。",
+  "analyzed_at": "2026-04-15T20:42:00.769906+00:00",
   "slug": "Ping_Sx-Enhanced"
 }

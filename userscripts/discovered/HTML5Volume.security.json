@@ -13,21 +13,21 @@
       "type": "数据外传"
     },
     {
-      "description": "脚本未读取 document.cookie、localStorage（除非用于存储音量设置）、sessionStorage，也未监听键盘输入事件，未访问浏览器指纹相关API。",
+      "description": "脚本未读取 document.cookie、localStorage（除存储音量设置外）、sessionStorage，也未监听键盘输入事件，未访问浏览器指纹相关API。",
       "location": "全脚本",
       "recommendation": "无",
       "severity": "CRITICAL",
       "type": "隐私采集"
     },
     {
-      "description": "脚本未使用 eval、new Function、setTimeout(string)、innerHTML 执行远程内容，也未通过 @require 或动态 script 标签加载远程 JS。",
+      "description": "脚本未使用 eval、new Function、setTimeout(string)、innerHTML 执行远程代码，也未通过 @require 或动态 script 标签加载远程 JS。",
       "location": "全脚本",
       "recommendation": "无",
       "severity": "HIGH",
       "type": "远程代码执行"
     },
     {
-      "description": "脚本申请的 @grant 权限均被合理使用，无权限滥用现象。",
+      "description": "脚本申请了 GM_registerMenuCommand、GM_unregisterMenuCommand、GM_openInTab、GM_getValue、GM_setValue、GM_notification 权限，且均有实际使用，未发现权限滥用。",
       "location": "元数据与代码",
       "recommendation": "无",
       "severity": "HIGH",
@@ -41,14 +41,14 @@
       "type": "敏感 API 调用"
     },
     {
-      "description": "脚本代码未发现明显混淆、base64 解码执行或字符串拼接执行特征。",
+      "description": "脚本代码清晰无混淆，未发现 base64 解码执行、字符串拼接执行或混淆器特征。",
       "location": "全脚本",
       "recommendation": "无",
       "severity": "MEDIUM",
       "type": "代码混淆"
     },
     {
-      "description": "脚本未通过 @require 加载任何外部依赖库。",
+      "description": "脚本无 @require 加载外部依赖，所有代码均为本地实现，无供应链风险。",
       "location": "元数据",
       "recommendation": "无",
       "severity": "LOW",
@@ -57,13 +57,14 @@
   ],
   "privacy_collection": {
     "details": [
-      "使用 localStorage 存储当前音量值，仅用于功能实现，不涉及敏感隐私数据"
+      "使用 localStorage 存储当前音量值（html5_xiu_currentVolume）",
+      "使用 GM_getValue 和 GM_setValue 存储和读取音量设置和强制列表"
     ],
     "detected": true
   },
   "risk_level": "LOW",
   "script_name": "HTML5 Video Audio Default Volume",
-  "summary": "该脚本主要功能为调整 HTML5 视频音频默认音量，支持为不同网站分别记忆音量设置。代码中未发现任何数据外传、隐私敏感信息采集、远程代码执行风险，且权限申请合理。仅使用 localStorage 存储音量值，属于正常功能需求。整体安全风险较低，适合使用。",
-  "analyzed_at": "2026-04-15T20:33:20.398540+00:00",
+  "summary": "该脚本主要功能为调整 HTML5 视频音频默认音量并记忆各网站音量设置。未发现任何数据外传、远程代码执行或权限滥用风险。脚本会使用 localStorage 和 GM_getValue/GM_setValue 存储音量相关设置，属于正常功能需求。整体代码清晰，无混淆，且无外部依赖。综合评估风险等级为低。",
+  "analyzed_at": "2026-04-15T20:41:35.675934+00:00",
   "slug": "HTML5Volume"
 }

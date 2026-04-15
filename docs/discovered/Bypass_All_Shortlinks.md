@@ -40,51 +40,51 @@ title: 旁路全部短链接
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**分析时间**：2026-04-15
+**风险等级**：🟡 LOW　　**分析时间**：2026-04-15
 
-> The script requests multiple permissions and uses GM_xmlhttpRequest indicating network communication with third-party servers, which poses a critical data transmission risk. No explicit privacy-invasive behaviors like cookie or storage reading or keyboard event listening were detected. No remote code execution or dynamic script injection was found. Permissions requested appear consistent with functionality. External dependencies are from trusted sources with fixed versions. Overall, the script has a medium risk level primarily due to potential data transmission.
+> 该脚本主要功能为绕过短链接和广告，自动跳过烦人的链接缩短器和广告，自动下载文件和视频。脚本使用了GM_xmlhttpRequest和@require加载远程脚本，存在数据外传行为，但请求目标为可信的更新服务器和图标托管服务器，未发现上传用户敏感数据。未发现隐私采集、远程代码执行风险和权限滥用。整体风险等级为低。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：third-party domains potentially contacted via GM_xmlhttpRequest） |
+| 数据外传 | ❌ 检测到（目标：https://update.greasyfork.org, https://i.ibb.co） |
 | 隐私采集 | ✅ 未检测到 |
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Transmission  
-> The script uses GM_xmlhttpRequest to perform network requests which may send user data to third-party servers. The exact endpoints and data sent are not fully visible in the provided snippet, but the presence of GM_xmlhttpRequest indicates potential data transmission.  
-> 位置：Script code using GM_xmlhttpRequest  
-> 建议：Review all network requests to ensure no sensitive user data is sent to untrusted third-party servers. Limit requests to trusted domains only.
+**⛔ CRITICAL** — 数据外传  
+> 脚本使用了GM_xmlhttpRequest进行网络请求，且@require加载了远程脚本，存在数据外传风险。请求目标主要为GreasyFork更新服务器和图标托管服务器，未发现明显的用户敏感数据上传。  
+> 位置：GM_xmlhttpRequest调用及@require远程脚本加载  
+> 建议：确认远程脚本来源可信，避免上传用户敏感数据。
 
-**⛔ CRITICAL** — Privacy Collection  
-> The script reads and manipulates document content to bypass shortlinks and ads, but no explicit reading of document.cookie, localStorage, or sessionStorage was found in the visible code. No event listeners for keyboard input were detected in the snippet.  
-> 位置：Script main code  
-> 建议：Verify that no hidden or obfuscated code reads cookies, storage, or listens to keyboard events to protect user privacy.
+**⛔ CRITICAL** — 隐私采集  
+> 脚本未发现读取document.cookie、localStorage、sessionStorage，未监听键盘事件，未读取表单字段，未访问浏览器指纹相关API。  
+> 位置：代码整体  
+> 建议：无
 
-**🔴 HIGH** — Remote Code Execution  
-> The script does not use eval(), new Function(), or setTimeout with string arguments in the visible code. No dynamic script injection or remote code loading besides the @require from a known GreasyFork URL was detected.  
-> 位置：Script main code and metadata  
-> 建议：Avoid dynamic code execution and loading scripts from untrusted sources to prevent remote code execution risks.
+**🔴 HIGH** — 远程代码执行  
+> 未发现eval、new Function、setTimeout字符串执行、innerHTML执行远程内容，@require加载的远程脚本为可信GreasyFork更新地址。  
+> 位置：代码整体  
+> 建议：无
 
-**🔴 HIGH** — Permission Abuse  
-> The script requests multiple @grant permissions including GM_xmlhttpRequest, GM_setClipboard, GM_openInTab, GM_registerMenuCommand, GM_setValue, GM_getValue, GM_addStyle, and window.onurlchange. The usage of these permissions appears consistent with the script's functionality to bypass shortlinks, open tabs, and manage settings.  
-> 位置：Script metadata and code  
-> 建议：Ensure all granted permissions are necessary and used appropriately to minimize permission abuse.
+**🔴 HIGH** — 权限滥用  
+> 脚本申请了多个GM_*权限，均在代码中有合理使用，未发现权限滥用。  
+> 位置：元数据@grant声明与代码使用  
+> 建议：无
 
-**🟠 MEDIUM** — Sensitive API Call  
-> No usage of sensitive APIs like navigator.geolocation, RTCPeerConnection, MediaDevices, or Clipboard API (except GM_setClipboard which is a granted permission) was detected in the visible code.  
-> 位置：Script main code  
-> 建议：Monitor usage of sensitive APIs to prevent privacy leaks.
+**🟠 MEDIUM** — 敏感API调用  
+> 未发现使用navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API等敏感API。  
+> 位置：代码整体  
+> 建议：无
 
-**🟠 MEDIUM** — Code Obfuscation  
-> No obvious code obfuscation, base64 decoding, or string concatenation for code execution was found in the visible code.  
-> 位置：Script main code  
-> 建议：Maintain code transparency to facilitate security reviews.
+**🟠 MEDIUM** — 代码混淆  
+> 未发现明显代码混淆、base64解码执行或字符串拼接执行。  
+> 位置：代码整体  
+> 建议：无
 
-**🟡 LOW** — External Dependency  
-> The script @require loads MonkeyConfig Mod.js from a GreasyFork update URL, which is a known and trusted source. The version is fixed by the URL path containing a specific script ID and version number, reducing supply chain risks.  
-> 位置：Script metadata @require  
-> 建议：Continue to use fixed versions from trusted sources for external dependencies.
+**🟡 LOW** — 外部依赖  
+> @require加载的第三方库来源为GreasyFork官方更新地址，版本固定，来源可信。  
+> 位置：@require声明  
+> 建议：无
 
 ---
 

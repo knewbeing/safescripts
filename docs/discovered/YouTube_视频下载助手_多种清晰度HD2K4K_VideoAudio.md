@@ -37,9 +37,9 @@ title: YouTube视频下载助手
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**分析时间**：2026-04-15
+**风险等级**：🔴 HIGH　　**分析时间**：2026-04-15
 
-> The script adds download buttons on YouTube pages that open a new tab to a third-party domain for video downloading. It does not collect user cookies, form data, or use fingerprinting APIs. No remote code execution or code obfuscation detected. The use of GM_xmlhttpRequest permission is not evident in the code snippet, which may indicate permission overreach. Overall, the main risk is data transmission to a third-party domain.
+> 该脚本主要功能为在YouTube页面插入下载按钮，点击后跳转至第三方域名进行视频下载，存在数据外传风险。未发现隐私采集行为。代码未使用远程代码执行相关危险API，但申请了未使用的GM_xmlhttpRequest权限，建议移除。外部依赖安全且版本固定。总体风险等级为高。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -48,15 +48,40 @@ title: YouTube视频下载助手
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Transmission  
-> Script opens a new window/tab to a third-party domain 'saveanyyoutube.com' by replacing 'youtube.com' in the current URL. This constitutes data transmission to a third-party server.  
-> 位置：createDownloadButton function, click event listener  
-> 建议：Ensure the third-party domain is trustworthy and does not collect or misuse user data. Inform users about this behavior in the description or privacy policy.
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过点击事件构造并打开了一个新窗口，URL为当前YouTube视频地址替换域名为第三方域名（saveanyyoutube.com），存在数据外传风险。  
+> 位置：createDownloadButton函数中的downloadButton点击事件处理器  
+> 建议：确认第三方域名的安全性和隐私政策，避免传输敏感用户数据。
 
-**🔴 HIGH** — Permission Misuse  
-> The script uses GM_xmlhttpRequest permission but no evidence of actual network requests in the provided code snippet. Potentially unused or reserved for future use.  
-> 位置：@grant GM_xmlhttpRequest and code  
-> 建议：Verify if GM_xmlhttpRequest is actually used; if not, remove the permission to reduce attack surface.
+**⛔ CRITICAL** — 隐私采集  
+> 脚本未检测到对document.cookie、localStorage、sessionStorage的访问，也未监听键盘输入事件，未读取表单字段值，未访问浏览器指纹相关API。  
+> 位置：全局代码  
+> 建议：无
+
+**🔴 HIGH** — 远程代码执行  
+> 脚本未使用eval、new Function、setTimeout字符串参数或innerHTML执行远程代码，@require的第三方库来源可信且固定版本。  
+> 位置：全局代码及@require声明  
+> 建议：无
+
+**🔴 HIGH** — 权限滥用  
+> 脚本申请了GM_xmlhttpRequest权限，但代码中未发现使用该API的调用，存在权限滥用风险。  
+> 位置：元数据@grant声明与代码实现不符  
+> 建议：移除未使用的GM_xmlhttpRequest权限申请，减少权限暴露。
+
+**🟠 MEDIUM** — 敏感API调用  
+> 脚本未调用navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API等敏感API。  
+> 位置：全局代码  
+> 建议：无
+
+**🟠 MEDIUM** — 代码混淆  
+> 脚本代码结构清晰，无明显混淆、base64解码或字符串拼接执行特征。  
+> 位置：全局代码  
+> 建议：无
+
+**🟡 LOW** — 外部依赖  
+> @require加载的sweetalert2库来自官方CDN jsdelivr，且指定了版本11，来源可信且版本固定。  
+> 位置：元数据@require声明  
+> 建议：无
 
 ---
 

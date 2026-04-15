@@ -94,51 +94,56 @@ title: 在线购物优惠券助手
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**分析时间**：2026-04-15
+**风险等级**：⛔ CRITICAL　　**分析时间**：2026-04-15
 
-> 该脚本申请了大量权限，且存在向第三方服务器 oversea.mimixiaoke.com 和 jtmate.com 发送数据的行为，且声明了推广链接特性，存在较高的数据外传和隐私采集风险。由于未提供完整代码，无法完全排查远程代码执行和隐私采集细节，建议谨慎使用并进一步审查完整代码。
+> 该脚本存在向第三方服务器发送数据的行为，且可能采集用户隐私信息（如 cookie、存储数据、键盘输入等），存在较大安全风险。脚本权限申请较多，需核实实际使用情况。建议开发者明确告知用户数据使用情况，限制数据采集范围，并避免无必要的敏感权限申请和隐私采集行为。
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：oversea.mimixiaoke.com, jtmate.com） |
-| 隐私采集 | ✅ 未检测到 |
+| 隐私采集 | ❌ 检测到（读取 document.cookie, 访问 localStorage 或 sessionStorage, 监听键盘事件） |
 
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本使用了 GM_xmlhttpRequest 进行网络请求，且 @connect 指定了第三方服务器 oversea.mimixiaoke.com 和 jtmate.com，存在向第三方服务器发送数据的风险。  
-> 位置：全局网络请求  
+> 脚本使用了 GM_xmlhttpRequest 进行网络请求，且 @connect 指定了第三方域名 oversea.mimixiaoke.com 和 jtmate.com，存在向第三方服务器发送数据的风险。  
+> 位置：@connect 和代码中 GM_xmlhttpRequest 调用  
 > 建议：确认请求内容是否包含用户敏感数据，若包含则需明确告知用户并限制数据范围，避免隐私泄露。
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本元数据中声明了 @antifeature referral-link，可能存在自动插入推广链接行为，属于用户利益相关的潜在风险。  
-> 位置：元数据 @antifeature  
-> 建议：确认推广链接行为是否透明且用户可控，避免强制推广或隐蔽行为。
+**⛔ CRITICAL** — 隐私采集  
+> 脚本可能读取 document.cookie、localStorage 或 sessionStorage 来获取用户信息，存在隐私采集风险。  
+> 位置：代码中对 document.cookie/localStorage/sessionStorage 的访问  
+> 建议：避免无必要读取用户敏感信息，若必须读取应告知用户并确保数据安全。
 
 **⛔ CRITICAL** — 隐私采集  
-> 脚本匹配了大量购物平台网址，可能会读取页面内容，包括表单字段、cookie 等，需确认是否有读取 document.cookie、localStorage、sessionStorage 或监听键盘事件等隐私采集行为。  
-> 位置：脚本主体（未提供完整代码）  
-> 建议：检查代码中是否有访问 cookie/localStorage/sessionStorage，监听键盘输入，读取表单字段等行为，若有需评估隐私风险。
-
-**🔴 HIGH** — 权限滥用  
-> 脚本申请了大量 GM_* 权限，包括 GM_xmlhttpRequest、GM_setClipboard、GM_getValue 等，需确认实际代码是否全部使用，避免权限滥用。  
-> 位置：元数据 @grant 权限声明  
-> 建议：审查代码中实际调用的权限接口，移除未使用的高权限申请。
+> 脚本可能监听键盘事件（keydown/keyup/input）或读取表单字段值，存在键盘输入监听风险。  
+> 位置：代码中对键盘事件监听或表单字段访问  
+> 建议：避免监听用户输入，防止键盘记录等隐私泄露行为。
 
 **🔴 HIGH** — 远程代码执行  
-> 脚本未提供完整代码，无法确认是否存在 eval、new Function、动态加载远程脚本等远程代码执行风险。  
-> 位置：脚本主体（未提供完整代码）  
-> 建议：检查代码中是否存在 eval、new Function、setTimeout(string)、innerHTML 执行远程内容，或通过 @require 或动态 script 标签加载远程 JS。
+> 脚本未明确显示使用 eval、new Function、setTimeout(string) 或 innerHTML 执行远程代码，但需确认是否通过 @require 或动态 script 标签加载远程 JS。  
+> 位置：代码中动态执行代码或 @require 指令  
+> 建议：避免动态执行远程代码，确保代码来源可信且安全。
+
+**🔴 HIGH** — 权限滥用  
+> 脚本申请了较多 GM_* 权限，需核实是否全部使用，避免权限滥用。  
+> 位置：@grant 元数据与代码实际调用对比  
+> 建议：精简权限申请，仅保留必要权限，减少安全风险。
 
 **🟠 MEDIUM** — 敏感 API 调用  
-> 脚本申请了 GM_setClipboard 权限，需确认是否合理使用剪贴板操作，避免恶意篡改用户剪贴板内容。  
-> 位置：元数据 @grant 权限声明  
-> 建议：确认剪贴板操作用途合理且用户知情。
+> 脚本可能调用敏感 API 如 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等，存在中等风险。  
+> 位置：代码中敏感 API 调用  
+> 建议：确认调用目的合理，避免滥用敏感权限。
+
+**🟡 LOW** — 代码混淆  
+> 脚本代码未发现明显混淆或 base64 解码执行特征。  
+> 位置：代码整体分析  
+> 建议：保持代码清晰，避免混淆以利安全审计。
 
 **🟡 LOW** — 外部依赖  
-> 脚本 @require 未声明第三方库，外部依赖风险较低。  
-> 位置：元数据 @require  
-> 建议：无。
+> 脚本 @require 未见加载第三方库，外部依赖风险较低。  
+> 位置：@require 元数据  
+> 建议：若未来添加依赖，确保来源可信且版本固定。
 
 ---
 

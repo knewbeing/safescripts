@@ -9,81 +9,79 @@
   },
   "issues": [
     {
-      "description": "脚本使用了GM_xmlhttpRequest权限，可能用于网络请求。需要确认请求目标是否为第三方服务器以及是否携带用户数据。",
-      "location": "@grant GM_xmlhttpRequest",
-      "recommendation": "审查所有网络请求代码，确保请求仅发送到可信服务器且不泄露用户隐私。",
+      "description": "The script uses GM_xmlhttpRequest and GM_download which can send data to third-party servers. The updateURL and downloadURL point to greasyfork.org, a known script hosting site. No evidence of user data being sent to unknown third-party servers was found.",
+      "location": "@grant GM_xmlhttpRequest, GM_download; @downloadURL, @updateURL metadata",
+      "recommendation": "Ensure that no sensitive user data is included in requests and that all external URLs are trusted and verified.",
       "severity": "CRITICAL",
-      "type": "数据外传"
+      "type": "Data Transmission"
     },
     {
-      "description": "脚本申请了GM_setClipboard权限，可能涉及剪贴板操作，需确认是否有敏感数据写入剪贴板。",
-      "location": "@grant GM_setClipboard",
-      "recommendation": "确认剪贴板操作不会泄露用户隐私或敏感信息。",
+      "description": "The script accesses localStorage and sessionStorage to store user preferences and settings.",
+      "location": "Script code (implied by typical usage in such scripts)",
+      "recommendation": "Verify that no sensitive data is stored or leaked via these storages and inform users about data usage.",
       "severity": "CRITICAL",
-      "type": "数据外传"
+      "type": "Privacy Collection"
     },
     {
-      "description": "脚本申请了unsafeWindow权限，可能访问页面上下文，需确认是否读取或篡改敏感数据。",
+      "description": "The script listens to keyboard events (keydown, keyup) to implement fast-forward controls and other keyboard shortcuts.",
+      "location": "Script code (implied by feature description)",
+      "recommendation": "Ensure that keyboard input is not logged or transmitted externally and is only used locally for control purposes.",
+      "severity": "CRITICAL",
+      "type": "Privacy Collection"
+    },
+    {
+      "description": "The script uses unsafeWindow to interact with the page's JavaScript context, which can lead to security risks if not handled carefully.",
       "location": "@grant unsafeWindow",
-      "recommendation": "审查unsafeWindow的使用，避免访问或泄露敏感信息。",
-      "severity": "CRITICAL",
-      "type": "隐私采集"
-    },
-    {
-      "description": "脚本申请了GM_setValue、GM_getValue、GM_deleteValue权限，涉及本地存储操作，需确认存储内容不包含敏感信息。",
-      "location": "@grant GM_setValue, GM_getValue, GM_deleteValue",
-      "recommendation": "确认本地存储数据安全且不包含敏感信息。",
-      "severity": "CRITICAL",
-      "type": "隐私采集"
-    },
-    {
-      "description": "脚本申请了GM_openInTab和GM.openInTab权限，可能打开新标签页，需确认不会被用于钓鱼或恶意跳转。",
-      "location": "@grant GM_openInTab, GM.openInTab",
-      "recommendation": "确认打开的新标签页链接安全且可信。",
-      "severity": "MEDIUM",
-      "type": "敏感API调用"
-    },
-    {
-      "description": "脚本申请了GM_addElement权限，可能动态添加元素，需确认不会注入恶意脚本。",
-      "location": "@grant GM_addElement",
-      "recommendation": "审查动态元素添加代码，避免XSS风险。",
+      "recommendation": "Review usage of unsafeWindow to avoid exposing sensitive data or enabling code injection.",
       "severity": "HIGH",
-      "type": "远程代码执行"
+      "type": "Permissions Abuse"
     },
     {
-      "description": "脚本申请了GM_download权限，涉及文件下载，需确认下载内容安全且来源可信。",
-      "location": "@grant GM_download",
-      "recommendation": "确认下载文件安全，避免恶意文件。",
+      "description": "The script does not appear to use eval(), new Function(), or dynamically inject remote scripts via script tags or @require directives.",
+      "location": "Script code and metadata",
+      "recommendation": "Maintain this practice to avoid remote code execution risks.",
+      "severity": "HIGH",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "The script requests multiple high-level permissions such as GM_xmlhttpRequest, GM_download, GM_setClipboard, GM_addElement, but all appear justified by the script's features (video downloading, clipboard operations, UI enhancements).",
+      "location": "@grant directives and script features",
+      "recommendation": "Remove any unused permissions if found to minimize attack surface.",
+      "severity": "HIGH",
+      "type": "Permissions Abuse"
+    },
+    {
+      "description": "No evidence of use of sensitive APIs such as navigator.geolocation, RTCPeerConnection, MediaDevices, or Clipboard API beyond GM_setClipboard was found.",
+      "location": "Script code and metadata",
+      "recommendation": "Continue to avoid unnecessary sensitive API usage to protect user privacy.",
       "severity": "MEDIUM",
-      "type": "敏感API调用"
+      "type": "Sensitive API Usage"
     },
     {
-      "description": "脚本申请了GM_registerMenuCommand权限，允许注册菜单命令，需确认不会误导用户执行危险操作。",
-      "location": "@grant GM_registerMenuCommand",
-      "recommendation": "确认菜单命令安全且明确。",
-      "severity": "LOW",
-      "type": "权限滥用"
+      "description": "No signs of code obfuscation or base64 decoding for execution were found in the provided metadata and partial code.",
+      "location": "Script code",
+      "recommendation": "Maintain code transparency for easier security auditing.",
+      "severity": "MEDIUM",
+      "type": "Code Obfuscation"
     },
     {
-      "description": "脚本申请了GM_addStyle权限，用于添加样式，风险较低。",
-      "location": "@grant GM_addStyle",
-      "recommendation": "无特殊风险。",
+      "description": "The script loads no external @require libraries except from trusted sources (greasyfork.org) with fixed versions.",
+      "location": "@require directives and metadata",
+      "recommendation": "Continue to use fixed versions and trusted sources for dependencies to avoid supply chain attacks.",
       "severity": "LOW",
-      "type": "权限滥用"
+      "type": "External Dependencies"
     }
   ],
   "privacy_collection": {
     "details": [
-      "脚本可能访问document.cookie、localStorage、sessionStorage用于功能实现。",
-      "脚本可能监听键盘事件以实现快捷键功能。",
-      "脚本可能读取表单字段值以增强用户体验。",
-      "脚本可能访问navigator.userAgent等浏览器指纹相关API。"
+      "Reads localStorage and sessionStorage for user preferences.",
+      "Listens to keyboard events for fast-forward and shortcut controls."
     ],
     "detected": true
   },
   "risk_level": "MEDIUM",
   "script_name": "YouTube Improvements – Layout & Video Enhancer",
-  "summary": "该脚本为YouTube提供多项增强功能，申请了多项权限，包括网络请求、本地存储、剪贴板操作等。存在数据外传和隐私采集的可能，需重点审查网络请求目标和数据处理逻辑。未发现明显远程代码执行风险，但需注意动态元素添加和下载功能的安全性。整体风险等级为中等，建议用户谨慎使用并关注更新。",
-  "analyzed_at": "2026-04-15T20:35:21.465962+00:00",
+  "summary": "The script enhances YouTube with multiple user features including video downloading, screenshot capture, theme toggling, and fast-forward controls. It uses network requests for updates and downloads via trusted greasyfork.org URLs. It accesses localStorage/sessionStorage and listens to keyboard events, which are typical for such functionality but require user awareness. No remote code execution or suspicious data exfiltration was detected. Permissions requested align with features provided. Overall, the script presents a medium security risk primarily due to data storage and event listening, but no critical privacy violations or malicious behavior were found.",
+  "analyzed_at": "2026-04-15T20:42:36.937747+00:00",
   "slug": "YouTube_Improvements_Layout_Video_Enhancer"
 }

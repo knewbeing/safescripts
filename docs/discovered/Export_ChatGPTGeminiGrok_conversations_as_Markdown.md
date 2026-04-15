@@ -43,7 +43,7 @@ title: ChatGPT/Grok聊天导出为Markdown
 
 **风险等级**：🟡 LOW　　**分析时间**：2026-04-15
 
-> The script is designed to export chat histories from specified websites to Markdown format. It does not perform any network requests or data exfiltration, nor does it collect user privacy data such as cookies, storage, or input events. It does not execute remote code or load external scripts dynamically. The only notable issue is the presence of unused high-level permissions (GM_xmlhttpRequest) which should be removed to reduce risk. Overall, the script is low risk and safe to use.
+> The script exports chat history from specified websites to Markdown format without transmitting data externally or collecting sensitive user information. It does not perform remote code execution or use sensitive APIs. However, it requests GM_xmlhttpRequest permission which is not used, suggesting permission over-privilege. Overall, the script is low risk but can improve by removing unused permissions.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -52,10 +52,10 @@ title: ChatGPT/Grok聊天导出为Markdown
 
 ### 发现的问题
 
-**🔴 HIGH** — Permission Abuse  
+**🔴 HIGH** — Permissions Misuse  
 > Script requests GM_xmlhttpRequest permission but does not use it in the code, indicating unnecessary high privilege grant.  
-> 位置：@grant directives and script code  
-> 建议：Remove unused GM_xmlhttpRequest grant to minimize permission scope.
+> 位置：@grant directives  
+> 建议：Remove unused GM_xmlhttpRequest grant to minimize permissions.
 
 ---
 
