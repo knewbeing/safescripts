@@ -1,0 +1,29 @@
+{
+  "slug": "jira-tools",
+  "platform": "github",
+  "source_url": "https://raw.githubusercontent.com/camp-plus/camp-xt/d73930202a0c451c7c733658d6697f55635c05e9/scripts/jira.atlassian.com/jira-tools.user.js",
+  "source_repo": "camp-plus/camp-xt",
+  "raw_url": "https://raw.githubusercontent.com/camp-plus/camp-xt/d73930202a0c451c7c733658d6697f55635c05e9/scripts/jira.atlassian.com/jira-tools.user.js",
+  "filename": "jira-tools.user.js",
+  "name": "CAMP-XT: Jira",
+  "version": "1.0.11",
+  "description": "CAMP tools for Jira",
+  "match": [
+    "https://jira.atlassian.com/*"
+  ],
+  "grant": [
+    "GM_setValue",
+    "GM_getValue"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  CAMP-XT: Jira\n// @namespace  camp-xt/jira.atlassian.com\n// @version  1.0.11\n// @description  CAMP tools for Jira\n// @author  CAMP Team\n// @match  https://jira.atlassian.com/*\n// @updateURL  https://cdn.jsdelivr.net/gh/camp-plus/camp-xt@157c87e9f39d2721dd50084e1841eb7b7ac61107/scripts/jira.atlassian.com/jira-tools.user.js\n// @downloadURL  https://cdn.jsdelivr.net/gh/camp-plus/camp-xt@157c87e9f39d2721dd50084e1841eb7b7ac61107/scripts/jira.atlassian.com/jira-tools.user.js\n// @run-at  document-start\n// @grant  GM_setValue\n// @grant  GM_getValue",
+  "sha256": "584b45607dcdeb40ae56f3cd1f3514b904427993ec53839b68eaf858aa2e4ad7",
+  "discovered_at": "2026-04-16T06:39:16.968660+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": null,
+  "good_ratings": null,
+  "bad_ratings": null,
+  "summary": {}
+}

@@ -17,12 +17,12 @@
   "require": [],
   "metadata_raw": "// @name  Blooket Coin and Token Hacker\n// @namespace  http://tampermonkey.net/\n// @version  1.0\n// @description  Add coins and tokens to your Blooket account\n// @author  You\n// @match  https://dashboard.blooket.com/market\n// @grant  none\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/516991/Blooket%20Coin%20and%20Token%20Hacker.user.js\n// @updateURL  https://update.greasyfork.org/scripts/516991/Blooket%20Coin%20and%20Token%20Hacker.meta.js",
   "sha256": "94f205fc28b9af1fb52cdd6dc490dde783a9078f8f032dc50e222f85b16a6686",
-  "discovered_at": "2026-04-15T22:23:01.398000+00:00",
+  "discovered_at": "2026-04-16T06:45:22.430803+00:00",
   "ai_reason": "",
   "target_roles": "",
-  "is_new": true,
-  "install_count": 10496,
+  "is_new": false,
+  "install_count": 10504,
   "good_ratings": 1,
-  "bad_ratings": 4,
+  "bad_ratings": 0,
   "summary": {}
 }

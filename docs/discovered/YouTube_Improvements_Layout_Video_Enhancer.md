@@ -8,7 +8,7 @@ title: "YouTube Improvements – Layout & Video Enhancer"
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/YouTube_Improvements_Layout_Video_Enhancer.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**1.1.4**　　发现时间：**2026-04-15**　　来源：[GreasyFork](https://greasyfork.org/scripts/560618-youtube-improvements-layout-video-enhancer) <Badge type="tip" text="GreasyFork" />　　安装量：**28,088**　　评分：👍16 / 👎8
+> 版本：**1.1.4**　　发现时间：**2026-04-16**　　来源：[GreasyFork](https://greasyfork.org/scripts/560618-youtube-improvements-layout-video-enhancer) <Badge type="tip" text="GreasyFork" />　　安装量：**28,210**　　评分：👍16 / 👎0
 
 ## 功能介绍
 

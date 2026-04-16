@@ -17,11 +17,11 @@
   "require": [],
   "metadata_raw": "// @name  WEXI veck.io hack aimbot, ESP and Speed\n// @namespace  https://wexi.qzz.io/\n// @version  1.2\n// @description  veck.io Mod Menu - Aimbot, ESP, Kill all, God mode fly and more.\n// @match  *://veck.io/*\n// @run-at  document-idle\n// @author  wexi\n// @grant  none\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/573903/WEXI%20veckio%20hack%20aimbot%2C%20ESP%20and%20Speed.user.js\n// @updateURL  https://update.greasyfork.org/scripts/573903/WEXI%20veckio%20hack%20aimbot%2C%20ESP%20and%20Speed.meta.js",
   "sha256": "fbb9778f7369d1943844397aac0e8205e74105a8e459f9ad1cca9b97d0ea1b69",
-  "discovered_at": "2026-04-15T22:19:05.674614+00:00",
+  "discovered_at": "2026-04-16T06:41:25.503183+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 117,
+  "install_count": 146,
   "good_ratings": 0,
   "bad_ratings": 0,
   "summary": {}

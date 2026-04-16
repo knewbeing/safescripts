@@ -8,7 +8,7 @@ title: "youtube-adb"
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/YouTube去广告.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**6.21**　　发现时间：**2026-04-15**　　来源：[GreasyFork](https://greasyfork.org/scripts/459541-youtube-adb) <Badge type="tip" text="GreasyFork" />　　安装量：**296,735**　　评分：👍151 / 👎27
+> 版本：**6.21**　　发现时间：**2026-04-16**　　来源：[GreasyFork](https://greasyfork.org/scripts/459541-youtube-adb) <Badge type="tip" text="GreasyFork" />　　安装量：**296,753**　　评分：👍151 / 👎0
 
 ## 功能介绍
 

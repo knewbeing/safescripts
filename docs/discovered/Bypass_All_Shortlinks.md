@@ -8,7 +8,7 @@ title: "Bypass All Shortlinks"
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/Bypass_All_Shortlinks.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**96.7**　　发现时间：**2026-04-15**　　来源：[GreasyFork](https://greasyfork.org/scripts/431691-bypass-all-shortlinks) <Badge type="tip" text="GreasyFork" />　　安装量：**464,343**　　评分：👍574 / 👎89
+> 版本：**96.7**　　发现时间：**2026-04-16**　　来源：[GreasyFork](https://greasyfork.org/scripts/431691-bypass-all-shortlinks) <Badge type="tip" text="GreasyFork" />　　安装量：**464,386**　　评分：👍574 / 👎0
 
 ## 功能介绍
 

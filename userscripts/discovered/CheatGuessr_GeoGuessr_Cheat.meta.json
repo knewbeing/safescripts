@@ -17,12 +17,12 @@
   "require": [],
   "metadata_raw": "// @name  CheatGuessr | GeoGuessr Cheat\n// @namespace  http://tampermonkey.net/\n// @version  1.2\n// @description  Extremely customizable GeoGuessr cheating client. Click 3 to open the settings menu.\n// @author  CheatGuessr\n// @match  https://www.geoguessr.com/*\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=geoguessr.com\n// @grant  GM_webRequest\n// @license  GNU AGPLv3\n// @downloadURL  https://update.greasyfork.org/scripts/525302/CheatGuessr%20%7C%20GeoGuessr%20Cheat.user.js\n// @updateURL  https://update.greasyfork.org/scripts/525302/CheatGuessr%20%7C%20GeoGuessr%20Cheat.meta.js",
   "sha256": "c7a2748d60b3adc3d3bdb5f1fa501f4a57ac27f5d9ec5a0a2a1be0ff7ac4586e",
-  "discovered_at": "2026-04-15T22:22:59.725672+00:00",
+  "discovered_at": "2026-04-16T06:45:24.702038+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 8090,
+  "install_count": 8101,
   "good_ratings": 4,
-  "bad_ratings": 1,
+  "bad_ratings": 0,
   "summary": {}
 }

@@ -1,0 +1,34 @@
+{
+  "slug": "Remove_web_limits_modified",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/28497-%E7%BD%91%E9%A1%B5%E9%99%90%E5%88%B6%E8%A7%A3%E9%99%A4-%E6%94%B9",
+  "source_repo": "28497",
+  "raw_url": "https://update.greasyfork.org/scripts/28497/Remove%20web%20limits%28modified%29.user.js",
+  "filename": "Remove_web_limits_modified.user.js",
+  "name": "网页限制解除(改)",
+  "version": "4.4.8",
+  "description": "通杀大部分网站,可以解除禁止复制、剪切、选择文本、右键菜单的限制。原作者cat73,因为和搜索跳转脚本冲突,遂进行了改动。",
+  "match": [
+    "*://*/*"
+  ],
+  "grant": [
+    "GM_getValue",
+    "GM_setValue",
+    "GM_addStyle",
+    "GM_deleteValue",
+    "GM_xmlhttpRequest",
+    "GM_setClipboard",
+    "GM_registerMenuCommand"
+  ],
+  "require": [],
+  "metadata_raw": "// @namespace  https://greasyfork.org/zh-CN/users/106222-qxin-i\n// @name  网页限制解除(改)\n// @name:en  Remove web limits(modified)\n// @name:zh  网页限制解除(改)\n// @name:ja  ウェブの規制緩和(変更)\n// @author  Cat73 & iqxin(修改)\n// @contributor  iqxin\n// @description  通杀大部分网站,可以解除禁止复制、剪切、选择文本、右键菜单的限制。原作者cat73,因为和搜索跳转脚本冲突,遂进行了改动。\n// @description  原作者https://www.github.com/Cat7373/,因为和搜索跳转脚本冲突,遂进行了改动\n// @description:en  Pass to kill most of the site, you can lift the restrictions prohibited to copy, cut, select the text, right-click menu.revised version\n// @description:zh  通杀大部分网站,可以解除禁止复制、剪切、选择文本、右键菜单的限制。原作者cat73,因为和搜索跳转脚本冲突,遂进行了改动\n// @description:zh-TW  通殺大部分網站,可以解除禁止復制、剪切、選擇文本、右鍵菜單的限制。\n// @description:ja  サイトのほとんどを殺すために渡し、あなたは、コピー切り取り、テキスト、右クリックメニューを選択することは禁止の制限を解除することができます。\n// @homepageURL  https://cat7373.github.io/remove-web-limits/\n// @supportURL  https://greasyfork.org/zh-CN/scripts/28497\n// @icon  data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAQAAADZc7J/AAABpElEQVR4nO3Vv2uUQRDG8c/ebSMWqay0trATAxrUSi1S2AiWFoJYpNCgoBjURsHWJKeNRfAvsDgFixQqKdPZ2ViEiCJYBOQu8f1hEXO59713j7MUfLZ6d2a/O8vMO0OzDnin9Ku2Mjvuaw07xgSAYEVXe2indMhj92zpKJLnBhF8MDeye9hn6zbN70eRiqCw02Bra3up8BBLu1FEBxsBucXqW4csz0ULe4jorSCMuPU89boRELDMHiI6Y8V65bbCUTccc70RkaOwKLOg0IkyXa9qTjOu2LAs6NZuD86hrdTyxRNTkUqqdhXlHrngGRVEZsMpJwex9DxIZSHYclesIb65LCoHgIs66UJq6btDBZHZrPh8V6YBOX66LbOkTGckBYimBW2FVTNeuOZNyrFJ236Yl4NSy5SbVm1PDvhodqgyMledTdRlAtDzqfL9tfkwUtyaRkv9LwFj9B/w7wPycXOhqlJ0yZHKPChMi5MCiM47XhsopbVJAUHfrYbmN/EToN+02eLPfz9OYyZhFJzW1Jn3lTsxaKQjCkp52jy45r1ZvSbTb9M0d4PBozGZAAAAAElFTkSuQmCC\n// @version  4.4.8\n// @license  LGPLv3\n// @match  *://*/*\n// @exclude  *www.bilibili.com/video*\n// @exclude  *www.bilibili.com/v*\n// @exclude  *www.bilibili.com/s/*\n// @exclude  *www.bilibili.com/bangumi*\n// @exclude  https://www.bilibili.com/medialist/play/*\n// @exclude  *www.youtube.com/watch*\n// @exclude  *www.panda.tv*\n// @exclude  *www.github.com*\n// @exclude  https://lanhuapp.com/*\n// @exclude  https://www.douyu.com/*\n// @exclude  https://www.zhihu.com/signin?*\n// @exclude  https://tieba.baidu.com/*\n// @exclude  https://v.qq.com/*\n// @exclude  *.taobao.com/*\n// @exclude  *tmall.com*\n// @exclude  *signin*\n// @connect  eemm.me\n// @grant  GM_getValue\n// @grant  GM_setValue\n// @grant  GM_addStyle\n// @grant  GM_deleteValue\n// @grant  GM_xmlhttpRequest\n// @grant  GM_setClipboard\n// @grant  GM_registerMenuCommand\n// @run-at  document-start\n// @downloadURL  https://update.greasyfork.org/scripts/28497/Remove%20web%20limits%28modified%29.user.js\n// @updateURL  https://update.greasyfork.org/scripts/28497/Remove%20web%20limits%28modified%29.meta.js",
+  "sha256": "af9e623ab9733c215f8e20b7f69bda44881bbe040553a4584e721b3bab3da161",
+  "discovered_at": "2026-04-16T06:47:23.710995+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 2227060,
+  "good_ratings": 3997,
+  "bad_ratings": 0,
+  "summary": {}
+}

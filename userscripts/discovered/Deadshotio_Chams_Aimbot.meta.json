@@ -1,0 +1,28 @@
+{
+  "slug": "Deadshotio_Chams_Aimbot",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/572110-deadshot-io-chams-aimbot",
+  "source_repo": "572110",
+  "raw_url": "https://update.greasyfork.org/scripts/572110/Deadshotio%20Chams%20%20Aimbot.user.js",
+  "filename": "Deadshotio_Chams_Aimbot.user.js",
+  "name": "Deadshot.io Chams & Aimbot",
+  "version": "1.0.1",
+  "description": "s1mple chams & aimbot for deadshot.io",
+  "match": [
+    "*://*deadshot.io/*"
+  ],
+  "grant": [
+    "unsafeWindow"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Deadshot.io Chams & Aimbot\n// @namespace  http://tampermonkey.net/\n// @version  1.0.1\n// @description  s1mple chams & aimbot for deadshot.io\n// @author  ovftank\n// @match  *://*deadshot.io/*\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=deadshot.io\n// @grant  unsafeWindow\n// @run-at  document-start\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/572110/Deadshotio%20Chams%20%20Aimbot.user.js\n// @updateURL  https://update.greasyfork.org/scripts/572110/Deadshotio%20Chams%20%20Aimbot.meta.js",
+  "sha256": "644cec6338ec268812f2198cc39bcd413a31166377917bf69d0970f021986dd8",
+  "discovered_at": "2026-04-16T06:45:26.303744+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 548,
+  "good_ratings": 1,
+  "bad_ratings": 0,
+  "summary": {}
+}

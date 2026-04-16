@@ -1,0 +1,32 @@
+{
+  "slug": "Torn_Toolbox",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/573645-torn-toolbox",
+  "source_repo": "573645",
+  "raw_url": "https://update.greasyfork.org/scripts/573645/Torn%20Toolbox.user.js",
+  "filename": "Torn_Toolbox.user.js",
+  "name": "Torn Toolbox",
+  "version": "1.0.0",
+  "description": "All-in-one Torn assistant — Gym coach, Crime helper, Bazaar tracker, Shop analyzer, Item Locker & Break-Even calculator.",
+  "match": [
+    "https://www.torn.com/*"
+  ],
+  "grant": [
+    "GM_getValue",
+    "GM_setValue",
+    "GM_addStyle",
+    "GM.xmlHttpRequest",
+    "GM_xmlhttpRequest"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Torn Toolbox\n// @namespace  torn.toolbox.aio\n// @version  1.0.0\n// @description  All-in-one Torn assistant — Gym coach, Crime helper, Bazaar tracker, Shop analyzer, Item Locker & Break-Even calculator.\n// @author  RnVjayBPZmYh [4233331]\n// @match  https://www.torn.com/*\n// @grant  GM_getValue\n// @grant  GM_setValue\n// @grant  GM_addStyle\n// @grant  GM.xmlHttpRequest\n// @grant  GM_xmlhttpRequest\n// @connect  weav3r.dev\n// @run-at  document-end\n// @license  MIT\n// @homepageURL  https://www.torn.com/profiles.php?XID=4233331\n// @downloadURL  https://update.greasyfork.org/scripts/573645/Torn%20Toolbox.user.js\n// @updateURL  https://update.greasyfork.org/scripts/573645/Torn%20Toolbox.meta.js",
+  "sha256": "bd64341b740ca08bd769745c191aafc4743d403a6f9239cbccfb1e6c169a14b9",
+  "discovered_at": "2026-04-16T06:47:19.888427+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 141,
+  "good_ratings": 0,
+  "bad_ratings": 0,
+  "summary": {}
+}

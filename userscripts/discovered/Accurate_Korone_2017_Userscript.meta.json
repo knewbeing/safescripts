@@ -1,0 +1,29 @@
+{
+  "slug": "Accurate_Korone_2017_Userscript",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/566293-accurate-korone-2017-userscript",
+  "source_repo": "566293",
+  "raw_url": "https://update.greasyfork.org/scripts/566293/Accurate%20Korone%202017%20Userscript.user.js",
+  "filename": "Accurate_Korone_2017_Userscript.user.js",
+  "name": "Accurate Korone 2017 Userscript",
+  "version": "2.6",
+  "description": "Use this alongside the userstyle.",
+  "match": [
+    "*.pekora.zip/*",
+    "*.korone.zip/*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Accurate Korone 2017 Userscript\n// @namespace  https://pekora.zip/\n// @version  2.6\n// @description  Use this alongside the userstyle.\n// @match  *.pekora.zip/*\n// @match  *.korone.zip/*\n// @run-at  document-start\n// @grant  none\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/566293/Accurate%20Korone%202017%20Userscript.user.js\n// @updateURL  https://update.greasyfork.org/scripts/566293/Accurate%20Korone%202017%20Userscript.meta.js",
+  "sha256": "dc646e881b80bf93bb53b29a145efa7f20333b0e3aa3473468b3a76fdd6fc9d0",
+  "discovered_at": "2026-04-16T06:44:20.520161+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 100,
+  "good_ratings": 0,
+  "bad_ratings": 0,
+  "summary": {}
+}

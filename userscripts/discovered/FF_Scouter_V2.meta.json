@@ -23,11 +23,11 @@
   "require": [],
   "metadata_raw": "// @name  FF Scouter V2\n// @namespace  Violentmonkey Scripts\n// @match  https://www.torn.com/*\n// @version  2.73\n// @author  rDacted, Weav3r, xentac, Glasnost\n// @description  Shows the expected Fair Fight score against targets and faction war status\n// @grant  GM_xmlhttpRequest\n// @grant  GM_setValue\n// @grant  GM_getValue\n// @grant  GM_listValues\n// @grant  GM_deleteValue\n// @grant  GM_registerMenuCommand\n// @grant  GM_addStyle\n// @connect  ffscouter.com\n// @license  GPL-3.0\n// @downloadURL  https://update.greasyfork.org/scripts/535292/FF%20Scouter%20V2.user.js\n// @updateURL  https://update.greasyfork.org/scripts/535292/FF%20Scouter%20V2.meta.js",
   "sha256": "ab52d07aed998e3ef17796f76b451788566f8ea119f9a5b72f0a7eec29eefd8a",
-  "discovered_at": "2026-04-15T22:21:03.277807+00:00",
+  "discovered_at": "2026-04-16T06:44:22.282163+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 12734,
+  "install_count": 12748,
   "good_ratings": 3,
   "bad_ratings": 0,
   "summary": {}

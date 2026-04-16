@@ -1,0 +1,33 @@
+{
+  "slug": "overlay-all",
+  "platform": "github",
+  "source_url": "https://raw.githubusercontent.com/camp-plus/camp-xt/d73930202a0c451c7c733658d6697f55635c05e9/scripts/overlay-all.user.js",
+  "source_repo": "camp-plus/camp-xt",
+  "raw_url": "https://raw.githubusercontent.com/camp-plus/camp-xt/d73930202a0c451c7c733658d6697f55635c05e9/scripts/overlay-all.user.js",
+  "filename": "overlay-all.user.js",
+  "name": "CAMP-XT: All-in-One Installer",
+  "version": "1.0.11",
+  "description": "Single userscript that installs the CAMP overlay (page context) and registers GitHub, Gmail, and Jira handlers. Install this first.",
+  "match": [
+    "https://github.com/*",
+    "https://mail.google.com/*",
+    "https://jira.atlassian.com/*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [
+    "https://cdn.jsdelivr.net/gh/camp-plus/camp-xt@main/shared/camp-utils.js",
+    "https://cdn.jsdelivr.net/gh/camp-plus/camp-xt@main/shared/camp-overlay.js"
+  ],
+  "metadata_raw": "// @name  CAMP-XT: All-in-One Installer\n// @namespace  camp-xt/installer-all\n// @version  1.0.11\n// @description  Single userscript that installs the CAMP overlay (page context) and registers GitHub, Gmail, and Jira handlers. Install this first.\n// @author  CAMP Team\n// @match  https://github.com/*\n// @match  https://mail.google.com/*\n// @match  https://jira.atlassian.com/*\n// @run-at  document-start\n// @grant  none\n// @require  https://cdn.jsdelivr.net/gh/camp-plus/camp-xt@main/shared/camp-utils.js\n// @require  https://cdn.jsdelivr.net/gh/camp-plus/camp-xt@main/shared/camp-overlay.js\n// @updateURL  https://cdn.jsdelivr.net/gh/camp-plus/camp-xt@main/scripts/overlay-all.user.js\n// @downloadURL  https://cdn.jsdelivr.net/gh/camp-plus/camp-xt@main/scripts/overlay-all.user.js",
+  "sha256": "996f061ccc7d768c9a6bd7865edda62a8c619c845f832aca5d0eac455046f69c",
+  "discovered_at": "2026-04-16T06:39:18.744143+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": null,
+  "good_ratings": null,
+  "bad_ratings": null,
+  "summary": {}
+}

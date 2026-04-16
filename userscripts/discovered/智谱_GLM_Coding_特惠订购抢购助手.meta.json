@@ -19,12 +19,12 @@
   "require": [],
   "metadata_raw": "// @name  智谱 GLM Coding 特惠订购抢购助手\n// @name:en  智谱 GLM Coding 特惠订购抢购助手\n// @namespace  http://tampermonkey.net/\n// @version  6.3.8\n// @description  用于在前端代码中去除按钮的disabled属性，使其在界面上显示为可点击状态。这仅影响前端表现，不改变后端逻辑。\n// @description:en  用于在前端代码中去除按钮的disabled属性，使其在界面上显示为可点击状态。这仅影响前端表现，不改变后端逻辑。modifying the front-end code to remove the `disabled` attribute from the purchase button\n// @author  YourName\n// @match  *://www.bigmodel.cn/*\n// @match  https://www.bigmodel.cn/glm-coding\n// @match  https://bigmodel.cn/glm-coding*\n// @run-at  document-start\n// @grant  none\n// @buy  me a coff   邀请链接,邀请码新购，下单立减5%金额 https://www.bigmodel.cn/glm-coding?ic=EVDHUUYDNB\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/571507/%E6%99%BA%E8%B0%B1%20GLM%20Coding%20%E7%89%B9%E6%83%A0%E8%AE%A2%E8%B4%AD%E6%8A%A2%E8%B4%AD%E5%8A%A9%E6%89%8B.user.js\n// @updateURL  https://update.greasyfork.org/scripts/571507/%E6%99%BA%E8%B0%B1%20GLM%20Coding%20%E7%89%B9%E6%83%A0%E8%AE%A2%E8%B4%AD%E6%8A%A2%E8%B4%AD%E5%8A%A9%E6%89%8B.meta.js",
   "sha256": "0605254a5a6f9f65b938b497dbab4e819c38f660bee1f97fc4120af27947f55f",
-  "discovered_at": "2026-04-15T22:17:03.913390+00:00",
+  "discovered_at": "2026-04-16T06:39:26.543904+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 1271,
-  "good_ratings": 1,
+  "install_count": 1399,
+  "good_ratings": 2,
   "bad_ratings": 0,
   "summary": {}
 }

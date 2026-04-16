@@ -25,11 +25,11 @@
   "require": [],
   "metadata_raw": "// @name  BEST Cheat for Chess.com (NEW Stockfish 18.0.5 to 9.0, No Anti-Ban)\n// @namespace  http://tampermonkey.net/\n// @version  9.3.11\n// @description  An extremely advanced Chess.com cheat menu with 7 Stockfish models (18.0.5 to 9.0), tons of powerful features, and countless customization options.\n// @author  Ech0\n// @copyright  2025, Ech0\n// @license  MIT\n// @match  https://www.chess.com/play/*\n// @match  https://www.chess.com/game/*\n// @match  https://www.chess.com/analysis\n// @match  https://www.chess.com/analysis/*\n// @match  https://www.chess.com/puzzles/*\n// @match  https://www.chess.com/daily\n// @connect  chess-api.com\n// @connect  stockfish.online\n// @connect  unpkg.com\n// @connect  *\n// @grant  GM_getResourceText\n// @grant  GM_getValue\n// @grant  GM_setValue\n// @grant  GM_xmlhttpRequest\n// @resource  stockfish.js https://unpkg.com/stockfish@18.0.5/bin/stockfish-18-single.js\n// @run-at  document-idle\n// @downloadURL  https://update.greasyfork.org/scripts/557044/BEST%20Cheat%20for%20Chesscom%20%28NEW%20Stockfish%201805%20to%2090%2C%20No%20Anti-Ban%29.user.js\n// @updateURL  https://update.greasyfork.org/scripts/557044/BEST%20Cheat%20for%20Chesscom%20%28NEW%20Stockfish%201805%20to%2090%2C%20No%20Anti-Ban%29.meta.js",
   "sha256": "0800082c3d047a1e8c75c311b89aec184ce9eefb0b06e6c85706ee1cdb380533",
-  "discovered_at": "2026-04-15T22:22:05.344978+00:00",
+  "discovered_at": "2026-04-16T06:46:24.999417+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 2933,
+  "install_count": 2945,
   "good_ratings": 6,
   "bad_ratings": 0,
   "summary": {}

@@ -8,7 +8,7 @@ title: "FF Scouter V2"
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/FF_Scouter_V2.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**2.73**　　发现时间：**2026-04-15**　　来源：[GreasyFork](https://greasyfork.org/scripts/535292-ff-scouter-v2) <Badge type="tip" text="GreasyFork" />　　安装量：**12,734**　　评分：👍3 / 👎0
+> 版本：**2.73**　　发现时间：**2026-04-16**　　来源：[GreasyFork](https://greasyfork.org/scripts/535292-ff-scouter-v2) <Badge type="tip" text="GreasyFork" />　　安装量：**12,748**　　评分：👍3 / 👎0
 
 ## 功能介绍
 

@@ -24,12 +24,12 @@
   "require": [],
   "metadata_raw": "// @name  Nexus No Wait ++\n// @description  Skip Countdown, Auto Download, and More for Nexus Mods. Supports (Manual/Vortex/MO2/NMM)\n// @version  2.1.1\n// @namespace  NexusNoWaitPlusPlus\n// @author  Torkelicious\n// @iconURL  https://raw.githubusercontent.com/torkelicious/nexus-no-wait-pp/refs/heads/main/icon.png\n// @icon  https://raw.githubusercontent.com/torkelicious/nexus-no-wait-pp/refs/heads/main/icon.png\n// @license  GPL-3.0-or-later\n// @match  https://*.nexusmods.com/*\n// @run-at  document-idle\n// @grant  GM_getValue\n// @grant  GM_setValue\n// @grant  GM.xmlHttpRequest\n// @grant  GM_xmlhttpRequest\n// @grant  GM_info\n// @grant  GM_addStyle\n// @grant  GM_listValues\n// @grant  GM_deleteValue\n// @connect  *.nexusmods.com\n// @connect  raw.githubusercontent.com\n// @downloadURL  https://update.greasyfork.org/scripts/519037/Nexus%20No%20Wait%20%2B%2B.user.js\n// @updateURL  https://update.greasyfork.org/scripts/519037/Nexus%20No%20Wait%20%2B%2B.meta.js",
   "sha256": "5462ea3b6209e2ecd3e14dc0d5051f01cd1a6b4fd02dd87a19d9625a9902f344",
-  "discovered_at": "2026-04-15T22:20:59.546215+00:00",
+  "discovered_at": "2026-04-16T06:43:21.726530+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 9688,
+  "install_count": 9704,
   "good_ratings": 16,
-  "bad_ratings": 2,
+  "bad_ratings": 0,
   "summary": {}
 }
