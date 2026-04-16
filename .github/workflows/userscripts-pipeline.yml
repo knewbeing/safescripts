@@ -1,6 +1,11 @@
 name: UserScripts Pipeline
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/userscripts-pipeline.yml"
   schedule:
     - cron: "0 2 * * 1"   # 每周一 02:00 UTC
   workflow_dispatch:
