@@ -16,9 +16,11 @@ MANAGED_DIR = REPO_ROOT / "userscripts" / "managed"
 DISCOVERED_DIR = REPO_ROOT / "userscripts" / "discovered"
 DOCS_MANAGED = REPO_ROOT / "docs" / "managed"
 DOCS_DISCOVERED = REPO_ROOT / "docs" / "discovered"
+DATA_DIR = REPO_ROOT / "docs" / ".vitepress" / "data"
 
 DOCS_MANAGED.mkdir(parents=True, exist_ok=True)
 DOCS_DISCOVERED.mkdir(parents=True, exist_ok=True)
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 RISK_ORDER_SAFE_FIRST = ["SAFE", "LOW", "MEDIUM", "HIGH", "CRITICAL", "UNKNOWN"]
 
@@ -100,6 +102,107 @@ def _sort_entries_safe_first(entries: list[dict]) -> list[dict]:
     return sorted(entries, key=lambda e: order.get(e.get("risk_level", "UNKNOWN"), 99))
 
 
+def _risk_issues_text(entry: dict) -> str:
+    """为前端分页表格生成纯文本风险说明。"""
+    risk = entry.get("risk_level", "UNKNOWN")
+    issues = entry.get("security_issues", [])
+    summary = entry.get("security_summary", "") or ""
+
+    if risk in ("SAFE", "UNKNOWN"):
+        return summary or "无已知风险"
+    if risk == "LOW":
+        return summary or "低风险"
+
+    sev_order = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
+    top = sorted(
+        [i for i in issues if isinstance(i, dict)],
+        key=lambda x: sev_order.get(x.get("severity", "LOW"), 9),
+    )[:5]
+    if top:
+        parts = []
+        for issue in top:
+            sev = issue.get("severity", "LOW")
+            itype = issue.get("type", "风险项")
+            desc = (issue.get("description", "") or "").strip()
+            parts.append(f"[{sev}] {itype}: {desc}")
+        return "\n".join(parts)
+    return summary or "存在风险"
+
+
+def build_managed_table_data(entries: list[dict]) -> list[dict]:
+    rows = []
+    for e in _sort_entries_safe_first(entries):
+        slug = e.get("slug", "")
+        summary = e.get("summary", {})
+        name = summary.get("zh_name") or e.get("name", slug)
+        version = e.get("version", "?")
+        sites = summary.get("applicable_sites", [])
+        sites_str = "、".join(sites[:2]) + ("…" if len(sites) > 2 else "") if sites else "通用"
+        risk = e.get("risk_level", "UNKNOWN")
+        badge = RISK_BADGE.get(risk, "⬜")
+        rows.append(
+            {
+                "risk": f"{badge}{risk}",
+                "name": name,
+                "link": f"./{slug}",
+                "version": version,
+                "sites": sites_str,
+                "risk_details": _risk_issues_text(e),
+            }
+        )
+    return rows
+
+
+def build_discovered_table_data(entries: list[dict]) -> list[dict]:
+    platform_labels = {
+        "github": "GH",
+        "greasyfork": "GF",
+        "gitee": "Gitee",
+        "gitlab": "GL",
+        "openuserjs": "OUJS",
+    }
+    platform_urls_tpl = {
+        "github": "https://github.com/{repo}",
+        "gitee": "https://gitee.com/{repo}",
+        "gitlab": "https://gitlab.com/{repo}",
+    }
+
+    rows = []
+    for e in _sort_entries_safe_first(entries):
+        slug = e.get("slug", "")
+        summary = e.get("summary", {})
+        name = summary.get("zh_name") or e.get("name", slug)
+        repo = e.get("source_repo", "") or e.get("repo", "")
+        platform = e.get("platform", "github")
+        plabel = platform_labels.get(platform, platform or "GH")
+        if platform in platform_urls_tpl:
+            purl = platform_urls_tpl[platform].format(repo=repo)
+        else:
+            purl = e.get("source_url", "")
+        repo_short = repo.split("/")[-1] if "/" in repo else (repo or "")
+
+        install = e.get("install_count")
+        ic_suffix = ""
+        if install and install > 1000:
+            ic_suffix = f" {install//1000}k↓" if install < 1_000_000 else f" {install//1_000_000}M↓"
+
+        repo_name = f"{repo_short}{ic_suffix}" if repo_short else "—"
+        risk = e.get("risk_level", "UNKNOWN")
+        badge = RISK_BADGE.get(risk, "⬜")
+        rows.append(
+            {
+                "risk": f"{badge}{risk}",
+                "name": name,
+                "link": f"./{slug}",
+                "source_name": repo_name,
+                "source_link": purl or "",
+                "platform": plabel,
+                "risk_details": _risk_issues_text(e),
+            }
+        )
+    return rows
+
+
 def render_managed_index(entries: list[dict]) -> str:
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     lines = [
@@ -118,22 +221,14 @@ def render_managed_index(entries: list[dict]) -> str:
         lines += ["> 暂无托管脚本，请在 `target-repos.json` 的 `userscripts` 数组中添加脚本地址。", ""]
         return "\n".join(lines)
 
-    lines += ["| 风险 | 脚本 | 版本 | 适用网站 | 风险说明 |",
-              "|:----:|:-----|:----:|:---------|:---------|"]
-
-    for e in _sort_entries_safe_first(entries):
-        slug = e.get("slug", "")
-        summary = e.get("summary", {})
-        name = summary.get("zh_name") or e.get("name", slug)
-        version = e.get("version", "?")
-        sites = summary.get("applicable_sites", [])
-        sites_str = "、".join(sites[:2]) + ("…" if len(sites) > 2 else "") if sites else "通用"
-        risk = e.get("risk_level", "UNKNOWN")
-        badge = RISK_BADGE.get(risk, "⬜")
-        risk_md = _risk_issues_md(e)
-        lines.append(f"| {badge}{risk} | [{name}](./{slug}) | {version} | {sites_str} | {risk_md} |")
-
-    lines.append("")
+    lines += [
+        "<script setup>",
+        "import managedItems from '../.vitepress/data/managed.json'",
+        "</script>",
+        "",
+        "<PaginatedScriptsTable kind=\"managed\" :items=\"managedItems\" />",
+        "",
+    ]
     return "\n".join(lines)
 
 
@@ -157,48 +252,14 @@ def render_discovered_index(entries: list[dict]) -> str:
         lines += ["> 暂无发现的脚本，等待下次自动运行。", ""]
         return "\n".join(lines)
 
-    platform_labels = {
-        "github": "GH", "greasyfork": "GF",
-        "gitee": "Gitee", "gitlab": "GL", "openuserjs": "OUJS",
-    }
-    platform_urls_tpl = {
-        "github": "https://github.com/{repo}",
-        "gitee": "https://gitee.com/{repo}",
-        "gitlab": "https://gitlab.com/{repo}",
-    }
-
-    lines += ["| 风险 | 脚本 | 来源 | 平台 | 风险说明 |",
-              "|:----:|:-----|:-----|:----:|:---------|"]
-
-    for e in _sort_entries_safe_first(entries):
-        slug = e.get("slug", "")
-        summary = e.get("summary", {})
-        name = summary.get("zh_name") or e.get("name", slug)
-        repo = e.get("source_repo", "") or e.get("repo", "")
-        platform = e.get("platform", "github")
-        plabel = platform_labels.get(platform, platform or "GH")
-
-        # 构建来源链接
-        if platform in platform_urls_tpl:
-            purl = platform_urls_tpl[platform].format(repo=repo)
-        else:
-            purl = e.get("source_url", "")
-        repo_short = repo.split("/")[-1] if "/" in repo else (repo or "")
-
-        # 安装量（GreasyFork）
-        install = e.get("install_count")
-        ic_suffix = ""
-        if install and install > 1000:
-            ic_suffix = f" {install//1000}k↓" if install < 1_000_000 else f" {install//1_000_000}M↓"
-
-        repo_link = f"[{repo_short}{ic_suffix}]({purl})" if repo_short and purl else (repo_short or "—")
-
-        risk = e.get("risk_level", "UNKNOWN")
-        badge = RISK_BADGE.get(risk, "⬜")
-        risk_md = _risk_issues_md(e)
-        lines.append(f"| {badge}{risk} | [{name}](./{slug}) | {repo_link} | {plabel} | {risk_md} |")
-
-    lines.append("")
+    lines += [
+        "<script setup>",
+        "import discoveredItems from '../.vitepress/data/discovered.json'",
+        "</script>",
+        "",
+        "<PaginatedScriptsTable kind=\"discovered\" :items=\"discoveredItems\" />",
+        "",
+    ]
     return "\n".join(lines)
 
 
@@ -207,6 +268,15 @@ def main() -> None:
 
     managed = load_scripts(MANAGED_DIR)
     discovered = load_scripts(DISCOVERED_DIR)
+
+    managed_data = build_managed_table_data(managed)
+    discovered_data = build_discovered_table_data(discovered)
+    (DATA_DIR / "managed.json").write_text(
+        json.dumps(managed_data, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    (DATA_DIR / "discovered.json").write_text(
+        json.dumps(discovered_data, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
 
     managed_index = DOCS_MANAGED / "index.md"
     managed_index.write_text(render_managed_index(managed), encoding="utf-8")

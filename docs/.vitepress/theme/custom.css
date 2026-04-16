@@ -174,3 +174,32 @@
 .vp-doc .custom-block p {
   margin: 0;
 }
+
+/* 分页组件 */
+.scripts-pager__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin: 10px 0;
+}
+
+.scripts-pager__toolbar select,
+.scripts-pager__toolbar button {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 6px;
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-1);
+  padding: 4px 8px;
+}
+
+.scripts-pager__nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.scripts-pager .risk-details {
+  white-space: pre-line;
+}
