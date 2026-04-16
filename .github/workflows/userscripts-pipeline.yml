@@ -111,6 +111,47 @@ jobs:
           GITHUB_TOKEN:   ${{ secrets.GITHUB_TOKEN }}
         run: python scripts/analyze_userscript_security.py
 
+      - name: "④.5 Quarantine risky managed scripts (>LOW)"
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          risk_order = {"SAFE": 0, "UNKNOWN": 0, "LOW": 1, "MEDIUM": 2, "HIGH": 3, "CRITICAL": 4}
+          scripts_dir = Path("userscripts/managed")
+          quarantined = 0
+
+          for security_file in sorted(scripts_dir.glob("*.security.json")):
+              try:
+                  result = json.loads(security_file.read_text(encoding="utf-8"))
+              except Exception as exc:
+                  print(f"skip {security_file.name}: parse error: {exc}")
+                  continue
+
+              risk = str(result.get("risk_level", "UNKNOWN")).upper()
+              if risk_order.get(risk, 0) <= risk_order["LOW"]:
+                  continue
+
+              slug = security_file.stem.replace(".security", "")
+              script_file = scripts_dir / f"{slug}.user.js"
+              print(f"[RISK] {script_file.name} | level={risk}")
+              print(f"  summary: {result.get('summary', '')}")
+              for issue in (result.get("issues") or [])[:5]:
+                  sev = issue.get("severity", "")
+                  issue_type = issue.get("type", "")
+                  desc = str(issue.get("description", "")).replace("\n", " ").strip()
+                  print(f"  - {sev} {issue_type}: {desc}")
+
+              if script_file.exists():
+                  script_file.write_text("", encoding="utf-8")
+                  quarantined += 1
+                  print(f"  => quarantined: {script_file.name}")
+              else:
+                  print(f"  => script not found: {script_file.name}")
+
+          print(f"Quarantined managed scripts: {quarantined}")
+          PY
+
       - name: "⑤ Regenerate index (with security)"
         run: python scripts/generate_docs_index.py
 
