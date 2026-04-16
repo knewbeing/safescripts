@@ -2,7 +2,7 @@ name: UserScripts Pipeline
 
 on:
   schedule:
-    - cron: "0 2 * * *"   # 每天 02:00 UTC
+    - cron: "0 2 * * 1"   # 每周一 02:00 UTC
   workflow_dispatch:
     inputs:
       skip_discovery:
@@ -320,6 +320,8 @@ jobs:
           python scripts/write_run_history.py || true
 
       - name: Commit updated files
+        env:
+          TARGET_BRANCH: ${{ github.ref_name }}
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -328,7 +330,7 @@ jobs:
             echo "No changes to commit"
           else
             git commit -m "chore: sync userscripts and update docs [skip ci]"
-            git push
+            git push origin "HEAD:${TARGET_BRANCH}"
           fi
 
       - name: Setup Node.js
