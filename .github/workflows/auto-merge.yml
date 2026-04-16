@@ -1,0 +1,71 @@
+name: Auto Merge Copilot PRs
+
+# 在 copilot/* 分支有新推送时触发，由 workflow 自身使用内置 GITHUB_TOKEN 完成合并
+on:
+  push:
+    branches:
+      - "copilot/**"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    name: Auto merge Copilot PR into main
+    runs-on: ubuntu-latest
+    steps:
+      - name: Find open PR for this branch
+        id: find_pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="${{ github.ref_name }}"
+          PR_JSON=$(gh pr list \
+            --repo "${{ github.repository }}" \
+            --head "$BRANCH" \
+            --state open \
+            --json number,isDraft,title \
+            --limit 1)
+          echo "pr_json=$PR_JSON" | head -c 200
+          PR_NUMBER=$(echo "$PR_JSON" | python3 -c "import sys,json; arr=json.load(sys.stdin); print(arr[0]['number'] if arr else '')")
+          IS_DRAFT=$(echo "$PR_JSON" | python3 -c "import sys,json; arr=json.load(sys.stdin); print(arr[0]['isDraft'] if arr else 'false')")
+          echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "is_draft=$IS_DRAFT" >> "$GITHUB_OUTPUT"
+          echo "Found PR: $PR_NUMBER (draft=$IS_DRAFT)"
+
+      - name: Convert draft to ready
+        if: steps.find_pr.outputs.pr_number != '' && steps.find_pr.outputs.is_draft == 'True'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr ready "${{ steps.find_pr.outputs.pr_number }}" \
+            --repo "${{ github.repository }}"
+          echo "PR ${{ steps.find_pr.outputs.pr_number }} is now ready for review"
+
+      - name: Merge PR
+        if: steps.find_pr.outputs.pr_number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER="${{ steps.find_pr.outputs.pr_number }}"
+          echo "Merging PR #$PR_NUMBER …"
+          gh pr merge "$PR_NUMBER" \
+            --repo "${{ github.repository }}" \
+            --merge \
+            --subject "chore: auto-merge Copilot PR #${PR_NUMBER} [skip ci]" \
+            --delete-branch
+          echo "✅ PR #$PR_NUMBER merged successfully"
+
+      - name: Trigger UserScripts Pipeline on main
+        if: steps.find_pr.outputs.pr_number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          DEFAULT_BRANCH=$(gh repo view "${{ github.repository }}" --json defaultBranchRef -q '.defaultBranchRef.name')
+          gh workflow run userscripts-pipeline.yml \
+            --repo "${{ github.repository }}" \
+            --ref "$DEFAULT_BRANCH" \
+            -f skip_discovery=false \
+            -f skip_security=false
+          echo "✅ UserScripts Pipeline triggered on $DEFAULT_BRANCH"

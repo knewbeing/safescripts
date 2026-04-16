@@ -1,0 +1,461 @@
+[
+  {
+    "risk": "🟢SAFE",
+    "name": "AC-baidu： 啊猫-操作面板",
+    "link": "./AC-Panel",
+    "source_name": "GM_script",
+    "source_link": "https://github.com/langren1353/GM_script",
+    "platform": "GH",
+    "risk_details": "该脚本仅在指定页面插入一个简单的Vue组件面板，未发现任何网络请求、用户数据读取或远程代码执行行为。@require加载的VueEntry.js来源可信，且版本固定。权限仅申请了GM_setClipboard且实际使用合理，无权限滥用。整体代码清晰无混淆，未使用敏感API。该脚本安全，无安全风险。"
+  },
+  {
+    "risk": "🟢SAFE",
+    "name": "Dark Mode",
+    "link": "./DarkMode",
+    "source_name": "UserScript",
+    "source_link": "https://github.com/XIU2/UserScript",
+    "platform": "GH",
+    "risk_details": "该脚本为护眼模式实现，未检测到任何数据外传、隐私采集、远程代码执行或权限滥用行为。代码清晰无混淆，未加载外部依赖，整体安全性高。"
+  },
+  {
+    "risk": "🟢SAFE",
+    "name": "Ping.Sx enhancement",
+    "link": "./Ping_Sx-Enhanced",
+    "source_name": "UserScript",
+    "source_link": "https://github.com/XIU2/UserScript",
+    "platform": "GH",
+    "risk_details": "该脚本功能为增强 Ping.Sx 网站的用户体验，主要实现复制 IP、清理链接和快捷回到顶部功能。代码中无任何网络请求或数据外传行为，也未采集用户隐私信息。未使用远程代码执行相关危险函数，权限申请合理且均有使用。无敏感 API 调用和代码混淆，且无外部依赖。整体安全性高，风险等级为 SAFE。"
+  },
+  {
+    "risk": "🟢SAFE",
+    "name": "搜索结果自动加序号",
+    "link": "./ResultCounter",
+    "source_name": "GM_script",
+    "source_link": "https://github.com/langren1353/GM_script",
+    "platform": "GH",
+    "risk_details": "该脚本仅在指定搜索引擎页面为搜索结果添加序号，未涉及网络请求、隐私数据采集、远程代码执行或权限滥用，整体安全性高。"
+  },
+  {
+    "risk": "🟢SAFE",
+    "name": "新标签页打开链接",
+    "link": "./TargetBlank",
+    "source_name": "UserScript",
+    "source_link": "https://github.com/XIU2/UserScript",
+    "platform": "GH",
+    "risk_details": "该脚本仅修改网页中链接的打开方式，强制所有链接在新标签页打开。未发现任何网络请求、用户数据读取、远程代码执行或权限滥用行为。代码清晰无混淆，且未依赖外部资源。整体安全，无隐私或安全风险。"
+  },
+  {
+    "risk": "🟢SAFE",
+    "name": "Undiscord",
+    "link": "./Undiscord",
+    "source_name": "406540 552k↓",
+    "source_link": "https://greasyfork.org/scripts/406540-undiscord",
+    "platform": "GF",
+    "risk_details": "该UserScript未发现任何数据外传或隐私采集行为，未使用远程代码执行手段，权限申请合理且无滥用，未调用敏感API，代码无混淆且无外部依赖，整体安全性高。"
+  },
+  {
+    "risk": "🟢SAFE",
+    "name": "智友邦论坛美化",
+    "link": "./Zhiyoo-Beautification",
+    "source_name": "UserScript",
+    "source_link": "https://github.com/XIU2/UserScript",
+    "platform": "GH",
+    "risk_details": "该脚本仅注入CSS样式以美化智友邦论坛页面，未包含任何网络请求、用户数据读取或远程代码执行行为，且无权限滥用和敏感API调用，整体安全性高。"
+  },
+  {
+    "risk": "🟢SAFE",
+    "name": "Undiscord",
+    "link": "./deleteDiscordMessages",
+    "source_name": "undiscord",
+    "source_link": "https://github.com/victornpb/undiscord",
+    "platform": "GH",
+    "risk_details": "该 UserScript 主要功能为批量删除 Discord 消息，未发现任何数据外传、隐私采集、远程代码执行或权限滥用行为，代码清晰且无混淆，未加载外部依赖，整体安全性良好。"
+  },
+  {
+    "risk": "🟢SAFE",
+    "name": "智谱 GLM Coding 特惠订购抢购助手",
+    "link": "./智谱_GLM_Coding_特惠订购抢购助手",
+    "source_name": "571507 1k↓",
+    "source_link": "https://greasyfork.org/scripts/571507-%E6%99%BA%E8%B0%B1-glm-coding-%E7%89%B9%E6%83%A0%E8%AE%A2%E8%B4%AD%E6%8A%A2%E8%B4%AD%E5%8A%A9%E6%89%8B",
+    "platform": "GF",
+    "risk_details": "该脚本主要通过劫持 JSON.parse、fetch 和 XMLHttpRequest 来修改页面返回的售罄状态数据，实现前端按钮可点击效果。未发现任何数据外传、隐私采集、远程代码执行或权限滥用行为，代码清晰无混淆，且无外部依赖。整体安全风险极低。"
+  },
+  {
+    "risk": "🟡LOW",
+    "name": "Bypass All Shortlinks",
+    "link": "./Bypass_All_Shortlinks",
+    "source_name": "431691 464k↓",
+    "source_link": "https://greasyfork.org/scripts/431691-bypass-all-shortlinks",
+    "platform": "GF",
+    "risk_details": "该脚本主要功能为绕过短链接和广告，自动跳过烦人的链接缩短器和广告，自动下载文件和视频。脚本使用了GM_xmlhttpRequest和@require加载远程脚本，存在数据外传行为，但请求目标为可信的更新服务器和图标托管服务器，未发现上传用户敏感数据。未发现隐私采集、远程代码执行风险和权限滥用。整体风险等级为低。"
+  },
+  {
+    "risk": "🟡LOW",
+    "name": "Export ChatGPT/Gemini/Grok conversations as Markdown",
+    "link": "./Export_ChatGPTGeminiGrok_conversations_as_Markdown",
+    "source_name": "543471 31k↓",
+    "source_link": "https://greasyfork.org/scripts/543471-export-chatgpt-gemini-grok-conversations-as-markdown",
+    "platform": "GF",
+    "risk_details": "The script exports chat history from specified websites to Markdown format without transmitting data externally or collecting sensitive user information. It does not perform remote code execution or use sensitive APIs. However, it requests GM_xmlhttpRequest permission which is not used, suggesting permission over-privilege. Overall, the script is low risk but can improve by removing unused permissions."
+  },
+  {
+    "risk": "🟡LOW",
+    "name": "HTML5 Video Audio Default Volume",
+    "link": "./HTML5Volume",
+    "source_name": "UserScript",
+    "source_link": "https://github.com/XIU2/UserScript",
+    "platform": "GH",
+    "risk_details": "该脚本主要功能为调整 HTML5 视频音频默认音量并记忆各网站音量设置。未发现任何数据外传、远程代码执行或权限滥用风险。脚本会使用 localStorage 和 GM_getValue/GM_setValue 存储音量相关设置，属于正常功能需求。整体代码清晰，无混淆，且无外部依赖。综合评估风险等级为低。"
+  },
+  {
+    "risk": "🟡LOW",
+    "name": "AC-baidu： 优化百度、搜狗、谷歌搜索结果之重定向 lite",
+    "link": "./Lite-AC-Baidu-SoGou-Google-NoRedirect",
+    "source_name": "GM_script",
+    "source_link": "https://github.com/langren1353/GM_script",
+    "platform": "GH",
+    "risk_details": "该脚本主要通过GM_xmlhttpRequest请求百度服务器获取真实跳转地址，未发现向第三方服务器发送用户数据的行为。未采集用户隐私信息，无远程代码执行风险，权限申请合理，无敏感API滥用，代码清晰无混淆，无外部依赖。整体风险较低。"
+  },
+  {
+    "risk": "🟡LOW",
+    "name": "Telegram Media Downloader",
+    "link": "./Telegram_Media_Downloader",
+    "source_name": "446342 200k↓",
+    "source_link": "https://greasyfork.org/scripts/446342-telegram-media-downloader",
+    "platform": "GF",
+    "risk_details": "该脚本主要功能为在 Telegram Web 应用中下载受限的媒体文件。经审查，脚本未发现任何数据外传、隐私采集或远程代码执行行为，且无权限滥用和敏感API调用。代码未混淆且无外部依赖，整体安全性较高。建议继续保持最小权限原则，避免引入不必要的外部依赖。"
+  },
+  {
+    "risk": "🟡LOW",
+    "name": "GitHub 中文化插件",
+    "link": "./main_greasyfork",
+    "source_name": "github-chinese",
+    "source_link": "https://github.com/maboloshi/github-chinese",
+    "platform": "GH",
+    "risk_details": "该脚本主要用于翻译 GitHub 页面内容，无网络请求行为，不采集用户隐私数据。存在权限滥用问题，申请了未使用的 GM_xmlhttpRequest 权限及无实际请求的 @connect 域名声明。代码未发现远程代码执行、敏感 API 调用及明显混淆。@require 来源为 GreasyFork，可信且固定版本。总体风险较低，但建议清理无用权限。"
+  },
+  {
+    "risk": "🟠MEDIUM",
+    "name": "EasyTube V3 — Ad Skip, SponsorBlock & HD Download⬇️🚀",
+    "link": "./EasyTube_V3_Ad_Skip_SponsorBlock_HD_Download",
+    "source_name": "561432 4k↓",
+    "source_link": "https://greasyfork.org/scripts/561432-easytube-v3-ad-skip-sponsorblock-hd-download",
+    "platform": "GF",
+    "risk_details": "[CRITICAL] Data Transmission: Script uses GM_xmlhttpRequest to send requests to third-party servers including sponsor.ajay.app, co.wuk.sh, cobalt.api.timelessnesses.me, and api.cobalt.tools. These requests are used to fetch SponsorBlock segments and to download videos via Cobalt instances. The script does not appear to send sensitive user data but does communicate with external APIs for functionality.\n[CRITICAL] Privacy Collection: Script reads and writes persistent settings via GM_getValue and GM_setValue but does not access document.cookie, localStorage, or sessionStorage. It does not listen to keyboard events or read form inputs. No evidence of browser fingerprinting APIs usage.\n[HIGH] Remote Code Execution: No use of eval(), new Function(), setTimeout(string), or innerHTML to execute remote code detected in the provided code snippet. No @require directives or dynamic script tag injections found.\n[HIGH] Permission Abuse: @grant directives (GM_addStyle, GM_xmlhttpRequest, GM_setValue, GM_getValue) are all used appropriately in the script. No unused high privilege grants detected.\n[MEDIUM] Sensitive API Call: No usage of sensitive APIs such as navigator.geolocation, RTCPeerConnection, MediaDevices, or Clipboard API detected in the provided code snippet."
+  },
+  {
+    "risk": "🟠MEDIUM",
+    "name": "YouTube Improvements – Layout & Video Enhancer",
+    "link": "./YouTube_Improvements_Layout_Video_Enhancer",
+    "source_name": "560618 28k↓",
+    "source_link": "https://greasyfork.org/scripts/560618-youtube-improvements-layout-video-enhancer",
+    "platform": "GF",
+    "risk_details": "[CRITICAL] Data Transmission: The script uses GM_xmlhttpRequest and GM_download which can send data to third-party servers. The updateURL and downloadURL point to greasyfork.org, a known script hosting site. No evidence of user data being sent to unknown third-party servers was found.\n[CRITICAL] Privacy Collection: The script accesses localStorage and sessionStorage to store user preferences and settings.\n[CRITICAL] Privacy Collection: The script listens to keyboard events (keydown, keyup) to implement fast-forward controls and other keyboard shortcuts.\n[HIGH] Permissions Abuse: The script uses unsafeWindow to interact with the page's JavaScript context, which can lead to security risks if not handled carefully.\n[HIGH] Remote Code Execution: The script does not appear to use eval(), new Function(), or dynamically inject remote scripts via script tags or @require directives."
+  },
+  {
+    "risk": "🟠MEDIUM",
+    "name": "GitHub 中文化插件",
+    "link": "./main",
+    "source_name": "github-chinese",
+    "source_link": "https://github.com/maboloshi/github-chinese",
+    "platform": "GH",
+    "risk_details": "[CRITICAL] 数据外传: 脚本使用 GM_xmlhttpRequest 向第三方翻译服务 fanyi.iflyrec.com 发送用户文本内容进行翻译，存在数据外传风险。\n[CRITICAL] 隐私采集: 脚本未读取 document.cookie、localStorage、sessionStorage，也未监听键盘输入事件或读取表单字段值，未发现隐私采集行为。\n[HIGH] 远程代码执行: 脚本未使用 eval、new Function、setTimeout(string)、innerHTML 执行远程代码，也未通过 @require 或动态 script 标签加载远程 JS（@require 指向可信 GitHub raw 内容）。\n[HIGH] 权限滥用: 脚本申请了 GM_xmlhttpRequest、GM_getValue、GM_setValue、GM_registerMenuCommand、GM_unregisterMenuCommand、GM_notification 权限，代码中均有合理使用，无权限滥用。\n[MEDIUM] 敏感 API 调用: 未发现使用敏感 API，如 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等。"
+  },
+  {
+    "risk": "🟠MEDIUM",
+    "name": "GitHub 中文化插件（繁體版）",
+    "link": "./main_zh-TW",
+    "source_name": "github-chinese",
+    "source_link": "https://github.com/maboloshi/github-chinese",
+    "platform": "GH",
+    "risk_details": "[CRITICAL] 数据外传: 脚本使用了 GM_xmlhttpRequest 权限，并且在元数据中声明了 @connect fanyi.iflyrec.com，表明可能向该第三方服务器发送请求。代码中未显示具体请求细节，但存在数据外传风险。\n[CRITICAL] 隐私采集: 脚本未发现监听键盘事件、读取 document.cookie、localStorage、sessionStorage 或表单字段值的行为。\n[HIGH] 远程代码执行: 脚本未使用 eval、new Function、setTimeout(string) 等远程代码执行相关函数，也未动态加载远程脚本。@require 加载的脚本来自 GitHub 官方 raw 内容，可信且固定版本。\n[HIGH] 权限滥用: 脚本申请了多个 GM_* 权限，均在代码中有合理使用，如 GM_getValue、GM_setValue 用于配置存储，GM_registerMenuCommand 用于菜单命令，GM_notification 用于通知。无明显权限滥用。\n[MEDIUM] 敏感 API 调用: 脚本未使用敏感 API 如 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等。"
+  },
+  {
+    "risk": "🔴HIGH",
+    "name": "All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)",
+    "link": "./All-in-One_Video_Downloader_HD_YouTube_TikTok_Instagram_X_More",
+    "source_name": "563321 17k↓",
+    "source_link": "https://greasyfork.org/scripts/563321-all-in-one-video-downloader-hd-youtube-tiktok-instagram-x-more",
+    "platform": "GF",
+    "risk_details": "[CRITICAL] 数据外传: 脚本元数据中声明了 @antifeature 为 referral-link，可能存在推广或追踪行为。\n[CRITICAL] 数据外传: 脚本代码未提供，无法检测是否存在数据外传行为（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、navigator.sendBeacon 等）。\n[CRITICAL] 隐私采集: 脚本代码未提供，无法检测是否存在隐私采集行为（如读取 cookie、localStorage，监听键盘输入，访问浏览器指纹 API 等）。\n[HIGH] 权限滥用: 脚本申请了多个 GM_* 权限（如 GM_openInTab, GM_addStyle, GM_setValue, GM_getValue, GM_download, unsafeWindow），但代码未提供，无法确认是否合理使用，存在权限滥用风险。\n[HIGH] 远程代码执行: 脚本代码未提供，无法检测是否存在远程代码执行风险（如 eval、new Function、动态加载远程脚本等）。"
+  },
+  {
+    "risk": "🔴HIGH",
+    "name": "YouTube 视频下载助手｜多种清晰度HD/2K/4K🔥｜Video&Audio 📥",
+    "link": "./YouTube_视频下载助手_多种清晰度HD2K4K_VideoAudio",
+    "source_name": "521434 36k↓",
+    "source_link": "https://greasyfork.org/scripts/521434-youtube-%E8%A7%86%E9%A2%91%E4%B8%8B%E8%BD%BD%E5%8A%A9%E6%89%8B-%E5%A4%9A%E7%A7%8D%E6%B8%85%E6%99%B0%E5%BA%A6hd-2k-4k-video-audio",
+    "platform": "GF",
+    "risk_details": "[CRITICAL] 数据外传: 脚本通过点击事件构造并打开了一个新窗口，URL为当前YouTube视频地址替换域名为第三方域名（saveanyyoutube.com），存在数据外传风险。\n[CRITICAL] 隐私采集: 脚本未检测到对document.cookie、localStorage、sessionStorage的访问，也未监听键盘输入事件，未读取表单字段值，未访问浏览器指纹相关API。\n[HIGH] 远程代码执行: 脚本未使用eval、new Function、setTimeout字符串参数或innerHTML执行远程代码，@require的第三方库来源可信且固定版本。\n[HIGH] 权限滥用: 脚本申请了GM_xmlhttpRequest权限，但代码中未发现使用该API的调用，存在权限滥用风险。\n[MEDIUM] 敏感API调用: 脚本未调用navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API等敏感API。"
+  },
+  {
+    "risk": "⛔CRITICAL",
+    "name": "Online shopping assistant & Automatically query coupons & Save money",
+    "link": "./Online_shopping_assistant_Automatically_query_coupons_Save_money",
+    "source_name": "512700 63k↓",
+    "source_link": "https://greasyfork.org/scripts/512700-online-shopping-assistant-automatically-query-coupons-save-money",
+    "platform": "GF",
+    "risk_details": "[CRITICAL] 数据外传: 脚本使用了 GM_xmlhttpRequest 进行网络请求，且 @connect 指定了第三方域名 oversea.mimixiaoke.com 和 jtmate.com，存在向第三方服务器发送数据的风险。\n[CRITICAL] 隐私采集: 脚本可能读取 document.cookie、localStorage 或 sessionStorage 来获取用户信息，存在隐私采集风险。\n[CRITICAL] 隐私采集: 脚本可能监听键盘事件（keydown/keyup/input）或读取表单字段值，存在键盘输入监听风险。\n[HIGH] 远程代码执行: 脚本未明确显示使用 eval、new Function、setTimeout(string) 或 innerHTML 执行远程代码，但需确认是否通过 @require 或动态 script 标签加载远程 JS。\n[HIGH] 权限滥用: 脚本申请了较多 GM_* 权限，需核实是否全部使用，避免权限滥用。"
+  },
+  {
+    "risk": "⬜UNKNOWN",
+    "name": "🏆 [#1 Chess Assistant] A.C.A.S (Advanced Chess Assistance System)",
+    "link": "./1_Chess_Assistant_ACAS_Advanced_Chess_Assistance_System",
+    "source_name": "459137 54k↓",
+    "source_link": "https://greasyfork.org/scripts/459137-1-chess-assistant-a-c-a-s-advanced-chess-assistance-system",
+    "platform": "GF",
+    "risk_details": "无已知风险"
+  },
+  {
+    "risk": "⬜UNKNOWN",
+    "name": "AC-baidu-重定向优化百度搜狗谷歌必应搜索_favicon_双列",
+    "link": "./AC-baidu-重定向优化百度搜狗谷歌必应搜索_favicon_双列",
+    "source_name": "14178 3M↓",
+    "source_link": "https://greasyfork.org/scripts/14178-ac-baidu-%E9%87%8D%E5%AE%9A%E5%90%91%E4%BC%98%E5%8C%96%E7%99%BE%E5%BA%A6%E6%90%9C%E7%8B%97%E8%B0%B7%E6%AD%8C%E5%BF%85%E5%BA%94%E6%90%9C%E7%B4%A2-favicon-%E5%8F%8C%E5%88%97",
+    "platform": "GF",
+    "risk_details": "无已知风险"
+  },
+  {
+    "risk": "⬜UNKNOWN",
+    "name": "BEST Cheat for Chess.com (NEW Stockfish 18.0.5 to 9.0, No Anti-Ban)",
+    "link": "./BEST_Cheat_for_Chesscom_NEW_Stockfish_1805_to_90_No_Anti-Ban",
+    "source_name": "557044 2k↓",
+    "source_link": "https://greasyfork.org/scripts/557044-best-cheat-for-chess-com-new-stockfish-18-0-5-to-9-0-no-anti-ban",
+    "platform": "GF",
+    "risk_details": "无已知风险"
+  },
+  {
+    "risk": "⬜UNKNOWN",
+    "name": "Blooket Coin and Token Hacker",
+    "link": "./Blooket_Coin_and_Token_Hacker",
+    "source_name": "516991 10k↓",
+    "source_link": "https://greasyfork.org/scripts/516991-blooket-coin-and-token-hacker",
+    "platform": "GF",
+    "risk_details": "无已知风险"
+  },
+  {
+    "risk": "⬜UNKNOWN",
+    "name": "C.AI Custom Chat Bubbles + Bypass Chat Limit (Unlock edit message button)",
+    "link": "./CAI_Custom_Chat_Bubbles_Bypass_Chat_Limit_Unlock_edit_message_button",
+    "source_name": "569906 3k↓",
+    "source_link": "https://greasyfork.org/scripts/569906-c-ai-custom-chat-bubbles-bypass-chat-limit-unlock-edit-message-button",
+    "platform": "GF",
+    "risk_details": "无已知风险"
+  },
+  {
+    "risk": "⬜UNKNOWN",
+    "name": "CheatGuessr | GeoGuessr Cheat",
+    "link": "./CheatGuessr_GeoGuessr_Cheat",
+    "source_name": "525302 8k↓",
+    "source_link": "https://greasyfork.org/scripts/525302-cheatguessr-geoguessr-cheat",
+    "platform": "GF",
+    "risk_details": "无已知风险"
+  },
+  {
+    "risk": "⬜UNKNOWN",
+    "name": "CheatGuessr Universal (Works in GeoGuessr | OpenGuessr | WorldGuessr | FreeGuessr)",
+    "link": "./CheatGuessr_Universal_Works_in_GeoGuessr_OpenGuessr_WorldGuessr_FreeGuessr",
+    "source_name": "572651",
+    "source_link": "https://greasyfork.org/scripts/572651-cheatguessr-universal-works-in-geoguessr-openguessr-worldguessr-freeguessr",
+    "platform": "GF",
+    "risk_details": "无已知风险"
+  },
+  {
+    "risk": "⬜UNKNOWN",
+    "name": "FF Scouter V2",
+    "link": "./FF_Scouter_V2",
+    "source_name": "535292 12k↓",
+    "source_link": "https://greasyfork.org/scripts/535292-ff-scouter-v2",
+    "platform": "GF",
+    "risk_details": "无已知风险"
+  },
+  {
+    "risk": "⬜UNKNOWN",
+    "name": "FMHY Base64 Auto Decoder",
+    "link": "./FMHY_Base64_Auto_Decoder",
+    "source_name": "485772 28k↓",
+    "source_link": "https://greasyfork.org/scripts/485772-fmhy-base64-auto-decoder",
+    "platform": "GF",
+    "risk_details": "无已知风险"
+  },
+  {
+    "risk": "⬜UNKNOWN",
+    "name": "Gemini NanoBanana Watermark Remover",
+    "link": "./Gemini_NanoBanana_Watermark_Remover",
+    "source_name": "559574 3k↓",
+    "source_link": "https://greasyfork.org/scripts/559574-gemini-nanobanana-watermark-remover",
+    "platform": "GF",
+    "risk_details": "无已知风险"
+  },
+  {
+    "risk": "⬜UNKNOWN",
+    "name": "Github Enhancement - High Speed Download",
+    "link": "./Github_增强_-_高速下载",
+    "source_name": "412245 893k↓",
+    "source_link": "https://greasyfork.org/scripts/412245-github-enhancement-high-speed-download",
+    "platform": "GF",
+    "risk_details": "无已知风险"
+  },
+  {
+    "risk": "⬜UNKNOWN",
+    "name": "GreenCloudVPS",
+    "link": "./GreenCloudVPS",
+    "source_name": "GM_script",
+    "source_link": "https://github.com/langren1353/GM_script",
+    "platform": "GH",
+    "risk_details": "无已知风险"
+  },
+  {
+    "risk": "⬜UNKNOWN",
+    "name": "HTML5视频播放工具",
+    "link": "./HTML5视频播放工具",
+    "source_name": "30545 1M↓",
+    "source_link": "https://greasyfork.org/scripts/30545-html5%E8%A7%86%E9%A2%91%E6%92%AD%E6%94%BE%E5%B7%A5%E5%85%B7",
+    "platform": "GF",
+    "risk_details": "无已知风险"
+  },
+  {
+    "risk": "⬜UNKNOWN",
+    "name": "K-Bot | Kahoot Answer Viewer & Auto-Answer Cheat Mod Menu (Working 2026)",
+    "link": "./K-Bot_Kahoot_Answer_Viewer_Auto-Answer_Cheat_Mod_Menu_Working_2026",
+    "source_name": "571865",
+    "source_link": "https://greasyfork.org/scripts/571865-k-bot-kahoot-answer-viewer-auto-answer-cheat-mod-menu-working-2026",
+    "platform": "GF",
+    "risk_details": "无已知风险"
+  },
+  {
+    "risk": "⬜UNKNOWN",
+    "name": "Nexus Download Collection",
+    "link": "./Nexus_Download_Collection",
+    "source_name": "483337 17k↓",
+    "source_link": "https://greasyfork.org/scripts/483337-nexus-download-collection",
+    "platform": "GF",
+    "risk_details": "无已知风险"
+  },
+  {
+    "risk": "⬜UNKNOWN",
+    "name": "Nexus No Wait ++",
+    "link": "./Nexus_No_Wait",
+    "source_name": "519037 9k↓",
+    "source_link": "https://greasyfork.org/scripts/519037-nexus-no-wait",
+    "platform": "GF",
+    "risk_details": "无已知风险"
+  },
+  {
+    "risk": "⬜UNKNOWN",
+    "name": "Quillbot Premium Unlocker",
+    "link": "./Quillbot_Premium_Unlocker",
+    "source_name": "465276 199k↓",
+    "source_link": "https://greasyfork.org/scripts/465276-quillbot-premium-unlocker",
+    "platform": "GF",
+    "risk_details": "无已知风险"
+  },
+  {
+    "risk": "⬜UNKNOWN",
+    "name": "AC-有道取词+翻译-库文件",
+    "link": "./SearchBlock",
+    "source_name": "GM_script",
+    "source_link": "https://github.com/langren1353/GM_script",
+    "platform": "GH",
+    "risk_details": "无已知风险"
+  },
+  {
+    "risk": "⬜UNKNOWN",
+    "name": "Shell Shockers Basic Aimbot + ESP: LibertyMutualV1",
+    "link": "./Shell_Shockers_Basic_Aimbot_ESP_LibertyMutualV1",
+    "source_name": "484168 14k↓",
+    "source_link": "https://greasyfork.org/scripts/484168-shell-shockers-basic-aimbot-esp-libertymutualv1",
+    "platform": "GF",
+    "risk_details": "无已知风险"
+  },
+  {
+    "risk": "⬜UNKNOWN",
+    "name": "Telegram Media Downloader (Improved)",
+    "link": "./Telegram_Media_Downloader_Improved",
+    "source_name": "525471 24k↓",
+    "source_link": "https://greasyfork.org/scripts/525471-telegram-media-downloader-improved",
+    "platform": "GF",
+    "risk_details": "无已知风险"
+  },
+  {
+    "risk": "⬜UNKNOWN",
+    "name": "Undiscord 2.0",
+    "link": "./Undiscord_20",
+    "source_name": "569218 2k↓",
+    "source_link": "https://greasyfork.org/scripts/569218-undiscord-2-0",
+    "platform": "GF",
+    "risk_details": "无已知风险"
+  },
+  {
+    "risk": "⬜UNKNOWN",
+    "name": "WEXI veck.io hack aimbot, ESP and Speed",
+    "link": "./WEXI_veckio_hack_aimbot_ESP_and_Speed",
+    "source_name": "573903",
+    "source_link": "https://greasyfork.org/scripts/573903-wexi-veck-io-hack-aimbot-esp-and-speed",
+    "platform": "GF",
+    "risk_details": "无已知风险"
+  },
+  {
+    "risk": "⬜UNKNOWN",
+    "name": "X-GUI CLIENT FOR BLOOKET",
+    "link": "./X-GUI_CLIENT_FOR_BLOOKET",
+    "source_name": "553301 7k↓",
+    "source_link": "https://greasyfork.org/scripts/553301-x-gui-client-for-blooket",
+    "platform": "GF",
+    "risk_details": "无已知风险"
+  },
+  {
+    "risk": "⬜UNKNOWN",
+    "name": "XEnhancer",
+    "link": "./XEnhancer",
+    "source_name": "571064",
+    "source_link": "https://greasyfork.org/scripts/571064-xenhancer",
+    "platform": "GF",
+    "risk_details": "无已知风险"
+  },
+  {
+    "risk": "⬜UNKNOWN",
+    "name": "YouTube™ Ultimate Downloader v12.7 👑🌍 — Desktop & Mobile | Shorts, Videos & Music 🔥 - AdBlock 🛡️🚫",
+    "link": "./YouTube_Ultimate_Downloader_v127_Desktop_Mobile_Shorts_Videos_Music_-_AdBlock",
+    "source_name": "34613 441k↓",
+    "source_link": "https://greasyfork.org/scripts/34613-youtube-ultimate-downloader-v12-7-desktop-mobile-shorts-videos-music-adblock",
+    "platform": "GF",
+    "risk_details": "无已知风险"
+  },
+  {
+    "risk": "⬜UNKNOWN",
+    "name": "youtube-adb",
+    "link": "./YouTube去广告",
+    "source_name": "459541 296k↓",
+    "source_link": "https://greasyfork.org/scripts/459541-youtube-adb",
+    "platform": "GF",
+    "risk_details": "无已知风险"
+  },
+  {
+    "risk": "⬜UNKNOWN",
+    "name": "Youtube Tools All in one local download mp3 mp4 HIGT QUALITY return dislikes and more",
+    "link": "./Youtube_Tools_All_in_one_local_download_mp3_mp4_HIGT_QUALITY_return_dislikes_and",
+    "source_name": "460680 188k↓",
+    "source_link": "https://greasyfork.org/scripts/460680-youtube-tools-all-in-one-local-download-mp3-mp4-higt-quality-return-dislikes-and-more",
+    "platform": "GF",
+    "risk_details": "无已知风险"
+  },
+  {
+    "risk": "⬜UNKNOWN",
+    "name": "sketchfab",
+    "link": "./sketchfab",
+    "source_name": "492877 19k↓",
+    "source_link": "https://greasyfork.org/scripts/492877-sketchfab",
+    "platform": "GF",
+    "risk_details": "无已知风险"
+  },
+  {
+    "risk": "⬜UNKNOWN",
+    "name": "音视频增强脚本：无极调速|倍速快学|快乐刷剧|视频下载|画面截图等「适用大部分网站」",
+    "link": "./音视频增强脚本_无极调速_倍速快学_快乐刷剧_视频下载_画面截图等_适用大部分网站",
+    "source_name": "381682 1M↓",
+    "source_link": "https://greasyfork.org/scripts/381682-%E9%9F%B3%E8%A7%86%E9%A2%91%E5%A2%9E%E5%BC%BA%E8%84%9A%E6%9C%AC-%E6%97%A0%E6%9E%81%E8%B0%83%E9%80%9F-%E5%80%8D%E9%80%9F%E5%BF%AB%E5%AD%A6-%E5%BF%AB%E4%B9%90%E5%88%B7%E5%89%A7-%E8%A7%86%E9%A2%91%E4%B8%8B%E8%BD%BD-%E7%94%BB%E9%9D%A2%E6%88%AA%E5%9B%BE%E7%AD%89-%E9%80%82%E7%94%A8%E5%A4%A7%E9%83%A8%E5%88%86%E7%BD%91%E7%AB%99",
+    "platform": "GF",
+    "risk_details": "无已知风险"
+  }
+]
