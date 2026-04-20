@@ -2,12 +2,20 @@
   "_comment": "SafeScripts 配置文件：在 userscripts 数组中添加要跟踪的 Tampermonkey 脚本地址。支持 GitHub blob URL、Gitee blob URL、GitLab blob URL、GreasyFork code URL 以及 raw 直链。重点收集对 PM/PdM/Dev/Arch 有提效价值的脚本。",
   "settings": {
     "max_discovered": 20,
-    "ai_model": "openai/gpt-4.1-mini"
+    "ai_model": "openai/gpt-4.1"
   },
   "userscripts": [
     "https://github.com/MiPoNianYou/UserScripts/blob/main/Scripts/Password-Revealer.user.js",
     "https://github.com/maboloshi/github-chinese/blob/gh-pages/main.user.js",
     "https://github.com/XIU2/UserScript/blob/master/GithubEnhanced-High-Speed-Download.user.js",
-    "https://update.greasyfork.org/scripts/412245/GitHub%20Issue%20Link%20Status.user.js"
+    "https://update.greasyfork.org/scripts/412245/GitHub%20Issue%20Link%20Status.user.js",
+    "https://update.greasyfork.org/scripts/421603/Magic%20Userscript%2B%20%3A%20Show%20Site%20All%20UserJS.user.js",
+    "https://update.greasyfork.org/scripts/406136/CSDN%E4%BC%98%E5%8C%96.user.js",
+    "https://update.greasyfork.org/scripts/545686/GitHub%20AI%20%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90%E5%8A%A9%E6%89%8B.user.js",
+    "https://update.greasyfork.org/scripts/412245/Github%20%E5%A2%9E%E5%BC%BA%20-%20%E9%AB%98%E9%80%9F%E4%B8%8B%E8%BD%BD.user.js",
+    "https://raw.githubusercontent.com/MiPoNianYou/UserScripts/main/Scripts/Universal-Web-Liberator.user.js",
+    "https://update.greasyfork.org/scripts/440871/%E9%AA%9A%E6%89%B0%E6%8B%A6%E6%88%AA.user.js",
+    "https://update.greasyfork.org/scripts/505207/%E8%A7%A3%E9%99%A4CSDN%E7%99%BB%E5%BD%95%E5%A4%8D%E5%88%B6.user.js",
+    "https://update.greasyfork.org/scripts/544254/GitHub%20Repo%20Tree%20Generator.user.js"
   ]
 }
