@@ -25,42 +25,12 @@
   "require": [],
   "metadata_raw": "// @name  FMHY Base64 Auto Decoder\n// @version  2.5\n// @author  Rust1667\n// @description  Decode base64-encoded links in some pastebins and make URLs clickable\n// @match  *://rentry.co/*\n// @match  *://rentry.org/*\n// @match  *://pastes.fmhy.net/*\n// @match  *://bin.disroot.org/?*#*\n// @match  *://privatebin.net/?*#*\n// @match  *://textbin.xyz/?*#*\n// @match  *://bin.idrix.fr/?*#*\n// @match  *://privatebin.rinuploads.org/?*#*\n// @match  *://pastebin.com/*\n// @grant  none\n// @icon  https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://fmhy.net&size=64\n// @namespace  https://greasyfork.org/users/980489\n// @downloadURL  https://update.greasyfork.org/scripts/485772/FMHY%20Base64%20Auto%20Decoder.user.js\n// @updateURL  https://update.greasyfork.org/scripts/485772/FMHY%20Base64%20Auto%20Decoder.meta.js",
   "sha256": "70eb484ee46e8054fd1cf8b493a71b66f403b5be3755d474a49f71302f635200",
-  "discovered_at": "2026-04-20T03:45:13.983994+00:00",
+  "discovered_at": "2026-04-20T04:59:29.767411+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 28822,
+  "install_count": 28825,
   "good_ratings": 7,
   "bad_ratings": 2,
-  "summary": {
-    "applicable_sites": [
-      "Rentry（rentry.co、rentry.org）",
-      "FMHY Pastebin（pastes.fmhy.net）",
-      "Disroot Pastebin（bin.disroot.org）",
-      "PrivateBin（privatebin.net、privatebin.rinuploads.org）",
-      "Textbin（textbin.xyz）",
-      "Idrix Pastebin（bin.idrix.fr）",
-      "Pastebin（pastebin.com）"
-    ],
-    "description": "本脚本可自动识别并解码部分网盘或文本分享网站中的 Base64 编码链接，并将其直接转换为可点击的链接，方便用户访问。无需手动解码，提升浏览和获取资源的效率。适用于常见的 Pastebin 及类似文本分享网站。",
-    "permissions": [
-      {
-        "explanation": "脚本不需要额外权限，直接在网页上运行。",
-        "grant": "none"
-      }
-    ],
-    "tags": [
-      "链接解码",
-      "自动化",
-      "便捷访问",
-      "Pastebin工具",
-      "文本处理"
-    ],
-    "usage": [
-      "1. 安装脚本后，访问支持的网站（如 Pastebin、Rentry 等）。",
-      "2. 页面中的 Base64 编码链接会自动被解码并变为可点击的链接。",
-      "3. 直接点击链接即可跳转，无需手动复制或解码。"
-    ],
-    "zh_name": "FMHY Base64 自动解码器"
-  }
+  "summary": {}
 }

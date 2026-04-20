@@ -18,35 +18,12 @@
   "require": [],
   "metadata_raw": "// @name  Crime Profitability\n// @namespace  heartflower.torn\n// @version  1.3.6\n// @description  Show value per nerve on the crime pages\n// @author  Heartflower [2626587]\n// @match  https://www.torn.com/loader.php?sid=crimes*\n// @match  https://www.torn.com/page.php?sid=crimes*\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=torn.com\n// @grant  GM.xmlHttpRequest\n// @downloadURL  https://update.greasyfork.org/scripts/538188/Crime%20Profitability.user.js\n// @updateURL  https://update.greasyfork.org/scripts/538188/Crime%20Profitability.meta.js",
   "sha256": "1e591be548ed2d1d3347da7b8ffff6acd6d21e33019e5c9f862d263a8f8a5b06",
-  "discovered_at": "2026-04-20T03:48:23.486384+00:00",
+  "discovered_at": "2026-04-20T05:02:29.415561+00:00",
   "ai_reason": "",
   "target_roles": "",
-  "is_new": true,
-  "install_count": 4843,
+  "is_new": false,
+  "install_count": 4845,
   "good_ratings": 1,
   "bad_ratings": 0,
-  "summary": {
-    "applicable_sites": [
-      "Torn 游戏网站"
-    ],
-    "description": "本脚本会在 Torn 游戏的犯罪页面显示每点神经值对应的收益，帮助玩家更好地选择犯罪类型。数据会自动从在线表格获取并缓存，确保信息较为准确。适合想要优化收益的玩家使用。",
-    "permissions": [
-      {
-        "explanation": "允许脚本在后台访问外部数据表，获取最新犯罪收益数据。",
-        "grant": "GM.xmlHttpRequest"
-      }
-    ],
-    "tags": [
-      "游戏辅助",
-      "收益计算",
-      "Torn",
-      "数据增强"
-    ],
-    "usage": [
-      "安装脚本后，进入 Torn 游戏的犯罪页面。",
-      "页面会自动显示每点神经值的收益信息。",
-      "根据显示的数值选择最优犯罪类型。"
-    ],
-    "zh_name": "犯罪收益显示器"
-  }
+  "summary": {}
 }

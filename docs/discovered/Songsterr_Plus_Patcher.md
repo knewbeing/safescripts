@@ -8,7 +8,7 @@ title: "Songsterr Plus Patcher"
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/Songsterr_Plus_Patcher.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**1.2.2**　　发现时间：**2026-04-16**　　来源：[GreasyFork](https://greasyfork.org/scripts/500019-songsterr-plus-patcher) <Badge type="tip" text="GreasyFork" />　　安装量：**13,050**　　评分：👍14 / 👎0
+> 版本：**1.2.2**　　发现时间：**2026-04-20**　　来源：[GreasyFork](https://greasyfork.org/scripts/500019-songsterr-plus-patcher) <Badge type="tip" text="GreasyFork" />　　安装量：**13,246**　　评分：👍14 / 👎3
 
 ## 功能介绍
 

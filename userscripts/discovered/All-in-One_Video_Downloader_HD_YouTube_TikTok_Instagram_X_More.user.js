@@ -1,40 +1,42 @@
 // ==UserScript==
 // @name        All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:ar     All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:bg     All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:cs     All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:da     All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:de     All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:el     All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
+// @name:ar     مُحمِّل فيديو متكامل – HD (يوتيوب، تيك توك، إنستغرام، إكس وغيرها)
+// @name:bg     Универсален видеоизтегляч – HD (YouTube, TikTok, Instagram, X и др.)
+// @name:cs     Univerzální stahovač videí – HD (YouTube, TikTok, Instagram, X a další)
+// @name:da     Alt-i-ét-video-downloader – HD (YouTube, TikTok, Instagram, X m.m.)
+// @name:de     All-in-One-Video-Downloader – HD (YouTube, TikTok, Instagram, X u. a.)
+// @name:el     Ολοκληρωμένη λήψη βίντεο – HD (YouTube, TikTok, Instagram, X και άλλα)
 // @name:en     All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:eo     All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:es     All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:es-419 All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:fi     All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:fr     All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:fr-CA  All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:he     All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:hr     All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:hu     All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:id     All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More))
-// @name:it     All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:ja     All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:ka     All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:ko     All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:nb     All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:nl     All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:pl     All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:pt-BR  All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:ro     All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:ru     All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:sv     All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:th     All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:tr     All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:uk     All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:ug     All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
-// @name:vi     All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)
+// @name:eo     Ĉio-en-unu video-elŝutilo – HD (YouTube, TikTok, Instagram, X kaj pli)
+// @name:es     Descargador de vídeo todo en uno – HD (YouTube, TikTok, Instagram, X y más)
+// @name:es-419 Descargador de video todo en uno – HD (YouTube, TikTok, Instagram, X y más)
+// @name:fi     Kaikki yhdessä -videolataaja – HD (YouTube, TikTok, Instagram, X jne.)
+// @name:fr     Téléchargeur vidéo tout-en-un – HD (YouTube, TikTok, Instagram, X et plus)
+// @name:fr-CA  Téléchargeur de vidéos tout-en-un – HD (YouTube, TikTok, Instagram, X et plus)
+// @name:he     מוריד וידאו הכול-באחד – HD (YouTube, TikTok, Instagram, X ועוד)
+// @name:hr     Sve-u-jednom preuzimanje videa – HD (YouTube, TikTok, Instagram, X i više)
+// @name:hu     Minden-egyben videóletöltő – HD (YouTube, TikTok, Instagram, X és más)
+// @name:id     Pengunduh video serba ada – HD (YouTube, TikTok, Instagram, X, dll.)
+// @name:it     Scaricatore video tutto-in-uno – HD (YouTube, TikTok, Instagram, X e altro)
+// @name:ja     オールインワン動画ダウンローダー – HD（YouTube、TikTok、Instagram、X など）
+// @name:ka     ყველაფერი-ერთში ვიდეოს ჩამოტვირთვა – HD (YouTube, TikTok, Instagram, X და სხვა)
+// @name:ko     올인원 동영상 다운로더 – HD(YouTube, TikTok, Instagram, X 등)
+// @name:nb     Alt-i-ett-videonedlaster – HD (YouTube, TikTok, Instagram, X m.m.)
+// @name:nl     Alles-in-één video-downloader – HD (YouTube, TikTok, Instagram, X en meer)
+// @name:pl     Uniwersalny pobieracz wideo – HD (YouTube, TikTok, Instagram, X i inne)
+// @name:pt-BR  Baixador de vídeo tudo-em-um – HD (YouTube, TikTok, Instagram, X e mais)
+// @name:ro     Descărcător video totul-într-unul – HD (YouTube, TikTok, Instagram, X și altele)
+// @name:ru     Универсальный загрузчик видео – HD (YouTube, TikTok, Instagram, X и др.)
+// @name:sv     Allt-i-ett-videonedladdare – HD (YouTube, TikTok, Instagram, X m.m.)
+// @name:th     ดาวน์โหลดวิดีโอครบในที่เดียว – HD (YouTube, TikTok, Instagram, X และอื่นๆ)
+// @name:tr     Hepsi bir arada video indirici – HD (YouTube, TikTok, Instagram, X ve daha fazlası)
+// @name:uk     Універсальний завантажувач відео – HD (YouTube, TikTok, Instagram, X тощо)
+// @name:ug     بارلىق ئىقتىدار بىر يەردە: HD ۋىدىئو چۈشۈرگۈچ (YouTube، TikTok، Instagram، X ۋە باشقىلار)
+// @name:vi     Trình tải video tất cả trong một – HD (YouTube, TikTok, Instagram, X và hơn thế nữa)
+// @name:zh-CN  多合一视频下载器（支持：YouTube, TikTok, Instagram等）
+// @name:zh-TW  多合一視頻下載器（支援：YouTube, TikTok, Instagram等）
 // @description       An all-in-one, fast, and free HD video downloader. Supports video downloads from YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (formerly Twitter), and more. Enjoy seamless, high-quality downloads with no watermarks.
-// @description:ar    أداة شاملة وسريعة ومجانية لتحميل مقاطع الفيديو بدقة عالية. يدعم تحميل مقاطع الفيديو من يوتيوب، تيك توك، إنستغرام، ثريدز، إكس (تويتر سابقًا)، والمزيد. استمتع بتحميلات عالية الجودة بدون علامات مائية.
+// @description:ar    أداة شاملة وسريعة ومجانية لتحميل مقاطع الفيديو بدقة عالية. يدعم تحميل مقاطع الفيديو من يوتيوب، تيك توك، Douyin، إنستغرام، ثريدز، XiaoHongShu، إكس (تويتر سابقًا)، والمزيد. استمتع بتحميلات عالية الجودة بدون علامات مائية.
 // @description:bg    Всичко в едно, бързо и безплатно изтегляне на видео с висока резолюция. Поддържа изтегляне на видеа от YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (бивш Twitter) и други. Насладете се на безпроблемни, висококачествени изтегляния без водни знаци.
 // @description:cs    Vše v jednom, rychlý a bezplatný downloader videí ve vysoké kvalitě. Podporuje stahování videí z YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (dříve Twitter) a dalších. Užijte si plynulé, kvalitní stahování bez vodoznaků.
 // @description:da    En alt-i-en, hurtig og gratis HD video downloader. Understøtter video downloads fra YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (tidligere Twitter) og mere. Nyd problemfri, høj kvalitet downloads uden vandmærker.
@@ -43,7 +45,7 @@
 // @description:en    An all-in-one, fast, and free HD video downloader. Supports video downloads from YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (formerly Twitter), and more. Enjoy seamless, high-quality downloads with no watermarks.
 // @description:eo    Ĉio-en-unu, rapida kaj senpaga HD-video-elŝutilo. Subtenas video-elŝutojn de YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (antaŭe Twitter), kaj aliaj. Ŝatu seninterrompajn, altkvalitajn elŝutojn sen akvamaĵoj.
 // @description:es    Un descargador de video todo en uno, rápido y gratuito en HD. Admite descargas de videos de YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (anteriormente Twitter) y más. Disfruta de descargas de alta calidad sin marcas de agua.
-// @description:fi    Kaikki yhdessä, nopea ja ilmainen HD-videoiden lataaja. Tukee videoiden lataamista YouTubesta, TikTokista, Instagramista, Threadsista, X:stä (entinen Twitter) ja muista. Nauti saumatonta, korkealaatuista lataamista ilman vesileimoja.
+// @description:fi    Kaikki yhdessä, nopea ja ilmainen HD-videoiden lataaja. Tukee videoiden lataamista YouTubesta, TikTokista, Douyinista, Instagramista, Threadsista, XiaoHongShusta, X:stä (entinen Twitter) ja muista. Nauti saumatonta, korkealaatuista lataamista ilman vesileimoja.
 // @description:fr    Un téléchargeur vidéo HD tout-en-un, rapide et gratuit. Prend en charge les téléchargements de vidéos depuis YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (anciennement Twitter) et plus encore. Profitez de téléchargements fluides et de haute qualité sans filigranes.
 // @description:fr-CA Un téléchargeur vidéo HD tout-en-un, rapide et gratuit. Prend en charge les téléchargements de vidéos depuis YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (anciennement Twitter) et plus encore. Profitez de téléchargements fluides et de haute qualité sans filigranes.
 // @description:he    מנוע הורדות וידאו HD מהיר, חינמי ומקיף. תומך בהורדת וידאו מיוטיוב, טיקטוק, אינסטגרם, Threads, XiaoHongShu, X (בעבר טוויטר) ועוד. תהנה מהורדות באיכות גבוהה ללא סימני מים.
@@ -51,7 +53,7 @@
 // @description:hu    Egy minden-egyben, gyors és ingyenes HD videó letöltő. Támogatja a videók letöltését YouTube-ról, TikTok-ról, Instagram-ról, Threads, XiaoHongShu, X (régen Twitter) és másról. Élvezze a zökkenőmentes, magas minőségű letöltéseket vízjel nélkül.
 // @description:id    Downloader video HD serba ada, cepat, dan gratis. Mendukung unduhan video dari YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (sebelumnya Twitter), dan banyak lagi. Nikmati unduhan berkualitas tinggi tanpa tanda air.
 // @description:it    Un downloader video HD completo, veloce e gratuito. Supporta il download di video da YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (precedentemente Twitter) e altri. Goditi download fluidi e di alta qualità senza filigrane.
-// @description:ja    YouTube の視聴体験を向上させるための高速で無料な HD 動画ダウンローダー。YouTube、TikTok、Instagram、Threads、X（旧 Twitter）などからの動画ダウンロードをサポート。シームレスで高品質なダウンロードをウォーターマークなしでお楽しみください。
+// @description:ja    YouTube の視聴体験を向上させるための高速で無料な HD 動画ダウンローダー。YouTube、TikTok、Douyin、Instagram、Threads、XiaoHongShu、X（旧 Twitter）などからの動画ダウンロードをサポート。シームレスで高品質なダウンロードをウォーターマークなしでお楽しみください。
 // @description:ka    ყველაფერი ერთში, სწრაფი და უფასო HD ვიდეო ჩამოტვირთვა. მხარს უჭერს ვიდეოს ჩამოტვირთვას YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (ყოფილი Twitter) და სხვა პლატფორმებიდან. დატკბით უარყოფითი ნიშნების გარეშე, უმაღლესი ხარისხის ჩამოტვირთვებით.
 // @description:ko    YouTube 시청 경험을 향상시키는 모든 기능을 갖춘, 빠르고 무료인 HD 비디오 다운로드기. YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X(이전 Twitter) 등에서 비디오 다운로드를 지원합니다. 워터마크 없이 원활한 고품질 다운로드를 즐기세요.
 // @description:nb    En alt-i-en, rask og gratis HD video nedlaster. Støtter video nedlastinger fra YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (tidligere Twitter), og mer. Nyt sømløse, høy kvalitet nedlastinger uten vannmerker.
@@ -64,10 +66,12 @@
 // @description:th    เครื่องมือดาวน์โหลดวิดีโอ HD ที่รวดเร็วและฟรีแบบครบวงจร รองรับการดาวน์โหลดวิดีโอจาก YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (เดิม Twitter) และอื่นๆ เพลิดเพลินกับการดาวน์โหลดที่มีคุณภาพสูงโดยไม่มีลายน้ำ
 // @description:tr    Birçok platformdan video indirmenizi destekleyen, hızlı ve ücretsiz HD video indirme aracıdır. YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (eski Twitter) ve daha fazlasını destekler. Su işareti olmadan kesintisiz yüksek kaliteli indirmelerin keyfini çıkarın.
 // @description:uk    Всі в одному, швидкий та безкоштовний HD відео-завантажувач. Підтримує завантаження відео з YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (колишній Twitter) та інших. Насолоджуйтесь безперешкодними високоякісними завантаженнями без водяних знаків.
-// @description:ug    YouTube كۆرۈش تەجرىبەڭىزنى ياخشىلايدىغان، تىز ۋە ھەقسىز HD ۋىدىئو چۈشۈرگۈچى. يۇتۇب، تيك توك، ئىنستاگرام، Threads، X (ئالدىنقى Twitter) ۋە باشقا پلاتفورمالاردىن ۋىدىئو چۈشۈرۈشنى قوللايدۇ. سۇ ئىشاراتسىز ئېغىزدىن سۈپەتلىك چۈشۈرۈشتىن لەززەتلىنىڭ.
+// @description:ug    YouTube كۆرۈش تەجرىبەڭىزنى ياخشىلايدىغان، تىز ۋە ھەقسىز HD ۋىدىئو چۈشۈرگۈچى. يۇتۇب، تيك توك، دۇيىن، ئىنستاگرام، Threads، XiaoHongShu، X (ئالدىنقى Twitter) ۋە باشقا پلاتفورمالاردىن ۋىدىئو چۈشۈرۈشنى قوللايدۇ. سۇ ئىشاراتسىز ئېغىزدىن سۈپەتلىك چۈشۈرۈشتىن لەززەتلىنىڭ.
 // @description:vi    Trình tải video HD tất cả trong một, nhanh chóng và miễn phí. Hỗ trợ tải video từ YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (trước đây là Twitter) và nhiều nền tảng khác. Thưởng thức tải xuống chất lượng cao mượt mà mà không có watermark.
+// @description:zh-CN 一款多合一、快速且免费的在线视频下载器。支持从 YouTube、TikTok、抖音、Instagram、Threads、小红书、X（Twitter）等平台下载视频。享受无水印、高质量、流畅便捷的下载体验
+// @description:zh-TW 一款多合一、快速且免費的線上視頻下載器。支援從 YouTube、TikTok、抖音、Instagram、Threads、小紅書、X（Twitter）等平台下載視頻。享受無水印、高質量、流暢便捷的下載體驗
 // @namespace   AllInOneDownloader_Daniel
-// @version     1.0.7
+// @version     1.0.8
 // @author      Daniel
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADQAAAAwCAYAAABe6Vn9AAACZElEQVR4AeyZbVKDMBCGgYuJ/9WT2CNoqx6hnkT9T72YuA+WDg0M2SSblnFwWCfNfuR9EhqatiqM/+72bX3/3jZirccaYo2HL8yByrLYishazHfVx1hfXJDfHEhG18BIWHeFxHYJvn85gHxjZvWvQFmn16D4ukIGk5i1xLpCWafXoPi6QgaTmLXEukJZp9eg+LpCBpOYtYR6hTi7yPnGe84JVSs1feemlrG1ddVAx7OL+cd9jdDj2JpQ+wOeatTwIPVEqleobYuXcB3zGVqvjH2rjVUDfW3KQ3kFKGAY2xyIgh+bcndJqFAYNKpXiGDsUlAxMOgLBiIpN1QsDNqigEjMBZUCg65oIJKtoVJh0JQERAErKAsY9CQDUSQVygoGLSZAFIqFsoRBhxkQxUKheKaFPDQZw2emQAymhQKGWHIszRwIcQhFMO0pw0fMlC+1rwN62Lc7zblkLsY9syAY4a5A+vAN+8mdq63xwUDNikb795sOr6NNziyjH7AQDgAmhQ9sAPRJ+3QBQ+6pI7IBg4A/VzQia4zSEIbAoQMA7POxvHU3AGLJGcYntp+6Wy6xyFk6AhF61jnxghhiJ1xJXeZAqEEotzLtKcsFw1hZgCjMrQwUBkBvcp83ABOTw7IBIRYoDIDepF/9/YDEBl9qoODKV0pYIlC3vcuuWMqcHMTca9a/OCB5Zn3327s8t0bfNPn8iwP6KYrTqoi40ftt6C8m/iRnoveKXbJ5bPudUTaUG1fK0E/b9S8OSATWArIVsQ1tMfea9S8RyAUIel3Jm2z0xguqsKzgt4oPjv8BCgbZ6l9/AQAA//9HnEu0AAAABklEQVQDAI1HmgBXKvxdAAAAAElFTkSuQmCC
 // @include     https://*.youtube.com/*
@@ -91,6 +95,8 @@
 // @include     https://*.amemv.com/*
 // @include     https://*.tikwm.com/*
 // @include     https://*.tiktokcdn-eu.com/*
+// @include     https://*.tiktokcdn-us.com/*
+// @include     https://*.douyinpic.com/*
 // @connect     googlevideo.com
 // @connect     tiktokcdn.com
 // @connect     snssdk.com
@@ -104,6 +110,8 @@
 // @connect     amemv.com
 // @connect     tikwm.com
 // @connect     tiktokcdn-eu.com
+// @connect     tiktokcdn-us.com
+// @connect     douyinpic.com
 // @noframes
 // @license     MIT
 // @run-at      document-start
@@ -711,7 +719,9 @@
 	      /xhscdn\.com/,
 	      /amemv\.com/,
 	      /tikwm\.com/,
-	      /tiktokcdn-eu\.com/
+	      /tiktokcdn-eu\.com/,
+	      /tiktokcdn-us\.com/,
+	      /douyinpic\.com/
 	    ];
 	    const currentHost = window.location.host;
 	    return hosts.some((rule) => rule.test(currentHost));

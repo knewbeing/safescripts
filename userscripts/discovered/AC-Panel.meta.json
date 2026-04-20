@@ -19,35 +19,12 @@
   ],
   "metadata_raw": "// @name  AC-baidu： 啊猫-操作面板\n// @description  用于快速操作和显示的一个面板\n// @author  AC\n// @create  2024-12-12\n// @lastmodified  2024-03-07\n// @version  1.0\n// @include  https://zhibo2.90dao.com/\n// @namespace  gm.com\n// @copyright  2024, AC\n// @note  2024.12.12-V1.0 初始化第一版\n// @run-at  document-end\n// @grant  GM_setClipboard\n// @require  https://update.greasyfork.org/scripts/503097/1424938/VueEntry.js",
   "sha256": "b417995ea2decb97bfbe53554e395085ecabbe4417507aa84fbf38756a04d9e8",
-  "discovered_at": "2026-04-20T03:41:42.065258+00:00",
+  "discovered_at": "2026-04-20T04:55:23.099427+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
   "install_count": null,
   "good_ratings": null,
   "bad_ratings": null,
-  "summary": {
-    "applicable_sites": [
-      "90dao直播"
-    ],
-    "description": "本脚本会在90dao直播网站页面右下角添加一个操作面板，方便用户快速操作和查看数据。面板上有按钮和数据显示，点击按钮可以增加计数。适合需要简单交互和数据展示的用户。",
-    "permissions": [
-      {
-        "explanation": "允许脚本将内容复制到剪贴板，方便用户一键复制信息。",
-        "grant": "GM_setClipboard"
-      }
-    ],
-    "tags": [
-      "操作面板",
-      "数据展示",
-      "网页增强",
-      "直播辅助"
-    ],
-    "usage": [
-      "1. 安装脚本后，打开90dao直播网站。",
-      "2. 页面右下角会出现一个操作面板。",
-      "3. 点击面板上的按钮可增加计数，查看数据变化。"
-    ],
-    "zh_name": "啊猫-操作面板"
-  }
+  "summary": {}
 }

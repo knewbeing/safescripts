@@ -17,35 +17,12 @@
   "require": [],
   "metadata_raw": "// @name  youtube-adb\n// @name:zh-CN  YouTube去广告\n// @name:zh-TW  YouTube去廣告\n// @name:zh-HK  YouTube去廣告\n// @name:zh-MO  YouTube去廣告\n// @namespace  https://github.com/iamfugui/youtube-adb\n// @version  6.21\n// @description  A script to remove YouTube ads, including static ads and video ads, without interfering with the network and ensuring safety.\n// @description:zh-CN  脚本用于移除YouTube广告，包括静态广告和视频广告。不会干扰网络，安全。\n// @description:zh-TW  腳本用於移除 YouTube 廣告，包括靜態廣告和視頻廣告。不會干擾網路，安全。\n// @description:zh-HK  腳本用於移除 YouTube 廣告，包括靜態廣告和視頻廣告。不會干擾網路，安全。\n// @description:zh-MO  腳本用於移除 YouTube 廣告，包括靜態廣告和視頻廣告。不會干擾網路，安全。\n// @match  *://*.youtube.com/*\n// @exclude  *://accounts.youtube.com/*\n// @exclude  *://www.youtube.com/live_chat_replay*\n// @exclude  *://www.youtube.com/persist_identity*\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=YouTube.com\n// @grant  none\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/459541/YouTube%E5%8E%BB%E5%B9%BF%E5%91%8A.user.js\n// @updateURL  https://update.greasyfork.org/scripts/459541/YouTube%E5%8E%BB%E5%B9%BF%E5%91%8A.meta.js",
   "sha256": "9758d2bbac03f3fefbc1fe534fd6a9c6fcbee81fbdcb0566ea998c92133a131f",
-  "discovered_at": "2026-04-20T03:47:36.337485+00:00",
+  "discovered_at": "2026-04-20T05:02:25.713188+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 297024,
+  "install_count": 297026,
   "good_ratings": 150,
   "bad_ratings": 27,
-  "summary": {
-    "applicable_sites": [
-      "YouTube"
-    ],
-    "description": "本脚本能自动移除YouTube上的广告，包括页面上的静态广告和视频播放中的广告。无需手动操作，观看体验更流畅。脚本不会影响网络连接，使用安全可靠。",
-    "permissions": [
-      {
-        "explanation": "脚本不需要额外权限，运行时不会访问您的隐私数据。",
-        "grant": "none"
-      }
-    ],
-    "tags": [
-      "去广告",
-      "YouTube",
-      "视频优化",
-      "无痕浏览"
-    ],
-    "usage": [
-      "1. 安装Tampermonkey扩展。",
-      "2. 在Tampermonkey中添加本脚本。",
-      "3. 打开YouTube，广告将自动被屏蔽，无需额外设置。"
-    ],
-    "zh_name": "YouTube去广告"
-  }
+  "summary": {}
 }

@@ -17,37 +17,12 @@
   "require": [],
   "metadata_raw": "// @name  WEXI Veck.io CRACKED by Terra\n// @namespace  https://wexi.qzz.io/\n// @version  1.2.1\n// @description  veck.io Mod Menu - Aimbot, ESP, Kill all, God mode fly and more, cracked by Terra.\n// @match  *://veck.io/*\n// @run-at  document-idle\n// @author  cracked by terra\n// @grant  none\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/574026/WEXI%20Veckio%20CRACKED%20by%20Terra.user.js\n// @updateURL  https://update.greasyfork.org/scripts/574026/WEXI%20Veckio%20CRACKED%20by%20Terra.meta.js",
   "sha256": "8d3d177e494e653f7de3590fbaf793a4552e6083729e10e865fc820a46a98362",
-  "discovered_at": "2026-04-20T03:49:05.060975+00:00",
+  "discovered_at": "2026-04-20T05:03:32.948087+00:00",
   "ai_reason": "",
   "target_roles": "",
-  "is_new": true,
-  "install_count": 193,
+  "is_new": false,
+  "install_count": 198,
   "good_ratings": 0,
   "bad_ratings": 0,
-  "summary": {
-    "applicable_sites": [
-      "Veck.io 游戏网站"
-    ],
-    "description": "本脚本为 Veck.io 游戏提供修改菜单，包含自动瞄准（Aimbot）、透视（ESP）、一键击杀、无敌飞行等功能。安装后可在游戏中开启各种辅助，提升游戏体验。此版本为破解版本，无需额外密钥。",
-    "permissions": [
-      {
-        "explanation": "脚本不申请任何特殊权限，仅在网页内运行。",
-        "grant": "none"
-      }
-    ],
-    "tags": [
-      "游戏辅助",
-      "破解",
-      "自动瞄准",
-      "透视",
-      "一键击杀",
-      "无敌"
-    ],
-    "usage": [
-      "1. 安装脚本后，打开 Veck.io 网站。",
-      "2. 进入游戏后，屏幕会显示辅助菜单。",
-      "3. 按需选择并开启所需的辅助功能。"
-    ],
-    "zh_name": "Veck.io 游戏辅助菜单"
-  }
+  "summary": {}
 }

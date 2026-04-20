@@ -17,35 +17,12 @@
   "require": [],
   "metadata_raw": "// @name  GreenCloudVPS\n// @namespace  http://tampermonkey.net/\n// @version  0.1\n// @description  try to take over the world!\n// @author  You\n// @include  https://greencloudvps.com/*\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=greencloudvps.com\n// @grant  none",
   "sha256": "bf9e479d88f8125948ae08fb54df670409555954cb5105fb521050a150726f50",
-  "discovered_at": "2026-04-20T03:42:17.631777+00:00",
+  "discovered_at": "2026-04-20T04:55:26.496585+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
   "install_count": null,
   "good_ratings": null,
   "bad_ratings": null,
-  "summary": {
-    "applicable_sites": [
-      "GreenCloudVPS 官网"
-    ],
-    "description": "本脚本用于自动化 GreenCloudVPS 官网的购买流程。它会自动点击购物车、结账、选择支付方式并同意协议，帮助用户快速下单。适合需要抢购或简化购买流程的用户。",
-    "permissions": [
-      {
-        "explanation": "脚本不需要额外权限，仅操作网页内容。",
-        "grant": "none"
-      }
-    ],
-    "tags": [
-      "自动化",
-      "VPS购买",
-      "抢购",
-      "表单填写"
-    ],
-    "usage": [
-      "1. 安装脚本后，访问 GreenCloudVPS 官网。",
-      "2. 选择需要购买的产品，进入购物车页面。",
-      "3. 脚本会自动帮你点击继续、结账、选择支付宝支付并同意协议，无需手动操作。"
-    ],
-    "zh_name": "GreenCloudVPS 自动下单助手"
-  }
+  "summary": {}
 }

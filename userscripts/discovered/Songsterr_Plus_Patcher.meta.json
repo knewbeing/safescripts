@@ -17,12 +17,12 @@
   "require": [],
   "metadata_raw": "// @name  Songsterr Plus Patcher\n// @namespace  https://github.com/Strikeless\n// @version  1.2.2\n// @description  Trick Songsterr to unlock plus features.\n// @license  The Unlicense\n// @supportURL  https://github.com/Strikeless/SongsterrPlusPatcher\n// @match  http*://*.songsterr.com/*\n// @run-at  document-start\n// @grant  unsafeWindow\n// @downloadURL  https://update.greasyfork.org/scripts/500019/Songsterr%20Plus%20Patcher.user.js\n// @updateURL  https://update.greasyfork.org/scripts/500019/Songsterr%20Plus%20Patcher.meta.js",
   "sha256": "2ea320b5a9f9c7013d8bb97c6b8b64ea2a26a57fbe30fc1c34c47c9953d2cb17",
-  "discovered_at": "2026-04-16T06:44:27.768211+00:00",
+  "discovered_at": "2026-04-20T05:05:26.701160+00:00",
   "ai_reason": "",
   "target_roles": "",
-  "is_new": true,
-  "install_count": 13050,
+  "is_new": false,
+  "install_count": 13246,
   "good_ratings": 14,
-  "bad_ratings": 0,
+  "bad_ratings": 3,
   "summary": {}
 }

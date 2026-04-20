@@ -74,85 +74,12 @@
   ],
   "metadata_raw": "// @name  HTML5视频播放工具\n// @name:en  HTML5 Video Playing Tools\n// @name:it  Strumenti di riproduzione video HTML5\n// @description  视频截图；切换画中画；缓存视频；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、西瓜视频、爱奇艺、A站、PPTV、芒果TV、咪咕视频、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、风行、百度云视频等；直播：twitch、斗鱼、YY、虎牙、龙珠、战旗。可增加自定义站点\n// @description:en  Enable hotkeys for HTML5 playback: video screenshot; enable/disable picture-in-picture; copy cached video; send any video to full screen or browser window size; fast forward, rewind, pause/play, volume, skip to next video, skip to previous or next frame, set playback speed. Video sites supported: YouTube, TED, Youku, QQ.com, bilibili, ixigua, iQiyi, support mainstream video sites in mainland China; Live broadcasts: Twitch, Douyu.com, YY.com, Huya.com. Custom sites can be added\n// @description:it  Abilita tasti di scelta rapida per riproduzione HTML5: screenshot del video; abilita/disabilita picture-in-picture; copia il video nella cache; manda qualsiasi video a schermo intero o a dimensione finestra del browser; avanzamento veloce, riavvolgimento, pausa/riproduzione, imposta velocità di riproduzione. Siti video supportati: YouTube, TED, Supporto dei siti video mainstream nella Cina continentale. È possibile aggiungere siti personalizzati\n// @homepage  https://bbs.kafan.cn/thread-2093014-1-1.html\n// @match  https://*.qq.com/*\n// @match  https://www.weiyun.com/video_*\n// @match  https://v.youku.com/v*\n// @match  https://m.youku.com/*\n// @match  https://vku.youku.com/live/*\n// @match  https://video.tudou.com/v/*\n// @match  https://www.iqiyi.com/*\n// @match  https://live.bilibili.com/*\n// @match  https://www.bilibili.com/*\n// @match  https://www.ixigua.com/*\n// @match  https://www.toutiao.com/video/*\n// @match  https://www.acfun.cn/*\n// @match  https://live.acfun.cn/live/*\n// @match  http://v.pptv.com/show/*\n// @match  https://v.pptv.com/show/*\n// @match  https://www.miguvideo.com/*\n// @match  https://tv.sohu.com/*\n// @match  https://film.sohu.com/album/*\n// @match  https://www.mgtv.com/*\n// @match  https://movie.douban.com/subject/*\n// @match  https://pan.baidu.com/*\n// @match  https://yun.baidu.com/*\n// @match  https://*.163.com/*\n// @match  https://*.icourse163.org/*\n// @match  http://video.sina.*/*\n// @match  https://video.sina.*/*\n// @match  http://k.sina.*/*\n// @match  https://k.sina.*/*\n// @match  https://weibo.com/*\n// @match  https://*.weibo.com/*\n// @match  https://pan.baidu.com/*\n// @match  https://yun.baidu.com/*\n// @match  http://v.ifeng.com/*\n// @match  https://v.ifeng.com/*\n// @match  http://news.mtime.com/*\n// @match  http://video.mtime.com/*\n// @match  https://www.youtube.com/*\n// @match  https://www.ted.com/talks/*\n// @match  https://www.twitch.tv/*\n// @match  https://www.yy.com/*\n// @match  https://www.huya.com/*\n// @match  https://v.douyu.com/*\n// @match  https://www.douyu.com/*\n// @match  https://live.douyin.com/*\n// @match  https://www.douyin.com/*\n// @match  https://www.longzhu.com/*\n// @match  https://www.zhanqi.tv/*\n// @match  https://lemonlive*/*\n// @exclude  https://user.qzone.qq.com/*\n// @exclude  https://www.dj92cc.net/dance/play/id/*\n// @version  2.0.2\n// @inject-into  content\n// @run-at  document-start\n// @require  https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js\n// @require  https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js\n// @grant  GM_addStyle\n// @grant  window.onurlchange\n// @grant  unsafeWindow\n// @grant  GM_registerMenuCommand\n// @grant  GM_setValue\n// @grant  GM_getValue\n// @include  */play*\n// @include  *play/*\n// @namespace  https://greasyfork.org/users/7036\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/30545/HTML5%E8%A7%86%E9%A2%91%E6%92%AD%E6%94%BE%E5%B7%A5%E5%85%B7.user.js\n// @updateURL  https://update.greasyfork.org/scripts/30545/HTML5%E8%A7%86%E9%A2%91%E6%92%AD%E6%94%BE%E5%B7%A5%E5%85%B7.meta.js",
   "sha256": "2d011a2ccb0a40a4b8ecc49c61caf7b9b766234567bea650ab4631394ad9e035",
-  "discovered_at": "2026-04-20T03:45:38.124997+00:00",
+  "discovered_at": "2026-04-20T05:00:27.134146+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 1276019,
+  "install_count": 1276024,
   "good_ratings": 2612,
   "bad_ratings": 21,
-  "summary": {
-    "applicable_sites": [
-      "腾讯视频",
-      "优酷",
-      "土豆",
-      "爱奇艺",
-      "B站",
-      "西瓜视频",
-      "今日头条",
-      "AcFun",
-      "PPTV",
-      "咪咕视频",
-      "搜狐视频",
-      "芒果TV",
-      "豆瓣电影",
-      "百度网盘",
-      "网易云课堂",
-      "新浪视频",
-      "微博",
-      "凤凰视频",
-      "时光网",
-      "YouTube",
-      "TED",
-      "Twitch",
-      "YY直播",
-      "虎牙直播",
-      "斗鱼直播",
-      "抖音",
-      "龙珠直播",
-      "战旗直播"
-    ],
-    "description": "本脚本为主流视频网站和直播平台的 HTML5 视频播放提供增强工具。支持视频截图、画中画、缓存、网页全屏等功能，并添加了丰富的快捷键操作。适用于如B站、优酷、腾讯视频、爱奇艺、YouTube等国内外主流视频和直播网站。用户也可自定义支持站点。",
-    "permissions": [
-      {
-        "explanation": "允许脚本动态添加自定义样式，美化界面或隐藏元素。",
-        "grant": "GM_addStyle"
-      },
-      {
-        "explanation": "监听网页地址变化，适配单页应用的视频切换。",
-        "grant": "window.onurlchange"
-      },
-      {
-        "explanation": "让脚本能访问网页的原始窗口对象，增强兼容性和功能。",
-        "grant": "unsafeWindow"
-      },
-      {
-        "explanation": "在油猴菜单中添加自定义命令，方便用户操作设置。",
-        "grant": "GM_registerMenuCommand"
-      },
-      {
-        "explanation": "保存用户设置或偏好，保证下次使用时自动生效。",
-        "grant": "GM_setValue"
-      },
-      {
-        "explanation": "读取已保存的用户设置，实现个性化体验。",
-        "grant": "GM_getValue"
-      }
-    ],
-    "tags": [
-      "视频增强",
-      "快捷键",
-      "网页全屏",
-      "画中画",
-      "多平台支持",
-      "直播辅助"
-    ],
-    "usage": [
-      "1. 安装脚本后，访问支持的视频或直播网站。",
-      "2. 播放视频时，界面会显示增强工具栏或提示。",
-      "3. 使用快捷键或工具栏按钮进行截图、快进、画中画等操作。",
-      "4. 可在油猴菜单中设置自定义选项或管理支持站点。"
-    ],
-    "zh_name": "HTML5视频播放工具"
-  }
+  "summary": {}
 }

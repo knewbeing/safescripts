@@ -20,49 +20,12 @@
   "require": [],
   "metadata_raw": "// @name  Deadshot.io ESP & Memory Aimbot & Silent Aimbot & No recoil\n// @namespace  http://tampermonkey.net/\n// @description  ESP & Memory Aimbot & Silent Aimbot & No recoil for deadshot.io\n// @version  1.0.6\n// @author  ovftank\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=deadshot.io\n// @match  *://deadshot.io/*\n// @grant  unsafeWindow\n// @grant  GM_xmlhttpRequest\n// @grant  GM_setValue\n// @grant  GM_getValue\n// @connect  deadshot-cheat.netlify.app\n// @run-at  document-start\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/572110/Deadshotio%20ESP%20%20Memory%20Aimbot%20%20Silent%20Aimbot%20%20No%20recoil.user.js\n// @updateURL  https://update.greasyfork.org/scripts/572110/Deadshotio%20ESP%20%20Memory%20Aimbot%20%20Silent%20Aimbot%20%20No%20recoil.meta.js",
   "sha256": "0ad514bd2fcd94c1bb8e883fbb88e2266e7ad2d5315745c0582d3d2351154d4b",
-  "discovered_at": "2026-04-20T03:46:10.847084+00:00",
+  "discovered_at": "2026-04-20T05:01:30.335051+00:00",
   "ai_reason": "",
   "target_roles": "",
-  "is_new": true,
+  "is_new": false,
   "install_count": 827,
   "good_ratings": 4,
   "bad_ratings": 2,
-  "summary": {
-    "applicable_sites": [
-      "deadshot.io"
-    ],
-    "description": "本脚本为 deadshot.io 游戏提供辅助功能，包括透视（ESP）、自动瞄准（Aimbot）、无后坐力等。安装后可自动加载最新辅助代码，无需手动更新。适合希望提升游戏体验的玩家使用。",
-    "permissions": [
-      {
-        "explanation": "允许脚本访问和修改页面的全局变量，便于注入辅助功能。",
-        "grant": "unsafeWindow"
-      },
-      {
-        "explanation": "用于从外部服务器下载最新的辅助代码。",
-        "grant": "GM_xmlhttpRequest"
-      },
-      {
-        "explanation": "用于本地保存下载的辅助代码，实现缓存和自动更新。",
-        "grant": "GM_setValue"
-      },
-      {
-        "explanation": "用于读取本地缓存的辅助代码，提升加载速度。",
-        "grant": "GM_getValue"
-      }
-    ],
-    "tags": [
-      "游戏辅助",
-      "自动瞄准",
-      "透视",
-      "无后坐力",
-      "deadshot.io",
-      "外挂"
-    ],
-    "usage": [
-      "1. 安装脚本后，打开 deadshot.io 网站。",
-      "2. 游戏页面会自动加载辅助功能，无需手动操作。",
-      "3. 若辅助未生效，可尝试刷新页面。"
-    ],
-    "zh_name": "deadshot.io 游戏辅助"
-  }
+  "summary": {}
 }

@@ -20,49 +20,12 @@
   "require": [],
   "metadata_raw": "// @name  EasyTube V3 — Ad Skip, SponsorBlock & HD Download⬇️🚀\n// @name:vi  EasyTube V3 — Bỏ qua quảng cáo, SponsorBlock & Tải HD\n// @name:zh-CN  EasyTube V3 — YouTube 广告跳过、SponsorBlock 和 HD 下载器\n// @name:zh-TW  EasyTube V3 — YouTube 廣告跳過、SponsorBlock 和 HD 下載器\n// @name:ru  EasyTube V3 — Пропуск рекламы, SponsorBlock и HD загрузчик\n// @name:ja  EasyTube V3 — 広告スキップ・SponsorBlock・HDダウンローダー\n// @name:ko  EasyTube V3 — 광고 건너뛰기, SponsorBlock, HD 다운로더\n// @name:es  EasyTube V3 — Saltar anuncios, SponsorBlock y descarga HD\n// @name:pt-BR  EasyTube V3 — Pular anúncios, SponsorBlock e download HD\n// @name:fr  EasyTube V3 — Ignorer pubs, SponsorBlock et téléchargeur HD\n// @name:de  EasyTube V3 — Werbung überspringen, SponsorBlock, HD-Download\n// @name:tr  EasyTube V3 — Reklam Atlama, SponsorBlock ve HD İndirici\n// @name:pl  EasyTube V3 — Pomijanie reklam, SponsorBlock, pobieranie HD\n// @name:id  EasyTube V3 — Lewati Iklan, SponsorBlock & Unduhan HD\n// @name:th  EasyTube V3 — ข้ามโฆษณา, SponsorBlock และดาวน์โหลด HD\n// @name:ar  EasyTube V3 — تخطي الإعلانات، SponsorBlock وتنزيل HD\n// @description  🚫 Auto-skip ALL YouTube ads via MutationObserver + playbackRate trick (fastest method 2025). ⏭ SponsorBlock API (9 categories). 🎥 Force 4K/1440p/1080p quality. ⬇ Download via Cobalt (multi-instance fallback). 💾 Remembers your toggle settings. Bypass adblock detection. Works on Tampermonkey & Violentmonkey.\n// @description:vi  🚫 Bỏ qua quảng cáo YouTube tức thì (MutationObserver + playbackRate 16x). ⏭ SponsorBlock (9 danh mục). 🎥 4K/1440p/1080p. ⬇ Tải video qua Cobalt. 💾 Lưu cài đặt. Bypass popup adblock.\n// @description:zh-CN  🚫 最快速跳过所有YouTube广告(MutationObserver+16x倍速)。⏭ SponsorBlock(9类别)。🎥 4K画质。⬇ Cobalt多节点下载。💾 保存设置。绕过广告拦截检测。\n// @description:zh-TW  🚫 最快速跳過所有YouTube廣告（MutationObserver+16x倍速）。⏭ SponsorBlock（9類別）。🎥 4K畫質。⬇ Cobalt多節點下載。💾 儲存設定。繞過廣告攔截偵測。\n// @description:ru  🚫 Мгновенный пропуск рекламы (MutationObserver + 16x). ⏭ SponsorBlock (9 категорий). 🎥 4K качество. ⬇ Загрузка через Cobalt. 💾 Сохранение настроек.\n// @description:ja  🚫 全広告を即時スキップ（MutationObserver+16倍速）。⏭ SponsorBlock（9カテゴリ）。🎥 4K画質。⬇ Cobaltでダウンロード。💾 設定保存。\n// @description:ko  🚫 즉시 광고 스킵(MutationObserver+16배속). ⏭ SponsorBlock(9카테고리). 🎥 4K화질. ⬇ Cobalt 다운로드. 💾 설정저장.\n// @description:es  🚫 Salta anuncios al instante (MutationObserver+16x). ⏭ SponsorBlock. 🎥 4K. ⬇ Cobalt. 💾 Ajustes guardados.\n// @description:fr  🚫 Ignore les publicités instantanément. ⏭ SponsorBlock. 🎥 4K. ⬇ Cobalt. 💾 Paramètres sauvegardés.\n// @description:de  🚫 Werbung sofort überspringen. ⏭ SponsorBlock. 🎥 4K. ⬇ Cobalt. 💾 Einstellungen gespeichert.\n// @description:pt-BR  🚫 Pula anúncios instantaneamente. ⏭ SponsorBlock. 🎥 4K. ⬇ Cobalt. 💾 Configurações salvas.\n// @description:tr  🚫 Reklamları anında atlar. ⏭ SponsorBlock. 🎥 4K. ⬇ Cobalt. 💾 Ayarlar kaydedilir.\n// @description:pl  🚫 Natychmiastowe pomijanie reklam. ⏭ SponsorBlock. 🎥 4K. ⬇ Cobalt. 💾 Zapamiętuje ustawienia.\n// @description:id  🚫 Lewati iklan seketika. ⏭ SponsorBlock. 🎥 4K. ⬇ Cobalt. 💾 Pengaturan tersimpan.\n// @description:ar  🚫 تخطي الإعلانات فوراً. ⏭ SponsorBlock. 🎥 4K. ⬇ Cobalt. 💾 الإعدادات محفوظة.\n// @description:th  🚫 ข้ามโฆษณาทันที ⏭ SponsorBlock 🎥 4K ⬇ Cobalt 💾 บันทึกการตั้งค่า\n// @namespace  https://greasyfork.org/users/1510019\n// @version  3.0.0\n// @author  2pixel\n// @license  MIT\n// @homepageURL  https://greasyfork.org/en/scripts/561432\n// @supportURL  https://greasyfork.org/en/scripts/561432/feedback\n// @icon  https://raw.githubusercontent.com/not2pixel/TampermonkeyProjects/refs/heads/main/EasyTube.png\n// @icon64  https://raw.githubusercontent.com/not2pixel/TampermonkeyProjects/refs/heads/main/EasyTube.png\n// @match  https://*.youtube.com/*\n// @exclude  https://www.youtube.com/live_chat*\n// @exclude  https://studio.youtube.com/*\n// @grant  GM_addStyle\n// @grant  GM_xmlhttpRequest\n// @grant  GM_setValue\n// @grant  GM_getValue\n// @connect  sponsor.ajay.app\n// @connect  co.wuk.sh\n// @connect  cobalt.api.timelessnesses.me\n// @connect  api.cobalt.tools\n// @run-at  document-start\n// @compatible  chrome   Tested on Chrome 120+ with Tampermonkey\n// @compatible  firefox  Tested on Firefox 120+ with Tampermonkey / Violentmonkey\n// @compatible  edge     Tested on Edge 120+ with Tampermonkey\n// @compatible  opera    Supported via Tampermonkey / Violentmonkey\n// @downloadURL  https://update.greasyfork.org/scripts/561432/EasyTube%20V3%20%E2%80%94%20Ad%20Skip%2C%20SponsorBlock%20%20HD%20Download%E2%AC%87%EF%B8%8F%F0%9F%9A%80.user.js\n// @updateURL  https://update.greasyfork.org/scripts/561432/EasyTube%20V3%20%E2%80%94%20Ad%20Skip%2C%20SponsorBlock%20%20HD%20Download%E2%AC%87%EF%B8%8F%F0%9F%9A%80.meta.js",
   "sha256": "e23865a863715d68a3f6f2a232cd7f55a97bab27ccb491a92b0addd324ea9731",
-  "discovered_at": "2026-04-20T03:44:41.345682+00:00",
+  "discovered_at": "2026-04-20T04:58:30.179922+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 4964,
+  "install_count": 4970,
   "good_ratings": 5,
   "bad_ratings": 2,
-  "summary": {
-    "applicable_sites": [
-      "YouTube"
-    ],
-    "description": "本脚本可自动跳过YouTube所有广告，支持SponsorBlock自动跳过片头片尾等内容，强制高清视频播放，并提供多节点视频下载功能。还能记住你的设置，并绕过广告拦截检测。",
-    "permissions": [
-      {
-        "explanation": "允许脚本自定义页面样式。",
-        "grant": "GM_addStyle"
-      },
-      {
-        "explanation": "让脚本能跨域请求数据，如获取SponsorBlock信息或下载链接。",
-        "grant": "GM_xmlhttpRequest"
-      },
-      {
-        "explanation": "用于保存你的脚本设置。",
-        "grant": "GM_setValue"
-      },
-      {
-        "explanation": "用于读取你保存的脚本设置。",
-        "grant": "GM_getValue"
-      }
-    ],
-    "tags": [
-      "广告屏蔽",
-      "视频下载",
-      "YouTube增强",
-      "SponsorBlock",
-      "高清视频",
-      "自动化"
-    ],
-    "usage": [
-      "安装脚本后，打开YouTube即可自动跳过广告和SponsorBlock片段。",
-      "在视频页面可选择下载高清视频。",
-      "如需调整设置，可在页面上的脚本界面进行切换。"
-    ],
-    "zh_name": "EasyTube V3 — YouTube广告跳过、SponsorBlock和HD下载器"
-  }
+  "summary": {}
 }
