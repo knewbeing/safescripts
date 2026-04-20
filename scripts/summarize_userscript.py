@@ -27,7 +27,7 @@ PROMPT_FILE = REPO_ROOT / ".github" / "prompts" / "summarize-userscript.prompt.y
 MANAGED_DIR = REPO_ROOT / "userscripts" / "managed"
 DOCS_MANAGED = REPO_ROOT / "docs" / "managed"
 TMP_DIR = Path("/tmp/userscripts")
-MODEL = "openai/gpt-4.1-mini"
+MODEL = "openai/gpt-4.1"
 
 DOCS_MANAGED.mkdir(parents=True, exist_ok=True)
 

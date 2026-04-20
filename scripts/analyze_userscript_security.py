@@ -24,7 +24,7 @@ sys.path.insert(0, str(REPO_ROOT / ".github" / "scripts"))
 from ai_models import create_models_client, request_from_prompt  # noqa: E402
 
 PROMPT_FILE = REPO_ROOT / ".github" / "prompts" / "analyze-userscript-security.prompt.yml"
-MODEL = "openai/gpt-4.1-mini"
+MODEL = "openai/gpt-4.1"
 
 RISK_BADGE = {
     "SAFE": "🟢 SAFE",

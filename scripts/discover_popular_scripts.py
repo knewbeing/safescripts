@@ -40,7 +40,7 @@ SUMMARIZE_PROMPT = REPO_ROOT / ".github" / "prompts" / "summarize-userscript.pro
 DISCOVERED_DIR = REPO_ROOT / "userscripts" / "discovered"
 DOCS_DISCOVERED = REPO_ROOT / "docs" / "discovered"
 TMP_DIR = Path("/tmp/userscripts")
-MODEL = "openai/gpt-4.1-mini"
+MODEL = "openai/gpt-4.1"
 MAX_SCRIPTS = int(os.environ.get("MAX_DISCOVERED", "10"))
 
 DISCOVERED_DIR.mkdir(parents=True, exist_ok=True)
