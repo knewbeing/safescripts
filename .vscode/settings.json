@@ -1,0 +1,15 @@
+{
+    "terminal.integrated.initialHintCopilotCli": true,
+    "github.copilot.chat.agent.autoFix": true,
+    "github.copilot.chat.cli.sessionController.enabled": true,
+    "github.copilot.chat.cli.sessionControllerForSessionsApp.enabled": true,
+    "github.copilot.chat.cli.showExternalSessions": true,
+    "github.copilot.chat.otel.captureContent": true,
+    "github.copilot.chat.codesearch.enabled": true,
+    "github.copilot.chat.copilotMemory.enabled": true,
+    "github.copilot.chat.agent.omitFileAttachmentContents": true,
+    "github.copilot.chat.agentDebugLog.fileLogging.enabled": true,
+    "github.copilot.chat.anthropic.tools.websearch.enabled": true,
+    "github.copilot.chat.alternateGptPrompt.enabled": true,
+    "github.copilot.chat.alternateGeminiModelFPrompt.enabled": true
+}
