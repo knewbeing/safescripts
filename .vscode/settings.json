@@ -11,5 +11,7 @@
     "github.copilot.chat.agentDebugLog.fileLogging.enabled": true,
     "github.copilot.chat.anthropic.tools.websearch.enabled": true,
     "github.copilot.chat.alternateGptPrompt.enabled": true,
-    "github.copilot.chat.alternateGeminiModelFPrompt.enabled": true
+    "github.copilot.chat.alternateGeminiModelFPrompt.enabled": true,
+    "chat.requestQueuing.defaultAction": "queue",
+    "github.copilot.chat.cli.isolationOption.enabled": false
 }

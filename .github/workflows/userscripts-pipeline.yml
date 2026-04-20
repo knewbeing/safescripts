@@ -1,6 +1,11 @@
 name: UserScripts Pipeline
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/userscripts-pipeline.yml"
   schedule:
     - cron: "0 2 * * 1"   # 每周一 02:00 UTC
   workflow_dispatch:
@@ -320,6 +325,7 @@ jobs:
           python scripts/write_run_history.py || true
 
       - name: Commit updated files
+        continue-on-error: true
         env:
           TARGET_BRANCH: ${{ github.ref_name }}
         run: |
@@ -330,7 +336,7 @@ jobs:
             echo "No changes to commit"
           else
             git commit -m "chore: sync userscripts and update docs [skip ci]"
-            git push origin "HEAD:${TARGET_BRANCH}"
+            git push origin "HEAD:${TARGET_BRANCH}" || echo "::warning::Failed to push generated files back to ${TARGET_BRANCH}; continuing with build and deploy."
           fi
 
       - name: Setup Node.js
