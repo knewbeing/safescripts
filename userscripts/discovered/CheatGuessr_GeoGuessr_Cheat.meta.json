@@ -17,12 +17,37 @@
   "require": [],
   "metadata_raw": "// @name  CheatGuessr | GeoGuessr Cheat\n// @namespace  http://tampermonkey.net/\n// @version  1.2\n// @description  Extremely customizable GeoGuessr cheating client. Click 3 to open the settings menu.\n// @author  CheatGuessr\n// @match  https://www.geoguessr.com/*\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=geoguessr.com\n// @grant  GM_webRequest\n// @license  GNU AGPLv3\n// @downloadURL  https://update.greasyfork.org/scripts/525302/CheatGuessr%20%7C%20GeoGuessr%20Cheat.user.js\n// @updateURL  https://update.greasyfork.org/scripts/525302/CheatGuessr%20%7C%20GeoGuessr%20Cheat.meta.js",
   "sha256": "c7a2748d60b3adc3d3bdb5f1fa501f4a57ac27f5d9ec5a0a2a1be0ff7ac4586e",
-  "discovered_at": "2026-04-16T06:45:24.702038+00:00",
+  "discovered_at": "2026-04-20T03:45:33.105572+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 8101,
+  "install_count": 8428,
   "good_ratings": 4,
-  "bad_ratings": 0,
-  "summary": {}
+  "bad_ratings": 3,
+  "summary": {
+    "applicable_sites": [
+      "GeoGuessr官网"
+    ],
+    "description": "本脚本为GeoGuessr游戏提供作弊辅助工具，允许用户通过快捷键显示谷歌地图、获取详细地理位置信息等。支持自定义设置菜单，提升游戏体验。还可屏蔽广告，界面可自定义。",
+    "permissions": [
+      {
+        "explanation": "允许脚本拦截和修改网页的网络请求，便于实现作弊功能。",
+        "grant": "GM_webRequest"
+      }
+    ],
+    "tags": [
+      "游戏辅助",
+      "作弊",
+      "地图工具",
+      "快捷键",
+      "广告屏蔽"
+    ],
+    "usage": [
+      "安装脚本后，进入GeoGuessr官网。",
+      "按下数字键3可打开设置菜单，自定义快捷键和功能。",
+      "按快捷键1可显示谷歌地图辅助定位。",
+      "根据需要使用其他快捷键获取详细位置或进行快速定位。"
+    ],
+    "zh_name": "GeoGuessr作弊助手"
+  }
 }

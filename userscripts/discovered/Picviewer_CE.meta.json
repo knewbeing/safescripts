@@ -1,0 +1,108 @@
+{
+  "slug": "Picviewer_CE",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/24204-picviewer-ce",
+  "source_repo": "24204",
+  "raw_url": "https://update.greasyfork.org/scripts/24204/Picviewer%20CE%2B.user.js",
+  "filename": "Picviewer_CE.user.js",
+  "name": "Picviewer CE+",
+  "version": "2026.2.6.1",
+  "description": "Powerful picture viewing tool online, which can popup/scale/rotate/batch save pictures automatically",
+  "match": [
+    "*://*/*"
+  ],
+  "grant": [
+    "GM_getValue",
+    "GM_setValue",
+    "GM_deleteValue",
+    "GM_addStyle",
+    "GM_openInTab",
+    "GM_setClipboard",
+    "GM_xmlhttpRequest",
+    "GM_registerMenuCommand",
+    "GM_notification",
+    "GM_download",
+    "GM.getValue",
+    "GM.setValue",
+    "GM.deleteValue",
+    "GM.addStyle",
+    "GM.openInTab",
+    "GM.setClipboard",
+    "GM.xmlHttpRequest",
+    "GM.registerMenuCommand",
+    "GM.notification",
+    "unsafeWindow"
+  ],
+  "require": [
+    "https://update.greasyfork.org/scripts/6158/23710/GM_config%20CN.js",
+    "https://update.greasyfork.org/scripts/438080/1738227/pvcep_rules.js",
+    "https://update.greasyfork.org/scripts/440698/1740314/pvcep_lang.js"
+  ],
+  "metadata_raw": "// @name  Picviewer CE+\n// @name:zh-CN  Picviewer CE+\n// @name:zh-TW  Picviewer CE+\n// @name:ja  Picviewer CE+\n// @name:pt-BR  Picviewer CE+\n// @name:ru  Picviewer CE+\n// @author  NLF && ywzhaiqi && hoothin\n// @description  Powerful picture viewing tool online, which can popup/scale/rotate/batch save pictures automatically\n// @description:zh-CN  在线看图工具，支持图片翻转、旋转、缩放、弹出大图、批量保存\n// @description:zh-TW  線上看圖工具，支援圖片翻轉、旋轉、縮放、彈出大圖、批量儲存\n// @description:ja  画像を強力に閲覧できるツール。ポップアップ表示、拡大・縮小、回転、一括保存などの機能を自動で実行できます\n// @description:pt-BR  Poderosa ferramenta de visualização de imagens on-line, que pode pop-up/dimensionar/girar/salvar em lote imagens automaticamente\n// @description:ru  Мощный онлайн-инструмент для просмотра изображений, который может автоматически отображать/масштабировать/вращать/пакетно сохранять изображения\n// @version  2026.2.6.1\n// @icon  data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAAAV1BMVEUAAAD////29vbKysoqKioiIiKysrKhoaGTk5N9fX3z8/Pv7+/r6+vk5OTb29vOzs6Ojo5UVFQzMzMZGRkREREMDAy4uLisrKylpaV4eHhkZGRPT08/Pz/IfxjQAAAAgklEQVQoz53RRw7DIBBAUb5pxr2m3/+ckfDImwyJlL9DDzQgDIUMRu1vWOxTBdeM+onApENF0qHjpkOk2VTwLVEF40Kbfj1wK8AVu2pQA1aBBYDHJ1wy9Cf4cXD5chzNAvsAnc8TjoLAhIzsBao9w1rlVTIvkOYMd9nm6xPi168t9AYkbANdajpjcwAAAABJRU5ErkJggg==\n// @namespace  https://github.com/hoothin/UserScripts\n// @homepage  https://pv.hoothin.com/\n// @supportURL  https://github.com/hoothin/UserScripts/issues\n// @connect  www.google.com\n// @connect  www.google.com.hk\n// @connect  www.google.co.jp\n// @connect  ipv4.google.com\n// @connect  image.baidu.com\n// @connect  www.tineye.com\n// @connect  hoothin.com\n// @connect  *\n// @grant  GM_getValue\n// @grant  GM_setValue\n// @grant  GM_deleteValue\n// @grant  GM_addStyle\n// @grant  GM_openInTab\n// @grant  GM_setClipboard\n// @grant  GM_xmlhttpRequest\n// @grant  GM_registerMenuCommand\n// @grant  GM_notification\n// @grant  GM_download\n// @grant  GM.getValue\n// @grant  GM.setValue\n// @grant  GM.deleteValue\n// @grant  GM.addStyle\n// @grant  GM.openInTab\n// @grant  GM.setClipboard\n// @grant  GM.xmlHttpRequest\n// @grant  GM.registerMenuCommand\n// @grant  GM.notification\n// @grant  unsafeWindow\n// @require  https://update.greasyfork.org/scripts/6158/23710/GM_config%20CN.js\n// @require  https://update.greasyfork.org/scripts/438080/1738227/pvcep_rules.js\n// @require  https://update.greasyfork.org/scripts/440698/1740314/pvcep_lang.js\n// @match  *://*/*\n// @exclude  http://www.toodledo.com/tasks/*\n// @exclude  http*://maps.google.com*/*\n// @exclude  *://www.google.*/_/chrome/newtab*\n// @exclude  *://mega.*/*\n// @exclude  *://*.mega.*/*\n// @exclude  *://onedrive.live.com/*\n// @run-at  document-end\n// @created  2011-6-15\n// @contributionURL  https://ko-fi.com/hoothin\n// @contributionAmount  1\n// @downloadURL  https://update.greasyfork.org/scripts/24204/Picviewer%20CE%2B.user.js\n// @updateURL  https://update.greasyfork.org/scripts/24204/Picviewer%20CE%2B.meta.js",
+  "sha256": "d46b17a95257deffa8715f21a481dd89074e444c6c7630b79fa647521364190d",
+  "discovered_at": "2026-04-20T03:49:11.170833+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 303520,
+  "good_ratings": 1367,
+  "bad_ratings": 1,
+  "summary": {
+    "applicable_sites": [
+      "所有网站（部分特殊网站除外，如Toodledo、Google地图、Mega、OneDrive等）"
+    ],
+    "description": "Picviewer CE+ 是一款强大的在线看图工具，支持图片弹出大图、缩放、旋转、翻转等操作。还可以批量保存网页上的图片，提升浏览和管理图片的效率。适用于绝大多数网页，操作便捷。",
+    "permissions": [
+      {
+        "explanation": "用于存储和读取脚本的设置和数据。",
+        "grant": "GM_getValue/GM.setValue/GM.deleteValue/GM.getValue/GM.setValue/GM.deleteValue"
+      },
+      {
+        "explanation": "为网页添加自定义样式，优化图片查看体验。",
+        "grant": "GM_addStyle/GM.addStyle"
+      },
+      {
+        "explanation": "在新标签页打开图片或链接，方便查看原图。",
+        "grant": "GM_openInTab/GM.openInTab"
+      },
+      {
+        "explanation": "将图片地址或内容复制到剪贴板。",
+        "grant": "GM_setClipboard/GM.setClipboard"
+      },
+      {
+        "explanation": "实现跨域网络请求，获取图片或相关数据。",
+        "grant": "GM_xmlhttpRequest/GM.xmlHttpRequest"
+      },
+      {
+        "explanation": "在脚本菜单中添加功能入口，便于用户操作。",
+        "grant": "GM_registerMenuCommand/GM.registerMenuCommand"
+      },
+      {
+        "explanation": "发送桌面通知，提醒用户操作结果。",
+        "grant": "GM_notification/GM.notification"
+      },
+      {
+        "explanation": "支持批量下载网页图片到本地。",
+        "grant": "GM_download"
+      },
+      {
+        "explanation": "允许脚本访问网页的原始窗口对象，增强功能兼容性。",
+        "grant": "unsafeWindow"
+      }
+    ],
+    "tags": [
+      "图片增强",
+      "批量下载",
+      "网页工具",
+      "图片管理",
+      "效率提升"
+    ],
+    "usage": [
+      "1. 安装脚本后，访问包含图片的网页。",
+      "2. 鼠标悬停或点击图片，会自动弹出大图查看窗口。",
+      "3. 可在弹窗中对图片进行缩放、旋转、翻转等操作。",
+      "4. 如需批量保存图片，可使用脚本菜单或相关按钮一键下载。"
+    ],
+    "zh_name": "Picviewer CE+"
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "slug": "Universal-Web-Liberator",
+  "source_url": "https://raw.githubusercontent.com/MiPoNianYou/UserScripts/main/Scripts/Universal-Web-Liberator.user.js",
+  "raw_url": "https://raw.githubusercontent.com/MiPoNianYou/UserScripts/main/Scripts/Universal-Web-Liberator.user.js",
+  "filename": "Universal-Web-Liberator.user.js",
+  "name": "Universal Web Liberator",
+  "version": "1.5.5",
+  "description": "Disable webpage restrictions on Right-Click / Selection / Copy / Drag | Restore a seamless interactive experience | Tap the dynamic indicator in the bottom-right corner | Use the shortcut Meta/Ctrl+Alt+L | Toggle state via the userscript menu",
+  "match": [
+    "*://*/*"
+  ],
+  "grant": [
+    "GM_getValue",
+    "GM_setValue",
+    "GM_deleteValue",
+    "GM_addStyle",
+    "GM_registerMenuCommand",
+    "GM_unregisterMenuCommand"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Universal Web Liberator\n// @name:zh-CN  网页枷锁破除\n// @name:zh-TW  網頁枷鎖破除\n// @description  Disable webpage restrictions on Right-Click / Selection / Copy / Drag | Restore a seamless interactive experience | Tap the dynamic indicator in the bottom-right corner | Use the shortcut Meta/Ctrl+Alt+L | Toggle state via the userscript menu\n// @description:zh-CN  解除网页右键菜单/选择文本/拷贝粘贴/拖拽内容限制 恢复自由交互体验 轻点右下角灵动指示器 | 使用快捷键 Meta/Ctrl+Alt+L | 脚本菜单切换状态\n// @description:zh-TW  解除網頁右鍵選單/選取文字/複製貼上/拖曳內容限制 恢復自由互動體驗 輕點右下角靈動指示器 | 使用快捷鍵 Meta/Ctrl+Alt+L | 腳本選單切換狀態\n// @version  1.5.5\n// @icon  https://raw.githubusercontent.com/MiPoNianYou/UserScripts/main/Icons/Universal-Web-Liberator-Icon.svg\n// @author  念柚\n// @namespace  https://github.com/MiPoNianYou/UserScripts\n// @supportURL  https://github.com/MiPoNianYou/UserScripts/issues\n// @license  AGPL-3.0\n// @match  *://*/*\n// @grant  GM_getValue\n// @grant  GM_setValue\n// @grant  GM_deleteValue\n// @grant  GM_addStyle\n// @grant  GM_registerMenuCommand\n// @grant  GM_unregisterMenuCommand\n// @run-at  document-start\n// @downloadURL  https://raw.githubusercontent.com/MiPoNianYou/UserScripts/main/Scripts/Universal-Web-Liberator.user.js\n// @updateURL  https://raw.githubusercontent.com/MiPoNianYou/UserScripts/main/Scripts/Universal-Web-Liberator.user.js",
+  "sha256": "8ff65c842f15f2ccf0259e7f240b7f14b0a73f6394b1bb8e07a2a33cd55429cd",
+  "updated_at": "2026-04-20T03:37:05.924214+00:00",
+  "is_new": true,
+  "summary": {
+    "applicable_sites": [
+      "所有网站"
+    ],
+    "description": "本脚本可解除网页上的右键菜单、文本选择、复制粘贴和拖拽等限制，让用户自由操作网页内容。支持通过页面右下角的灵动指示器、快捷键（Meta/Ctrl+Alt+L）或脚本菜单随时开关功能。适用于绝大多数网站，提升网页交互体验。",
+    "permissions": [
+      {
+        "explanation": "用于读取脚本的设置状态。",
+        "grant": "GM_getValue"
+      },
+      {
+        "explanation": "用于保存脚本的设置状态。",
+        "grant": "GM_setValue"
+      },
+      {
+        "explanation": "用于删除脚本的设置数据。",
+        "grant": "GM_deleteValue"
+      },
+      {
+        "explanation": "用于为网页添加自定义样式，显示指示器等界面元素。",
+        "grant": "GM_addStyle"
+      },
+      {
+        "explanation": "用于在用户脚本菜单中添加切换功能的入口。",
+        "grant": "GM_registerMenuCommand"
+      },
+      {
+        "explanation": "用于在用户脚本菜单中移除切换功能的入口。",
+        "grant": "GM_unregisterMenuCommand"
+      }
+    ],
+    "tags": [
+      "网页增强",
+      "复制解锁",
+      "右键解锁",
+      "交互优化",
+      "快捷操作"
+    ],
+    "usage": [
+      "安装脚本后，访问任何网页即可自动生效。",
+      "如需临时关闭/开启功能，可点击网页右下角的灵动指示器。",
+      "也可按下快捷键 Meta/Ctrl+Alt+L 快速切换状态。",
+      "还可在浏览器的用户脚本菜单中手动切换功能。"
+    ],
+    "zh_name": "网页枷锁破除"
+  }
+}

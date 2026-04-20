@@ -20,12 +20,40 @@
   ],
   "metadata_raw": "// @name  Quillbot Premium Unlocker\n// @namespace  quillbot.taozhiyu.gitee.io\n// @version  1.0.0\n// @description  Unlocks Quillbot Premium features with improved stability and compatibility\n// @author  longkidkoolstar\n// @match  https://quillbot.com/*\n// @icon  https://quillbot.com/favicon.png\n// @require  https://greasyfork.org/scripts/455943-ajaxhooker/code/ajaxHooker.js?version=1124435\n// @run-at  document-start\n// @grant  GM_setValue\n// @grant  GM_getValue\n// @license  none\n// @downloadURL  https://update.greasyfork.org/scripts/465276/Quillbot%20Premium%20Unlocker.user.js\n// @updateURL  https://update.greasyfork.org/scripts/465276/Quillbot%20Premium%20Unlocker.meta.js",
   "sha256": "ce991fa1172f3de5c70e788b16d00c43ccebe786567aada609b5fc2e1bb4b8a9",
-  "discovered_at": "2026-04-16T06:41:21.927794+00:00",
+  "discovered_at": "2026-04-20T03:44:47.288450+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 199079,
-  "good_ratings": 28,
-  "bad_ratings": 0,
-  "summary": {}
+  "install_count": 199439,
+  "good_ratings": 29,
+  "bad_ratings": 21,
+  "summary": {
+    "applicable_sites": [
+      "Quillbot官网"
+    ],
+    "description": "本脚本可免费解锁Quillbot网站上的高级（Premium）功能，包括高级改写模式、语法检查、更多同义词等。安装后，用户无需付费即可体验会员专属服务。脚本提升了稳定性和兼容性，使用更流畅。",
+    "permissions": [
+      {
+        "explanation": "用于在浏览器中保存脚本设置或状态。",
+        "grant": "GM_setValue"
+      },
+      {
+        "explanation": "用于读取之前保存的脚本设置或状态。",
+        "grant": "GM_getValue"
+      }
+    ],
+    "tags": [
+      "会员破解",
+      "写作辅助",
+      "Quillbot",
+      "功能增强",
+      "免费体验"
+    ],
+    "usage": [
+      "1. 安装脚本后，访问Quillbot官网。",
+      "2. 登录或直接使用，页面会自动解锁高级功能。",
+      "3. 无需额外设置，直接体验会员专属服务。"
+    ],
+    "zh_name": "Quillbot高级功能解锁"
+  }
 }

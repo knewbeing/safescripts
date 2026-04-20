@@ -1,0 +1,72 @@
+{
+  "slug": "CheatGuessr_Universal_GeoGuessr_OpenGuessr_WorldGuessr_FreeGuessr",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/572651-cheatguessr-universal-geoguessr-openguessr-worldguessr-freeguessr",
+  "source_repo": "572651",
+  "raw_url": "https://update.greasyfork.org/scripts/572651/CheatGuessr%20Universal%20%7C%20GeoGuessr%20%7C%20OpenGuessr%20%7C%20WorldGuessr%20%7C%20FreeGuessr.user.js",
+  "filename": "CheatGuessr_Universal_GeoGuessr_OpenGuessr_WorldGuessr_FreeGuessr.user.js",
+  "name": "CheatGuessr Universal | GeoGuessr | OpenGuessr | WorldGuessr | FreeGuessr",
+  "version": "7.33",
+  "description": "Undetectable | Press Tab to open the settings menu | pin on map & send location to discord & open location in google maps",
+  "match": [
+    "*://*.geoguessr.com/*",
+    "*://*.openguessr.com/*",
+    "*://*.worldguessr.com/*",
+    "*://freeguessr.com/*",
+    "*://guesswhereyouare.com/*"
+  ],
+  "grant": [
+    "GM_setValue",
+    "GM_getValue",
+    "GM_xmlhttpRequest"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  CheatGuessr Universal | GeoGuessr | OpenGuessr | WorldGuessr | FreeGuessr\n// @version  7.33\n// @description  Undetectable | Press Tab to open the settings menu | pin on map & send location to discord & open location in google maps\n// @author  woggieboost\n// @license  MIT\n// @match  *://*.geoguessr.com/*\n// @match  *://*.openguessr.com/*\n// @match  *://*.worldguessr.com/*\n// @match  *://freeguessr.com/*\n// @match  *://guesswhereyouare.com/*\n// @grant  GM_setValue\n// @grant  GM_getValue\n// @grant  GM_xmlhttpRequest\n// @connect  discord.com\n// @connect  nominatim.openstreetmap.org\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=geoguessr.com\n// @namespace  https://greasyfork.org/en/users/1588266-woggieboost\n// @downloadURL  https://update.greasyfork.org/scripts/572651/CheatGuessr%20Universal%20%7C%20GeoGuessr%20%7C%20OpenGuessr%20%7C%20WorldGuessr%20%7C%20FreeGuessr.user.js\n// @updateURL  https://update.greasyfork.org/scripts/572651/CheatGuessr%20Universal%20%7C%20GeoGuessr%20%7C%20OpenGuessr%20%7C%20WorldGuessr%20%7C%20FreeGuessr.meta.js",
+  "sha256": "2f4d47c97dfbefc7a3a02bdfff456eee3ced32d3ad57d3d27cd8f4e0825c265e",
+  "discovered_at": "2026-04-20T03:46:03.161438+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 740,
+  "good_ratings": 2,
+  "bad_ratings": 1,
+  "summary": {
+    "applicable_sites": [
+      "GeoGuessr",
+      "OpenGuessr",
+      "WorldGuessr",
+      "FreeGuessr",
+      "GuessWhereYouAre"
+    ],
+    "description": "本脚本为地理猜图类网站提供辅助功能。按 Tab 键可打开设置菜单，支持在地图上标记位置、将位置信息发送到 Discord、在谷歌地图中打开定位。脚本设计为难以被检测，保障使用安全。",
+    "permissions": [
+      {
+        "explanation": "用于在本地保存脚本设置和用户数据。",
+        "grant": "GM_setValue"
+      },
+      {
+        "explanation": "用于从本地读取脚本设置和用户数据。",
+        "grant": "GM_getValue"
+      },
+      {
+        "explanation": "用于向外部网站（如 Discord）发送网络请求，实现分享等功能。",
+        "grant": "GM_xmlhttpRequest"
+      }
+    ],
+    "tags": [
+      "地理猜图",
+      "辅助工具",
+      "地图",
+      "作弊",
+      "分享",
+      "自动化"
+    ],
+    "usage": [
+      "安装脚本后，进入支持的地理猜图网站。",
+      "按下 Tab 键打开脚本设置菜单。",
+      "根据需要在地图上标记位置，或一键发送位置信息到 Discord。",
+      "可直接在谷歌地图中查看当前定位。"
+    ],
+    "zh_name": "地理猜图辅助通用脚本"
+  }
+}

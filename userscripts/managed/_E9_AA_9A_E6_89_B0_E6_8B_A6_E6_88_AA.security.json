@@ -1,0 +1,22 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "SAFE",
+  "script_name": "骚扰拦截",
+  "security_score": 100,
+  "summary": "该脚本仅通过 DOM 操作拦截和删除骚扰元素，没有任何网络请求、隐私采集、远程代码执行、混淆、XSS 注入、权限滥用、敏感 API 调用或供应链风险。代码结构清晰，未申请任何高权限，安全性极高。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-04-20T03:42:56.683048+00:00",
+  "slug": "_E9_AA_9A_E6_89_B0_E6_8B_A6_E6_88_AA"
+}

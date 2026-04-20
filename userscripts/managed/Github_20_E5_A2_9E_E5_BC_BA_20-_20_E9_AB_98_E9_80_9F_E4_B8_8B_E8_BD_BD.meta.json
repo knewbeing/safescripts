@@ -1,0 +1,94 @@
+{
+  "slug": "Github_20_E5_A2_9E_E5_BC_BA_20-_20_E9_AB_98_E9_80_9F_E4_B8_8B_E8_BD_BD",
+  "source_url": "https://update.greasyfork.org/scripts/412245/Github%20%E5%A2%9E%E5%BC%BA%20-%20%E9%AB%98%E9%80%9F%E4%B8%8B%E8%BD%BD.user.js",
+  "raw_url": "https://update.greasyfork.org/scripts/412245/Github%20%E5%A2%9E%E5%BC%BA%20-%20%E9%AB%98%E9%80%9F%E4%B8%8B%E8%BD%BD.user.js",
+  "filename": "Github_20_E5_A2_9E_E5_BC_BA_20-_20_E9_AB_98_E9_80_9F_E4_B8_8B_E8_BD_BD.user.js",
+  "name": "Github Enhancement - High Speed Download",
+  "version": "2.6.37",
+  "description": "High-speed download of Git Clone/SSH, Release, Raw, Code(ZIP) and other files (Based on public welfare), project list file quick download (☁)",
+  "match": [
+    "*://github.com/*",
+    "*://hub.whtrys.space/*",
+    "*://dgithub.xyz/*",
+    "*://kkgithub.com/*",
+    "*://github.site/*",
+    "*://github.store/*",
+    "*://bgithub.xyz/*"
+  ],
+  "grant": [
+    "GM_registerMenuCommand",
+    "GM_unregisterMenuCommand",
+    "GM_openInTab",
+    "GM_getValue",
+    "GM_setValue",
+    "GM_notification",
+    "GM_setClipboard",
+    "window.onurlchange"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Github Enhancement - High Speed Download\n// @name:zh-CN  Github 增强 - 高速下载\n// @name:zh-TW  Github 增強 - 高速下載\n// @name:ru  Улучшение GitHub – быстрое скачивание\n// @version  2.6.37\n// @author  X.I.U\n// @description  High-speed download of Git Clone/SSH, Release, Raw, Code(ZIP) and other files (Based on public welfare), project list file quick download (☁)\n// @description:zh-CN  高速下载 Git Clone/SSH、Release、Raw、Code(ZIP) 等文件 (公益加速)、项目列表单文件快捷下载 (☁)\n// @description:zh-TW  高速下載 Git Clone/SSH、Release、Raw、Code(ZIP) 等文件 (公益加速)、項目列表單文件快捷下載 (☁)\n// @description:ru  Высокоскоростная загрузка Git Clone/SSH, выпусков, изначальных файлов, кода (ZIP) и других файлов (на основе общественного благосостояния), быстрая загрузка файлов из списка проектов (☁)\n// @match  *://github.com/*\n// @match  *://hub.whtrys.space/*\n// @match  *://dgithub.xyz/*\n// @match  *://kkgithub.com/*\n// @match  *://github.site/*\n// @match  *://github.store/*\n// @match  *://bgithub.xyz/*\n// @icon  data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAACEUExURUxpcRgWFhsYGBgWFhcWFh8WFhoYGBgWFiUlJRcVFRkWFhgVFRgWFhgVFRsWFhgWFigeHhkWFv////////////r6+h4eHv///xcVFfLx8SMhIUNCQpSTk/r6+jY0NCknJ97e3ru7u+fn51BOTsPCwqGgoISDg6empmpoaK2srNDQ0FhXV3eXcCcAAAAXdFJOUwCBIZXMGP70BuRH2Ze/LpIMUunHkpQR34sfygAAAVpJREFUOMt1U+magjAMDAVb5BDU3W25b9T1/d9vaYpQKDs/rF9nSNJkArDA9ezQZ8wPbc8FE6eAiQUsOO1o19JolFibKCdHGHC0IJezOMD5snx/yE+KOYYr42fPSufSZyazqDoseTPw4lGJNOu6LBXVUPBG3lqYAOv/5ZwnNUfUifzBt8gkgfgINmjxOpgqUA147QWNaocLniqq3QsSVbQHNp45N/BAwoYQz9oUJEiE4GMGfoBSMj5gjeWRIMMqleD/CAzUHFqTLyjOA5zjNnwa4UCEZ2YK3khEcBXHjVBtEFeIZ6+NxYbPqWp1DLKV42t6Ujn2ydyiPi9nX0TTNAkVVZ/gozsl6FbrktkwaVvL2TRK0C8Ca7Hck7f5OBT6FFbLATkL2ugV0tm0RLM9fedDvhWstl8Wp9AFDjFX7yOY/lJrv8AkYuz7fuP8dv9izCYH+x3/LBnj9fYPBTpJDNzX+7cAAAAASUVORK5CYII=\n// @grant  GM_registerMenuCommand\n// @grant  GM_unregisterMenuCommand\n// @grant  GM_openInTab\n// @grant  GM_getValue\n// @grant  GM_setValue\n// @grant  GM_notification\n// @grant  GM_setClipboard\n// @grant  window.onurlchange\n// @sandbox  JavaScript\n// @license  GPL-3.0 License\n// @run-at  document-end\n// @namespace  https://greasyfork.org/scripts/412245\n// @supportURL  https://github.com/XIU2/UserScript\n// @homepageURL  https://github.com/XIU2/UserScript\n// @downloadURL  https://update.greasyfork.org/scripts/412245/Github%20%E5%A2%9E%E5%BC%BA%20-%20%E9%AB%98%E9%80%9F%E4%B8%8B%E8%BD%BD.user.js\n// @updateURL  https://update.greasyfork.org/scripts/412245/Github%20%E5%A2%9E%E5%BC%BA%20-%20%E9%AB%98%E9%80%9F%E4%B8%8B%E8%BD%BD.meta.js",
+  "sha256": "7f8d24c05ee5e96b7b44d23205a6e422a31f139e20d678428ddf9b6671567e2c",
+  "updated_at": "2026-04-20T03:37:05.806311+00:00",
+  "is_new": true,
+  "summary": {
+    "applicable_sites": [
+      "GitHub",
+      "hub.whtrys.space",
+      "dgithub.xyz",
+      "kkgithub.com",
+      "github.site",
+      "github.store",
+      "bgithub.xyz"
+    ],
+    "description": "本脚本为 GitHub 提供高速下载功能，支持加速 Git Clone/SSH、Release、Raw、Code(ZIP) 等文件下载。用户还可以在项目列表中一键下载单个文件，极大提升下载效率。所有加速服务均为公益性质，适合经常需要下载 GitHub 文件的用户。",
+    "permissions": [
+      {
+        "explanation": "在脚本菜单中添加自定义功能按钮，方便操作。",
+        "grant": "GM_registerMenuCommand"
+      },
+      {
+        "explanation": "移除脚本菜单中的自定义按钮。",
+        "grant": "GM_unregisterMenuCommand"
+      },
+      {
+        "explanation": "在新标签页打开加速下载链接。",
+        "grant": "GM_openInTab"
+      },
+      {
+        "explanation": "保存用户的设置或偏好。",
+        "grant": "GM_getValue"
+      },
+      {
+        "explanation": "设置或更新用户的设置或偏好。",
+        "grant": "GM_setValue"
+      },
+      {
+        "explanation": "通过浏览器通知提醒用户操作结果。",
+        "grant": "GM_notification"
+      },
+      {
+        "explanation": "将加速下载链接一键复制到剪贴板。",
+        "grant": "GM_setClipboard"
+      },
+      {
+        "explanation": "监听页面地址变化，确保功能在单页应用中正常。",
+        "grant": "window.onurlchange"
+      }
+    ],
+    "tags": [
+      "下载加速",
+      "GitHub增强",
+      "文件管理",
+      "效率工具",
+      "公益加速",
+      "开发辅助"
+    ],
+    "usage": [
+      "安装脚本后，访问 GitHub 或相关加速镜像网站。",
+      "在文件、Release、Raw、Code(ZIP) 等页面，会出现加速下载按钮。",
+      "点击加速按钮即可通过公益加速通道下载文件。",
+      "如需自定义设置，可在脚本菜单中进行调整。"
+    ],
+    "zh_name": "Github 增强 - 高速下载"
+  }
+}

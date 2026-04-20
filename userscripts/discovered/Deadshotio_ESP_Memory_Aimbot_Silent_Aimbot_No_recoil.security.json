@@ -1,0 +1,60 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [
+      "deadshot-cheat.netlify.app"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "脚本通过 GM_xmlhttpRequest 向 deadshot-cheat.netlify.app 发起请求，获取并执行远程 JavaScript 代码。该行为属于数据外传和远程代码执行，且目标为第三方服务器。",
+      "location": "fetchAndCacheCode() 函数，GM_xmlhttpRequest 调用",
+      "recommendation": "禁止向非官方、未知第三方服务器请求并执行代码。仅允许加载受信任源且固定版本哈希的代码。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本动态获取远程代码并通过 eval 执行，属于远程代码执行风险。远程代码可随时更改，可能导致恶意行为。",
+      "location": "patchImports() 函数，eval(customCode)",
+      "recommendation": "禁止动态 eval 执行远程代码。仅允许本地或受信任源的静态代码。",
+      "severity": "CRITICAL",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本申请了 GM_xmlhttpRequest、unsafeWindow 等高权限，且实际使用 GM_xmlhttpRequest 进行远程代码加载。",
+      "location": "元数据 @grant",
+      "recommendation": "仅申请实际需要的最低权限。避免滥用高权限。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本通过 GM_getValue/GM_setValue 存储和读取远程代码，存在持久化恶意代码风险。",
+      "location": "GM_getValue/GM_setValue 调用",
+      "recommendation": "避免存储和读取未经审查的远程代码。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "@require 未使用，但通过自定义 URL 加载第三方代码，且未固定版本哈希，存在供应链风险。",
+      "location": "CUSTOM_SCRIPT_URL 变量",
+      "recommendation": "仅允许加载受信任源且固定版本哈希的代码。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "CRITICAL",
+  "script_name": "Deadshot.io ESP & Memory Aimbot & Silent Aimbot & No recoil",
+  "security_score": 34,
+  "summary": "该脚本存在严重安全风险：1) 动态从第三方服务器加载并执行远程代码，2) 使用 eval 执行未审查代码，3) 权限申请过高，4) 存储和读取远程代码，5) 供应链风险。未检测到隐私采集、代码混淆或 DOM XSS。强烈建议禁止使用该脚本。",
+  "supply_chain_risk": true,
+  "websocket_usage": false,
+  "analyzed_at": "2026-04-20T03:53:23.467044+00:00",
+  "slug": "Deadshotio_ESP_Memory_Aimbot_Silent_Aimbot_No_recoil"
+}

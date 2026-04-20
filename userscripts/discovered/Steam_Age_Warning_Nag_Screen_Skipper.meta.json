@@ -1,0 +1,50 @@
+{
+  "slug": "Steam_Age_Warning_Nag_Screen_Skipper",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/370848-steam-age-warning-nag-screen-skipper",
+  "source_repo": "370848",
+  "raw_url": "https://update.greasyfork.org/scripts/370848/Steam%20Age%20Warning%20Nag%20Screen%20Skipper.user.js",
+  "filename": "Steam_Age_Warning_Nag_Screen_Skipper.user.js",
+  "name": "Steam Age Warning Nag Screen Skipper",
+  "version": "0.0.1",
+  "description": "Skips the \"Content may not be appropriate for all ages\" screen.",
+  "match": [
+    "https://steamcommunity.com/*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Steam Age Warning Nag Screen Skipper\n// @namespace  https://greasyfork.org/en/scripts/370848-steam-age-warning-nag-screen-skipper\n// @version  0.0.1\n// @description  Skips the \"Content may not be appropriate for all ages\" screen.\n// @author  Phlegomatic\n// @match  https://steamcommunity.com/*\n// @grant  none\n// @run-at  document-end\n// @downloadURL  https://update.greasyfork.org/scripts/370848/Steam%20Age%20Warning%20Nag%20Screen%20Skipper.user.js\n// @updateURL  https://update.greasyfork.org/scripts/370848/Steam%20Age%20Warning%20Nag%20Screen%20Skipper.meta.js",
+  "sha256": "aa442647ac1ce7dd3a0cb9404ba0b6f26503eb62f792935f156241b0babe6b8c",
+  "discovered_at": "2026-04-20T03:48:28.614265+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 887,
+  "good_ratings": 4,
+  "bad_ratings": 0,
+  "summary": {
+    "applicable_sites": [
+      "Steam 社区"
+    ],
+    "description": "本脚本可自动跳过 Steam 社区中“内容可能不适合所有年龄段”的年龄警告页面，无需手动点击继续按钮。适合经常浏览 Steam 社区内容的用户，提升访问体验。",
+    "permissions": [
+      {
+        "explanation": "脚本无需额外权限，仅操作网页内容。",
+        "grant": "none"
+      }
+    ],
+    "tags": [
+      "Steam",
+      "自动化",
+      "去广告弹窗",
+      "便捷浏览"
+    ],
+    "usage": [
+      "安装脚本后，访问 Steam 社区时遇到年龄警告页面会自动跳过。",
+      "无需手动操作，直接进入目标页面。"
+    ],
+    "zh_name": "Steam年龄警告自动跳过"
+  }
+}

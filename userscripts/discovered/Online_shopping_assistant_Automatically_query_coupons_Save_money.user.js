@@ -36,45 +36,45 @@
 // @name:uk     Помічник для онлайн-шопінгу & Автоматичний пошук купонів & Економія грошей
 // @name:ug     تور سودا سېتىۋېلىش ياردەمچىسى & ئاپتوماتىك كۇپون ئىزدەش & پۇل تېجەش
 // @name:vi     Trợ lý mua sắm trực tuyến & Tự động tìm kiếm mã giảm giá & Tiết kiệm tiền
-// @description        Automatically search for coupons on popular shopping platforms to help you find the best deals on the products you need, without overspending. Currently supports: Aliexpress, Lazada, eBay, Amazon, and more.
-// @description:ar     البحث التلقائي عن القسائم على منصات التسوق الشهيرة لمساعدتك في العثور على أفضل العروض للمنتجات التي تحتاجها، دون إنفاق مبالغ زائدة. يدعم حاليًا: علي إكسبرس، لازادا، إيباي، أمازون والمزيد.
-// @description:bg     Автоматично търсене на купони на популярни търговски платформи, за да ви помогне да намерите най-добрите оферти за продуктите, от които се нуждаете, без да харчите прекалено много. В момента поддържа: Aliexpress, Lazada, eBay, Amazon и други.
-// @description:ckb    داواکاری خۆکارانەی کوپۆنەکان لە سەردەمی فەرەشەکانەوە بۆ یارمەتی کردنی تۆ لە دۆزینەوەی باشترین بەرهەمهاتەکان بۆ بەرهەمی پێویستەکانت، بێ گەورە کردنی ھەزەرەکان. ئیشکراوی ئێستا: Aliexpress، Lazada، eBay، Amazon و زۆرتر.
-// @description:cs     Automatické vyhledávání kupónů na populárních nákupních platformách, které vám pomohou najít nejlepší nabídky pro produkty, které potřebujete, aniž byste přeplatili. Momentálně podporuje: Aliexpress, Lazada, eBay, Amazon a další.
-// @description:da     Automatisk søgning efter kuponer på populære shoppingplatforme, der hjælper dig med at finde de bedste tilbud på de produkter, du har brug for, uden at bruge for meget. Understøtter i øjeblikket: Aliexpress, Lazada, eBay, Amazon og mere.
-// @description:de     Automatisches Suchen nach Gutscheinen auf beliebten Shopping-Plattformen, um Ihnen zu helfen, die besten Angebote für die Produkte zu finden, die Sie benötigen, ohne zu viel auszugeben. Unterstützt derzeit: Aliexpress, Lazada, eBay, Amazon und mehr.
-// @description:el     Αυτόματη αναζήτηση κουπονιών σε δημοφιλείς πλατφόρμες αγορών για να σας βοηθήσει να βρείτε τις καλύτερες προσφορές για τα προϊόντα που χρειάζεστε, χωρίς να ξοδέψετε υπερβολικά. Υποστηρίζει αυτή τη στιγμή: Aliexpress, Lazada, eBay, Amazon και άλλα.
-// @description:en     Automatically search for coupons on popular shopping platforms to help you find the best deals on the products you need, without overspending. Currently supports: Aliexpress, Lazada, eBay, Amazon, and more.
-// @description:eo     Aŭtomate serĉi kuponojn en popularaj aĉetplatformoj por helpi vin trovi la plej bonajn oferton por la produktoj, kiujn vi bezonas, sen tro elspezi. Nuntempe subtenas: Aliexpress, Lazada, eBay, Amazon kaj aliaj.
-// @description:es     Buscar automáticamente cupones en plataformas de compras populares para ayudarte a encontrar las mejores ofertas de los productos que necesitas, sin gastar de más. Actualmente es compatible con: Aliexpress, Lazada, eBay, Amazon y más.
-// @description:es-419 Buscar automáticamente cupones en plataformas de compras populares para ayudarte a encontrar las mejores ofertas de los productos que necesitas, sin gastar de más. Actualmente es compatible con: Aliexpress, Lazada, eBay, Amazon y más.
-// @description:fi     Automaattinen kuponkien haku suosituilla ostosalustoilla auttaaksesi löytämään parhaat tarjoukset tarvitsemasi tuotteista ilman, että käytät liikaa rahaa. Tällä hetkellä tuetaan: Aliexpress, Lazada, eBay, Amazon ja muita.
-// @description:fr     Recherche automatique de coupons sur des plateformes de shopping populaires pour vous aider à trouver les meilleures offres sur les produits dont vous avez besoin, sans trop dépenser. Actuellement pris en charge : Aliexpress, Lazada, eBay, Amazon et plus.
-// @description:fr-CA  Recherche automatique de coupons sur des plateformes de shopping populaires pour vous aider à trouver les meilleures offres sur les produits dont vous avez besoin, sans trop dépenser. Actuellement pris en charge : Aliexpress, Lazada, eBay, Amazon et plus.
-// @description:he     חיפוש אוטומטי של קופונים בפלטפורמות קניות פופולריות כדי לעזור לך למצוא את ההצעות הטובות ביותר למוצרים שאתה צריך, מבלי להוציא יותר מדי. כרגע תומך ב: Aliexpress, Lazada, eBay, Amazon ועוד.
-// @description:hr     Automatsko pretraživanje kupona na popularnim shopping platformama kako bi vam pomoglo da pronađete najbolje ponude za proizvode koje trebate, bez prekomjernog trošenja. Trenutno podržava: Aliexpress, Lazada, eBay, Amazon i još mnogo toga.
-// @description:hu     Automatikus kupon keresés népszerű vásárlási platformokon, hogy segítsen megtalálni a legjobb ajánlatokat a szükséges termékekhez, anélkül, hogy túl sokat költene. Jelenleg támogatja: Aliexpress, Lazada, eBay, Amazon és mások.
-// @description:id     Cari kupon secara otomatis di platform belanja populer untuk membantu Anda menemukan penawaran terbaik untuk produk yang Anda butuhkan, tanpa membelanjakan terlalu banyak. Saat ini mendukung: Aliexpress, Lazada, eBay, Amazon, dan lainnya.
-// @description:it     Cerca automaticamente i coupon su piattaforme di shopping popolari per aiutarti a trovare le migliori offerte sui prodotti di cui hai bisogno, senza spendere troppo. Attualmente supporta: Aliexpress, Lazada, eBay, Amazon e altro.
-// @description:ja     人気のショッピングプラットフォームでクーポンを自動的に検索し、必要な製品の最良の取引を見つけるのに役立ちます。無駄遣いを防ぎます。現在対応しているプラットフォーム: Aliexpress、Lazada、eBay、Amazon など。
-// @description:ka     პოპულარული შოპინგ პლატფორმებზე ავტომატური კუპონის ძიება, რათა დაგეხმაროთ საუკეთესო შეთავაზებების პოვნაში თქვენთვის საჭირო პროდუქციისთვის, ზედმეტი ხარჯების გარეშე. ამჟამად მხარდაჭერილია: Aliexpress, Lazada, eBay, Amazon და სხვა.
-// @description:ko     인기 쇼핑 플랫폼에서 자동으로 쿠폰을 검색하여 필요한 제품에 대한 최상의 거래를 찾는 데 도움을 줍니다. 과도한 지출 없이. 현재 지원되는 플랫폼: Aliexpress, Lazada, eBay, Amazon 등.
-// @description:nb     Automatisk søk etter kuponger på populære shoppingplattformer for å hjelpe deg med å finne de beste tilbudene på produktene du trenger, uten å bruke for mye. Støtter for øyeblikket: Aliexpress, Lazada, eBay, Amazon og mer.
-// @description:nl     Automatisch zoeken naar coupons op populaire winkelplatforms om je te helpen de beste aanbiedingen te vinden voor de producten die je nodig hebt, zonder te veel uit te geven. Ondersteunt momenteel: Aliexpress, Lazada, eBay, Amazon en meer.
-// @description:pl     Automatyczne wyszukiwanie kuponów na popularnych platformach zakupowych, które pomogą Ci znaleźć najlepsze oferty na produkty, których potrzebujesz, bez przepłacania. Obecnie obsługiwane: Aliexpress, Lazada, eBay, Amazon i inne.
-// @description:pt-BR  Buscar automaticamente cupons nas plataformas de compras populares para ajudá-lo a encontrar as melhores ofertas nos produtos que você precisa, sem gastar demais. Atualmente suporta: Aliexpress, Lazada, eBay, Amazon e mais.
-// @description:ro     Căutare automată de cupoane pe platformele populare de cumpărături pentru a te ajuta să găsești cele mai bune oferte la produsele de care ai nevoie, fără a cheltui prea mult. În prezent suportă: Aliexpress, Lazada, eBay, Amazon și altele.
-// @description:ru     Автоматический поиск купонов на популярных торговых платформах, чтобы помочь вам найти лучшие предложения на необходимые товары, не переплачивая. В настоящее время поддерживает: Aliexpress, Lazada, eBay, Amazon и другие.
-// @description:sk     Automatické vyhľadávanie kupónov na populárnych nákupných platformách, ktoré vám pomôžu nájsť najlepšie ponuky na produkty, ktoré potrebujete, bez zbytočných výdavkov. Momentálne podporuje: Aliexpress, Lazada, eBay, Amazon a ďalšie.
-// @description:sr     Аутоматско претраживање купона на популарним платформама за куповину како би вам помогло да пронађете најбоље понуде за производе који су вам потребни, без претераног трошења. Тренутно подржава: Aliexpress, Lazada, eBay, Amazon и остало.
-// @description:sv     Automatiskt söka efter kuponger på populära shoppingplattformar för att hjälpa dig att hitta de bästa erbjudandena på de produkter du behöver, utan att överskrida budgeten. För närvarande stöds: Aliexpress, Lazada, eBay, Amazon och fler.
-// @description:th     ค้นหาคูปองอัตโนมัติในแพลตฟอร์มช็อปปิ้งยอดนิยมเพื่อช่วยให้คุณค้นหาข้อเสนอที่ดีที่สุดสำหรับสินค้าที่คุณต้องการโดยไม่ต้องใช้จ่ายเกินไป ขณะนี้รองรับ: Aliexpress, Lazada, eBay, Amazon และอื่นๆ
-// @description:tr     Popüler alışveriş platformlarında otomatik olarak kupon arayarak, ihtiyacınız olan ürünler için en iyi fırsatları bulmanıza yardımcı olur, fazla harcama yapmadan. Şu anda desteklenenler: Aliexpress, Lazada, eBay, Amazon ve daha fazlası.
-// @description:uk     Автоматичний пошук купонів на популярних торгових платформах, щоб допомогти вам знайти найкращі пропозиції на товари, які вам потрібні, без зайвих витрат. Наразі підтримується: Aliexpress, Lazada, eBay, Amazon та інші.
-// @description:ug     پاپۇلار سودا سېتىش پلاتفورمالىرىدا ئاپتوماتىك كۇپون ئىزدەش ئارقىلىق، پەقەت مۇھتاج بولغان مەھسۇلاتلارغا ئەڭ ياخشى پەقەتلەرنى تاپشۇرۇشقا ياردەم بېرىدۇ، ھىچ بىر ئاشىق پۇل چىقارماي. ھازىر كۆرسىتىلىدىغان: Aliexpress، Lazada، eBay، Amazon ۋە باشقا.
-// @description:vi     Tìm kiếm tự động mã giảm giá trên các nền tảng mua sắm phổ biến để giúp bạn tìm được những ưu đãi tốt nhất cho sản phẩm bạn cần, mà không phải chi tiêu quá mức. Hiện tại hỗ trợ: Aliexpress, Lazada, eBay, Amazon và nhiều hơn nữa.
+// @description        Automatically search for coupons on popular shopping platforms to help you find the best deals on the products you need, without overspending. Currently supports: Aliexpress, Lazada, eBay, Amazon, and more. (Privacy Policy: https://github.com/nuck-liu2335/script-policy)
+// @description:ar     البحث التلقائي عن القسائم على منصات التسوق الشهيرة لمساعدتك في العثور على أفضل العروض للمنتجات التي تحتاجها، دون إنفاق مبالغ زائدة. يدعم حاليًا: علي إكسبرس، لازادا، إيباي، أمازون والمزيد. (سياسة الخصوصية: https://github.com/nuck-liu2335/script-policy)
+// @description:bg     Автоматично търсене на купони на популярни търговски платформи, за да ви помогне да намерите най-добрите оферти за продуктите, от които се нуждаете, без да харчите прекалено много. В момента поддържа: Aliexpress, Lazada, eBay, Amazon и други. (Политика за поверителност: https://github.com/nuck-liu2335/script-policy)
+// @description:ckb    داواکاری خۆکارانەی کوپۆنەکان لە سەردەمی فەرەشەکانەوە بۆ یارمەتی کردنی تۆ لە دۆزینەوەی باشترین بەرهەمهاتەکان بۆ بەرهەمی پێویستەکانت، بێ گەورە کردنی ھەزەرەکان. ئیشکراوی ئێستا: Aliexpress، Lazada، eBay، Amazon و زۆرتر. (سیاسەتی نهێنی: https://github.com/nuck-liu2335/script-policy)
+// @description:cs     Automatické vyhledávání kupónů na populárních nákupních platformách, které vám pomohou najít nejlepší nabídky pro produkty, které potřebujete, aniž byste přeplatili. Momentálně podporuje: Aliexpress, Lazada, eBay, Amazon a další. (Zásady ochrany osobních údajů: https://github.com/nuck-liu2335/script-policy)
+// @description:da     Automatisk søgning efter kuponer på populære shoppingplatforme, der hjælper dig med at finde de bedste tilbud på de produkter, du har brug for, uden at bruge for meget. Understøtter i øjeblikket: Aliexpress, Lazada, eBay, Amazon og mere. (Privatlivspolitik: https://github.com/nuck-liu2335/script-policy)
+// @description:de     Automatisches Suchen nach Gutscheinen auf beliebten Shopping-Plattformen, um Ihnen zu helfen, die besten Angebote für die Produkte zu finden, die Sie benötigen, ohne zu viel auszugeben. Unterstützt derzeit: Aliexpress, Lazada, eBay, Amazon und mehr. (Datenschutzrichtlinie: https://github.com/nuck-liu2335/script-policy)
+// @description:el     Αυτόματη αναζήτηση κουπονιών σε δημοφιλείς πλατφόρμες αγορών για να σας βοηθήσει να βρείτε τις καλύτερες προσφορές για τα προϊόντα που χρειάζεστε, χωρίς να ξοδέψετε υπερβολικά. Υποστηρίζει αυτή τη στιγμή: Aliexpress, Lazada, eBay, Amazon και άλλα. (Πολιτική Απορρήτου: https://github.com/nuck-liu2335/script-policy)
+// @description:en     Automatically search for coupons on popular shopping platforms to help you find the best deals on the products you need, without overspending. Currently supports: Aliexpress, Lazada, eBay, Amazon, and more. (Privacy Policy: https://github.com/nuck-liu2335/script-policy)
+// @description:eo     Aŭtomate serĉi kuponojn en popularaj aĉetplatformoj por helpi vin trovi la plej bonajn oferton por la produktoj, kiujn vi bezonas, sen tro elspezi. Nuntempe subtenas: Aliexpress, Lazada, eBay, Amazon kaj aliaj. (Privateca Politiko: https://github.com/nuck-liu2335/script-policy)
+// @description:es     Buscar automáticamente cupones en plataformas de compras populares para ayudarte a encontrar las mejores ofertas de los productos que necesitas, sin gastar de más. Actualmente es compatible con: Aliexpress, Lazada, eBay, Amazon y más. (Política de privacidad: https://github.com/nuck-liu2335/script-policy)
+// @description:es-419 Buscar automáticamente cupones en plataformas de compras populares para ayudarte a encontrar las mejores ofertas de los productos que necesitas, sin gastar de más. Actualmente es compatible con: Aliexpress, Lazada, eBay, Amazon y más. (Política de privacidad: https://github.com/nuck-liu2335/script-policy)
+// @description:fi     Automaattinen kuponkien haku suosituilla ostosalustoilla auttaaksesi löytämään parhaat tarjoukset tarvitsemasi tuotteista ilman, että käytät liikaa rahaa. Tällä hetkellä tuetaan: Aliexpress, Lazada, eBay, Amazon ja muita. (Tietosuojakäytäntö: https://github.com/nuck-liu2335/script-policy)
+// @description:fr     Recherche automatique de coupons sur des plateformes de shopping populaires pour vous aider à trouver les meilleures offres sur les produits dont vous avez besoin, sans trop dépenser. Actuellement pris en charge : Aliexpress, Lazada, eBay, Amazon et plus. (Politique de confidentialité: https://github.com/nuck-liu2335/script-policy)
+// @description:fr-CA  Recherche automatique de coupons sur des plateformes de shopping populaires pour vous aider à trouver les meilleures offres sur les produits dont vous avez besoin, sans trop dépenser. Actuellement pris en charge : Aliexpress, Lazada, eBay, Amazon et plus. (Politique de confidentialité: https://github.com/nuck-liu2335/script-policy)
+// @description:he     חיפוש אוטומטי של קופונים בפלטפורמות קניות פופולריות כדי לעזור לך למצוא את ההצעות הטובות ביותר למוצרים שאתה צריך, מבלי להוציא יותר מדי. כרגע תומך ב: Aliexpress, Lazada, eBay, Amazon ועוד. (מדיניות פרטיות: https://github.com/nuck-liu2335/script-policy)
+// @description:hr     Automatsko pretraživanje kupona na popularnim shopping platformama kako bi vam pomoglo da pronađete najbolje ponude za proizvode koje trebate, bez prekomjernog trošenja. Trenutno podržava: Aliexpress, Lazada, eBay, Amazon i još mnogo toga. (Pravila privatnosti: https://github.com/nuck-liu2335/script-policy)
+// @description:hu     Automatikus kupon keresés népszerű vásárlási platformokon, hogy segítsen megtalálni a legjobb ajánlatokat a szükséges termékekhez, anélkül, hogy túl sokat költene. Jelenleg támogatja: Aliexpress, Lazada, eBay, Amazon és mások. (Adatvédelmi irányelv: https://github.com/nuck-liu2335/script-policy)
+// @description:id     Cari kupon secara otomatis di platform belanja populer untuk membantu Anda menemukan penawaran terbaik untuk produk yang Anda butuhkan, tanpa membelanjakan terlalu banyak. Saat ini mendukung: Aliexpress, Lazada, eBay, Amazon, dan lainnya. (Kebijakan Privasi: https://github.com/nuck-liu2335/script-policy)
+// @description:it     Cerca automaticamente i coupon su piattaforme di shopping popolari per aiutarti a trovare le migliori offerte sui prodotti di cui hai bisogno, senza spendere troppo. Attualmente supporta: Aliexpress, Lazada, eBay, Amazon e altro. (Informativa sulla privacy: https://github.com/nuck-liu2335/script-policy)
+// @description:ja     人気のショッピングプラットフォームでクーポンを自動的に検索し、必要な製品の最良の取引を見つけるのに役立ちます。無駄遣いを防ぎます。現在対応しているプラットフォーム: Aliexpress、Lazada、eBay、Amazon など。 (プライバシーポリシー: https://github.com/nuck-liu2335/script-policy)
+// @description:ka     პოპულარული შოპინგ პლატფორმებზე ავტომატური კუპონის ძიება, რათა დაგეხმაროთ საუკეთესო შეთავაზებების პოვნაში თქვენთვის საჭირო პროდუქციისთვის, ზედმეტი ხარჯების გარეშე. ამჟამად მხარდაჭერილია: Aliexpress, Lazada, eBay, Amazon და სხვა. (კონფიდენციალურობის პოლიტიკა: https://github.com/nuck-liu2335/script-policy)
+// @description:ko     인기 쇼핑 플랫폼에서 자동으로 쿠폰을 검색하여 필요한 제품에 대한 최상의 거래를 찾는 데 도움을 줍니다. 과도한 지출 없이. 현재 지원되는 플랫폼: Aliexpress, Lazada, eBay, Amazon 등. (개인정보 처리방침: https://github.com/nuck-liu2335/script-policy)
+// @description:nb     Automatisk søk etter kuponger på populære shoppingplattformer for å hjelpe deg med å finne de beste tilbudene på produktene du trenger, uten å bruke for mye. Støtter for øyeblikket: Aliexpress, Lazada, eBay, Amazon og mer. (Personvernerklæring: https://github.com/nuck-liu2335/script-policy)
+// @description:nl     Automatisch zoeken naar coupons op populaire winkelplatforms om je te helpen de beste aanbiedingen te vinden voor de producten die je nodig hebt, zonder te veel uit te geven. Ondersteunt momenteel: Aliexpress, Lazada, eBay, Amazon en meer. (Privacybeleid: https://github.com/nuck-liu2335/script-policy)
+// @description:pl     Automatyczne wyszukiwanie kuponów na popularnych platformach zakupowych, które pomogą Ci znaleźć najlepsze oferty na produkty, których potrzebujesz, bez przepłacania. Obecnie obsługiwane: Aliexpress, Lazada, eBay, Amazon i inne. (Polityka prywatności: https://github.com/nuck-liu2335/script-policy)
+// @description:pt-BR  Buscar automaticamente cupons nas plataformas de compras populares para ajudá-lo a encontrar as melhores ofertas nos produtos que você precisa, sem gastar demais. Atualmente suporta: Aliexpress, Lazada, eBay, Amazon e mais. (Política de Privacidade: https://github.com/nuck-liu2335/script-policy)
+// @description:ro     Căutare automată de cupoane pe platformele populare de cumpărături pentru a te ajuta să găsești cele mai bune oferte la produsele de care ai nevoie, fără a cheltui prea mult. În prezent suportă: Aliexpress, Lazada, eBay, Amazon și altele. (Politica de confidențialitate: https://github.com/nuck-liu2335/script-policy)
+// @description:ru     Автоматический поиск купонов на популярных торговых платформах, чтобы помочь вам найти лучшие предложения на необходимые товары, не переплачивая. В настоящее время поддерживает: Aliexpress, Lazada, eBay, Amazon и другие. (Политика конфиденциальности: https://github.com/nuck-liu2335/script-policy)
+// @description:sk     Automatické vyhľadávanie kupónov na populárnych nákupných platformách, ktoré vám pomôžu nájsť najlepšie ponuky na produkty, ktoré potrebujete, bez zbytočných výdavkov. Momentálne podporuje: Aliexpress, Lazada, eBay, Amazon a ďalšie. (Zásady ochrany osobných údajov: https://github.com/nuck-liu2335/script-policy)
+// @description:sr     Аутоматско претраживање купона на популарним платформама за куповину како би вам помогло да пронађете најбоље понуде за производе који су вам потребни, без претераног трошења. Тренутно подржава: Aliexpress, Lazada, eBay, Amazon и остало. (Политика приватности: https://github.com/nuck-liu2335/script-policy)
+// @description:sv     Automatiskt söka efter kuponger på populära shoppingplattformar för att hjälpa dig att hitta de bästa erbjudandena på de produkter du behöver, utan att överskrida budgeten. För närvarande stöds: Aliexpress, Lazada, eBay, Amazon och fler. (Integritetspolicy: https://github.com/nuck-liu2335/script-policy)
+// @description:th     ค้นหาคูปองอัตโนมัติในแพลตฟอร์มช็อปปิ้งยอดนิยมเพื่อช่วยให้คุณค้นหาข้อเสนอที่ดีที่สุดสำหรับสินค้าที่คุณต้องการโดยไม่ต้องใช้จ่ายเกินไป ขณะนี้รองรับ: Aliexpress, Lazada, eBay, Amazon และอื่นๆ (นโยบายความเป็นส่วนตัว: https://github.com/nuck-liu2335/script-policy)
+// @description:tr     Popüler alışveriş platformlarında otomatik olarak kupon arayarak, ihtiyacınız olan ürünler için en iyi fırsatları bulmanıza yardımcı olur, fazla harcama yapmadan. Şu anda desteklenenler: Aliexpress, Lazada, eBay, Amazon ve daha fazlası. (Gizlilik Politikası: https://github.com/nuck-liu2335/script-policy)
+// @description:uk     Автоматичний пошук купонів на популярних торгових платформах, щоб допомогти вам знайти найкращі пропозиції на товари, які вам потрібні, без зайвих витрат. Наразі підтримується: Aliexpress, Lazada, eBay, Amazon та інші. (Політика конфіденційності: https://github.com/nuck-liu2335/script-policy)
+// @description:ug     پاپۇلار سودا سېتىش پلاتفورمالىرىدا ئاپتوماتىك كۇپون ئىزدەش ئارقىلىق، پەقەت مۇھتاج بولغان مەھسۇلاتلارغا ئەڭ ياخشى پەقەتلەرنى تاپشۇرۇشقا ياردەم بېرىدۇ، ھىچ بىر ئاشىق پۇل چىقارماي. ھازىر كۆرسىتىلىدىغان: Aliexpress، Lazada، eBay، Amazon ۋە باشقا. (مەخپىيەتلىك سىياسىتى: https://github.com/nuck-liu2335/script-policy)
+// @description:vi     Tìm kiếm tự động mã giảm giá trên các nền tảng mua sắm phổ biến để giúp bạn tìm được những ưu đãi tốt nhất cho sản phẩm bạn cần, mà không phải chi tiêu quá mức. Hiện tại hỗ trợ: Aliexpress, Lazada, eBay, Amazon và nhiều hơn nữa. (Chính sách quyền riêng tư: https://github.com/nuck-liu2335/script-policy)
 // @namespace   Thaddeus_ecommerce_NameScope
-// @version     1.1.11
+// @version     1.1.14
 // @author      Thaddeus310,PeterParker
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAABAZJREFUWEetl1lME1EUhv+htbaISamoVTC0WrcgASOSlFCpuEfRmPigicaghgeXRI2JiTy4xVfikzExLvhkJGpiTYi4FUQeDMEG3CXp4FpQaEW0LKWjd2Camemdxep96EzSc+/5zn/PPecOg78Ypb7LXgbccdEU7/i7nzwZcI3k2VSx+4TeZRk9hst8F09wYMSONacx4E7qAVEFSMWxnEwLRBHA47v0CIAgMb+uPT0DoV8DmtEvnmLHs96Q2M7/uGLXctrEJADRPic5X5czF/Uf36lCEOd2Swae9YWS7Dgwy5srKvl8EUYSgMd3iVMKUUkBvcr8UTRJCQkATXYtvUnEZMgkV5smgUgApJpwJPoZRHLpnqtyixMzAaAmvZYKqfz/uGIX75v/oUVfVlMN49QpMGTZUllfMmfo1Tt0ucvBuleIkm+sTvAAtOgPtlVjQiSOaPck5M+0pAwxOO0reuNRXO3fKAEgCxIVGKW933bjGKZO5jASNiPPNillgLqOMIqLR1BnWJMEQI4lFcD6IYgt7bUozIsi0GTGHFPqCnSZf2B69ih8g0Vo82yRB+JnaEdvU9s5zI6+hyE+CoNRsSzoUmU0NpbnwR4LHhRXIjLLKamQVICq9lPYup7V5UCPEWNyIPjyMw73HKUC8CGKq9l/B8jwIhhooQGAKMAJzoWnHOD+DRvYThP2HJU0GMXgie1Q2IKJmVE4XMNgNAD4rqekAFmsoW4uvvT0Yee+Xn5BrVFfa0dsxIV5BR2Yv/Q75Fsg8kVPQrkC9dc9WLB6B5zWKi3f/P+NDxchO/8IjN+rxhQQ5YCz0C3uHfoAGm67YbS5UV5aowug9sISxAbN2H3gCW8v3gLz/PxE7yA9gRnv/2QbEkOuwJuADd04Bq7vCsrKn2tCBEP70Rn4hlVrryUBiI8hD0ArxbRTcPfOdpizbMjNOq+aB43NGxBPcyErfgv5pV2qAHwpJhbyckwD6GOdCHzcDAPeItfeQIUgzoncQ6HWRPTyLRAUEFoytR0r1YGO5lx8jnhgySkENzB+sxpmAZODT7TRmBE/2RcoKemEzRFMbBXtGErasVwFtUJElHjdOg0/M5xIM8aQlp6DWH8IsYEvKHD1I9MRhMUakeSJHIB6IRnPBb4m6KmEBISMwYgVZmsEFms4ybFAIQOgX8kEY9KcqtpPef9rLxBVQt/e05J7KPVaXj1w5tHKhZ2ax02vgVCIzrRsOHSl5uZZ8TzFD5MXTx3heSbWqteJmt3bYUckr5jNpNmofprdaynye9Nby/4Fwv+rqHFVSavkI0eXAmKjVEA+xaaz2YbuygmLIfkSkgej6+tYmERAyPtM47cC8hS2iEgs2HQMu05uLb0v2Wc1BX8DMGUKxDW5sRoAAAAASUVORK5CYII=
 // @match       *://*/*
@@ -139,12 +139,11 @@
 // @include     /^https:\/\/([\w-]+\.)?ajio\.[\w.-]+([/?#].*)?$/
 // @include     /^https:\/\/([\w-]+\.)?flipkart\.[\w.-]+([/?#].*)?$/
 // @include     /^https:\/\/([\w-]+\.)?myntra\.[\w.-]+([/?#].*)?$/
-// @include     /^https:\/\/([\w-]+\.)?kraken\.[\w.-]+([/?#].*)?$/
 // @include     *://www.jtmate.com/mid/merge**
 // @exclude     *://www.lazada.com/*
 // @exclude     *://shopee.com/*
-// @connect     oversea.mimixiaoke.com
 // @connect     jtmate.com
+// @connect     mimixiaoke.com
 // @license     MIT
 // @run-at      document-idle
 // @antifeature referral-link
@@ -167,31 +166,45 @@
 
   
   /*!
-  * Copyright (c) 2024 - 2025, Thaddeus310,PeterParker. All rights reserved.
-  *
-  * Permission is hereby granted, free of charge, to any person obtaining a copy
-  * of this software and associated documentation files (the "Software"), to deal
-  * in the Software without restriction, including without limitation the rights
-  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-  * copies of the Software, and to permit persons to whom the Software is
-  * furnished to do so, subject to the following conditions:
-  *
-  * The above copyright notice and this permission notice shall be included in
-  * all copies or substantial portions of the Software.
-  *
-  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-  *
-  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-  * SOFTWARE.
-  */
+   * Before using this script, please make sure to read the information provided
+   * in the @description section, which includes an overview of the script’s
+   * features and the privacy notice. By continuing to use this script, you
+   * acknowledge that you have read and understood the relevant content.
+   * If you do not agree, please stop using the script immediately.
+   *
+   * 
+   * Copyright (c) 2024 - 2026, Thaddeus310,PeterParker.
+   * All rights reserved.
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in
+   * all copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   *
+   */
 
 
   const ScriptConst = {
-    "lang": (navigator.language || navigator.userLanguage || "").slice(0, 2).toLowerCase() || "en",
+    "lang": (() => {
+      const navLang = navigator.language || navigator.userLanguage || "en";
+      if (navLang.startsWith("zh")) {
+        return navLang === "zh-CN" || navLang === "zh-TW" ? navLang : "zh-CN";
+      }
+      return navLang.slice(0, 2).toLowerCase() || "en";
+    })(),
     "isDev": false,
     "isDebug": false,
     "version": "1.0.1",
@@ -202,6 +215,7 @@
   const PlatformConst = {
     "x": { "p": "x", "match": /twitter|x\.com$/ },
     "youtube": { "p": "youtube", "match": /youtube\.com$/ },
+    "google": { "p": "google", "match": /google\.com$/ },
     "tiktok": { "p": "tiktok", "match": /www\.tiktok\.com/ },
     "cobalt": { "p": "cobalt", "match": /cobalt\.tools/ }
   };
@@ -412,47 +426,28 @@
     },
     mustGetElement: function(handler) {
       return __async$q(this, null, function* () {
-        const getElements = (handler2) => __async$q(this, null, function* () {
-          const promiseArray = [];
-          const handlers = handler2.split("@");
-          for (let i = 0; i < handlers.length; i++) {
-            const eleName = handlers[i];
-            if (!eleName) {
-              continue;
-            }
-            if (eleName == "body") {
-              promiseArray.push(
-                new Promise((resolve, reject) => {
-                  resolve(document.body);
-                })
-              );
-            } else if (eleName == "html") {
-              promiseArray.push(
-                new Promise((resolve, reject) => {
-                  resolve(document.html);
-                })
-              );
-            } else {
-              promiseArray.push(this.waitForElementByInterval(eleName, document.body, true, 10, 1500));
-            }
-          }
-          let element2 = yield Promise.race(promiseArray);
-          return element2;
+        const getElements = (h) => __async$q(this, null, function* () {
+          const names = h.split("@").filter((s) => s.length);
+          const promises = names.map((eleName) => {
+            if (eleName === "body")
+              return Promise.resolve(document.body);
+            if (eleName === "html")
+              return Promise.resolve(document.documentElement);
+            return this.waitForElementByInterval(eleName, document.body, true, 10, 1500);
+          });
+          return promises.length ? Promise.race(promises) : null;
         });
         let element = yield getElements(handler);
-        return new Promise((resolve, reject) => {
-          if (element) {
-            resolve(element);
-            return;
-          }
-          const waitInterval = setInterval(() => {
-            element = getElements(handler);
-            if (element) {
+        if (element)
+          return element;
+        return new Promise((resolve) => {
+          const waitInterval = setInterval(() => __async$q(this, null, function* () {
+            const el = yield getElements(handler);
+            if (el) {
               clearInterval(waitInterval);
-              resolve(element);
-              return;
+              resolve(el);
             }
-          }, 2e3);
+          }), 2e3);
         });
       });
     },
@@ -3198,6 +3193,9 @@
           "action": "action-" + name
         }
       });
+      root.addEventListener("wheel", (e) => {
+        e.stopImmediatePropagation();
+      }, { passive: false, capture: true });
       insertRootElement.appendChild(root);
       const outerDIV = ElementUtil.createElement("div", {
         attributes: {
@@ -3414,26 +3412,27 @@
   const LangueUtil = {
     updateDelay: 15 * 60 * 1e3,
     _locations: {
-      "en": { languageDefault: "Default" },
-      "es": { languageDefault: "Predeterminado" },
-      "ar": { languageDefault: "افتراضي" },
-      "fr": { languageDefault: "Par défaut" },
-      "pt": { languageDefault: "Padrão" },
-      "ru": { languageDefault: "По умолчанию" },
-      "ja": { languageDefault: "デフォルト" },
-      "de": { languageDefault: "Standard" },
-      "ko": { languageDefault: "기본" },
-      "it": { languageDefault: "Predefinito" },
-      "id": { languageDefault: "Default" },
-      "tr": { languageDefault: "Varsayılan" },
-      "pl": { languageDefault: "Domyślnie" },
-      "uk": { languageDefault: "Типово" },
-      "nl": { languageDefault: "Standaard" },
-      "vi": { languageDefault: "Mặc định" },
-      "ms": { languageDefault: "Lalai" },
-      "th": { languageDefault: "ค่าเริ่มต้น" },
-      "mx": { languageDefault: "Predeterminado" },
-      "cl": { languageDefault: "Predeterminado" }
+      "en": { "languageDefault": "Follow Browser" },
+      "es": { "languageDefault": "Seguir el navegador" },
+      "ar": { "languageDefault": "اتباع المتصفح" },
+      "fr": { "languageDefault": "Suivre le navigateur" },
+      "pt": { "languageDefault": "Seguir o navegador" },
+      "ru": { "languageDefault": "Следовать браузеру" },
+      "ja": { "languageDefault": "ブラウザに従う" },
+      "de": { "languageDefault": "Dem Browser folgen" },
+      "ko": { "languageDefault": "브라우저 따르기" },
+      "it": { "languageDefault": "Segui il browser" },
+      "id": { "languageDefault": "Ikuti browser" },
+      "tr": { "languageDefault": "Tarayıcıyı takip et" },
+      "pl": { "languageDefault": "Podążaj za przeglądarką" },
+      "uk": { "languageDefault": "Слідувати браузеру" },
+      "nl": { "languageDefault": "Volg browser" },
+      "vi": { "languageDefault": "Theo trình duyệt" },
+      "ms": { "languageDefault": "Ikut pelayar" },
+      "th": { "languageDefault": "ตามเบราว์เซอร์" },
+      "mx": { "languageDefault": "Seguir el navegador" },
+      "zh-CN": { "languageDefault": "跟随浏览器" },
+      "zh-TW": { "languageDefault": "跟隨瀏覽器" }
     },
     getLanguages: function() {
       var _a, _b, _c;
@@ -3457,7 +3456,9 @@
         { code: "ms", name: "Bahasa Melayu", dir: "ltr" },
         { code: "th", name: "ไทย", dir: "ltr" },
         { code: "mx", name: "Mexican Spanish", dir: "ltr" },
-        { code: "cl", name: "Chilean Spanish", dir: "ltr" }
+        { code: "cl", name: "Chilean Spanish", dir: "ltr" },
+        { code: "zh-CN", name: "中文（简体）", dir: "ltr" },
+        { code: "zh-TW", name: "中文（繁體）", dir: "ltr" }
       ];
       const language = (_a = languages.find((lang) => lang.code === DefaultValue.lang)) != null ? _a : languages[0];
       const defaultLanguage = Object.assign({}, language);
@@ -3532,6 +3533,7 @@
         if (now - langueObjects.time >= this.updateDelay || now === langueObjects.time || langueObjects.lang != lang || force) {
           try {
             const requestsBase = getRequestUrl()["getLangue"];
+            Logger.log("info", "lang=======>", requestsBase.method, requestsBase.url, { "lang": lang });
             Tools.request(requestsBase.method, requestsBase.url, { "lang": lang }, { "Content-Type": "application/json;charset=UTF-8" }, 5 * 1e3).then((serverLangueJson) => {
               if (serverLangueJson.code === "success") {
                 const serverLangueObjects = JSON.parse(serverLangueJson.result);
@@ -4848,7 +4850,7 @@
     }
   };
 
-  var css_248z = ".history-panel-wrapper{box-sizing:border-box;position:fixed;z-index:2147483646}.history-panel-wrapper svg.icon-i87i-svg path{fill:var(--color-modeal-header-icon)!important}.history-panel-wrapper svg.icon-i87i-svg:hover path{fill:var(--color-modeal-header-icon-hover)!important}.history-panel-wrapper>.history-panel-aside-main{background-color:#fff;border:1px solid #ebebeb;border-radius:5px;bottom:70px;box-shadow:2px 2px 5px #b6bdc5;height:400px;overflow-x:hidden;overflow-y:auto;position:absolute;right:0;width:400px}.history-panel-wrapper>.history-panel-aside-main>.panel-aside-main-inner{display:flex;flex-direction:column;height:100%;width:100%}.history-panel-aside-main .panel-aside-main-header{align-items:center;background-color:var(--color-modeal-header-background);border-bottom:1px solid #ebe6e6;box-sizing:border-box;display:flex;height:var(--size-height-modeal-header);justify-content:space-between;padding:0 var(--size-padding-horizontal-modeal-header)}.history-panel-aside-main .panel-aside-main-header>.logo-header{align-items:center;display:flex;justify-content:center}.history-panel-aside-main .panel-aside-main-header>.logo-header>svg{height:var(--size-height-modeal-icon)!important;width:var(--size-height-modeal-icon)!important}.history-panel-aside-main .panel-aside-main-header>.title-header{flex:1;font-size:var(--size-font-modeal-header-title);font-weight:700;padding-left:10px}.history-panel-aside-main .panel-aside-main-header .btns-header{display:flex;flex-direction:row}.history-panel-aside-main .panel-aside-main-header .btns-header .close,.history-panel-aside-main .panel-aside-main-header .btns-header .setting{align-items:center;cursor:pointer;display:flex;justify-content:center;width:var(--size-height-modeal-operat-icon)}.history-panel-aside-main .panel-aside-main-content{background-color:var(--color-modeal-content-background);flex:1;overflow:auto}.history-panel-aside-main .panel-aside-main-item{margin:5px 0;padding:5px}.history-panel-aside-main .panel-aside-main-item .item-title{color:#b6b6b6;font-size:13px;font-weight:500;padding:5px 0;text-align:center}.history-panel-aside-main .panel-aside-main-item .item-container{display:flex;flex-flow:wrap;flex-direction:row;justify-content:flex-start}.history-panel-aside-main .histories-box-review_item{margin:5px 0;overflow:hidden;width:33.3333%}.history-panel-aside-main .histories-box-review_item>a{background-color:#fff!important;border:1px solid #ccc!important;border-radius:5px!important;box-sizing:initial!important;display:block!important;margin:0 auto!important;position:relative!important;width:110px!important}.history-panel-aside-main .histories-box-review_item>a>.review-shadow{border:2px solid red;border-radius:5px;bottom:0;display:none;left:0;position:absolute;right:0;text-align:center;top:0;z-index:99}.history-panel-aside-main .histories-box-review_item>a>.review-shadow .delete-btn{background-color:red;border-radius:3px;color:#fff;font-size:13px;height:15px;line-height:10px;position:absolute;right:0;text-align:center;top:0;width:15px}.history-panel-aside-main .histories-box-review_item>a>.review-img{border-radius:5px 5px 0 0;height:110px;overflow:hidden;width:110px}.history-panel-aside-main .histories-box-review_item>a>.review-img>img{width:100%!important}.history-panel-aside-main .histories-box-review_item>a>.review-text{color:#000!important;font-size:13px!important;overflow:hidden!important;padding:5px!important;text-align:center!important;text-decoration:underline!important;text-overflow:ellipsis!important;white-space:nowrap!important}.history-panel-wrapper>.history-panel-aside-body{background-color:#fafafa;border-radius:5px;box-shadow:1px 1px 2px #b6bdc5;direction:ltr!important;display:flex;height:60px;overflow:hidden}.history-panel-wrapper>.history-panel-aside-body>div{align-items:center!important;display:flex!important;justify-content:center!important}.history-panel-aside-body .goods-expand{cursor:pointer;width:20px!important}.history-panel-aside-body .goods-expand svg{transition:transform .3s!important}.history-panel-aside-body .goods-review{flex-direction:row;transition:all .5s ease-in-out;width:auto}.history-panel-aside-body .goods-review-item{border-radius:4px;cursor:pointer;height:45px;line-height:45px;margin:0 5px;overflow:hidden;position:relative;width:45px}.history-panel-aside-body .goods-review-item>a{display:block!important;height:100%!important;width:100%!important}.history-panel-aside-body .goods-review-item>a>.review-shadow{background-color:#3d9ba433;bottom:0;display:none;left:0;position:absolute;right:0;text-align:center;top:0;z-index:99}.history-panel-aside-body .goods-review-item>a>.review-shadow img{width:15px!important}.history-panel-aside-body .goods-review-item img{width:100%!important}.history-panel-aside-body .history-box-expand{cursor:pointer;flex-direction:column;margin:0 10px;text-align:center}.history-panel-aside-body .history-box-expand svg{height:33px!important;width:33px!important}.history-panel-aside-body .history-box-expand label{font-size:12px!important;font-weight:700!important}.history-panel-aside-body .wrapper-drag-handle{box-shadow:0 3px 3px -2px #0003,0 3px 4px 0 #00000024,0 1px 8px 0 #0000001f;cursor:move;width:20px!important}";
+  var css_248z = ".history-panel-wrapper{box-sizing:border-box;position:fixed;z-index:2147483646}.history-panel-wrapper svg.icon-i87i-svg path{fill:var(--color-modeal-header-icon)!important}.history-panel-wrapper svg.icon-i87i-svg:hover path{fill:var(--color-modeal-header-icon-hover)!important}.history-panel-wrapper>.history-panel-aside-main{background-color:#fff;border:1px solid #ebebeb;border-radius:5px;bottom:70px;box-shadow:2px 2px 5px #b6bdc5;height:400px;overflow-x:hidden;overflow-y:auto;position:absolute;right:0;width:400px}.history-panel-wrapper>.history-panel-aside-main>.panel-aside-main-inner{display:flex;flex-direction:column;height:100%;width:100%}.history-panel-aside-main .panel-aside-main-header{align-items:center;background-color:var(--color-modeal-header-background);border-bottom:1px solid #ebe6e6;box-sizing:border-box;display:flex;height:var(--size-height-modeal-header);justify-content:space-between;padding:0 var(--size-padding-horizontal-modeal-header)}.history-panel-aside-main .panel-aside-main-header>.logo-header{align-items:center;display:flex;justify-content:center}.history-panel-aside-main .panel-aside-main-header>.logo-header>svg{height:var(--size-height-modeal-icon)!important;width:var(--size-height-modeal-icon)!important}.history-panel-aside-main .panel-aside-main-header>.title-header{flex:1;font-size:var(--size-font-modeal-header-title);font-weight:700;padding-left:10px}.history-panel-aside-main .panel-aside-main-header .btns-header{display:flex;flex-direction:row}.history-panel-aside-main .panel-aside-main-header .btns-header .close,.history-panel-aside-main .panel-aside-main-header .btns-header .setting{align-items:center;cursor:pointer;display:flex;justify-content:center;width:var(--size-height-modeal-operat-icon)}.history-panel-aside-main .panel-aside-main-content{background-color:var(--color-modeal-content-background);flex:1;overflow-x:hidden;overflow-y:auto}.history-panel-aside-main .panel-aside-main-content::-webkit-scrollbar{width:2px}.history-panel-aside-main .panel-aside-main-content::-webkit-scrollbar-track{background:#0000}.history-panel-aside-main .panel-aside-main-content::-webkit-scrollbar-thumb{background-color:#969696;border-radius:2px}.history-panel-aside-main .panel-aside-main-item{margin:5px 0;padding:5px}.history-panel-aside-main .panel-aside-main-item .item-title{color:#b6b6b6;font-size:13px;font-weight:500;padding:5px 0;text-align:center}.history-panel-aside-main .panel-aside-main-item .item-container{display:flex;flex-flow:wrap;flex-direction:row;justify-content:flex-start}.history-panel-aside-main .histories-box-review_item{margin:5px 0;overflow:hidden;width:33.3333%}.history-panel-aside-main .histories-box-review_item>a{background-color:#fff!important;border:1px solid #ccc!important;border-radius:5px!important;box-sizing:initial!important;display:block!important;margin:0 auto!important;position:relative!important;width:110px!important}.history-panel-aside-main .histories-box-review_item>a>.review-shadow{border:2px solid red;border-radius:5px;bottom:0;display:none;left:0;position:absolute;right:0;text-align:center;top:0;z-index:99}.history-panel-aside-main .histories-box-review_item>a>.review-shadow .delete-btn{background-color:red;border-radius:3px;color:#fff;font-size:13px;height:15px;line-height:10px;position:absolute;right:0;text-align:center;top:0;width:15px}.history-panel-aside-main .histories-box-review_item>a>.review-img{border-radius:5px 5px 0 0;height:110px;overflow:hidden;width:110px}.history-panel-aside-main .histories-box-review_item>a>.review-img>img{width:100%!important}.history-panel-aside-main .histories-box-review_item>a>.review-text{color:#000!important;font-size:13px!important;overflow:hidden!important;padding:5px!important;text-align:center!important;text-decoration:underline!important;text-overflow:ellipsis!important;white-space:nowrap!important}.history-panel-wrapper>.history-panel-aside-body{background-color:#fafafa;border-radius:5px;box-shadow:1px 1px 2px #b6bdc5;direction:ltr!important;display:flex;height:60px;overflow:hidden}.history-panel-wrapper>.history-panel-aside-body>div{align-items:center!important;display:flex!important;justify-content:center!important}.history-panel-aside-body .goods-expand{cursor:pointer;width:20px!important}.history-panel-aside-body .goods-expand svg{transition:transform .3s!important}.history-panel-aside-body .goods-review{flex-direction:row;transition:all .5s ease-in-out;width:auto}.history-panel-aside-body .goods-review-item{border-radius:4px;cursor:pointer;height:45px;line-height:45px;margin:0 5px;overflow:hidden;position:relative;width:45px}.history-panel-aside-body .goods-review-item>a{display:block!important;height:100%!important;width:100%!important}.history-panel-aside-body .goods-review-item>a>.review-shadow{background-color:#3d9ba433;bottom:0;display:none;left:0;position:absolute;right:0;text-align:center;top:0;z-index:99}.history-panel-aside-body .goods-review-item>a>.review-shadow img{width:15px!important}.history-panel-aside-body .goods-review-item img{width:100%!important}.history-panel-aside-body .history-box-expand{cursor:pointer;flex-direction:column;margin:0 10px;text-align:center}.history-panel-aside-body .history-box-expand svg{height:33px!important;width:33px!important}.history-panel-aside-body .history-box-expand label{font-size:12px!important;font-weight:700!important}.history-panel-aside-body .wrapper-drag-handle{box-shadow:0 3px 3px -2px #0003,0 3px 4px 0 #00000024,0 1px 8px 0 #0000001f;cursor:move;width:20px!important}";
 
   const GoodsHistory = {
     root: null,
@@ -5867,13 +5869,13 @@
       const id = Tools.getGoodsIdByLink(href);
       if (title && price && cover) {
         Promise.all([
-          Tools.waitForElementByInterval(price, document.body, false),
-          Tools.waitForElementByInterval(cover, document.body, true)
+          Tools.waitForElementByInterval(cover, document.body, true),
+          Tools.waitForElementByInterval(price, document.body, false, 10, 5e3)
         ]).then((elements) => {
-          const priceElement = elements[0];
-          const coverElement = elements[1];
+          const coverElement = elements[0];
+          const priceElement = elements[1];
           const titleElement = document.querySelector(title);
-          if (coverElement && priceElement) {
+          if (coverElement) {
             var imgSrc = "";
             if (coverElement.tagName == "IMG") {
               imgSrc = coverElement.getAttribute("data-src") || coverElement.getAttribute("data-url") || coverElement.getAttribute("src");

@@ -302,5 +302,39 @@
     "issues": [
       "⚠️ 仅 22/64 个发现脚本有安全检查"
     ]
+  },
+  {
+    "run_id": "24647230120",
+    "run_number": 21,
+    "timestamp": "2026-04-20T04:06:53.901568+00:00",
+    "success": true,
+    "managed": {
+      "total": 13,
+      "with_security": 12,
+      "risk": {
+        "CRITICAL": 3,
+        "LOW": 2,
+        "SAFE": 5,
+        "MEDIUM": 2
+      }
+    },
+    "discovered": {
+      "total": 74,
+      "with_security": 34,
+      "risk": {
+        "SAFE": 9,
+        "LOW": 8,
+        "CRITICAL": 7,
+        "MEDIUM": 6,
+        "HIGH": 4
+      }
+    },
+    "pages": {
+      "status": 200,
+      "ok": true
+    },
+    "issues": [
+      "⚠️ 仅 34/74 个发现脚本有安全检查"
+    ]
   }
 ]

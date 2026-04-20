@@ -1,0 +1,148 @@
+{
+  "slug": "Pagetual",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/438684-pagetual",
+  "source_repo": "438684",
+  "raw_url": "https://update.greasyfork.org/scripts/438684/Pagetual.user.js",
+  "filename": "Pagetual.user.js",
+  "name": "Pagetual",
+  "version": "1.9.37.131",
+  "description": "Perpetual pages - powerful auto-pager script. Auto fetching next paginated web pages and inserting into current page for infinite scroll. Support thousands of web sites without any rule.",
+  "match": [
+    "*://*/*"
+  ],
+  "grant": [
+    "GM_xmlhttpRequest",
+    "GM_registerMenuCommand",
+    "GM_notification",
+    "GM_getValue",
+    "GM_setValue",
+    "GM_addStyle",
+    "GM_openInTab",
+    "GM_deleteValue",
+    "GM_info",
+    "GM_setClipboard",
+    "GM.xmlHttpRequest",
+    "GM.registerMenuCommand",
+    "GM.notification",
+    "GM.getValue",
+    "GM.setValue",
+    "GM.addStyle",
+    "GM.openInTab",
+    "GM.deleteValue",
+    "GM.info",
+    "GM.setClipboard"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Pagetual\n// @name:zh-CN  东方永页机\n// @name:zh-TW  東方永頁機\n// @name:ja  東方永頁機\n// @name:ko  東方永頁機\n// @name:pt-BR  Pagetual\n// @name:ru  Pagetual\n// @name:de  Pagetual\n// @name:es  Pagetual\n// @name:fr  Pagetual\n// @name:it  Pagetual\n// @name:id  Pagetual\n// @name:th  Pagetual\n// @name:nb  Pagetual\n// @name:sv  Pagetual\n// @name:sr  Pagetual\n// @name:sk  Pagetual\n// @name:hu  Pagetual\n// @name:ro  Pagetual\n// @name:fi  Pagetual\n// @name:el  Pagetual\n// @name:eo  Pagetual\n// @name:bg  Pagetual\n// @name:cs  Pagetual\n// @name:vi  Pagetual\n// @name:pl  Pagetual\n// @name:uk  Pagetual\n// @name:tr  Pagetual\n// @name:nl  Pagetual\n// @name:da  Pagetual\n// @name:fr-CA  Pagetual\n// @namespace  hoothin\n// @version  1.9.37.131\n// @description  Perpetual pages - powerful auto-pager script. Auto fetching next paginated web pages and inserting into current page for infinite scroll. Support thousands of web sites without any rule.\n// @description:zh-CN  终极自动翻页 - 加载并拼接下一分页内容至当前页尾，智能适配任意网页\n// @description:zh-TW  終極自動翻頁 - 加載並拼接下一分頁內容至當前頁尾，智能適配任意網頁\n// @description:pt-BR  Páginas infinitas - um poderoso script de paginação automática. Carrega automaticamente as próximas páginas da web paginadas e as insere na página atual para rolagem infinita. Suporta milhares de sites sem nenhuma regra.\n// @description:ja  Webページを自動で読み込み継ぎ足し表示を行うブラウザ拡張です、次のページ付けされた Web ページの自動読み込みと現在のページへの挿入 ルールなしで何千もの Web サイトをサポートします。\n// @description:ko  페이지가 매겨진 다음 웹 페이지를 자동으로 로드하고 현재 페이지에 삽입합니다. 규칙 없이 수천 개의 웹 사이트를 지원합니다.\n// @description:ru  Автоматическая подгрузка следующих страниц и вставка их содержимого в текущую страницу. Поддерживает тысячи сайтов даже с настройками по умолчанию.\n// @description:de  Automatisches Laden der nächsten paginierten Webseiten und Einfügen in die aktuelle Seite. Unterstützen Sie Tausende von Websites ohne Regeln.\n// @description:es  Carga automática de las siguientes páginas web paginadas e inserción en la página actual. Admite miles de sitios web sin ninguna regla.\n// @description:fr  Chargement automatique des pages Web paginées suivantes et insertion dans la page en cours. Prend en charge des milliers de sites Web sans aucune règle.\n// @description:it  Caricamento automatico delle pagine Web impaginate successive e inserimento nella pagina corrente. Supporta migliaia di siti web senza alcuna regola.\n// @description:id  Pengambilan otomatis halaman web yang dipaginasi berikutnya dan penyisipan ke halaman saat ini untuk pengguliran tak terbatas. Mendukung ribuan situs web tanpa aturan apa pun.\n// @description:th  ดึงหน้าเว็บแบบแบ่งหน้าถัดไปโดยอัตโนมัติและแทรกลงในหน้าปัจจุบันเพื่อเลื่อนแบบไม่มีที่สิ้นสุด รองรับเว็บไซต์หลายพันแห่งโดยไม่มีกฎเกณฑ์ใดๆ\n// @description:nb  Henter automatisk neste paginerte nettsider og setter inn på gjeldende side for uendelig rulling. Støtt tusenvis av nettsider uten noen regel.\n// @description:sv  Hämtar automatiskt nästa paginerade webbsidor och infogar på aktuell sida för oändlig rullning. Stöd tusentals webbplatser utan några regler.\n// @description:sr  Аутоматско преузимање следећих пагинираних веб страница и уметање у тренутну страницу за бесконачно померање. Подржите хиљаде веб локација без икаквог правила.\n// @description:sk  Samodejno pridobivanje naslednjih paginiranih spletnih strani in vstavljanje v trenutno stran za neskončno drsenje. Podprite na tisoče spletnih mest brez pravil.\n// @description:hu  A következő oldalszámozott weboldalak automatikus lekérése és beszúrása az aktuális oldalra a végtelen görgetés érdekében. Több ezer webhely támogatása szabály nélkül.\n// @description:ro  Preluare automată a următoarelor pagini web paginate și inserare în pagina curentă pentru defilare infinită. Suportă mii de site-uri web fără nicio regulă.\n// @description:fi  Hakee automaattisesti seuraavat sivutetut verkkosivut ja lisäämällä nykyiselle sivulle loputonta vieritystä. Tukee tuhansia web-sivustoja ilman sääntöjä.\n// @description:el  Αυτόματη ανάκτηση επόμενων σελιδοποιημένων ιστοσελίδων και εισαγωγή στην τρέχουσα σελίδα για άπειρη κύλιση. Υποστηρίξτε χιλιάδες ιστοσελίδες χωρίς κανένα κανόνα.\n// @description:eo  Aŭtomate alportado de sekvaj paĝigitaj retpaĝoj kaj enmetado en nunan paĝon por senfina movo. Subtenu milojn da retejoj sen ajna regulo.\n// @description:bg  Автоматично извличане на следващите уеб страници с пагиниране и вмъкване в текущата страница за безкрайно превъртане. Поддържайте хиляди уеб сайтове без никакви правила.\n// @description:cs  Automatické načítání dalších stránkovaných webových stránek a vkládání do aktuální stránky pro nekonečné posouvání. Podporujte tisíce webových stránek bez jakýchkoli pravidel.\n// @description:vi  Tự động tìm các trang web được phân trang tiếp theo và chèn vào trang hiện tại để cuộn vô hạn. Hỗ trợ hàng ngàn trang web mà không cần bất kỳ quy tắc nào.\n// @description:pl  Automatyczne pobieranie kolejnych stron internetowych z podziałem na strony i wstawianie ich do bieżącej strony w celu nieskończonego przewijania. Obsługa tysięcy stron internetowych bez żadnej reguły.\n// @description:uk  Автоматичне отримання наступних веб-сторінок із розбивкою на сторінки та вставка на поточну сторінку для нескінченного прокручування. Підтримка тисяч веб-сайтів без будь-яких правил.\n// @description:tr  Sonraki sayfalı web sayfalarını otomatik olarak getirme ve sonsuz kaydırma için geçerli sayfaya ekleme. Hiçbir kural olmadan binlerce web sitesini destekleyin.\n// @description:nl  Automatisch ophalen van volgende gepagineerde webpagina's en invoegen in huidige pagina voor oneindig scrollen. Ondersteun duizenden websites zonder enige regel.\n// @description:da  Automatisk hentning af næste paginerede websider og indsættelse på nuværende side for uendelig rulning. Støt tusindvis af websteder uden nogen regler.\n// @description:fr-CA  Récupération automatique des pages Web paginées suivantes et insertion dans la page actuelle pour un défilement infini. Prise en charge de milliers de sites Web sans aucune règle.\n// @author  hoothin\n// @license  MPL-2.0\n// @match  *://*/*\n// @icon  data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAdVBMVEUAAAD3VU33VU32VEz8U073VU32VU33VU32VUz0Uk/3VE32VU32VUz2VU32VU32VU32VU33VU33U0z2VU34Wkv3VE32VUz/mpj/nJj2VUz2VU32VE33VEz2VU32VU32VUz3VE32VEz3VE3/mZf2Vkz2VU3/mpilFFolAAAAJXRSTlMA3Lp/GvTBT5YQLuawZ/DOyZwlPQeKc21N04+FX1bqpm9DNoB4T68ePwAAAitJREFUWMPt1tuasiAUBuCFCG5Rs3QybTPV1/1f4v/3PDkyIojn8x5qBrI+ltAfh32/yysmBKvyXb+njb6bDL9kzTd5SzjDAsYT8nFoGSxYe6BVqoNDp2jFDit25BRgVUAODB4YWcETWVTwVNGiGN5iWtBgg4YMCpsoI38dNunmmWyxUTvbPwwbsYR0fIzZLQ0pTG8eieRmBLMmpdH9uimQEf6TNRnXXKLZHixpJtywLzOgMHtFCqdM64DahHRnOE1dsrekm9wr2WtLcAlpdHwcp1pAJySXYnERclzp4+v19jXdmcTvQUJtz+ZaI4i05/V/UGYrCxbaAsOYoNfIKEQxpqQuzCgJJJ/3f42O8ywEZuMVWi/8hODxGj3GW2b0udkbGULLDOjimAG0S3fLGlBnXQM9irG1CiQdVQi0dqQsOSDlyEEz7Vy9OxxfR71VCXsSB23jMrKJYZXSjw57sqgLn5Z0wolsOCz0RyJkyeYjgz7pwwVq20eboZwtVUl2EnN5gJ50dQZFdryATvABRTr/tJXkUMdaAK5pwtCapwtFLskguwuyMh/Sd9WChQ4sIvIUYSk3PYqQvCQlOC04IfN7PkdjOyRKWhdKXMmiAFt9i3sJ5jxoRuR0vqAghxxwHuqfQE5OHGDKOrwEnqs1DgAZ2e4Eev1d45TN7JfhrQLKgfwMFYAsvp33dXII073aVQLI2gN5S58lfmGnKKFtah7nkgnBZB7zlP7Y/QNiTM6sYNzawwAAAABJRU5ErkJggg==\n// @grant  GM_xmlhttpRequest\n// @grant  GM_registerMenuCommand\n// @grant  GM_notification\n// @grant  GM_getValue\n// @grant  GM_setValue\n// @grant  GM_addStyle\n// @grant  GM_openInTab\n// @grant  GM_deleteValue\n// @grant  GM_info\n// @grant  GM_setClipboard\n// @grant  GM.xmlHttpRequest\n// @grant  GM.registerMenuCommand\n// @grant  GM.notification\n// @grant  GM.getValue\n// @grant  GM.setValue\n// @grant  GM.addStyle\n// @grant  GM.openInTab\n// @grant  GM.deleteValue\n// @grant  GM.info\n// @grant  GM.setClipboard\n// @homepage  https://github.com/hoothin/UserScripts/tree/master/Pagetual\n// @supportURL  https://github.com/hoothin/UserScripts/issues\n// @connect  wedata.net\n// @connect  githubusercontent.com\n// @connect  ghproxy.com\n// @connect  ghp.ci\n// @connect  hoothin.github.io\n// @connect  *\n// @run-at  document-end\n// @contributionURL  https://ko-fi.com/hoothin\n// @contributionAmount  1\n// @downloadURL  https://update.greasyfork.org/scripts/438684/Pagetual.user.js\n// @updateURL  https://update.greasyfork.org/scripts/438684/Pagetual.meta.js",
+  "sha256": "08468a855a5d049ec4024cdeacb11c3107934ffedfdb5ccd7cd143921e6481a5",
+  "discovered_at": "2026-04-20T03:48:08.873590+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 457165,
+  "good_ratings": 623,
+  "bad_ratings": 2,
+  "summary": {
+    "applicable_sites": [
+      "所有网站"
+    ],
+    "description": "本脚本可让网页实现自动翻页，无需手动点击“下一页”，内容会自动加载并拼接到当前页面底部。支持几乎所有分页网站，无需额外设置。适合阅读论坛、新闻、搜索结果等多页内容时使用。",
+    "permissions": [
+      {
+        "explanation": "用于跨域加载下一页内容，实现自动翻页功能。",
+        "grant": "GM_xmlhttpRequest"
+      },
+      {
+        "explanation": "在脚本菜单中添加自定义命令，方便用户操作。",
+        "grant": "GM_registerMenuCommand"
+      },
+      {
+        "explanation": "在页面右下角弹出通知，提示翻页状态等信息。",
+        "grant": "GM_notification"
+      },
+      {
+        "explanation": "保存用户设置或脚本状态，便于下次使用。",
+        "grant": "GM_getValue"
+      },
+      {
+        "explanation": "存储用户设置或脚本状态。",
+        "grant": "GM_setValue"
+      },
+      {
+        "explanation": "为页面添加自定义样式，优化拼接内容显示。",
+        "grant": "GM_addStyle"
+      },
+      {
+        "explanation": "在新标签页打开链接，辅助部分功能。",
+        "grant": "GM_openInTab"
+      },
+      {
+        "explanation": "删除已保存的数据。",
+        "grant": "GM_deleteValue"
+      },
+      {
+        "explanation": "获取当前脚本的相关信息。",
+        "grant": "GM_info"
+      },
+      {
+        "explanation": "将内容复制到剪贴板，方便用户操作。",
+        "grant": "GM_setClipboard"
+      },
+      {
+        "explanation": "与 GM_xmlhttpRequest 类似，兼容不同环境的跨域请求。",
+        "grant": "GM.xmlHttpRequest"
+      },
+      {
+        "explanation": "与 GM_registerMenuCommand 类似，兼容不同环境的菜单命令。",
+        "grant": "GM.registerMenuCommand"
+      },
+      {
+        "explanation": "与 GM_notification 类似，兼容不同环境的通知。",
+        "grant": "GM.notification"
+      },
+      {
+        "explanation": "与 GM_getValue 类似，兼容不同环境的数据读取。",
+        "grant": "GM.getValue"
+      },
+      {
+        "explanation": "与 GM_setValue 类似，兼容不同环境的数据保存。",
+        "grant": "GM.setValue"
+      },
+      {
+        "explanation": "与 GM_addStyle 类似，兼容不同环境的样式添加。",
+        "grant": "GM.addStyle"
+      },
+      {
+        "explanation": "与 GM_openInTab 类似，兼容不同环境的新标签页打开。",
+        "grant": "GM.openInTab"
+      },
+      {
+        "explanation": "与 GM_deleteValue 类似，兼容不同环境的数据删除。",
+        "grant": "GM.deleteValue"
+      },
+      {
+        "explanation": "与 GM_info 类似，兼容不同环境的脚本信息获取。",
+        "grant": "GM.info"
+      },
+      {
+        "explanation": "与 GM_setClipboard 类似，兼容不同环境的剪贴板操作。",
+        "grant": "GM.setClipboard"
+      }
+    ],
+    "tags": [
+      "自动翻页",
+      "无限滚动",
+      "网页增强",
+      "阅读优化",
+      "通用脚本"
+    ],
+    "usage": [
+      "安装脚本后，访问任何带分页的网页。",
+      "向下滚动页面，脚本会自动加载并拼接下一页内容。",
+      "无需手动点击“下一页”按钮，内容会连续显示。",
+      "如需设置或暂停功能，可通过浏览器油猴菜单操作。"
+    ],
+    "zh_name": "东方永页机"
+  }
+}

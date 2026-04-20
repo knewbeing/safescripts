@@ -1,0 +1,62 @@
+{
+  "slug": "Krunker_Cheat_v2",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/551530-krunker-cheat-v2",
+  "source_repo": "551530",
+  "raw_url": "https://update.greasyfork.org/scripts/551530/Krunker%20Cheat%20v2.user.js",
+  "filename": "Krunker_Cheat_v2.user.js",
+  "name": "Krunker Cheat v2",
+  "version": "2.0",
+  "description": "Aimbot, ESP, Recoil Comp, ESP Lines, and Hardcore Mode. Original script by wi1lliott8411; also marked under \"downloadURL\"",
+  "match": [
+    "*://krunker.io/*",
+    "*://browserfps.com/*"
+  ],
+  "grant": [
+    "unsafeWindow",
+    "GM_info"
+  ],
+  "require": [
+    "https://unpkg.com/three@0.150.0/build/three.min.js"
+  ],
+  "metadata_raw": "// @name  Krunker Cheat v2\n// @name:en  Krunker Cheat v2\n// @description:en  A lot of features for Krunker.io - Aimbot, ESP, Wallhack and more!\n// @namespace  http://tampermonkey.net/\n// @version  2.0\n// @author  xenona\n// @match  *://krunker.io/*\n// @match  *://browserfps.com/*\n// @exclude  *://krunker.io/social*\n// @exclude  *://krunker.io/editor*\n// @icon  https://krunkergame.com/wp-content/uploads/thumbs/custom/K/krunker.webp\n// @run-at  document-start\n// @require  https://unpkg.com/three@0.150.0/build/three.min.js\n// @grant  unsafeWindow\n// @grant  GM_info\n// @description  Aimbot, ESP, Recoil Comp, ESP Lines, and Hardcore Mode. Original script by wi1lliott8411; also marked under \"downloadURL\"\n// @downloadURL  https://update.greasyfork.org/scripts/551530/Krunker%20Cheat%20v2.user.js\n// @updateURL  https://update.greasyfork.org/scripts/551530/Krunker%20Cheat%20v2.meta.js",
+  "sha256": "f86e920847b340b225fa022ef995789b78c1823fcda9d00fbf2340842966305b",
+  "discovered_at": "2026-04-20T03:48:33.517845+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 1318,
+  "good_ratings": 1,
+  "bad_ratings": 0,
+  "summary": {
+    "applicable_sites": [
+      "Krunker.io",
+      "BrowserFPS.com"
+    ],
+    "description": "本脚本为 Krunker.io 和 BrowserFPS.com 提供多种游戏辅助功能，包括自动瞄准（Aimbot）、透视（ESP）、墙体透视（Wallhack）等。玩家可通过快捷键开启或关闭不同功能，提升游戏体验。",
+    "permissions": [
+      {
+        "explanation": "允许脚本访问和修改页面的全局变量，便于实现高级功能。",
+        "grant": "unsafeWindow"
+      },
+      {
+        "explanation": "用于获取当前脚本的信息，如版本号，便于提示用户更新。",
+        "grant": "GM_info"
+      }
+    ],
+    "tags": [
+      "游戏辅助",
+      "Krunker",
+      "自动瞄准",
+      "透视",
+      "作弊",
+      "射击游戏"
+    ],
+    "usage": [
+      "1. 安装脚本后，进入 Krunker.io 或 BrowserFPS.com 游戏页面。",
+      "2. 通过快捷键（如V键、N键、L键）分别开启或关闭自动瞄准、透视等功能。",
+      "3. 按需切换功能，享受更便捷的游戏体验。"
+    ],
+    "zh_name": "Krunker 辅助脚本 v2"
+  }
+}

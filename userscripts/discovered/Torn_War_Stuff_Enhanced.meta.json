@@ -1,0 +1,62 @@
+{
+  "slug": "Torn_War_Stuff_Enhanced",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/529238-torn-war-stuff-enhanced",
+  "source_repo": "529238",
+  "raw_url": "https://update.greasyfork.org/scripts/529238/Torn%20War%20Stuff%20Enhanced.user.js",
+  "filename": "Torn_War_Stuff_Enhanced.user.js",
+  "name": "Torn War Stuff Enhanced",
+  "version": "1.12",
+  "description": "Show travel status and hospital time and sort by hospital time on war page. Fork of https://greasyfork.org/en/scripts/448681-torn-war-stuff",
+  "match": [
+    "https://www.torn.com/factions.php*"
+  ],
+  "grant": [
+    "GM_addStyle",
+    "GM_registerMenuCommand",
+    "GM_xmlhttpRequest"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Torn War Stuff Enhanced\n// @namespace  namespace\n// @version  1.12\n// @description  Show travel status and hospital time and sort by hospital time on war page. Fork of https://greasyfork.org/en/scripts/448681-torn-war-stuff\n// @author  xentac\n// @license  MIT\n// @match  https://www.torn.com/factions.php*\n// @grant  GM_addStyle\n// @grant  GM_registerMenuCommand\n// @grant  GM_xmlhttpRequest\n// @connect  api.torn.com\n// @downloadURL  https://update.greasyfork.org/scripts/529238/Torn%20War%20Stuff%20Enhanced.user.js\n// @updateURL  https://update.greasyfork.org/scripts/529238/Torn%20War%20Stuff%20Enhanced.meta.js",
+  "sha256": "20c8d7b625b9a776fc05a8b2fbb21bfed0d9e6e23d631dc58ca5ece6b0f9fbc0",
+  "discovered_at": "2026-04-20T03:48:57.942315+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 5446,
+  "good_ratings": 1,
+  "bad_ratings": 0,
+  "summary": {
+    "applicable_sites": [
+      "Torn 游戏派系页面"
+    ],
+    "description": "本脚本用于在 Torn 游戏的派系战争页面显示对方成员的旅行状态和住院时间，并可按住院时间排序。它还会高亮显示状态不同的成员，方便玩家快速获取关键信息。",
+    "permissions": [
+      {
+        "explanation": "用于动态添加自定义样式，让页面显示更直观。",
+        "grant": "GM_addStyle"
+      },
+      {
+        "explanation": "在脚本菜单中添加“设置 API Key”选项，方便用户输入 Torn API 密钥。",
+        "grant": "GM_registerMenuCommand"
+      },
+      {
+        "explanation": "用于向 Torn 官方 API 请求数据，获取最新的成员状态信息。",
+        "grant": "GM_xmlhttpRequest"
+      }
+    ],
+    "tags": [
+      "游戏辅助",
+      "信息增强",
+      "Torn",
+      "界面优化",
+      "数据可视化"
+    ],
+    "usage": [
+      "安装脚本后，进入 Torn 的派系页面。",
+      "首次使用时，点击脚本菜单中的“Set Api Key”并输入你的 Torn 公共 API 密钥。",
+      "刷新页面后，派系成员列表会显示旅行状态和住院时间，并可按住院时间排序。"
+    ],
+    "zh_name": "Torn战争信息增强"
+  }
+}

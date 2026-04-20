@@ -1,124 +1,24 @@
 {
-  "approved": true,
+  "approved": false,
   "data_transmission": {
-    "destinations": [
-      "https://gh.h233.eu.org",
-      "https://rapidgit.jjda.de5.net",
-      "https://gh.ddlc.top",
-      "https://gh-proxy.org",
-      "https://cdn.gh-proxy.org",
-      "https://edgeone.gh-proxy.org",
-      "https://cors.isteed.cc",
-      "https://ghproxy.it",
-      "https://github.boki.moe",
-      "https://gh-proxy.net",
-      "https://gh.jasonzeng.dev",
-      "https://gh.monlor.com",
-      "https://fastgit.cc",
-      "https://github.tbedu.top",
-      "https://firewall.lxstd.org",
-      "https://github.ednovas.xyz",
-      "https://ghfile.geekertao.top",
-      "https://gh.chjina.com",
-      "https://ghpxy.hwinzniej.top",
-      "https://cdn.crashmc.com",
-      "https://git.yylx.win",
-      "https://gitproxy.mrhjx.cn",
-      "https://ghproxy.cxkpro.top",
-      "https://gh.xxooo.cf",
-      "https://github.limoruirui.com",
-      "https://gh.idayer.com",
-      "https://gh.llkk.cc",
-      "https://down.npee.cn",
-      "https://raw.ihtw.moe",
-      "https://xget.xi-xu.me",
-      "https://gh.nxnow.top",
-      "https://gh.zwy.one",
-      "https://ghproxy.monkeyray.net",
-      "https://gh.xx9527.cn",
-      "https://ghfast.top",
-      "https://wget.la"
-    ],
-    "detected": true
+    "destinations": [],
+    "detected": false
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本中存在大量访问第三方公益加速节点的网络请求，可能会将用户请求的 GitHub 资源通过这些第三方节点转发，存在数据外传风险。",
-      "location": "代码中 download_url_us 数组定义部分",
-      "recommendation": "确认这些第三方节点的安全性和隐私政策，避免敏感数据泄露。",
+      "description": "无法进行完整安全审查：未提供脚本代码，仅有元数据。无法判断是否存在数据外传、隐私采集、远程代码执行等风险。",
+      "location": "全局",
+      "recommendation": "请提供完整 UserScript 代码以便进行全面安全审查。",
       "severity": "CRITICAL",
-      "type": "数据外传"
+      "type": "代码缺失"
     },
     {
-      "description": "脚本申请了多个 GM_* 权限，但未发现对 GM_openInTab 的使用，存在权限滥用风险。",
-      "location": "元数据 @grant 部分",
-      "recommendation": "建议精简权限申请，仅申请实际使用的权限。",
+      "description": "脚本申请了 GM_openInTab、GM_notification、GM_setClipboard 等高权限，但未提供代码无法判断实际用途。",
+      "location": "元数据 @grant",
+      "recommendation": "仅申请实际需要的权限，避免权限滥用。",
       "severity": "MEDIUM",
-      "type": "权限滥用"
-    },
-    {
-      "description": "脚本未发现使用 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险函数。",
-      "location": "整体代码分析",
-      "recommendation": "无",
-      "severity": "HIGH",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "脚本未发现明显的代码混淆特征，如 base64 解码执行、字符串数组索引映射、大量 unicode 编码或高度压缩代码。",
-      "location": "整体代码分析",
-      "recommendation": "无",
-      "severity": "HIGH",
-      "type": "代码混淆"
-    },
-    {
-      "description": "脚本未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未发现 document.write 插入不可信内容，未操作 iframe src 为 javascript: 协议。",
-      "location": "整体代码分析",
-      "recommendation": "无",
-      "severity": "HIGH",
-      "type": "DOM XSS / 注入"
-    },
-    {
-      "description": "脚本未发现访问 document.cookie、localStorage、sessionStorage、IndexedDB，未监听键盘输入事件，未读取表单字段值，未访问浏览器指纹相关 API，未读取剪贴板内容。",
-      "location": "整体代码分析",
-      "recommendation": "无",
-      "severity": "CRITICAL",
-      "type": "隐私采集"
-    },
-    {
-      "description": "脚本未发现使用 WebSocket、EventSource、navigator.sendBeacon 等网络请求方式。",
-      "location": "整体代码分析",
-      "recommendation": "无",
-      "severity": "CRITICAL",
-      "type": "数据外传"
-    },
-    {
-      "description": "脚本 @require 未使用，未发现加载远程 JS 的行为。",
-      "location": "元数据及代码",
-      "recommendation": "无",
-      "severity": "HIGH",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "脚本未发现使用敏感 API，如 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 读取剪贴板、Notification API。",
-      "location": "整体代码分析",
-      "recommendation": "无",
-      "severity": "MEDIUM",
-      "type": "敏感 API 调用"
-    },
-    {
-      "description": "脚本 @require 未使用，未涉及供应链风险。",
-      "location": "元数据",
-      "recommendation": "无",
-      "severity": "MEDIUM",
-      "type": "供应链风险"
-    },
-    {
-      "description": "脚本未发现修改页面 frame 保护策略或创建隐藏 iframe。",
-      "location": "整体代码分析",
-      "recommendation": "无",
-      "severity": "LOW",
-      "type": "ClickJacking / iframe 风险"
+      "type": "权限滥用风险"
     }
   ],
   "obfuscation_detected": false,
@@ -126,12 +26,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "MEDIUM",
+  "risk_level": "CRITICAL",
   "script_name": "Github Enhancement - High Speed Download",
-  "security_score": 76,
-  "summary": "该脚本主要通过多个第三方公益加速节点实现 GitHub 文件的高速下载，存在较多第三方网络请求，存在数据外传风险。未发现隐私采集、远程代码执行、代码混淆、DOM XSS 等高风险行为。权限申请中存在未使用的权限，建议精简。整体安全评分为 76，风险等级为中等。",
+  "security_score": 50,
+  "summary": "无法进行有效安全审查，因为未提供脚本代码。仅根据元数据分析，存在权限滥用风险。请补充完整代码以获得准确安全评估。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-04-15T21:01:52.515170+00:00",
+  "analyzed_at": "2026-04-20T03:40:12.775147+00:00",
   "slug": "GitHub_20Issue_20Link_20Status"
 }

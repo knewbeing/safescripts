@@ -4,22 +4,34 @@
     "destinations": [],
     "detected": false
   },
+  "dom_xss_risk": false,
   "issues": [
     {
-      "description": "Script requests GM_xmlhttpRequest permission but does not use it in the code, indicating unnecessary high privilege grant.",
-      "location": "@grant directives",
-      "recommendation": "Remove unused GM_xmlhttpRequest grant to minimize permissions.",
-      "severity": "HIGH",
-      "type": "Permissions Misuse"
+      "description": "脚本申请了 GM_xmlhttpRequest 权限，但代码未使用该 API进行任何网络请求，未发现数据外传行为。",
+      "location": "元数据 @grant 和主代码",
+      "recommendation": "如无实际需求，建议移除 GM_xmlhttpRequest 权限。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本申请了 GM_openInTab 和 GM.openInTab 权限，但代码未使用该 API进行任何操作。",
+      "location": "元数据 @grant 和主代码",
+      "recommendation": "如无实际需求，建议移除 GM_openInTab 和 GM.openInTab 权限。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
     }
   ],
+  "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
     "detected": false
   },
   "risk_level": "LOW",
   "script_name": "Export ChatGPT/Gemini/Grok conversations as Markdown",
-  "summary": "The script exports chat history from specified websites to Markdown format without transmitting data externally or collecting sensitive user information. It does not perform remote code execution or use sensitive APIs. However, it requests GM_xmlhttpRequest permission which is not used, suggesting permission over-privilege. Overall, the script is low risk but can improve by removing unused permissions.",
-  "analyzed_at": "2026-04-15T20:41:28.876353+00:00",
+  "security_score": 84,
+  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 调用、供应链风险或 iframe 风险。仅存在未使用的高权限申请（GM_xmlhttpRequest、GM_openInTab），建议移除以降低潜在风险。整体安全性较高，适合公开使用。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-04-20T03:54:41.566569+00:00",
   "slug": "Export_ChatGPTGeminiGrok_conversations_as_Markdown"
 }

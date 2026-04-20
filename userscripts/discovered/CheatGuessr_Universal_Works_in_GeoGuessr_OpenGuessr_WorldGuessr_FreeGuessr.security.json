@@ -1,0 +1,72 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [
+      "discord.com",
+      "nominatim.openstreetmap.org"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "Script sends user location data (latitude, longitude, formatted address) to Discord via webhook, which is a third-party server. This is triggered by user action and can include sensitive location information.",
+      "location": "sendToDiscord(embed) function, GM_xmlhttpRequest to Discord webhook",
+      "recommendation": "Warn users about the privacy risk and allow disabling this feature. Ensure webhook URLs are not hardcoded or shared.",
+      "severity": "CRITICAL",
+      "type": "Data Exfiltration"
+    },
+    {
+      "description": "Script sends latitude and longitude to nominatim.openstreetmap.org for reverse geocoding. While this is a public API, it transmits user location data externally.",
+      "location": "_getAddress(lat, lng) function, GM_xmlhttpRequest to nominatim.openstreetmap.org",
+      "recommendation": "Inform users about external API usage and minimize data sent.",
+      "severity": "CRITICAL",
+      "type": "Data Exfiltration"
+    },
+    {
+      "description": "Script collects and processes user location (lat/lng), potentially derived from StreetView or platform-specific DOM elements. This is used for address lookup and Discord transmission.",
+      "location": "getCoordinates(), _getAddress(), sendToDiscord()",
+      "recommendation": "Limit collection to only necessary data and provide clear user consent.",
+      "severity": "CRITICAL",
+      "type": "Privacy Collection"
+    },
+    {
+      "description": "Script requests Notification API permission and sends notifications to the user.",
+      "location": "requestNotificationPermission(), sendNotification()",
+      "recommendation": "Ensure notifications are not abused and only used for legitimate purposes.",
+      "severity": "MEDIUM",
+      "type": "Sensitive API Usage"
+    },
+    {
+      "description": "Script applies GM_xmlhttpRequest for external requests, but only requests @grant GM_xmlhttpRequest, GM_setValue, GM_getValue. No excessive permissions detected.",
+      "location": "Metadata block",
+      "recommendation": "Do not request unused high privileges.",
+      "severity": "LOW",
+      "type": "Permission Usage"
+    },
+    {
+      "description": "Script connects to discord.com and nominatim.openstreetmap.org as declared in @connect. No supply chain risk detected as no @require is used.",
+      "location": "Metadata block",
+      "recommendation": "Always verify external domains and avoid dynamic code loading.",
+      "severity": "LOW",
+      "type": "Supply Chain Risk"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [
+      "Collects latitude and longitude from platform-specific DOM elements",
+      "Reverse geocodes location to address",
+      "Transmits location/address to Discord webhook"
+    ],
+    "detected": true
+  },
+  "risk_level": "CRITICAL",
+  "script_name": "CheatGuessr Universal (Works in GeoGuessr | OpenGuessr | WorldGuessr | FreeGuessr)",
+  "security_score": 25,
+  "summary": "This script poses a critical privacy and data exfiltration risk by transmitting user location and address data to third-party servers (Discord and OpenStreetMap Nominatim). No code obfuscation or DOM XSS detected. Notification API is used, but not abused. No supply chain risk or excessive permissions. Users should be warned about the privacy implications and external data transmission.",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-04-20T03:52:48.936813+00:00",
+  "slug": "CheatGuessr_Universal_Works_in_GeoGuessr_OpenGuessr_WorldGuessr_FreeGuessr"
+}

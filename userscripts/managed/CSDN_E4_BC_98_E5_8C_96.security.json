@@ -1,0 +1,47 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [
+      "blog.csdn.net",
+      "mp-action.csdn.net"
+    ],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "@require 加载的第三方库均为官方 CDN（jsdelivr），且指定了版本号或 commit 哈希，供应链风险较低。",
+      "location": "UserScript metadata",
+      "recommendation": "继续保持固定版本哈希，避免使用可变 URL。",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    },
+    {
+      "description": "申请了 GM_xmlhttpRequest 权限，但代码未发现实际使用，且仅允许连接 blog.csdn.net 和 mp-action.csdn.net。",
+      "location": "UserScript metadata",
+      "recommendation": "如无实际使用，可移除 GM_xmlhttpRequest 权限。",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "申请了 unsafeWindow 权限，但代码未发现实际使用。",
+      "location": "UserScript metadata",
+      "recommendation": "如无实际使用，可移除 unsafeWindow 权限。",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "LOW",
+  "script_name": "CSDN优化",
+  "security_score": 81,
+  "summary": "该脚本主要用于优化 CSDN 网页体验，屏蔽广告、自动展开内容等。未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 注入等高风险行为。@require 的第三方库均为官方 CDN 且固定版本，供应链风险较低。部分高权限申请（GM_xmlhttpRequest、unsafeWindow）未实际使用，建议移除。整体安全风险较低，建议定期复查依赖库更新。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-04-20T03:39:56.488239+00:00",
+  "slug": "CSDN_E4_BC_98_E5_8C_96"
+}

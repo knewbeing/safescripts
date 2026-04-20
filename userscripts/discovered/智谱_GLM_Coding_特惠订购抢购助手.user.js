@@ -2,7 +2,7 @@
 // @name         智谱 GLM Coding 特惠订购抢购助手
 // @name:en      智谱 GLM Coding 特惠订购抢购助手
 // @namespace    http://tampermonkey.net/
-// @version      6.3.8
+// @version      6.4
 // @description  用于在前端代码中去除按钮的disabled属性，使其在界面上显示为可点击状态。这仅影响前端表现，不改变后端逻辑。
 // @description:en  用于在前端代码中去除按钮的disabled属性，使其在界面上显示为可点击状态。这仅影响前端表现，不改变后端逻辑。modifying the front-end code to remove the `disabled` attribute from the purchase button
 // @author       YourName

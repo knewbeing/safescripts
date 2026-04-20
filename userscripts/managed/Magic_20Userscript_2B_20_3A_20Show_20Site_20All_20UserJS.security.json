@@ -1,0 +1,92 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [
+      "greasyfork.org",
+      "sleazyfork.org",
+      "github.com",
+      "githubusercontent.com",
+      "openuserjs.org"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "脚本通过 GM_xmlhttpRequest 向 greasyfork.org、sleazyfork.org、github.com、githubusercontent.com、openuserjs.org 发起网络请求，查询当前页面可用的用户脚本。请求目标均为公开用户脚本平台，无携带敏感用户数据，仅包含当前页面 URL。",
+      "location": "多处 GM_xmlhttpRequest 调用",
+      "recommendation": "确保请求内容仅包含必要信息（如当前页面 URL），避免携带 cookie、敏感数据。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本申请了 GM_openInTab 权限，但实际代码中仅用于打开用户脚本详情页，无滥用行为。",
+      "location": "@grant GM_openInTab",
+      "recommendation": "建议仅申请实际需要的权限，避免权限滥用。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本申请了 GM_getValue、GM_setValue、GM_info 等权限，用于本地存储和脚本信息，无敏感操作。",
+      "location": "@grant GM_getValue, GM_setValue, GM_info",
+      "recommendation": "无风险，合理使用。",
+      "severity": "LOW",
+      "type": "权限申请"
+    },
+    {
+      "description": "未检测到 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险。",
+      "location": "全局代码",
+      "recommendation": "保持当前安全实践。",
+      "severity": "LOW",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "未检测到代码混淆、字符串数组映射、base64 解码、unicode 混淆等混淆特征。",
+      "location": "全局代码",
+      "recommendation": "保持代码可读性。",
+      "severity": "LOW",
+      "type": "代码混淆"
+    },
+    {
+      "description": "未检测到 DOM XSS、用户输入直接插入 innerHTML/outerHTML、document.write 注入等风险。",
+      "location": "全局代码",
+      "recommendation": "保持当前安全实践。",
+      "severity": "LOW",
+      "type": "DOM XSS"
+    },
+    {
+      "description": "未检测到敏感 API 调用（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API）。",
+      "location": "全局代码",
+      "recommendation": "保持当前安全实践。",
+      "severity": "LOW",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "未检测到供应链风险，未通过 @require 加载第三方库。",
+      "location": "元数据与代码",
+      "recommendation": "如需加载第三方库，建议固定版本哈希并使用官方 CDN。",
+      "severity": "LOW",
+      "type": "供应链风险"
+    },
+    {
+      "description": "未检测到 iframe 风险、frame 保护策略修改、隐藏 iframe 数据提取等行为。",
+      "location": "全局代码",
+      "recommendation": "保持当前安全实践。",
+      "severity": "LOW",
+      "type": "ClickJacking/iframe 风险"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "MEDIUM",
+  "script_name": "Magic Userscript+ : Show Site All UserJS",
+  "security_score": 67,
+  "summary": "脚本主要功能为查询当前页面可用的用户脚本，通过 GM_xmlhttpRequest 向公开用户脚本平台发起请求，未检测到隐私采集、远程代码执行、混淆、DOM XSS、敏感 API 调用、供应链风险等高危行为。唯一的 CRITICAL 风险为数据外传，但仅限于当前页面 URL，未携带敏感信息。整体安全性较高，建议关注未来版本权限申请与数据传输内容。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-04-20T03:41:43.714953+00:00",
+  "slug": "Magic_20Userscript_2B_20_3A_20Show_20Site_20All_20UserJS"
+}

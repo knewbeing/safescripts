@@ -1,0 +1,37 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "Uses prompt to collect user input and directly updates DOM element with user-provided values. However, the values are parsed as integers and not inserted as HTML, mitigating XSS risk.",
+      "location": "addCoinsAndTokens() and updateBalanceDisplay()",
+      "recommendation": "Ensure that only numbers are used for DOM updates and avoid inserting untrusted input as HTML.",
+      "severity": "LOW",
+      "type": "DOM Manipulation"
+    },
+    {
+      "description": "The script attempts to simulate adding coins/tokens by updating the page display, but does not interact with backend or perform any network requests.",
+      "location": "Entire script",
+      "recommendation": "No sensitive actions detected. If future versions add network requests, review for data exfiltration.",
+      "severity": "LOW",
+      "type": "Data Transmission"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "SAFE",
+  "script_name": "Blooket Coin and Token Hacker",
+  "security_score": 97,
+  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用或供应链风险。仅通过 prompt 收集用户输入并更新页面显示，没有与外部服务器通信，也未申请任何高权限。整体安全风险极低，安全评分为97分。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-04-20T03:51:57.834512+00:00",
+  "slug": "Blooket_Coin_and_Token_Hacker"
+}

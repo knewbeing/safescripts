@@ -19,12 +19,35 @@
   "require": [],
   "metadata_raw": "// @name  Undiscord\n// @description  Delete all messages in a Discord channel or DM (Bulk deletion)\n// @version  5.2.6\n// @author  victornpb\n// @homepageURL  https://github.com/victornpb/undiscord\n// @supportURL  https://github.com/victornpb/undiscord/discussions\n// @match  https://*.discord.com/app\n// @match  https://*.discord.com/channels/*\n// @match  https://*.discord.com/login\n// @license  MIT\n// @namespace  https://github.com/victornpb/deleteDiscordMessages\n// @icon  https://victornpb.github.io/undiscord/images/icon128.png\n// @downloadURL  https://raw.githubusercontent.com/victornpb/undiscord/master/deleteDiscordMessages.user.js\n// @contributionURL  https://www.buymeacoffee.com/vitim\n// @grant  none\n// @attribution  Original project (https://github.com/victornpb/undiscord)",
   "sha256": "43ea6bddffb269d8094cbb97759f6e8a4e154f7e673fea8c864c057b5f83d1b4",
-  "discovered_at": "2026-04-15T22:15:57.013815+00:00",
+  "discovered_at": "2026-04-20T03:41:37.445888+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
   "install_count": null,
   "good_ratings": null,
   "bad_ratings": null,
-  "summary": {}
+  "summary": {
+    "applicable_sites": [
+      "Discord"
+    ],
+    "description": "本脚本可帮助用户批量删除 Discord 频道或私信中的所有消息。适合需要清理大量历史消息的用户，操作简单高效。删除过程自动进行，无需手动逐条操作。",
+    "permissions": [
+      {
+        "explanation": "脚本不请求任何特殊权限，仅在页面上运行。",
+        "grant": "none"
+      }
+    ],
+    "tags": [
+      "消息管理",
+      "批量删除",
+      "Discord",
+      "自动化"
+    ],
+    "usage": [
+      "1. 安装脚本后，登录 Discord 网页版。",
+      "2. 进入需要清理消息的频道或私信页面。",
+      "3. 页面会出现批量删除工具，按提示操作即可开始删除。"
+    ],
+    "zh_name": "Discord消息批量删除"
+  }
 }

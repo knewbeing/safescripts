@@ -67,7 +67,7 @@
 // @description:ug    YouTube كۆرۈش تەجرىبەڭىزنى ياخشىلايدىغان، تىز ۋە ھەقسىز HD ۋىدىئو چۈشۈرگۈچى. يۇتۇب، تيك توك، ئىنستاگرام، Threads، X (ئالدىنقى Twitter) ۋە باشقا پلاتفورمالاردىن ۋىدىئو چۈشۈرۈشنى قوللايدۇ. سۇ ئىشاراتسىز ئېغىزدىن سۈپەتلىك چۈشۈرۈشتىن لەززەتلىنىڭ.
 // @description:vi    Trình tải video HD tất cả trong một, nhanh chóng và miễn phí. Hỗ trợ tải video từ YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (trước đây là Twitter) và nhiều nền tảng khác. Thưởng thức tải xuống chất lượng cao mượt mà mà không có watermark.
 // @namespace   AllInOneDownloader_Daniel
-// @version     1.0.6
+// @version     1.0.7
 // @author      Daniel
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADQAAAAwCAYAAABe6Vn9AAACZElEQVR4AeyZbVKDMBCGgYuJ/9WT2CNoqx6hnkT9T72YuA+WDg0M2SSblnFwWCfNfuR9EhqatiqM/+72bX3/3jZirccaYo2HL8yByrLYishazHfVx1hfXJDfHEhG18BIWHeFxHYJvn85gHxjZvWvQFmn16D4ukIGk5i1xLpCWafXoPi6QgaTmLXEukJZp9eg+LpCBpOYtYR6hTi7yPnGe84JVSs1feemlrG1ddVAx7OL+cd9jdDj2JpQ+wOeatTwIPVEqleobYuXcB3zGVqvjH2rjVUDfW3KQ3kFKGAY2xyIgh+bcndJqFAYNKpXiGDsUlAxMOgLBiIpN1QsDNqigEjMBZUCg65oIJKtoVJh0JQERAErKAsY9CQDUSQVygoGLSZAFIqFsoRBhxkQxUKheKaFPDQZw2emQAymhQKGWHIszRwIcQhFMO0pw0fMlC+1rwN62Lc7zblkLsY9syAY4a5A+vAN+8mdq63xwUDNikb795sOr6NNziyjH7AQDgAmhQ9sAPRJ+3QBQ+6pI7IBg4A/VzQia4zSEIbAoQMA7POxvHU3AGLJGcYntp+6Wy6xyFk6AhF61jnxghhiJ1xJXeZAqEEotzLtKcsFw1hZgCjMrQwUBkBvcp83ABOTw7IBIRYoDIDepF/9/YDEBl9qoODKV0pYIlC3vcuuWMqcHMTca9a/OCB5Zn3327s8t0bfNPn8iwP6KYrTqoi40ftt6C8m/iRnoveKXbJ5bPudUTaUG1fK0E/b9S8OSATWArIVsQ1tMfea9S8RyAUIel3Jm2z0xguqsKzgt4oPjv8BCgbZ6l9/AQAA//9HnEu0AAAABklEQVQDAI1HmgBXKvxdAAAAAElFTkSuQmCC
 // @include     https://*.youtube.com/*
@@ -88,6 +88,22 @@
 // @include     https://*.tiktokv.com/*
 // @include     https://*.douyinstatic.com/*
 // @include     https://*.xhscdn.com/*
+// @include     https://*.amemv.com/*
+// @include     https://*.tikwm.com/*
+// @include     https://*.tiktokcdn-eu.com/*
+// @connect     googlevideo.com
+// @connect     tiktokcdn.com
+// @connect     snssdk.com
+// @connect     douyinvod.com
+// @connect     tiktokv.com
+// @connect     fbcdn.net
+// @connect     zjcdn.com
+// @connect     twimg.com
+// @connect     douyinstatic.com
+// @connect     xhscdn.com
+// @connect     amemv.com
+// @connect     tikwm.com
+// @connect     tiktokcdn-eu.com
 // @noframes
 // @license     MIT
 // @run-at      document-start
@@ -692,7 +708,10 @@
 	      /tiktokv\.com/,
 	      /douyinstatic\.com/,
 	      /twimg\.com/,
-	      /xhscdn\.com/
+	      /xhscdn\.com/,
+	      /amemv\.com/,
+	      /tikwm\.com/,
+	      /tiktokcdn-eu\.com/
 	    ];
 	    const currentHost = window.location.host;
 	    return hosts.some((rule) => rule.test(currentHost));

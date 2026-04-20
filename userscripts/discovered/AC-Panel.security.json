@@ -4,14 +4,27 @@
     "destinations": [],
     "detected": false
   },
-  "issues": [],
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "@require 加载的第三方库（VueEntry.js）来源为 greasyfork.org，未固定版本哈希，存在一定供应链风险。",
+      "location": "@require https://update.greasyfork.org/scripts/503097/1424938/VueEntry.js",
+      "recommendation": "建议使用官方 CDN 并固定版本哈希，或自行托管已审核的库文件。",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    }
+  ],
+  "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
     "detected": false
   },
-  "risk_level": "SAFE",
+  "risk_level": "LOW",
   "script_name": "AC-baidu： 啊猫-操作面板",
-  "summary": "该脚本仅在指定页面插入一个简单的Vue组件面板，未发现任何网络请求、用户数据读取或远程代码执行行为。@require加载的VueEntry.js来源可信，且版本固定。权限仅申请了GM_setClipboard且实际使用合理，无权限滥用。整体代码清晰无混淆，未使用敏感API。该脚本安全，无安全风险。",
-  "analyzed_at": "2026-04-15T20:39:55.881058+00:00",
+  "security_score": 92,
+  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用或敏感 API 调用。唯一风险为 @require 加载的第三方库未固定版本哈希，存在一定供应链风险。整体安全性较高，建议关注第三方库来源和版本固定。",
+  "supply_chain_risk": true,
+  "websocket_usage": false,
+  "analyzed_at": "2026-04-20T03:50:06.244305+00:00",
   "slug": "AC-Panel"
 }

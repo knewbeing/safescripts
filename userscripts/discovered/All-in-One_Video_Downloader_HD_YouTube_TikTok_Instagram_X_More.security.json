@@ -1,74 +1,79 @@
 {
   "approved": false,
   "data_transmission": {
-    "destinations": [],
-    "detected": false
+    "destinations": [
+      "googlevideo.com",
+      "tiktokcdn.com",
+      "snssdk.com",
+      "douyinvod.com",
+      "tiktokv.com",
+      "fbcdn.net",
+      "zjcdn.com",
+      "twimg.com",
+      "douyinstatic.com",
+      "xhscdn.com",
+      "amemv.com",
+      "tikwm.com",
+      "tiktokcdn-eu.com"
+    ],
+    "detected": true
   },
+  "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本申请了多个 GM_* 权限（如 GM_openInTab, GM_addStyle, GM_setValue, GM_getValue, GM_download, unsafeWindow），但代码未提供，无法确认是否合理使用，存在权限滥用风险。",
-      "location": "@grant 元数据",
-      "recommendation": "确认脚本实际代码中是否使用了所有申请的权限，避免申请未使用的高权限。",
-      "severity": "HIGH",
+      "description": "脚本申请了 GM_xmlhttpRequest 权限，并通过 @connect 指定多个第三方视频 CDN，存在数据外传风险。虽然主要用于视频下载，但无法确认是否仅用于合法下载行为，且未限制请求内容。",
+      "location": "元数据 @grant/@connect",
+      "recommendation": "限制 GM_xmlhttpRequest 的使用范围，确保仅用于视频下载且不携带用户敏感信息。建议代码层面增加数据校验。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本申请了 GM_openInTab 和 GM_download 权限，属于高权限操作，可能被滥用打开恶意页面或下载恶意文件。",
+      "location": "元数据 @grant",
+      "recommendation": "仅在实际需要时申请高权限，避免权限滥用。建议代码层面限制打开和下载目标。",
+      "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "脚本元数据中声明了 @antifeature 为 referral-link，可能存在推广或追踪行为。",
-      "location": "@antifeature 元数据",
-      "recommendation": "审查脚本是否包含推广链接或追踪代码，确保用户隐私安全。",
-      "severity": "CRITICAL",
-      "type": "数据外传"
-    },
-    {
-      "description": "脚本代码未提供，无法检测是否存在数据外传行为（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、navigator.sendBeacon 等）。",
-      "location": "脚本主体",
-      "recommendation": "提供完整代码以便检测是否有数据外传行为。",
-      "severity": "CRITICAL",
-      "type": "数据外传"
-    },
-    {
-      "description": "脚本代码未提供，无法检测是否存在隐私采集行为（如读取 cookie、localStorage，监听键盘输入，访问浏览器指纹 API 等）。",
-      "location": "脚本主体",
-      "recommendation": "提供完整代码以便检测是否有隐私采集行为。",
-      "severity": "CRITICAL",
-      "type": "隐私采集"
-    },
-    {
-      "description": "脚本代码未提供，无法检测是否存在远程代码执行风险（如 eval、new Function、动态加载远程脚本等）。",
-      "location": "脚本主体",
-      "recommendation": "提供完整代码以便检测远程代码执行风险。",
+      "description": "脚本申请了 unsafeWindow 权限，允许访问页面原生 JS 环境，存在远程代码执行和供应链风险。",
+      "location": "元数据 @grant",
+      "recommendation": "仅在必要时使用 unsafeWindow，避免与页面 JS 混用导致安全漏洞。",
       "severity": "HIGH",
       "type": "远程代码执行"
     },
     {
-      "description": "脚本代码未提供，无法检测是否调用敏感 API（如 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等）。",
-      "location": "脚本主体",
-      "recommendation": "提供完整代码以便检测敏感 API 调用。",
-      "severity": "MEDIUM",
+      "description": "未发现代码混淆、eval、new Function、setTimeout(string) 等高危执行方式，但完整代码未提供，无法完全确认。",
+      "location": "主代码段",
+      "recommendation": "建议完整公开代码，避免隐藏混淆或动态执行风险。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本未申请敏感 API（如 geolocation、MediaDevices、Clipboard），未发现隐私采集行为。",
+      "location": "元数据 @grant",
+      "recommendation": "保持现有状态，勿增加敏感 API 调用。",
+      "severity": "LOW",
       "type": "敏感 API 调用"
     },
     {
-      "description": "脚本代码未提供，无法检测是否存在代码混淆或动态解码执行行为。",
-      "location": "脚本主体",
-      "recommendation": "提供完整代码以便检测代码混淆情况。",
-      "severity": "MEDIUM",
-      "type": "代码混淆"
-    },
-    {
-      "description": "脚本元数据未显示 @require 字段，未检测到外部依赖。",
-      "location": "元数据",
-      "recommendation": "无",
+      "description": "脚本未使用 @require 加载第三方库，供应链风险较低。",
+      "location": "元数据 @require",
+      "recommendation": "如需加载第三方库，建议固定版本哈希并使用官方 CDN。",
       "severity": "LOW",
-      "type": "外部依赖"
+      "type": "供应链风险"
     }
   ],
+  "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
     "detected": false
   },
   "risk_level": "HIGH",
   "script_name": "All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)",
-  "summary": "由于未提供完整脚本代码，无法全面检测数据外传、隐私采集、远程代码执行等关键安全风险。元数据中存在权限申请较多且未确认使用情况，存在权限滥用风险。@antifeature 标记为 referral-link，提示可能存在推广或追踪行为，需重点关注。建议提供完整代码进行深入分析。",
-  "analyzed_at": "2026-04-15T20:40:04.004920+00:00",
+  "security_score": 37,
+  "summary": "该脚本主要用于视频下载，申请了多个高权限（GM_xmlhttpRequest、GM_openInTab、GM_download、unsafeWindow），并允许与多个第三方视频 CDN 通信。虽然未发现隐私采集和代码混淆，但存在数据外传、远程代码执行和权限滥用风险。建议限制权限申请、明确数据传输范围，并完整公开代码以便进一步审查。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-04-20T03:51:40.615732+00:00",
   "slug": "All-in-One_Video_Downloader_HD_YouTube_TikTok_Instagram_X_More"
 }

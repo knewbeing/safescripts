@@ -1,0 +1,58 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "@connect * 允许任意域名的网络请求，存在数据外传风险，虽然代码未见明显数据上报，但此权限极易被滥用。",
+      "location": "UserScript 元数据 @connect *",
+      "recommendation": "移除 @connect *，仅保留实际需要的域名。",
+      "severity": "CRITICAL",
+      "type": "权限滥用"
+    },
+    {
+      "description": "大量 @grant 权限申请，包括 GM_xmlhttpRequest、unsafeWindow 等高权限，部分未在代码中实际使用。",
+      "location": "UserScript 元数据 @grant",
+      "recommendation": "仅申请实际需要的权限，移除未用高权限。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "@require 加载 less.js 和 vue.js，来源为 registry.npmmirror.com，虽然为知名镜像，但非官方 CDN，存在供应链风险。",
+      "location": "UserScript 元数据 @require",
+      "recommendation": "建议使用官方 CDN 并固定版本哈希，避免供应链污染。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    },
+    {
+      "description": "@resource 加载大量样式文件，部分来源为 tujidu.com 和 gitcode.net，非官方域名，存在供应链风险。",
+      "location": "UserScript 元数据 @resource",
+      "recommendation": "建议使用可信 CDN 并固定版本哈希，避免供应链污染。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    },
+    {
+      "description": "申请了 unsafeWindow 权限，可能导致脚本可访问页面全局对象，存在安全隐患。",
+      "location": "UserScript 元数据 @grant unsafeWindow",
+      "recommendation": "仅在确实需要时使用 unsafeWindow，并限制其操作范围。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "HIGH",
+  "script_name": "AC-baidu-重定向优化百度搜狗谷歌必应搜索_favicon_双列",
+  "security_score": 49,
+  "summary": "该脚本未发现明显的数据外传、隐私采集、远程代码执行或 DOM XSS 风险，但元数据中存在严重权限滥用（@connect *）、供应链风险（@require/@resource 非官方 CDN）、以及敏感 API 权限申请（unsafeWindow）。建议严格收缩权限、使用可信 CDN 并固定版本哈希。当前安全评分为 49，风险等级为 HIGH，不建议在敏感环境下使用。",
+  "supply_chain_risk": true,
+  "websocket_usage": false,
+  "analyzed_at": "2026-04-20T03:50:15.067739+00:00",
+  "slug": "AC-baidu-重定向优化百度搜狗谷歌必应搜索_favicon_双列"
+}

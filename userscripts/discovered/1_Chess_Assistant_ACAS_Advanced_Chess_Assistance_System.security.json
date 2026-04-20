@@ -1,0 +1,40 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [
+      "psyyke.github.io",
+      "localhost"
+    ],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "@require 加载的第三方库（LegacyGMjs.js, CommLinkjs.js, UniversalBoardDrawerjs.js）均来自 update.greasyfork.org，未固定版本哈希，存在供应链风险。",
+      "location": "UserScript metadata (@require)",
+      "recommendation": "建议使用官方 CDN 并固定版本哈希，避免供应链污染。",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    },
+    {
+      "description": "申请了 GM_openInTab、GM_setClipboard、GM_notification、unsafeWindow 等高权限，但代码中未见明显使用，存在权限滥用风险。",
+      "location": "UserScript metadata (@grant)",
+      "recommendation": "仅申请实际需要的权限，移除未使用的高权限。",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "MEDIUM",
+  "script_name": "🏆 [#1 Chess Assistant] A.C.A.S (Advanced Chess Assistance System)",
+  "security_score": 84,
+  "summary": "脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要风险为供应链风险（@require 未固定版本哈希）和权限滥用（申请高权限但未实际使用）。建议加强第三方库管理和权限最小化原则。",
+  "supply_chain_risk": true,
+  "websocket_usage": false,
+  "analyzed_at": "2026-04-20T03:50:01.005385+00:00",
+  "slug": "1_Chess_Assistant_ACAS_Advanced_Chess_Assistance_System"
+}

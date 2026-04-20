@@ -1,0 +1,22 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "SAFE",
+  "script_name": "Universal Web Liberator",
+  "security_score": 100,
+  "summary": "该脚本仅操作页面交互限制（如右键、选择、复制、拖拽），未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。所有 @grant 权限均为本地存储、样式注入和菜单命令，无高风险行为。代码结构清晰，无混淆。安全性极高，适合公开使用。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-04-20T03:42:48.202709+00:00",
+  "slug": "Universal-Web-Liberator"
+}

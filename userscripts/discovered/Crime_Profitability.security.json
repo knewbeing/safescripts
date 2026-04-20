@@ -1,0 +1,91 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [
+      "https://docs.google.com/spreadsheets/d/13wUFhhssuPdAONI_OmRJi6l_Bs7KRZXDgVFCn7uJJNQ/gviz/tq?tqx=out:csv&gid=560321570",
+      "https://docs.google.com/spreadsheets/d/13wUFhhssuPdAONI_OmRJi6l_Bs7KRZXDgVFCn7uJJNQ/gviz/tq?tqx=out:csv&gid=1626436424"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "脚本通过 GM.xmlHttpRequest 请求 Google Sheets CSV 数据，属于第三方数据源。虽然未携带用户数据，但存在数据外传行为。",
+      "location": "GM.xmlHttpRequest 调用 emforusData 和 crackingData",
+      "recommendation": "仅允许请求可信、公开的第三方数据源，避免携带任何用户敏感信息。建议明确说明用途并限制请求内容。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本读取 localStorage 多个键值用于缓存数据和设置，未涉及敏感信息，但存在隐私采集行为。",
+      "location": "localStorage.getItem('hf-crime-profitability-data') 等",
+      "recommendation": "确保仅存储非敏感数据，避免采集用户隐私信息。建议在隐私政策中说明用途。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本申请 GM.xmlHttpRequest 权限，但仅用于获取公开 Google Sheets 数据，未滥用高权限。",
+      "location": "@grant GM.xmlHttpRequest",
+      "recommendation": "建议仅申请实际需要的权限，避免权限滥用。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "未检测到 eval、new Function、setTimeout(string) 等远程代码执行风险。",
+      "location": "全局代码",
+      "recommendation": "保持代码安全，避免动态执行字符串。",
+      "severity": "LOW",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "未检测到代码混淆、base64 解码、字符串映射等混淆特征。",
+      "location": "全局代码",
+      "recommendation": "保持代码可读性，避免混淆。",
+      "severity": "LOW",
+      "type": "代码混淆"
+    },
+    {
+      "description": "未检测到 DOM XSS 或注入风险，未直接插入用户输入到 innerHTML。",
+      "location": "全局代码",
+      "recommendation": "继续保持安全的 DOM 操作。",
+      "severity": "LOW",
+      "type": "DOM XSS / 注入"
+    },
+    {
+      "description": "未检测到敏感 API 调用（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。",
+      "location": "全局代码",
+      "recommendation": "避免调用敏感 API，除非确有必要。",
+      "severity": "LOW",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "未检测到供应链风险，未使用 @require 加载第三方库。",
+      "location": "元数据",
+      "recommendation": "如需加载第三方库，建议固定版本哈希并使用官方 CDN。",
+      "severity": "LOW",
+      "type": "供应链风险"
+    },
+    {
+      "description": "未检测到 ClickJacking 或 iframe 风险，未修改 frame 保护策略或创建隐藏 iframe。",
+      "location": "全局代码",
+      "recommendation": "继续避免 iframe 风险。",
+      "severity": "LOW",
+      "type": "ClickJacking / iframe 风险"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [
+      "localStorage 读取 hf-crime-profitability-data、hf-crime-profitability-cracking-data、hf-crime-profitability-last-fetched、hf-crime-profitability-bfs、hf-crime-profitability-settings、hf-crime-profitability-threshold"
+    ],
+    "detected": true
+  },
+  "risk_level": "CRITICAL",
+  "script_name": "Crime Profitability",
+  "security_score": 50,
+  "summary": "该脚本存在数据外传（请求第三方 Google Sheets 数据）和隐私采集（localStorage 读取）两项 CRITICAL 风险。未检测到远程代码执行、代码混淆、DOM XSS、敏感 API 调用、供应链风险等高风险行为。整体安全性中等偏低，建议加强数据外传和隐私采集的透明度与限制。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-04-20T03:53:01.737911+00:00",
+  "slug": "Crime_Profitability"
+}

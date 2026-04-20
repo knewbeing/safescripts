@@ -1,0 +1,126 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [
+      "https://gh.h233.eu.org/https://github.com",
+      "https://rapidgit.jjda.de5.net/https://github.com",
+      "https://gh.ddlc.top/https://github.com",
+      "https://gh-proxy.org/https://github.com",
+      "https://cdn.gh-proxy.org/https://github.com",
+      "https://edgeone.gh-proxy.org/https://github.com",
+      "https://cors.isteed.cc/github.com",
+      "https://ghproxy.it/https://github.com",
+      "https://github.boki.moe/https://github.com",
+      "https://gh-proxy.net/https://github.com",
+      "https://gh.jasonzeng.dev/https://github.com",
+      "https://gh.monlor.com/https://github.com",
+      "https://fastgit.cc/https://github.com",
+      "https://github.tbedu.top/https://github.com",
+      "https://firewall.lxstd.org/https://github.com",
+      "https://github.ednovas.xyz/https://github.com",
+      "https://ghfile.geekertao.top/https://github.com",
+      "https://ghp.keleyaa.com/https://github.com",
+      "https://gh.chjina.com/https://github.com",
+      "https://ghpxy.hwinzniej.top/https://github.com",
+      "https://cdn.crashmc.com/https://github.com",
+      "https://git.yylx.win/https://github.com",
+      "https://gitproxy.mrhjx.cn/https://github.com",
+      "https://ghproxy.cxkpro.top/https://github.com",
+      "https://gh.xxooo.cf/https://github.com",
+      "https://github.limoruirui.com/https://github.com",
+      "https://gh.idayer.com/https://github.com",
+      "https://gh.llkk.cc/https://github.com",
+      "https://down.npee.cn/?https://github.com",
+      "https://raw.ihtw.moe/github.com",
+      "https://xget.xi-xu.me/gh",
+      "https://gh.nxnow.top/https://github.com",
+      "https://gh.zwy.one/https://github.com",
+      "https://ghproxy.monkeyray.net/https://github.com",
+      "https://gh.xx9527.cn/https://github.com",
+      "https://ghfast.top/https://github.com",
+      "https://wget.la/https://github.com"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "脚本通过构造下载链接，将用户请求重定向到第三方加速代理服务器（如 gh.h233.eu.org、gh-proxy.org 等），存在数据外传风险。虽然主要用于下载 Github 文件，但用户的下载行为、请求内容可能被第三方服务器记录。",
+      "location": "download_url_us 数组及相关下载逻辑",
+      "recommendation": "警告用户可能存在隐私泄露风险，建议仅使用可信加速节点。避免在下载敏感或私有仓库内容时使用第三方加速。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本未检测到主动采集用户隐私数据（如 cookie、localStorage、剪贴板、表单输入等），但通过 GM_getValue/GM_setValue 存储用户配置。",
+      "location": "GM_getValue/GM_setValue",
+      "recommendation": "确认存储内容仅为配置项，不含敏感信息。",
+      "severity": "MEDIUM",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等动态代码执行方式，也未通过 innerHTML/outerHTML 插入外部脚本。",
+      "location": "全局代码",
+      "recommendation": "保持当前安全实践，避免后续引入动态代码执行。",
+      "severity": "LOW",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本未检测到代码混淆、base64 解码、字符串映射或高度压缩代码。",
+      "location": "全局代码",
+      "recommendation": "保持代码可读性，便于社区审查。",
+      "severity": "LOW",
+      "type": "代码混淆"
+    },
+    {
+      "description": "脚本未检测到 DOM XSS 风险（未直接将用户输入插入 innerHTML/outerHTML）。",
+      "location": "全局代码",
+      "recommendation": "继续避免直接插入用户输入到 DOM。",
+      "severity": "LOW",
+      "type": "DOM XSS"
+    },
+    {
+      "description": "脚本申请了 GM_openInTab、GM_notification、GM_setClipboard 等权限，部分权限（如 GM_openInTab）可被滥用，但实际用途为打开下载链接、通知和复制链接，未发现滥用。",
+      "location": "元数据 @grant",
+      "recommendation": "定期复查权限申请，避免不必要的高权限。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API 读取、Notification API 滥用）。",
+      "location": "全局代码",
+      "recommendation": "继续避免敏感 API 调用。",
+      "severity": "LOW",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "脚本未通过 @require 加载第三方库，未发现供应链风险。",
+      "location": "元数据",
+      "recommendation": "如需引入第三方库，建议固定版本哈希并使用官方 CDN。",
+      "severity": "LOW",
+      "type": "供应链风险"
+    },
+    {
+      "description": "脚本未修改 frame 保护策略，也未创建隐藏 iframe 用于数据提取。",
+      "location": "全局代码",
+      "recommendation": "继续避免 iframe 风险。",
+      "severity": "LOW",
+      "type": "ClickJacking / iframe 风险"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [
+      "GM_getValue/GM_setValue 用于存储配置项，无敏感数据采集"
+    ],
+    "detected": false
+  },
+  "risk_level": "CRITICAL",
+  "script_name": "Github Enhancement - High Speed Download",
+  "security_score": 50,
+  "summary": "该脚本主要通过第三方加速代理服务器实现 Github 文件高速下载，存在数据外传风险（CRITICAL），用户的下载行为和请求内容可能被第三方记录。未检测到主动隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险等问题。建议用户谨慎使用第三方加速节点，避免下载敏感或私有仓库内容。整体安全评分为 50，风险等级为 CRITICAL。脚本不建议用于敏感场景。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-04-20T03:41:33.487646+00:00",
+  "slug": "Github_20_E5_A2_9E_E5_BC_BA_20-_20_E9_AB_98_E9_80_9F_E4_B8_8B_E8_BD_BD"
+}

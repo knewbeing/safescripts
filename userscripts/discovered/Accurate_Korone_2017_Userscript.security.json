@@ -1,0 +1,86 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "脚本未检测到任何网络请求（GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource、sendBeacon），不存在数据外传风险。",
+      "location": "全局",
+      "recommendation": "保持现有设计，避免添加任何外部数据传输逻辑。",
+      "severity": "CRITICAL",
+      "type": "Data Transmission"
+    },
+    {
+      "description": "脚本未访问 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板，也未监听键盘输入或读取表单字段，未采集任何隐私数据。",
+      "location": "全局",
+      "recommendation": "继续避免隐私数据采集，确保用户隐私安全。",
+      "severity": "CRITICAL",
+      "type": "Privacy Collection"
+    },
+    {
+      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string)、innerHTML/outerHTML 插入外部脚本，也未通过 @require 或动态 script 标签加载远程 JS。",
+      "location": "全局",
+      "recommendation": "避免动态执行代码和远程脚本加载，确保代码执行安全。",
+      "severity": "HIGH",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "脚本未检测到任何代码混淆（无 base64 解码执行、字符串数组映射、unicode 混淆、高度压缩单行代码）。",
+      "location": "全局",
+      "recommendation": "保持代码可读性，避免混淆。",
+      "severity": "HIGH",
+      "type": "Code Obfuscation"
+    },
+    {
+      "description": "脚本未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未使用 document.write() 插入不可信内容，也未操作 iframe src 为 javascript: 协议。",
+      "location": "全局",
+      "recommendation": "继续避免 DOM 注入和 XSS 风险。",
+      "severity": "HIGH",
+      "type": "DOM XSS/Injection"
+    },
+    {
+      "description": "脚本未申请任何 GM_* 权限（@grant none），不存在权限滥用风险。",
+      "location": "元数据",
+      "recommendation": "仅申请必要权限，避免权限滥用。",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。",
+      "location": "全局",
+      "recommendation": "继续避免敏感 API 调用，防止隐私泄露。",
+      "severity": "MEDIUM",
+      "type": "Sensitive API Usage"
+    },
+    {
+      "description": "脚本未通过 @require 加载任何第三方库，无供应链风险。",
+      "location": "元数据",
+      "recommendation": "如需加载第三方库，建议使用官方 CDN 并固定版本哈希。",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    },
+    {
+      "description": "脚本未修改 frame 保护策略，也未创建隐藏 iframe 用于数据提取。",
+      "location": "全局",
+      "recommendation": "继续避免 iframe 风险和 ClickJacking。",
+      "severity": "LOW",
+      "type": "ClickJacking / iframe Risk"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "SAFE",
+  "script_name": "Accurate Korone 2017 Userscript",
+  "security_score": 100,
+  "summary": "该用户脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码结构清晰，未申请任何高权限，未加载第三方库，整体安全性极高。建议继续保持现有安全设计。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-04-20T03:51:29.733906+00:00",
+  "slug": "Accurate_Korone_2017_Userscript"
+}

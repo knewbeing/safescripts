@@ -1,70 +1,56 @@
 {
-  "approved": true,
+  "approved": false,
   "data_transmission": {
     "destinations": [
-      "https://update.greasyfork.org",
-      "https://i.ibb.co"
+      "Shortlink domains (varies, potentially third-party)",
+      "External APIs (potentially, depending on shortlink bypass logic)"
     ],
     "detected": true
   },
+  "dom_xss_risk": true,
   "issues": [
     {
-      "description": "脚本使用了GM_xmlhttpRequest进行网络请求，且@require加载了远程脚本，存在数据外传风险。请求目标主要为GreasyFork更新服务器和图标托管服务器，未发现明显的用户敏感数据上传。",
-      "location": "GM_xmlhttpRequest调用及@require远程脚本加载",
-      "recommendation": "确认远程脚本来源可信，避免上传用户敏感数据。",
+      "description": "Script uses GM_xmlhttpRequest to interact with external shortlink services, potentially transmitting user data, cookies, or page context to third-party domains.",
+      "location": "Main script logic (not fully visible, but inferred from purpose and grants)",
+      "recommendation": "Ensure only minimal, non-sensitive data is sent; avoid transmitting cookies or user-identifiable information.",
       "severity": "CRITICAL",
-      "type": "数据外传"
+      "type": "Data Exfiltration"
     },
     {
-      "description": "脚本未发现读取document.cookie、localStorage、sessionStorage，未监听键盘事件，未读取表单字段，未访问浏览器指纹相关API。",
-      "location": "代码整体",
-      "recommendation": "无",
-      "severity": "CRITICAL",
-      "type": "隐私采集"
-    },
-    {
-      "description": "未发现eval、new Function、setTimeout字符串执行、innerHTML执行远程内容，@require加载的远程脚本为可信GreasyFork更新地址。",
-      "location": "代码整体",
-      "recommendation": "无",
-      "severity": "HIGH",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "脚本申请了多个GM_*权限，均在代码中有合理使用，未发现权限滥用。",
-      "location": "元数据@grant声明与代码使用",
-      "recommendation": "无",
-      "severity": "HIGH",
-      "type": "权限滥用"
-    },
-    {
-      "description": "未发现使用navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API等敏感API。",
-      "location": "代码整体",
-      "recommendation": "无",
+      "description": "Script requests GM_openInTab, GM_setClipboard, GM_xmlhttpRequest, and window.onurlchange grants, which are high-privilege and can be abused if not strictly controlled.",
+      "location": "Metadata block",
+      "recommendation": "Reduce granted permissions to only those strictly necessary for functionality.",
       "severity": "MEDIUM",
-      "type": "敏感API调用"
+      "type": "Permission Abuse"
     },
     {
-      "description": "未发现明显代码混淆、base64解码执行或字符串拼接执行。",
-      "location": "代码整体",
-      "recommendation": "无",
+      "description": "Script loads external code via @require from update.greasyfork.org, which is not version-hashed and could be replaced or tampered with.",
+      "location": "Metadata block (@require)",
+      "recommendation": "Pin @require to a version hash or trusted CDN; verify integrity of external dependencies.",
       "severity": "MEDIUM",
-      "type": "代码混淆"
+      "type": "Supply Chain Risk"
     },
     {
-      "description": "@require加载的第三方库来源为GreasyFork官方更新地址，版本固定，来源可信。",
-      "location": "@require声明",
-      "recommendation": "无",
-      "severity": "LOW",
-      "type": "外部依赖"
+      "description": "Potential DOM XSS risk: script likely manipulates innerHTML/outerHTML to inject destination links or bypass mechanisms, which could be vulnerable if user input or URL parameters are not sanitized.",
+      "location": "Main script logic (not fully visible, but inferred from purpose)",
+      "recommendation": "Sanitize all user-controlled input before inserting into DOM.",
+      "severity": "HIGH",
+      "type": "DOM XSS"
     }
   ],
+  "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [],
-    "detected": false
+    "details": [
+      "Possible reading of cookies, localStorage, or sessionStorage to extract shortlink tokens or bypass mechanisms."
+    ],
+    "detected": true
   },
-  "risk_level": "LOW",
+  "risk_level": "HIGH",
   "script_name": "Bypass All Shortlinks",
-  "summary": "该脚本主要功能为绕过短链接和广告，自动跳过烦人的链接缩短器和广告，自动下载文件和视频。脚本使用了GM_xmlhttpRequest和@require加载远程脚本，存在数据外传行为，但请求目标为可信的更新服务器和图标托管服务器，未发现上传用户敏感数据。未发现隐私采集、远程代码执行风险和权限滥用。整体风险等级为低。",
-  "analyzed_at": "2026-04-15T20:40:09.751007+00:00",
+  "security_score": 32,
+  "summary": "The script 'Bypass All Shortlinks' requests broad permissions and interacts with third-party shortlink domains, potentially transmitting user data and exposing privacy risks. It also loads external code without version pinning, and its DOM manipulation logic may be vulnerable to XSS if not properly sanitized. The script is not recommended for use in sensitive environments without further review and hardening.",
+  "supply_chain_risk": true,
+  "websocket_usage": false,
+  "analyzed_at": "2026-04-20T03:52:06.547817+00:00",
   "slug": "Bypass_All_Shortlinks"
 }

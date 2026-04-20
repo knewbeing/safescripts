@@ -6,7 +6,7 @@
   "raw_url": "https://update.greasyfork.org/scripts/571507/%E6%99%BA%E8%B0%B1%20GLM%20Coding%20%E7%89%B9%E6%83%A0%E8%AE%A2%E8%B4%AD%E6%8A%A2%E8%B4%AD%E5%8A%A9%E6%89%8B.user.js",
   "filename": "智谱_GLM_Coding_特惠订购抢购助手.user.js",
   "name": "智谱 GLM Coding 特惠订购抢购助手",
-  "version": "6.3.8",
+  "version": "6.4",
   "description": "用于在前端代码中去除按钮的disabled属性，使其在界面上显示为可点击状态。这仅影响前端表现，不改变后端逻辑。",
   "match": [
     "*://www.bigmodel.cn/*",
@@ -17,14 +17,39 @@
     "none"
   ],
   "require": [],
-  "metadata_raw": "// @name  智谱 GLM Coding 特惠订购抢购助手\n// @name:en  智谱 GLM Coding 特惠订购抢购助手\n// @namespace  http://tampermonkey.net/\n// @version  6.3.8\n// @description  用于在前端代码中去除按钮的disabled属性，使其在界面上显示为可点击状态。这仅影响前端表现，不改变后端逻辑。\n// @description:en  用于在前端代码中去除按钮的disabled属性，使其在界面上显示为可点击状态。这仅影响前端表现，不改变后端逻辑。modifying the front-end code to remove the `disabled` attribute from the purchase button\n// @author  YourName\n// @match  *://www.bigmodel.cn/*\n// @match  https://www.bigmodel.cn/glm-coding\n// @match  https://bigmodel.cn/glm-coding*\n// @run-at  document-start\n// @grant  none\n// @buy  me a coff   邀请链接,邀请码新购，下单立减5%金额 https://www.bigmodel.cn/glm-coding?ic=EVDHUUYDNB\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/571507/%E6%99%BA%E8%B0%B1%20GLM%20Coding%20%E7%89%B9%E6%83%A0%E8%AE%A2%E8%B4%AD%E6%8A%A2%E8%B4%AD%E5%8A%A9%E6%89%8B.user.js\n// @updateURL  https://update.greasyfork.org/scripts/571507/%E6%99%BA%E8%B0%B1%20GLM%20Coding%20%E7%89%B9%E6%83%A0%E8%AE%A2%E8%B4%AD%E6%8A%A2%E8%B4%AD%E5%8A%A9%E6%89%8B.meta.js",
-  "sha256": "0605254a5a6f9f65b938b497dbab4e819c38f660bee1f97fc4120af27947f55f",
-  "discovered_at": "2026-04-16T06:39:26.543904+00:00",
+  "metadata_raw": "// @name  智谱 GLM Coding 特惠订购抢购助手\n// @name:en  智谱 GLM Coding 特惠订购抢购助手\n// @namespace  http://tampermonkey.net/\n// @version  6.4\n// @description  用于在前端代码中去除按钮的disabled属性，使其在界面上显示为可点击状态。这仅影响前端表现，不改变后端逻辑。\n// @description:en  用于在前端代码中去除按钮的disabled属性，使其在界面上显示为可点击状态。这仅影响前端表现，不改变后端逻辑。modifying the front-end code to remove the `disabled` attribute from the purchase button\n// @author  YourName\n// @match  *://www.bigmodel.cn/*\n// @match  https://www.bigmodel.cn/glm-coding\n// @match  https://bigmodel.cn/glm-coding*\n// @run-at  document-start\n// @grant  none\n// @buy  me a coff   邀请链接,邀请码新购，下单立减5%金额 https://www.bigmodel.cn/glm-coding?ic=EVDHUUYDNB\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/571507/%E6%99%BA%E8%B0%B1%20GLM%20Coding%20%E7%89%B9%E6%83%A0%E8%AE%A2%E8%B4%AD%E6%8A%A2%E8%B4%AD%E5%8A%A9%E6%89%8B.user.js\n// @updateURL  https://update.greasyfork.org/scripts/571507/%E6%99%BA%E8%B0%B1%20GLM%20Coding%20%E7%89%B9%E6%83%A0%E8%AE%A2%E8%B4%AD%E6%8A%A2%E8%B4%AD%E5%8A%A9%E6%89%8B.meta.js",
+  "sha256": "2e6cdb49a74df885676a0833a177200781e114918fe9f26da7c8324c6857dd27",
+  "discovered_at": "2026-04-20T03:44:19.680782+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 1399,
-  "good_ratings": 2,
-  "bad_ratings": 0,
-  "summary": {}
+  "install_count": 1992,
+  "good_ratings": 3,
+  "bad_ratings": 1,
+  "summary": {
+    "applicable_sites": [
+      "智谱AI官网",
+      "GLM Coding订购页面"
+    ],
+    "description": "本脚本用于在智谱GLM Coding订购页面，将原本不可点击的购买按钮变为可点击。它通过修改网页前端代码，让“售罄”或“不可购买”状态的商品按钮显示为可用，但不影响实际的后端购买逻辑。适合需要抢购特惠商品的用户辅助操作。",
+    "permissions": [
+      {
+        "explanation": "脚本不需要额外权限，仅操作页面本身。",
+        "grant": "none"
+      }
+    ],
+    "tags": [
+      "抢购助手",
+      "前端优化",
+      "电商辅助",
+      "智谱AI",
+      "GLM Coding"
+    ],
+    "usage": [
+      "1. 安装脚本后，访问智谱GLM Coding订购相关页面。",
+      "2. 遇到灰色不可点击的购买按钮时，按钮会自动变为可点击。",
+      "3. 正常点击按钮尝试购买即可（实际库存以后台为准）。"
+    ],
+    "zh_name": "智谱GLM Coding特惠抢购助手"
+  }
 }

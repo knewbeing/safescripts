@@ -1,124 +1,22 @@
 {
   "approved": true,
   "data_transmission": {
-    "destinations": [
-      "https://gh.h233.eu.org",
-      "https://rapidgit.jjda.de5.net",
-      "https://gh.ddlc.top",
-      "https://gh-proxy.org",
-      "https://cdn.gh-proxy.org",
-      "https://edgeone.gh-proxy.org",
-      "https://cors.isteed.cc",
-      "https://ghproxy.it",
-      "https://github.boki.moe",
-      "https://gh-proxy.net",
-      "https://gh.jasonzeng.dev",
-      "https://gh.monlor.com",
-      "https://fastgit.cc",
-      "https://github.tbedu.top",
-      "https://firewall.lxstd.org",
-      "https://github.ednovas.xyz",
-      "https://ghfile.geekertao.top",
-      "https://ghp.keleyaa.com",
-      "https://gh.chjina.com",
-      "https://ghpxy.hwinzniej.top",
-      "https://cdn.crashmc.com",
-      "https://git.yylx.win",
-      "https://gitproxy.mrhjx.cn",
-      "https://ghproxy.cxkpro.top",
-      "https://gh.xxooo.cf",
-      "https://github.limoruirui.com",
-      "https://gh.idayer.com",
-      "https://gh.llkk.cc",
-      "https://down.npee.cn",
-      "https://raw.ihtw.moe",
-      "https://xget.xi-xu.me",
-      "https://gh.nxnow.top",
-      "https://gh.zwy.one",
-      "https://ghproxy.monkeyray.net",
-      "https://gh.xx9527.cn",
-      "https://ghfast.top",
-      "https://wget.la"
-    ],
-    "detected": true
+    "destinations": [],
+    "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [
-    {
-      "description": "脚本中存在大量第三方加速节点的网络请求，部分节点为非官方或未知来源，存在数据外传风险。",
-      "location": "脚本中定义的 download_url_us 数组",
-      "recommendation": "建议确认所有第三方加速节点的可信度，避免向不可信服务器发送敏感数据。",
-      "severity": "CRITICAL",
-      "type": "数据外传"
-    },
-    {
-      "description": "脚本申请了 GM_openInTab 权限，但代码中未见明显使用，存在权限滥用风险。",
-      "location": "元数据 @grant 权限声明",
-      "recommendation": "建议移除未使用的高权限申请，减少权限滥用风险。",
-      "severity": "MEDIUM",
-      "type": "权限滥用"
-    },
-    {
-      "description": "脚本未发现使用 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险函数。",
-      "location": "代码整体",
-      "recommendation": "无",
-      "severity": "HIGH",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "脚本未发现明显的代码混淆特征，如 base64 解码执行、字符串数组映射、大量 unicode 编码或高度压缩代码。",
-      "location": "代码整体",
-      "recommendation": "无",
-      "severity": "HIGH",
-      "type": "代码混淆"
-    },
-    {
-      "description": "脚本未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未见 DOM XSS 注入风险。",
-      "location": "代码整体",
-      "recommendation": "无",
-      "severity": "HIGH",
-      "type": "DOM XSS / 注入"
-    },
-    {
-      "description": "脚本未发现读取 document.cookie、localStorage、sessionStorage、IndexedDB，未监听键盘输入事件，未读取剪贴板内容等隐私采集行为。",
-      "location": "代码整体",
-      "recommendation": "无",
-      "severity": "CRITICAL",
-      "type": "隐私采集"
-    },
-    {
-      "description": "脚本未发现使用敏感 API 如 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 读取剪贴板、Notification API 等。",
-      "location": "代码整体",
-      "recommendation": "无",
-      "severity": "MEDIUM",
-      "type": "敏感 API 调用"
-    },
-    {
-      "description": "脚本 @require 未见加载第三方库，供应链风险较低。",
-      "location": "元数据 @require",
-      "recommendation": "无",
-      "severity": "MEDIUM",
-      "type": "供应链风险"
-    },
-    {
-      "description": "脚本未见修改页面 frame 保护策略或创建隐藏 iframe，ClickJacking / iframe 风险较低。",
-      "location": "代码整体",
-      "recommendation": "无",
-      "severity": "LOW",
-      "type": "ClickJacking / iframe 风险"
-    }
-  ],
+  "issues": [],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
     "detected": false
   },
-  "risk_level": "MEDIUM",
+  "risk_level": "SAFE",
   "script_name": "Github Enhancement - High Speed Download",
-  "security_score": 76,
-  "summary": "该脚本主要通过多个第三方加速节点实现 GitHub 文件的高速下载，存在大量向第三方服务器发起请求的行为，存在数据外传风险。未发现隐私采集、远程代码执行、代码混淆及 DOM XSS 等高风险行为。部分权限申请未被使用，建议优化权限声明。整体安全评分为 76 分，属于中等风险水平。",
+  "security_score": 100,
+  "summary": "该 UserScript 仅包含元数据，无任何实际代码逻辑，因此不存在数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。安全评分为满分 100，风险等级 SAFE。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-04-15T21:02:06.631395+00:00",
+  "analyzed_at": "2026-04-20T03:41:16.191594+00:00",
   "slug": "GithubEnhanced-High-Speed-Download"
 }

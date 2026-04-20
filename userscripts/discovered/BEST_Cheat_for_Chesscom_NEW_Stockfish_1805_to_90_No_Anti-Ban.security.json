@@ -1,0 +1,77 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [
+      "chess-api.com",
+      "stockfish.online",
+      "unpkg.com",
+      "*"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "@connect * 允许任意域名的网络请求，存在严重数据外传风险。脚本可向任意第三方服务器发送数据。",
+      "location": "metadata (@connect *)",
+      "recommendation": "移除 @connect *，仅允许必要的可信域名。",
+      "severity": "CRITICAL",
+      "type": "Data Exfiltration"
+    },
+    {
+      "description": "脚本通过 GM_xmlhttpRequest 和 fetch 加载外部 JS/WASM 引擎（如 unpkg.com、cdnjs），存在数据外传和供应链风险。",
+      "location": "engine loader (LOCAL_ENGINES, GM_xmlhttpRequest, fetch)",
+      "recommendation": "仅允许固定版本哈希的官方 CDN，避免动态加载和供应链污染。",
+      "severity": "CRITICAL",
+      "type": "Data Exfiltration / Supply Chain"
+    },
+    {
+      "description": "脚本申请 GM_xmlhttpRequest 高权限，且与 @connect * 配合，存在滥用风险。",
+      "location": "metadata (@grant GM_xmlhttpRequest)",
+      "recommendation": "仅申请必要权限，移除未使用或高风险权限。",
+      "severity": "HIGH",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "脚本通过 GM_getResourceText 加载外部 JS（stockfish.js），并动态创建 Worker，存在远程代码执行风险。",
+      "location": "engine loader (GM_getResourceText, Worker)",
+      "recommendation": "仅加载可信、固定版本的 JS，避免动态代码执行。",
+      "severity": "HIGH",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "脚本通过 fetch/GM_xmlhttpRequest 加载 WASM 文件并执行，存在远程代码执行风险。",
+      "location": "engine loader (fetch, GM_xmlhttpRequest, WASM)",
+      "recommendation": "仅加载可信、固定版本的 WASM，避免动态代码执行。",
+      "severity": "HIGH",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "@grant GM_getValue/GM_setValue 权限申请，但代码未见明显使用，存在权限滥用风险。",
+      "location": "metadata (@grant GM_getValue, GM_setValue)",
+      "recommendation": "移除未使用的高权限申请。",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "@resource stockfish.js 加载自 unpkg.com，未固定版本哈希，存在供应链风险。",
+      "location": "metadata (@resource stockfish.js https://unpkg.com/stockfish@18.0.5/bin/stockfish-18-single.js)",
+      "recommendation": "使用官方 CDN 并固定版本哈希。",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "CRITICAL",
+  "script_name": "BEST Cheat for Chess.com (NEW Stockfish 18.0.5 to 9.0, No Anti-Ban)",
+  "security_score": 0,
+  "summary": "该脚本存在严重的数据外传风险（@connect *），远程代码执行风险（动态加载 JS/WASM），权限滥用（高权限申请），以及供应链风险（未固定版本哈希的第三方库）。未检测到隐私采集、代码混淆或 DOM XSS，但由于 CRITICAL 级别问题，安全评分为 0，风险等级为 CRITICAL。",
+  "supply_chain_risk": true,
+  "websocket_usage": false,
+  "analyzed_at": "2026-04-20T03:51:51.231240+00:00",
+  "slug": "BEST_Cheat_for_Chesscom_NEW_Stockfish_1805_to_90_No_Anti-Ban"
+}

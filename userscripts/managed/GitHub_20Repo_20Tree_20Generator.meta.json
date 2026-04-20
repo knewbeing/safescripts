@@ -1,0 +1,59 @@
+{
+  "slug": "GitHub_20Repo_20Tree_20Generator",
+  "source_url": "https://update.greasyfork.org/scripts/544254/GitHub%20Repo%20Tree%20Generator.user.js",
+  "raw_url": "https://update.greasyfork.org/scripts/544254/GitHub%20Repo%20Tree%20Generator.user.js",
+  "filename": "GitHub_20Repo_20Tree_20Generator.user.js",
+  "name": "GitHub Repo Tree Generator",
+  "version": "1.1",
+  "description": "Generate, filter, and share a clean directory tree for any GitHub repo",
+  "match": [
+    "https://github.com/*"
+  ],
+  "grant": [
+    "GM_addStyle",
+    "GM_setClipboard",
+    "GM_download"
+  ],
+  "require": [
+    "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
+  ],
+  "metadata_raw": "// @name  GitHub Repo Tree Generator\n// @namespace  http://tampermonkey.net/\n// @version  1.1\n// @description  Generate, filter, and share a clean directory tree for any GitHub repo\n// @author  Azad-sl\n// @homepage  https://github.com/Azad-sl/GitTree\n// @license  MIT\n// @match  https://github.com/*\n// @grant  GM_addStyle\n// @grant  GM_setClipboard\n// @grant  GM_download\n// @require  https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js\n// @require  https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js\n// @downloadURL  https://update.greasyfork.org/scripts/544254/GitHub%20Repo%20Tree%20Generator.user.js\n// @updateURL  https://update.greasyfork.org/scripts/544254/GitHub%20Repo%20Tree%20Generator.meta.js",
+  "sha256": "488b3df88bc0745d24160bf35a92cefb65fcb0737f203858099ef58c219982dd",
+  "updated_at": "2026-04-20T03:37:05.987611+00:00",
+  "is_new": true,
+  "summary": {
+    "applicable_sites": [
+      "GitHub"
+    ],
+    "description": "本脚本可在 GitHub 仓库页面生成简洁的目录树，支持筛选和分享。用户可以一键复制目录结构、下载为图片或生成二维码，方便展示和分享项目结构。界面集成于 GitHub 页面，操作简单直观。",
+    "permissions": [
+      {
+        "explanation": "用于为脚本界面和弹窗添加自定义样式。",
+        "grant": "GM_addStyle"
+      },
+      {
+        "explanation": "允许一键将生成的目录树内容复制到剪贴板。",
+        "grant": "GM_setClipboard"
+      },
+      {
+        "explanation": "支持将目录树导出为图片等文件并下载到本地。",
+        "grant": "GM_download"
+      }
+    ],
+    "tags": [
+      "GitHub增强",
+      "目录树",
+      "项目管理",
+      "分享工具",
+      "界面优化"
+    ],
+    "usage": [
+      "安装脚本后，访问任意 GitHub 仓库页面。",
+      "页面会出现“生成目录树”按钮，点击即可生成目录树。",
+      "可筛选、复制、下载目录树或生成二维码进行分享。",
+      "关闭弹窗即可返回正常浏览。"
+    ],
+    "zh_name": "GitHub仓库目录树生成器"
+  }
+}
