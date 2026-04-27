@@ -35,9 +35,55 @@ title: "GitHub仓库目录树生成器"
 
 ## 安全分析
 
-::: info 等待分析
-安全分析将在下次流水线运行时自动更新。
-:::
+**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-04-27
+
+> 该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。所有第三方库均来自可信 CDN 且固定版本。安全评分为 100，风险等级 SAFE。
+
+| 检查项 | 结果 |
+|--------|------|
+| 数据外传 | ✅ 未检测到 |
+| 隐私采集 | ✅ 未检测到 |
+| 代码混淆 | ✅ 未检测到 |
+| WebSocket/SSE | ✅ 未使用 |
+| DOM XSS 风险 | ✅ 未检测到 |
+| 供应链风险 | ✅ 可信 |
+
+### 发现的问题
+
+**⛔ CRITICAL** — Data Transmission  
+> 脚本未检测到任何网络请求（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource、navigator.sendBeacon），不存在数据外传行为。  
+> 位置：全局  
+> 建议：保持现有设计，避免添加任何外部数据传输。
+
+**⛔ CRITICAL** — Privacy Collection  
+> 脚本未检测到任何隐私采集行为（如读取 cookie、localStorage、sessionStorage、IndexedDB、监听键盘输入并外传、读取表单字段、访问指纹 API、读取剪贴板内容）。  
+> 位置：全局  
+> 建议：保持现有设计，避免添加隐私采集代码。
+
+**🔴 HIGH** — Remote Code Execution  
+> 脚本未使用 eval、new Function、setTimeout(string)、setInterval(string)、innerHTML/outerHTML 执行外部脚本、@require 加载非可信 JS、document.write 插入脚本等远程代码执行风险。  
+> 位置：全局  
+> 建议：保持现有设计，避免动态执行外部代码。
+
+**🔴 HIGH** — Code Obfuscation  
+> 脚本未检测到任何代码混淆（无 base64 解码执行、字符串数组映射、unicode 混淆、高度压缩单行代码）。  
+> 位置：全局  
+> 建议：保持代码可读性，避免混淆。
+
+**🔴 HIGH** — DOM XSS/Injection  
+> 脚本未检测到任何 DOM XSS 或注入风险（未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未使用 document.write 插入不可信内容，未操作 iframe src 为 javascript: 协议）。  
+> 位置：全局  
+> 建议：保持现有设计，插入内容时始终注意转义。
+
+**🟠 MEDIUM** — Permission Abuse  
+> 脚本申请的 @grant 权限与实际代码使用相符（GM_addStyle、GM_setClipboard、GM_download），未申请未使用的高权限。  
+> 位置：元数据  
+> 建议：仅申请实际需要的权限。
+
+**🟠 MEDIUM** — Supply Chain Risk  
+> 脚本通过 @require 加载的第三方库均来自官方 CDN（cdnjs），且指定了固定版本，供应链风险较低。  
+> 位置：元数据  
+> 建议：继续使用可信 CDN 并固定版本。
 
 ---
 

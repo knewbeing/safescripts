@@ -1,0 +1,71 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [
+      "discord.com",
+      "nominatim.openstreetmap.org"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "脚本通过 GM_xmlhttpRequest 向 discord.com 发送地理位置数据（send location to discord），存在用户数据外传至第三方服务器的风险。",
+      "location": "功能描述及 GM_xmlhttpRequest 使用",
+      "recommendation": "仅允许用户主动发送数据，明确告知用户数据外传行为，并限制数据内容。避免自动或隐蔽发送用户敏感信息。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本通过 GM_xmlhttpRequest 向 nominatim.openstreetmap.org 查询地理位置，涉及用户坐标数据外传。",
+      "location": "getAddress/_getAddress 函数",
+      "recommendation": "仅在用户明确操作时发送请求，避免自动采集和外传用户坐标。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本读取并操作 localStorage（Storage.prototype.setItem Proxy），但未检测到敏感数据采集行为。",
+      "location": "WORLDGUESSR 分支",
+      "recommendation": "避免读取或操作存储中包含敏感信息的数据，确保不采集用户隐私。",
+      "severity": "MEDIUM",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本申请 GM_xmlhttpRequest 高权限，并声明 @connect discord.com，存在权限滥用风险。",
+      "location": "元数据 @grant/@connect",
+      "recommendation": "仅申请实际需要的权限，避免高权限滥用。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本调用 Notification API，可能被滥用发送通知。",
+      "location": "sendNotification/requestNotificationPermission",
+      "recommendation": "仅在用户明确授权后使用通知功能，避免骚扰。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "脚本未检测到远程代码执行、代码混淆、DOM XSS、供应链风险、WebSocket、iframe 风险等高危行为。",
+      "location": "整体代码审查",
+      "recommendation": "保持代码透明，避免引入远程脚本和混淆代码。",
+      "severity": "LOW",
+      "type": "常规安全检查"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [
+      "操作 localStorage",
+      "发送地理坐标到第三方"
+    ],
+    "detected": true
+  },
+  "risk_level": "CRITICAL",
+  "script_name": "GeoGuessr OpenGuessr WorldGuessr FreeGuessr Helper Universal",
+  "security_score": 42,
+  "summary": "该脚本存在严重的数据外传风险，尤其是地理位置数据被发送到 discord.com 和 nominatim.openstreetmap.org。虽然未检测到远程代码执行、混淆、XSS 等高危行为，但隐私采集和权限滥用问题依然存在。建议加强用户告知、限制数据外传、精简权限申请。当前安全评分为 42，风险等级为 CRITICAL，不建议在敏感环境下使用。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-04-27T05:12:12.999988+00:00",
+  "slug": "GeoGuessr_OpenGuessr_WorldGuessr_FreeGuessr_Helper_Universal"
+}

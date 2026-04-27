@@ -1,0 +1,39 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [
+      "googleusercontent.com"
+    ],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "申请了 GM_xmlhttpRequest 权限，但代码未实际使用该 API进行网络请求。@connect 仅允许 googleusercontent.com，未发现数据外传行为。",
+      "location": "元数据 @grant/@connect",
+      "recommendation": "如无需 GM_xmlhttpRequest，可移除该权限以减少攻击面。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "申请了 unsafeWindow 权限，但代码未实际使用 unsafeWindow。",
+      "location": "元数据 @grant",
+      "recommendation": "如无需 unsafeWindow，可移除该权限。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "LOW",
+  "script_name": "Gemini NanoBanana Watermark Remover",
+  "security_score": 89,
+  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险等高危行为。仅存在未使用的高权限申请（GM_xmlhttpRequest、unsafeWindow），建议移除以提升安全性。整体风险较低，安全评分为89分。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-04-27T05:12:02.121558+00:00",
+  "slug": "Gemini_NanoBanana_Watermark_Remover"
+}

@@ -1,0 +1,63 @@
+{
+  "slug": "Gartic_Phone_Draw_Bot",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/495177-gartic-phone-draw-bot",
+  "source_repo": "495177",
+  "raw_url": "https://update.greasyfork.org/scripts/495177/Gartic%20Phone%20Draw%20Bot.user.js",
+  "filename": "Gartic_Phone_Draw_Bot.user.js",
+  "name": "Gartic Phone Draw Bot",
+  "version": "0.1",
+  "description": "Auto drawing bot!",
+  "match": [
+    "*://garticphone.com/*"
+  ],
+  "grant": [
+    "unsafeWindow",
+    "GM_xmlhttpRequest",
+    "GM_log"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Gartic Phone Draw Bot\n// @namespace  http://tampermonkey.net/\n// @version  0.1\n// @license  GNU\n// @description  Auto drawing bot!\n// @author  petmshall (peter-marshall5)\n// @match  *://garticphone.com/*\n// @connect  garticphone.com\n// @exclude  *://garticphone.com/_next/*\n// @icon  https://www.google.com/s2/favicons?domain=garticphone.com\n// @grant  unsafeWindow\n// @grant  GM_xmlhttpRequest\n// @grant  GM_log\n// @run-at  document-start\n// @downloadURL  https://update.greasyfork.org/scripts/495177/Gartic%20Phone%20Draw%20Bot.user.js\n// @updateURL  https://update.greasyfork.org/scripts/495177/Gartic%20Phone%20Draw%20Bot.meta.js",
+  "sha256": "707e3d01a569f29a13f2bcadf0e81618f62f68e75b03971fd1dd8fddc9471770",
+  "discovered_at": "2026-04-27T05:06:39.656665+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 10735,
+  "good_ratings": 0,
+  "bad_ratings": 1,
+  "summary": {
+    "applicable_sites": [
+      "Gartic Phone"
+    ],
+    "description": "本脚本可自动在 Gartic Phone 游戏中进行绘画，模拟玩家操作，帮助快速完成画图任务。适用于需要自动绘制的场景，无需手动操作。",
+    "permissions": [
+      {
+        "explanation": "允许脚本访问和操作网页的全局对象，便于与游戏内部功能交互。",
+        "grant": "unsafeWindow"
+      },
+      {
+        "explanation": "允许脚本发送网络请求，获取外部资源或数据。",
+        "grant": "GM_xmlhttpRequest"
+      },
+      {
+        "explanation": "允许脚本输出日志信息，方便调试和查看运行状态。",
+        "grant": "GM_log"
+      }
+    ],
+    "tags": [
+      "自动绘画",
+      "游戏辅助",
+      "Gartic Phone",
+      "自动化",
+      "娱乐",
+      "脚本工具"
+    ],
+    "usage": [
+      "安装 Tampermonkey 扩展并添加本脚本。",
+      "进入 Gartic Phone 网站，开始游戏。",
+      "在绘画环节，脚本会自动进行绘画操作，无需手动画图。"
+    ],
+    "zh_name": "Gartic Phone自动绘画机器人"
+  }
+}

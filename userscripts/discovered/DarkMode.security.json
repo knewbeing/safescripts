@@ -7,18 +7,67 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本申请了 GM_openInTab 权限，但仅用于打开反馈页面（github），未被滥用。",
-      "location": "元数据 @grant GM_openInTab, 代码 window.GM_openInTab('https:...')",
-      "recommendation": "确认 GM_openInTab 仅用于可信站点（如 github），避免用于未知或恶意站点。",
+      "description": "脚本未检测到任何网络请求（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource、sendBeacon），不存在数据外传行为。",
+      "location": "全局",
+      "recommendation": "保持现有状态，确保未来版本不引入外传代码。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本未检测到任何隐私采集行为（如读取 cookie、localStorage、sessionStorage、IndexedDB、监听键盘输入、读取表单字段、访问指纹 API、读取剪贴板）。",
+      "location": "全局",
+      "recommendation": "保持现有状态，确保未来版本不引入隐私采集代码。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string)、innerHTML/outerHTML 插入外部脚本、@require 或动态 script 标签加载远程 JS、document.write 插入脚本内容。",
+      "location": "全局",
+      "recommendation": "保持现有状态，避免引入远程代码执行风险。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本未检测到任何代码混淆行为（如 base64 解码执行、字符串数组+索引映射、unicode 混淆、高度压缩单行代码）。",
+      "location": "全局",
+      "recommendation": "保持代码可读性，避免混淆。",
+      "severity": "HIGH",
+      "type": "代码混淆"
+    },
+    {
+      "description": "脚本未检测到 DOM XSS 或注入风险（未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未使用 document.write 插入不可信内容，未操作 iframe src 为 javascript: 协议）。",
+      "location": "全局",
+      "recommendation": "保持现有状态，确保未来版本不引入 DOM XSS 风险。",
+      "severity": "HIGH",
+      "type": "DOM XSS / 注入"
+    },
+    {
+      "description": "脚本申请了 GM_openInTab、GM_notification 等权限，但实际用途仅为菜单跳转和通知，未检测到滥用行为。权限申请与实际使用基本匹配。",
+      "location": "元数据 @grant",
+      "recommendation": "定期审查权限申请，移除未使用的高权限。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "脚本申请了 GM_notification 权限，但未在代码中实际使用。",
-      "location": "元数据 @grant GM_notification",
-      "recommendation": "建议移除未使用的高权限申请，减少攻击面。",
+      "description": "脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API 除 GM_notification）。",
+      "location": "全局",
+      "recommendation": "保持现有状态，避免引入敏感 API 调用。",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "脚本未使用 @require 加载第三方库，无供应链风险。",
+      "location": "元数据 @require",
+      "recommendation": "如需引入第三方库，建议固定版本哈希并使用官方 CDN。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    },
+    {
+      "description": "脚本未检测到修改 frame 保护策略或创建隐藏 iframe 用于数据提取。",
+      "location": "全局",
+      "recommendation": "保持现有状态，避免引入 iframe 风险。",
+      "severity": "LOW",
+      "type": "ClickJacking / iframe 风险"
     }
   ],
   "obfuscation_detected": false,
@@ -26,12 +75,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "LOW",
+  "risk_level": "SAFE",
   "script_name": "Dark Mode",
-  "security_score": 84,
-  "summary": "该脚本主要用于页面暗色模式切换，未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 调用、供应链风险或 iframe 风险。唯一风险为申请了部分未使用或高权限（GM_openInTab、GM_notification），但未被滥用。整体安全性较高，建议移除未使用权限以进一步提升安全性。",
+  "security_score": 100,
+  "summary": "该脚本仅用于页面暗色模式切换，未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 调用、供应链风险或 iframe 风险。权限申请合理，整体安全性极高。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-04-20T03:53:07.458842+00:00",
+  "analyzed_at": "2026-04-27T05:09:34.577015+00:00",
   "slug": "DarkMode"
 }

@@ -1,0 +1,86 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "脚本申请了 unsafeWindow 权限，允许脚本与页面 JS 进行深度交互，可能被滥用导致远程代码执行或数据泄露。",
+      "location": "元数据 @grant unsafeWindow",
+      "recommendation": "仅在必要时申请 unsafeWindow，避免滥用。建议移除或限制使用。",
+      "severity": "HIGH",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本通过覆盖 WebAssembly.instantiate 和 WebAssembly.instantiateStreaming，捕获 WASM 内存实例。这可能用于游戏作弊，但也可能被滥用读取敏感数据。",
+      "location": "WebAssembly.instantiate/instantiateStreaming 重写",
+      "recommendation": "仅在明确知晓用途时使用此技术，避免泄露敏感数据。建议增加安全注释和限制。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "脚本未检测到任何网络请求、数据外传或 WebSocket 使用。",
+      "location": "全局代码",
+      "recommendation": "保持无外传行为，定期复查。",
+      "severity": "LOW",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本未检测到隐私采集行为（如读取 cookie、localStorage、剪贴板、表单等）。",
+      "location": "全局代码",
+      "recommendation": "保持无隐私采集，定期复查。",
+      "severity": "LOW",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本未检测到 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险。",
+      "location": "全局代码",
+      "recommendation": "保持无动态执行，定期复查。",
+      "severity": "LOW",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本未检测到代码混淆、base64 解码、字符串映射或高度压缩代码。",
+      "location": "全局代码",
+      "recommendation": "保持代码可读性，避免混淆。",
+      "severity": "LOW",
+      "type": "代码混淆"
+    },
+    {
+      "description": "脚本未检测到 DOM XSS 或注入风险（如 innerHTML/outerHTML 插入用户输入、document.write 等）。",
+      "location": "全局代码",
+      "recommendation": "保持无注入风险，定期复查。",
+      "severity": "LOW",
+      "type": "DOM XSS / 注入"
+    },
+    {
+      "description": "脚本未检测到供应链风险（无 @require 加载第三方库）。",
+      "location": "元数据",
+      "recommendation": "如需加载第三方库，建议固定版本哈希并使用官方 CDN。",
+      "severity": "LOW",
+      "type": "供应链风险"
+    },
+    {
+      "description": "脚本未检测到 ClickJacking 或 iframe 风险。",
+      "location": "全局代码",
+      "recommendation": "保持无 iframe 风险，定期复查。",
+      "severity": "LOW",
+      "type": "ClickJacking / iframe 风险"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "MEDIUM",
+  "script_name": "Deadshot.io aimbot - CODIGO REAL (MATRIX RGB EDITION) - DRAGGABLE & MULTILANG",
+  "security_score": 77,
+  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险等严重安全问题。主要风险在于申请 unsafeWindow 权限和捕获 WASM 内存实例，可能被滥用。整体安全评分为 77，建议谨慎使用并定期复查。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-04-27T05:09:57.209589+00:00",
+  "slug": "Deadshotio_aimbot_-_CODIGO_REAL_MATRIX_RGB_EDITION_-_DRAGGABLE_MULTILANG"
+}

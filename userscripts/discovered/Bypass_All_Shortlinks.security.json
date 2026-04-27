@@ -2,55 +2,61 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
-      "Shortlink domains (varies, potentially third-party)",
-      "External APIs (potentially, depending on shortlink bypass logic)"
+      "Third-party shortlink domains (dynamic, based on visited sites)",
+      "GreasyFork CDN (for @require)",
+      "Potentially other domains via GM_xmlhttpRequest"
     ],
     "detected": true
   },
-  "dom_xss_risk": true,
+  "dom_xss_risk": false,
   "issues": [
     {
-      "description": "Script uses GM_xmlhttpRequest to interact with external shortlink services, potentially transmitting user data, cookies, or page context to third-party domains.",
-      "location": "Main script logic (not fully visible, but inferred from purpose and grants)",
-      "recommendation": "Ensure only minimal, non-sensitive data is sent; avoid transmitting cookies or user-identifiable information.",
+      "description": "Script uses GM_xmlhttpRequest to interact with external shortlink domains. While this is core to its function, it may transmit user navigation data and potentially cookies to third-party services.",
+      "location": "Main script logic (not fully visible in provided code, but inferred from description and grants)",
+      "recommendation": "Ensure only minimal, non-sensitive data is sent. Avoid transmitting cookies or user-identifiable information.",
       "severity": "CRITICAL",
-      "type": "Data Exfiltration"
+      "type": "Data Transmission"
     },
     {
-      "description": "Script requests GM_openInTab, GM_setClipboard, GM_xmlhttpRequest, and window.onurlchange grants, which are high-privilege and can be abused if not strictly controlled.",
-      "location": "Metadata block",
-      "recommendation": "Reduce granted permissions to only those strictly necessary for functionality.",
+      "description": "Script requests GM_openInTab permission, which allows opening arbitrary URLs in new tabs. This can be abused if not properly controlled.",
+      "location": "Metadata block (@grant GM_openInTab)",
+      "recommendation": "Restrict usage to only trusted URLs. Remove permission if not strictly necessary.",
       "severity": "MEDIUM",
       "type": "Permission Abuse"
     },
     {
-      "description": "Script loads external code via @require from update.greasyfork.org, which is not version-hashed and could be replaced or tampered with.",
-      "location": "Metadata block (@require)",
-      "recommendation": "Pin @require to a version hash or trusted CDN; verify integrity of external dependencies.",
+      "description": "Script requests GM_setClipboard permission, which allows writing to the clipboard. This can be abused for phishing or unwanted clipboard manipulation.",
+      "location": "Metadata block (@grant GM_setClipboard)",
+      "recommendation": "Limit clipboard writes to explicit user actions. Remove permission if not strictly necessary.",
       "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
+      "type": "Permission Abuse"
     },
     {
-      "description": "Potential DOM XSS risk: script likely manipulates innerHTML/outerHTML to inject destination links or bypass mechanisms, which could be vulnerable if user input or URL parameters are not sanitized.",
-      "location": "Main script logic (not fully visible, but inferred from purpose)",
-      "recommendation": "Sanitize all user-controlled input before inserting into DOM.",
-      "severity": "HIGH",
-      "type": "DOM XSS"
+      "description": "Script requests GM_xmlhttpRequest permission, which is necessary for bypassing shortlinks but can be abused for data exfiltration.",
+      "location": "Metadata block (@grant GM_xmlhttpRequest)",
+      "recommendation": "Ensure all requests are transparent and only target shortlink domains. Avoid sending sensitive data.",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "Script uses @require to load MonkeyConfig Mod.js from GreasyFork CDN. While GreasyFork is generally trusted, the version is not pinned with a hash, so supply chain risk exists.",
+      "location": "Metadata block (@require https://update.greasyfork.org/scripts/528923/1588272/MonkeyConfig%20Mod.js)",
+      "recommendation": "Pin @require to a version hash or use official, immutable CDN links.",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [
-      "Possible reading of cookies, localStorage, or sessionStorage to extract shortlink tokens or bypass mechanisms."
-    ],
-    "detected": true
+    "details": [],
+    "detected": false
   },
   "risk_level": "HIGH",
   "script_name": "Bypass All Shortlinks",
-  "security_score": 32,
-  "summary": "The script 'Bypass All Shortlinks' requests broad permissions and interacts with third-party shortlink domains, potentially transmitting user data and exposing privacy risks. It also loads external code without version pinning, and its DOM manipulation logic may be vulnerable to XSS if not properly sanitized. The script is not recommended for use in sensitive environments without further review and hardening.",
+  "security_score": 44,
+  "summary": "The script's core function requires network requests to third-party shortlink domains, which poses a critical risk of data transmission. Several medium risks are present due to permission grants and supply chain concerns. No evidence of privacy collection, code obfuscation, or DOM XSS was found in the metadata and partial code. The script is not approved for use in sensitive environments without further review of the full implementation.",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-04-20T03:52:06.547817+00:00",
+  "analyzed_at": "2026-04-27T05:08:21.098141+00:00",
   "slug": "Bypass_All_Shortlinks"
 }

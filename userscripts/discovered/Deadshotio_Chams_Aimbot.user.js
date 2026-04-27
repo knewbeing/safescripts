@@ -14,14 +14,14 @@
 // ==/UserScript==
 (() => {
     'use strict';
-
+ 
     const config = {
         fov: 250,
         sensitivity: 0.35,
         headOffset: 0.6,
         prediction: 2,
     };
-
+ 
     const MENU_STYLE = `
         #cheat-menu {
             position: fixed; top: 20px; right: 20px; width: 220px;
@@ -37,7 +37,7 @@
         .a-slider { width: 100%; height: 4px; background: #333; border-radius: 2px; appearance: none; outline: none; }
         .a-slider::-webkit-slider-thumb { appearance: none; width: 12px; height: 12px; background: #00ffd2; border-radius: 50%; cursor: pointer; box-shadow: 0 0 8px #00ffd2; }
     `;
-
+ 
     const createUI = () => {
         const style = document.createElement('style'); style.innerHTML = MENU_STYLE; document.head.appendChild(style);
         const menu = document.createElement('div'); menu.id = 'cheat-menu';
@@ -48,31 +48,31 @@
             <div style="font-size: 9px; color: #555; text-align: center; margin-top: 10px;">[Insert] Toggle Menu</div>
         `;
         document.body.appendChild(menu);
-
+ 
         const link = (id, key, valId) => {
             const el = document.getElementById(id), vEl = document.getElementById(valId);
             el.oninput = () => { config[key] = parseFloat(el.value); vEl.innerText = el.value; };
         };
         link('i-fov', 'fov', 'v-fov'); link('i-sens', 'sensitivity', 'v-sens'); link('i-pred', 'prediction', 'v-pred');
-
+ 
         window.addEventListener('keydown', (e) => {
             if (e.key === 'Insert') menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
         });
     };
-
+ 
     const detectedPlayers = [];
     let currentTarget = null, isAiming = false;
     const PLAYER_HISTORY = new Map();
     let viewProjMatrix = null;
     const PLAYER_VERTEX_SET = new Set([8829, 10392, 10944, 16413]);
-
+ 
     const uniformCache = new Map();
     let activeTextureUnit = 0;
     const textureUnitBindings = new Array(32).fill(null);
     const textureDataMap = new WeakMap();
     let currentProgram = null;
     let isDepthEnabled = false;
-
+ 
     const multiplyMatrixVec4 = (m, [x, y, z, w]) => [
         m[0] * x + m[4] * y + m[8] * z + m[12] * w, m[1] * x + m[5] * y + m[9] * z + m[13] * w,
         m[2] * x + m[6] * y + m[10] * z + m[14] * w, m[3] * x + m[7] * y + m[11] * z + m[15] * w,
@@ -83,13 +83,13 @@
         if (clip[3] <= 0.001) return null;
         return [(clip[0] / clip[3] + 1) * 0.5 * window.innerWidth, (1 - clip[1] / clip[3]) * 0.5 * window.innerHeight];
     };
-
+ 
     class PlayerDetector {
         static getCachedMatrices = (program) => {
             const cache = uniformCache.get(program);
             if (!cache) return { vp: null, model: null, boneUnit: null, opacity: 1.0, isEnemy: true };
             let vp = null, model = null, boneUnit = null, opacity = 1.0, isEnemy = false;
-
+ 
             for (const [name, val] of cache) {
                 if (val?.length === 16) {
                     if (val[11] !== 0 && Math.abs(val[15]) > 1.0) vp = val;
@@ -102,12 +102,12 @@
             }
             return { vp, model, boneUnit, opacity, isEnemy };
         };
-
+ 
         static processDrawCall = (gl, program, vertexCount) => {
             const { vp, model, boneUnit, opacity, isEnemy } = this.getCachedMatrices(program);
             if (vp) { viewProjMatrix = vp }
             if (!model || !PLAYER_VERTEX_SET.has(vertexCount) || opacity < 0.1 || !isEnemy) return;
-
+ 
             let pos = [model[12], model[13] + config.headOffset, model[14]];
             if (boneUnit !== null && textureUnitBindings[boneUnit]) {
                 const boneData = textureDataMap.get(textureUnitBindings[boneUnit]);
@@ -117,32 +117,32 @@
                 }
             }
             if (!pos.every(Number.isFinite)) return;
-
+ 
             const playerKey = `${vertexCount}_${model[12].toFixed(1)}_${model[14].toFixed(1)}`;
             let finalPos = [...pos];
-
+ 
             if (config.prediction > 0) {
                 const hist = PLAYER_HISTORY.get(playerKey) || { last: pos, vel: [0, 0, 0], tick: Date.now() };
                 const now = Date.now(), dt = (now - hist.tick) / 1000;
                 if (dt > 0.001 && dt < 0.5) {
                     const instVel = [(pos[0] - hist.last[0]) / dt, (pos[1] - hist.last[1]) / dt, (pos[2] - hist.last[2]) / dt];
                     hist.vel = hist.vel.map((v, i) => v * 0.6 + instVel[i] * 0.4);
-
+ 
                     const lookAhead = 0.06 * config.prediction;
                     finalPos = pos.map((v, i) => v + hist.vel[i] * lookAhead);
                 }
                 PLAYER_HISTORY.set(playerKey, { last: pos, vel: hist.vel, tick: now });
             }
-
+ 
             if (finalPos.every(Number.isFinite)) {
                 detectedPlayers.push({ position: finalPos });
             }
         };
     }
-
+ 
     const originalX = Object.getOwnPropertyDescriptor(MouseEvent.prototype, 'movementX').get;
     const originalY = Object.getOwnPropertyDescriptor(MouseEvent.prototype, 'movementY').get;
-
+ 
     const applyAimbot = (orig, isY) => {
         if (isAiming && currentTarget) {
             const sPos = worldToScreen(currentTarget.position);
@@ -157,21 +157,21 @@
         }
         return typeof orig === 'number' ? orig : 0;
     };
-
+ 
     Object.defineProperty(MouseEvent.prototype, 'movementX', { get: function () { return applyAimbot(originalX.call(this), false); } });
     Object.defineProperty(MouseEvent.prototype, 'movementY', { get: function () { return applyAimbot(originalY.call(this), true); } });
-
+ 
     const hookWebGL = (GL) => {
         if (!GL || GL._hooked) return;
         GL._hooked = true;
-
+ 
         GL.enable = new Proxy(GL.enable, { apply(target, thisArg, args) { if (args[0] === 2929) isDepthEnabled = true; return Reflect.apply(...arguments); } });
         GL.disable = new Proxy(GL.disable, { apply(target, thisArg, args) { if (args[0] === 2929) isDepthEnabled = false; return Reflect.apply(...arguments); } });
         GL.useProgram = new Proxy(GL.useProgram, { apply(target, thisArg, args) { currentProgram = args[0]; return Reflect.apply(...arguments); } });
         GL.getUniformLocation = new Proxy(GL.getUniformLocation, { apply(target, thisArg, args) { const loc = Reflect.apply(...arguments); if (loc) loc._name = args[1]; return loc; } });
         GL.activeTexture = new Proxy(GL.activeTexture, { apply(target, thisArg, args) { activeTextureUnit = args[0] - thisArg.TEXTURE0; return Reflect.apply(...arguments); } });
         GL.bindTexture = new Proxy(GL.bindTexture, { apply(target, thisArg, args) { if (args[0] === thisArg.TEXTURE_2D) textureUnitBindings[activeTextureUnit] = args[1]; return Reflect.apply(...arguments); } });
-
+ 
         GL.texImage2D = new Proxy(GL.texImage2D, {
             apply(target, thisArg, args) {
                 const p = args[args.length - 1];
@@ -182,7 +182,7 @@
                 return Reflect.apply(...arguments);
             }
         });
-
+ 
         ["uniformMatrix4fv", "uniform1f", "uniform1i"].forEach(s => {
             if (GL[s]) {
                 GL[s] = new Proxy(GL[s], {
@@ -201,12 +201,12 @@
                 });
             }
         });
-
+ 
         GL.drawElements = new Proxy(GL.drawElements, {
             apply(target, thisArg, args) {
                 const gl = thisArg, vC = args[1];
                 if (currentProgram && vC > 1000) PlayerDetector.processDrawCall(gl, currentProgram, vC);
-
+ 
                 if (PLAYER_VERTEX_SET.has(vC)) {
                     const wasEnabled = isDepthEnabled;
                     if (wasEnabled) gl.disable(gl.DEPTH_TEST);
@@ -218,7 +218,7 @@
             }
         });
     };
-
+ 
     unsafeWindow.HTMLCanvasElement.prototype.getContext = new Proxy(unsafeWindow.HTMLCanvasElement.prototype.getContext, {
         apply(target, thisArg, args) {
             const ctx = Reflect.apply(...arguments);
@@ -229,15 +229,15 @@
             return ctx;
         }
     });
-
+ 
     if (unsafeWindow.WebGLRenderingContext) hookWebGL(unsafeWindow.WebGLRenderingContext.prototype);
     if (unsafeWindow.WebGL2RenderingContext) hookWebGL(unsafeWindow.WebGL2RenderingContext.prototype);
-
+ 
     const init = () => {
         createUI();
         window.addEventListener('mousedown', (e) => { if (e.button === 2) isAiming = true; });
         window.addEventListener('mouseup', (e) => { if (e.button === 2) isAiming = false; });
-
+ 
         const loop = () => {
             const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
             let best = null, minDist = config.fov;
@@ -249,7 +249,7 @@
             });
             currentTarget = best;
             detectedPlayers.length = 0;
-
+ 
             if (PLAYER_HISTORY.size > 50) {
                 const now = Date.now();
                 for (const [id, data] of PLAYER_HISTORY) if (now - data.tick > 2000) PLAYER_HISTORY.delete(id);
@@ -258,8 +258,8 @@
         };
         requestAnimationFrame(loop);
     };
-
+ 
     if (document.readyState === 'complete') init();
     else window.addEventListener('load', init);
-
+ 
 })();

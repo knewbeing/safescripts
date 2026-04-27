@@ -45,9 +45,9 @@ title: "CSDN优化"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：81/100　　**分析时间**：2026-04-20
+**风险等级**：🟡 LOW　　**安全评分**：81/100　　**分析时间**：2026-04-27
 
-> 该脚本主要用于优化 CSDN 网页体验，屏蔽广告、自动展开内容等。未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 注入等高风险行为。@require 的第三方库均为官方 CDN 且固定版本，供应链风险较低。部分高权限申请（GM_xmlhttpRequest、unsafeWindow）未实际使用，建议移除。整体安全风险较低，建议定期复查依赖库更新。
+> 该脚本主要用于优化 CSDN 网页体验，屏蔽广告、自动展开内容等。未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。所有网络请求仅限 CSDN 官方域名，依赖库来源可信且版本固定。存在部分未使用高权限申请（GM_xmlhttpRequest、unsafeWindow），建议移除。整体安全风险较低，建议定期审查依赖库安全。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -62,18 +62,18 @@ title: "CSDN优化"
 
 **🟠 MEDIUM** — Supply Chain Risk  
 > @require 加载的第三方库均为官方 CDN（jsdelivr），且指定了版本号或 commit 哈希，供应链风险较低。  
-> 位置：UserScript metadata  
-> 建议：继续保持固定版本哈希，避免使用可变 URL。
+> 位置：UserScript 元数据  
+> 建议：持续关注依赖库安全，建议定期审查依赖库更新。
 
 **🟠 MEDIUM** — Permission Abuse  
-> 申请了 GM_xmlhttpRequest 权限，但代码未发现实际使用，且仅允许连接 blog.csdn.net 和 mp-action.csdn.net。  
-> 位置：UserScript metadata  
-> 建议：如无实际使用，可移除 GM_xmlhttpRequest 权限。
+> 申请了 GM_xmlhttpRequest 权限，但代码未见实际使用（主代码段未调用），且 @connect 仅限 csdn 官方域名。  
+> 位置：UserScript 元数据  
+> 建议：如无实际使用可移除 GM_xmlhttpRequest 权限，减少攻击面。
 
 **🟠 MEDIUM** — Permission Abuse  
-> 申请了 unsafeWindow 权限，但代码未发现实际使用。  
-> 位置：UserScript metadata  
-> 建议：如无实际使用，可移除 unsafeWindow 权限。
+> 申请了 unsafeWindow 权限，但主代码段未见实际使用。  
+> 位置：UserScript 元数据  
+> 建议：如无实际使用可移除 unsafeWindow 权限，减少攻击面。
 
 ---
 

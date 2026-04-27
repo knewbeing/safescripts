@@ -30,9 +30,30 @@ title: "Krunker Cheat v2"
 
 ## 安全分析
 
-::: info 等待分析
-安全分析将在下次流水线运行时自动更新。
-:::
+**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-04-27
+
+> 该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要安全问题为权限滥用（unsafeWindow）和供应链风险（未固定版本哈希的第三方库）。整体风险较低，但建议修正上述问题以提升安全性。
+
+| 检查项 | 结果 |
+|--------|------|
+| 数据外传 | ✅ 未检测到 |
+| 隐私采集 | ✅ 未检测到 |
+| 代码混淆 | ✅ 未检测到 |
+| WebSocket/SSE | ✅ 未使用 |
+| DOM XSS 风险 | ✅ 未检测到 |
+| 供应链风险 | ⚠️ 存在风险 |
+
+### 发现的问题
+
+**🟠 MEDIUM** — Permission Abuse  
+> 申请了 unsafeWindow 权限，但实际代码未使用 unsafeWindow，属于高权限滥用。  
+> 位置：UserScript metadata (@grant unsafeWindow)  
+> 建议：移除未使用的高权限申请，减少攻击面。
+
+**🟠 MEDIUM** — Supply Chain Risk  
+> 通过 @require 加载了第三方库 three.js，虽然使用官方 unpkg CDN，但未固定版本哈希，存在供应链污染风险。  
+> 位置：UserScript metadata (@require https://unpkg.com/three@0.150.0/build/three.min.js)  
+> 建议：建议使用官方 CDN 并固定版本哈希，避免供应链攻击。
 
 ---
 

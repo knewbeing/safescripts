@@ -1,0 +1,54 @@
+{
+  "slug": "Deadshotio_aimbot_-_CODIGO_REAL_MATRIX_RGB_EDITION_-_DRAGGABLE_MULTILANG",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/574970-deadshot-io-aimbot-codigo-real-matrix-rgb-edition-draggable-multilang",
+  "source_repo": "574970",
+  "raw_url": "https://update.greasyfork.org/scripts/574970/Deadshotio%20aimbot%20-%20CODIGO%20REAL%20%28MATRIX%20RGB%20EDITION%29%20-%20DRAGGABLE%20%20MULTILANG.user.js",
+  "filename": "Deadshotio_aimbot_-_CODIGO_REAL_MATRIX_RGB_EDITION_-_DRAGGABLE_MULTILANG.user.js",
+  "name": "Deadshot.io aimbot - CODIGO REAL (MATRIX RGB EDITION) - DRAGGABLE & MULTILANG",
+  "version": "1.4",
+  "description": "Deadshot.io AIMBOT, CHAMS Y ESP - Estilo Matrix y Lineas RGB - CREADO y MODIFICADO Y ACTUALIZADO POR CODIGO REAL con Menú Arrastrable e Idiomas",
+  "match": [
+    "*://*deadshot.io/*"
+  ],
+  "grant": [
+    "unsafeWindow"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Deadshot.io aimbot - CODIGO REAL (MATRIX RGB EDITION) - DRAGGABLE & MULTILANG\n// @namespace  https://tampermonkey.net/\n// @version  1.4\n// @description  Deadshot.io AIMBOT, CHAMS Y ESP - Estilo Matrix y Lineas RGB - CREADO y MODIFICADO Y ACTUALIZADO POR CODIGO REAL con Menú Arrastrable e Idiomas\n// @author  CODIGO REAL\n// @match  *://*deadshot.io/*\n// @icon  https://upload.wikimedia.org/wikipedia/commons/9/9b/The.Matrix.glmatrix.2.png\n// @grant  unsafeWindow\n// @run-at  document-start\n// @downloadURL  https://update.greasyfork.org/scripts/574970/Deadshotio%20aimbot%20-%20CODIGO%20REAL%20%28MATRIX%20RGB%20EDITION%29%20-%20DRAGGABLE%20%20MULTILANG.user.js\n// @updateURL  https://update.greasyfork.org/scripts/574970/Deadshotio%20aimbot%20-%20CODIGO%20REAL%20%28MATRIX%20RGB%20EDITION%29%20-%20DRAGGABLE%20%20MULTILANG.meta.js",
+  "sha256": "1c3c168cd192dba83f11a21a64acc831029e59202009dcda33b0cbc3830778c8",
+  "discovered_at": "2026-04-27T05:06:19.126160+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 128,
+  "good_ratings": 0,
+  "bad_ratings": 0,
+  "summary": {
+    "applicable_sites": [
+      "Deadshot.io"
+    ],
+    "description": "本脚本为 Deadshot.io 游戏提供自动瞄准（Aimbot）、透视（ESP）、人物高亮（Chams）等辅助功能，界面支持拖动和多语言，整体风格为矩阵 RGB。安装后可提升游戏体验和操作便捷性。",
+    "permissions": [
+      {
+        "explanation": "允许脚本访问和修改网页的全局对象，增强功能实现。",
+        "grant": "unsafeWindow"
+      }
+    ],
+    "tags": [
+      "游戏辅助",
+      "自动瞄准",
+      "透视",
+      "界面增强",
+      "多语言",
+      "矩阵风格"
+    ],
+    "usage": [
+      "安装脚本后，进入 Deadshot.io 游戏网站。",
+      "进入游戏时会弹出矩阵风格提示窗口。",
+      "按下菜单快捷键（-）打开设置面板，可拖动和切换语言。",
+      "根据需要开启自动瞄准、透视等功能，调整参数。"
+    ],
+    "zh_name": "Deadshot.io 辅助脚本"
+  }
+}

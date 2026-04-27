@@ -5,23 +5,30 @@
       "psyyke.github.io",
       "localhost"
     ],
-    "detected": false
+    "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "@require 加载的第三方库（LegacyGMjs.js, CommLinkjs.js, UniversalBoardDrawerjs.js）均来自 update.greasyfork.org，未固定版本哈希，存在供应链风险。",
-      "location": "UserScript metadata (@require)",
-      "recommendation": "建议使用官方 CDN 并固定版本哈希，避免供应链污染。",
-      "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
+      "description": "Script stores and retrieves backend URLs and instance variables using GM_setValue and GM_getValue, which may include user data or session information. The backend is set to 'psyyke.github.io' or 'localhost'.",
+      "location": "Functions: constructBackendURL, getCurrentBackendURL, createInstanceVariable",
+      "recommendation": "Ensure no sensitive user data is transmitted or stored. Review backend endpoints for privacy compliance.",
+      "severity": "CRITICAL",
+      "type": "Data Transmission"
     },
     {
-      "description": "申请了 GM_openInTab、GM_setClipboard、GM_notification、unsafeWindow 等高权限，但代码中未见明显使用，存在权限滥用风险。",
-      "location": "UserScript metadata (@grant)",
-      "recommendation": "仅申请实际需要的权限，移除未使用的高权限。",
+      "description": "Script grants high privileges including unsafeWindow, GM_openInTab, GM_setClipboard, GM_notification, but only uses GM_setValue, GM_getValue, GM_deleteValue, GM_listValues, GM_registerMenuCommand in code. Unused high privileges may be abused.",
+      "location": "Metadata @grant section",
+      "recommendation": "Remove unused high privilege grants (unsafeWindow, GM_openInTab, GM_setClipboard, GM_notification) unless strictly required.",
       "severity": "MEDIUM",
       "type": "Permission Abuse"
+    },
+    {
+      "description": "Script uses @require to load three external scripts from update.greasyfork.org, but URLs are not pinned to a specific version hash (query param ?acasv=2 is not a hash).",
+      "location": "Metadata @require section",
+      "recommendation": "Pin @require URLs to immutable version hashes to prevent supply chain attacks.",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
     }
   ],
   "obfuscation_detected": false,
@@ -29,12 +36,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "MEDIUM",
+  "risk_level": "HIGH",
   "script_name": "🏆 [#1 Chess Assistant] A.C.A.S (Advanced Chess Assistance System)",
-  "security_score": 84,
-  "summary": "脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要风险为供应链风险（@require 未固定版本哈希）和权限滥用（申请高权限但未实际使用）。建议加强第三方库管理和权限最小化原则。",
+  "security_score": 52,
+  "summary": "该脚本存在数据外传风险（与开发者服务器通信，可能存储/传递用户数据），并申请了高权限但未全部使用，且 @require 的第三方库未固定版本哈希，存在供应链风险。未检测到隐私采集、代码混淆、DOM XSS 或 WebSocket 使用。建议移除未用高权限、固定依赖版本哈希，并审查外部依赖代码。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-04-20T03:50:01.005385+00:00",
+  "analyzed_at": "2026-04-27T05:07:11.779160+00:00",
   "slug": "1_Chess_Assistant_ACAS_Advanced_Chess_Assistance_System"
 }

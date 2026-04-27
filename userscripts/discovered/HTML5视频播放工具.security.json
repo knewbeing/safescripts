@@ -1,0 +1,37 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "@require 加载的第三方库（Vue、jQuery）来自 jsdelivr 官方 CDN，但未固定版本哈希，存在供应链污染风险。",
+      "location": "元数据 @require",
+      "recommendation": "建议使用带有版本哈希的 CDN URL（如 https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js?sha384=...），确保依赖不可变。",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    },
+    {
+      "description": "申请了 window.onurlchange 和 unsafeWindow 权限，后者为高权限，可能被滥用。",
+      "location": "元数据 @grant",
+      "recommendation": "仅在实际需要时申请 unsafeWindow，避免滥用高权限。",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "LOW",
+  "script_name": "HTML5视频播放工具",
+  "security_score": 89,
+  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要风险为供应链依赖未固定版本哈希和高权限申请。整体安全性较高，建议加强依赖管理和权限控制。",
+  "supply_chain_risk": true,
+  "websocket_usage": false,
+  "analyzed_at": "2026-04-27T05:12:59.439908+00:00",
+  "slug": "HTML5视频播放工具"
+}

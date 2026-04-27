@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         All-in-One Video Downloader (YouTube, Twitter, TikTok, Instagram, Facebook) - Tenzaa
+// @name         🔥🔥🔥All-in-One Video Downloader (YouTube, Twitter, TikTok, Instagram, Facebook) - Tenzaa
 // @namespace    https://tenzaa.com/
 // @version      1.0.1
 // @description  [2026 Latest] Multi-platform Video Downloader for YouTube, Twitter, TikTok, Instagram, Facebook. Hover to download 4K, MP3, MP4 without watermark.
@@ -215,16 +215,16 @@
 // @description:vi Tải xuống video từ YouTube, Twitter, TikTok, Instagram, Facebook. Hỗ trợ 4K, MP3, MP4. Không có hình mờ.
 // @name:yo      Ohun Nkan Gbigbasilẹ Fidio Gbogbo-ni-Ẹkan 2026 - YouTube, Twitter, TikTok, Instagram, Facebook
 // @description:yo Gba awọn fidio lati YouTube, Twitter, TikTok, Instagram, Facebook. Atilẹyin 4K, MP3, MP4. Ko si ami omi.
-// @name:zh-CN   全能视频下载器 2026最新 - 支持 YouTube, Twitter, TikTok, Instagram, Facebook
+// @name:zh-CN   🔥🔥🔥全能视频下载器 【2026】最新 - 支持 YouTube, Twitter, TikTok, Instagram, Facebook
 // @description:zh-CN 一键下载 YouTube, Twitter, TikTok, Instagram, Facebook 视频。支持 4K, MP3, MP4, 无水印。
-// @name:zh-HK   全能影片下載器 2026最新 - 支援 YouTube, Twitter, TikTok, Instagram, Facebook
+// @name:zh-HK   🔥🔥🔥全能影片下載器 【2026】最新 - 支援 YouTube, Twitter, TikTok, Instagram, Facebook
 // @description:zh-HK 一鍵下載 YouTube, Twitter, TikTok, Instagram, Facebook 影片。支援 4K, MP3, MP4, 無浮水印。
-// @name:zh-TW   全能影片下載器 2026最新 - 支援 YouTube, Twitter, TikTok, Instagram, Facebook
+// @name:zh-TW   🔥🔥🔥全能影片下載器 【2026】最新 - 支援 YouTube, Twitter, TikTok, Instagram, Facebook
 // @description:zh-TW 一鍵下載 YouTube, Twitter, TikTok, Instagram, Facebook 影片。支援 4K, MP3, MP4, 無浮水印。
 // @name:zu      Konke-ku-Kunye Isilandi se-Video 2026 - YouTube, Twitter, TikTok, Instagram, Facebook
 // @description:zu Landa amavidiyo kusuka ku-YouTube, Twitter, TikTok, Instagram, Facebook. Sekela i-4K, MP3, MP4. Akukho watermark.
-// @downloadURL https://update.greasyfork.org/scripts/574417/All-in-One%20Video%20Downloader%20%28YouTube%2C%20Twitter%2C%20TikTok%2C%20Instagram%2C%20Facebook%29%20-%20Tenzaa.user.js
-// @updateURL https://update.greasyfork.org/scripts/574417/All-in-One%20Video%20Downloader%20%28YouTube%2C%20Twitter%2C%20TikTok%2C%20Instagram%2C%20Facebook%29%20-%20Tenzaa.meta.js
+// @downloadURL https://update.greasyfork.org/scripts/574417/%F0%9F%94%A5%F0%9F%94%A5%F0%9F%94%A5All-in-One%20Video%20Downloader%20%28YouTube%2C%20Twitter%2C%20TikTok%2C%20Instagram%2C%20Facebook%29%20-%20Tenzaa.user.js
+// @updateURL https://update.greasyfork.org/scripts/574417/%F0%9F%94%A5%F0%9F%94%A5%F0%9F%94%A5All-in-One%20Video%20Downloader%20%28YouTube%2C%20Twitter%2C%20TikTok%2C%20Instagram%2C%20Facebook%29%20-%20Tenzaa.meta.js
 // ==/UserScript==
 
 (function() {

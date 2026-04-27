@@ -10,63 +10,91 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 GM_xmlhttpRequest 向 discord.com 发送用户地理位置、地址信息等数据，属于数据外传行为，且目标为第三方服务器。",
+      "description": "脚本通过 GM_xmlhttpRequest 向 discord.com 发送用户地理位置、地址信息等数据，属于数据外传行为。此行为可导致用户隐私泄露。",
       "location": "sendToDiscord(embed) 函数",
-      "recommendation": "仅在用户明确授权情况下发送数据，避免自动外传敏感信息。建议增加用户确认提示，并限制数据内容。",
+      "recommendation": "仅允许用户明确授权后发送数据，避免自动上报敏感信息。建议增加用户确认提示，并详细说明数据用途。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本通过 GM_xmlhttpRequest 向 nominatim.openstreetmap.org 查询地理位置反查地址，涉及用户地理坐标外传。",
+      "description": "脚本通过 GM_xmlhttpRequest 向 nominatim.openstreetmap.org 查询地理反查服务，传递用户当前坐标。虽然为地图功能，但涉及用户地理隐私。",
       "location": "_getAddress(lat, lng) 函数",
-      "recommendation": "仅在用户主动操作时请求，避免自动批量发送坐标。建议增加用户提示。",
+      "recommendation": "应告知用户地理坐标将被发送至第三方服务，避免自动发送敏感坐标。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本收集并处理用户地理坐标、地址信息，并有发送到 Discord 的功能，涉及隐私采集。",
-      "location": "createEmbed(), sendToDiscord(embed), _getAddress(lat, lng)",
-      "recommendation": "明确告知用户采集内容及用途，避免自动采集和外传敏感信息。",
+      "description": "脚本收集并处理用户地理坐标、地址信息，并可将其发送至 Discord Webhook。属于隐私采集行为。",
+      "location": "createEmbed()、sendToDiscord()、_getAddress() 等函数",
+      "recommendation": "应明确告知用户采集内容及用途，避免自动采集和外传敏感信息。",
       "severity": "CRITICAL",
       "type": "隐私采集"
     },
     {
-      "description": "脚本申请 GM_xmlhttpRequest 高权限，并实际用于外部数据传输，权限申请合理但风险较高。",
+      "description": "脚本申请 GM_xmlhttpRequest 高权限，并实际用于向外部服务器发送数据。权限申请与实际用途一致，但属于高风险操作。",
       "location": "元数据 @grant GM_xmlhttpRequest",
-      "recommendation": "仅申请必要权限，限制外部通信目标。",
+      "recommendation": "仅在必要时申请高权限，避免滥用。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
       "description": "脚本调用 Notification API，可能被滥用发送通知。",
-      "location": "sendNotification(title, body), requestNotificationPermission()",
-      "recommendation": "仅在用户主动操作时发送通知，避免骚扰。",
+      "location": "sendNotification()、requestNotificationPermission()",
+      "recommendation": "建议仅在用户明确授权后使用通知功能。",
       "severity": "MEDIUM",
       "type": "敏感 API 调用"
     },
     {
-      "description": "脚本未检测到远程代码执行、代码混淆、DOM XSS、iframe 风险等高危行为。",
-      "location": "整体代码审查",
-      "recommendation": "保持代码透明，避免动态加载或混淆。",
+      "description": "脚本未检测到代码混淆、eval、动态 script 加载等远程代码执行风险。",
+      "location": "全局代码审查",
+      "recommendation": "保持代码透明，避免混淆和动态执行。",
       "severity": "LOW",
-      "type": "一般安全建议"
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本未检测到 DOM XSS、用户输入直接插入 innerHTML/outerHTML 等注入风险。",
+      "location": "全局代码审查",
+      "recommendation": "继续保持安全的 DOM 操作。",
+      "severity": "LOW",
+      "type": "DOM XSS"
+    },
+    {
+      "description": "脚本未检测到供应链风险，未使用 @require 加载第三方库。",
+      "location": "元数据 @require",
+      "recommendation": "如需加载第三方库，建议固定版本哈希并使用官方 CDN。",
+      "severity": "LOW",
+      "type": "供应链风险"
+    },
+    {
+      "description": "脚本未检测到 WebSocket、EventSource、剪贴板读取、键盘监听等高风险行为。",
+      "location": "全局代码审查",
+      "recommendation": "继续保持安全实践。",
+      "severity": "LOW",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本在部分平台修改 iframe sandbox 属性，可能影响 frame 保护策略。",
+      "location": "Element.prototype.setAttribute Proxy",
+      "recommendation": "避免降低 frame 保护，确保页面安全。",
+      "severity": "LOW",
+      "type": "ClickJacking / iframe 风险"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
       "收集用户地理坐标",
-      "收集地理反查地址信息",
-      "发送到 Discord Webhook"
+      "收集用户地址信息",
+      "可将上述信息发送至 Discord Webhook"
     ],
     "detected": true
   },
   "risk_level": "CRITICAL",
   "script_name": "CheatGuessr Universal | GeoGuessr | OpenGuessr | WorldGuessr | FreeGuessr",
   "security_score": 25,
-  "summary": "该脚本存在严重的数据外传和隐私采集风险，主要表现为自动或手动将用户地理位置、地址等敏感信息发送到第三方服务器（Discord、OpenStreetMap）。未检测到远程代码执行、代码混淆、DOM XSS 等高危行为，但敏感权限和 API 调用存在中等风险。整体安全评分较低，不建议在敏感环境下使用。",
+  "summary": "该脚本存在严重的数据外传和隐私采集风险，尤其是自动将用户地理位置、地址等敏感信息发送至 Discord Webhook 和第三方地理反查服务。未检测到代码混淆、远程代码执行、DOM XSS 等高风险行为。建议加强用户授权机制，避免自动外传敏感数据。整体安全评分较低，不建议在敏感环境下使用。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-04-20T03:52:38.051329+00:00",
+  "analyzed_at": "2026-04-27T05:09:00.673339+00:00",
   "slug": "CheatGuessr_Universal_GeoGuessr_OpenGuessr_WorldGuessr_FreeGuessr"
 }

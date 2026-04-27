@@ -46,9 +46,9 @@ title: "Magic Userscript+ ：显示站点所有 UserJS"
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：67/100　　**分析时间**：2026-04-20
+**风险等级**：⛔ CRITICAL　　**安全评分**：35/100　　**分析时间**：2026-04-27
 
-> 脚本主要功能为查询当前页面可用的用户脚本，通过 GM_xmlhttpRequest 向公开用户脚本平台发起请求，未检测到隐私采集、远程代码执行、混淆、DOM XSS、敏感 API 调用、供应链风险等高危行为。唯一的 CRITICAL 风险为数据外传，但仅限于当前页面 URL，未携带敏感信息。整体安全性较高，建议关注未来版本权限申请与数据传输内容。
+> 该脚本通过 GM_xmlhttpRequest 向多个第三方站点发送请求，存在数据外传风险。元数据申请了高权限（如 GM_openInTab），但由于缺少完整代码，无法判断是否存在隐私采集、远程代码执行、DOM XSS、代码混淆等高风险行为。建议补充完整代码进行进一步审查。当前安全评分为 35，风险等级为 CRITICAL。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -62,49 +62,24 @@ title: "Magic Userscript+ ：显示站点所有 UserJS"
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本通过 GM_xmlhttpRequest 向 greasyfork.org、sleazyfork.org、github.com、githubusercontent.com、openuserjs.org 发起网络请求，查询当前页面可用的用户脚本。请求目标均为公开用户脚本平台，无携带敏感用户数据，仅包含当前页面 URL。  
-> 位置：多处 GM_xmlhttpRequest 调用  
-> 建议：确保请求内容仅包含必要信息（如当前页面 URL），避免携带 cookie、敏感数据。
+> 脚本通过 GM_xmlhttpRequest 访问 greasyfork.org、sleazyfork.org、github.com、githubusercontent.com、openuserjs.org 等第三方站点，可能会传递当前页面 URL 或其他用户数据。  
+> 位置：元数据 @connect，@grant GM_xmlhttpRequest  
+> 建议：确保仅发送必要的非敏感数据，避免传递用户隐私信息或 Cookie。
+
+**🔴 HIGH** — 未知风险  
+> 脚本未提供完整代码，无法判断是否存在隐私采集、远程代码执行、DOM XSS、代码混淆等高风险行为。  
+> 位置：代码缺失  
+> 建议：建议补充完整代码进行全面审查。
 
 **🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_openInTab 权限，但实际代码中仅用于打开用户脚本详情页，无滥用行为。  
-> 位置：@grant GM_openInTab  
-> 建议：建议仅申请实际需要的权限，避免权限滥用。
+> 脚本申请了 GM_openInTab 权限，但未提供完整代码无法判断是否被滥用。  
+> 位置：元数据 @grant GM_openInTab  
+> 建议：仅在必要时申请高权限，避免滥用 GM_openInTab 造成安全风险。
 
-**🟡 LOW** — 权限申请  
-> 脚本申请了 GM_getValue、GM_setValue、GM_info 等权限，用于本地存储和脚本信息，无敏感操作。  
-> 位置：@grant GM_getValue, GM_setValue, GM_info  
-> 建议：无风险，合理使用。
-
-**🟡 LOW** — 远程代码执行  
-> 未检测到 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险。  
-> 位置：全局代码  
-> 建议：保持当前安全实践。
-
-**🟡 LOW** — 代码混淆  
-> 未检测到代码混淆、字符串数组映射、base64 解码、unicode 混淆等混淆特征。  
-> 位置：全局代码  
-> 建议：保持代码可读性。
-
-**🟡 LOW** — DOM XSS  
-> 未检测到 DOM XSS、用户输入直接插入 innerHTML/outerHTML、document.write 注入等风险。  
-> 位置：全局代码  
-> 建议：保持当前安全实践。
-
-**🟡 LOW** — 敏感 API 调用  
-> 未检测到敏感 API 调用（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API）。  
-> 位置：全局代码  
-> 建议：保持当前安全实践。
-
-**🟡 LOW** — 供应链风险  
-> 未检测到供应链风险，未通过 @require 加载第三方库。  
-> 位置：元数据与代码  
-> 建议：如需加载第三方库，建议固定版本哈希并使用官方 CDN。
-
-**🟡 LOW** — ClickJacking/iframe 风险  
-> 未检测到 iframe 风险、frame 保护策略修改、隐藏 iframe 数据提取等行为。  
-> 位置：全局代码  
-> 建议：保持当前安全实践。
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 GM_getValue/GM_setValue 等存储权限，但未提供完整代码无法判断是否存储敏感信息。  
+> 位置：元数据 @grant GM_getValue, GM_setValue  
+> 建议：避免存储用户隐私数据，或对敏感信息进行加密处理。
 
 ---
 

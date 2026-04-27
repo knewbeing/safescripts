@@ -12,51 +12,51 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "Script uses GM_xmlhttpRequest to communicate with SponsorBlock API and multiple Cobalt instances for video download. These are third-party servers and may receive YouTube video IDs and possibly other metadata.",
+      "description": "Script uses GM_xmlhttpRequest to access SponsorBlock API and multiple Cobalt instances for video download. These are third-party servers and may receive YouTube video IDs and possibly other metadata.",
       "location": "CFG.sbApi, CFG.cobaltInstances, GM_xmlhttpRequest usage",
-      "recommendation": "Ensure only minimal, non-sensitive data is sent. Review SponsorBlock and Cobalt privacy policies. Warn users about potential privacy implications.",
+      "recommendation": "Review transmitted data, ensure only non-sensitive info is sent. Warn users about potential privacy implications.",
       "severity": "CRITICAL",
       "type": "Data Transmission"
     },
     {
-      "description": "Script stores user toggle settings and state using GM_setValue/GM_getValue, but does not appear to collect or transmit sensitive user data (e.g., cookies, form values, clipboard, or keyboard input).",
-      "location": "GM_setValue, GM_getValue usage",
-      "recommendation": "Continue to avoid collecting sensitive data. Periodically review for privacy leaks.",
-      "severity": "LOW",
+      "description": "Script stores and retrieves user toggle settings via GM_setValue/GM_getValue. No evidence of sensitive data collection (e.g., cookies, passwords, clipboard, keyboard input).",
+      "location": "Persistent state section (GM_setValue, GM_getValue)",
+      "recommendation": "Ensure only non-sensitive preferences are stored. Do not expand to sensitive data collection.",
+      "severity": "MEDIUM",
       "type": "Privacy Collection"
     },
     {
-      "description": "No evidence of eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection. No @require or document.write usage.",
-      "location": "Full script review",
-      "recommendation": "Maintain strict avoidance of remote code execution patterns.",
+      "description": "Script applies playbackRate tricks and DOM manipulation but does not use eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection.",
+      "location": "Main logic",
+      "recommendation": "Maintain avoidance of dynamic code execution.",
       "severity": "LOW",
       "type": "Remote Code Execution"
     },
     {
-      "description": "No code obfuscation detected. Script is readable, not minified or obfuscated.",
-      "location": "Full script review",
-      "recommendation": "Maintain transparency and readability.",
+      "description": "No evidence of code obfuscation, base64 decoding, unicode string encoding, or minified/obfuscated code.",
+      "location": "Entire script",
+      "recommendation": "Continue to publish readable, auditable code.",
       "severity": "LOW",
       "type": "Code Obfuscation"
     },
     {
-      "description": "No DOM XSS risk detected. User input and URL parameters are not directly inserted into innerHTML/outerHTML.",
-      "location": "Full script review",
-      "recommendation": "Continue to sanitize any future user input handling.",
+      "description": "No DOM XSS risk detected: user input and URL parameters are not inserted into innerHTML/outerHTML without sanitization.",
+      "location": "DOM manipulation sections",
+      "recommendation": "Maintain safe DOM handling practices.",
       "severity": "LOW",
       "type": "DOM XSS"
     },
     {
-      "description": "Script requests GM_xmlhttpRequest, GM_setValue, GM_getValue, GM_addStyle. All are used in code. No evidence of unused high-risk grants.",
-      "location": "Metadata block (@grant)",
-      "recommendation": "Avoid requesting unnecessary permissions.",
+      "description": "Script requests GM_xmlhttpRequest, GM_setValue, GM_getValue, GM_addStyle. All are used. No evidence of unused high-risk grants.",
+      "location": "Metadata @grant section",
+      "recommendation": "Do not request unnecessary permissions.",
       "severity": "LOW",
       "type": "Permission Abuse"
     },
     {
-      "description": "Script connects to multiple third-party APIs (SponsorBlock, Cobalt instances). These are not official YouTube APIs and pose supply chain risk if endpoints are compromised.",
-      "location": "@connect sponsor.ajay.app, co.wuk.sh, cobalt.api.timelessnesses.me, api.cobalt.tools",
-      "recommendation": "Prefer official APIs or well-known, audited endpoints. Monitor for endpoint changes or compromise.",
+      "description": "Script connects to multiple Cobalt instances for video download. These are not official YouTube APIs and may pose supply chain risks.",
+      "location": "CFG.cobaltInstances, @connect",
+      "recommendation": "Warn users about supply chain risk. Prefer official or well-known APIs/CDNs.",
       "severity": "MEDIUM",
       "type": "Supply Chain Risk"
     }
@@ -64,17 +64,17 @@
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "Stores toggle settings and state via GM_setValue/GM_getValue",
-      "Does not collect cookies, form values, clipboard, or keyboard input"
+      "Stores toggle settings (adEnabled, sbEnabled, qualityEnabled) via GM_setValue/GM_getValue",
+      "No evidence of document.cookie, localStorage, sessionStorage, IndexedDB, clipboard, or keyboard input collection"
     ],
     "detected": false
   },
-  "risk_level": "MEDIUM",
+  "risk_level": "HIGH",
   "script_name": "EasyTube V3 — Ad Skip, SponsorBlock & HD Download⬇️🚀",
   "security_score": 67,
-  "summary": "Script transmits YouTube video IDs and possibly metadata to third-party APIs (SponsorBlock and Cobalt instances) for ad skipping and video downloading. No evidence of sensitive data collection or code execution risks. Supply chain risk exists due to reliance on non-official endpoints. Overall, script is readable and permissions are appropriate, but users should be aware of privacy implications and supply chain risks.",
+  "summary": "The script transmits YouTube video IDs and possibly other metadata to third-party servers (SponsorBlock and Cobalt instances) for ad skipping and video downloading. No evidence of sensitive data collection or code obfuscation. Supply chain risk exists due to reliance on unofficial Cobalt APIs. Overall, the script is readable and avoids dynamic code execution, but users should be aware of privacy and supply chain risks.",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-04-20T03:54:34.291792+00:00",
+  "analyzed_at": "2026-04-27T05:10:10.763575+00:00",
   "slug": "EasyTube_V3_Ad_Skip_SponsorBlock_HD_Download"
 }

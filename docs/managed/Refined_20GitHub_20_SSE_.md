@@ -64,60 +64,50 @@ title: 🏷️ 小鱼标签 (UTags) - 为链接添加用户标签
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：25/100　　**分析时间**：2026-04-20
+**风险等级**：⛔ CRITICAL　　**安全评分**：42/100　　**分析时间**：2026-04-27
 
-> 该脚本元数据申请了极高权限，尤其是 @connect * 和 GM_xmlhttpRequest，允许任意数据外传，存在严重安全风险。未提供完整代码，无法审查实际行为，建议严格限制网络权限并补充完整代码以便进一步审查。
+> 该脚本元数据申请了极高权限，尤其是 @connect * 和 GM_xmlhttpRequest，允许向任意域名发送数据，存在严重数据外传风险。脚本可读写本地存储，可能涉及隐私数据。未发现代码混淆、远程代码执行、DOM XSS，但权限配置极不安全。建议严格限制网络请求目标，移除不必要的高权限申请。
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：dav.jianguoyun.com, localhost, *） |
-| 隐私采集 | ❌ 检测到（GM.getValue/GM.setValue/GM.deleteValue/GM.addValueChangeListener 可能涉及用户标签、备注、书签等数据存储与同步） |
+| 隐私采集 | ❌ 检测到（本地存储读写（GM.getValue, GM.setValue, GM.deleteValue, GM.addValueChangeListener）） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ⚠️ 存在风险 |
+| 供应链风险 | ✅ 可信 |
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> @connect * 允许任意域名的数据传输，存在严重数据外传风险。脚本可通过 GM_xmlhttpRequest/GM.xmlHttpRequest 向任何第三方服务器发送数据。  
+**⛔ CRITICAL** — Data Exfiltration  
+> @connect * 允许任意域名的数据传输，存在严重数据外传风险。结合 GM_xmlhttpRequest 权限，脚本可向任何第三方服务器发送数据。  
 > 位置：元数据 @connect *  
-> 建议：移除 @connect *，仅允许可信域名。严格限制数据传输目标。
+> 建议：限制 @connect 域名范围，仅允许可信服务。移除 @connect *，只保留必要的域名。
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本申请了 GM.xmlHttpRequest 和 GM_xmlhttpRequest 权限，结合 @connect *，可实现任意数据外传。  
+**⛔ CRITICAL** — Data Exfiltration  
+> 申请了 GM.xmlHttpRequest 和 GM_xmlhttpRequest 权限，允许脚本进行跨域网络请求，结合 @connect * 存在数据外传风险。  
 > 位置：元数据 @grant GM.xmlHttpRequest, GM_xmlhttpRequest  
-> 建议：仅申请必要的网络权限，并限制目标域名。
+> 建议：仅申请必要的网络请求权限，并配合严格的 @connect 域名限制。
 
-**🔴 HIGH** — 隐私采集  
-> 脚本申请了 GM.getValue, GM.setValue, GM.deleteValue, GM.addValueChangeListener 等权限，可能涉及用户数据存储和同步，若结合网络请求可导致隐私泄露。  
+**🟠 MEDIUM** — Privacy Collection  
+> 脚本申请了 GM.getValue、GM.setValue、GM.deleteValue、GM.addValueChangeListener 等权限，允许读写本地存储，可能涉及用户隐私数据。  
 > 位置：元数据 @grant GM.getValue, GM.setValue, GM.deleteValue, GM.addValueChangeListener  
-> 建议：确保用户数据仅本地存储，不外传。审查数据同步逻辑。
+> 建议：确保存储的数据不包含敏感信息，且不会被外传。
 
-**🔴 HIGH** — 远程代码执行  
-> 脚本申请了 GM_addElement 权限，可能用于动态插入脚本或内容，需关注远程代码执行风险。  
+**🟡 LOW** — DOM Manipulation  
+> 脚本申请了 GM_addElement 权限，允许动态插入元素，若结合 innerHTML/outerHTML 操作可能存在 XSS 风险。  
 > 位置：元数据 @grant GM_addElement  
-> 建议：仅允许插入受信任内容，避免插入远程脚本。
+> 建议：插入元素时避免使用不可信内容，严格转义用户输入。
 
-**🔴 HIGH** — 未知风险  
-> 脚本未提供完整代码，无法审查实际数据采集、远程代码执行、DOM XSS、混淆等行为，存在未知风险。  
-> 位置：完整代码缺失  
-> 建议：提供完整代码以便全面安全审查。
-
-**🟠 MEDIUM** — 敏感 API 调用  
-> 脚本申请了 GM.registerMenuCommand 权限，若结合 eval/new Function 等动态执行，可能被滥用。  
+**🟡 LOW** — Permission Abuse  
+> 脚本申请了 GM.registerMenuCommand 权限，允许注册菜单命令，若结合敏感操作可能被滥用。  
 > 位置：元数据 @grant GM.registerMenuCommand  
-> 建议：避免动态执行用户输入或远程内容。
+> 建议：菜单命令应避免触发敏感操作，如数据外传、远程代码执行。
 
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM.info 权限，但代码未展示实际用途，存在权限滥用风险。  
+**🟡 LOW** — Permission Abuse  
+> 脚本申请了 GM.info 权限，允许访问脚本元信息，通常风险较低，但需注意信息泄露。  
 > 位置：元数据 @grant GM.info  
-> 建议：仅申请实际需要的权限。
-
-**🟠 MEDIUM** — 供应链风险  
-> @connect dav.jianguoyun.com 允许与第三方云存储通信，需审查是否涉及用户数据同步或外传。  
-> 位置：元数据 @connect dav.jianguoyun.com  
-> 建议：仅允许必要的数据同步，避免敏感信息外传。
+> 建议：仅在必要场景下使用 GM.info，避免泄露用户环境信息。
 
 ---
 

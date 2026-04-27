@@ -1,0 +1,70 @@
+{
+  "slug": "EasyTube_V40_Ad_Skip_SponsorBlock_HD_Download_No_Lag",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/561432-easytube-v4-0-ad-skip-sponsorblock-hd-download-no-lag",
+  "source_repo": "561432",
+  "raw_url": "https://update.greasyfork.org/scripts/561432/EasyTube%20V40%20%E2%80%94%20Ad%20Skip%20%20SponsorBlock%20%20HD%20Download%E2%AC%87%EF%B8%8F%F0%9F%9A%80%20%28No%20Lag%29.user.js",
+  "filename": "EasyTube_V40_Ad_Skip_SponsorBlock_HD_Download_No_Lag.user.js",
+  "name": "EasyTube V4.0 — Ad Skip & SponsorBlock & HD Download⬇️🚀 (No Lag)",
+  "version": "4.0.0",
+  "description": "V4.0 — Rewritten for performance. 🚫 Multi-layer ad skip with minimal CPU usage. ⏭ SponsorBlock (9 cats). 🎥 Force 4K. ⬇ Download via evdfrance.fr. 💾 Remembers settings. Bypass adblock detection. No Cobalt. No lag.",
+  "match": [
+    "https://*.youtube.com/*"
+  ],
+  "grant": [
+    "GM_addStyle",
+    "GM_xmlhttpRequest",
+    "GM_setValue",
+    "GM_getValue"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  EasyTube V4.0 — Ad Skip & SponsorBlock & HD Download⬇️🚀 (No Lag)\n// @name:vi  EasyTube V4.0 — Bỏ qua quảng cáo, SponsorBlock & Tải HD (Không lag)\n// @name:zh-CN  EasyTube V4.0 — 广告跳过、SponsorBlock 和 HD 下载器（无卡顿）\n// @name:zh-TW  EasyTube V4.0 — 廣告跳過、SponsorBlock 和 HD 下載器（無卡頓）\n// @name:ru  EasyTube V4.0 — Пропуск рекламы, SponsorBlock и HD загрузчик (без лагов)\n// @name:ja  EasyTube V4.0 — 広告スキップ・SponsorBlock・HDダウンローダー（ラグなし）\n// @name:ko  EasyTube V4.0 — 광고 건너뛰기, SponsorBlock, HD 다운로더 (렉 없음)\n// @name:es  EasyTube V4.0 — Saltar anuncios, SponsorBlock y descarga HD (sin lag)\n// @name:pt-BR  EasyTube V4.0 — Pular anúncios, SponsorBlock e download HD (sem lag)\n// @name:fr  EasyTube V4.0 — Ignorer pubs, SponsorBlock et téléchargeur HD (sans lag)\n// @name:de  EasyTube V4.0 — Werbung überspringen, SponsorBlock, HD-Download (kein Lag)\n// @name:tr  EasyTube V4.0 — Reklam Atlama, SponsorBlock ve HD İndirici (Lag Yok)\n// @name:pl  EasyTube V4.0 — Pomijanie reklam, SponsorBlock, pobieranie HD (bez opóźnień)\n// @name:id  EasyTube V4.0 — Lewati Iklan, SponsorBlock & Unduhan HD (Tanpa Lag)\n// @name:th  EasyTube V4.0 — ข้ามโฆษณา, SponsorBlock และดาวน์โหลด HD (ไม่กระตุก)\n// @name:ar  EasyTube V4.0 — تخطي الإعلانات، SponsorBlock وتنزيل HD (بدون تأخير)\n// @description  V4.0 — Rewritten for performance. 🚫 Multi-layer ad skip with minimal CPU usage. ⏭ SponsorBlock (9 cats). 🎥 Force 4K. ⬇ Download via evdfrance.fr. 💾 Remembers settings. Bypass adblock detection. No Cobalt. No lag.\n// @description:vi  V4.0 — Viết lại tối ưu hiệu năng. 🚫 Skip quảng cáo đa lớp, CPU thấp. ⏭ SponsorBlock 9 danh mục. 🎥 Ép 4K. ⬇ Tải video qua evdfrance.fr. 💾 Lưu cài đặt. Bypass popup adblock. Không lag.\n// @description:zh-CN  V4.0 — 性能重写版。🚫 多层广告跳过，低CPU占用。⏭ SponsorBlock(9类别)。🎥 4K画质。⬇ 通过evdfrance.fr下载视频。💾 保存设置。绕过广告拦截检测。无卡顿。\n// @description:zh-TW  V4.0 — 效能重寫版。🚫 多層廣告跳過，低CPU占用。⏭ SponsorBlock（9類別）。🎥 4K畫質。⬇ 透過evdfrance.fr下載影片。💾 儲存設定。繞過廣告攔截偵測。無卡頓。\n// @description:ru  V4.0 — Переписано для производительности. 🚫 Мгновенный пропуск рекламы. ⏭ SponsorBlock (9 категорий). 🎥 4K качество. ⬇ Загрузка через evdfrance.fr. 💾 Сохранение настроек. Без лагов.\n// @description:ja  V4.0 — パフォーマンス最適化版。🚫 全広告を即時スキップ。⏭ SponsorBlock（9カテゴリ）。🎥 4K画質。⬇ evdfrance.frでダウンロード。💾 設定保存。広告ブロック検出回避。ラグなし。\n// @description:ko  V4.0 — 성능 최적화 재작성. 🚫 즉시 광고 스킵, CPU 절약. ⏭ SponsorBlock(9카테고리). 🎥 4K화질. ⬇ evdfrance.fr 다운로드. 💾 설정저장. 광고차단 감지 우회. 렉 없음.\n// @description:es  V4.0 — Reescrito para rendimiento. 🚫 Salta anuncios al instante. ⏭ SponsorBlock. 🎥 4K. ⬇ Descarga por evdfrance.fr. 💾 Ajustes guardados. Sin lag.\n// @description:fr  V4.0 — Réécrit pour la performance. 🚫 Ignore les pubs instantanément. ⏭ SponsorBlock. 🎥 4K. ⬇ Téléchargement via evdfrance.fr. 💾 Paramètres sauvegardés. Sans lag.\n// @description:de  V4.0 — Für Performance neu geschrieben. 🚫 Werbung sofort überspringen. ⏭ SponsorBlock. 🎥 4K. ⬇ Download via evdfrance.fr. 💾 Einstellungen gespeichert. Kein Lag.\n// @description:pt-BR  V4.0 — Reescrito para desempenho. 🚫 Pula anúncios instantaneamente. ⏭ SponsorBlock. 🎥 4K. ⬇ Download via evdfrance.fr. 💾 Configurações salvas. Sem lag.\n// @description:tr  V4.0 — Performans için yeniden yazıldı. 🚫 Reklamları anında atlar. ⏭ SponsorBlock. 🎥 4K. ⬇ evdfrance.fr ile indirme. 💾 Ayarlar kaydedilir. Lag yok.\n// @description:pl  V4.0 — Przepisane dla wydajności. 🚫 Natychmiastowe pomijanie reklam. ⏭ SponsorBlock. 🎥 4K. ⬇ Pobieranie przez evdfrance.fr. 💾 Zapamiętuje ustawienia. Bez opóźnień.\n// @description:id  V4.0 — Ditulis ulang untuk performa. 🚫 Lewati iklan seketika. ⏭ SponsorBlock. 🎥 4K. ⬇ Unduh via evdfrance.fr. 💾 Pengaturan tersimpan. Tanpa lag.\n// @description:ar  V4.0 — أُعيدت الكتابة لتحسين الأداء. 🚫 تخطي الإعلانات فوراً. ⏭ SponsorBlock. 🎥 4K. ⬇ تنزيل عبر evdfrance.fr. 💾 الإعدادات محفوظة. بدون تأخير.\n// @description:th  V4.0 — เขียนใหม่เพื่อประสิทธิภาพ 🚫 ข้ามโฆษณาทันที ⏭ SponsorBlock 🎥 4K ⬇ ดาวน์โหลดผ่าน evdfrance.fr 💾 บันทึกการตั้งค่า ไม่กระตุก\n// @namespace  https://greasyfork.org/users/1510019\n// @version  4.0.0\n// @author  2pixel (rewrite: performance-optimized)\n// @license  MIT\n// @icon  https://raw.githubusercontent.com/not2pixel/TampermonkeyProjects/refs/heads/main/EasyTube.png\n// @icon64  https://raw.githubusercontent.com/not2pixel/TampermonkeyProjects/refs/heads/main/EasyTube.png\n// @match  https://*.youtube.com/*\n// @exclude  https://www.youtube.com/live_chat*\n// @exclude  https://studio.youtube.com/*\n// @grant  GM_addStyle\n// @grant  GM_xmlhttpRequest\n// @grant  GM_setValue\n// @grant  GM_getValue\n// @connect  sponsor.ajay.app\n// @connect  evdfrance.fr\n// @run-at  document-start\n// @compatible  chrome   Tampermonkey 4+\n// @compatible  firefox  Tampermonkey / Violentmonkey\n// @compatible  edge     Tampermonkey 4+\n// @compatible  opera    Supported via Tampermonkey / Violentmonkey\n// @homepageURL  https://greasyfork.org/en/scripts/561432\n// @supportURL  https://greasyfork.org/en/scripts/561432/feedback\n// @downloadURL  https://update.greasyfork.org/scripts/561432/EasyTube%20V40%20%E2%80%94%20Ad%20Skip%20%20SponsorBlock%20%20HD%20Download%E2%AC%87%EF%B8%8F%F0%9F%9A%80%20%28No%20Lag%29.user.js\n// @updateURL  https://update.greasyfork.org/scripts/561432/EasyTube%20V40%20%E2%80%94%20Ad%20Skip%20%20SponsorBlock%20%20HD%20Download%E2%AC%87%EF%B8%8F%F0%9F%9A%80%20%28No%20Lag%29.meta.js",
+  "sha256": "a5d5680a2905e6b953c098aea2739f8132168a910a2d1ae6eb47a764c1ca1e11",
+  "discovered_at": "2026-04-27T05:04:24.391533+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 5856,
+  "good_ratings": 7,
+  "bad_ratings": 3,
+  "summary": {
+    "applicable_sites": [
+      "YouTube"
+    ],
+    "description": "本脚本可自动跳过YouTube视频中的多层广告，支持SponsorBlock自动跳过赞助片段，强制提升视频画质至4K，并提供高清视频下载功能。它还能保存你的设置，绕过广告拦截检测，保证流畅无卡顿体验。",
+    "permissions": [
+      {
+        "explanation": "用于添加自定义样式，让界面更美观或突出功能按钮。",
+        "grant": "GM_addStyle"
+      },
+      {
+        "explanation": "用于跨域请求SponsorBlock和下载服务，获取跳过片段和下载链接。",
+        "grant": "GM_xmlhttpRequest"
+      },
+      {
+        "explanation": "用于保存用户的脚本设置，记住你的偏好。",
+        "grant": "GM_setValue"
+      },
+      {
+        "explanation": "用于读取已保存的设置，自动应用你的偏好。",
+        "grant": "GM_getValue"
+      }
+    ],
+    "tags": [
+      "广告跳过",
+      "视频下载",
+      "SponsorBlock",
+      "画质提升",
+      "YouTube优化",
+      "设置记忆"
+    ],
+    "usage": [
+      "安装脚本后，打开YouTube任意视频页面。",
+      "广告会自动跳过，赞助片段自动屏蔽。",
+      "视频画质自动提升至4K（如有）。",
+      "页面会出现下载按钮，可一键下载高清视频。",
+      "你的设置会自动保存，无需重复操作。"
+    ],
+    "zh_name": "EasyTube V4.0 — 广告跳过、SponsorBlock 和 HD 下载器（无卡顿）"
+  }
+}

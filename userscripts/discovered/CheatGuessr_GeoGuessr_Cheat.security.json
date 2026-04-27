@@ -1,5 +1,5 @@
 {
-  "approved": true,
+  "approved": false,
   "data_transmission": {
     "destinations": [
       "https://nominatim.openstreetmap.org/reverse"
@@ -9,82 +9,82 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 fetch 向 https://nominatim.openstreetmap.org/reverse 发起网络请求，传递当前地图坐标（lat/lng），用于获取地理位置详情。该请求为第三方服务，可能涉及用户行为数据外传。",
-      "location": "fetchLocationDetails() 函数",
-      "recommendation": "如需使用第三方 API，建议明确告知用户并限制请求内容，仅发送必要数据。",
+      "description": "脚本通过 fetch 向 https://nominatim.openstreetmap.org/reverse 发起网络请求，传递用户当前地理坐标（lat/lng）。该行为属于数据外传，且目标为第三方服务器。",
+      "location": "fetchLocationDetails()",
+      "recommendation": "仅在用户明确操作时发送请求，并在文档中告知用户数据用途。避免自动或隐式传递敏感地理信息。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本读取和写入 localStorage 以保存用户设置。未发现敏感数据采集行为。",
-      "location": "loadSettings()/saveSettings()",
-      "recommendation": "确保仅存储非敏感配置数据，避免存储用户隐私信息。",
-      "severity": "CRITICAL",
+      "description": "脚本读取并存储设置到 localStorage，内容包括用户自定义按键等配置。未发现敏感隐私数据采集。",
+      "location": "loadSettings(), saveSettings()",
+      "recommendation": "确保 localStorage 仅用于非敏感配置，避免存储账号、密码等敏感信息。",
+      "severity": "MEDIUM",
       "type": "隐私采集"
     },
     {
-      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行方式，也未动态加载外部 JS。",
-      "location": "全局代码审查",
-      "recommendation": "保持当前安全实践，避免未来引入远程代码执行风险。",
-      "severity": "HIGH",
+      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行相关 API，也未动态加载外部脚本。",
+      "location": "全局",
+      "recommendation": "保持当前实现，避免引入动态代码执行。",
+      "severity": "LOW",
       "type": "远程代码执行"
     },
     {
-      "description": "脚本未发现明显混淆、压缩或 base64/unicode 编码混淆特征。",
-      "location": "全局代码审查",
-      "recommendation": "保持代码可读性，便于社区审查。",
-      "severity": "HIGH",
+      "description": "脚本未发现代码混淆、base64 解码、字符串映射或高度压缩单行代码。",
+      "location": "全局",
+      "recommendation": "保持代码可读性，避免混淆。",
+      "severity": "LOW",
       "type": "代码混淆"
     },
     {
-      "description": "脚本未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未发现 DOM XSS 风险。",
-      "location": "toggleSettingsModal() 等 UI 构建函数",
-      "recommendation": "如未来涉及用户输入，需严格转义。",
-      "severity": "HIGH",
+      "description": "脚本未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未发现 DOM XSS 风险。",
+      "location": "toggleSettingsModal()",
+      "recommendation": "如后续涉及用户输入，需严格转义。",
+      "severity": "LOW",
       "type": "DOM XSS"
     },
     {
-      "description": "脚本申请了 GM_webRequest 权限，但实际代码未使用 GM_webRequest API。",
-      "location": "@grant 元数据",
-      "recommendation": "移除未使用的高权限申请，减少权限滥用风险。",
+      "description": "脚本申请了 GM_webRequest 权限，但实际代码未使用 GM_webRequest API，属于权限滥用。",
+      "location": "元数据 @grant",
+      "recommendation": "移除未使用的高权限申请，减少攻击面。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
       "description": "脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API）。",
-      "location": "全局代码审查",
-      "recommendation": "保持当前安全实践。",
-      "severity": "MEDIUM",
+      "location": "全局",
+      "recommendation": "保持当前实现，避免调用敏感 API。",
+      "severity": "LOW",
       "type": "敏感 API 调用"
     },
     {
       "description": "脚本未通过 @require 加载第三方库，无供应链风险。",
       "location": "元数据",
-      "recommendation": "如需引入第三方库，建议使用官方 CDN 并固定版本。",
-      "severity": "MEDIUM",
+      "recommendation": "如需引入第三方库，建议固定版本哈希并使用官方 CDN。",
+      "severity": "LOW",
       "type": "供应链风险"
     },
     {
       "description": "脚本未修改 frame 保护策略，也未创建隐藏 iframe 用于数据提取。",
-      "location": "mapsFromCoords() 函数仅打开新窗口",
-      "recommendation": "保持当前安全实践。",
+      "location": "全局",
+      "recommendation": "保持当前实现，避免 iframe 滥用。",
       "severity": "LOW",
-      "type": "ClickJacking/iframe 风险"
+      "type": "ClickJacking / iframe 风险"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "localStorage 读取/写入"
+      "localStorage: 存储用户设置（非敏感）"
     ],
-    "detected": true
+    "detected": false
   },
-  "risk_level": "CRITICAL",
+  "risk_level": "HIGH",
   "script_name": "CheatGuessr | GeoGuessr Cheat",
-  "security_score": 34,
-  "summary": "该脚本存在数据外传（向第三方 API 发送地图坐标）和隐私采集（localStorage 读取/写入）风险，且申请了未使用的高权限（GM_webRequest）。未发现远程代码执行、代码混淆、DOM XSS、敏感 API 调用、供应链风险或 iframe 风险。建议移除未使用权限，并明确告知用户数据外传行为。",
+  "security_score": 52,
+  "summary": "脚本存在严重的数据外传风险（地理坐标发送至第三方服务器），并申请了未使用的高权限（GM_webRequest）。未发现代码混淆、远程代码执行、DOM XSS、敏感 API 调用等高风险行为。建议移除未使用权限，并明确告知用户地理数据用途。整体安全评分为 52，风险等级为 HIGH。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-04-20T03:52:28.491785+00:00",
+  "analyzed_at": "2026-04-27T05:08:46.829733+00:00",
   "slug": "CheatGuessr_GeoGuessr_Cheat"
 }
