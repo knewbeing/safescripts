@@ -1,27 +1,31 @@
 // ==UserScript==
 // @name    CheatGuessr Universal | GeoGuessr | OpenGuessr | WorldGuessr | FreeGuessr
-// @version    7.33
-// @description    Undetectable | Press Tab to open the settings menu | pin on map & send location to discord & open location in google maps
+// @namespace    https://greasyfork.org/en/users/1588266-woggieboost 
+// @version    9.2
+// @description    Undetectable GeoGuessr cheat tool | Press Tab to open the settings menu | pin on map & send to discord & open in google maps
 // @author    woggieboost
 // @license    MIT
-// @match    *://*.geoguessr.com/*
-// @match    *://*.openguessr.com/*
-// @match    *://*.worldguessr.com/*
-// @match    *://freeguessr.com/*
-// @match    *://guesswhereyouare.com/*
+// @include    *://*.geoguessr.com/*
+// @include    *://openguessr.com/*
+// @include    *://*.worldguessr.*/*
+// @include    *://*worldguessrgame.*/*
+// @include    *://freeguessr.com/*
+// @include    *://guesswhereyouare.com/*
 // @grant    GM_setValue
 // @grant    GM_getValue
 // @grant    GM_xmlhttpRequest
 // @connect    discord.com
 // @connect    nominatim.openstreetmap.org
 // @icon    https://www.google.com/s2/favicons?sz=64&domain=geoguessr.com
-// @namespace https://greasyfork.org/en/users/1588266-woggieboost
 // @downloadURL https://update.greasyfork.org/scripts/572651/CheatGuessr%20Universal%20%7C%20GeoGuessr%20%7C%20OpenGuessr%20%7C%20WorldGuessr%20%7C%20FreeGuessr.user.js
 // @updateURL https://update.greasyfork.org/scripts/572651/CheatGuessr%20Universal%20%7C%20GeoGuessr%20%7C%20OpenGuessr%20%7C%20WorldGuessr%20%7C%20FreeGuessr.meta.js
 // ==/UserScript==
 
 (function () {
     'use strict';
+
+    const Proxy = window.Proxy;
+    const Reflect = window.Reflect;
 
     // ========== Platform Detection ==========
     const PLATFORM = {
@@ -59,6 +63,7 @@
             }
         });
     }
+
     if (platform == PLATFORM.GEOGUESSR){
         const scripts = document.querySelectorAll('script');
         scripts.forEach(script => {
@@ -71,21 +76,105 @@
 
         Array.prototype.push = new Proxy(originalPush, {
             apply(target, thisArg, args) {
-
-                const filtered = args.filter(item => {
-                    if (item && (item.type === 7 || item.type === 9) && item.payload && item.time) {
-                        return false;
+                try {
+                    for (const item of args) {
+                        if (item && (item.type === 7 || item.type === 9) && item.payload && item.time){
+                            return thisArg.length;
+                        }
                     }
-                    return true;
-                });
+                } catch (e) {}
 
-                if (filtered.length === 0) {
-                    return thisArg.length;
-                }
-
-                return Reflect.apply(target, thisArg, filtered);
+                return Reflect.apply(target, thisArg, args);
             }
         });
+    }
+
+    else if (platform == PLATFORM.WORLDGUESSR){
+        Object.defineProperty(unsafeWindow, 'banned', {
+            value: true,
+            writable: false,
+            configurable: false
+        });
+
+        const originalSetItem = Storage.prototype.setItem;
+
+        Storage.prototype.setItem = new Proxy(originalSetItem, {
+            apply(target, thisArg, args) {
+                const [key, value] = args;
+                if (key.includes('banned')) {
+                    return;
+                }
+                return Reflect.apply(target, thisArg, args);
+            }
+        });
+
+        const orig = unsafeWindow.gtag;
+
+        unsafeWindow.gtag = new Proxy(orig, {
+            apply(target, thisArg, args) {
+                try {
+                    const [, event] = args;
+                    if (typeof event === 'string' && event.indexOf('cheat') !== -1) {
+                        return;
+                    }
+                } catch {}
+
+                return Reflect.apply(target, thisArg, args);
+            }
+        });
+    }
+
+    else if (platform == PLATFORM.FREEGUESSR){
+        const origStartsWith = String.prototype.startsWith;
+        String.prototype.startsWith = new Proxy(origStartsWith, {
+            apply(target, thisArg, args) {
+                const prefix = args[0];
+                if (prefix === "pSTx63EYu") return true;
+                return Reflect.apply(target, thisArg, args);
+            }
+        });
+
+        const originalFetch = unsafeWindow.fetch
+        unsafeWindow.fetch = new Proxy(originalFetch, {
+            apply(target, thisArg, args) {
+                let [url, options] = args;
+
+                if (url instanceof Request) {
+                    url = url.url;
+                }
+
+                if (typeof url === "string" && url.includes("cheat")) {
+                    return Promise.resolve(
+                        new Response(JSON.stringify({ success: true }), {
+                            status: 200,
+                            headers: { "Content-Type": "application/json" }
+                        })
+                    );
+                }
+                return Reflect.apply(target, thisArg, args);
+            }
+        });
+
+        const originalPush = Array.prototype.push;
+        Array.prototype.push = new Proxy(originalPush, {
+            apply(target, thisArg, args) {
+                try {
+                    for (const item of args) {
+                        if (
+                            Array.isArray(item) &&
+                            item.length >= 2 &&
+                            typeof item[1] === "string" &&
+                            (item[1].includes( "focus"))
+                        ) {
+                            return thisArg.length;
+                        }
+                    }
+                } catch (e) {}
+
+                return Reflect.apply(target, thisArg, args);
+            }
+        });
+
     }
 
 
@@ -96,17 +185,18 @@
         notify: 'g',
         toggleMarker: 'x',
         toggleInfo: 'v',
-        openInGoogle:'t'
+        openInGoogle:'t',
     };
 
     const DEFAULT_TOGGLES = {
+        openPanel: true,
         sendToDiscord: true,
         autoSend: false,
         notify: true,
         autoNotify: false,
         toggleMarker: true,
         toggleInfo: true,
-        openInGoogle:true
+        openInGoogle:true,
     };
 
     // ========== Global State ==========
@@ -121,22 +211,10 @@
         originalNickname: null,
         originalFlag: null,
         logoElement: null,
+        panel:null,
         hotkeys: GM_getValue('hotkeys', DEFAULT_HOTKEYS),
         featureToggles: GM_getValue('featureToggles', DEFAULT_TOGGLES),
     };
-
-    // Initialize missing hotkeys
-    if (!state.hotkeys.openPanel) {
-        state.hotkeys.openPanel = 'tab';
-        GM_setValue('hotkeys', state.hotkeys);
-    }
-
-    // Initialize missing toggles
-    if (state.featureToggles.autoSend === undefined) {
-        state.featureToggles.autoSend = false;
-        state.featureToggles.autoNotify = false;
-        GM_setValue('featureToggles', state.featureToggles);
-    }
 
     if (!state.hotkeys.openInGoogle) {
         state.hotkeys.openInGoogle = 't';
@@ -152,6 +230,10 @@
 
     function saveFeatureToggles() {
         GM_setValue('featureToggles', state.featureToggles);
+    }
+
+    function generateClass(prefix) {
+        return String(prefix) + Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
     }
 
     function getMainDomain() {
@@ -200,12 +282,12 @@
         };
     }
 
+    function coordsEqual(c1, c2) {
+        return c1 && c2 && c1[0] === c2[0] && c1[1] === c2[1];
+    }
+
     // ========== Nominatim Service ==========
     function _getAddress(lat, lng) {
-        if (state.lastCoord && state.lastCoord === [lat, lng]) {
-            return Promise.resolve(state.currentAddress);
-        }
-
         return new Promise((resolve, reject) => {
             const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=en`;
             GM_xmlhttpRequest({
@@ -309,8 +391,6 @@
             }
         });
     }
-
-    // ========== Platform-Specific Adapters ==========
 
     // Coordinate getter
     function getCoordinates() {
@@ -506,7 +586,7 @@
             if (state.logoElement) {
                 if (state.isInfoDisplayed) {
                     state.logoElement.style.opacity = 1;
-                    state.logoElement.textContent = formatAddress(state.currentAddress);
+                    state.logoElement.textContent = formatAddress(state.currentAddress) || getLocationDescription();
                 } else {
                     if(platform === PLATFORM.FREEGUESSR){
                         state.logoElement.textContent = 'FreeGuessr';
@@ -613,11 +693,11 @@
 
     // ========== Settings Panel ==========
     function createSettingsPanel() {
-        const panel = document.createElement('div');
-        panel.id = 'cgx-settings-panel';
-        panel.style.cssText = `
+        state.panel = document.createElement('div');
+        state.panel.id = 'cgx-settings-panel';
+        state.panel.style.cssText = `
             position: fixed;
-            top: 30%;
+            top: 20%;
             left: 40%;
             width: 300px;
             background: rgba(25, 25, 25, 0.92);
@@ -629,17 +709,17 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.08);
             box-shadow: 0 8px 20px rgba(0,0,0,0.35);
-            animation: cgxFadeIn 0.18s ease-out;
+            animation: FadeIn 0.18s ease-out;
         `;
 
-        panel.innerHTML = `
+        state.panel.innerHTML = `
             <style>
-                @keyframes cgxFadeIn {
+                @keyframes FadeIn {
                     from { opacity: 0; transform: translateY(-6px); }
                     to { opacity: 1; transform: translateY(0); }
                 }
 
-                .cgx-input {
+                .input {
                     width: 50px;
                     text-align: center;
                     padding: 4px 6px;
@@ -650,12 +730,12 @@
                     outline: none;
                     transition: 0.15s;
                 }
-                .cgx-input:focus {
+                .input:focus {
                     border-color: #4caf50;
                     background: rgba(255,255,255,0.15);
                 }
 
-                .cgx-btn {
+                .btn {
                     width: 100%;
                     padding: 8px;
                     margin-top: 10px;
@@ -665,16 +745,16 @@
                     font-size: 14px;
                     transition: 0.15s;
                 }
-                .cgx-save-btn { background: #4caf50; color: white; }
-                .cgx-reset-btn { background: #2196f3; color: white; }
-                .cgx-reset-btn:hover { background: #42a5f5; }
-                .cgx-btn:disabled {
+                .save-btn { background: #4caf50; color: white; }
+                .reset-btn { background: #2196f3; color: white; }
+                .reset-btn:hover { background: #42a5f5; }
+                .btn:disabled {
                     background: #c0c0c0 !important;
                     cursor: default;
                     opacity: 0.9;
                 }
 
-                .cgx-close-btn {
+                .close-btn {
                     position: absolute;
                     top: 8px;
                     right: 10px;
@@ -684,11 +764,11 @@
                     transition: 0.15s;
                     user-select: none;
                 }
-                .cgx-close-btn:hover {
+                .close-btn:hover {
                     color: #cd312f;
                     transform: scale(1.15);
                 }
-                .cgx-toggle {
+                .toggle {
                     width: 36px;
                     height: 18px;
                     border-radius: 20px;
@@ -697,7 +777,7 @@
                     cursor: pointer;
                     transition: 0.2s;
                 }
-                .cgx-toggle::after {
+                .toggle::after {
                     content: "";
                     position: absolute;
                     width: 14px;
@@ -709,17 +789,17 @@
                     transition: 0.2s;
                 }
 
-                .cgx-toggle.active {
+                .toggle.active {
                     background: #4caf50;
                     box-shadow: 0 0 6px rgba(76,175,80,0.6);
                 }
 
-                .cgx-toggle.active::after {
+                .toggle.active::after {
                     left: 20px;
                 }
             </style>
 
-            <div class="cgx-close-btn">✕</div>
+            <div class="close-btn">✕</div>
 
             <div style="font-size:17px; text-align:center; font-weight:bold; margin-bottom:12px;">
                 Hotkeys Settings
@@ -728,26 +808,26 @@
             ${Object.keys(DEFAULT_TOGGLES).map(key => `
                 <div style="margin-bottom:10px; display:flex; align-items:center; justify-content:space-between;">
                     <div style="display:flex; align-items:center; gap:8px;">
-                        ${key !== 'openPanel' ? `<div class="cgx-toggle ${state.featureToggles[key] ? 'active' : ''}" data-toggle="${key}"></div>` : `<div style="width:36px;"></div>`}
+                        ${key !== 'openPanel' ? `<div class="toggle ${state.featureToggles[key] ? 'active' : ''}" data-toggle="${key}"></div>` : `<div style="width:36px;"></div>`}
                         <span>${key}</span>
                     </div>
-                    ${['autoSend', 'autoNotify'].includes(key) ? '' : `<input class="cgx-input" type="text" data-key="${key}" value="${state.hotkeys[key] || ''}">`}
+                    ${['autoSend', 'autoNotify'].includes(key) ? '' : `<input class="input" type="text" data-key="${key}" value="${state.hotkeys[key] || ''}">`}
                 </div>
             `).join('')}
 
-            <button id="cgx-save-hotkeys" class="cgx-btn cgx-save-btn">Save</button>
-            <button id="cgx-reset-hotkeys" class="cgx-btn cgx-reset-btn">Reset</button>
+            <button class="btn save-btn">Save</button>
+            <button class="btn reset-btn">Reset</button>
         `;
 
-        document.body.appendChild(panel);
+        document.body.appendChild(state.panel);
 
         // Close button
-        panel.querySelector('.cgx-close-btn').onclick = () => {
-            panel.style.display = 'none';
+        state.panel.querySelector('.close-btn').onclick = () => {
+            state.panel.style.display = 'none';
         };
 
         // Toggles
-        panel.querySelectorAll('.cgx-toggle').forEach(toggle => {
+        state.panel.querySelectorAll('.toggle').forEach(toggle => {
             toggle.onclick = () => {
                 const key = toggle.dataset.toggle;
                 state.featureToggles[key] = !state.featureToggles[key];
@@ -757,9 +837,9 @@
         });
 
         // Save button
-        const saveBtn = document.getElementById('cgx-save-hotkeys');
+        const saveBtn = document.querySelector('.save-btn');
         saveBtn.onclick = () => {
-            panel.querySelectorAll('.cgx-input').forEach(input => {
+            state.panel.querySelectorAll('.input').forEach(input => {
                 const key = input.dataset.key;
                 const val = input.value.trim().toLowerCase();
                 if (val) state.hotkeys[key] = val;
@@ -778,12 +858,12 @@
         };
 
         // Reset button
-        const resetBtn = document.getElementById('cgx-reset-hotkeys');
+        const resetBtn = document.querySelector('.reset-btn');
         resetBtn.onclick = () => {
             state.hotkeys = { ...DEFAULT_HOTKEYS };
             saveHotkeys();
 
-            panel.querySelectorAll('.cgx-input').forEach(input => {
+            state.panel.querySelectorAll('.input').forEach(input => {
                 input.value = state.hotkeys[input.dataset.key];
             });
 
@@ -792,7 +872,7 @@
         };
 
         // Key input handling
-        panel.querySelectorAll('.cgx-input').forEach(input => {
+        state.panel.querySelectorAll('.input').forEach(input => {
             input.addEventListener('keydown', e => {
                 e.preventDefault();
 
@@ -858,14 +938,13 @@
               key === state.hotkeys.toggleInfo ||
               key === state.hotkeys.notify ||
               key === state.hotkeys.openPanel ||
-              key === state.hotkeys.openInGoogle;
+              key === state.hotkeys.openInGoogle
 
         if (!isHotkey) return;
 
         if (key === state.hotkeys.openPanel) {
-            const panel = document.getElementById('cgx-settings-panel');
-            if (panel) {
-                panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+            if (state.panel) {
+                state.panel.style.display = state.panel.style.display === 'none' ? 'block' : 'none';
             } else {
                 createSettingsPanel();
             }
@@ -904,7 +983,6 @@
     }
 
     // ========== Platform Initialization ==========
-
     if (platform === PLATFORM.GEOGUESSR) {
         // GeoGuessr initialization
 
@@ -966,7 +1044,7 @@
                 const intervalId = setInterval(async () => {
                     const { lat, lng } = getCoordinates();
                     if (lat && lng) {
-                        if (state.lastCoord != [lat, lng]) {
+                        if (!coordsEqual(state.lastCoord, [lat, lng])) {
                             state.lastCoord = [lat, lng];
                             state.currentAddress = await getAddress(lat, lng);
                             updateAddressDisplay();
@@ -992,7 +1070,6 @@
                     L.Map.prototype.setView = new Proxy(originalSetView, {
                         apply(target, thisArg, args) {
                             state.gameMap = thisArg;
-
                             return Reflect.apply(target, thisArg, args);
                         }
                     });
@@ -1010,7 +1087,7 @@
     // ========== Styles ==========
     const style = document.createElement('style');
     style.innerHTML = `
-        .gameplayAdArea, .venatus-ad, #worldguessr_gameui_ad, #worldguessr_home_ad {
+        .gameplayAdArea, .venatus-ad, .adsbygoogle, #worldguessr_gameui_ad, #worldguessr_home_ad {
             display: none !important;
             visibility: hidden !important;
             opacity: 0 !important;

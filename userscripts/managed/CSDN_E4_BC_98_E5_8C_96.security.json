@@ -10,25 +10,25 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "@require 加载的第三方库均为官方 CDN（jsdelivr），且指定了版本号或 commit 哈希，供应链风险较低。",
-      "location": "UserScript 元数据",
-      "recommendation": "持续关注依赖库安全，建议定期审查依赖库更新。",
+      "description": "@require 加载了多个第三方库，部分为作者自建仓库（CoverUMD），其余为 npm 包通过 jsdelivr CDN加载，均为固定版本哈希。",
+      "location": "元数据 @require",
+      "recommendation": "建议定期审查 CoverUMD 仓库代码，确保无供应链污染。npm 包建议只用官方源。",
       "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
+      "type": "供应链风险"
     },
     {
-      "description": "申请了 GM_xmlhttpRequest 权限，但代码未见实际使用（主代码段未调用），且 @connect 仅限 csdn 官方域名。",
-      "location": "UserScript 元数据",
-      "recommendation": "如无实际使用可移除 GM_xmlhttpRequest 权限，减少攻击面。",
+      "description": "申请了 GM_xmlhttpRequest 权限，但主代码未见实际调用，且 @connect 仅限 csdn 官方域名。",
+      "location": "元数据 @grant/@connect",
+      "recommendation": "如无实际使用 GM_xmlhttpRequest，建议移除该权限。",
       "severity": "MEDIUM",
-      "type": "Permission Abuse"
+      "type": "权限滥用"
     },
     {
-      "description": "申请了 unsafeWindow 权限，但主代码段未见实际使用。",
-      "location": "UserScript 元数据",
-      "recommendation": "如无实际使用可移除 unsafeWindow 权限，减少攻击面。",
+      "description": "申请了 unsafeWindow 权限，但主代码仅做 window 兼容处理，未见敏感操作。",
+      "location": "元数据 @grant",
+      "recommendation": "如无必要，建议移除 unsafeWindow 权限。",
       "severity": "MEDIUM",
-      "type": "Permission Abuse"
+      "type": "权限滥用"
     }
   ],
   "obfuscation_detected": false,
@@ -39,9 +39,9 @@
   "risk_level": "LOW",
   "script_name": "CSDN优化",
   "security_score": 81,
-  "summary": "该脚本主要用于优化 CSDN 网页体验，屏蔽广告、自动展开内容等。未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。所有网络请求仅限 CSDN 官方域名，依赖库来源可信且版本固定。存在部分未使用高权限申请（GM_xmlhttpRequest、unsafeWindow），建议移除。整体安全风险较低，建议定期审查依赖库安全。",
+  "summary": "该脚本主要用于页面优化和广告屏蔽，未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。所有网络请求仅限 CSDN 官方域名，且未见实际数据上报代码。第三方依赖均为固定版本，供应链风险较低。部分高权限申请未实际使用，建议精简。整体安全风险较低，适合公开使用。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-04-27T05:00:01.111382+00:00",
+  "analyzed_at": "2026-05-04T05:27:15.268040+00:00",
   "slug": "CSDN_E4_BC_98_E5_8C_96"
 }

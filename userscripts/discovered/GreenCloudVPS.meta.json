@@ -17,37 +17,12 @@
   "require": [],
   "metadata_raw": "// @name  GreenCloudVPS\n// @namespace  http://tampermonkey.net/\n// @version  0.1\n// @description  try to take over the world!\n// @author  You\n// @include  https://greencloudvps.com/*\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=greencloudvps.com\n// @grant  none",
   "sha256": "bf9e479d88f8125948ae08fb54df670409555954cb5105fb521050a150726f50",
-  "discovered_at": "2026-04-27T05:03:03.628731+00:00",
+  "discovered_at": "2026-05-04T05:46:23.592906+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
   "install_count": null,
   "good_ratings": null,
   "bad_ratings": null,
-  "summary": {
-    "applicable_sites": [
-      "GreenCloudVPS官网"
-    ],
-    "description": "本脚本自动化GreenCloudVPS官网的购物流程，包括自动点击继续、结账、选择支付方式和同意条款，帮助用户快速完成订单。适用于促销活动和常规购物页面。",
-    "permissions": [
-      {
-        "explanation": "脚本无需额外权限，仅操作网页内容。",
-        "grant": "none"
-      }
-    ],
-    "tags": [
-      "自动化",
-      "购物助手",
-      "VPS",
-      "GreenCloudVPS",
-      "支付流程",
-      "促销活动"
-    ],
-    "usage": [
-      "安装脚本后，访问GreenCloudVPS官网。",
-      "在购物或促销页面时，脚本会自动点击按钮完成流程。",
-      "无需手动操作，自动选择支付方式并提交订单。"
-    ],
-    "zh_name": "GreenCloudVPS自动购物助手"
-  }
+  "summary": {}
 }

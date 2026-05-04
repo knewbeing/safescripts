@@ -35,45 +35,46 @@
 // @name:vi     Trình tải video tất cả trong một – HD (YouTube, TikTok, Instagram, X và hơn thế nữa)
 // @name:zh-CN  多合一视频下载器（支持：YouTube, TikTok, Instagram等）
 // @name:zh-TW  多合一視頻下載器（支援：YouTube, TikTok, Instagram等）
-// @description       An all-in-one, fast, and free HD video downloader. Supports video downloads from YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (formerly Twitter), and more. Enjoy seamless, high-quality downloads with no watermarks.
+// @description       An all-in-one, fast, and free HD video downloader. Supports video downloads from YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (formerly Twitter), and more. Enjoy seamless, high-quality downloads with no watermarks.
 // @description:ar    أداة شاملة وسريعة ومجانية لتحميل مقاطع الفيديو بدقة عالية. يدعم تحميل مقاطع الفيديو من يوتيوب، تيك توك، Douyin، إنستغرام، ثريدز، XiaoHongShu، إكس (تويتر سابقًا)، والمزيد. استمتع بتحميلات عالية الجودة بدون علامات مائية.
-// @description:bg    Всичко в едно, бързо и безплатно изтегляне на видео с висока резолюция. Поддържа изтегляне на видеа от YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (бивш Twitter) и други. Насладете се на безпроблемни, висококачествени изтегляния без водни знаци.
-// @description:cs    Vše v jednom, rychlý a bezplatný downloader videí ve vysoké kvalitě. Podporuje stahování videí z YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (dříve Twitter) a dalších. Užijte si plynulé, kvalitní stahování bez vodoznaků.
-// @description:da    En alt-i-en, hurtig og gratis HD video downloader. Understøtter video downloads fra YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (tidligere Twitter) og mere. Nyd problemfri, høj kvalitet downloads uden vandmærker.
-// @description:de    Ein All-in-One, schneller und kostenloser HD-Video-Downloader. Unterstützt das Herunterladen von Videos von YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (ehemals Twitter) und mehr. Genießen Sie nahtlose, hochqualitative Downloads ohne Wasserzeichen.
-// @description:el    Ένας ολοκληρωμένος, γρήγορος και δωρεάν downloader HD βίντεο. Υποστηρίζει λήψη βίντεο από YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (πρώην Twitter) και άλλα. Απολαύστε απρόσκοπτες, υψηλής ποιότητας λήψεις χωρίς υδατογραφήματα.
-// @description:en    An all-in-one, fast, and free HD video downloader. Supports video downloads from YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (formerly Twitter), and more. Enjoy seamless, high-quality downloads with no watermarks.
-// @description:eo    Ĉio-en-unu, rapida kaj senpaga HD-video-elŝutilo. Subtenas video-elŝutojn de YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (antaŭe Twitter), kaj aliaj. Ŝatu seninterrompajn, altkvalitajn elŝutojn sen akvamaĵoj.
-// @description:es    Un descargador de video todo en uno, rápido y gratuito en HD. Admite descargas de videos de YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (anteriormente Twitter) y más. Disfruta de descargas de alta calidad sin marcas de agua.
+// @description:bg    Всичко в едно, бързо и безплатно изтегляне на видео с висока резолюция. Поддържа изтегляне на видеа от YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (бивш Twitter) и други. Насладете се на безпроблемни, висококачествени изтегляния без водни знаци.
+// @description:cs    Vše v jednom, rychlý a bezplatný downloader videí ve vysoké kvalitě. Podporuje stahování videí z YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (dříve Twitter) a dalších. Užijte si plynulé, kvalitní stahování bez vodoznaků.
+// @description:da    En alt-i-en, hurtig og gratis HD video downloader. Understøtter video downloads fra YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (tidligere Twitter) og mere. Nyd problemfri, høj kvalitet downloads uden vandmærker.
+// @description:de    Ein All-in-One, schneller und kostenloser HD-Video-Downloader. Unterstützt das Herunterladen von Videos von YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (ehemals Twitter) und mehr. Genießen Sie nahtlose, hochqualitative Downloads ohne Wasserzeichen.
+// @description:el    Ένας ολοκληρωμένος, γρήγορος και δωρεάν downloader HD βίντεο. Υποστηρίζει λήψη βίντεο από YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (πρώην Twitter) και άλλα. Απολαύστε απρόσκοπτες, υψηλής ποιότητας λήψεις χωρίς υδατογραφήματα.
+// @description:en    An all-in-one, fast, and free HD video downloader. Supports video downloads from YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (formerly Twitter), and more. Enjoy seamless, high-quality downloads with no watermarks.
+// @description:eo    Ĉio-en-unu, rapida kaj senpaga HD-video-elŝutilo. Subtenas video-elŝutojn de YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (antaŭe Twitter), kaj aliaj. Ŝatu seninterrompajn, altkvalitajn elŝutojn sen akvamaĵoj.
+// @description:es    Un descargador de video todo en uno, rápido y gratuito en HD. Admite descargas de videos de YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (anteriormente Twitter) y más. Disfruta de descargas de alta calidad sin marcas de agua.
 // @description:fi    Kaikki yhdessä, nopea ja ilmainen HD-videoiden lataaja. Tukee videoiden lataamista YouTubesta, TikTokista, Douyinista, Instagramista, Threadsista, XiaoHongShusta, X:stä (entinen Twitter) ja muista. Nauti saumatonta, korkealaatuista lataamista ilman vesileimoja.
-// @description:fr    Un téléchargeur vidéo HD tout-en-un, rapide et gratuit. Prend en charge les téléchargements de vidéos depuis YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (anciennement Twitter) et plus encore. Profitez de téléchargements fluides et de haute qualité sans filigranes.
-// @description:fr-CA Un téléchargeur vidéo HD tout-en-un, rapide et gratuit. Prend en charge les téléchargements de vidéos depuis YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (anciennement Twitter) et plus encore. Profitez de téléchargements fluides et de haute qualité sans filigranes.
-// @description:he    מנוע הורדות וידאו HD מהיר, חינמי ומקיף. תומך בהורדת וידאו מיוטיוב, טיקטוק, אינסטגרם, Threads, XiaoHongShu, X (בעבר טוויטר) ועוד. תהנה מהורדות באיכות גבוהה ללא סימני מים.
-// @description:hr    Svi-u-jednom, brzi i besplatni HD downloader za video. Podržava preuzimanje videa s YouTubea, TikToka, Instagrama, Threads, XiaoHongShu, X (bivši Twitter) i još mnogo toga. Uživajte u besprijekornim, visokokvalitetnim preuzimanjima bez vodmarks.
-// @description:hu    Egy minden-egyben, gyors és ingyenes HD videó letöltő. Támogatja a videók letöltését YouTube-ról, TikTok-ról, Instagram-ról, Threads, XiaoHongShu, X (régen Twitter) és másról. Élvezze a zökkenőmentes, magas minőségű letöltéseket vízjel nélkül.
-// @description:id    Downloader video HD serba ada, cepat, dan gratis. Mendukung unduhan video dari YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (sebelumnya Twitter), dan banyak lagi. Nikmati unduhan berkualitas tinggi tanpa tanda air.
-// @description:it    Un downloader video HD completo, veloce e gratuito. Supporta il download di video da YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (precedentemente Twitter) e altri. Goditi download fluidi e di alta qualità senza filigrane.
+// @description:fr    Un téléchargeur vidéo HD tout-en-un, rapide et gratuit. Prend en charge les téléchargements de vidéos depuis YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (anciennement Twitter) et plus encore. Profitez de téléchargements fluides et de haute qualité sans filigranes.
+// @description:fr-CA Un téléchargeur vidéo HD tout-en-un, rapide et gratuit. Prend en charge les téléchargements de vidéos depuis YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (anciennement Twitter) et plus encore. Profitez de téléchargements fluides et de haute qualité sans filigranes.
+// @description:he    מנוע הורדות וידאו HD מהיר, חינמי ומקיף. תומך בהורדת וידאו מיוטיוב, טיקטוק, אינסטגרם, Threads, XiaoHongShu, TED, X (בעבר טוויטר) ועוד. תהנה מהורדות באיכות גבוהה ללא סימני מים.
+// @description:hr    Svi-u-jednom, brzi i besplatni HD downloader za video. Podržava preuzimanje videa s YouTubea, TikToka, Instagrama, Threads, XiaoHongShu, TED, X (bivši Twitter) i još mnogo toga. Uživajte u besprijekornim, visokokvalitetnim preuzimanjima bez vodmarks.
+// @description:hu    Egy minden-egyben, gyors és ingyenes HD videó letöltő. Támogatja a videók letöltését YouTube-ról, TikTok-ról, Instagram-ról, Threads, XiaoHongShu, TED, X (régen Twitter) és másról. Élvezze a zökkenőmentes, magas minőségű letöltéseket vízjel nélkül.
+// @description:id    Downloader video HD serba ada, cepat, dan gratis. Mendukung unduhan video dari YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (sebelumnya Twitter), dan banyak lagi. Nikmati unduhan berkualitas tinggi tanpa tanda air.
+// @description:it    Un downloader video HD completo, veloce e gratuito. Supporta il download di video da YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (precedentemente Twitter) e altri. Goditi download fluidi e di alta qualità senza filigrane.
 // @description:ja    YouTube の視聴体験を向上させるための高速で無料な HD 動画ダウンローダー。YouTube、TikTok、Douyin、Instagram、Threads、XiaoHongShu、X（旧 Twitter）などからの動画ダウンロードをサポート。シームレスで高品質なダウンロードをウォーターマークなしでお楽しみください。
-// @description:ka    ყველაფერი ერთში, სწრაფი და უფასო HD ვიდეო ჩამოტვირთვა. მხარს უჭერს ვიდეოს ჩამოტვირთვას YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (ყოფილი Twitter) და სხვა პლატფორმებიდან. დატკბით უარყოფითი ნიშნების გარეშე, უმაღლესი ხარისხის ჩამოტვირთვებით.
-// @description:ko    YouTube 시청 경험을 향상시키는 모든 기능을 갖춘, 빠르고 무료인 HD 비디오 다운로드기. YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X(이전 Twitter) 등에서 비디오 다운로드를 지원합니다. 워터마크 없이 원활한 고품질 다운로드를 즐기세요.
-// @description:nb    En alt-i-en, rask og gratis HD video nedlaster. Støtter video nedlastinger fra YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (tidligere Twitter), og mer. Nyt sømløse, høy kvalitet nedlastinger uten vannmerker.
-// @description:nl    Een alles-in-één, snelle en gratis HD-video downloader. Ondersteunt video-downloads van YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (voorheen Twitter) en meer. Geniet van naadloze, hoogwaardige downloads zonder watermerken.
-// @description:pl    Jedno w jednym, szybki i darmowy pobieracz wideo HD. Obsługuje pobieranie wideo z YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (dawniej Twitter) i innych. Ciesz się płynne, wysokiej jakości pobieranie bez znaków wodnych.
-// @description:pt-BR Um downloader de vídeo HD completo, rápido e gratuito. Suporta downloads de vídeos do YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (anteriormente Twitter) e muito mais. Aproveite downloads de alta qualidade sem marcas d'água.
-// @description:ro    Un downloader video HD rapid și gratuit, totul într-un singur pachet. Suportă descărcarea de videoclipuri de pe YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (fost Twitter) și altele. Bucurați-vă de descărcări de înaltă calitate fără filigrane.
-// @description:ru    Все-в-одном, быстрый и бесплатный HD видеозагрузчик. Поддерживает загрузку видео с YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (бывший Twitter) и других. Наслаждайтесь безупречными загрузками высокого качества без водяных знаков.
-// @description:sv    En allt-i-ett, snabb och gratis HD-video nedladdare. Stöder video nedladdningar från YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (tidigare Twitter) och mer. Njut av sömlösa, högkvalitativa nedladdningar utan vattenmärken.
-// @description:th    เครื่องมือดาวน์โหลดวิดีโอ HD ที่รวดเร็วและฟรีแบบครบวงจร รองรับการดาวน์โหลดวิดีโอจาก YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (เดิม Twitter) และอื่นๆ เพลิดเพลินกับการดาวน์โหลดที่มีคุณภาพสูงโดยไม่มีลายน้ำ
-// @description:tr    Birçok platformdan video indirmenizi destekleyen, hızlı ve ücretsiz HD video indirme aracıdır. YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (eski Twitter) ve daha fazlasını destekler. Su işareti olmadan kesintisiz yüksek kaliteli indirmelerin keyfini çıkarın.
-// @description:uk    Всі в одному, швидкий та безкоштовний HD відео-завантажувач. Підтримує завантаження відео з YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (колишній Twitter) та інших. Насолоджуйтесь безперешкодними високоякісними завантаженнями без водяних знаків.
+// @description:ka    ყველაფერი ერთში, სწრაფი და უფასო HD ვიდეო ჩამოტვირთვა. მხარს უჭერს ვიდეოს ჩამოტვირთვას YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (ყოფილი Twitter) და სხვა პლატფორმებიდან. დატკბით უარყოფითი ნიშნების გარეშე, უმაღლესი ხარისხის ჩამოტვირთვებით.
+// @description:ko    YouTube 시청 경험을 향상시키는 모든 기능을 갖춘, 빠르고 무료인 HD 비디오 다운로드기. YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X(이전 Twitter) 등에서 비디오 다운로드를 지원합니다. 워터마크 없이 원활한 고품질 다운로드를 즐기세요.
+// @description:nb    En alt-i-en, rask og gratis HD video nedlaster. Støtter video nedlastinger fra YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (tidligere Twitter), og mer. Nyt sømløse, høy kvalitet nedlastinger uten vannmerker.
+// @description:nl    Een alles-in-één, snelle en gratis HD-video downloader. Ondersteunt video-downloads van YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (voorheen Twitter) en meer. Geniet van naadloze, hoogwaardige downloads zonder watermerken.
+// @description:pl    Jedno w jednym, szybki i darmowy pobieracz wideo HD. Obsługuje pobieranie wideo z YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (dawniej Twitter) i innych. Ciesz się płynne, wysokiej jakości pobieranie bez znaków wodnych.
+// @description:pt-BR Um downloader de vídeo HD completo, rápido e gratuito. Suporta downloads de vídeos do YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (anteriormente Twitter) e muito mais. Aproveite downloads de alta qualidade sem marcas d'água.
+// @description:ro    Un downloader video HD rapid și gratuit, totul într-un singur pachet. Suportă descărcarea de videoclipuri de pe YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (fost Twitter) și altele. Bucurați-vă de descărcări de înaltă calitate fără filigrane.
+// @description:ru    Все-в-одном, быстрый и бесплатный HD видеозагрузчик. Поддерживает загрузку видео с YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (бывший Twitter) и других. Наслаждайтесь безупречными загрузками высокого качества без водяных знаков.
+// @description:sv    En allt-i-ett, snabb och gratis HD-video nedladdare. Stöder video nedladdningar från YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (tidigare Twitter) och mer. Njut av sömlösa, högkvalitativa nedladdningar utan vattenmärken.
+// @description:th    เครื่องมือดาวน์โหลดวิดีโอ HD ที่รวดเร็วและฟรีแบบครบวงจร รองรับการดาวน์โหลดวิดีโอจาก YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (เดิม Twitter) และอื่นๆ เพลิดเพลินกับการดาวน์โหลดที่มีคุณภาพสูงโดยไม่มีลายน้ำ
+// @description:tr    Birçok platformdan video indirmenizi destekleyen, hızlı ve ücretsiz HD video indirme aracıdır. YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (eski Twitter) ve daha fazlasını destekler. Su işareti olmadan kesintisiz yüksek kaliteli indirmelerin keyfini çıkarın.
+// @description:uk    Всі в одному, швидкий та безкоштовний HD відео-завантажувач. Підтримує завантаження відео з YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (колишній Twitter) та інших. Насолоджуйтесь безперешкодними високоякісними завантаженнями без водяних знаків.
 // @description:ug    YouTube كۆرۈش تەجرىبەڭىزنى ياخشىلايدىغان، تىز ۋە ھەقسىز HD ۋىدىئو چۈشۈرگۈچى. يۇتۇب، تيك توك، دۇيىن، ئىنستاگرام، Threads، XiaoHongShu، X (ئالدىنقى Twitter) ۋە باشقا پلاتفورمالاردىن ۋىدىئو چۈشۈرۈشنى قوللايدۇ. سۇ ئىشاراتسىز ئېغىزدىن سۈپەتلىك چۈشۈرۈشتىن لەززەتلىنىڭ.
-// @description:vi    Trình tải video HD tất cả trong một, nhanh chóng và miễn phí. Hỗ trợ tải video từ YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, X (trước đây là Twitter) và nhiều nền tảng khác. Thưởng thức tải xuống chất lượng cao mượt mà mà không có watermark.
+// @description:vi    Trình tải video HD tất cả trong một, nhanh chóng và miễn phí. Hỗ trợ tải video từ YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (trước đây là Twitter) và nhiều nền tảng khác. Thưởng thức tải xuống chất lượng cao mượt mà mà không có watermark.
 // @description:zh-CN 一款多合一、快速且免费的在线视频下载器。支持从 YouTube、TikTok、抖音、Instagram、Threads、小红书、X（Twitter）等平台下载视频。享受无水印、高质量、流畅便捷的下载体验
 // @description:zh-TW 一款多合一、快速且免費的線上視頻下載器。支援從 YouTube、TikTok、抖音、Instagram、Threads、小紅書、X（Twitter）等平台下載視頻。享受無水印、高質量、流暢便捷的下載體驗
 // @namespace   AllInOneDownloader_Daniel
-// @version     1.0.8
+// @version     1.0.9
 // @author      Daniel
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADQAAAAwCAYAAABe6Vn9AAACZElEQVR4AeyZbVKDMBCGgYuJ/9WT2CNoqx6hnkT9T72YuA+WDg0M2SSblnFwWCfNfuR9EhqatiqM/+72bX3/3jZirccaYo2HL8yByrLYishazHfVx1hfXJDfHEhG18BIWHeFxHYJvn85gHxjZvWvQFmn16D4ukIGk5i1xLpCWafXoPi6QgaTmLXEukJZp9eg+LpCBpOYtYR6hTi7yPnGe84JVSs1feemlrG1ddVAx7OL+cd9jdDj2JpQ+wOeatTwIPVEqleobYuXcB3zGVqvjH2rjVUDfW3KQ3kFKGAY2xyIgh+bcndJqFAYNKpXiGDsUlAxMOgLBiIpN1QsDNqigEjMBZUCg65oIJKtoVJh0JQERAErKAsY9CQDUSQVygoGLSZAFIqFsoRBhxkQxUKheKaFPDQZw2emQAymhQKGWHIszRwIcQhFMO0pw0fMlC+1rwN62Lc7zblkLsY9syAY4a5A+vAN+8mdq63xwUDNikb795sOr6NNziyjH7AQDgAmhQ9sAPRJ+3QBQ+6pI7IBg4A/VzQia4zSEIbAoQMA7POxvHU3AGLJGcYntp+6Wy6xyFk6AhF61jnxghhiJ1xJXeZAqEEotzLtKcsFw1hZgCjMrQwUBkBvcp83ABOTw7IBIRYoDIDepF/9/YDEBl9qoODKV0pYIlC3vcuuWMqcHMTca9a/OCB5Zn3327s8t0bfNPn8iwP6KYrTqoi40ftt6C8m/iRnoveKXbJ5bPudUTaUG1fK0E/b9S8OSATWArIVsQ1tMfea9S8RyAUIel3Jm2z0xguqsKzgt4oPjv8BCgbZ6l9/AQAA//9HnEu0AAAABklEQVQDAI1HmgBXKvxdAAAAAElFTkSuQmCC
+// @include     https://www.ted.com/*
 // @include     https://*.youtube.com/*
 // @include     https://x.com/*
 // @include     https://twitter.com/*
@@ -97,6 +98,8 @@
 // @include     https://*.tiktokcdn-eu.com/*
 // @include     https://*.tiktokcdn-us.com/*
 // @include     https://*.douyinpic.com/*
+// @include     https://*.douyinmusicpromotion.com/*
+// @include     https://*.cdninstagram.com/*
 // @connect     googlevideo.com
 // @connect     tiktokcdn.com
 // @connect     snssdk.com
@@ -112,6 +115,8 @@
 // @connect     tiktokcdn-eu.com
 // @connect     tiktokcdn-us.com
 // @connect     douyinpic.com
+// @connect     douyinmusicpromotion.com
+// @connect     cdninstagram.com
 // @noframes
 // @license     MIT
 // @run-at      document-start
@@ -267,7 +272,7 @@
 	          resolve();
 	          clearInterval(interval);
 	        }
-	      }, 500);
+	      }, 777);
 	    });
 	  },
 	  genrateShorts: function() {
@@ -413,11 +418,15 @@
 	  run: function() {
 	    setInterval(() => {
 	      document.querySelectorAll("*[data-pressable-container='true']:not([detectvs='true'])").forEach((element) => {
-	        element.setAttribute("detectvs", "true");
 	        if (element.querySelector("video") === null) {
 	          return;
 	        }
+	        element.setAttribute("detectvs", "true");
 	        const buttons = element.querySelectorAll("*[role='button']");
+	        const btnLen = buttons.length;
+	        if (btnLen <= 1) {
+	          return;
+	        }
 	        const lastButton = buttons[buttons.length - 1];
 	        const shareButton = lastButton.parentElement;
 	        const downloadButton = shareButton.cloneNode(false);
@@ -441,7 +450,7 @@
 	          }
 	        });
 	      });
-	    }, 500);
+	    }, 777);
 	  },
 	  start: function() {
 	    const isYoutube = /threads\.com/.test(window.location.host);
@@ -574,7 +583,7 @@
 	        });
 	        toolbar.appendChild(downloadDiv);
 	      }
-	    }, 500);
+	    }, 777);
 	  },
 	  start: function() {
 	    const isRun = /instagram\.com/.test(window.location.host);
@@ -617,7 +626,7 @@
 	    if (isRun) {
 	      setInterval(() => {
 	        this.genrate();
-	      }, 500);
+	      }, 777);
 	    }
 	  }
 	};
@@ -697,7 +706,7 @@
 	    if (isRun) {
 	      setInterval(() => {
 	        this.genrate();
-	      }, 500);
+	      }, 777);
 	    }
 	  }
 	};
@@ -721,7 +730,9 @@
 	      /tikwm\.com/,
 	      /tiktokcdn-eu\.com/,
 	      /tiktokcdn-us\.com/,
-	      /douyinpic\.com/
+	      /douyinpic\.com/,
+	      /douyinmusicpromotion\.com/,
+	      /cdninstagram\.com/
 	    ];
 	    const currentHost = window.location.host;
 	    return hosts.some((rule) => rule.test(currentHost));
@@ -1305,6 +1316,125 @@
 	  }
 	};
 
+	const TedDownloader = {
+	  createDownloadButtonClass: function() {
+	    return "sc-download-" + Math.floor(1e5 + Math.random() * 9e5);
+	  },
+	  injectStyle: function(buttonClass) {
+	    GM_addStyle(`
+			.${buttonClass}{
+				cursor:pointer;
+				justify-content:center;
+				align-items:center;
+				width:40px;
+				height:40px;
+				z-index:999999;
+                position:relative;
+				border-radius:50%;
+				display:flex;
+			}
+			.${buttonClass}::before {
+				content: "";
+				position: absolute;
+				inset: 0;
+				border-radius: inherit;
+				padding: 2px; 
+				background: linear-gradient(90deg,red, orange, yellow, green, cyan, blue, violet, red);
+				background-size: 200% 200%;
+				opacity: 0;
+				transition: opacity .25s;
+				-webkit-mask:
+				linear-gradient(#000 0 0) content-box,
+				linear-gradient(#000 0 0);
+				-webkit-mask-composite: xor;
+				mask-composite: exclude;
+			}
+			.${buttonClass}:hover::before {
+				opacity: 1;
+				animation: rainbowMove 3s linear infinite;
+			}
+			@keyframes rainbowMove {
+				0%   { background-position: 0% 50%; }
+				100% { background-position: 200% 50%; }
+			}
+		`);
+	  },
+	  createDownloadButton: function(buttonClass) {
+	    const downloadElement = document.createElement("div");
+	    downloadElement.setAttribute("x-add", "true");
+	    downloadElement.classList.add(buttonClass);
+	    downloadElement.style.cursor = "pointer";
+	    downloadElement.appendChild(CommonUtils.genrateDownloadSvg("#000"));
+	    downloadElement.addEventListener("click", () => {
+	      const url = "https://www.tool77.com/" + CommonUtils.getSupportedLang() + "/v/downloader?url=" + encodeURIComponent(window.location.href);
+	      CommonUtils.openInTab(url);
+	    });
+	    return downloadElement;
+	  },
+	  isTalkPage: function() {
+	    return /www\.ted\.com\/talks\//.test(window.location.href);
+	  },
+	  injectDownloaderIfNeeded: function(buttonClass) {
+	    if (!this.isTalkPage()) {
+	      return;
+	    }
+	    if (document.querySelector("." + buttonClass)) {
+	      return;
+	    }
+	    const transcript = document.querySelector("#transcript-control");
+	    const actionContainer = transcript?.parentNode?.querySelector(".items-center");
+	    if (!actionContainer) {
+	      return;
+	    }
+	    actionContainer.appendChild(this.createDownloadButton(buttonClass));
+	  },
+	  setupPageObserver: function(buttonClass) {
+	    let rafId = null;
+	    const scheduleInject = () => {
+	      if (rafId !== null) {
+	        return;
+	      }
+	      rafId = requestAnimationFrame(() => {
+	        rafId = null;
+	        this.injectDownloaderIfNeeded(buttonClass);
+	      });
+	    };
+	    const observer = new MutationObserver(() => {
+	      scheduleInject();
+	    });
+	    observer.observe(document.documentElement, { childList: true, subtree: true });
+	    const onLocationChange = () => {
+	      scheduleInject();
+	    };
+	    window.addEventListener("popstate", onLocationChange);
+	    window.addEventListener("hashchange", onLocationChange);
+	    const rawPushState = history.pushState;
+	    history.pushState = function(...args) {
+	      const ret = rawPushState.apply(this, args);
+	      onLocationChange();
+	      return ret;
+	    };
+	    const rawReplaceState = history.replaceState;
+	    history.replaceState = function(...args) {
+	      const ret = rawReplaceState.apply(this, args);
+	      onLocationChange();
+	      return ret;
+	    };
+	    scheduleInject();
+	  },
+	  generateHtml: function() {
+	    const buttonClass = this.createDownloadButtonClass();
+	    this.injectStyle(buttonClass);
+	    this.setupPageObserver(buttonClass);
+	  },
+	  start: function() {
+	    const isRun = /www\.ted\.com/.test(window.location.host);
+	    if (isRun) {
+	      this.generateHtml();
+	    }
+	  }
+	};
+
 	YouTubeDownloader.start();
 	TiktokDownloader.start();
 	ThreadsDownloader.start();
@@ -1313,5 +1443,6 @@
 	DouyinDownloader.start();
 	XiaoHongShuDownloader.start();
 	Downloader.start();
+	TedDownloader.start();
 
 }());

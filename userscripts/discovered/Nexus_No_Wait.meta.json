@@ -6,7 +6,7 @@
   "raw_url": "https://update.greasyfork.org/scripts/519037/Nexus%20No%20Wait%20%2B%2B.user.js",
   "filename": "Nexus_No_Wait.user.js",
   "name": "Nexus No Wait ++",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "Skip Countdown, Auto Download, and More for Nexus Mods. Supports (Manual/Vortex/MO2/NMM)",
   "match": [
     "https://*.nexusmods.com/*"
@@ -22,68 +22,14 @@
     "GM_deleteValue"
   ],
   "require": [],
-  "metadata_raw": "// @name  Nexus No Wait ++\n// @description  Skip Countdown, Auto Download, and More for Nexus Mods. Supports (Manual/Vortex/MO2/NMM)\n// @version  2.1.1\n// @namespace  NexusNoWaitPlusPlus\n// @author  Torkelicious\n// @iconURL  https://raw.githubusercontent.com/torkelicious/nexus-no-wait-pp/refs/heads/main/icon.png\n// @icon  https://raw.githubusercontent.com/torkelicious/nexus-no-wait-pp/refs/heads/main/icon.png\n// @license  GPL-3.0-or-later\n// @match  https://*.nexusmods.com/*\n// @run-at  document-idle\n// @grant  GM_getValue\n// @grant  GM_setValue\n// @grant  GM.xmlHttpRequest\n// @grant  GM_xmlhttpRequest\n// @grant  GM_info\n// @grant  GM_addStyle\n// @grant  GM_listValues\n// @grant  GM_deleteValue\n// @connect  *.nexusmods.com\n// @connect  raw.githubusercontent.com\n// @downloadURL  https://update.greasyfork.org/scripts/519037/Nexus%20No%20Wait%20%2B%2B.user.js\n// @updateURL  https://update.greasyfork.org/scripts/519037/Nexus%20No%20Wait%20%2B%2B.meta.js",
-  "sha256": "5462ea3b6209e2ecd3e14dc0d5051f01cd1a6b4fd02dd87a19d9625a9902f344",
-  "discovered_at": "2026-04-27T05:05:18.129857+00:00",
+  "metadata_raw": "// @name  Nexus No Wait ++\n// @description  Skip Countdown, Auto Download, and More for Nexus Mods. Supports (Manual/Vortex/MO2/NMM)\n// @version  2.1.2\n// @namespace  NexusNoWaitPlusPlus\n// @author  Torkelicious\n// @iconURL  https://raw.githubusercontent.com/torkelicious/nexus-no-wait-pp/refs/heads/main/icon.png\n// @icon  https://raw.githubusercontent.com/torkelicious/nexus-no-wait-pp/refs/heads/main/icon.png\n// @license  GPL-3.0-or-later\n// @match  https://*.nexusmods.com/*\n// @run-at  document-idle\n// @grant  GM_getValue\n// @grant  GM_setValue\n// @grant  GM.xmlHttpRequest\n// @grant  GM_xmlhttpRequest\n// @grant  GM_info\n// @grant  GM_addStyle\n// @grant  GM_listValues\n// @grant  GM_deleteValue\n// @connect  *.nexusmods.com\n// @connect  raw.githubusercontent.com\n// @downloadURL  https://update.greasyfork.org/scripts/519037/Nexus%20No%20Wait%20%2B%2B.user.js\n// @updateURL  https://update.greasyfork.org/scripts/519037/Nexus%20No%20Wait%20%2B%2B.meta.js",
+  "sha256": "8819291ad19856a3169736576b4f79ee6d6b8284ec1e1284f8da5c91b5dacea1",
+  "discovered_at": "2026-05-04T06:02:52.781885+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 10367,
-  "good_ratings": 17,
+  "install_count": 10916,
+  "good_ratings": 18,
   "bad_ratings": 2,
-  "summary": {
-    "applicable_sites": [
-      "Nexus Mods"
-    ],
-    "description": "本脚本可自动跳过 Nexus Mods 网站的下载等待时间，自动开始下载，并支持多种下载方式（手动/Vortex/MO2/NMM）。它还能自动关闭下载页面、跳过文件需求提示、处理归档文件，并隐藏会员推广信息。",
-    "permissions": [
-      {
-        "explanation": "用于读取用户配置数据。",
-        "grant": "GM_getValue"
-      },
-      {
-        "explanation": "用于保存用户配置数据。",
-        "grant": "GM_setValue"
-      },
-      {
-        "explanation": "用于发起网络请求，获取下载链接或数据。",
-        "grant": "GM.xmlHttpRequest"
-      },
-      {
-        "explanation": "用于发起网络请求，兼容旧版脚本。",
-        "grant": "GM_xmlhttpRequest"
-      },
-      {
-        "explanation": "用于获取当前脚本的信息，如版本号。",
-        "grant": "GM_info"
-      },
-      {
-        "explanation": "用于动态添加自定义样式，优化页面显示。",
-        "grant": "GM_addStyle"
-      },
-      {
-        "explanation": "用于列出所有已保存的配置项。",
-        "grant": "GM_listValues"
-      },
-      {
-        "explanation": "用于删除指定的配置项。",
-        "grant": "GM_deleteValue"
-      }
-    ],
-    "tags": [
-      "下载加速",
-      "自动化",
-      "Nexus Mods",
-      "跳过等待",
-      "工具增强",
-      "页面优化"
-    ],
-    "usage": [
-      "安装脚本后，访问 Nexus Mods 网站。",
-      "在下载页面，等待时间会被自动跳过，下载自动开始。",
-      "下载完成后，页面可自动关闭。",
-      "如需调整功能，可在脚本设置中修改配置。"
-    ],
-    "zh_name": "Nexus免等待增强版"
-  }
+  "summary": {}
 }

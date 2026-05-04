@@ -1,0 +1,29 @@
+{
+  "slug": "YouTube_Ad-Bypass",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/575941-youtube-ad-bypass",
+  "source_repo": "575941",
+  "raw_url": "https://update.greasyfork.org/scripts/575941/YouTube%20Ad-Bypass.user.js",
+  "filename": "YouTube_Ad-Bypass.user.js",
+  "name": "YouTube Ad-Bypass",
+  "version": "1.21",
+  "description": "Salta y oculta anuncios de YouTube",
+  "match": [
+    "*://www.youtube.com/*",
+    "*://music.youtube.com/*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  YouTube Ad-Bypass\n// @namespace  YouTube_Ad-Bypass_Fckoff\n// @version  1.21\n// @description:en  Skips and hides YouTube ads\n// @description:es  Salta y oculta anuncios de YouTube\n// @description:pt  Pula e oculta anúncios do YouTube\n// @description:fr  Passe et masque las publicités YouTube\n// @description:it  Salta e nasconde gli annunci di YouTube\n// @description:de  Überspringe und verberge YouTube-Werbung\n// @description:hi  यूट्यूब विज्ञापनों को छोड़ें और छुपाएं (YouTube vigyapanon ko chhodein aur chhupayein)\n// @description:zh-CN  跳过并 column 隐藏 YouTube 广告 (Tiàoguò bìng yǐncáng YouTube guǎnggào)\n// @description:ja  YouTube 広告をスキップして非表示にします (YouTube kōkoku o sukippu shite hihyōji ni shimasu)\n// @description:ru  Пропускает и скрывает рекламу на YouTube.\n// @author  WakeUpNeo\n// @match  *://www.youtube.com/*\n// @match  *://music.youtube.com/*\n// @run-at  document-start\n// @grant  none\n// @license  MIT\n// @description  Salta y oculta anuncios de YouTube\n// @downloadURL  https://update.greasyfork.org/scripts/575941/YouTube%20Ad-Bypass.user.js\n// @updateURL  https://update.greasyfork.org/scripts/575941/YouTube%20Ad-Bypass.meta.js",
+  "sha256": "326e5893f2f4c81eded710a2b7ae44ac9d7bf32b4dc17849c76f24fd8e7a666e",
+  "discovered_at": "2026-05-04T06:05:57.281755+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 188,
+  "good_ratings": 0,
+  "bad_ratings": 0,
+  "summary": {}
+}
