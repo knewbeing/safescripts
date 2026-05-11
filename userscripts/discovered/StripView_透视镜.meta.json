@@ -38,24 +38,24 @@
   "require": [],
   "metadata_raw": "// @name  StripView 透视镜\n// @name:zh-CN  StripView 透视镜\n// @name:zh-TW  StripView 透視鏡\n// @name:ja  StripView 透視レンズ\n// @name:ru  StripView Рентгеновская линза\n// @name:ko  StripView 투視 렌즈\n// @namespace  http://tampermonkey.net/\n// @version  8.8.6\n// @description  A draggable reveal lens for videos on any webpage (完美无损移植版)\n// @description:zh-CN  在任意网页视频上拖拽使用的透视镜（防内存泄漏优化版）。\n// @description:zh-TW  在任意網頁視頻上拖拽使用的透視鏡（防內存洩漏優化版）。\n// @description:ja  あらゆるウェブページの動画にドラッグできる透視レンズ。\n// @description:ru  Перетаскиваемая рентгеновская линза для видео на любой веб-странице.\n// @description:ko  모든 웹페이지의 비디오에 드래그할 수 있는 투시 렌즈입니다.\n// @author  You\n// @match  *://*.youtube.com/*\n// @match  *://*.bilibili.com/*\n// @match  *://*.bilibili.tv/*\n// @match  *://*.twitch.tv/*\n// @match  *://*.vimeo.com/*\n// @match  *://*.dailymotion.com/*\n// @match  *://*.nicovideo.jp/*\n// @match  *://*.acfun.cn/*\n// @match  *://*.tiktok.com/*\n// @match  *://*.douyin.com/*\n// @match  *://*.kuaishou.com/*\n// @match  *://*.ixigua.com/*\n// @match  *://v.qq.com/*\n// @match  *://*.iqiyi.com/*\n// @match  *://*.youku.com/*\n// @match  *://*.x.com/*\n// @match  *://*.twitter.com/*\n// @match  *://*.reddit.com/*\n// @match  *://*.iwara.tv/*\n// @match  *://*.spankbang.com/*\n// @match  *://*.hanime.tv/*\n// @match  *://*.tktube.com/*\n// @grant  GM_addStyle\n// @connect  sv.acreatorhub.com\n// @run-at  document-idle\n// @downloadURL  https://update.greasyfork.org/scripts/575364/StripView%20%E9%80%8F%E8%A7%86%E9%95%9C.user.js\n// @updateURL  https://update.greasyfork.org/scripts/575364/StripView%20%E9%80%8F%E8%A7%86%E9%95%9C.meta.js",
   "sha256": "833f01979cb0b6ffadff03bd657e506e84473ceb0813eb5b3ec777140d6cd565",
-  "discovered_at": "2026-04-27T05:03:13.062580+00:00",
+  "discovered_at": "2026-05-11T06:14:58.648502+00:00",
   "ai_reason": "",
   "target_roles": "",
-  "is_new": true,
-  "install_count": 736,
-  "good_ratings": 1,
+  "is_new": false,
+  "install_count": 1606,
+  "good_ratings": 2,
   "bad_ratings": 0,
   "summary": {
     "applicable_sites": [
       "YouTube",
       "B站",
-      "Bilibili国际版",
+      "Bilibili TV",
       "Twitch",
       "Vimeo",
       "Dailymotion",
       "Niconico",
       "AcFun",
-      "TikTok",
+      "抖音国际版（TikTok）",
       "抖音",
       "快手",
       "西瓜视频",
@@ -70,26 +70,25 @@
       "Hanime",
       "TKTUBE"
     ],
-    "description": "本脚本为网页视频提供一个可拖拽的“透视镜”工具，用户可以在视频上自由移动该镜，局部放大或突出显示视频内容。支持多种主流视频网站，优化防止内存泄漏。",
+    "description": "本脚本为任意网页视频提供一个可拖拽的“透视镜”工具。用户可以在视频上自由移动该工具，查看视频的不同区域。优化了内存使用，适合长时间使用。支持多种主流视频网站。",
     "permissions": [
       {
-        "explanation": "用于动态添加和修改页面样式，让透视镜界面更美观。",
+        "explanation": "用于向网页添加自定义样式，让透视镜界面美观且不影响原有内容。",
         "grant": "GM_addStyle"
       }
     ],
     "tags": [
       "视频增强",
-      "网页工具",
-      "可视化",
+      "工具",
+      "视觉特效",
       "多平台",
-      "辅助功能",
       "用户体验"
     ],
     "usage": [
-      "安装脚本后，打开任意支持的视频网站。",
-      "播放视频时，页面会出现一个可拖拽的透视镜。",
-      "用鼠标拖动透视镜到视频任意位置，局部放大或突出显示。",
-      "如需关闭或隐藏透视镜，可按页面提示操作。"
+      "安装脚本后，访问支持的视频网站。",
+      "在视频上会出现一个可拖拽的透视镜工具。",
+      "按住并拖动透视镜，可以查看视频不同区域的细节。",
+      "无需额外设置，直接使用即可。"
     ],
     "zh_name": "StripView 透视镜"
   }

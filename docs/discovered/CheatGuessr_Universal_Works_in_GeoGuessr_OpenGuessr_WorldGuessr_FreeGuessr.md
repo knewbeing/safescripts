@@ -30,14 +30,14 @@ title: "CheatGuessr Universal (Works in GeoGuessr | OpenGuessr | WorldGuessr | F
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：25/100　　**分析时间**：2026-04-27
+**风险等级**：⛔ CRITICAL　　**安全评分**：50/100　　**分析时间**：2026-05-11
 
-> This script transmits user location data to third-party servers (discord.com and nominatim.openstreetmap.org), collects sensitive location information from the page, and modifies iframe sandboxing. These behaviors pose critical privacy and data exfiltration risks. No code obfuscation or DOM XSS detected. Supply chain risk is low as no @require is used. The script is not safe for privacy-sensitive users.
+> 该脚本存在严重的数据外传和隐私采集风险。它会将用户当前地理坐标通过 GM_xmlhttpRequest 发送到 nominatim.openstreetmap.org 获取地址信息，并可将地理坐标、地址、地图截图等通过 Discord Webhook 外传到 discord.com。虽然未检测到键盘输入内容被外传，但涉及地理位置的敏感信息传输，且用户可配置任意 Discord Webhook，存在较高隐私泄露风险。未发现远程代码执行、代码混淆或 DOM XSS 问题。建议仅在完全信任脚本和 Webhook 接收方时使用。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：discord.com, nominatim.openstreetmap.org） |
-| 隐私采集 | ❌ 检测到（Reads coordinates from page elements and React fiber nodes, Sends location data to external APIs） |
+| 数据外传 | ❌ 检测到（目标：nominatim.openstreetmap.org, discord.com） |
+| 隐私采集 | ❌ 检测到（获取地理坐标（lat/lng）并外传） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -45,35 +45,30 @@ title: "CheatGuessr Universal (Works in GeoGuessr | OpenGuessr | WorldGuessr | F
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Exfiltration  
-> The script sends user location data (latitude, longitude, formatted address) to discord.com via a webhook, which is a third-party server. This is triggered by user action or feature toggles.  
-> 位置：sendToDiscord(embed) function, GM_xmlhttpRequest to discord.com  
-> 建议：Warn users about the privacy risk and allow disabling this feature. Ensure webhook URLs are not hardcoded or shared.
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过 GM_xmlhttpRequest 向 nominatim.openstreetmap.org 发送地理坐标，获取地址信息。  
+> 位置：_getAddress() 函数  
+> 建议：仅允许必要的地理数据请求，避免发送用户敏感信息。
 
-**⛔ CRITICAL** — Data Exfiltration  
-> The script sends user coordinates to nominatim.openstreetmap.org to retrieve address information. While this is a public geocoding API, it transmits user location data externally.  
-> 位置：_getAddress(lat, lng) function, GM_xmlhttpRequest to nominatim.openstreetmap.org  
-> 建议：Inform users that their location data is sent to a third-party geocoding service.
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过 GM_xmlhttpRequest 向用户配置的 Discord Webhook（discord.com）发送地理坐标、地址、地图截图等信息。  
+> 位置：sendToDiscord() 函数  
+> 建议：警告用户此行为可能导致隐私泄露，确保 Webhook 仅为本人所有。
 
-**⛔ CRITICAL** — Privacy Collection  
-> The script reads coordinates from the page, including from React fiber nodes and iframe properties, which may include sensitive location data.  
-> 位置：getCoordinates() function  
-> 建议：Limit data collection to only what is necessary for the script's functionality.
+**🟠 MEDIUM** — 敏感 API 调用  
+> 脚本使用 Notification API 发送通知。  
+> 位置：sendNotification() 函数  
+> 建议：仅在用户授权后使用通知，避免骚扰。
 
-**🟠 MEDIUM** — Sensitive API Usage  
-> The script requests notification permission and uses the Notification API to send notifications.  
-> 位置：requestNotificationPermission(), sendNotification()  
-> 建议：Ensure notifications are not abused and only used for legitimate purposes.
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 GM_xmlhttpRequest 权限，并声明 @connect discord.com，允许向 Discord 发送任意数据。  
+> 位置：元数据 @grant/@connect  
+> 建议：仅申请必要权限，警告用户风险。
 
-**🟠 MEDIUM** — Permission Usage  
-> The script grants GM_xmlhttpRequest, which is used for external requests, and GM_setValue/GM_getValue for persistent storage. All granted permissions are used.  
-> 位置：UserScript metadata  
-> 建议：No excessive permissions detected, but review GM_xmlhttpRequest usage for scope.
-
-**🟡 LOW** — ClickJacking / iframe Risk  
-> The script modifies Element.prototype.setAttribute to ignore sandbox attribute for iframes, which may weaken frame protection.  
-> 位置：Element.prototype.setAttribute override  
-> 建议：Do not bypass sandboxing unless absolutely necessary. This may expose the page to clickjacking or iframe-based attacks.
+**🟡 LOW** — 隐私采集  
+> 脚本监听键盘事件（如 Tab、Q、G、X、V），但未检测到键盘输入内容被外传。  
+> 位置：热键处理相关代码  
+> 建议：确保不采集或外传用户输入内容。
 
 ---
 

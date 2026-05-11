@@ -5,57 +5,7 @@
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [
-    {
-      "description": "脚本未检测到任何网络请求（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource、navigator.sendBeacon），不存在数据外传行为。",
-      "location": "全局",
-      "recommendation": "保持现有设计，避免添加任何外部数据传输。",
-      "severity": "CRITICAL",
-      "type": "Data Transmission"
-    },
-    {
-      "description": "脚本未检测到任何隐私采集行为（如读取 cookie、localStorage、sessionStorage、IndexedDB、监听键盘输入并外传、读取表单字段、访问指纹 API、读取剪贴板内容）。",
-      "location": "全局",
-      "recommendation": "保持现有设计，避免添加隐私采集代码。",
-      "severity": "CRITICAL",
-      "type": "Privacy Collection"
-    },
-    {
-      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string)、innerHTML/outerHTML 执行外部脚本、@require 加载非可信 JS、document.write 插入脚本等远程代码执行风险。",
-      "location": "全局",
-      "recommendation": "保持现有设计，避免动态执行外部代码。",
-      "severity": "HIGH",
-      "type": "Remote Code Execution"
-    },
-    {
-      "description": "脚本未检测到任何代码混淆（无 base64 解码执行、字符串数组映射、unicode 混淆、高度压缩单行代码）。",
-      "location": "全局",
-      "recommendation": "保持代码可读性，避免混淆。",
-      "severity": "HIGH",
-      "type": "Code Obfuscation"
-    },
-    {
-      "description": "脚本未检测到任何 DOM XSS 或注入风险（未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未使用 document.write 插入不可信内容，未操作 iframe src 为 javascript: 协议）。",
-      "location": "全局",
-      "recommendation": "保持现有设计，插入内容时始终注意转义。",
-      "severity": "HIGH",
-      "type": "DOM XSS/Injection"
-    },
-    {
-      "description": "脚本申请的 @grant 权限与实际代码使用相符（GM_addStyle、GM_setClipboard、GM_download），未申请未使用的高权限。",
-      "location": "元数据",
-      "recommendation": "仅申请实际需要的权限。",
-      "severity": "MEDIUM",
-      "type": "Permission Abuse"
-    },
-    {
-      "description": "脚本通过 @require 加载的第三方库均来自官方 CDN（cdnjs），且指定了固定版本，供应链风险较低。",
-      "location": "元数据",
-      "recommendation": "继续使用可信 CDN 并固定版本。",
-      "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
-    }
-  ],
+  "issues": [],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
@@ -64,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "GitHub Repo Tree Generator",
   "security_score": 100,
-  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。所有第三方库均来自可信 CDN 且固定版本。安全评分为 100，风险等级 SAFE。",
+  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。所有 @require 的第三方库均来自官方 CDN 并指定了明确版本。脚本仅操作页面 DOM 和样式，未涉及敏感数据或外部通信。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-04-27T05:00:23.743288+00:00",
+  "analyzed_at": "2026-05-11T05:52:16.398114+00:00",
   "slug": "GitHub_20Repo_20Tree_20Generator"
 }

@@ -2,70 +2,62 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
-      "discord.com",
-      "nominatim.openstreetmap.org"
+      "nominatim.openstreetmap.org",
+      "discord.com"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script sends user location data (latitude, longitude, formatted address) to discord.com via a webhook, which is a third-party server. This is triggered by user action or feature toggles.",
-      "location": "sendToDiscord(embed) function, GM_xmlhttpRequest to discord.com",
-      "recommendation": "Warn users about the privacy risk and allow disabling this feature. Ensure webhook URLs are not hardcoded or shared.",
+      "description": "脚本通过 GM_xmlhttpRequest 向 nominatim.openstreetmap.org 发送地理坐标，获取地址信息。",
+      "location": "_getAddress() 函数",
+      "recommendation": "仅允许必要的地理数据请求，避免发送用户敏感信息。",
       "severity": "CRITICAL",
-      "type": "Data Exfiltration"
+      "type": "数据外传"
     },
     {
-      "description": "The script sends user coordinates to nominatim.openstreetmap.org to retrieve address information. While this is a public geocoding API, it transmits user location data externally.",
-      "location": "_getAddress(lat, lng) function, GM_xmlhttpRequest to nominatim.openstreetmap.org",
-      "recommendation": "Inform users that their location data is sent to a third-party geocoding service.",
+      "description": "脚本通过 GM_xmlhttpRequest 向用户配置的 Discord Webhook（discord.com）发送地理坐标、地址、地图截图等信息。",
+      "location": "sendToDiscord() 函数",
+      "recommendation": "警告用户此行为可能导致隐私泄露，确保 Webhook 仅为本人所有。",
       "severity": "CRITICAL",
-      "type": "Data Exfiltration"
+      "type": "数据外传"
     },
     {
-      "description": "The script reads coordinates from the page, including from React fiber nodes and iframe properties, which may include sensitive location data.",
-      "location": "getCoordinates() function",
-      "recommendation": "Limit data collection to only what is necessary for the script's functionality.",
-      "severity": "CRITICAL",
-      "type": "Privacy Collection"
-    },
-    {
-      "description": "The script requests notification permission and uses the Notification API to send notifications.",
-      "location": "requestNotificationPermission(), sendNotification()",
-      "recommendation": "Ensure notifications are not abused and only used for legitimate purposes.",
-      "severity": "MEDIUM",
-      "type": "Sensitive API Usage"
-    },
-    {
-      "description": "The script grants GM_xmlhttpRequest, which is used for external requests, and GM_setValue/GM_getValue for persistent storage. All granted permissions are used.",
-      "location": "UserScript metadata",
-      "recommendation": "No excessive permissions detected, but review GM_xmlhttpRequest usage for scope.",
-      "severity": "MEDIUM",
-      "type": "Permission Usage"
-    },
-    {
-      "description": "The script modifies Element.prototype.setAttribute to ignore sandbox attribute for iframes, which may weaken frame protection.",
-      "location": "Element.prototype.setAttribute override",
-      "recommendation": "Do not bypass sandboxing unless absolutely necessary. This may expose the page to clickjacking or iframe-based attacks.",
+      "description": "脚本监听键盘事件（如 Tab、Q、G、X、V），但未检测到键盘输入内容被外传。",
+      "location": "热键处理相关代码",
+      "recommendation": "确保不采集或外传用户输入内容。",
       "severity": "LOW",
-      "type": "ClickJacking / iframe Risk"
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本使用 Notification API 发送通知。",
+      "location": "sendNotification() 函数",
+      "recommendation": "仅在用户授权后使用通知，避免骚扰。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "脚本申请了 GM_xmlhttpRequest 权限，并声明 @connect discord.com，允许向 Discord 发送任意数据。",
+      "location": "元数据 @grant/@connect",
+      "recommendation": "仅申请必要权限，警告用户风险。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "Reads coordinates from page elements and React fiber nodes",
-      "Sends location data to external APIs"
+      "获取地理坐标（lat/lng）并外传"
     ],
     "detected": true
   },
   "risk_level": "CRITICAL",
   "script_name": "CheatGuessr Universal (Works in GeoGuessr | OpenGuessr | WorldGuessr | FreeGuessr)",
-  "security_score": 25,
-  "summary": "This script transmits user location data to third-party servers (discord.com and nominatim.openstreetmap.org), collects sensitive location information from the page, and modifies iframe sandboxing. These behaviors pose critical privacy and data exfiltration risks. No code obfuscation or DOM XSS detected. Supply chain risk is low as no @require is used. The script is not safe for privacy-sensitive users.",
+  "security_score": 50,
+  "summary": "该脚本存在严重的数据外传和隐私采集风险。它会将用户当前地理坐标通过 GM_xmlhttpRequest 发送到 nominatim.openstreetmap.org 获取地址信息，并可将地理坐标、地址、地图截图等通过 Discord Webhook 外传到 discord.com。虽然未检测到键盘输入内容被外传，但涉及地理位置的敏感信息传输，且用户可配置任意 Discord Webhook，存在较高隐私泄露风险。未发现远程代码执行、代码混淆或 DOM XSS 问题。建议仅在完全信任脚本和 Webhook 接收方时使用。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-04-27T05:09:13.097561+00:00",
+  "analyzed_at": "2026-05-11T06:42:49.650993+00:00",
   "slug": "CheatGuessr_Universal_Works_in_GeoGuessr_OpenGuessr_WorldGuessr_FreeGuessr"
 }

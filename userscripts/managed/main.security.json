@@ -1,29 +1,24 @@
 {
   "approved": true,
   "data_transmission": {
-    "destinations": [],
+    "destinations": [
+      "fanyi.iflyrec.com"
+    ],
     "detected": false
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限，并声明 @connect fanyi.iflyrec.com，但主代码为空，未检测到实际的数据外传行为。",
-      "location": "元数据区",
-      "recommendation": "仅在需要时使用 GM_xmlhttpRequest，并确保不外传用户敏感数据。",
-      "severity": "MEDIUM",
-      "type": "权限滥用"
-    },
-    {
-      "description": "@require 加载了 https://raw.githubusercontent.com/maboloshi/github-chinese/gh-pages/locals.js?v1.9.3-2026-04-12，属于第三方代码，未固定哈希，存在供应链风险。",
-      "location": "元数据区",
-      "recommendation": "建议使用官方 CDN 并固定版本哈希，避免供应链污染。",
+      "description": "@require 加载的第三方库 https://raw.githubusercontent.com/maboloshi/github-chinese/gh-pages/locals.js?v1.9.3-2026-04-30 来源为 GitHub Pages，非官方 CDN，存在一定供应链风险。",
+      "location": "元数据 @require",
+      "recommendation": "建议使用官方 CDN 或固定版本哈希，确保依赖来源可信且内容不可变。",
       "severity": "MEDIUM",
       "type": "供应链风险"
     },
     {
-      "description": "脚本申请了 GM_notification 权限，但主代码为空，未检测到实际使用。",
-      "location": "元数据区",
-      "recommendation": "仅申请实际需要的权限，避免权限滥用。",
+      "description": "脚本声明 @grant GM_xmlhttpRequest 权限，并 @connect fanyi.iflyrec.com，具备向第三方服务器发起网络请求的能力，但主代码未见实际调用。",
+      "location": "元数据 @grant/@connect",
+      "recommendation": "如无实际使用，建议移除相关权限，最小化权限申请。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     }
@@ -33,12 +28,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "MEDIUM",
+  "risk_level": "LOW",
   "script_name": "GitHub 中文化插件",
-  "security_score": 76,
-  "summary": "该脚本主代码为空，未检测到数据外传、隐私采集、远程代码执行、XSS、混淆等高风险行为。但存在供应链风险（@require 加载第三方代码且未固定哈希）和权限滥用（申请了未使用的高权限），建议优化权限申请和第三方库管理。整体风险为中等，安全评分为76分。",
+  "security_score": 89,
+  "summary": "该脚本主要用于 GitHub 界面本地化，未检测到数据外传、隐私采集、远程代码执行、XSS 或代码混淆等高危行为。存在供应链风险（@require 非官方 CDN）和权限冗余（声明但未使用 GM_xmlhttpRequest），整体风险较低。建议关注依赖库安全性并最小化权限。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-04-27T05:01:22.804903+00:00",
+  "analyzed_at": "2026-05-11T05:56:50.726103+00:00",
   "slug": "main"
 }

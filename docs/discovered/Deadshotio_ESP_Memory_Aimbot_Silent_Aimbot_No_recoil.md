@@ -30,14 +30,14 @@ title: "Deadshot.io ESP & Memory Aimbot & Silent Aimbot & No recoil"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：35/100　　**分析时间**：2026-04-27
+**风险等级**：⛔ CRITICAL　　**安全评分**：0/100　　**分析时间**：2026-05-11
 
-> 该脚本存在严重安全风险：动态加载并 eval 执行远程代码，目标服务器为非官方第三方域名，存在数据外传、远程代码执行和供应链污染风险。未发现直接隐私采集，但远程代码不可审查，可能存在隐私泄露。强烈建议禁止使用此脚本。
+> 该脚本存在极高安全风险：动态拉取并 eval 执行远程代码，未锁定版本，存在严重的远程代码执行和供应链攻击风险。远程代码可随时更改，可能导致隐私数据泄露、恶意行为注入等。强烈不建议使用。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：deadshot-cheat.netlify.app） |
-| 隐私采集 | ✅ 未检测到 |
+| 数据外传 | ❌ 检测到（目标：https://deadshot-cheat.netlify.app/index.js） |
+| 隐私采集 | ❌ 检测到（本地脚本未直接采集隐私数据，但远程 index.js 代码不可控，存在隐私采集风险。） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -45,35 +45,30 @@ title: "Deadshot.io ESP & Memory Aimbot & Silent Aimbot & No recoil"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Exfiltration & Remote Code Execution  
-> 脚本通过 GM_xmlhttpRequest 向 deadshot-cheat.netlify.app 发起网络请求，下载并执行远程 JavaScript 代码，存在数据外传和远程代码执行风险。  
-> 位置：fetchAndCacheCode() 函数，CUSTOM_SCRIPT_URL  
-> 建议：禁止从非官方、未固定版本哈希的第三方域名动态加载和执行代码。仅允许本地或可信 CDN 固定版本。
+**⛔ CRITICAL** — 远程代码执行/供应链风险  
+> 脚本通过 GM_xmlhttpRequest 动态从 https://deadshot-cheat.netlify.app/index.js 拉取远程代码，并未固定版本或哈希，存在严重供应链风险和远程代码执行风险。  
+> 位置：fetchAndCacheCode() 函数  
+> 建议：禁止动态加载未固定哈希的远程代码，改为本地集成或使用可信 CDN 并锁定版本。
 
-**⛔ CRITICAL** — Remote Code Execution  
-> 脚本使用 eval 执行远程获取的代码，存在远程代码执行风险，攻击者可随时更换 payload。  
-> 位置：patchImports() 函数，mod[TARGET_METHOD] = (...args) => { eval(customCode); }  
-> 建议：禁止使用 eval 执行动态获取的代码，避免 RCE。建议采用本地静态代码或固定版本哈希。
+**⛔ CRITICAL** — 远程代码执行  
+> 拉取到的远程代码通过 eval 执行，属于典型的远程代码执行（RCE）高危行为。  
+> 位置：mod[TARGET_METHOD] = (...args) => { (0, eval)(customCode); ... }  
+> 建议：严禁使用 eval 执行外部代码，尤其是网络获取的内容。
 
-**🔴 HIGH** — Remote Code Execution  
-> 脚本通过 eval 执行远程代码，属于高度危险的远程代码执行行为。  
-> 位置：patchImports() 函数  
-> 建议：禁止 eval，采用安全的代码注入方式。
+**🔴 HIGH** — 隐私采集风险  
+> 脚本未直接采集隐私数据，但远程拉取的 index.js 代码不可控，可能包含隐私采集行为。  
+> 位置：远程 index.js  
+> 建议：禁止动态加载远程代码，或对远程代码进行严格审计。
 
-**🔴 HIGH** — Obfuscation (Potential)  
-> 脚本未混淆，但远程加载的 index.js 可能存在混淆，无法审查其内容。  
-> 位置：CUSTOM_SCRIPT_URL  
-> 建议：禁止加载不可审查的混淆代码。
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 unsafeWindow 权限，增加了与页面直接交互的攻击面。  
+> 位置：@grant unsafeWindow  
+> 建议：如非必要，移除 unsafeWindow 权限。
 
-**🟠 MEDIUM** — Supply Chain Risk  
-> 脚本未对远程代码来源进行校验（如哈希校验），存在供应链风险。  
-> 位置：CUSTOM_SCRIPT_URL，GM_xmlhttpRequest  
-> 建议：仅允许加载官方 CDN 且固定版本哈希的第三方库，禁止可变 URL。
-
-**🟠 MEDIUM** — Permission Abuse  
-> 脚本申请了 GM_xmlhttpRequest、unsafeWindow 等高权限，但实际用途仅为远程代码加载，存在权限滥用风险。  
-> 位置：元数据 @grant  
-> 建议：仅申请实际需要的最低权限，避免滥用。
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 GM_xmlhttpRequest、GM_setValue、GM_getValue 权限，部分权限仅用于远程代码拉取和本地缓存，存在被滥用风险。  
+> 位置：@grant GM_xmlhttpRequest, GM_setValue, GM_getValue  
+> 建议：最小化权限申请，仅保留实际需要的权限。
 
 ---
 

@@ -35,43 +35,43 @@
 // @name:vi     Trình tải video tất cả trong một – HD (YouTube, TikTok, Instagram, X và hơn thế nữa)
 // @name:zh-CN  多合一视频下载器（支持：YouTube, TikTok, Instagram等）
 // @name:zh-TW  多合一視頻下載器（支援：YouTube, TikTok, Instagram等）
-// @description       An all-in-one, fast, and free HD video downloader. Supports video downloads from YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (formerly Twitter), and more. Enjoy seamless, high-quality downloads with no watermarks.
-// @description:ar    أداة شاملة وسريعة ومجانية لتحميل مقاطع الفيديو بدقة عالية. يدعم تحميل مقاطع الفيديو من يوتيوب، تيك توك، Douyin، إنستغرام، ثريدز، XiaoHongShu، إكس (تويتر سابقًا)، والمزيد. استمتع بتحميلات عالية الجودة بدون علامات مائية.
-// @description:bg    Всичко в едно, бързо и безплатно изтегляне на видео с висока резолюция. Поддържа изтегляне на видеа от YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (бивш Twitter) и други. Насладете се на безпроблемни, висококачествени изтегляния без водни знаци.
-// @description:cs    Vše v jednom, rychlý a bezplatný downloader videí ve vysoké kvalitě. Podporuje stahování videí z YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (dříve Twitter) a dalších. Užijte si plynulé, kvalitní stahování bez vodoznaků.
-// @description:da    En alt-i-en, hurtig og gratis HD video downloader. Understøtter video downloads fra YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (tidligere Twitter) og mere. Nyd problemfri, høj kvalitet downloads uden vandmærker.
-// @description:de    Ein All-in-One, schneller und kostenloser HD-Video-Downloader. Unterstützt das Herunterladen von Videos von YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (ehemals Twitter) und mehr. Genießen Sie nahtlose, hochqualitative Downloads ohne Wasserzeichen.
-// @description:el    Ένας ολοκληρωμένος, γρήγορος και δωρεάν downloader HD βίντεο. Υποστηρίζει λήψη βίντεο από YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (πρώην Twitter) και άλλα. Απολαύστε απρόσκοπτες, υψηλής ποιότητας λήψεις χωρίς υδατογραφήματα.
-// @description:en    An all-in-one, fast, and free HD video downloader. Supports video downloads from YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (formerly Twitter), and more. Enjoy seamless, high-quality downloads with no watermarks.
-// @description:eo    Ĉio-en-unu, rapida kaj senpaga HD-video-elŝutilo. Subtenas video-elŝutojn de YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (antaŭe Twitter), kaj aliaj. Ŝatu seninterrompajn, altkvalitajn elŝutojn sen akvamaĵoj.
-// @description:es    Un descargador de video todo en uno, rápido y gratuito en HD. Admite descargas de videos de YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (anteriormente Twitter) y más. Disfruta de descargas de alta calidad sin marcas de agua.
-// @description:fi    Kaikki yhdessä, nopea ja ilmainen HD-videoiden lataaja. Tukee videoiden lataamista YouTubesta, TikTokista, Douyinista, Instagramista, Threadsista, XiaoHongShusta, X:stä (entinen Twitter) ja muista. Nauti saumatonta, korkealaatuista lataamista ilman vesileimoja.
-// @description:fr    Un téléchargeur vidéo HD tout-en-un, rapide et gratuit. Prend en charge les téléchargements de vidéos depuis YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (anciennement Twitter) et plus encore. Profitez de téléchargements fluides et de haute qualité sans filigranes.
-// @description:fr-CA Un téléchargeur vidéo HD tout-en-un, rapide et gratuit. Prend en charge les téléchargements de vidéos depuis YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (anciennement Twitter) et plus encore. Profitez de téléchargements fluides et de haute qualité sans filigranes.
-// @description:he    מנוע הורדות וידאו HD מהיר, חינמי ומקיף. תומך בהורדת וידאו מיוטיוב, טיקטוק, אינסטגרם, Threads, XiaoHongShu, TED, X (בעבר טוויטר) ועוד. תהנה מהורדות באיכות גבוהה ללא סימני מים.
-// @description:hr    Svi-u-jednom, brzi i besplatni HD downloader za video. Podržava preuzimanje videa s YouTubea, TikToka, Instagrama, Threads, XiaoHongShu, TED, X (bivši Twitter) i još mnogo toga. Uživajte u besprijekornim, visokokvalitetnim preuzimanjima bez vodmarks.
-// @description:hu    Egy minden-egyben, gyors és ingyenes HD videó letöltő. Támogatja a videók letöltését YouTube-ról, TikTok-ról, Instagram-ról, Threads, XiaoHongShu, TED, X (régen Twitter) és másról. Élvezze a zökkenőmentes, magas minőségű letöltéseket vízjel nélkül.
-// @description:id    Downloader video HD serba ada, cepat, dan gratis. Mendukung unduhan video dari YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (sebelumnya Twitter), dan banyak lagi. Nikmati unduhan berkualitas tinggi tanpa tanda air.
-// @description:it    Un downloader video HD completo, veloce e gratuito. Supporta il download di video da YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (precedentemente Twitter) e altri. Goditi download fluidi e di alta qualità senza filigrane.
-// @description:ja    YouTube の視聴体験を向上させるための高速で無料な HD 動画ダウンローダー。YouTube、TikTok、Douyin、Instagram、Threads、XiaoHongShu、X（旧 Twitter）などからの動画ダウンロードをサポート。シームレスで高品質なダウンロードをウォーターマークなしでお楽しみください。
-// @description:ka    ყველაფერი ერთში, სწრაფი და უფასო HD ვიდეო ჩამოტვირთვა. მხარს უჭერს ვიდეოს ჩამოტვირთვას YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (ყოფილი Twitter) და სხვა პლატფორმებიდან. დატკბით უარყოფითი ნიშნების გარეშე, უმაღლესი ხარისხის ჩამოტვირთვებით.
-// @description:ko    YouTube 시청 경험을 향상시키는 모든 기능을 갖춘, 빠르고 무료인 HD 비디오 다운로드기. YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X(이전 Twitter) 등에서 비디오 다운로드를 지원합니다. 워터마크 없이 원활한 고품질 다운로드를 즐기세요.
-// @description:nb    En alt-i-en, rask og gratis HD video nedlaster. Støtter video nedlastinger fra YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (tidligere Twitter), og mer. Nyt sømløse, høy kvalitet nedlastinger uten vannmerker.
-// @description:nl    Een alles-in-één, snelle en gratis HD-video downloader. Ondersteunt video-downloads van YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (voorheen Twitter) en meer. Geniet van naadloze, hoogwaardige downloads zonder watermerken.
-// @description:pl    Jedno w jednym, szybki i darmowy pobieracz wideo HD. Obsługuje pobieranie wideo z YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (dawniej Twitter) i innych. Ciesz się płynne, wysokiej jakości pobieranie bez znaków wodnych.
-// @description:pt-BR Um downloader de vídeo HD completo, rápido e gratuito. Suporta downloads de vídeos do YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (anteriormente Twitter) e muito mais. Aproveite downloads de alta qualidade sem marcas d'água.
-// @description:ro    Un downloader video HD rapid și gratuit, totul într-un singur pachet. Suportă descărcarea de videoclipuri de pe YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (fost Twitter) și altele. Bucurați-vă de descărcări de înaltă calitate fără filigrane.
-// @description:ru    Все-в-одном, быстрый и бесплатный HD видеозагрузчик. Поддерживает загрузку видео с YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (бывший Twitter) и других. Наслаждайтесь безупречными загрузками высокого качества без водяных знаков.
-// @description:sv    En allt-i-ett, snabb och gratis HD-video nedladdare. Stöder video nedladdningar från YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (tidigare Twitter) och mer. Njut av sömlösa, högkvalitativa nedladdningar utan vattenmärken.
-// @description:th    เครื่องมือดาวน์โหลดวิดีโอ HD ที่รวดเร็วและฟรีแบบครบวงจร รองรับการดาวน์โหลดวิดีโอจาก YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (เดิม Twitter) และอื่นๆ เพลิดเพลินกับการดาวน์โหลดที่มีคุณภาพสูงโดยไม่มีลายน้ำ
-// @description:tr    Birçok platformdan video indirmenizi destekleyen, hızlı ve ücretsiz HD video indirme aracıdır. YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (eski Twitter) ve daha fazlasını destekler. Su işareti olmadan kesintisiz yüksek kaliteli indirmelerin keyfini çıkarın.
-// @description:uk    Всі в одному, швидкий та безкоштовний HD відео-завантажувач. Підтримує завантаження відео з YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (колишній Twitter) та інших. Насолоджуйтесь безперешкодними високоякісними завантаженнями без водяних знаків.
-// @description:ug    YouTube كۆرۈش تەجرىبەڭىزنى ياخشىلايدىغان، تىز ۋە ھەقسىز HD ۋىدىئو چۈشۈرگۈچى. يۇتۇب، تيك توك، دۇيىن، ئىنستاگرام، Threads، XiaoHongShu، X (ئالدىنقى Twitter) ۋە باشقا پلاتفورمالاردىن ۋىدىئو چۈشۈرۈشنى قوللايدۇ. سۇ ئىشاراتسىز ئېغىزدىن سۈپەتلىك چۈشۈرۈشتىن لەززەتلىنىڭ.
-// @description:vi    Trình tải video HD tất cả trong một, nhanh chóng và miễn phí. Hỗ trợ tải video từ YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, X (trước đây là Twitter) và nhiều nền tảng khác. Thưởng thức tải xuống chất lượng cao mượt mà mà không có watermark.
-// @description:zh-CN 一款多合一、快速且免费的在线视频下载器。支持从 YouTube、TikTok、抖音、Instagram、Threads、小红书、X（Twitter）等平台下载视频。享受无水印、高质量、流畅便捷的下载体验
-// @description:zh-TW 一款多合一、快速且免費的線上視頻下載器。支援從 YouTube、TikTok、抖音、Instagram、Threads、小紅書、X（Twitter）等平台下載視頻。享受無水印、高質量、流暢便捷的下載體驗
+// @description       An all-in-one, fast, and free HD video downloader. Supports video downloads from YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, Facebook, X (formerly Twitter), and more. Enjoy seamless, high-quality downloads with no watermarks.
+// @description:ar    أداة شاملة وسريعة ومجانية لتحميل مقاطع الفيديو بدقة عالية. يدعم تحميل مقاطع الفيديو من يوتيوب، تيك توك، Douyin، إنستغرام، Facebook، ثريدز، XiaoHongShu، TED، إكس (تويتر سابقًا)، والمزيد. استمتع بتحميلات عالية الجودة بدون علامات مائية.
+// @description:bg    Всичко в едно, бързо и безплатно изтегляне на видео с висока резолюция. Поддържа изтегляне на видеа от YouTube, TikTok, Douyin, Instagram, Facebook, Threads, XiaoHongShu, TED, X (бивш Twitter) и други. Насладете се на безпроблемни, висококачествени изтегляния без водни знаци.
+// @description:cs    Vše v jednom, rychlý a bezplatný downloader videí ve vysoké kvalitě. Podporuje stahování videí z YouTube, TikTok, Douyin, Instagram, Facebook, Threads, XiaoHongShu, TED, X (dříve Twitter) a dalších. Užijte si plynulé, kvalitní stahování bez vodoznaků.
+// @description:da    En alt-i-en, hurtig og gratis HD video downloader. Understøtter video downloads fra YouTube, TikTok, Douyin, Instagram, Facebook, Threads, XiaoHongShu, TED, X (tidligere Twitter) og mere. Nyd problemfri, høj kvalitet downloads uden vandmærker.
+// @description:de    Ein All-in-One, schneller und kostenloser HD-Video-Downloader. Unterstützt das Herunterladen von Videos von YouTube, TikTok, Douyin, Instagram, Facebook, Threads, XiaoHongShu, TED, X (ehemals Twitter) und mehr. Genießen Sie nahtlose, hochqualitative Downloads ohne Wasserzeichen.
+// @description:el    Ένας ολοκληρωμένος, γρήγορος και δωρεάν downloader HD βίντεο. Υποστηρίζει λήψη βίντεο από YouTube, TikTok, Douyin, Instagram, Facebook, Threads, XiaoHongShu, TED, X (πρώην Twitter) και άλλα. Απολαύστε απρόσκοπτες, υψηλής ποιότητας λήψεις χωρίς υδατογραφήματα.
+// @description:en    An all-in-one, fast, and free HD video downloader. Supports video downloads from YouTube, TikTok, Douyin, Instagram, Threads, XiaoHongShu, TED, Facebook, X (formerly Twitter), and more. Enjoy seamless, high-quality downloads with no watermarks.
+// @description:eo    Ĉio-en-unu, rapida kaj senpaga HD-video-elŝutilo. Subtenas video-elŝutojn de YouTube, TikTok, Douyin, Instagram, Facebook, Threads, XiaoHongShu, TED, X (antaŭe Twitter), kaj aliaj. Ŝatu seninterrompajn, altkvalitajn elŝutojn sen akvamaĵoj.
+// @description:es    Un descargador de video todo en uno, rápido y gratuito en HD. Admite descargas de videos de YouTube, TikTok, Douyin, Instagram, Facebook, Threads, XiaoHongShu, TED, X (anteriormente Twitter) y más. Disfruta de descargas de alta calidad sin marcas de agua.
+// @description:fi    Kaikki yhdessä, nopea ja ilmainen HD-videoiden lataaja. Tukee videoiden lataamista YouTubesta, TikTokista, Douyinista, Instagramista, Facebookista, Threadsista, XiaoHongShusta, X:stä (entinen Twitter) ja muista. Nauti saumatonta, korkealaatuista lataamista ilman vesileimoja.
+// @description:fr    Un téléchargeur vidéo HD tout-en-un, rapide et gratuit. Prend en charge les téléchargements de vidéos depuis YouTube, TikTok, Douyin, Instagram, Facebook, Threads, XiaoHongShu, TED, X (anciennement Twitter) et plus encore. Profitez de téléchargements fluides et de haute qualité sans filigranes.
+// @description:fr-CA Un téléchargeur vidéo HD tout-en-un, rapide et gratuit. Prend en charge les téléchargements de vidéos depuis YouTube, TikTok, Douyin, Instagram, Facebook, Threads, XiaoHongShu, TED, X (anciennement Twitter) et plus encore. Profitez de téléchargements fluides et de haute qualité sans filigranes.
+// @description:he    מנוע הורדות וידאו HD מהיר, חינמי ומקיף. תומך בהורדת וידאו מיוטיוב, טיקטוק, אינסטגרם, Facebook, Threads, XiaoHongShu, TED, X (בעבר טוויטר) ועוד. תהנה מהורדות באיכות גבוהה ללא סימני מים.
+// @description:hr    Svi-u-jednom, brzi i besplatni HD downloader za video. Podržava preuzimanje videa s YouTubea, TikToka, Instagrama, Facebooka, Threads, XiaoHongShu, TED, X (bivši Twitter) i još mnogo toga. Uživajte u besprijekornim, visokokvalitetnim preuzimanjima bez vodmarks.
+// @description:hu    Egy minden-egyben, gyors és ingyenes HD videó letöltő. Támogatja a videók letöltését YouTube-ról, TikTok-ról, Instagram-ról, Facebookról, Threads, XiaoHongShu, TED, X (régen Twitter) és másról. Élvezze a zökkenőmentes, magas minőségű letöltéseket vízjel nélkül.
+// @description:id    Downloader video HD serba ada, cepat, dan gratis. Mendukung unduhan video dari YouTube, TikTok, Douyin, Instagram, Facebook, Threads, XiaoHongShu, TED, X (sebelumnya Twitter), dan banyak lagi. Nikmati unduhan berkualitas tinggi tanpa tanda air.
+// @description:it    Un downloader video HD completo, veloce e gratuito. Supporta il download di video da YouTube, TikTok, Douyin, Instagram, Facebook, Threads, XiaoHongShu, TED, X (precedentemente Twitter) e altri. Goditi download fluidi e di alta qualità senza filigrane.
+// @description:ja    YouTube の視聴体験を向上させるための高速で無料な HD 動画ダウンローダー。YouTube、TikTok、Douyin、Instagram、Facebook、Threads、XiaoHongShu、X（旧 Twitter）などからの動画ダウンロードをサポート。シームレスで高品質なダウンロードをウォーターマークなしでお楽しみください。
+// @description:ka    ყველაფერი ერთში, სწრაფი და უფასო HD ვიდეო ჩამოტვირთვა. მხარს უჭერს ვიდეოს ჩამოტვირთვას YouTube, TikTok, Douyin, Instagram, Facebook, Threads, XiaoHongShu, TED, X (ყოფილი Twitter) და სხვა პლატფორმებიდან. დატკბით უარყოფითი ნიშნების გარეშე, უმაღლესი ხარისხის ჩამოტვირთვებით.
+// @description:ko    YouTube 시청 경험을 향상시키는 모든 기능을 갖춘, 빠르고 무료인 HD 비디오 다운로드기. YouTube, TikTok, Douyin, Instagram, Facebook, Threads, XiaoHongShu, TED, X(이전 Twitter) 등에서 비디오 다운로드를 지원합니다. 워터마크 없이 원활한 고품질 다운로드를 즐기세요.
+// @description:nb    En alt-i-en, rask og gratis HD video nedlaster. Støtter video nedlastinger fra YouTube, TikTok, Douyin, Instagram, Facebook, Threads, XiaoHongShu, TED, X (tidligere Twitter), og mer. Nyt sømløse, høy kvalitet nedlastinger uten vannmerker.
+// @description:nl    Een alles-in-één, snelle en gratis HD-video downloader. Ondersteunt video-downloads van YouTube, TikTok, Douyin, Instagram, Facebook, Threads, XiaoHongShu, TED, X (voorheen Twitter) en meer. Geniet van naadloze, hoogwaardige downloads zonder watermerken.
+// @description:pl    Jedno w jednym, szybki i darmowy pobieracz wideo HD. Obsługuje pobieranie wideo z YouTube, TikTok, Douyin, Instagram, Facebook, Threads, XiaoHongShu, TED, X (dawniej Twitter) i innych. Ciesz się płynne, wysokiej jakości pobieranie bez znaków wodnych.
+// @description:pt-BR Um downloader de vídeo HD completo, rápido e gratuito. Suporta downloads de vídeos do YouTube, TikTok, Douyin, Instagram, Facebook, Threads, XiaoHongShu, TED, X (anteriormente Twitter) e muito mais. Aproveite downloads de alta qualidade sem marcas d'água.
+// @description:ro    Un downloader video HD rapid și gratuit, totul într-un singur pachet. Suportă descărcarea de videoclipuri de pe YouTube, TikTok, Douyin, Instagram, Facebook, Threads, XiaoHongShu, TED, X (fost Twitter) și altele. Bucurați-vă de descărcări de înaltă calitate fără filigrane.
+// @description:ru    Все-в-одном, быстрый и бесплатный HD видеозагрузчик. Поддерживает загрузку видео с YouTube, TikTok, Douyin, Instagram, Facebook, Threads, XiaoHongShu, TED, X (бывший Twitter) и других. Наслаждайтесь безупречными загрузками высокого качества без водяных знаков.
+// @description:sv    En allt-i-ett, snabb och gratis HD-video nedladdare. Stöder video nedladdningar från YouTube, TikTok, Douyin, Instagram, Facebook, Threads, XiaoHongShu, TED, X (tidigare Twitter) och mer. Njut av sömlösa, högkvalitativa nedladdningar utan vattenmärken.
+// @description:th    เครื่องมือดาวน์โหลดวิดีโอ HD ที่รวดเร็วและฟรีแบบครบวงจร รองรับการดาวน์โหลดวิดีโอจาก YouTube, TikTok, Douyin, Instagram, Facebook, Threads, XiaoHongShu, TED, X (เดิม Twitter) และอื่นๆ เพลิดเพลินกับการดาวน์โหลดที่มีคุณภาพสูงโดยไม่มีลายน้ำ
+// @description:tr    Birçok platformdan video indirmenizi destekleyen, hızlı ve ücretsiz HD video indirme aracıdır. YouTube, TikTok, Douyin, Instagram, Facebook, Threads, XiaoHongShu, TED, X (eski Twitter) ve daha fazlasını destekler. Su işareti olmadan kesintisiz yüksek kaliteli indirmelerin keyfini çıkarın.
+// @description:uk    Всі в одному, швидкий та безкоштовний HD відео-завантажувач. Підтримує завантаження відео з YouTube, TikTok, Douyin, Instagram, Facebook, Threads, XiaoHongShu, TED, X (колишній Twitter) та інших. Насолоджуйтесь безперешкодними високоякісними завантаженнями без водяних знаків.
+// @description:ug    YouTube كۆرۈش تەجرىبەڭىزنى ياخشىلايدىغان، تىز ۋە ھەقسىز HD ۋىدىئو چۈشۈرگۈچى. يۇتۇب، تيك توك، دۇيىن، ئىنستاگرام، Facebook، Threads، XiaoHongShu، TED، X (ئالدىنقى Twitter) ۋە باشقا پلاتفورمالاردىن ۋىدىئو چۈشۈرۈشنى قوللايدۇ. سۇ ئىشاراتسىز ئېغىزدىن سۈپەتلىك چۈشۈرۈشتىن لەززەتلىنىڭ.
+// @description:vi    Trình tải video HD tất cả trong một, nhanh chóng và miễn phí. Hỗ trợ tải video từ YouTube, TikTok, Douyin, Instagram, Facebook, Threads, XiaoHongShu, TED, X (trước đây là Twitter) và nhiều nền tảng khác. Thưởng thức tải xuống chất lượng cao mượt mà mà không có watermark.
+// @description:zh-CN 一款多合一、快速且免费的在线视频下载器。支持从 YouTube、TikTok、抖音、Instagram、Facebook、Threads、TED、小红书、X（Twitter）等平台下载视频。享受无水印、高质量、流畅便捷的下载体验
+// @description:zh-TW 一款多合一、快速且免費的線上視頻下載器。支援從 YouTube、TikTok、抖音、Instagram、Facebook、Threads、TED、小紅書、X（Twitter）等平台下載視頻。享受無水印、高質量、流暢便捷的下載體驗
 // @namespace   AllInOneDownloader_Daniel
-// @version     1.0.9
+// @version     1.0.10
 // @author      Daniel
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADQAAAAwCAYAAABe6Vn9AAACZElEQVR4AeyZbVKDMBCGgYuJ/9WT2CNoqx6hnkT9T72YuA+WDg0M2SSblnFwWCfNfuR9EhqatiqM/+72bX3/3jZirccaYo2HL8yByrLYishazHfVx1hfXJDfHEhG18BIWHeFxHYJvn85gHxjZvWvQFmn16D4ukIGk5i1xLpCWafXoPi6QgaTmLXEukJZp9eg+LpCBpOYtYR6hTi7yPnGe84JVSs1feemlrG1ddVAx7OL+cd9jdDj2JpQ+wOeatTwIPVEqleobYuXcB3zGVqvjH2rjVUDfW3KQ3kFKGAY2xyIgh+bcndJqFAYNKpXiGDsUlAxMOgLBiIpN1QsDNqigEjMBZUCg65oIJKtoVJh0JQERAErKAsY9CQDUSQVygoGLSZAFIqFsoRBhxkQxUKheKaFPDQZw2emQAymhQKGWHIszRwIcQhFMO0pw0fMlC+1rwN62Lc7zblkLsY9syAY4a5A+vAN+8mdq63xwUDNikb795sOr6NNziyjH7AQDgAmhQ9sAPRJ+3QBQ+6pI7IBg4A/VzQia4zSEIbAoQMA7POxvHU3AGLJGcYntp+6Wy6xyFk6AhF61jnxghhiJ1xJXeZAqEEotzLtKcsFw1hZgCjMrQwUBkBvcp83ABOTw7IBIRYoDIDepF/9/YDEBl9qoODKV0pYIlC3vcuuWMqcHMTca9a/OCB5Zn3327s8t0bfNPn8iwP6KYrTqoi40ftt6C8m/iRnoveKXbJ5bPudUTaUG1fK0E/b9S8OSATWArIVsQ1tMfea9S8RyAUIel3Jm2z0xguqsKzgt4oPjv8BCgbZ6l9/AQAA//9HnEu0AAAABklEQVQDAI1HmgBXKvxdAAAAAElFTkSuQmCC
 // @include     https://www.ted.com/*
@@ -79,10 +79,11 @@
 // @include     https://x.com/*
 // @include     https://twitter.com/*
 // @include     https://www.threads.com/*
-// @include     https://www.instagram.com/reels/*
+// @include     https://www.instagram.com/*
 // @include     https://www.tikTok.com/*
 // @include     https://www.douyin.com/*
 // @include     https://www.xiaohongshu.com/*
+// @include     https://www.facebook.com/*
 // @include     https://*.googlevideo.com/*
 // @include     https://*.tiktokcdn.com/*
 // @include     https://*.douyinvod.com/*
@@ -100,6 +101,7 @@
 // @include     https://*.douyinpic.com/*
 // @include     https://*.douyinmusicpromotion.com/*
 // @include     https://*.cdninstagram.com/*
+// @include     https://*.licdn.com/*
 // @connect     googlevideo.com
 // @connect     tiktokcdn.com
 // @connect     snssdk.com
@@ -117,6 +119,8 @@
 // @connect     douyinpic.com
 // @connect     douyinmusicpromotion.com
 // @connect     cdninstagram.com
+// @connect     ted.com
+// @connect     licdn.com
 // @noframes
 // @license     MIT
 // @run-at      document-start
@@ -231,6 +235,358 @@
 	      return `${(size / mb).toFixed(decimals)} MB`;
 	    }
 	    return `${(size / kb).toFixed(decimals)} KB`;
+	  },
+	  downloaderEvent: function(url) {
+	    const durl = "https://www.tool77.com/" + CommonUtils.getSupportedLang() + "/v/downloader?url=" + encodeURIComponent(url);
+	    CommonUtils.openInTab(durl);
+	  },
+	  findParentByClassContains: function(el, classPart, maxLevel = 5) {
+	    let level = 0;
+	    let cur = el;
+	    while (cur && level < maxLevel) {
+	      if (cur.className && typeof cur.className === "string" && cur.className.includes(classPart)) {
+	        return cur;
+	      }
+	      cur = cur.parentElement;
+	      level++;
+	    }
+	    return null;
+	  }
+	};
+
+	const DownloadHud = {
+	  instances: /* @__PURE__ */ new Map(),
+	  createStyleText: function(id, zIndex, buttonSize) {
+	    return `
+            #${id} {
+                position: fixed;
+                z-index: ${zIndex} !important;
+                overflow: hidden;
+                background: rgba(0, 0, 0, 0.3);
+                width: ${buttonSize}px;
+                height: ${buttonSize}px;
+                border-radius: 50%;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                pointer-events: auto !important;
+                font-size: 16px;
+            }
+            #${id}::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                border-radius: inherit;
+                padding: 2px;
+                background: linear-gradient(90deg, red, orange, yellow, green, cyan, blue, violet, red);
+                background-size: 200% 200%;
+                opacity: 0;
+                transition: opacity .25s;
+                -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+                -webkit-mask-composite: xor;
+                mask-composite: exclude;
+            }
+            #${id}.all-in-one-downloader-daniel-hover {
+                opacity: 1;
+            }
+            #${id}.all-in-one-downloader-daniel-hover::before {
+                opacity: 1;
+                animation: all-in-one-downloader-rainbow-move 3s linear infinite;
+            }
+            #${id} svg {
+                fill: currentColor;
+                pointer-events: none;
+            }
+            @keyframes all-in-one-downloader-rainbow-move {
+                0% { background-position: 0% 50%; }
+                100% { background-position: 200% 50%; }
+            }
+        `;
+	  },
+	  isPointInRect: function(x, y, rect) {
+	    return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+	  },
+	  isVisibleElement: function(element, minTargetSize) {
+	    const rect = element.getBoundingClientRect();
+	    if (rect.width <= minTargetSize || rect.height <= minTargetSize) {
+	      return false;
+	    }
+	    const computedStyle = window.getComputedStyle(element);
+	    if (computedStyle.display === "none" || computedStyle.visibility === "hidden" || computedStyle.opacity === "0") {
+	      return false;
+	    }
+	    return true;
+	  },
+	  createHoverDownloadButton: function(options = {}) {
+	    const {
+	      id = "all-in-one-downloader-daniel",
+	      zIndex = 2147483647,
+	      buttonSize = 40,
+	      buttonPosition = "top-center",
+	      buttonEdgeOffset = 15,
+	      iconSize = 25,
+	      iconColor = "#fff",
+	      minTargetSize = 50,
+	      targetSelector = "video",
+	      extraTargetSelector = "",
+	      getAnchorRect = null,
+	      onClick = null
+	    } = options;
+	    if (this.instances.has(id)) {
+	      return this.instances.get(id).api;
+	    }
+	    const state = {
+	      activeTarget: null,
+	      mouseX: -500,
+	      mouseY: -500,
+	      destroyed: false,
+	      disabled: false,
+	      buttonPosition,
+	      buttonEdgeOffset
+	    };
+	    const style = GM_addStyle(this.createStyleText(id, zIndex, buttonSize));
+	    const button = document.createElement("div");
+	    button.id = id;
+	    button.style.cursor = "pointer!important";
+	    const svgIcon = CommonUtils.genrateDownloadSvg(iconColor, iconSize, iconSize);
+	    button.appendChild(svgIcon);
+	    (document.body || document.documentElement).appendChild(button);
+	    const updateButtonPos = () => {
+	      if (state.destroyed) {
+	        return;
+	      }
+	      if (!state.activeTarget || button.style.display === "none") {
+	        return;
+	      }
+	      let rect = null;
+	      if (typeof getAnchorRect === "function") {
+	        rect = getAnchorRect(state.activeTarget);
+	      }
+	      if (!rect) {
+	        rect = state.activeTarget.getBoundingClientRect();
+	      }
+	      if (!rect) {
+	        return;
+	      }
+	      const edgeOffset = Number.isFinite(Number(state.buttonEdgeOffset)) ? Number(state.buttonEdgeOffset) : 15;
+	      let top = rect.top + edgeOffset;
+	      let left = rect.left + rect.width / 2 - buttonSize / 2;
+	      switch (state.buttonPosition) {
+	        case "bottom-center":
+	          top = rect.bottom - buttonSize - edgeOffset;
+	          left = rect.left + rect.width / 2 - buttonSize / 2;
+	          break;
+	        case "left-center":
+	          top = rect.top + rect.height / 2 - buttonSize / 2;
+	          left = rect.left + edgeOffset;
+	          break;
+	        case "right-center":
+	          top = rect.top + rect.height / 2 - buttonSize / 2;
+	          left = rect.right - buttonSize - edgeOffset;
+	          break;
+	        case "top-center":
+	        default:
+	          top = rect.top + edgeOffset;
+	          left = rect.left + rect.width / 2 - buttonSize / 2;
+	          break;
+	      }
+	      if (left < 5)
+	        left = 5;
+	      if (top < 5)
+	        top = 5;
+	      if (top > window.innerHeight - buttonSize - 5) {
+	        top = window.innerHeight - buttonSize - 5;
+	      }
+	      if (left > window.innerWidth - buttonSize - 5) {
+	        left = window.innerWidth - buttonSize - 5;
+	      }
+	      button.style.top = `${top}px`;
+	      button.style.left = `${left}px`;
+	    };
+	    const pickTarget = () => {
+	      const targets = document.querySelectorAll(targetSelector);
+	      for (const element of targets) {
+	        const rect = element.getBoundingClientRect();
+	        if (!this.isPointInRect(state.mouseX, state.mouseY, rect))
+	          continue;
+	        if (!this.isVisibleElement(element, minTargetSize))
+	          continue;
+	        if (targetSelector === "video" && element.readyState < 3)
+	          continue;
+	        return element;
+	      }
+	      if (extraTargetSelector) {
+	        const extraTargets = document.querySelectorAll(extraTargetSelector);
+	        for (const element of extraTargets) {
+	          const rect = element.getBoundingClientRect();
+	          if (this.isPointInRect(state.mouseX, state.mouseY, rect)) {
+	            return element;
+	          }
+	        }
+	      }
+	      return null;
+	    };
+	    const checkHover = () => {
+	      if (state.destroyed)
+	        return;
+	      if (state.disabled) {
+	        button.style.display = "none";
+	        state.activeTarget = null;
+	        return;
+	      }
+	      if (state.mouseX < 0 || state.mouseY < 0)
+	        return;
+	      const buttonRect = button.getBoundingClientRect();
+	      const isHoveringButton = button.style.display === "flex" && this.isPointInRect(state.mouseX, state.mouseY, buttonRect);
+	      if (isHoveringButton) {
+	        button.classList.add("all-in-one-downloader-daniel-hover");
+	        return;
+	      }
+	      button.classList.remove("all-in-one-downloader-daniel-hover");
+	      const found = pickTarget();
+	      if (found) {
+	        state.activeTarget = found;
+	        button.style.display = "flex";
+	        updateButtonPos();
+	      } else {
+	        button.style.display = "none";
+	        state.activeTarget = null;
+	      }
+	    };
+	    const onMouseMove = (event) => {
+	      if (state.destroyed)
+	        return;
+	      state.mouseX = event.clientX;
+	      state.mouseY = event.clientY;
+	      checkHover();
+	    };
+	    const onMouseDown = (event) => {
+	      if (state.destroyed)
+	        return;
+	      if (state.disabled)
+	        return;
+	      if (button.style.display !== "flex")
+	        return;
+	      const rect = button.getBoundingClientRect();
+	      if (!this.isPointInRect(event.clientX, event.clientY, rect))
+	        return;
+	      event.preventDefault();
+	      event.stopPropagation();
+	      if (typeof onClick === "function") {
+	        try {
+	          onClick(state.activeTarget);
+	        } catch (error) {
+	          console.error("DownloadHud onClick error", error);
+	        }
+	      }
+	    };
+	    const onScroll = () => {
+	      if (state.destroyed)
+	        return;
+	      if (state.disabled)
+	        return;
+	      if (state.activeTarget && button.style.display === "flex") {
+	        updateButtonPos();
+	      }
+	    };
+	    window.addEventListener("mousemove", onMouseMove, true);
+	    window.addEventListener("mousedown", onMouseDown, true);
+	    window.addEventListener("scroll", onScroll, { passive: true, capture: true });
+	    const timer = setInterval(() => {
+	      if (state.destroyed)
+	        return;
+	      if (state.mouseX >= 0 && state.mouseY >= 0) {
+	        checkHover();
+	      }
+	    }, 300);
+	    const destroy = () => {
+	      if (state.destroyed) {
+	        return;
+	      }
+	      state.destroyed = true;
+	      clearInterval(timer);
+	      window.removeEventListener("mousemove", onMouseMove, true);
+	      window.removeEventListener("mousedown", onMouseDown, true);
+	      window.removeEventListener("scroll", onScroll, true);
+	      button.remove();
+	      style.remove();
+	      this.instances.delete(id);
+	    };
+	    const hideButton = () => {
+	      button.style.display = "none";
+	    };
+	    const disable = () => {
+	      state.disabled = true;
+	      button.style.display = "none";
+	      state.activeTarget = null;
+	    };
+	    const enable = () => {
+	      state.disabled = false;
+	      checkHover();
+	    };
+	    const showButtonForTarget = (target) => {
+	      if (!target || state.disabled)
+	        return;
+	      state.activeTarget = target;
+	      button.style.display = "flex";
+	      updateButtonPos();
+	    };
+	    const setButtonPosition = (position, edgeOffset) => {
+	      const validPositions = /* @__PURE__ */ new Set([
+	        "top-center",
+	        "bottom-center",
+	        "left-center",
+	        "right-center"
+	      ]);
+	      if (validPositions.has(position)) {
+	        state.buttonPosition = position;
+	      }
+	      if (edgeOffset != null && Number.isFinite(Number(edgeOffset))) {
+	        state.buttonEdgeOffset = Number(edgeOffset);
+	      }
+	      if (state.activeTarget && button.style.display === "flex") {
+	        updateButtonPos();
+	      }
+	    };
+	    const getCurrentTargetElement = () => state.activeTarget;
+	    const api = {
+	      getCurrentTargetElement,
+	      hideButton,
+	      disable,
+	      enable,
+	      showButtonForTarget,
+	      setButtonPosition,
+	      destroy
+	    };
+	    this.instances.set(id, { api });
+	    return api;
+	  },
+	  mountVideoHoverDownload: function(spec = {}) {
+	    const {
+	      getDownloadUrl,
+	      invokeDownload = CommonUtils.downloaderEvent,
+	      ...hoverButtonOptions
+	    } = spec;
+	    if (typeof getDownloadUrl !== "function") {
+	      console.error("DownloadHud.mountVideoHoverDownload: getDownloadUrl is required");
+	      return null;
+	    }
+	    return this.createHoverDownloadButton({
+	      ...hoverButtonOptions,
+	      onClick: (target) => {
+	        if (!target) {
+	          return;
+	        }
+	        const url = getDownloadUrl(target);
+	        if (url && !String(url).includes("undefined")) {
+	          invokeDownload(url);
+	        }
+	      }
+	    });
+	  },
+	  createHoverButton: function(options = {}) {
+	    return this.createHoverDownloadButton(options);
 	  }
 	};
 
@@ -276,26 +632,19 @@
 	    });
 	  },
 	  genrateShorts: function() {
-	    const genrateHtml = () => {
-	      if (window.location.href.indexOf("/shorts/") != -1) {
-	        const navigationButtonDown = document.querySelector("#navigation-button-down");
-	        if (navigationButtonDown) {
-	          const download = document.createElement("div");
-	          download.style.cursor = "pointer";
-	          download.setAttribute("style", "cursor:pointer;display: flex;justify-content: center;align-items: center;");
-	          download.id = "script_download_shorts";
-	          download.className = "navigation-button style-scope ytd-shorts";
-	          navigationButtonDown.after(download);
-	          download.appendChild(CommonUtils.genrateDownloadSvg("#3e3e3e", 45, 45));
-	          download.addEventListener("click", () => {
-	            this.downloadVideo();
-	          });
-	        }
+	    let downloadHud = DownloadHud.mountVideoHoverDownload({
+	      buttonSize: 48,
+	      iconSize: 25,
+	      buttonEdgeOffset: 15,
+	      getDownloadUrl: () => {
+	        return window.location.href;
 	      }
-	    };
+	    });
 	    setInterval(() => {
-	      if (!document.querySelector("#script_download_shorts")) {
-	        genrateHtml();
+	      if (window.location.href.indexOf("/shorts/") != -1) {
+	        downloadHud.enable();
+	      } else {
+	        downloadHud.disable();
 	      }
 	    }, 800);
 	  },
@@ -312,100 +661,41 @@
 	};
 
 	const TiktokDownloader = {
-	  downloadVideo: function(playId) {
-	    if (playId) {
-	      const url = "https://www.tool77.com/" + CommonUtils.getSupportedLang() + "/v/downloader?url=https%3A%2F%2Fwww.tiktok.com%2F%40_%2Fvideo/" + playId;
-	      CommonUtils.openInTab(url);
-	    }
-	  },
-	  findAncestorByClass: function(element, className, maxDepth = Infinity) {
-	    let current = element;
-	    let depth = 0;
-	    while (current && depth < maxDepth) {
-	      current = current.parentElement;
-	      depth++;
-	      if (current && current.classList.contains(className)) {
-	        return current;
-	      }
-	    }
-	    return null;
-	  },
 	  extractLastDashNumber: function(str) {
 	    if (!str)
 	      return null;
 	    const match = str.match(/-(\d+)$/);
 	    return match ? match[1] : null;
 	  },
-	  genrate: function() {
-	    const randomId = Math.floor(1e5 + Math.random() * 9e5);
-	    GM_addStyle(`
-			.sc-download-` + randomId + `{
-				cursor:pointer;
-				justify-content:center;
-				align-items:center;
-				width:40px;
-				height:40px;
-				z-index:99999;
-				position:absolute;
-				right:55px;
-				top:10px;
-				border-radius:50%;
-				display: flex;
-				border-radius:50%;
-			}
-			.sc-download-` + randomId + `::before {
-				content: "";
-				position: absolute;
-				inset: 0;
-				border-radius: inherit;
-				padding: 2px; 
-				background: linear-gradient(90deg,red, orange, yellow, green, cyan, blue, violet, red);
-				background-size: 200% 200%;
-				opacity: 0;
-				transition: opacity .25s;
-				-webkit-mask:
-				linear-gradient(#000 0 0) content-box,
-				linear-gradient(#000 0 0);
-				-webkit-mask-composite: xor;
-				mask-composite: exclude;
-			}
-			.sc-download-` + randomId + `:hover::before {
-				opacity: 1;
-				animation: rainbowMove 3s linear infinite;
-			}
-			@keyframes rainbowMove {
-				0%   { background-position: 0% 50%; }
-				100% { background-position: 200% 50%; }
-			}
-		`);
+	  getPlayUrl: function(target) {
+	    const container = CommonUtils.findParentByClassContains(target, "xgplayer-container", 5);
+	    if (container && container.getAttribute("id")) {
+	      const playId = this.extractLastDashNumber(container.getAttribute("id"));
+	      if (playId) {
+	        return "https://www.tiktok.com/@_/video/" + playId;
+	      }
+	    }
+	    return window.location.href.split("?")[0];
+	  },
+	  run: function() {
+	    const downloadHud = DownloadHud.mountVideoHoverDownload({
+	      getDownloadUrl: (target) => this.getPlayUrl(target)
+	    });
 	    setInterval(() => {
-	      document.querySelectorAll("video").forEach((element, index) => {
-	        if (element.getAttribute("src")) {
-	          const parentNode = element.parentNode;
-	          if (!parentNode.querySelector("*[x-add='true']")) {
-	            const downloadElement = document.createElement("div");
-	            downloadElement.setAttribute("x-add", "true");
-	            downloadElement.classList.add("sc-download-" + randomId);
-	            downloadElement.appendChild(CommonUtils.genrateDownloadSvg("#FFF"));
-	            downloadElement.style.cursor = "pointer";
-	            parentNode.appendChild(downloadElement);
-	            downloadElement.addEventListener("click", () => {
-	              const container = this.findAncestorByClass(parentNode, "xgplayer-container", 3);
-	              if (container && container.getAttribute("id")) {
-	                const playId = this.extractLastDashNumber(container.getAttribute("id"));
-	                if (playId)
-	                  this.downloadVideo(playId);
-	              }
-	            });
-	          }
-	        }
-	      });
-	    }, 1e3);
+	      const pathname = window.location.pathname;
+	      if (/^\/@[^/]+$/.test(pathname)) {
+	        downloadHud.setButtonPosition("bottom-center");
+	      } else if (/\/@[^/]+\/video\/.+$/.test(pathname)) {
+	        downloadHud.setButtonPosition("right-center");
+	      } else {
+	        downloadHud.setButtonPosition("top-center");
+	      }
+	    }, 700);
 	  },
 	  start: function() {
-	    const isRun = /tiktok\.com/.test(window.location.host);
+	    const isRun = /\.tiktok\.com/.test(window.location.host);
 	    if (isRun) {
-	      this.genrate();
+	      this.run();
 	    }
 	  }
 	};
@@ -427,7 +717,11 @@
 	        if (btnLen <= 1) {
 	          return;
 	        }
-	        const lastButton = buttons[buttons.length - 1];
+	        const buttonsWithNumber = Array.from(buttons).filter((btn) => /\d/.test(btn.textContent || ""));
+	        if (buttonsWithNumber.length === 0) {
+	          return;
+	        }
+	        const lastButton = buttonsWithNumber[buttonsWithNumber.length - 1];
 	        const shareButton = lastButton.parentElement;
 	        const downloadButton = shareButton.cloneNode(false);
 	        downloadButton.appendChild(CommonUtils.genrateDownloadSvg("#505050", 20, 20));
@@ -453,7 +747,7 @@
 	    }, 777);
 	  },
 	  start: function() {
-	    const isYoutube = /threads\.com/.test(window.location.host);
+	    const isYoutube = /\.threads\.com/.test(window.location.host);
 	    if (isYoutube) {
 	      this.run();
 	    }
@@ -558,7 +852,7 @@
 	    });
 	  },
 	  start: function() {
-	    const isRun = /twitter|x\.com/.test(window.location.host);
+	    const isRun = /\.(twitter|x)\.com/.test(window.location.host);
 	    if (isRun) {
 	      this.run();
 	    }
@@ -566,27 +860,24 @@
 	};
 
 	const InstagramDownloader = {
-	  downloadVideo: function() {
-	    const url = "https://www.tool77.com/" + CommonUtils.getSupportedLang() + "/v/downloader?url=" + encodeURIComponent(window.location.href);
-	    CommonUtils.openInTab(url);
+	  getPlayUrl: function(target) {
+	    const clean = (url) => String(url).split("?")[0];
+	    const article = target?.closest?.("article");
+	    if (article) {
+	      const selector = ['a[href*="/p/"]', 'a[href*="/reels/"]', 'a[href*="/reel/"]'].join(", ");
+	      const href = article.querySelector(selector)?.getAttribute("href");
+	      if (href)
+	        return clean(window.location.origin + href);
+	    }
+	    return clean(window.location.href);
 	  },
 	  run: function() {
-	    const interval = setInterval(() => {
-	      const toolbar = document.querySelector("div[role='toolbar']");
-	      if (toolbar) {
-	        clearInterval(interval);
-	        const downloadDiv = toolbar.firstElementChild.cloneNode();
-	        downloadDiv.style.cursor = "pointer";
-	        downloadDiv.appendChild(CommonUtils.genrateDownloadSvg("#000", 30, 30));
-	        downloadDiv.addEventListener("click", () => {
-	          this.downloadVideo();
-	        });
-	        toolbar.appendChild(downloadDiv);
-	      }
-	    }, 777);
+	    DownloadHud.mountVideoHoverDownload({
+	      getDownloadUrl: (target) => this.getPlayUrl(target)
+	    });
 	  },
 	  start: function() {
-	    const isRun = /instagram\.com/.test(window.location.host);
+	    const isRun = /\.instagram\.com/.test(window.location.host);
 	    if (isRun) {
 	      this.run();
 	    }
@@ -622,7 +913,7 @@
 	    });
 	  },
 	  start: function() {
-	    const isRun = /douyin\.com/.test(window.location.host);
+	    const isRun = /\.douyin\.com/.test(window.location.host);
 	    if (isRun) {
 	      setInterval(() => {
 	        this.genrate();
@@ -702,7 +993,7 @@
 	    });
 	  },
 	  start: function() {
-	    const isRun = /www\.xiaohongshu\.com/.test(window.location.host);
+	    const isRun = /\.xiaohongshu\.com/.test(window.location.host);
 	    if (isRun) {
 	      setInterval(() => {
 	        this.genrate();
@@ -732,7 +1023,9 @@
 	      /tiktokcdn-us\.com/,
 	      /douyinpic\.com/,
 	      /douyinmusicpromotion\.com/,
-	      /cdninstagram\.com/
+	      /cdninstagram\.com/,
+	      /ted\.com/,
+	      /licdn\.com/
 	    ];
 	    const currentHost = window.location.host;
 	    return hosts.some((rule) => rule.test(currentHost));
@@ -1428,21 +1721,57 @@
 	    this.setupPageObserver(buttonClass);
 	  },
 	  start: function() {
-	    const isRun = /www\.ted\.com/.test(window.location.host);
+	    const isRun = /\.ted\.com/.test(window.location.host);
 	    if (isRun) {
 	      this.generateHtml();
 	    }
 	  }
 	};
 
-	YouTubeDownloader.start();
-	TiktokDownloader.start();
-	ThreadsDownloader.start();
-	TwitterDownloader.start();
-	InstagramDownloader.start();
-	DouyinDownloader.start();
-	XiaoHongShuDownloader.start();
-	Downloader.start();
-	TedDownloader.start();
+	const FacebookDownloader = {
+	  getPlayUrl: function(target) {
+	    const clean = (url) => String(url).split("&")[0];
+	    const extractId = (url) => String(url).match(/(?:v=|\/videos\/|\/reel\/|\/reels\/)(\d+)/)?.[1];
+	    const toReelUrl = (id2) => "https://www.facebook.com/reel/" + id2;
+	    const href = window.location.href;
+	    const id = extractId(href);
+	    if (id) {
+	      return toReelUrl(id);
+	    }
+	    return clean(href);
+	  },
+	  run: function() {
+	    const downloadHud = DownloadHud.mountVideoHoverDownload({
+	      buttonEdgeOffset: 10,
+	      getDownloadUrl: (target) => this.getPlayUrl(target)
+	    });
+	    setInterval(() => {
+	      if (/\.facebook\.com\/(reel|reels|videos)\/.*?/.test(window.location.href)) {
+	        downloadHud.enable();
+	      } else {
+	        downloadHud.disable();
+	      }
+	    }, 700);
+	  },
+	  start: function() {
+	    const isRun = /\.facebook\.com/.test(window.location.host);
+	    if (isRun) {
+	      this.run();
+	    }
+	  }
+	};
+
+	[
+	  YouTubeDownloader,
+	  TiktokDownloader,
+	  ThreadsDownloader,
+	  TwitterDownloader,
+	  InstagramDownloader,
+	  DouyinDownloader,
+	  XiaoHongShuDownloader,
+	  Downloader,
+	  TedDownloader,
+	  FacebookDownloader
+	].forEach((m) => m.start());
 
 }());

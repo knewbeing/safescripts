@@ -32,9 +32,9 @@ title: "犯罪收益显示器"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-04-27
+**风险等级**：🟡 LOW　　**安全评分**：92/100　　**分析时间**：2026-05-11
 
-> The script fetches external data from Google Sheets using GM.xmlHttpRequest, but does not transmit user data or collect sensitive information. No code execution, obfuscation, or DOM XSS risks detected. Supply chain risk is minimal due to trusted source, but the sheet is not version-locked. Overall, the script is safe with minor supply chain and data fetch risks.
+> 该脚本主要通过 GM.xmlHttpRequest 访问 Google Sheets 公开数据，并在本地 localStorage 缓存数据和设置。未发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链或 iframe 风险。整体安全性高，风险极低。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -43,29 +43,54 @@ title: "犯罪收益显示器"
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ⚠️ 存在风险 |
+| 供应链风险 | ✅ 可信 |
 
 ### 发现的问题
 
-**🟠 MEDIUM** — Data Transmission  
-> Script fetches data from Google Sheets via GM.xmlHttpRequest. The destination is a trusted third-party (Google), and the request does not appear to transmit user data, only fetches external CSV data.  
-> 位置：GM.xmlHttpRequest usage for emforusData and crackingData URLs  
-> 建议：Ensure fetched data is not malicious and does not contain executable code. Monitor for any changes in the external sheet that could introduce supply chain risk.
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过 GM.xmlHttpRequest 访问 Google Sheets 公开 CSV 数据，未发现向第三方服务器上传用户数据、cookie、页面内容或用户行为。  
+> 位置：GM.xmlHttpRequest 调用  
+> 建议：确认不会将敏感信息拼接到请求 URL，当前实现安全。
 
-**🟠 MEDIUM** — Supply Chain Risk  
-> Script loads external data from Google Sheets (docs.google.com), which is a trusted source, but the sheet content is not version-locked and could change.  
-> 位置：emforusData and crackingData URLs  
-> 建议：Monitor the Google Sheets for supply chain risk. Consider validating fetched data format.
+**⛔ CRITICAL** — 隐私采集  
+> 脚本读取和写入 localStorage 以缓存数据和设置，但未发现读取 cookie、sessionStorage、IndexedDB、表单字段或监听键盘输入。  
+> 位置：localStorage 相关代码  
+> 建议：仅存储非敏感数据，避免存储用户隐私信息。
 
-**🟡 LOW** — Privacy Collection  
-> Script reads and writes to localStorage for caching and settings. No sensitive data is collected, only script-related settings and cached values.  
-> 位置：localStorage.getItem/setItem for various keys  
-> 建议：Ensure only non-sensitive, script-related data is stored. No privacy risk detected.
+**🔴 HIGH** — 远程代码执行  
+> 未发现 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险。  
+> 位置：全局  
+> 建议：保持当前实现，避免动态执行字符串代码。
 
-**🟡 LOW** — Permission Usage  
-> Script requests GM.xmlHttpRequest permission but only uses it for fetching public Google Sheets data. No excessive or unused permissions.  
-> 位置：@grant GM.xmlHttpRequest in metadata  
-> 建议：No action needed. Permission usage is appropriate.
+**🔴 HIGH** — 代码混淆  
+> 未发现代码混淆、base64 解码、字符串数组映射或高度压缩单行代码。  
+> 位置：全局  
+> 建议：保持代码可读性，便于安全审计。
+
+**🔴 HIGH** — DOM XSS  
+> 未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未发现 document.write() 注入。  
+> 位置：全局  
+> 建议：如需插入动态内容，务必进行转义。
+
+**🟠 MEDIUM** — 权限滥用  
+> @grant 仅申请 GM.xmlHttpRequest，未发现权限滥用。  
+> 位置：元数据 @grant  
+> 建议：仅申请实际需要的权限。
+
+**🟠 MEDIUM** — 敏感 API 调用  
+> 未发现敏感 API（如 geolocation、WebRTC、剪贴板、通知等）调用。  
+> 位置：全局  
+> 建议：如需使用敏感 API，需征得用户同意。
+
+**🟠 MEDIUM** — 供应链风险  
+> @require 未使用，未发现供应链风险。  
+> 位置：元数据 @require  
+> 建议：如需引入第三方库，建议使用可信 CDN 并锁定版本。
+
+**🟡 LOW** — iframe 风险  
+> 未发现修改 frame 保护策略或创建隐藏 iframe。  
+> 位置：全局  
+> 建议：如需使用 iframe，需明确用途并防范 ClickJacking。
 
 ---
 

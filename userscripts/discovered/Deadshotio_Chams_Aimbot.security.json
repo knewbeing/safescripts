@@ -7,11 +7,18 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本申请了 unsafeWindow 权限，但实际代码未使用 unsafeWindow，存在权限滥用风险。",
-      "location": "元数据 @grant unsafeWindow",
-      "recommendation": "移除未使用的高权限申请，避免潜在安全隐患。",
+      "description": "脚本申请了 @grant unsafeWindow 权限，但实际代码未发现对 unsafeWindow 的使用。",
+      "location": "@grant 元数据",
+      "recommendation": "如无必要，建议移除 @grant unsafeWindow 权限，减少潜在攻击面。",
       "severity": "MEDIUM",
       "type": "权限滥用"
+    },
+    {
+      "description": "脚本通过 Object.defineProperty 劫持 MouseEvent.prototype.movementX/Y，实现自动瞄准功能，属于游戏作弊行为。",
+      "location": "核心逻辑",
+      "recommendation": "仅供学习用途，勿用于破坏游戏公平性。",
+      "severity": "LOW",
+      "type": "伦理风险"
     }
   ],
   "obfuscation_detected": false,
@@ -21,10 +28,10 @@
   },
   "risk_level": "LOW",
   "script_name": "Deadshot.io Chams & Aimbot",
-  "security_score": 92,
-  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险、WebSocket 使用等高风险行为。唯一问题为申请了未使用的 unsafeWindow 高权限，建议移除。整体安全风险较低。",
+  "security_score": 89,
+  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险等高危安全问题。主要安全关注点为申请了未使用的高权限（unsafeWindow），建议移除。脚本本身为游戏作弊用途，存在伦理风险。整体安全性较高，但不建议用于破坏游戏公平性。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-04-27T05:09:38.381649+00:00",
+  "analyzed_at": "2026-05-11T06:45:38.217095+00:00",
   "slug": "Deadshotio_Chams_Aimbot"
 }

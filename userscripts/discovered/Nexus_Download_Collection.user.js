@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Nexus Download Collection
 // @namespace    NDC
-// @version      0.9.9
+// @version      0.9.10
 // @description  Download every mods of a collection in a single click
 // @author       Drigtime
 // @match        https://www.nexusmods.com/*
@@ -207,43 +207,86 @@ class NDC {
     async fetchDownloadLink(mod) {
         this.bypassNexusAdsCookie();
 
-        let response;
-        if (this.downloadMethod === NDCDownloadButton.DOWNLOAD_METHOD_VORTEX) {
-            response = await fetch(`${mod.file.url}&nmm=1`);
-        } else {
-            response = await fetch(mod.file.url);
-        }
-
-        const text = await response.text();
-
-        if (!response.ok) return { downloadUrl: "", text };
-
-        // console.log(text.match(/<td>1\.5MB<\/td>/));
-        // console.log(text.match(/<td>3MB<\/td>/));
-
         let downloadUrl = "";
-        if (this.downloadMethod === NDCDownloadButton.DOWNLOAD_METHOD_VORTEX) {
-            // Try the new website version regex first
-            let downloadUrlMatch = text.match(/const downloadUrl = '([^']+)'/);
-            if (!downloadUrlMatch) {
-                // Fallback to the old website version regex
-                downloadUrlMatch = text.match(/id="slowDownloadButton".*?data-download-url="([^"]+)"/);
-            }
-            downloadUrl = downloadUrlMatch ? downloadUrlMatch[1].replaceAll('&amp;', '&') : "";
-        } else {
-            const generateDownloadUrlResponse = await fetch(
-                "https://www.nexusmods.com/Core/Libs/Common/Managers/Downloads?GenerateDownloadUrl",
-                {
-                    headers: {
-                        "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-                    },
-                    body: `fid=${mod.fileId}&game_id=${mod.file.mod.game.id}`,
-                    method: "POST",
-                },
-            );
+        let text = "";
 
-            const fileLink = await generateDownloadUrlResponse.json();
-            downloadUrl = fileLink?.url || "";
+        // --- Helper: call the GenerateDownloadUrl API directly ---
+        const callGenerateApi = async (nmm = false) => {
+            try {
+                const body = `fid=${mod.fileId}&game_id=${mod.file.mod.game.id}${nmm ? "&nmm=1" : ""}`;
+                const apiResponse = await fetch(
+                    "https://www.nexusmods.com/Core/Libs/Common/Managers/Downloads?GenerateDownloadUrl",
+                    {
+                        headers: {
+                            "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+                            "Referer": mod.file.url,
+                            "X-Requested-With": "XMLHttpRequest",
+                        },
+                        body,
+                        method: "POST",
+                        credentials: "include",
+                    },
+                );
+                if (!apiResponse.ok) return "";
+                const json = await apiResponse.json();
+                // Nexus may return the URL under different field names
+                return json?.url || json?.URI || json?.src || json?.download_url || "";
+            } catch (e) {
+                console.error("[NDC] GenerateDownloadUrl API error:", e);
+                return "";
+            }
+        };
+
+        if (this.downloadMethod === NDCDownloadButton.DOWNLOAD_METHOD_VORTEX) {
+            // Step 1: fetch the page HTML and try to find the NXM/download URL via regex
+            const response = await fetch(`${mod.file.url}&nmm=1`);
+            text = await response.text();
+
+            if (!response.ok) return { downloadUrl: "", text };
+
+            // Try every known regex pattern (Nexus changes their HTML often)
+            // NOTE: NXM links found in raw HTML are intentionally excluded — they have
+            // no key/expires token, so Vortex would call the Nexus API to resolve them
+            // which returns 403 for non-premium users. GenerateDownloadUrl (below)
+            // always returns a properly keyed NXM link that works without Premium.
+            const patterns = [
+                /const downloadUrl = '([^']+)'/,
+                /id="slowDownloadButton".*?data-download-url="([^"]+)"/,
+                /data-download-url="([^"]+)"/,
+                /]+download-url="([^"]+)"/,
+                /download-url="([^"]+)"/,
+                /"url"\s*:\s*"([^"]+)"/,
+            ];
+
+            for (const pattern of patterns) {
+                const match = text.match(pattern);
+                if (match) {
+                    downloadUrl = match[1].replaceAll('&amp;', '&');
+                    console.log("[NDC] Found download URL via regex:", pattern);
+                    break;
+                }
+            }
+
+            // Step 2: if HTML scraping failed, call the API directly (Nexus now renders URLs via JS)
+            if (!downloadUrl) {
+                console.log("[NDC] HTML scraping failed, trying GenerateDownloadUrl API with nmm=1...");
+                downloadUrl = await callGenerateApi(true);
+            }
+
+            // Step 3: last resort without nmm flag
+            if (!downloadUrl) {
+                console.log("[NDC] Trying GenerateDownloadUrl API without nmm flag...");
+                downloadUrl = await callGenerateApi(false);
+            }
+
+        } else {
+            // Browser download method
+            const response = await fetch(mod.file.url);
+            text = await response.text();
+
+            if (!response.ok) return { downloadUrl: "", text };
+
+            downloadUrl = await callGenerateApi(false);
         }
 
         return { downloadUrl, text };

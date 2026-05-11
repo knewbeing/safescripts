@@ -25,12 +25,50 @@
   "require": [],
   "metadata_raw": "// @name  BEST Cheat for Chess.com (NEW Stockfish 18.0.5 to 9.0, No Anti-Ban)\n// @namespace  http://tampermonkey.net/\n// @version  9.3.11\n// @description  An extremely advanced Chess.com cheat menu with 7 Stockfish models (18.0.5 to 9.0), tons of powerful features, and countless customization options.\n// @author  Ech0\n// @copyright  2025, Ech0\n// @license  MIT\n// @match  https://www.chess.com/play/*\n// @match  https://www.chess.com/game/*\n// @match  https://www.chess.com/analysis\n// @match  https://www.chess.com/analysis/*\n// @match  https://www.chess.com/puzzles/*\n// @match  https://www.chess.com/daily\n// @connect  chess-api.com\n// @connect  stockfish.online\n// @connect  unpkg.com\n// @connect  *\n// @grant  GM_getResourceText\n// @grant  GM_getValue\n// @grant  GM_setValue\n// @grant  GM_xmlhttpRequest\n// @resource  stockfish.js https://unpkg.com/stockfish@18.0.5/bin/stockfish-18-single.js\n// @run-at  document-idle\n// @downloadURL  https://update.greasyfork.org/scripts/557044/BEST%20Cheat%20for%20Chesscom%20%28NEW%20Stockfish%201805%20to%2090%2C%20No%20Anti-Ban%29.user.js\n// @updateURL  https://update.greasyfork.org/scripts/557044/BEST%20Cheat%20for%20Chesscom%20%28NEW%20Stockfish%201805%20to%2090%2C%20No%20Anti-Ban%29.meta.js",
   "sha256": "0800082c3d047a1e8c75c311b89aec184ce9eefb0b06e6c85706ee1cdb380533",
-  "discovered_at": "2026-05-04T06:05:55.550821+00:00",
+  "discovered_at": "2026-05-11T06:19:29.463491+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 3876,
-  "good_ratings": 6,
-  "bad_ratings": 0,
-  "summary": {}
+  "install_count": 4211,
+  "good_ratings": 8,
+  "bad_ratings": 1,
+  "summary": {
+    "applicable_sites": [
+      "Chess.com 国际象棋网站"
+    ],
+    "description": "本脚本为 Chess.com 网站提供作弊辅助菜单，集成了 7 个不同版本的 Stockfish 国际象棋引擎。用户可在对局、分析、每日棋局和残局等页面获得最佳走法建议，并支持多种自定义设置。",
+    "permissions": [
+      {
+        "explanation": "用于读取脚本内嵌的资源文件，如 Stockfish 引擎代码。",
+        "grant": "GM_getResourceText"
+      },
+      {
+        "explanation": "用于保存用户的自定义设置或脚本状态。",
+        "grant": "GM_getValue"
+      },
+      {
+        "explanation": "用于修改和存储用户的自定义设置。",
+        "grant": "GM_setValue"
+      },
+      {
+        "explanation": "用于向外部服务器发送网络请求，获取分析数据或引擎资源。",
+        "grant": "GM_xmlhttpRequest"
+      }
+    ],
+    "tags": [
+      "国际象棋",
+      "辅助工具",
+      "作弊",
+      "Stockfish",
+      "游戏增强",
+      "Chess.com"
+    ],
+    "usage": [
+      "1. 安装脚本后，打开 Chess.com 网站的对局、分析或残局页面。",
+      "2. 页面上会出现作弊菜单，可选择不同版本的 Stockfish 引擎。",
+      "3. 根据提示获取最佳走法建议，或自定义菜单设置。",
+      "4. 如需调整功能，可在菜单中进行个性化配置。"
+    ],
+    "zh_name": "Chess.com 国际象棋作弊助手"
+  }
 }

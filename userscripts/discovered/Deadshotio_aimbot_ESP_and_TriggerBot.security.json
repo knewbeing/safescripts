@@ -1,0 +1,30 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "The script requests the 'unsafeWindow' grant, which allows full access to the page's JavaScript context. This increases the risk of privilege escalation or unintended interaction with page scripts.",
+      "location": "Metadata block (@grant unsafeWindow)",
+      "recommendation": "Only request 'unsafeWindow' if absolutely necessary. Review if the script can function without it.",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "LOW",
+  "script_name": "Deadshot.io aimbot, ESP and TriggerBot",
+  "security_score": 92,
+  "summary": "The script does not perform any network requests, data exfiltration, or privacy-invasive actions. It does not use eval, dynamic code execution, or obfuscation techniques. The only notable risk is the use of the 'unsafeWindow' grant, which is not inherently malicious but increases the attack surface. No supply chain or XSS risks were detected.",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-05-11T06:48:09.237754+00:00",
+  "slug": "Deadshotio_aimbot_ESP_and_TriggerBot"
+}

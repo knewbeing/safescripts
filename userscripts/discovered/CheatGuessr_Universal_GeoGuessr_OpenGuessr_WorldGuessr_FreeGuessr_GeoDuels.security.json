@@ -1,0 +1,63 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [
+      "discord.com",
+      "nominatim.openstreetmap.org"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "The script uses GM_xmlhttpRequest to send data to discord.com (likely for the 'send to Discord' feature). This may transmit map pin/location data or user actions to a third-party server.",
+      "location": "Feature: sendToDiscord, @connect discord.com, likely in code not fully shown",
+      "recommendation": "Warn users that location data may be sent to Discord. Ensure no sensitive user data (e.g., cookies, credentials) is transmitted. Consider making this opt-in and clearly informing users.",
+      "severity": "CRITICAL",
+      "type": "Data Exfiltration"
+    },
+    {
+      "description": "The script uses GM_xmlhttpRequest to access nominatim.openstreetmap.org, likely for reverse geocoding. While this is a public API, it may transmit coordinates or location data.",
+      "location": "Feature: address lookup, @connect nominatim.openstreetmap.org",
+      "recommendation": "Ensure only necessary location data is sent. Inform users of this behavior.",
+      "severity": "MEDIUM",
+      "type": "Data Transmission"
+    },
+    {
+      "description": "The script requests Notification API permission and uses Notification.permission, which could be abused to send unwanted notifications.",
+      "location": "Global state: notificationPermission, Notification API usage",
+      "recommendation": "Ensure notifications are only used for legitimate user actions and are not spammy.",
+      "severity": "MEDIUM",
+      "type": "Sensitive API Usage"
+    },
+    {
+      "description": "The script applies Proxy wrappers to native prototypes (e.g., Array.prototype.push, Element.prototype.setAttribute, Storage.prototype.setItem, String.prototype.startsWith, fetch). This can have unpredictable side effects and may break page or other extension functionality.",
+      "location": "Multiple locations: platform-specific code blocks",
+      "recommendation": "Limit prototype modifications to only what is strictly necessary. Document all such changes.",
+      "severity": "MEDIUM",
+      "type": "Code Robustness"
+    },
+    {
+      "description": "The script requests GM_xmlhttpRequest permission, which allows arbitrary cross-origin requests. While used for Discord and OpenStreetMap, this is a high-privilege grant.",
+      "location": "@grant GM_xmlhttpRequest",
+      "recommendation": "Restrict usage to only necessary domains and document all external requests.",
+      "severity": "MEDIUM",
+      "type": "Permission Usage"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [
+      "Location data (map pins, coordinates) may be collected and sent to Discord or OpenStreetMap."
+    ],
+    "detected": true
+  },
+  "risk_level": "MEDIUM",
+  "script_name": "CheatGuessr Universal | GeoGuessr | OpenGuessr | WorldGuessr | FreeGuessr | GeoDuels",
+  "security_score": 59,
+  "summary": "The script does not appear to be malicious or obfuscated, but it does transmit user location data to third-party services (Discord, OpenStreetMap) and requests high-privilege permissions. There is no evidence of keylogging, credential theft, or DOM XSS. Users should be aware that their game actions and locations may be sent to external servers, especially Discord. Prototype modifications may cause compatibility issues. Overall, the script is medium risk due to data transmission and permission usage, but not critically dangerous.",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-05-11T06:40:30.110465+00:00",
+  "slug": "CheatGuessr_Universal_GeoGuessr_OpenGuessr_WorldGuessr_FreeGuessr_GeoDuels"
+}

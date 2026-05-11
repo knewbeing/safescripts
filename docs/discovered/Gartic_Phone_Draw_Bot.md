@@ -30,9 +30,30 @@ title: "Gartic Phone Draw Bot"
 
 ## 安全分析
 
-::: info 等待分析
-安全分析将在下次流水线运行时自动更新。
-:::
+**风险等级**：🟡 LOW　　**安全评分**：67/100　　**分析时间**：2026-05-11
+
+> 该脚本主要通过 WebSocket 与 garticphone.com 服务器通信，实现自动绘图功能。未发现向第三方服务器外传数据、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。存在未使用的 GM_xmlhttpRequest 权限申请，建议移除。整体风险较低。
+
+| 检查项 | 结果 |
+|--------|------|
+| 数据外传 | ❌ 检测到（目标：garticphone.com） |
+| 隐私采集 | ✅ 未检测到 |
+| 代码混淆 | ✅ 未检测到 |
+| WebSocket/SSE | ⚠️ 使用 |
+| DOM XSS 风险 | ✅ 未检测到 |
+| 供应链风险 | ✅ 可信 |
+
+### 发现的问题
+
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过 WebSocket 发送自动生成的绘图数据包到 garticphone.com 服务器。  
+> 位置：sendPackets 函数、customWebSocket 类  
+> 建议：仅与目标站点通信，未发现向第三方或恶意服务器发送数据。
+
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 GM_xmlhttpRequest 权限，但实际代码未使用该 API。  
+> 位置：元数据 @grant  
+> 建议：移除未使用的高权限申请，减少权限滥用风险。
 
 ---
 

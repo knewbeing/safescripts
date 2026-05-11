@@ -16,60 +16,43 @@
       "tikwm.com",
       "tiktokcdn-eu.com",
       "tiktokcdn-us.com",
-      "douyinpic.com"
+      "douyinpic.com",
+      "douyinmusicpromotion.com",
+      "cdninstagram.com",
+      "ted.com",
+      "licdn.com"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限，并通过 @connect 指定了多个第三方视频 CDN 域名，存在数据外传风险。",
+      "description": "脚本申请了 GM_xmlhttpRequest 权限，并通过 @connect 允许与多个第三方视频 CDN 域名通信，存在数据外传的可能性。",
       "location": "元数据 @grant/@connect",
-      "recommendation": "确保所有网络请求仅用于视频下载，不携带用户敏感信息、Cookie 或页面内容。",
+      "recommendation": "限制 @connect 目标域名，仅允许必要的官方视频 CDN，避免向非官方或未知域名传输数据。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本申请了 GM_openInTab、GM_download、unsafeWindow 等高权限，但代码未展示实际使用情况，存在权限滥用风险。",
+      "description": "脚本申请了 GM_openInTab、GM_download、unsafeWindow 等高权限，但未见实际代码使用情况，存在权限滥用风险。",
       "location": "元数据 @grant",
-      "recommendation": "仅申请实际需要的最低权限，移除未使用或高风险权限。",
+      "recommendation": "仅申请实际需要的权限，移除未使用的高权限申请。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "未见 @require 加载第三方库，供应链风险较低，但 downloadURL/updateURL 指向 GreasyFork 官方，安全性较高。",
-      "location": "元数据 @require/@downloadURL",
-      "recommendation": "如需加载第三方库，建议固定版本哈希并使用官方 CDN。",
+      "description": "脚本未使用 @require 加载第三方库，降低了供应链风险。",
+      "location": "元数据 @require",
+      "recommendation": "保持当前状态，避免动态加载未知来源的第三方库。",
       "severity": "LOW",
       "type": "供应链风险"
     },
     {
-      "description": "未见 eval/new Function/setTimeout(string) 等远程代码执行相关用法，代码混淆特征也未发现。",
-      "location": "完整代码",
-      "recommendation": "保持代码可读性，避免动态执行字符串代码。",
+      "description": "脚本未检测到代码混淆、eval、new Function、setTimeout(string) 等远程代码执行高危用法。",
+      "location": "主代码区",
+      "recommendation": "保持当前状态，避免引入动态代码执行。",
       "severity": "LOW",
-      "type": "远程代码执行/混淆"
-    },
-    {
-      "description": "未见 document.cookie/localStorage/sessionStorage/IndexedDB/剪贴板读取/键盘监听等隐私采集行为。",
-      "location": "完整代码",
-      "recommendation": "保持不采集用户隐私数据。",
-      "severity": "LOW",
-      "type": "隐私采集"
-    },
-    {
-      "description": "未见 DOM XSS 注入风险，未直接插入用户输入到 innerHTML/outerHTML。",
-      "location": "完整代码",
-      "recommendation": "继续避免 DOM 注入风险。",
-      "severity": "LOW",
-      "type": "DOM XSS"
-    },
-    {
-      "description": "未见 WebSocket/EventSource 用法，暂无实时数据外传风险。",
-      "location": "完整代码",
-      "recommendation": "如需使用 WebSocket，需严格限制数据类型和目的地。",
-      "severity": "LOW",
-      "type": "WebSocket风险"
+      "type": "远程代码执行"
     }
   ],
   "obfuscation_detected": false,
@@ -79,10 +62,10 @@
   },
   "risk_level": "MEDIUM",
   "script_name": "All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)",
-  "security_score": 64,
-  "summary": "该脚本主要用于视频下载，网络请求目标均为视频 CDN，未见明显隐私采集、代码混淆、远程代码执行或 DOM XSS 风险。最大风险为数据外传（视频下载请求可能携带敏感信息）和权限滥用（申请了高权限但未展示实际用途）。建议进一步审查实际网络请求内容及权限使用情况。",
+  "security_score": 67,
+  "summary": "该脚本主要风险在于广泛的第三方域名数据传输权限（@connect），理论上可外传用户数据，属于 CRITICAL 级别。未发现隐私采集、代码混淆、远程代码执行等高危行为。部分高权限申请存在滥用空间。建议收紧 @connect 和 @grant 权限。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-04-27T05:07:52.042503+00:00",
+  "analyzed_at": "2026-05-11T06:30:34.368701+00:00",
   "slug": "All-in-One_Video_Downloader_HD_YouTube_TikTok_Instagram_X_More"
 }

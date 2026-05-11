@@ -24,12 +24,65 @@
   "require": [],
   "metadata_raw": "// @name  Nexus No Wait ++\n// @description  Skip Countdown, Auto Download, and More for Nexus Mods. Supports (Manual/Vortex/MO2/NMM)\n// @version  2.1.2\n// @namespace  NexusNoWaitPlusPlus\n// @author  Torkelicious\n// @iconURL  https://raw.githubusercontent.com/torkelicious/nexus-no-wait-pp/refs/heads/main/icon.png\n// @icon  https://raw.githubusercontent.com/torkelicious/nexus-no-wait-pp/refs/heads/main/icon.png\n// @license  GPL-3.0-or-later\n// @match  https://*.nexusmods.com/*\n// @run-at  document-idle\n// @grant  GM_getValue\n// @grant  GM_setValue\n// @grant  GM.xmlHttpRequest\n// @grant  GM_xmlhttpRequest\n// @grant  GM_info\n// @grant  GM_addStyle\n// @grant  GM_listValues\n// @grant  GM_deleteValue\n// @connect  *.nexusmods.com\n// @connect  raw.githubusercontent.com\n// @downloadURL  https://update.greasyfork.org/scripts/519037/Nexus%20No%20Wait%20%2B%2B.user.js\n// @updateURL  https://update.greasyfork.org/scripts/519037/Nexus%20No%20Wait%20%2B%2B.meta.js",
   "sha256": "8819291ad19856a3169736576b4f79ee6d6b8284ec1e1284f8da5c91b5dacea1",
-  "discovered_at": "2026-05-04T06:02:52.781885+00:00",
+  "discovered_at": "2026-05-11T06:07:38.418297+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 10916,
-  "good_ratings": 18,
+  "install_count": 11514,
+  "good_ratings": 20,
   "bad_ratings": 2,
-  "summary": {}
+  "summary": {
+    "applicable_sites": [
+      "Nexus Mods"
+    ],
+    "description": "本脚本可自动跳过 Nexus Mods 网站的下载等待时间，自动开始下载，并支持多种下载方式（如手动、Vortex、MO2、NMM）。还可自动关闭下载页面、跳过前置需求提示，并隐藏部分推广内容。让你在 Nexus Mods 上下载文件更加快捷高效。",
+    "permissions": [
+      {
+        "explanation": "用于读取用户的脚本设置。",
+        "grant": "GM_getValue"
+      },
+      {
+        "explanation": "用于保存用户的脚本设置。",
+        "grant": "GM_setValue"
+      },
+      {
+        "explanation": "用于发起跨域网络请求，提升兼容性。",
+        "grant": "GM.xmlHttpRequest"
+      },
+      {
+        "explanation": "用于发起跨域网络请求，兼容不同环境。",
+        "grant": "GM_xmlhttpRequest"
+      },
+      {
+        "explanation": "获取当前脚本的相关信息。",
+        "grant": "GM_info"
+      },
+      {
+        "explanation": "为页面添加自定义样式。",
+        "grant": "GM_addStyle"
+      },
+      {
+        "explanation": "列出所有已保存的脚本设置项。",
+        "grant": "GM_listValues"
+      },
+      {
+        "explanation": "删除指定的脚本设置项。",
+        "grant": "GM_deleteValue"
+      }
+    ],
+    "tags": [
+      "下载加速",
+      "自动化",
+      "Nexus Mods",
+      "跳过等待",
+      "页面优化"
+    ],
+    "usage": [
+      "1. 安装脚本后，访问 Nexus Mods 网站。",
+      "2. 在下载页面，脚本会自动跳过等待并开始下载。",
+      "3. 下载完成后，部分页面会自动关闭，无需手动操作。",
+      "4. 如需调整脚本设置，可在脚本管理器中修改。"
+    ],
+    "zh_name": "Nexus 无等待增强版"
+  }
 }

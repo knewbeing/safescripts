@@ -30,9 +30,9 @@ title: "Blooket Coin and Token Hacker"
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：97/100　　**分析时间**：2026-04-27
+**风险等级**：🟢 SAFE　　**安全评分**：97/100　　**分析时间**：2026-05-11
 
-> This UserScript does not transmit data externally, does not collect sensitive information, and does not use dangerous APIs or obfuscated code. It only modifies the DOM based on user input via prompt, and updates a page element's textContent. No supply chain or iframe risks detected. Overall, the script is safe, but as it manipulates game values, it may violate site terms of service.
+> 该 UserScript 仅在本地操作页面内容，不进行任何数据外传、隐私采集、远程代码执行或供应链依赖。未检测到高危或关键安全风险。主要操作为通过 prompt 获取用户输入并更新页面文本内容，未涉及敏感 API、网络请求或代码混淆。整体安全性高。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -45,15 +45,20 @@ title: "Blooket Coin and Token Hacker"
 
 ### 发现的问题
 
-**🟡 LOW** — User Input Handling  
-> Uses prompt to collect user input for coins and tokens, then updates DOM element with these values. No network requests or external data transmission detected.  
-> 位置：addCoinsAndTokens function  
-> 建议：Ensure user input is validated and not used in unsafe DOM operations. Currently, only textContent is updated, which is safe.
+**🟡 LOW** — DOM XSS  
+> 脚本通过 prompt 获取用户输入，但未将用户输入直接插入 innerHTML/outerHTML，仅用于文本内容和 alert，无 XSS 风险。  
+> 位置：addCoinsAndTokens()  
+> 建议：如需插入 HTML，需进行转义。当前实现安全。
+
+**🟡 LOW** — Data Transmission  
+> 脚本未使用任何网络请求或外部通信 API，无数据外传行为。  
+> 位置：全局  
+> 建议：保持此状态，勿添加外部通信代码。
 
 **🟡 LOW** — Permission Usage  
-> No permissions (@grant none) requested, which is appropriate for the script's functionality.  
-> 位置：Metadata block  
-> 建议：Maintain minimal permissions for best security.
+> 脚本未申请任何 @grant 权限，实际代码也未使用 GM_* API，权限申请合理。  
+> 位置：元数据  
+> 建议：保持最小权限原则。
 
 ---
 

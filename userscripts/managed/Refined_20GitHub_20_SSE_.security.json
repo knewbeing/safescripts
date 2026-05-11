@@ -11,61 +11,52 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "@connect * 允许任意域名的数据传输，存在严重数据外传风险。结合 GM_xmlhttpRequest 权限，脚本可向任何第三方服务器发送数据。",
-      "location": "元数据 @connect *",
-      "recommendation": "限制 @connect 域名范围，仅允许可信服务。移除 @connect *，只保留必要的域名。",
+      "description": "脚本声明 @connect *，允许向任意域名发起跨域请求，存在数据外传高风险。",
+      "location": "元数据 @connect",
+      "recommendation": "严格限制 @connect 域名范围，仅允许必要的可信域名。",
       "severity": "CRITICAL",
-      "type": "Data Exfiltration"
+      "type": "数据外传"
     },
     {
-      "description": "申请了 GM.xmlHttpRequest 和 GM_xmlhttpRequest 权限，允许脚本进行跨域网络请求，结合 @connect * 存在数据外传风险。",
-      "location": "元数据 @grant GM.xmlHttpRequest, GM_xmlhttpRequest",
-      "recommendation": "仅申请必要的网络请求权限，并配合严格的 @connect 域名限制。",
+      "description": "脚本声明 @grant GM.xmlHttpRequest 和 GM_xmlhttpRequest，具备任意跨域请求能力，配合 @connect * 存在数据外传风险。",
+      "location": "元数据 @grant",
+      "recommendation": "移除不必要的 GM_xmlhttpRequest 权限，或限制 @connect 域名。",
       "severity": "CRITICAL",
-      "type": "Data Exfiltration"
+      "type": "数据外传"
     },
     {
-      "description": "脚本申请了 GM.getValue、GM.setValue、GM.deleteValue、GM.addValueChangeListener 等权限，允许读写本地存储，可能涉及用户隐私数据。",
-      "location": "元数据 @grant GM.getValue, GM.setValue, GM.deleteValue, GM.addValueChangeListener",
-      "recommendation": "确保存储的数据不包含敏感信息，且不会被外传。",
+      "description": "脚本声明 @connect localhost，可能被滥用访问本地服务，存在隐私和安全风险。",
+      "location": "元数据 @connect",
+      "recommendation": "移除 @connect localhost，除非确有本地调试需求。",
+      "severity": "HIGH",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本声明了多个高权限 GM_* API，但未见实际代码，无法判断是否滥用。",
+      "location": "元数据 @grant",
+      "recommendation": "仅申请实际使用的权限，最小化授权。",
       "severity": "MEDIUM",
-      "type": "Privacy Collection"
+      "type": "权限滥用"
     },
     {
-      "description": "脚本申请了 GM_addElement 权限，允许动态插入元素，若结合 innerHTML/outerHTML 操作可能存在 XSS 风险。",
-      "location": "元数据 @grant GM_addElement",
-      "recommendation": "插入元素时避免使用不可信内容，严格转义用户输入。",
-      "severity": "LOW",
-      "type": "DOM Manipulation"
-    },
-    {
-      "description": "脚本申请了 GM.registerMenuCommand 权限，允许注册菜单命令，若结合敏感操作可能被滥用。",
-      "location": "元数据 @grant GM.registerMenuCommand",
-      "recommendation": "菜单命令应避免触发敏感操作，如数据外传、远程代码执行。",
-      "severity": "LOW",
-      "type": "Permission Abuse"
-    },
-    {
-      "description": "脚本申请了 GM.info 权限，允许访问脚本元信息，通常风险较低，但需注意信息泄露。",
-      "location": "元数据 @grant GM.info",
-      "recommendation": "仅在必要场景下使用 GM.info，避免泄露用户环境信息。",
-      "severity": "LOW",
-      "type": "Permission Abuse"
+      "description": "未提供完整代码，无法审查实际数据采集、远程代码执行、DOM XSS、混淆等实现细节。",
+      "location": "代码缺失",
+      "recommendation": "请补充完整脚本代码以进行全面安全审查。",
+      "severity": "MEDIUM",
+      "type": "代码完整性"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [
-      "本地存储读写（GM.getValue, GM.setValue, GM.deleteValue, GM.addValueChangeListener）"
-    ],
-    "detected": true
+    "details": [],
+    "detected": false
   },
   "risk_level": "CRITICAL",
   "script_name": "🏷️ UTags - Add usertags to links",
-  "security_score": 42,
-  "summary": "该脚本元数据申请了极高权限，尤其是 @connect * 和 GM_xmlhttpRequest，允许向任意域名发送数据，存在严重数据外传风险。脚本可读写本地存储，可能涉及隐私数据。未发现代码混淆、远程代码执行、DOM XSS，但权限配置极不安全。建议严格限制网络请求目标，移除不必要的高权限申请。",
+  "security_score": 50,
+  "summary": "该脚本元数据存在严重安全隐患：声明了 @connect * 允许任意跨域请求，配合 GM_xmlhttpRequest 等高权限 API，存在数据外传和隐私泄露的高风险。同时允许连接 localhost，可能被滥用访问本地服务。由于未提供完整代码，无法进一步分析实际数据采集、远程代码执行等风险。强烈建议限制 @connect 域名范围、最小化权限申请，并补充完整代码以完成全面安全审查。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-04-27T05:01:02.730635+00:00",
+  "analyzed_at": "2026-05-11T05:54:29.084210+00:00",
   "slug": "Refined_20GitHub_20_SSE_"
 }

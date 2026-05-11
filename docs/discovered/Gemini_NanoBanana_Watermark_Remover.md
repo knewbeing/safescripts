@@ -30,9 +30,9 @@ title: "Gemini NanoBanana Watermark Remover"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-04-27
+**风险等级**：🟡 LOW　　**安全评分**：84/100　　**分析时间**：2026-05-11
 
-> 该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险等高危行为。仅存在未使用的高权限申请（GM_xmlhttpRequest、unsafeWindow），建议移除以提升安全性。整体风险较低，安全评分为89分。
+> 该脚本主要用于在 Gemini Google 页面移除图片水印。代码结构清晰，无混淆，无远程代码执行、DOM XSS、隐私数据采集或数据外传行为。仅声明了对 googleusercontent.com 的网络访问权限，但未实际发起任何网络请求。存在未使用的高权限 @grant 声明，建议移除以进一步降低风险。整体安全风险较低。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -46,14 +46,14 @@ title: "Gemini NanoBanana Watermark Remover"
 ### 发现的问题
 
 **🟠 MEDIUM** — 权限滥用  
-> 申请了 GM_xmlhttpRequest 权限，但代码未实际使用该 API进行网络请求。@connect 仅允许 googleusercontent.com，未发现数据外传行为。  
-> 位置：元数据 @grant/@connect  
-> 建议：如无需 GM_xmlhttpRequest，可移除该权限以减少攻击面。
+> 脚本声明了 @grant GM_xmlhttpRequest 权限，但实际代码未发现任何 GM_xmlhttpRequest 的调用。  
+> 位置：元数据头部  
+> 建议：移除未使用的高权限 @grant 以减少权限滥用风险。
 
 **🟠 MEDIUM** — 权限滥用  
-> 申请了 unsafeWindow 权限，但代码未实际使用 unsafeWindow。  
-> 位置：元数据 @grant  
-> 建议：如无需 unsafeWindow，可移除该权限。
+> 脚本声明了 @grant unsafeWindow 权限，但实际代码未发现对 unsafeWindow 的访问。  
+> 位置：元数据头部  
+> 建议：移除未使用的高权限 @grant 以减少权限滥用风险。
 
 ---
 

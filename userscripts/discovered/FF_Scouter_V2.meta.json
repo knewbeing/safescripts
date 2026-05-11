@@ -23,12 +23,60 @@
   "require": [],
   "metadata_raw": "// @name  FF Scouter V2\n// @namespace  Violentmonkey Scripts\n// @match  https://www.torn.com/*\n// @version  2.73\n// @author  rDacted, Weav3r, xentac, Glasnost\n// @description  Shows the expected Fair Fight score against targets and faction war status\n// @grant  GM_xmlhttpRequest\n// @grant  GM_setValue\n// @grant  GM_getValue\n// @grant  GM_listValues\n// @grant  GM_deleteValue\n// @grant  GM_registerMenuCommand\n// @grant  GM_addStyle\n// @connect  ffscouter.com\n// @license  GPL-3.0\n// @downloadURL  https://update.greasyfork.org/scripts/535292/FF%20Scouter%20V2.user.js\n// @updateURL  https://update.greasyfork.org/scripts/535292/FF%20Scouter%20V2.meta.js",
   "sha256": "ab52d07aed998e3ef17796f76b451788566f8ea119f9a5b72f0a7eec29eefd8a",
-  "discovered_at": "2026-05-04T06:03:57.324768+00:00",
+  "discovered_at": "2026-05-11T06:10:39.506514+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 14085,
+  "install_count": 14637,
   "good_ratings": 3,
   "bad_ratings": 0,
-  "summary": {}
+  "summary": {
+    "applicable_sites": [
+      "Torn 城市（Torn.com）"
+    ],
+    "description": "本脚本可在 Torn 游戏网站上，显示你与目标玩家的 Fair Fight 分数预期，以及帮派战争状态。它通过界面提示，让你更好地评估对手和战局。适合活跃参与帮派战斗的玩家使用。",
+    "permissions": [
+      {
+        "explanation": "允许脚本从外部网站获取数据，用于计算分数和状态。",
+        "grant": "GM_xmlhttpRequest"
+      },
+      {
+        "explanation": "保存脚本设置和缓存数据，提升使用体验。",
+        "grant": "GM_setValue"
+      },
+      {
+        "explanation": "读取之前保存的设置和数据。",
+        "grant": "GM_getValue"
+      },
+      {
+        "explanation": "列出所有已保存的数据键，方便管理缓存。",
+        "grant": "GM_listValues"
+      },
+      {
+        "explanation": "删除不再需要的缓存或设置数据。",
+        "grant": "GM_deleteValue"
+      },
+      {
+        "explanation": "在浏览器扩展菜单中添加自定义命令，便于手动操作脚本功能。",
+        "grant": "GM_registerMenuCommand"
+      },
+      {
+        "explanation": "为页面添加自定义样式，让分数和状态显示更直观。",
+        "grant": "GM_addStyle"
+      }
+    ],
+    "tags": [
+      "游戏辅助",
+      "Torn",
+      "战斗分析",
+      "帮派管理",
+      "数据展示"
+    ],
+    "usage": [
+      "1. 安装脚本后，登录 Torn 网站。",
+      "2. 浏览玩家或帮派相关页面时，界面会自动显示 Fair Fight 分数和帮派战况。",
+      "3. 可通过浏览器扩展菜单手动调整脚本设置。"
+    ],
+    "zh_name": "公平战斗评分助手"
+  }
 }

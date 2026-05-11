@@ -1,0 +1,51 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "脚本拦截 XMLHttpRequest 并读取 Google Maps API 的响应内容，但未将数据外传。",
+      "location": "XMLHttpRequest.prototype.open 拦截",
+      "recommendation": "确保未来不会添加任何外传逻辑。",
+      "severity": "LOW",
+      "type": "Network interception"
+    },
+    {
+      "description": "脚本监听键盘事件，但未将输入内容外传。",
+      "location": "document.addEventListener('keydown', ...)",
+      "recommendation": "仅监听必要的快捷键，避免记录敏感输入。",
+      "severity": "LOW",
+      "type": "Keyboard event"
+    },
+    {
+      "description": "脚本通过 React 内部属性操作页面元素，存在一定维护风险。",
+      "location": "placeMarker, placeMarkerStreaks 函数",
+      "recommendation": "关注 Geoguessr 页面结构变更，避免脚本失效。",
+      "severity": "LOW",
+      "type": "DOM manipulation"
+    },
+    {
+      "description": "@grant 仅申请了 GM_webRequest，实际代码未使用该 API。",
+      "location": "元数据 @grant",
+      "recommendation": "移除未使用的权限声明，最小化权限。",
+      "severity": "MEDIUM",
+      "type": "Permission misuse"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "LOW",
+  "script_name": "Geoguessr Location Resolver (Works in all modes)",
+  "security_score": 89,
+  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。主要通过拦截 Google Maps API 响应获取坐标，并自动在 Geoguessr 页面上标记位置。未发现将用户数据发送到第三方服务器的行为。存在未使用的 GM_webRequest 权限声明，建议移除。整体安全风险较低。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-05-11T06:56:29.821746+00:00",
+  "slug": "Geoguessr_Location_Resolver_Works_in_all_modes"
+}

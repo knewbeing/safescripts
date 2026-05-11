@@ -38,14 +38,14 @@ title: "地理猜谜助手通用版"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：42/100　　**分析时间**：2026-04-27
+**风险等级**：🔴 HIGH　　**安全评分**：42/100　　**分析时间**：2026-05-11
 
-> 该脚本存在严重的数据外传风险，尤其是地理位置数据被发送到 discord.com 和 nominatim.openstreetmap.org。虽然未检测到远程代码执行、混淆、XSS 等高危行为，但隐私采集和权限滥用问题依然存在。建议加强用户告知、限制数据外传、精简权限申请。当前安全评分为 42，风险等级为 CRITICAL，不建议在敏感环境下使用。
+> 该脚本存在高风险的数据外传行为，尤其是将用户地理坐标发送到第三方（nominatim.openstreetmap.org 和 discord.com）。虽然未发现代码混淆、远程代码执行或 DOM XSS 风险，但涉及敏感数据的外传和部分权限滥用。建议加强用户知情同意机制，最小化权限申请，并限制敏感数据的自动外传。
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：discord.com, nominatim.openstreetmap.org） |
-| 隐私采集 | ❌ 检测到（操作 localStorage, 发送地理坐标到第三方） |
+| 隐私采集 | ❌ 检测到（地理坐标（用户在地图上的操作）） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -54,34 +54,24 @@ title: "地理猜谜助手通用版"
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本通过 GM_xmlhttpRequest 向 discord.com 发送地理位置数据（send location to discord），存在用户数据外传至第三方服务器的风险。  
-> 位置：功能描述及 GM_xmlhttpRequest 使用  
-> 建议：仅允许用户主动发送数据，明确告知用户数据外传行为，并限制数据内容。避免自动或隐蔽发送用户敏感信息。
+> 脚本通过 GM_xmlhttpRequest 发送地理坐标到 nominatim.openstreetmap.org 进行逆地理编码。虽然该服务为公开地图 API，但用户的地理坐标被外传到第三方。  
+> 位置：_getAddress() 函数  
+> 建议：仅在用户明确同意时发送地理坐标，或在隐私政策中明确说明。
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本通过 GM_xmlhttpRequest 向 nominatim.openstreetmap.org 查询地理位置，涉及用户坐标数据外传。  
-> 位置：getAddress/_getAddress 函数  
-> 建议：仅在用户明确操作时发送请求，避免自动采集和外传用户坐标。
-
-**🟠 MEDIUM** — 隐私采集  
-> 脚本读取并操作 localStorage（Storage.prototype.setItem Proxy），但未检测到敏感数据采集行为。  
-> 位置：WORLDGUESSR 分支  
-> 建议：避免读取或操作存储中包含敏感信息的数据，确保不采集用户隐私。
+> 脚本支持“send location to discord”功能，意味着用户的地理坐标可能被发送到 discord.com（如 Webhook），属于敏感数据外传。  
+> 位置：功能描述及 @connect discord.com 权限  
+> 建议：确保用户知情并同意，避免自动发送敏感信息到第三方。
 
 **🟠 MEDIUM** — 权限滥用  
-> 脚本申请 GM_xmlhttpRequest 高权限，并声明 @connect discord.com，存在权限滥用风险。  
+> 脚本申请了 GM_xmlhttpRequest 权限，并允许连接 discord.com 和 nominatim.openstreetmap.org，具备外传数据能力。  
 > 位置：元数据 @grant/@connect  
-> 建议：仅申请实际需要的权限，避免高权限滥用。
+> 建议：最小化权限申请，仅申请实际需要的域名。
 
 **🟠 MEDIUM** — 敏感 API 调用  
-> 脚本调用 Notification API，可能被滥用发送通知。  
-> 位置：sendNotification/requestNotificationPermission  
-> 建议：仅在用户明确授权后使用通知功能，避免骚扰。
-
-**🟡 LOW** — 常规安全检查  
-> 脚本未检测到远程代码执行、代码混淆、DOM XSS、供应链风险、WebSocket、iframe 风险等高危行为。  
-> 位置：整体代码审查  
-> 建议：保持代码透明，避免引入远程脚本和混淆代码。
+> 脚本调用 Notification API 发送通知，可能被滥用骚扰用户。  
+> 位置：sendNotification() 函数  
+> 建议：仅在用户主动授权后使用通知功能。
 
 ---
 

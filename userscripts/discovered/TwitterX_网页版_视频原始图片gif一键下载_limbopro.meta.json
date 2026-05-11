@@ -1,0 +1,64 @@
+{
+  "slug": "TwitterX_网页版_视频原始图片gif一键下载_limbopro",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/478651-twitter-x-%E7%BD%91%E9%A1%B5%E7%89%88-%E8%A7%86%E9%A2%91-%E5%8E%9F%E5%A7%8B%E5%9B%BE%E7%89%87-gif%E4%B8%80%E9%94%AE%E4%B8%8B%E8%BD%BD-limbopro",
+  "source_repo": "478651",
+  "raw_url": "https://update.greasyfork.org/scripts/478651/TwitterX%28%E7%BD%91%E9%A1%B5%E7%89%88%29%E8%A7%86%E9%A2%91%E5%8E%9F%E5%A7%8B%E5%9B%BE%E7%89%87gif%E4%B8%80%E9%94%AE%E4%B8%8B%E8%BD%BD%5Blimbopro%5D.user.js",
+  "filename": "TwitterX_网页版_视频原始图片gif一键下载_limbopro.user.js",
+  "name": "Twitter/X(网页版)视频/原始图片/gif一键下载.[limbopro]",
+  "version": "0.1.5.17",
+  "description": "Twitter/X(网页版)视频/图片/gif一键下载.[limbopro] / 一键下载推文4k/原始图片并按用户名进行保存",
+  "match": [
+    "https://twitter.com/*",
+    "https://x.com/*",
+    "https://twittervideodownloader.com/*",
+    "https://twittervid.com/*",
+    "https://tweeload.com/*",
+    "https://twittervideomp4.com/zh-tw/*",
+    "https://twittervideomp4.com/*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Twitter/X(网页版)视频/原始图片/gif一键下载.[limbopro]\n// @name:ja  Twitter/X (Web 版) のビデオ/写真/GIF をワンクリックでダウンロード。[limbopro]\n// @name:zh-cn  Twitter/X(网页版)视频/原始图片/gif一键下载.[limbopro]\n// @name:zh-tw  Twitter/X(網頁版)影片/原始圖片/gif一鍵下載.[limbopro]\n// @name:en  Twitter/X(web version)videos/4kPhotos/gif download.[limbopro]\n// @name:ko  Twitter/X(웹버전) 동영상/사진/gif 원클릭 다운로드.[limbopro]\n// @name:ru  Twitter/X (веб-версия) — загрузка видео/изображений/гифок в один клик.[limbopro]\n// @namespace  https://limbopro.com/\n// @version  0.1.5.17\n// @description  Twitter/X(网页版)视频/图片/gif一键下载.[limbopro] / 一键下载推文4k/原始图片并按用户名进行保存\n// @description:zh-cn  Twitter/X(网页版)视频/图片/gif一键下载.[limbopro] / 一键下载推文4k/原始图片并按用户名进行保存/将推文内容生成图片\n// @description:ja  Twitter/X (Web 版) のビデオ/写真/GIF をワンクリックでダウンロード。[limbopro] / ワンクリックでツイート画像をダウンロードし、ユーザー名で保存します/ツイートの内容から画像を生成する\n// @description:zh-tw  Twitter/X(網頁版)影片/圖片/gif一鍵下載.[limbopro] / 一鍵下載推文4k/原始圖片並按使用者名稱儲存/將推文內容產生圖片\n// @description:en  Twitter/X(web version)videos/4kPhotos/gif download.[limbopro] / Download tweet original images(4k) with one click and save by username/Generate images from tweet content\n// @description:ru  Twitter/X (веб-версия) — загрузка видео/изображений/гифок в один клик.[limbopro] / Загрузите изображения твитов одним щелчком мыши и сохраните их по имени пользователя./Генерация изображений из содержимого твита\n// @description:ko  Twitter/X(웹버전) 동영상/사진/gif 원클릭 다운로드.[limbopro] / 한 번의 클릭으로 트윗 이미지를 다운로드하고 사용자 이름으로 저장/트윗 콘텐츠에서 이미지 생성\n// @author  limbopro\n// @license  MIT\n// @match  https://twitter.com/*\n// @match  https://x.com/*\n// @match  https://twittervideodownloader.com/*\n// @match  https://twittervid.com/*\n// @match  https://tweeload.com/*\n// @match  https://twittervideomp4.com/zh-tw/*\n// @match  https://twittervideomp4.com/*\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=twitter.com\n// @orginalURL  https://limbopro.com/Adguard/twdl.user.js\n// @grant  none\n// @downloadURL  https://update.greasyfork.org/scripts/478651/TwitterX%28%E7%BD%91%E9%A1%B5%E7%89%88%29%E8%A7%86%E9%A2%91%E5%8E%9F%E5%A7%8B%E5%9B%BE%E7%89%87gif%E4%B8%80%E9%94%AE%E4%B8%8B%E8%BD%BD%5Blimbopro%5D.user.js\n// @updateURL  https://update.greasyfork.org/scripts/478651/TwitterX%28%E7%BD%91%E9%A1%B5%E7%89%88%29%E8%A7%86%E9%A2%91%E5%8E%9F%E5%A7%8B%E5%9B%BE%E7%89%87gif%E4%B8%80%E9%94%AE%E4%B8%8B%E8%BD%BD%5Blimbopro%5D.meta.js",
+  "sha256": "efb1c7ae528f12b5babec30400f26369c4465e9c96b176c79a0bb8e7d2e0f709",
+  "discovered_at": "2026-05-11T06:20:08.651310+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 17813,
+  "good_ratings": 29,
+  "bad_ratings": 2,
+  "summary": {
+    "applicable_sites": [
+      "Twitter/X",
+      "Twitter视频下载器（twittervideodownloader.com）",
+      "TwitterVid（twittervid.com）",
+      "Tweeload（tweeload.com）",
+      "Twitter MP4下载（twittervideomp4.com）"
+    ],
+    "description": "本脚本为 Twitter/X 网页版添加一键下载按钮，支持直接下载推文中的视频、原始图片（4K）、GIF 动图。下载的图片会按用户名分类保存，还能将推文内容生成图片。适用于多种 Twitter 视频下载相关网站。",
+    "permissions": [
+      {
+        "explanation": "脚本不需要额外权限，所有操作均在网页内完成。",
+        "grant": "none"
+      }
+    ],
+    "tags": [
+      "Twitter",
+      "一键下载",
+      "视频下载",
+      "图片下载",
+      "GIF下载",
+      "推文工具"
+    ],
+    "usage": [
+      "1. 安装脚本后，打开 Twitter/X 或支持的视频下载网站。",
+      "2. 在推文下方会出现下载按钮，点击即可一键下载视频、图片或 GIF。",
+      "3. 下载的图片会自动按用户名分类保存。",
+      "4. 可选择将推文内容生成图片进行保存。"
+    ],
+    "zh_name": "Twitter/X(网页版)视频/原始图片/gif一键下载"
+  }
+}

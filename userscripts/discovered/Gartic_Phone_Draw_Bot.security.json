@@ -2,74 +2,25 @@
   "approved": true,
   "data_transmission": {
     "destinations": [
-      "garticphone.com (via WebSocket)"
+      "garticphone.com"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "Script sends drawing data and game actions to garticphone.com via WebSocket. No evidence of transmission to third-party servers.",
-      "location": "sendPackets(), customWebSocket class",
-      "recommendation": "Ensure only game-relevant data is sent. No user credentials or sensitive information should be transmitted.",
+      "description": "脚本通过 WebSocket 发送自动生成的绘图数据包到 garticphone.com 服务器。",
+      "location": "sendPackets 函数、customWebSocket 类",
+      "recommendation": "仅与目标站点通信，未发现向第三方或恶意服务器发送数据。",
       "severity": "CRITICAL",
-      "type": "Data Transmission"
+      "type": "数据外传"
     },
     {
-      "description": "Script reads canvas pixel data and manipulates game canvas, but does not collect or transmit user privacy data (cookies, storage, clipboard, form fields, etc.).",
-      "location": "draw(), drawEnabled, CanvasRenderingContext2D proxies",
-      "recommendation": "Continue to avoid collecting sensitive user data.",
-      "severity": "CRITICAL",
-      "type": "Privacy Collection"
-    },
-    {
-      "description": "Script uses Proxy to override appendChild and CanvasRenderingContext2D methods, but does not use eval, new Function, or dynamic script injection. No remote code execution detected.",
-      "location": "Node.prototype.appendChild Proxy, CanvasRenderingContext2D proxies",
-      "recommendation": "Avoid introducing eval or dynamic script loading in future updates.",
-      "severity": "HIGH",
-      "type": "Remote Code Execution"
-    },
-    {
-      "description": "No evidence of code obfuscation or minification. Code is readable and not obfuscated.",
-      "location": "Entire script",
-      "recommendation": "Maintain code transparency for easier auditing.",
-      "severity": "HIGH",
-      "type": "Code Obfuscation"
-    },
-    {
-      "description": "No DOM XSS or injection detected. User input is not inserted into innerHTML/outerHTML or document.write.",
-      "location": "fakeButton.innerHTML (static content)",
-      "recommendation": "Continue to sanitize any future user input before DOM insertion.",
-      "severity": "HIGH",
-      "type": "DOM XSS/Injection"
-    },
-    {
-      "description": "Script requests GM_xmlhttpRequest and unsafeWindow grants, but only uses unsafeWindow. GM_xmlhttpRequest is not used in code.",
-      "location": "Metadata block (@grant)",
-      "recommendation": "Remove unused GM_xmlhttpRequest grant to minimize permission surface.",
+      "description": "脚本申请了 GM_xmlhttpRequest 权限，但实际代码未使用该 API。",
+      "location": "元数据 @grant",
+      "recommendation": "移除未使用的高权限申请，减少权限滥用风险。",
       "severity": "MEDIUM",
-      "type": "Permission Abuse"
-    },
-    {
-      "description": "No sensitive browser APIs (geolocation, camera, clipboard, notifications) are used.",
-      "location": "Entire script",
-      "recommendation": "Avoid using sensitive APIs unless strictly necessary.",
-      "severity": "MEDIUM",
-      "type": "Sensitive API Usage"
-    },
-    {
-      "description": "No @require third-party libraries or supply chain risk detected.",
-      "location": "Metadata block",
-      "recommendation": "If adding dependencies, use official CDNs and fixed versions.",
-      "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
-    },
-    {
-      "description": "No evidence of clickjacking or iframe manipulation.",
-      "location": "Entire script",
-      "recommendation": "Avoid creating hidden iframes or modifying frame protection.",
-      "severity": "LOW",
-      "type": "ClickJacking/Iframe Risk"
+      "type": "权限滥用"
     }
   ],
   "obfuscation_detected": false,
@@ -79,10 +30,10 @@
   },
   "risk_level": "LOW",
   "script_name": "Gartic Phone Draw Bot",
-  "security_score": 100,
-  "summary": "The script primarily automates drawing actions in Gartic Phone and communicates only with the game's official server via WebSocket. No evidence of privacy data collection, code obfuscation, DOM XSS, or supply chain risk. Unused GM_xmlhttpRequest grant should be removed. Overall, the script is safe with minimal risk.",
+  "security_score": 67,
+  "summary": "该脚本主要通过 WebSocket 与 garticphone.com 服务器通信，实现自动绘图功能。未发现向第三方服务器外传数据、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。存在未使用的 GM_xmlhttpRequest 权限申请，建议移除。整体风险较低。",
   "supply_chain_risk": false,
   "websocket_usage": true,
-  "analyzed_at": "2026-04-27T05:11:53.770811+00:00",
+  "analyzed_at": "2026-05-11T06:54:03.624846+00:00",
   "slug": "Gartic_Phone_Draw_Bot"
 }

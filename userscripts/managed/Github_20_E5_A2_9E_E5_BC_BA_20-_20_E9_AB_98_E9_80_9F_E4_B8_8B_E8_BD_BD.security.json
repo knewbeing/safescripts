@@ -1,22 +1,30 @@
 {
-  "approved": true,
+  "approved": false,
   "data_transmission": {
     "destinations": [],
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [],
+  "issues": [
+    {
+      "description": "无法评估脚本实际行为，因为未提供完整代码内容。仅凭元数据无法判断是否存在数据外传、隐私采集、远程代码执行等高危行为。",
+      "location": "N/A",
+      "recommendation": "请补充完整的 UserScript 代码以进行全面安全审查。仅凭元数据无法做出准确安全结论。",
+      "severity": "CRITICAL",
+      "type": "代码缺失"
+    }
+  ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
     "detected": false
   },
-  "risk_level": "SAFE",
+  "risk_level": "CRITICAL",
   "script_name": "Github Enhancement - High Speed Download",
-  "security_score": 100,
-  "summary": "该脚本未包含任何实际代码，仅有元数据声明。未检测到任何安全风险、数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。安全评分为100分。",
+  "security_score": 0,
+  "summary": "由于未提供完整代码，无法进行有效的安全审查。仅凭元数据无法判断脚本是否安全，存在极高的不确定性和潜在风险。请补充完整代码以获得准确的安全分析。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-04-27T05:00:29.234509+00:00",
+  "analyzed_at": "2026-05-11T05:52:56.524966+00:00",
   "slug": "Github_20_E5_A2_9E_E5_BC_BA_20-_20_E9_AB_98_E9_80_9F_E4_B8_8B_E8_BD_BD"
 }

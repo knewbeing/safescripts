@@ -1,0 +1,53 @@
+{
+  "slug": "Geoguessr_Location_Resolver_Works_in_all_modes",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/450253-geoguessr-location-resolver-works-in-all-modes",
+  "source_repo": "450253",
+  "raw_url": "https://update.greasyfork.org/scripts/450253/Geoguessr%20Location%20Resolver%20%28Works%20in%20all%20modes%29.user.js",
+  "filename": "Geoguessr_Location_Resolver_Works_in_all_modes.user.js",
+  "name": "Geoguessr Location Resolver (Works in all modes)",
+  "version": "14.1",
+  "description": "Features: Automatically score 5000 Points | Score randomly between 4500 and 5000 points | Open in Google Maps",
+  "match": [
+    "https://www.geoguessr.com/*"
+  ],
+  "grant": [
+    "GM_webRequest"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Geoguessr Location Resolver (Works in all modes)\n// @namespace  http://tampermonkey.net/\n// @version  14.1\n// @description  Features: Automatically score 5000 Points | Score randomly between 4500 and 5000 points | Open in Google Maps\n// @author  0x978\n// @match  https://www.geoguessr.com/*\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=geoguessr.com\n// @grant  GM_webRequest\n// @downloadURL  https://update.greasyfork.org/scripts/450253/Geoguessr%20Location%20Resolver%20%28Works%20in%20all%20modes%29.user.js\n// @updateURL  https://update.greasyfork.org/scripts/450253/Geoguessr%20Location%20Resolver%20%28Works%20in%20all%20modes%29.meta.js",
+  "sha256": "62e9e5f44f74a8f68e1313fc2a43e7ca0b672f31e1d790837b93c8428fbeee27",
+  "discovered_at": "2026-05-11T06:18:09.251804+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 30091,
+  "good_ratings": 29,
+  "bad_ratings": 9,
+  "summary": {
+    "applicable_sites": [
+      "GeoGuessr官网"
+    ],
+    "description": "本脚本可自动获取GeoGuessr游戏中的真实地理位置，帮助用户一键获得最高分或接近满分，并可快速在Google地图中打开当前位置。适用于所有游戏模式，极大简化猜地点过程。",
+    "permissions": [
+      {
+        "explanation": "允许脚本拦截和分析网页与外部服务（如Google地图API）的数据请求，以获取地理坐标信息。",
+        "grant": "GM_webRequest"
+      }
+    ],
+    "tags": [
+      "游戏辅助",
+      "自动答题",
+      "地图工具",
+      "GeoGuessr",
+      "作弊",
+      "地理定位"
+    ],
+    "usage": [
+      "1. 安装脚本后，打开GeoGuessr官网并开始游戏。",
+      "2. 游戏过程中，界面会出现自动定位和得分相关的按钮或功能。",
+      "3. 点击相应按钮即可自动获得满分或高分，或在Google地图中查看真实位置。"
+    ],
+    "zh_name": "GeoGuessr 地点解析助手"
+  }
+}
