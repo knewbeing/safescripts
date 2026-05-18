@@ -1,0 +1,94 @@
+{
+  "slug": "Bazaars_in_Item_Market_Powered_by_TornW3B",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/527616-bazaars-in-item-market-powered-by-tornw3b",
+  "source_repo": "527616",
+  "raw_url": "https://update.greasyfork.org/scripts/527616/Bazaars%20in%20Item%20Market%20Powered%20by%20TornW3B.user.js",
+  "filename": "Bazaars_in_Item_Market_Powered_by_TornW3B.user.js",
+  "name": "Bazaars in Item Market Powered by TornW3B",
+  "version": "3.26",
+  "description": "Displays bazaar listings with sorting controls",
+  "match": [
+    "https://www.torn.com/page.php?sid=ItemMarket*",
+    "https://www.torn.com/bazaar.php*"
+  ],
+  "grant": [
+    "GM.xmlHttpRequest",
+    "GM_setValue",
+    "GM_getValue",
+    "GM_deleteValue",
+    "GM_listValues",
+    "GM.setValue",
+    "GM.getValue",
+    "GM.deleteValue",
+    "GM.listValues"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Bazaars in Item Market Powered by TornW3B\n// @namespace  http://tampermonkey.net/\n// @version  3.26\n// @description  Displays bazaar listings with sorting controls\n// @author  Weav3r\n// @match  https://www.torn.com/page.php?sid=ItemMarket*\n// @match  https://www.torn.com/bazaar.php*\n// @grant  GM.xmlHttpRequest\n// @grant  GM_setValue\n// @grant  GM_getValue\n// @grant  GM_deleteValue\n// @grant  GM_listValues\n// @grant  GM.setValue\n// @grant  GM.getValue\n// @grant  GM.deleteValue\n// @grant  GM.listValues\n// @connect  weav3r.dev\n// @run-at  document-end\n// @downloadURL  https://update.greasyfork.org/scripts/527616/Bazaars%20in%20Item%20Market%20Powered%20by%20TornW3B.user.js\n// @updateURL  https://update.greasyfork.org/scripts/527616/Bazaars%20in%20Item%20Market%20Powered%20by%20TornW3B.meta.js",
+  "sha256": "9085a27188ec51593d4c6ddd307aafb902e78fc8ea0b52f3245e1c0e714c0f9a",
+  "discovered_at": "2026-05-18T06:13:16.423334+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 8325,
+  "good_ratings": 2,
+  "bad_ratings": 0,
+  "summary": {
+    "applicable_sites": [
+      "Torn 游戏物品市场页面",
+      "Torn 游戏个人商店页面"
+    ],
+    "description": "本脚本为 Torn 游戏的物品市场页面增加了个人商店（Bazaar）商品展示，并提供排序功能。用户可以更方便地浏览和筛选市场中的个人商店商品。",
+    "permissions": [
+      {
+        "explanation": "允许脚本向外部服务器请求数据，用于获取和展示商店信息。",
+        "grant": "GM.xmlHttpRequest"
+      },
+      {
+        "explanation": "用于在本地保存用户的设置或缓存数据。",
+        "grant": "GM_setValue"
+      },
+      {
+        "explanation": "用于读取本地保存的设置或缓存数据。",
+        "grant": "GM_getValue"
+      },
+      {
+        "explanation": "用于删除本地保存的设置或缓存数据。",
+        "grant": "GM_deleteValue"
+      },
+      {
+        "explanation": "用于列出所有本地保存的设置或缓存数据的键名。",
+        "grant": "GM_listValues"
+      },
+      {
+        "explanation": "用于以新版API方式保存本地数据。",
+        "grant": "GM.setValue"
+      },
+      {
+        "explanation": "用于以新版API方式读取本地数据。",
+        "grant": "GM.getValue"
+      },
+      {
+        "explanation": "用于以新版API方式删除本地数据。",
+        "grant": "GM.deleteValue"
+      },
+      {
+        "explanation": "用于以新版API方式列出所有本地数据的键名。",
+        "grant": "GM.listValues"
+      }
+    ],
+    "tags": [
+      "Torn",
+      "游戏辅助",
+      "物品市场",
+      "商店管理",
+      "信息展示"
+    ],
+    "usage": [
+      "安装脚本后，进入 Torn 的物品市场或个人商店页面。",
+      "页面会自动显示所有个人商店（Bazaar）的商品列表。",
+      "可使用新增的排序控件，对商品进行筛选和排序。"
+    ],
+    "zh_name": "Torn物品市场商店助手"
+  }
+}

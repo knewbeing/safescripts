@@ -1,0 +1,99 @@
+{
+  "slug": "YouTube",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/537017-youtube",
+  "source_repo": "537017",
+  "raw_url": "https://update.greasyfork.org/scripts/537017/YouTube%20%2B.user.js",
+  "filename": "YouTube.user.js",
+  "name": "YouTube +",
+  "version": "2.5",
+  "description": "Вкладки для информации, комментариев, видео, плейлиста и скачивание видео и другие функции ↴",
+  "match": [
+    "https://*.youtube.com/*",
+    "https://music.youtube.com/*",
+    "https://studio.youtube.com/*",
+    "*://myactivity.google.com/*",
+    "*://www.youtube.com/feed/history/*",
+    "https://www.youtube.com",
+    "*://*.youtube.com/**"
+  ],
+  "grant": [
+    "GM_addStyle",
+    "GM_getValue",
+    "GM_setValue",
+    "GM_addValueChangeListener",
+    "GM_xmlhttpRequest",
+    "unsafeWindow",
+    "GM_addElement"
+  ],
+  "require": [
+    "https://cdn.jsdelivr.net/npm/@preact/signals-core@1.12.1/dist/signals-core.min.js",
+    "https://cdn.jsdelivr.net/npm/browser-id3-writer@4.4.0/dist/browser-id3-writer.min.js",
+    "https://cdn.jsdelivr.net/npm/preact@10.27.2/dist/preact.min.js",
+    "https://cdn.jsdelivr.net/npm/preact@10.27.2/hooks/dist/hooks.umd.js",
+    "https://cdn.jsdelivr.net/npm/@preact/signals@2.5.0/dist/signals.min.js",
+    "https://cdn.jsdelivr.net/npm/dayjs@1.11.19/dayjs.min.js"
+  ],
+  "metadata_raw": "// @name  YouTube +\n// @name:ar  YouTube +\n// @name:az  YouTube +\n// @name:be  YouTube +\n// @name:bg  YouTube +\n// @name:zh-CN  YouTube +\n// @name:de  YouTube +\n// @name:nl  YouTube +\n// @name:en  YouTube +\n// @name:es  YouTube +\n// @name:fr  YouTube +\n// @name:hi  YouTube +\n// @name:id  YouTube +\n// @name:it  YouTube +\n// @name:ja  YouTube +\n// @name:kk  YouTube +\n// @name:ko  YouTube +\n// @name:ky  YouTube +\n// @name:pl  YouTube +\n// @name:pt  YouTube +\n// @name:tr  YouTube +\n// @name:zh-TW  YouTube +\n// @name:uk  YouTube +\n// @name:uz  YouTube +\n// @name:vi  YouTube +\n// @namespace  by\n// @version  2.5\n// @author  diorhc\n// @description  Вкладки для информации, комментариев, видео, плейлиста и скачивание видео и другие функции ↴\n// @description:ar  Tabview YouTube and download and other features ↴\n// @description:az  Tabview YouTube və yükləmə və digər xüsusiyyətlər ↴\n// @description:be  Tabview YouTube і загрузка і іншыя функцыі ↴\n// @description:bg  Tabview YouTube и изтегляне и други функции ↴\n// @description:zh-CN  标签视图 YouTube、下载及其他功能 ↴\n// @description:de  Tabview YouTube und Download und andere Funktionen ↴\n// @description:nl  Tabview YouTube en Download en andere functies ↴\n// @description:en  Tabview YouTube and Download and others features ↴\n// @description:es  Vista de pestañas de YouTube, descarga y otras funciones ↴\n// @description:fr  Tabview YouTube et Télécharger et autres fonctionnalités ↴\n// @description:hi  YouTube टैब व्यू, डाउनलोड और अन्य सुविधाएँ ↴\n// @description:id  Tampilan tab YouTube, unduh, dan fitur lainnya ↴\n// @description:it  Vista a schede per YouTube, download e altre funzionalità ↴\n// @description:ja  タブビューYouTubeとダウンロードおよびその他の機能 ↴\n// @description:kk  Tabview YouTube және жүктеу және басқа функциялар ↴\n// @description:ko  Tabview YouTube 및 다운로드 및 기타 기능 ↴\n// @description:ky  Tabview YouTube жана жүктөө жана башка функциялар ↴\n// @description:pl  Widok kart YouTube, pobieranie i inne funkcje ↴\n// @description:pt  Visualização em abas do YouTube, download e outros recursos ↴\n// @description:tr  Sekmeli Görünüm YouTube ve İndir ve diğer özellikler ↴\n// @description:zh-TW  標籤檢視 YouTube 及下載及其他功能 ↴\n// @description:uk  Перегляд вкладок YouTube, завантаження та інші функції ↴\n// @description:uz  YouTube uchun tabview va yuklab olish va boshqa xususiyatlar ↴\n// @description:vi  Chế độ tab cho YouTube, tải xuống và các tính năng khác ↴\n// @match  https://*.youtube.com/*\n// @match  https://music.youtube.com/*\n// @match  https://studio.youtube.com/*\n// @match  *://myactivity.google.com/*\n// @include  *://www.youtube.com/feed/history/*\n// @include  https://www.youtube.com\n// @include  *://*.youtube.com/**\n// @exclude  *://accounts.youtube.com/*\n// @exclude  *://www.youtube.com/live_chat_replay*\n// @exclude  *://www.youtube.com/persist_identity*\n// @exclude  /^https?://\\w+\\.youtube\\.com\\/live_chat.*$/\n// @exclude  /^https?://\\S+\\.(txt|png|jpg|jpeg|gif|xml|svg|manifest|log|ini)[^\\/]*$/\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=youtube.com\n// @license  MIT\n// @require  https://cdn.jsdelivr.net/npm/@preact/signals-core@1.12.1/dist/signals-core.min.js\n// @require  https://cdn.jsdelivr.net/npm/browser-id3-writer@4.4.0/dist/browser-id3-writer.min.js\n// @require  https://cdn.jsdelivr.net/npm/preact@10.27.2/dist/preact.min.js\n// @require  https://cdn.jsdelivr.net/npm/preact@10.27.2/hooks/dist/hooks.umd.js\n// @require  https://cdn.jsdelivr.net/npm/@preact/signals@2.5.0/dist/signals.min.js\n// @require  https://cdn.jsdelivr.net/npm/dayjs@1.11.19/dayjs.min.js\n// @grant  GM_addStyle\n// @grant  GM_getValue\n// @grant  GM_setValue\n// @grant  GM_addValueChangeListener\n// @grant  GM_xmlhttpRequest\n// @grant  unsafeWindow\n// @grant  GM_addElement\n// @connect  api.livecounts.io\n// @connect  cnv.cx\n// @connect  mp3yt.is\n// @connect  *\n// @connect  youtube.com\n// @connect  googlevideo.com\n// @connect  self\n// @run-at  document-start\n// @homepageURL  https://github.com/diorhc/YTP\n// @supportURL  https://github.com/diorhc/YTP/discussions\n// @downloadURL  https://update.greasyfork.org/scripts/537017/YouTube%20%2B.user.js\n// @updateURL  https://update.greasyfork.org/scripts/537017/YouTube%20%2B.meta.js",
+  "sha256": "9af74a2ce0f11df36700dc76866e0609d06365ac25cddcae929605701e3fd031",
+  "discovered_at": "2026-05-18T06:13:42.789520+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 4578,
+  "good_ratings": 23,
+  "bad_ratings": 1,
+  "summary": {
+    "applicable_sites": [
+      "YouTube",
+      "YouTube Music",
+      "YouTube Studio",
+      "Google 活动记录"
+    ],
+    "description": "本脚本为 YouTube 页面增加了标签视图，方便切换信息、评论、视频、播放列表等内容，并提供视频下载等增强功能。让用户在观看视频时操作更便捷，体验更多实用工具。",
+    "permissions": [
+      {
+        "explanation": "用于向页面添加自定义样式，让界面更美观或突出功能。",
+        "grant": "GM_addStyle"
+      },
+      {
+        "explanation": "用于读取脚本设置，实现个性化配置。",
+        "grant": "GM_getValue"
+      },
+      {
+        "explanation": "用于保存脚本设置，记住用户的偏好。",
+        "grant": "GM_setValue"
+      },
+      {
+        "explanation": "用于监听设置变化，实时响应用户操作。",
+        "grant": "GM_addValueChangeListener"
+      },
+      {
+        "explanation": "用于跨域请求资源，如获取视频下载链接。",
+        "grant": "GM_xmlhttpRequest"
+      },
+      {
+        "explanation": "允许脚本访问网页的原始窗口对象，实现更深层次的功能集成。",
+        "grant": "unsafeWindow"
+      },
+      {
+        "explanation": "用于向页面动态添加元素，扩展页面功能。",
+        "grant": "GM_addElement"
+      }
+    ],
+    "tags": [
+      "YouTube增强",
+      "视频下载",
+      "界面优化",
+      "标签切换",
+      "多功能工具"
+    ],
+    "usage": [
+      "安装脚本后，打开 YouTube、YouTube Music 或 YouTube Studio 页面。",
+      "在视频页面会看到新增的标签栏，可切换信息、评论、播放列表等。",
+      "如需下载视频，点击相应的下载按钮即可。",
+      "可在脚本设置中调整部分功能选项。"
+    ],
+    "zh_name": "YouTube 增强标签工具"
+  }
+}

@@ -12,37 +12,37 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 @connect * 允许任意外部域名的网络请求，且代码中存在大量对 unpkg.com、cdnjs.cloudflare.com 等第三方 CDN 的 JS/WASM 加载，存在数据外传和供应链风险。",
-      "location": "元数据 @connect, LOCAL_ENGINES jsUrl/wasmUrl",
-      "recommendation": "严格限制 @connect 域名，仅允许必要的可信域名。避免加载未锁定版本的第三方代码。",
+      "description": "@connect * 允许任意域名的网络请求，存在数据外传和隐私泄露的高风险。",
+      "location": "metadata (@connect *)",
+      "recommendation": "移除 @connect *，仅允许必要的可信域名。",
       "severity": "CRITICAL",
-      "type": "数据外传/供应链风险"
+      "type": "数据外传"
     },
     {
-      "description": "脚本通过 GM_xmlhttpRequest、动态 fetch、XHR 加载外部 JS/WASM 引擎，部分 URL 可变（如 unpkg.com、cdnjs.cloudflare.com），未锁定哈希，存在远程代码执行和供应链污染风险。",
-      "location": "LOCAL_ENGINES jsUrl/wasmUrl, 资源加载逻辑",
-      "recommendation": "仅允许加载固定版本的可信 JS/WASM 文件，并校验内容完整性。",
+      "description": "脚本通过 GM_xmlhttpRequest、fetch 方式加载外部 JS/WASM 引擎（unpkg.com、cdnjs.cloudflare.com），存在远程代码执行和供应链污染风险。",
+      "location": "LOCAL_ENGINES/jsUrl/wasmUrl",
+      "recommendation": "仅允许固定版本哈希的官方 CDN，避免可变 URL。",
       "severity": "HIGH",
       "type": "远程代码执行/供应链风险"
     },
     {
-      "description": "脚本申请了 @connect *、GM_xmlhttpRequest 等高权限，但实际用途主要为加载 Stockfish 引擎和资源，存在权限滥用风险。",
-      "location": "元数据 @connect, @grant",
-      "recommendation": "移除不必要的高权限申请，最小化权限集。",
+      "description": "@grant 申请了 GM_xmlhttpRequest，但用途不明，可能被滥用进行隐私数据外传。",
+      "location": "metadata (@grant GM_xmlhttpRequest)",
+      "recommendation": "仅在确有必要时申请 GM_xmlhttpRequest，并限制请求目标域名。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "脚本通过 GM_getResourceText、GM_xmlhttpRequest、fetch 等多种方式动态加载和执行外部 JS 资源，增加了远程代码注入的攻击面。",
-      "location": "资源加载相关代码",
-      "recommendation": "避免动态加载和执行外部 JS，或对资源进行严格校验。",
-      "severity": "HIGH",
-      "type": "远程代码执行"
+      "description": "@grant 申请了 GM_getValue/GM_setValue，但未见实际用途，存在权限冗余。",
+      "location": "metadata (@grant GM_getValue/GM_setValue)",
+      "recommendation": "移除未使用的高权限申请。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
     },
     {
-      "description": "部分资源（如 Stockfish 引擎）通过 unpkg.com、cdnjs.cloudflare.com 加载，若 CDN 被污染或版本更新，可能导致供应链攻击。",
-      "location": "LOCAL_ENGINES jsUrl/wasmUrl",
-      "recommendation": "使用官方渠道并锁定具体版本，必要时校验文件哈希。",
+      "description": "@resource 加载了外部 JS（stockfish.js），存在远程代码执行和供应链风险。",
+      "location": "@resource stockfish.js https://unpkg.com/stockfish@18.0.5/bin/stockfish-18-single.js",
+      "recommendation": "仅允许固定版本哈希的官方 CDN，避免可变 URL。",
       "severity": "MEDIUM",
       "type": "供应链风险"
     }
@@ -54,10 +54,10 @@
   },
   "risk_level": "CRITICAL",
   "script_name": "BEST Cheat for Chess.com (NEW Stockfish 18.0.5 to 9.0, No Anti-Ban)",
-  "security_score": 0,
-  "summary": "该脚本存在严重的安全风险，主要体现在数据外传、远程代码执行和供应链风险。脚本允许任意外部域名的网络请求，并动态加载未锁定版本的第三方 JS/WASM 资源，极易被利用进行恶意代码注入或数据泄露。建议严格限制网络权限、固定资源版本并校验完整性。",
+  "security_score": 35,
+  "summary": "该脚本存在严重的安全隐患，主要体现在允许任意域名的数据外传（@connect *），以及通过外部 CDN 动态加载 JS/WASM 引擎，存在远程代码执行和供应链污染风险。未发现明显的隐私采集、代码混淆或 DOM XSS 问题，但权限申请存在冗余。强烈建议移除 @connect * 并限制外部依赖来源。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-11T06:31:41.204770+00:00",
+  "analyzed_at": "2026-05-18T06:17:16.917926+00:00",
   "slug": "BEST_Cheat_for_Chesscom_NEW_Stockfish_1805_to_90_No_Anti-Ban"
 }

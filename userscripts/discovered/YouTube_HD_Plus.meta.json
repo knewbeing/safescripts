@@ -1,0 +1,63 @@
+{
+  "slug": "YouTube_HD_Plus",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/508784-youtube-hd-plus",
+  "source_repo": "508784",
+  "raw_url": "https://update.greasyfork.org/scripts/508784/YouTube%20HD%20Plus.user.js",
+  "filename": "YouTube_HD_Plus.user.js",
+  "name": "YouTube HD Plus",
+  "version": "2.7.7",
+  "description": "Automatically select your preferred video quality and enable Premium playback when available. (Supports YouTube Desktop, Music & Mobile)",
+  "match": [
+    "https://www.youtube.com/*",
+    "https://www.youtube-nocookie.com/*",
+    "https://m.youtube.com/*",
+    "https://music.youtube.com/*"
+  ],
+  "grant": [
+    "GM.getValue",
+    "GM.setValue"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  YouTube HD Plus\n// @name:en  YouTube HD Plus\n// @name:id  YouTube HD Plus\n// @name:zh-CN  YouTube HD Plus\n// @name:zh-TW  YouTube HD Plus\n// @name:ja  YouTube HD Plus\n// @name:ko  YouTube HD Plus\n// @name:fr  YouTube HD Plus\n// @name:es  YouTube HD Plus\n// @name:de  YouTube HD Plus\n// @name:ru  YouTube HD Plus\n// @description  Automatically select your preferred video quality and enable Premium playback when available. (Supports YouTube Desktop, Music & Mobile)\n// @description:en  Automatically select your preferred video quality and enable Premium playback when available. (Supports YouTube Desktop, Music & Mobile)\n// @description:id  Otomatis memilih kualitas video yang Anda sukai dan mengaktifkan pemutaran Premium jika tersedia. (Mendukung YouTube Desktop, Music & Mobile)\n// @description:zh-CN  自动选择您偏好的视频画质，并在可用时启用 Premium 播放。 (支持 YouTube 桌面版、音乐和移动端)\n// @description:zh-TW  自動選擇您偏好的影片畫質，並在可用時啟用 Premium 播放。 (支援 YouTube 桌面版、音樂和行動裝置)\n// @description:ja  希望する画質を自動で選択し、利用可能な場合は Premium 再生を有効にします。（対応: YouTube デスクトップ、Music、モバイル）\n// @description:ko  선호하는 동영상 화질을 자동으로 선택하고, 가능할 경우 Premium 재생을 활성화합니다. (지원: YouTube 데스크톱, Music, 모바일)\n// @description:fr  Sélectionne automatiquement la qualité vidéo préférée et active la lecture Premium lorsque disponible. (Compatible avec YouTube Desktop, Music et Mobile)\n// @description:es  Selecciona automáticamente la calidad de vídeo preferida y activa la reproducción Premium cuando esté disponible. (Compatible con YouTube Desktop, Music y Móvil)\n// @description:de  Wählt automatisch die bevorzugte Videoqualität und aktiviert Premium-Wiedergabe, wenn verfügbar. (Unterstützt YouTube Desktop, Music & Mobile)\n// @description:ru  Автоматически выбирает предпочтительное качество видео и включает воспроизведение Premium, если доступно. (Поддерживает YouTube Desktop, Music и Mobile)\n// @version  2.7.7\n// @run-at  document-end\n// @inject-into  content\n// @match  https://www.youtube.com/*\n// @match  https://www.youtube-nocookie.com/*\n// @match  https://m.youtube.com/*\n// @match  https://music.youtube.com/*\n// @exclude  https://*.youtube.com/live_chat*\n// @exclude  https://*.youtube.com/tv*\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=youtube.com\n// @grant  GM.getValue\n// @grant  GM.setValue\n// @author  Fznhq\n// @namespace  https://github.com/fznhq\n// @homepageURL  https://github.com/fznhq/userscript-collection\n// @homepage  https://github.com/fznhq/userscript-collection\n// @compatible  firefox\n// @compatible  chrome\n// @compatible  safari\n// @compatible  opera\n// @compatible  edge\n// @license  GNU GPLv3\n// @downloadURL  https://update.greasyfork.org/scripts/508784/YouTube%20HD%20Plus.user.js\n// @updateURL  https://update.greasyfork.org/scripts/508784/YouTube%20HD%20Plus.meta.js",
+  "sha256": "74f0620c96dfde0db1c942aa4571e7bc0201fca6b9786901386d9228241282bf",
+  "discovered_at": "2026-05-18T06:15:21.806652+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 5954,
+  "good_ratings": 27,
+  "bad_ratings": 0,
+  "summary": {
+    "applicable_sites": [
+      "YouTube（含桌面版、移动版）",
+      "YouTube Music",
+      "YouTube 无痕模式"
+    ],
+    "description": "本脚本可自动为您选择偏好的YouTube视频画质，并在可用时启用Premium播放功能。支持YouTube主站、音乐站和移动端，无需手动切换清晰度。",
+    "permissions": [
+      {
+        "explanation": "用于读取您设置的偏好视频画质等脚本配置。",
+        "grant": "GM.getValue"
+      },
+      {
+        "explanation": "用于保存您设置的偏好视频画质等脚本配置。",
+        "grant": "GM.setValue"
+      }
+    ],
+    "tags": [
+      "YouTube增强",
+      "画质自动切换",
+      "视频体验优化",
+      "自动化",
+      "Premium功能"
+    ],
+    "usage": [
+      "1. 安装脚本后，打开YouTube、YouTube Music或其移动版网页。",
+      "2. 播放任意视频，脚本会自动切换到您偏好的画质。",
+      "3. 如有Premium播放选项，脚本会自动启用。",
+      "4. 如需更改画质偏好，可在脚本设置中调整。"
+    ],
+    "zh_name": "YouTube HD Plus"
+  }
+}

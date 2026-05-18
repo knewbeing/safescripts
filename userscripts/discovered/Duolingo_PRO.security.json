@@ -1,0 +1,63 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [
+      "https://www.duolingopro.net",
+      "https://api.duolingopro.net"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "Script defines external server endpoints (https://www.duolingopro.net, https://api.duolingopro.net) and references feedback/reporting features that likely transmit user data or usage information to these third-party servers. The script also references automatic update and feedback mechanisms that may involve data transmission.",
+      "location": "Global scope, variables serverURL and apiURL, and text strings for feedback/reporting",
+      "recommendation": "Explicitly review all network requests (fetch, XMLHttpRequest, GM_xmlhttpRequest, etc.) to ensure no sensitive user data, cookies, or page content is transmitted. If possible, restrict or remove third-party data transmission.",
+      "severity": "CRITICAL",
+      "type": "Data Exfiltration"
+    },
+    {
+      "description": "Script reads document.cookie to extract the 'lang' value, which may include session or authentication information if not properly scoped. This is a privacy risk if combined with network transmission.",
+      "location": "let systemLanguage = document.cookie.split('; ').find(row => row.startsWith('lang=')).split('=')[1];",
+      "recommendation": "Avoid reading cookies unless strictly necessary. Never transmit cookie values to third-party servers.",
+      "severity": "CRITICAL",
+      "type": "Privacy Collection"
+    },
+    {
+      "description": "Script is not minified or obfuscated, but the code is incomplete and may contain further risks in the omitted sections (e.g., network requests, eval usage, dynamic script loading).",
+      "location": "N/A (code incomplete)",
+      "recommendation": "Review the complete script for additional risks, especially in network and code execution areas.",
+      "severity": "HIGH",
+      "type": "Incomplete Review"
+    },
+    {
+      "description": "@grant only requests GM_log, which is low risk, but the script may still use native APIs for network or storage access. No unnecessary high-privilege grants detected in metadata.",
+      "location": "// @grant GM_log",
+      "recommendation": "Limit permissions to only those required. Monitor for any future changes in grant usage.",
+      "severity": "LOW",
+      "type": "Permission Usage"
+    },
+    {
+      "description": "Script references automatic update URLs and feedback/reporting features, which may introduce supply chain risks if the remote server is compromised or serves malicious code in future updates.",
+      "location": "// @downloadURL, // @updateURL, feedback/reporting text",
+      "recommendation": "Pin update URLs to trusted sources and verify integrity of updates. Avoid auto-updating from untrusted domains.",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [
+      "Reads document.cookie for 'lang' value"
+    ],
+    "detected": true
+  },
+  "risk_level": "CRITICAL",
+  "script_name": "Duolingo PRO",
+  "security_score": 50,
+  "summary": "This script defines external server endpoints and references features that likely transmit user data to third-party servers, which is a critical risk. It also reads cookies, which may contain sensitive information. The script is not obfuscated and requests minimal permissions, but the incomplete code prevents a full review. There are also supply chain risks due to remote update URLs. Use of this script is NOT recommended without further review and mitigation of data exfiltration and privacy risks.",
+  "supply_chain_risk": true,
+  "websocket_usage": false,
+  "analyzed_at": "2026-05-18T06:22:08.114351+00:00",
+  "slug": "Duolingo_PRO"
+}

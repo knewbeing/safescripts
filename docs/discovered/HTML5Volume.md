@@ -4,15 +4,15 @@ title: "HTML5 视频音频默认音量"
 
 # HTML5 视频音频默认音量
 
-`音量控制`  `视频增强`  `音频增强`  `网页通用`  `用户体验`  `自动记忆`
+`音量控制`  `视频增强`  `音频增强`  `网页优化`  `自动化`  `隐私保护`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/HTML5Volume.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**1.0.5**　　发现时间：**2026-05-11**　　来源：[XIU2/UserScript](https://github.com/XIU2/UserScript) <Badge type="tip" text="GitHub" />
+> 版本：**1.0.5**　　发现时间：**2026-05-18**　　来源：[XIU2/UserScript](https://github.com/XIU2/UserScript) <Badge type="tip" text="GitHub" />
 
 ## 功能介绍
 
-本脚本可让所有网站上的 HTML5 视频和音频默认音量不再是 100%，避免突然被大音量吓到。它还能为每个网站分别记住你调整过的音量，下次访问自动恢复。
+本脚本可自动设置网页中 HTML5 视频和音频的默认音量，避免因默认 100% 音量而被吓到。每个网站的音量设置会被单独记忆，下次访问同一网站时自动应用上次的音量。
 
 ## 适用网站
 
@@ -21,20 +21,20 @@ title: "HTML5 视频音频默认音量"
 ## 使用方法
 
 1. 安装脚本后，访问任意含有 HTML5 视频或音频的网站。
-2. 播放视频或音频时，音量会自动设为默认值（非100%）。
-3. 你可以手动调整音量，脚本会记住该网站的设置。
-4. 如需更改默认音量，可通过油猴菜单进行设置。
+2. 播放视频或音频时，音量会自动调整为脚本设定的默认值。
+3. 如需更改默认音量，可通过油猴脚本菜单进行设置。
+4. 每个网站的音量设置会被自动记忆，无需重复调整。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `GM_registerMenuCommand` | 用于在脚本菜单中添加自定义命令，方便用户设置音量。 |
-| `GM_unregisterMenuCommand` | 用于移除脚本菜单中的自定义命令。 |
-| `GM_openInTab` | 用于在新标签页中打开链接，可能用于帮助或设置页面。 |
-| `GM_getValue` | 用于读取已保存的音量设置，实现每站点记忆。 |
-| `GM_setValue` | 用于保存你在每个网站调整的音量设置。 |
-| `GM_notification` | 用于在需要时弹出通知提示用户。 |
+| `GM_registerMenuCommand` | 用于在脚本菜单中添加自定义命令，方便用户操作。 |
+| `GM_unregisterMenuCommand` | 用于移除之前注册的菜单命令。 |
+| `GM_openInTab` | 用于在新标签页打开链接，便于跳转或查看帮助。 |
+| `GM_getValue` | 用于读取已保存的音量设置，实现每站点记忆音量。 |
+| `GM_setValue` | 用于保存用户的音量设置，实现下次自动应用。 |
+| `GM_notification` | 用于在需要时弹出桌面通知，提醒用户相关信息。 |
 
 ## 安全分析
 
@@ -44,4 +44,4 @@ title: "HTML5 视频音频默认音量"
 
 ---
 
-*由 SafeScripts 自动发现 · [查看原始来源](https://raw.githubusercontent.com/XIU2/UserScript/2de66ae0fb5e64439204b800db29ad925245a357/HTML5Volume.user.js)*
+*由 SafeScripts 自动发现 · [查看原始来源](https://raw.githubusercontent.com/XIU2/UserScript/de4fcb506ced59aa0c6637ab7c52a2594fa050ed/HTML5Volume.user.js)*

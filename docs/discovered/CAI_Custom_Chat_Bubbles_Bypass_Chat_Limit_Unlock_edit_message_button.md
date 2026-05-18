@@ -30,9 +30,9 @@ title: "C.AI Custom Chat Bubbles + Bypass Chat Limit (Unlock edit message button
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-05-11
+**风险等级**：🟡 LOW　　**安全评分**：76/100　　**分析时间**：2026-05-18
 
-> No critical or high-risk issues detected. The script does not transmit user data externally, collect sensitive information, or execute remote code. It requests some permissions (GM_xmlhttpRequest, @connect) that are not fully utilized in the visible code, which is a minor risk. No obfuscation or DOM XSS patterns found. Supply chain risk is low due to version-pinned dependency. Overall, the script is considered low risk.
+> 该脚本主要用于美化 character.ai 聊天界面和绕过聊天限制。未检测到用户数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。存在部分中等风险：1）申请了 GM_xmlhttpRequest 权限但未发现敏感数据外传，2）重写 fetch/XHR 可能影响兼容性，3）@require 依赖未锁定哈希存在供应链风险。整体安全性较高，建议关注依赖安全和权限最小化。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -41,29 +41,24 @@ title: "C.AI Custom Chat Bubbles + Bypass Chat Limit (Unlock edit message button
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ✅ 可信 |
+| 供应链风险 | ⚠️ 存在风险 |
 
 ### 发现的问题
 
-**🟠 MEDIUM** — Permission Overprovision  
-> The script requests @connect permission for translate.googleapis.com, but no code in the provided snippet sends user/page data to this endpoint. GM_xmlhttpRequest is granted but not used in the visible code.  
-> 位置：Metadata block and permissions  
-> 建议：Ensure GM_xmlhttpRequest is only used for necessary, transparent features. Avoid sending sensitive user data to third-party APIs.
+**🟠 MEDIUM** — 权限申请  
+> 申请了 GM_xmlhttpRequest 权限，但实际代码未发现对用户数据的外传，仅用于与 translate.googleapis.com 通信，且未检测到敏感数据传输。  
+> 位置：@grant, @connect 元数据及代码全局  
+> 建议：确保 GM_xmlhttpRequest 仅用于必要的第三方 API，避免传输敏感信息。
 
-**🟠 MEDIUM** — Permission Overprovision  
-> The script requests GM_xmlhttpRequest permission but does not use it in the provided code. Unused high-privilege permissions increase attack surface.  
-> 位置：Metadata block  
-> 建议：Remove unused GM_xmlhttpRequest permission if not required.
+**🟠 MEDIUM** — 敏感 API 拦截  
+> 脚本重写 fetch 和 XMLHttpRequest 以拦截对 neo.character.ai/feature_limits 的请求，实现“Bypass Chat Limit”功能。此行为可能影响页面正常功能，存在一定兼容性和维护风险。  
+> 位置：window.fetch, XMLHttpRequest.prototype.open  
+> 建议：建议详细测试兼容性，确保不会影响其他正常请求。
 
-**🟡 LOW** — Network Interception  
-> The script overrides window.fetch and XMLHttpRequest.prototype.open to block requests to 'neo.character.ai/feature_limits'. This is a local bypass and does not transmit data externally.  
-> 位置：Bypass Chat Limit feature  
-> 建议：Ensure such overrides do not inadvertently leak data or break site functionality.
-
-**🟡 LOW** — Supply Chain  
-> The script uses @require to load turndown from unpkg.com, a reputable CDN, and pins the version to 7.1.3.  
-> 位置：Metadata block  
-> 建议：Continue to pin versions for all external dependencies to reduce supply chain risk.
+**🟠 MEDIUM** — 供应链风险  
+> @require 加载了 turndown 库，来源为 unpkg.com，属于主流 CDN，但未锁定具体文件哈希，存在一定供应链风险。  
+> 位置：@require https://unpkg.com/turndown@7.1.3/lib/turndown.browser.umd.js  
+> 建议：建议使用带有版本哈希的 CDN 链接，或自行托管依赖。
 
 ---
 

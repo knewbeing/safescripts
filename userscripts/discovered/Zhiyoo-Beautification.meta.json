@@ -1,9 +1,9 @@
 {
   "slug": "Zhiyoo-Beautification",
   "platform": "github",
-  "source_url": "https://raw.githubusercontent.com/XIU2/UserScript/2de66ae0fb5e64439204b800db29ad925245a357/Zhiyoo-Beautification.user.js",
+  "source_url": "https://raw.githubusercontent.com/XIU2/UserScript/de4fcb506ced59aa0c6637ab7c52a2594fa050ed/Zhiyoo-Beautification.user.js",
   "source_repo": "XIU2/UserScript",
-  "raw_url": "https://raw.githubusercontent.com/XIU2/UserScript/2de66ae0fb5e64439204b800db29ad925245a357/Zhiyoo-Beautification.user.js",
+  "raw_url": "https://raw.githubusercontent.com/XIU2/UserScript/de4fcb506ced59aa0c6637ab7c52a2594fa050ed/Zhiyoo-Beautification.user.js",
   "filename": "Zhiyoo-Beautification.user.js",
   "name": "智友邦论坛美化",
   "version": "1.0.2",
@@ -15,7 +15,7 @@
   "require": [],
   "metadata_raw": "// @name  智友邦论坛美化\n// @version  1.0.2\n// @author  X.I.U\n// @description  精简多余内容、样式优化、宽屏显示\n// @icon  http://bbs.zhiyoo.net/favicon.ico\n// @match  *://bbs.zhiyoo.net/*\n// @license  GPL-3.0 License\n// @run-at  document-start\n// @namespace  https://greasyfork.org/scripts/412361\n// @supportURL  https://github.com/XIU2/UserScript\n// @homepageURL  https://github.com/XIU2/UserScript",
   "sha256": "7d4045401fda52d8034659af235c9253a3e9d24f215c459cb81c4d6716081ea3",
-  "discovered_at": "2026-05-11T05:54:42.121395+00:00",
+  "discovered_at": "2026-05-18T06:06:18.269907+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
@@ -26,17 +26,17 @@
     "applicable_sites": [
       "智友邦论坛"
     ],
-    "description": "本脚本对智友邦论坛页面进行美化，去除多余内容，优化页面样式，并实现宽屏显示。让论坛界面更简洁、阅读体验更好。",
+    "description": "本脚本对智友邦论坛页面进行美化，去除多余内容和广告，优化页面布局，使论坛显示更简洁宽敞。还调整了帖子标题和图片的显示效果，提升阅读体验。",
     "permissions": [],
     "tags": [
-      "页面美化",
-      "论坛优化",
+      "界面美化",
       "广告屏蔽",
+      "论坛优化",
       "宽屏显示"
     ],
     "usage": [
       "安装脚本后，访问智友邦论坛页面。",
-      "页面会自动变得更简洁宽屏，无需手动操作。"
+      "页面会自动变得更简洁宽敞，无需手动操作。"
     ],
     "zh_name": "智友邦论坛美化"
   }

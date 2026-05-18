@@ -14,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "GitHub AI 代码分析助手",
   "security_score": 100,
-  "summary": "该脚本仅在 GitHub 仓库页面插入本地按钮和下拉菜单，未检测到任何网络请求、数据外传、隐私采集、远程代码执行、混淆、XSS、权限滥用或供应链风险。按钮仅跳转到 zread.ai 和 deepwiki.com 的主页，无参数传递。整体安全。",
+  "summary": "该脚本仅在 GitHub 仓库页面插入本地按钮和下拉菜单，未检测到任何网络请求、数据外传、隐私采集、远程代码执行、混淆、XSS、权限滥用或供应链风险。代码结构清晰，未使用任何高危 API。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-11T05:51:41.187392+00:00",
+  "analyzed_at": "2026-05-18T06:05:38.434530+00:00",
   "slug": "GitHub_20AI_20_E4_BB_A3_E7_A0_81_E5_88_86_E6_9E_90_E5_8A_A9_E6_89_8B"
 }

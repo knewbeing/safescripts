@@ -33,9 +33,9 @@ title: "Deadshot.io 自动瞄准与高亮"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-05-11
+**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-05-18
 
-> 该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险等高危安全问题。主要安全关注点为申请了未使用的高权限（unsafeWindow），建议移除。脚本本身为游戏作弊用途，存在伦理风险。整体安全性较高，但不建议用于破坏游戏公平性。
+> 该脚本主要通过 WebGL Hook 和 MouseEvent 属性代理实现游戏辅助功能。未检测到数据外传、隐私采集、远程代码执行、代码混淆、供应链风险或 WebSocket 使用。唯一中等风险为申请了 unsafeWindow 权限，但未发现滥用。整体安全性较高。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -48,15 +48,20 @@ title: "Deadshot.io 自动瞄准与高亮"
 
 ### 发现的问题
 
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 @grant unsafeWindow 权限，但实际代码未发现对 unsafeWindow 的使用。  
-> 位置：@grant 元数据  
-> 建议：如无必要，建议移除 @grant unsafeWindow 权限，减少潜在攻击面。
+**⛔ CRITICAL** — 数据外传（无问题，仅说明）  
+> 未检测到任何网络请求、数据外传、WebSocket、EventSource、sendBeacon 等外联行为。  
+> 位置：全局  
+> 建议：保持无外传，勿添加任何数据上报逻辑。
 
-**🟡 LOW** — 伦理风险  
-> 脚本通过 Object.defineProperty 劫持 MouseEvent.prototype.movementX/Y，实现自动瞄准功能，属于游戏作弊行为。  
-> 位置：核心逻辑  
-> 建议：仅供学习用途，勿用于破坏游戏公平性。
+**🟠 MEDIUM** — 权限滥用  
+> 使用了 @grant unsafeWindow，允许脚本访问页面的全局对象，增加潜在攻击面，但本脚本未滥用。  
+> 位置：元数据 @grant  
+> 建议：仅在确有必要时申请 unsafeWindow 权限。
+
+**🟡 LOW** — DOM 注入  
+> 脚本通过 document.body.appendChild(menu) 和 document.createElement('style') 动态插入 UI，但未插入任何外部脚本或基于用户输入的内容，XSS 风险较低。  
+> 位置：createUI 函数  
+> 建议：确保所有插入 DOM 的内容均为静态或受控内容。
 
 ---
 

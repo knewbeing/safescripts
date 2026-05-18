@@ -2,7 +2,7 @@
 // @name         FF Scouter V2
 // @namespace    Violentmonkey Scripts
 // @match        https://www.torn.com/*
-// @version      2.73
+// @version      2.76
 // @author       rDacted, Weav3r, xentac, Glasnost
 // @description  Shows the expected Fair Fight score against targets and faction war status
 // @grant        GM_xmlhttpRequest
@@ -18,18 +18,20 @@
 // @updateURL https://update.greasyfork.org/scripts/535292/FF%20Scouter%20V2.meta.js
 // ==/UserScript==
 
-const FF_VERSION = "2.73";
+const FF_VERSION = "2.76";
 const API_INTERVAL = 30000;
 const FF_TARGET_STALENESS = 24 * 60 * 60 * 1000; // Refresh the target list every day
 const TARGET_KEY = "ffscouterv2-targets";
 const TARGET_INDEX_KEY = "ffscouterv2-target-index";
 const CLEARED_TSC_KEY = "ffscouterv2-cleared-tsc-keys";
 const CHECK_KEY_CACHE_KEY = "ffscouterv2-check-key-cache";
-const CHECK_KEY_INTERVAL = 15 * 60 * 1000;
+const CHECK_KEY_INTERVAL = 5 * 60 * 1000;
+const PREMIUM_UPGRADE_URL = "https://ffscouter.com/premium";
 const memberCountdowns = {};
 const MAX_REQUESTS_PER_MINUTE = 20;
 let apiCallInProgressCount = 0;
 let currentUserId = null;
+let premiumStatusRefreshInFlight = false;
 
 const TOAST_ERROR = "error";
 const TOAST_LOG = "log";
@@ -382,6 +384,24 @@ if (!singleton) {
 				letter-spacing: 0.3px;
 				pointer-events: none;
 			}
+
+			.ff-premium-upgrade-line {
+				display: block;
+				margin-top: 4px;
+				line-height: 1.3;
+				white-space: nowrap;
+				font-size: 12px;
+				font-style: normal;
+			}
+
+			@media (max-width: 768px) {
+				.ff-premium-upgrade-line {
+					margin-top: 6px;
+					line-height: 1.35;
+					white-space: normal;
+					overflow-wrap: anywhere;
+				}
+			}
         `);
 
   var BASE_URL = "https://ffscouter.com";
@@ -713,7 +733,7 @@ if (!singleton) {
     if (linksTopWrap) {
       linksTopWrap.parentNode.insertBefore(info_line, linksTopWrap.nextSibling);
     } else {
-      h4.after(info_line);
+      h4.parentNode.parentNode.after(info_line);
     }
   }
 
@@ -746,10 +766,10 @@ if (!singleton) {
       }
     });
 
-    var h4 = $("h4")[0];
+    var h4 = document.querySelector("h4");
     if (!h4) {
       const obs = new MutationObserver(function () {
-        var h4 = $("h4")[0];
+        var h4 = document.querySelector("h4");
         if (!h4) {
           return;
         }
@@ -929,6 +949,16 @@ if (!singleton) {
               showToast(ff_response.error);
               return;
             }
+            // If distribution data is returned while premium cache says "not premium",
+            // force a fresh check-key call to correct stale premium status.
+            const hasReturnedDistribution = Array.isArray(ff_response)
+              ? ff_response.some(
+                  (result) => !!result?.distribution?.distribution_human,
+                )
+              : false;
+            if (hasReturnedDistribution && getCachedPremiumStatus() === false) {
+              checkKeyAndUpdatePremium(true);
+            }
             var one_hour = 60 * 60 * 1000;
             var expiry = Date.now() + one_hour;
             const cachedObjs = [];
@@ -948,6 +978,8 @@ if (!singleton) {
                     expiry: expiry,
                     bs_estimate: result.bs_estimate,
                     bs_estimate_human: result.bs_estimate_human,
+                    premium_insights_available:
+                      !!result.premium_insights_available,
                     distribution_human:
                       result.distribution?.distribution_human ?? null,
                     distribution_last_updated:
@@ -1134,6 +1166,16 @@ if (!singleton) {
     }
   }
 
+  function getCachedPremiumStatus() {
+    try {
+      const cached = JSON.parse(rD_getValue(CHECK_KEY_CACHE_KEY, null));
+      if (!cached || typeof cached.is_premium !== "boolean") return null;
+      return cached.is_premium;
+    } catch {
+      return null;
+    }
+  }
+
   function get_difficulty_text(ff) {
     if (ff <= 1) {
       return "Extremely easy";
@@ -1189,17 +1231,27 @@ if (!singleton) {
     const text_colour = get_contrast_color(background_colour);
 
     let statDetails = "";
+    let extraDetailsLine = "";
     if (ff_response.bs_estimate_human) {
-      let distLine = "";
-      if (ff_response.distribution_human) {
+      const isViewerPremium = getCachedPremiumStatus();
+      if (
+        isViewerPremium === false &&
+        ff_response.premium_insights_available === true &&
+        !ff_response.distribution_human
+      ) {
+        extraDetailsLine =
+          '<span class="ff-premium-upgrade-line"><a href="' +
+          PREMIUM_UPGRADE_URL +
+          '" target="_blank" rel="noopener noreferrer" style="font-weight: bold; text-decoration: underline;">Premium Data Available - Upgrade To View</a></span>';
+      } else if (ff_response.distribution_human) {
         const ageStr = get_age_human(ff_response.distribution_last_updated);
         const agePart = ageStr ? ` (${ageStr} old)` : "";
-        distLine = `<span style="display:block; margin-top: 2px; font-size: 12px; font-style: normal;"><span style="font-weight: bold; margin-right: 6px;">Top Stats:</span><span style="font-weight: normal;">${ff_response.distribution_human}${agePart}</span></span>`;
+        extraDetailsLine = `<span style="display:block; margin-top: 2px; font-size: 12px; font-style: normal;"><span style="font-weight: bold; margin-right: 6px;">Top Stats:</span><span style="font-weight: normal;">${ff_response.distribution_human}${agePart}</span></span>`;
       }
-      statDetails = `<span style="font-size: 11px; font-weight: normal; margin-left: 8px; vertical-align: middle; font-style: italic;">Est. Stats: <span>${ff_response.bs_estimate_human}</span>${distLine}</span>`;
+      statDetails = `<span style="font-size: 11px; font-weight: normal; margin-left: 8px; vertical-align: middle; font-style: italic;">Est. Stats: <span>${ff_response.bs_estimate_human}</span></span>`;
     }
 
-    return `<span style=\"font-weight: bold; margin-right: 6px;\">FairFight:</span><span style=\"background: ${background_colour}; color: ${text_colour}; font-weight: bold; padding: 2px 6px; border-radius: 4px; display: inline-block;\">${ff_string} (${difficulty}) ${fresh}</span>${statDetails}`;
+    return `<span style=\"font-weight: bold; margin-right: 6px;\">FairFight:</span><span style=\"background: ${background_colour}; color: ${text_colour}; font-weight: bold; padding: 2px 6px; border-radius: 4px; display: inline-block;\">${ff_string} (${difficulty}) ${fresh}</span>${statDetails}${extraDetailsLine}`;
   }
 
   function get_ff_string_short(ff_response, player_id) {
@@ -1263,20 +1315,21 @@ if (!singleton) {
 
   function get_members() {
     var player_ids = [];
-    $(".table-body > .table-row").each(function () {
-      if (!$(this).find(".fallen").length) {
-        if (!$(this).find(".fedded").length) {
-          $(this)
-            .find(".member")
-            .each(function (index, value) {
-              var url = value.querySelectorAll('a[href^="/profiles"]')[0].href;
-              var player_id = url.match(/.*XID=(?<player_id>\d+)/).groups
-                .player_id;
-              player_ids.push(parseInt(player_id));
-            });
+    document
+      .querySelectorAll(".table-body > .table-row")
+      .forEach(function (elem) {
+        if (
+          !elem.querySelectorAll(".fallen").length &&
+          !elem.querySelectorAll(".fedded").length
+        ) {
+          elem.querySelectorAll(".member").forEach(function (value) {
+            var url = value.querySelectorAll('a[href^="/profiles"]')[0].href;
+            var player_id = url.match(/.*XID=(?<player_id>\d+)/).groups
+              .player_id;
+            player_ids.push(parseInt(player_id));
+          });
         }
-      }
-    });
+      });
 
     return player_ids;
   }
@@ -1344,8 +1397,9 @@ if (!singleton) {
   }
 
   async function apply_fair_fight_info(_) {
+    // The factions column defaults to BS Estimate unless the user chooses FF Score.
     const showBSDefault =
-      (ffSettingsGet("factions-col-display") || "fair_fight") ===
+      (ffSettingsGet("factions-col-display") || "battle_stats") ===
       "battle_stats";
     var ff_li = document.createElement("li");
     ff_li.tabIndex = "0";
@@ -1357,17 +1411,6 @@ if (!singleton) {
     ff_li.classList.add(
       showBSDefault ? "ff-scouter-ff-hidden" : "ff-scouter-ff-visible",
     );
-    ff_li.onclick = () => {
-      $(".ff-scouter-ff-visible").each(function (_, value) {
-        value.classList.remove("ff-scouter-ff-visible");
-        value.classList.add("ff-scouter-ff-hidden");
-      });
-      $(".ff-scouter-est-hidden").each(function (_, value) {
-        value.classList.remove("ff-scouter-est-hidden");
-        value.classList.add("ff-scouter-est-visible");
-      });
-    };
-
     ff_li.appendChild(document.createTextNode("FF"));
     var est_li = document.createElement("li");
     est_li.tabIndex = "0";
@@ -1379,82 +1422,295 @@ if (!singleton) {
     est_li.classList.add(
       showBSDefault ? "ff-scouter-est-visible" : "ff-scouter-est-hidden",
     );
-    est_li.onclick = () => {
-      $(".ff-scouter-ff-hidden").each(function (_, value) {
-        value.classList.remove("ff-scouter-ff-hidden");
-        value.classList.add("ff-scouter-ff-visible");
-      });
-      $(".ff-scouter-est-visible").each(function (_, value) {
-        value.classList.remove("ff-scouter-est-visible");
-        value.classList.add("ff-scouter-est-hidden");
-      });
-    };
 
     est_li.appendChild(document.createTextNode("Est"));
 
-    if ($(".table-header > .lvl").length == 0) {
+    if (document.querySelectorAll(".table-header > .lvl").length == 0) {
       // The .member-list doesn't have a .lvl, give up
       return;
     }
-    $(".table-header > .lvl")[0].after(ff_li, est_li);
+    document.querySelector(".table-header > .lvl")?.after(ff_li, est_li);
 
     const player_ids = [];
-    $(".table-body > .table-row > .member").each(async function (_, value) {
-      var url = value.querySelectorAll('a[href^="/profiles"]')[0].href;
-      var player_id = url.match(/.*XID=(?<player_id>\d+)/).groups.player_id;
-      player_ids.push(parseInt(player_id));
-    });
+    document
+      .querySelectorAll(".table-body > .table-row > .member")
+      .forEach(function (value) {
+        var url = value.querySelectorAll('a[href^="/profiles"]')[0].href;
+        var player_id = url.match(/.*XID=(?<player_id>\d+)/).groups.player_id;
+        player_ids.push(parseInt(player_id));
+      });
 
     const cached_values = await ffcache.get(player_ids);
+    const ffSortOrderKey = "factions-ff-sort-order";
+    const validFFSortOrders = new Set(["desc", "asc"]);
+    const savedFFSortOrder = ffSettingsGet(ffSortOrderKey);
+    let currentFFSortOrder = validFFSortOrders.has(savedFFSortOrder)
+      ? savedFFSortOrder
+      : "desc";
+    const estSortOrderKey = "factions-est-sort-order";
+    const validEstSortOrders = new Set(["desc", "asc"]);
+    const savedEstSortOrder = ffSettingsGet(estSortOrderKey);
+    let currentEstSortOrder = validEstSortOrders.has(savedEstSortOrder)
+      ? savedEstSortOrder
+      : "desc";
 
-    $(".table-body > .table-row > .member").each(async function (_, value) {
-      var url = value.querySelectorAll('a[href^="/profiles"]')[0].href;
-      var player_id = parseInt(
-        url.match(/.*XID=(?<player_id>\d+)/).groups.player_id,
-      );
-
-      var fair_fight_div = document.createElement("div");
-
-      fair_fight_div.classList.add("table-cell");
-
-      fair_fight_div.classList.add("lvl");
-      fair_fight_div.classList.add(
-        showBSDefault ? "ff-scouter-ff-hidden" : "ff-scouter-ff-visible",
-      );
-
-      var estimate_div = document.createElement("div");
-      estimate_div.classList.add("table-cell");
-      estimate_div.classList.add("lvl");
-      estimate_div.classList.add(
-        showBSDefault ? "ff-scouter-est-visible" : "ff-scouter-est-hidden",
-      );
-      const cached = cached_values[player_id];
-
-      if (cached && cached.value) {
-        const ff = cached.value;
-        const ff_string = get_ff_string_short(cached, player_id);
-        const background_colour = get_ff_colour(ff);
-        const text_colour = get_contrast_color(background_colour);
-        fair_fight_div.style.backgroundColor = background_colour;
-        fair_fight_div.style.color = text_colour;
-        fair_fight_div.style.fontWeight = "bold";
-        fair_fight_div.innerHTML = ff_string;
-
-        if (cached.bs_estimate_human) {
-          estimate_div.style.backgroundColor = background_colour;
-          estimate_div.style.color = text_colour;
-          estimate_div.style.fontWeight = "bold";
-          estimate_div.innerHTML = cached.bs_estimate_human;
-          if (cached.distribution_human) {
-            const ageStr = get_age_human(cached.distribution_last_updated);
-            const agePart = ageStr ? ` (${ageStr} old)` : "";
-            estimate_div.title = `Top Stats: ${cached.distribution_human}${agePart}`;
-          }
-        }
+    const get_estimate_for_row = (row) => {
+      const profile_link = row.querySelector('.member a[href^="/profiles"]');
+      if (!profile_link) {
+        return Number.NEGATIVE_INFINITY;
+      }
+      const match = profile_link.href.match(/.*XID=(?<player_id>\d+)/);
+      if (!match?.groups?.player_id) {
+        return Number.NEGATIVE_INFINITY;
       }
 
-      value.nextSibling.after(fair_fight_div, estimate_div);
-    });
+      const player_id = parseInt(match.groups.player_id, 10);
+      const cached = cached_values[player_id];
+      const estimate = Number(cached?.bs_estimate);
+      return Number.isFinite(estimate) ? estimate : Number.NEGATIVE_INFINITY;
+    };
+
+    const get_ff_for_row = (row) => {
+      const profile_link = row.querySelector('.member a[href^="/profiles"]');
+      if (!profile_link) {
+        return Number.NEGATIVE_INFINITY;
+      }
+      const match = profile_link.href.match(/.*XID=(?<player_id>\d+)/);
+      if (!match?.groups?.player_id) {
+        return Number.NEGATIVE_INFINITY;
+      }
+
+      const player_id = parseInt(match.groups.player_id, 10);
+      const cached = cached_values[player_id];
+      const ff = Number(cached?.value);
+      return Number.isFinite(ff) ? ff : Number.NEGATIVE_INFINITY;
+    };
+
+    function clearCustomSortArrows() {
+      // Only clear arrows that FF Scouter controls.
+      [ff_li, est_li].forEach((columnLi) => {
+        const sortDiv = columnLi.querySelector('[class*="sortIcon___"]');
+        if (!sortDiv) {
+          return;
+        }
+        sortDiv.classList.remove(
+          ...Array.from(sortDiv.classList).filter((c) =>
+            c.startsWith("activeIcon___"),
+          ),
+        );
+      });
+    }
+
+    function setSortArrow(targetLi, direction) {
+      // direction: "asc", "desc", or null (to clear)
+
+      // Clear all active arrows first so only one black arrow is shown.
+      document
+        .querySelectorAll('.table-header [class*="activeIcon___"]')
+        .forEach((el) => {
+          el.classList.remove(
+            ...Array.from(el.classList).filter((c) =>
+              c.startsWith("activeIcon___"),
+            ),
+          );
+        });
+
+      if (!targetLi || !direction) return;
+
+      // Find or create the sort icon div in the target column
+      let sortDiv = targetLi.querySelector('[class*="sortIcon___"]');
+      if (!sortDiv) {
+        sortDiv = document.createElement("div");
+        sortDiv.className = "sortIcon___LNQ9D";
+        targetLi.appendChild(sortDiv);
+      }
+      // Always reapply positioning so Torn's direction-specific top values don't interfere.
+      sortDiv.style.position = "absolute";
+      sortDiv.style.left = "50%";
+      sortDiv.style.transform = "translateX(-50%)";
+      sortDiv.style.margin = "0";
+
+      // Remove old direction classes
+      sortDiv.classList.remove(
+        ...Array.from(sortDiv.classList).filter(
+          (c) => c.startsWith("asc___") || c.startsWith("desc___"),
+        ),
+      );
+
+      // Add the correct direction class (Torn's exact class names from the live page)
+      if (direction === "asc") {
+        // Keep ascending arrow inside the header.
+        sortDiv.style.top = "auto";
+        sortDiv.style.bottom = "0px";
+        sortDiv.classList.add("asc___YAXFZ");
+      } else {
+        // Place descending arrow so its top edge sits at the header bottom.
+        sortDiv.style.top = "100%";
+        sortDiv.style.bottom = "auto";
+        sortDiv.classList.add("desc___ZvHWf");
+      }
+
+      // Make it visible
+      sortDiv.classList.add("activeIcon___SwNJj");
+    }
+
+    const apply_ff_sort_order = (sortOrder) => {
+      const table_body = document.querySelector(".table-body");
+      if (!table_body) {
+        return;
+      }
+
+      const member_rows = Array.from(
+        table_body.querySelectorAll(":scope > .table-row"),
+      );
+
+      if (sortOrder === "desc") {
+        member_rows.sort((a, b) => get_ff_for_row(b) - get_ff_for_row(a));
+        setTimeout(function () {
+          setSortArrow(ff_li, "desc");
+        }, 0);
+        // Reset the other column's remembered order to a valid two-state value.
+        currentEstSortOrder = "desc";
+        ffSettingsSet(estSortOrderKey, "desc");
+      } else {
+        member_rows.sort((a, b) => get_ff_for_row(a) - get_ff_for_row(b));
+        setTimeout(function () {
+          setSortArrow(ff_li, "asc");
+        }, 0);
+        currentEstSortOrder = "desc";
+        ffSettingsSet(estSortOrderKey, "desc");
+      }
+
+      member_rows.forEach((row) => table_body.appendChild(row));
+      currentFFSortOrder = sortOrder;
+      ffSettingsSet(ffSortOrderKey, sortOrder);
+    };
+
+    const apply_est_sort_order = (sortOrder) => {
+      const table_body = document.querySelector(".table-body");
+      if (!table_body) {
+        return;
+      }
+
+      const member_rows = Array.from(
+        table_body.querySelectorAll(":scope > .table-row"),
+      );
+
+      if (sortOrder === "desc") {
+        member_rows.sort(
+          (a, b) => get_estimate_for_row(b) - get_estimate_for_row(a),
+        );
+        setTimeout(function () {
+          setSortArrow(est_li, "desc");
+        }, 0);
+        currentFFSortOrder = "desc";
+        ffSettingsSet(ffSortOrderKey, "desc");
+      } else {
+        member_rows.sort(
+          (a, b) => get_estimate_for_row(a) - get_estimate_for_row(b),
+        );
+        setTimeout(function () {
+          setSortArrow(est_li, "asc");
+        }, 0);
+        currentFFSortOrder = "desc";
+        ffSettingsSet(ffSortOrderKey, "desc");
+      }
+
+      member_rows.forEach((row) => table_body.appendChild(row));
+      currentEstSortOrder = sortOrder;
+      ffSettingsSet(estSortOrderKey, sortOrder);
+    };
+
+    ff_li.onclick = () => {
+      // Two-state toggle only, matching Torn's native column headers.
+      const nextSortOrder = currentFFSortOrder === "desc" ? "asc" : "desc";
+      apply_ff_sort_order(nextSortOrder);
+    };
+
+    est_li.onclick = () => {
+      // Two-state toggle only, matching Torn's native column headers.
+      const nextSortOrder = currentEstSortOrder === "desc" ? "asc" : "desc";
+      apply_est_sort_order(nextSortOrder);
+    };
+
+    const tableHeader = document.querySelector(".table-header");
+    if (tableHeader && !tableHeader.dataset.ffScouterSortSyncBound) {
+      tableHeader.dataset.ffScouterSortSyncBound = "true";
+      tableHeader.addEventListener("click", function (event) {
+        const clickedHeaderCell = event.target.closest(
+          ".table-header > .table-cell",
+        );
+        if (!clickedHeaderCell) {
+          return;
+        }
+        if (clickedHeaderCell === ff_li || clickedHeaderCell === est_li) {
+          return;
+        }
+
+        // Defer to allow Torn to render its own active arrow first.
+        setTimeout(function () {
+          clearCustomSortArrows();
+        }, 0);
+      });
+    }
+
+    // Reapply the user's previous sorting preference for the active column.
+    if (showBSDefault) {
+      apply_est_sort_order(currentEstSortOrder);
+    } else {
+      apply_ff_sort_order(currentFFSortOrder);
+    }
+
+    document
+      .querySelectorAll(".table-body > .table-row > .member")
+      .forEach(function (value) {
+        var url = value.querySelectorAll('a[href^="/profiles"]')[0].href;
+        var player_id = parseInt(
+          url.match(/.*XID=(?<player_id>\d+)/).groups.player_id,
+        );
+
+        var fair_fight_div = document.createElement("div");
+
+        fair_fight_div.classList.add("table-cell");
+
+        fair_fight_div.classList.add("lvl");
+        fair_fight_div.classList.add(
+          showBSDefault ? "ff-scouter-ff-hidden" : "ff-scouter-ff-visible",
+        );
+
+        var estimate_div = document.createElement("div");
+        estimate_div.classList.add("table-cell");
+        estimate_div.classList.add("lvl");
+        estimate_div.classList.add(
+          showBSDefault ? "ff-scouter-est-visible" : "ff-scouter-est-hidden",
+        );
+        const cached = cached_values[player_id];
+
+        if (cached && cached.value) {
+          const ff = cached.value;
+          const ff_string = get_ff_string_short(cached, player_id);
+          const background_colour = get_ff_colour(ff);
+          const text_colour = get_contrast_color(background_colour);
+          fair_fight_div.style.backgroundColor = background_colour;
+          fair_fight_div.style.color = text_colour;
+          fair_fight_div.style.fontWeight = "bold";
+          fair_fight_div.innerHTML = ff_string;
+
+          if (cached.bs_estimate_human) {
+            estimate_div.style.backgroundColor = background_colour;
+            estimate_div.style.color = text_colour;
+            estimate_div.style.fontWeight = "bold";
+            estimate_div.innerHTML = cached.bs_estimate_human;
+            if (cached.distribution_human) {
+              const ageStr = get_age_human(cached.distribution_last_updated);
+              const agePart = ageStr ? ` (${ageStr} old)` : "";
+              estimate_div.title = `Top Stats: ${cached.distribution_human}${agePart}`;
+            }
+          }
+        }
+
+        value.nextSibling.after(fair_fight_div, estimate_div);
+      });
   }
 
   async function get_cache_misses(player_ids) {
@@ -1508,7 +1764,7 @@ if (!singleton) {
   ) {
     const torn_observer = new MutationObserver(async function () {
       // Find the member table - add a column if it doesn't already have one, for FF scores
-      var members_list = $(".members-list")[0];
+      var members_list = document.querySelector(".members-list");
       if (members_list) {
         torn_observer.disconnect();
 
@@ -1633,7 +1889,7 @@ if (!singleton) {
         const percent = ff_to_percent(cached.value);
         element.style.setProperty("--band-percent", percent);
 
-        $(element).find(".ff-scouter-arrow").remove();
+        element.querySelector(".ff-scouter-arrow")?.remove();
 
         var arrow;
         if (percent < 33) {
@@ -1643,11 +1899,10 @@ if (!singleton) {
         } else {
           arrow = RED_ARROW;
         }
-        const img = $("<img>", {
-          src: arrow,
-          class: "ff-scouter-arrow",
-        });
-        $(element).append(img);
+        const img = document.createElement("img");
+        img.src = arrow;
+        img.className = "ff-scouter-arrow";
+        element.appendChild(img);
       }
     }
   }
@@ -1686,7 +1941,7 @@ if (!singleton) {
       const response = await get_cached_value(player_id);
       if (response && response.value) {
         // Remove any existing elements
-        $(mini).find(".ff-scouter-mini-ff").remove();
+        mini.querySelector(".ff-scouter-mini-ff")?.remove();
 
         // Minimal, text-only Fair Fight string for mini-profiles
         const ff_string = get_ff_string(response);
@@ -1714,12 +1969,11 @@ if (!singleton) {
         }
         const message = `FF ${ff_string} (${difficulty}) ${fresh}${distLine}`;
 
-        const description = $(mini).find(".description");
-        const desc = $("<span></span>", {
-          class: "ff-scouter-mini-ff",
-        });
-        desc.text(message);
-        $(description).append(desc);
+        const description = mini.querySelector(".description");
+        const desc = document.createElement("span");
+        desc.className = "ff-scouter-mini-ff";
+        desc.textContent = message;
+        description.appendChild(desc);
       }
     }
   }
@@ -1749,7 +2003,7 @@ if (!singleton) {
         )
       ) {
         await apply_ff_gauge(
-          Array.from(node.querySelectorAll(".name___H_bss")),
+          Array.from(node.querySelectorAll('[class*="name__"]')),
         );
       } else if (
         window.location.href.startsWith("https://www.torn.com/joblist.php")
@@ -1799,7 +2053,7 @@ if (!singleton) {
         await apply_ff_gauge(Array.from(node.querySelectorAll(".poster")));
       } else if (window.location.href.includes("page.php?sid=hof")) {
         await apply_ff_gauge(
-          Array.from(node.querySelectorAll('[class^="userInfoBox__"]')),
+          Array.from(node.querySelectorAll('[class*="userInfoBox__"]')),
         );
       } else if (name_elems.length > 0) {
         // Fallback for anyone without honor bars enabled
@@ -1825,7 +2079,7 @@ if (!singleton) {
     }
     var mini_profiles = Array.from(
       node.parentNode.querySelectorAll(
-        '[class^="profile-mini-_userProfileWrapper_"]',
+        '[class*="profile-mini-_userProfileWrapper_"]',
       ),
     );
     if (mini_profiles.length > 0) {
@@ -2203,9 +2457,11 @@ if (!singleton) {
 
   function updateAPICalls() {
     let enemyFactionLink = document.querySelector(
-      ".opponentFactionName___vhESM",
+      '[class*="opponentFactionName__"]',
     );
-    let yourFactionLink = document.querySelector(".currentFactionName___eq7n8");
+    let yourFactionLink = document.querySelector(
+      '[class*="currentFactionName__"]',
+    );
     if (!enemyFactionLink || !yourFactionLink) return;
 
     let enemyFactionIdMatch = enemyFactionLink.href.match(/ID=(\d+)/);
@@ -2222,9 +2478,11 @@ if (!singleton) {
 
   function initWarScript() {
     let enemyFactionLink = document.querySelector(
-      ".opponentFactionName___vhESM",
+      '[class*="opponentFactionName__"]',
     );
-    let yourFactionLink = document.querySelector(".currentFactionName___eq7n8");
+    let yourFactionLink = document.querySelector(
+      '[class*="currentFactionName__"]',
+    );
     if (!enemyFactionLink || !yourFactionLink) return false;
 
     let enemyList = document.querySelector(".enemy-faction .members-list");
@@ -2781,7 +3039,7 @@ if (!singleton) {
     factionsColDiv.className = "ff-settings-entry ff-settings-entry-small";
     const factionsColLabel = document.createElement("label");
     factionsColLabel.setAttribute("for", "factions-col-display");
-    factionsColLabel.textContent = "Factions page FF column shows:";
+    factionsColLabel.textContent = "Faction Page Shows:";
     factionsColLabel.className = "ff-settings-label ff-settings-label-inline";
     factionsColDiv.appendChild(factionsColLabel);
     const factionsColSelect = document.createElement("select");
@@ -2789,14 +3047,14 @@ if (!singleton) {
     factionsColSelect.className = "ff-settings-input";
     const ffOption = document.createElement("option");
     ffOption.value = "fair_fight";
-    ffOption.textContent = "Fair Fight score";
+    ffOption.textContent = "FF Score";
     factionsColSelect.appendChild(ffOption);
     const bsOption = document.createElement("option");
     bsOption.value = "battle_stats";
-    bsOption.textContent = "Battle Stats estimate";
+    bsOption.textContent = "BS Estimate";
     factionsColSelect.appendChild(bsOption);
     factionsColSelect.value =
-      ffSettingsGet("factions-col-display") || "fair_fight";
+      ffSettingsGet("factions-col-display") || "battle_stats";
     factionsColDiv.appendChild(factionsColSelect);
     content.appendChild(factionsColDiv);
 
@@ -2843,7 +3101,7 @@ if (!singleton) {
       ffSettingsSetToggle("war-monitor-enabled", true);
       ffSettingsSetToggle("debug-logs", false);
       ffSettingsSet("ff-history-enabled", "true");
-      ffSettingsSet("factions-col-display", "fair_fight");
+      ffSettingsSet("factions-col-display", "battle_stats");
 
       document.getElementById("ff-ranges").value = "";
       document.getElementById("chain-button-toggle").checked = true;
@@ -2853,7 +3111,7 @@ if (!singleton) {
       document.getElementById("war-monitor-toggle").checked = true;
       document.getElementById("debug-logs").checked = false;
       document.getElementById("ff-history-toggle").checked = true;
-      document.getElementById("factions-col-display").value = "fair_fight";
+      document.getElementById("factions-col-display").value = "battle_stats";
 
       document.getElementById("ff-ranges").style.outline = "none";
 
@@ -3103,8 +3361,9 @@ if (!singleton) {
     checkKeyAndUpdatePremium();
   }
 
-  function checkKeyAndUpdatePremium() {
+  function checkKeyAndUpdatePremium(forceRefresh = false) {
     if (!key) return;
+    if (premiumStatusRefreshInFlight) return;
     const now = Date.now();
     const cached = (() => {
       try {
@@ -3114,6 +3373,7 @@ if (!singleton) {
       }
     })();
     if (
+      !forceRefresh &&
       cached &&
       cached.last_checked &&
       now - cached.last_checked < CHECK_KEY_INTERVAL
@@ -3122,11 +3382,13 @@ if (!singleton) {
       applyPremiumBadge(cached.is_premium);
       return;
     }
+    premiumStatusRefreshInFlight = true;
     const url = `${BASE_URL}/api/v1/check-key?key=${key}`;
     rD_xmlhttpRequest({
       method: "GET",
       url: url,
       onload: function (response) {
+        premiumStatusRefreshInFlight = false;
         if (!response || response.status !== 200) return;
         try {
           const data = JSON.parse(response.responseText);
@@ -3141,6 +3403,7 @@ if (!singleton) {
         }
       },
       onerror: function (e) {
+        premiumStatusRefreshInFlight = false;
         ffdebug("[FF Scouter V2] check-key error", e);
       },
     });

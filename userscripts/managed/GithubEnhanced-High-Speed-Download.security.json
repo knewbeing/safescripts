@@ -5,40 +5,18 @@
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [
-    {
-      "description": "未提供完整代码，无法检测到实际的数据外传、隐私采集、远程代码执行等实现层面风险。仅根据元数据分析。",
-      "location": "全局",
-      "recommendation": "建议补充完整代码以进行全面安全审查。",
-      "severity": "LOW",
-      "type": "代码缺失"
-    },
-    {
-      "description": "脚本申请了 GM_openInTab 权限，可能被滥用打开恶意网站或进行钓鱼。",
-      "location": "@grant 元数据",
-      "recommendation": "仅在确有必要时申请 GM_openInTab 权限，并限制打开的目标域名。",
-      "severity": "MEDIUM",
-      "type": "权限滥用"
-    },
-    {
-      "description": "脚本申请了 GM_notification 权限，可能被滥用发送钓鱼或骚扰通知。",
-      "location": "@grant 元数据",
-      "recommendation": "仅在用户明确操作下发送通知，避免骚扰。",
-      "severity": "MEDIUM",
-      "type": "权限滥用"
-    }
-  ],
+  "issues": [],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
     "detected": false
   },
-  "risk_level": "LOW",
+  "risk_level": "SAFE",
   "script_name": "Github Enhancement - High Speed Download",
-  "security_score": 81,
-  "summary": "由于未提供完整代码，无法检测到实现层面的安全问题。根据元数据分析，脚本未声明任何远程依赖（@require），未检测到数据外传、隐私采集、远程代码执行、混淆、DOM XSS 等高危风险。存在申请 GM_openInTab 和 GM_notification 权限的中等风险，建议仅在必要时使用。总体风险较低，但建议补充完整代码以获得更准确的安全评估。",
+  "security_score": 100,
+  "summary": "未检测到任何代码实现，脚本为空，仅包含元数据。不存在数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-11T05:52:40.677917+00:00",
+  "analyzed_at": "2026-05-18T06:06:00.377693+00:00",
   "slug": "GithubEnhanced-High-Speed-Download"
 }

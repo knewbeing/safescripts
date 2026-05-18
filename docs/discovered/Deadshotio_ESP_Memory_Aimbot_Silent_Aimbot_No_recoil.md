@@ -30,14 +30,14 @@ title: "Deadshot.io ESP & Memory Aimbot & Silent Aimbot & No recoil"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：0/100　　**分析时间**：2026-05-11
+**风险等级**：⛔ CRITICAL　　**安全评分**：0/100　　**分析时间**：2026-05-18
 
-> 该脚本存在极高安全风险：动态拉取并 eval 执行远程代码，未锁定版本，存在严重的远程代码执行和供应链攻击风险。远程代码可随时更改，可能导致隐私数据泄露、恶意行为注入等。强烈不建议使用。
+> 该脚本存在极高安全风险：1）通过 GM_xmlhttpRequest 动态拉取并 eval 执行第三方服务器代码，2）申请高权限（unsafeWindow），3）无任何校验机制，极易被用于后门、数据窃取或远程控制。强烈不建议使用。
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：https://deadshot-cheat.netlify.app/index.js） |
-| 隐私采集 | ❌ 检测到（本地脚本未直接采集隐私数据，但远程 index.js 代码不可控，存在隐私采集风险。） |
+| 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -45,30 +45,25 @@ title: "Deadshot.io ESP & Memory Aimbot & Silent Aimbot & No recoil"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 远程代码执行/供应链风险  
-> 脚本通过 GM_xmlhttpRequest 动态从 https://deadshot-cheat.netlify.app/index.js 拉取远程代码，并未固定版本或哈希，存在严重供应链风险和远程代码执行风险。  
-> 位置：fetchAndCacheCode() 函数  
-> 建议：禁止动态加载未固定哈希的远程代码，改为本地集成或使用可信 CDN 并锁定版本。
+**⛔ CRITICAL** — 远程代码执行 & 数据外传  
+> 脚本通过 GM_xmlhttpRequest 从第三方服务器 deadshot-cheat.netlify.app 动态拉取并执行远程 JavaScript 代码，存在严重的数据外传和远程代码执行风险。  
+> 位置：fetchAndCacheCode -> GM_xmlhttpRequest -> eval(customCode)  
+> 建议：禁止从不受信任的第三方服务器动态加载和执行代码，改为本地集成或使用可信 CDN 并固定版本哈希。
 
 **⛔ CRITICAL** — 远程代码执行  
-> 拉取到的远程代码通过 eval 执行，属于典型的远程代码执行（RCE）高危行为。  
-> 位置：mod[TARGET_METHOD] = (...args) => { (0, eval)(customCode); ... }  
-> 建议：严禁使用 eval 执行外部代码，尤其是网络获取的内容。
-
-**🔴 HIGH** — 隐私采集风险  
-> 脚本未直接采集隐私数据，但远程拉取的 index.js 代码不可控，可能包含隐私采集行为。  
-> 位置：远程 index.js  
-> 建议：禁止动态加载远程代码，或对远程代码进行严格审计。
+> 脚本使用 eval 执行远程拉取的代码，极易被利用为后门或植入恶意代码。  
+> 位置：patchImports -> eval(customCode)  
+> 建议：避免使用 eval，尤其是对外部来源的代码。
 
 **🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 unsafeWindow 权限，增加了与页面直接交互的攻击面。  
+> 脚本申请了 unsafeWindow 权限，可能导致页面与脚本间的隔离被打破，增加攻击面。  
 > 位置：@grant unsafeWindow  
-> 建议：如非必要，移除 unsafeWindow 权限。
+> 建议：仅在绝对必要时使用 unsafeWindow，并严格限制其用途。
 
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_xmlhttpRequest、GM_setValue、GM_getValue 权限，部分权限仅用于远程代码拉取和本地缓存，存在被滥用风险。  
-> 位置：@grant GM_xmlhttpRequest, GM_setValue, GM_getValue  
-> 建议：最小化权限申请，仅保留实际需要的权限。
+**🟠 MEDIUM** — 供应链风险  
+> 脚本未对拉取的远程代码做任何校验（如哈希校验），存在供应链污染风险。  
+> 位置：GM_xmlhttpRequest -> eval(customCode)  
+> 建议：如必须加载远程代码，应校验哈希并使用可信源。
 
 ---
 

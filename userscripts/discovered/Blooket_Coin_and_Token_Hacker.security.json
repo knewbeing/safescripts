@@ -7,25 +7,11 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 prompt 获取用户输入，但未将用户输入直接插入 innerHTML/outerHTML，仅用于文本内容和 alert，无 XSS 风险。",
-      "location": "addCoinsAndTokens()",
-      "recommendation": "如需插入 HTML，需进行转义。当前实现安全。",
+      "description": "Uses prompt() to collect user input, but does not sanitize or escape the input before inserting into the DOM via textContent. However, textContent is safe from XSS.",
+      "location": "updateBalanceDisplay function",
+      "recommendation": "No action needed for textContent, but avoid using innerHTML with unsanitized input.",
       "severity": "LOW",
-      "type": "DOM XSS"
-    },
-    {
-      "description": "脚本未使用任何网络请求或外部通信 API，无数据外传行为。",
-      "location": "全局",
-      "recommendation": "保持此状态，勿添加外部通信代码。",
-      "severity": "LOW",
-      "type": "Data Transmission"
-    },
-    {
-      "description": "脚本未申请任何 @grant 权限，实际代码也未使用 GM_* API，权限申请合理。",
-      "location": "元数据",
-      "recommendation": "保持最小权限原则。",
-      "severity": "LOW",
-      "type": "Permission Usage"
+      "type": "DOM Manipulation"
     }
   ],
   "obfuscation_detected": false,
@@ -36,9 +22,9 @@
   "risk_level": "SAFE",
   "script_name": "Blooket Coin and Token Hacker",
   "security_score": 97,
-  "summary": "该 UserScript 仅在本地操作页面内容，不进行任何数据外传、隐私采集、远程代码执行或供应链依赖。未检测到高危或关键安全风险。主要操作为通过 prompt 获取用户输入并更新页面文本内容，未涉及敏感 API、网络请求或代码混淆。整体安全性高。",
+  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、供应链风险或高危 DOM 注入行为。仅通过 prompt 获取用户输入并本地修改页面显示，不涉及网络请求或敏感 API。整体安全性高。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-11T06:33:48.035612+00:00",
+  "analyzed_at": "2026-05-18T06:18:01.755646+00:00",
   "slug": "Blooket_Coin_and_Token_Hacker"
 }

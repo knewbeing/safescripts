@@ -2,21 +2,21 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
-      "https://update.greasyfork.org/scripts/528923/1588272/MonkeyConfig%20Mod.js"
+      "update.greasyfork.org (for @require)"
     ],
     "detected": false
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "@require 加载了 https://update.greasyfork.org/scripts/528923/1588272/MonkeyConfig%20Mod.js，存在供应链风险，且未锁定哈希/版本。",
+      "description": "脚本通过 @require 加载了 https://update.greasyfork.org/scripts/528923/1588272/MonkeyConfig%20Mod.js，存在供应链风险。该 URL 来源为 GreasyFork，但未固定版本哈希，未来可能被篡改。",
       "location": "@require 元数据",
-      "recommendation": "仅使用可信官方 CDN 并锁定具体版本或哈希，避免供应链污染。",
+      "recommendation": "建议使用官方 CDN 并固定版本哈希，或将依赖代码本地化。",
       "severity": "MEDIUM",
       "type": "Supply Chain Risk"
     },
     {
-      "description": "脚本申请了 GM_openInTab、GM_setClipboard、GM_xmlhttpRequest 等高权限，但主代码未见实际使用，存在权限滥用风险。",
+      "description": "脚本申请了 GM_openInTab、GM_setClipboard、GM_xmlhttpRequest 等高权限，但在提供的代码片段中未见实际使用，存在权限滥用的可能。",
       "location": "@grant 元数据",
       "recommendation": "仅申请实际需要的权限，移除未使用的高权限。",
       "severity": "MEDIUM",
@@ -31,9 +31,9 @@
   "risk_level": "MEDIUM",
   "script_name": "Bypass All Shortlinks",
   "security_score": 84,
-  "summary": "该脚本主代码未见明显的数据外传、隐私采集、远程代码执行、混淆或 DOM XSS 风险。但存在供应链风险（@require 外部库未锁定版本）和权限滥用（申请了未使用的高权限）。建议仅使用可信第三方库并锁定版本，移除未使用的高权限。整体风险为中等，建议谨慎使用。",
+  "summary": "该脚本未发现明显的数据外传、隐私采集、远程代码执行、DOM XSS 或代码混淆行为。主要风险为供应链依赖未锁定版本和权限申请过多。建议锁定依赖版本并精简权限。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-11T06:35:05.017198+00:00",
+  "analyzed_at": "2026-05-18T06:18:10.805241+00:00",
   "slug": "Bypass_All_Shortlinks"
 }

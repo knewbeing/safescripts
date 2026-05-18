@@ -32,9 +32,9 @@ title: "Deadshot.io 辅助脚本"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：92/100　　**分析时间**：2026-05-11
+**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-05-18
 
-> The script does not perform any network requests, data exfiltration, or privacy-invasive actions. It does not use eval, dynamic code execution, or obfuscation techniques. The only notable risk is the use of the 'unsafeWindow' grant, which is not inherently malicious but increases the attack surface. No supply chain or XSS risks were detected.
+> 该脚本主要通过 hook WebAssembly 实例和内存，分析 deadshot.io 游戏中的实体数据，实现 aimbot、ESP 等功能。未检测到任何数据外传、隐私采集、远程代码执行、混淆或 XSS 风险。唯一的中等风险为申请了 unsafeWindow 权限，建议最小化权限。整体安全性较高，但属于游戏作弊脚本，存在被游戏官方检测和封禁的风险。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -47,10 +47,20 @@ title: "Deadshot.io 辅助脚本"
 
 ### 发现的问题
 
-**🟠 MEDIUM** — Permission Abuse  
-> The script requests the 'unsafeWindow' grant, which allows full access to the page's JavaScript context. This increases the risk of privilege escalation or unintended interaction with page scripts.  
-> 位置：Metadata block (@grant unsafeWindow)  
-> 建议：Only request 'unsafeWindow' if absolutely necessary. Review if the script can function without it.
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 @grant unsafeWindow 权限，允许脚本访问页面的原始 window 对象，可能被滥用进行高权限操作。  
+> 位置：@grant 元数据  
+> 建议：仅在确有必要时申请 unsafeWindow，建议最小化权限申请。
+
+**🟡 LOW** — 隐私采集  
+> 脚本通过 hook WebAssembly 实例和内存，分析游戏实体数据，属于高级作弊行为，但未发现数据外传。  
+> 位置：核心逻辑  
+> 建议：确认脚本不会将敏感数据发送到第三方服务器。
+
+**🟡 LOW** — 代码安全  
+> 脚本未发现任何网络请求、数据外传、远程代码加载、eval 或混淆代码。  
+> 位置：全局  
+> 建议：保持代码开源透明，防止后续版本引入恶意行为。
 
 ---
 

@@ -1,0 +1,88 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [
+      "weav3r.dev"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "脚本通过 GM.xmlHttpRequest 访问 weav3r.dev，但未发现携带用户敏感数据或 Cookie，仅用于获取市场数据。",
+      "location": "GM.xmlHttpRequest 调用（@connect weav3r.dev）",
+      "recommendation": "确保仅请求公开 API，不上传用户敏感信息。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本使用 GM_setValue/GM_getValue 及 localStorage 存储设置，无敏感信息采集。未监听键盘、未读取表单、未访问指纹 API。",
+      "location": "全局设置管理相关代码",
+      "recommendation": "继续避免采集用户隐私数据。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    },
+    {
+      "description": "未发现 eval、new Function、setTimeout(string) 等远程代码执行风险。未动态加载远程 JS。",
+      "location": "全局",
+      "recommendation": "保持当前实现，避免引入动态代码执行。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "未发现代码混淆、base64 解码、字符串数组映射或高度压缩单行代码。",
+      "location": "全局",
+      "recommendation": "保持代码可读性，便于安全审计。",
+      "severity": "HIGH",
+      "type": "代码混淆"
+    },
+    {
+      "description": "未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML。未见 document.write() 注入。",
+      "location": "全局",
+      "recommendation": "如后续需插入用户数据，务必转义。",
+      "severity": "HIGH",
+      "type": "DOM XSS / 注入"
+    },
+    {
+      "description": "@grant 权限与实际使用基本匹配，但部分 GM.*Value 权限存在冗余（如 GM_listValues 未实际调用）。",
+      "location": "元数据 @grant",
+      "recommendation": "移除未使用的高权限申请，最小化权限集。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "未调用 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API 等敏感接口。",
+      "location": "全局",
+      "recommendation": "如需使用敏感 API，需明确告知用户。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "@require 未使用第三方库，无供应链风险。",
+      "location": "元数据",
+      "recommendation": "如需引入第三方库，建议使用官方 CDN 并锁定版本。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    },
+    {
+      "description": "未见修改 frame 保护策略或创建隐藏 iframe。",
+      "location": "全局",
+      "recommendation": "如需嵌入 iframe，需评估 ClickJacking 风险。",
+      "severity": "LOW",
+      "type": "ClickJacking / iframe 风险"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "LOW",
+  "script_name": "Bazaars in Item Market Powered by TornW3B",
+  "security_score": 72,
+  "summary": "该脚本主要通过 GM.xmlHttpRequest 访问 weav3r.dev 获取市场数据，未发现上传用户敏感信息或 Cookie。未采集隐私、无远程代码执行、无混淆、无 XSS 风险。权限申请略有冗余，建议精简。整体安全风险较低。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-05-18T06:17:37.022377+00:00",
+  "slug": "Bazaars_in_Item_Market_Powered_by_TornW3B"
+}

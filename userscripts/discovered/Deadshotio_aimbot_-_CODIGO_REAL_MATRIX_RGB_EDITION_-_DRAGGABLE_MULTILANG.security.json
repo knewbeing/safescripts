@@ -7,38 +7,38 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本申请了 @grant unsafeWindow 权限，但实际代码中并未发现对 unsafeWindow 的直接使用，存在权限冗余。",
+      "description": "脚本申请了 @grant unsafeWindow 权限，但实际代码中未见必须使用该高权限的场景，存在权限滥用风险。",
       "location": "元数据 @grant",
-      "recommendation": "移除未使用的高权限申请，最小化权限暴露。",
+      "recommendation": "如非必要，移除 @grant unsafeWindow，降低潜在攻击面。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "脚本会通过 alert() 弹窗显示信息，可能影响用户体验，但不构成安全风险。",
+      "description": "脚本会弹出 alert，可能影响用户体验，但不构成安全风险。",
       "location": "alert 调用",
-      "recommendation": "可考虑改为更友好的 UI 提示。",
+      "recommendation": "可考虑改为非阻塞式通知。",
       "severity": "LOW",
       "type": "用户体验"
     },
     {
-      "description": "脚本包含大量游戏内存、WASM hook、矩阵变换等底层操作，存在被用于作弊的风险，但未发现数据外传或远程代码执行。",
-      "location": "全局",
-      "recommendation": "仅在合法场景下使用，避免违反游戏服务条款。",
-      "severity": "LOW",
-      "type": "合规风险"
+      "description": "脚本包含部分字符串混淆（如 SIGKEY、_ENCODED_SIGS 异或处理），但整体未高度混淆。",
+      "location": "_SIGKEY, _ENCODED_SIGS, _decodeSig",
+      "recommendation": "建议保持代码可读性，避免混淆。",
+      "severity": "HIGH",
+      "type": "代码混淆"
     }
   ],
-  "obfuscation_detected": false,
+  "obfuscation_detected": true,
   "privacy_collection": {
     "details": [],
     "detected": false
   },
-  "risk_level": "LOW",
+  "risk_level": "MEDIUM",
   "script_name": "Deadshot.io aimbot - CODIGO REAL (MATRIX RGB EDITION) - DRAGGABLE & MULTILANG",
-  "security_score": 89,
-  "summary": "该脚本主要实现游戏辅助功能（如 aimbot、ESP、chams），未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 或供应链风险。存在权限冗余（@grant unsafeWindow），建议最小化权限。整体安全风险较低，但存在合规风险（游戏作弊）。",
+  "security_score": 77,
+  "summary": "该脚本未检测到明显的数据外传、隐私采集或远程代码执行行为。存在部分代码混淆和权限滥用（@grant unsafeWindow），但未发现高危网络请求或敏感数据泄露。整体风险为中等，建议移除不必要的高权限申请并保持代码可读性。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-11T06:47:30.835386+00:00",
+  "analyzed_at": "2026-05-18T06:21:42.385897+00:00",
   "slug": "Deadshotio_aimbot_-_CODIGO_REAL_MATRIX_RGB_EDITION_-_DRAGGABLE_MULTILANG"
 }

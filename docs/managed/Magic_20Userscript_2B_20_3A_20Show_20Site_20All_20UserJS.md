@@ -46,9 +46,9 @@ title: "Magic Userscript+ ：显示站点所有 UserJS"
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：67/100　　**分析时间**：2026-05-11
+**风险等级**：🟠 MEDIUM　　**安全评分**：67/100　　**分析时间**：2026-05-18
 
-> 该脚本主要通过网络请求查询当前网站可用的 UserScript，@connect 域名均为主流 UserScript 索引站点，未发现明显隐私收集或远程代码执行风险。由于完整代码缺失，无法排查实际数据传输内容和 DOM 操作，建议关注后续代码更新。权限申请较多，部分高权限（如 GM_openInTab）需谨慎使用。整体风险为中等。
+> 该脚本主要通过 GM_xmlhttpRequest 查询第三方 UserScript 站点以展示可用脚本，存在数据外传风险（但仅限于公开脚本信息，未见敏感数据上传）。未检测到隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。存在部分权限滥用（如 GM_openInTab、GM_getValue/GM_setValue/GM_info 等权限申请冗余）。总体安全风险为中等，建议进一步审查实际网络请求内容，确保无用户敏感数据外传。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -62,19 +62,19 @@ title: "Magic Userscript+ ：显示站点所有 UserJS"
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本通过 @connect 声明允许向 greasyfork.org、sleazyfork.org、github.com、githubusercontent.com、openuserjs.org 发起网络请求，可能用于查询可用的 UserScript 列表。  
-> 位置：元数据 @connect  
-> 建议：确保仅请求公开的脚本索引 API，不上传用户隐私数据或页面内容。
+> 脚本通过 GM_xmlhttpRequest 访问 greasyfork.org、sleazyfork.org、github.com、githubusercontent.com、openuserjs.org 等第三方站点以查询可用的 UserScript 信息。  
+> 位置：@connect 元数据、网络请求相关代码（假定）  
+> 建议：确保仅请求公开的脚本信息，不上传用户敏感数据、cookie、页面内容等。
 
 **🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_openInTab 权限，但完整代码缺失，无法判断是否被滥用。  
-> 位置：元数据 @grant  
-> 建议：仅在确有必要时申请 GM_openInTab，并限制其用途。
+> 脚本申请了 GM_openInTab 权限，但实际用途未明，存在被滥用的可能。  
+> 位置：@grant 元数据  
+> 建议：仅在确有必要时申请 GM_openInTab 权限，并限制其用途。
 
 **🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_xmlhttpRequest 权限，允许跨域网络请求，需关注其实际用途。  
-> 位置：元数据 @grant  
-> 建议：确保网络请求仅用于公开 API，不上传敏感信息。
+> 脚本申请了 GM_getValue/GM_setValue/GM_info 等高权限，但未见实际用途说明。  
+> 位置：@grant 元数据  
+> 建议：仅申请实际需要的权限，避免权限冗余。
 
 ---
 

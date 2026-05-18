@@ -30,14 +30,14 @@ title: "CheatGuessr | GeoGuessr Cheat"
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：59/100　　**分析时间**：2026-05-11
+**风险等级**：🔴 HIGH　　**安全评分**：52/100　　**分析时间**：2026-05-18
 
-> The script does not contain code obfuscation, remote code execution, or DOM XSS risks. It does transmit coordinates to a third-party (OpenStreetMap Nominatim) for reverse geocoding, which is a privacy consideration but not a critical leak of user data. It stores settings in localStorage and requests an unused GM_webRequest permission. No supply chain or iframe/clickjacking risks detected. Overall, the script is medium risk due to third-party data transmission and minor privacy/permission issues.
+> The script transmits coordinates to a third-party API (OpenStreetMap Nominatim), which is a critical data exfiltration risk. It also collects settings in localStorage, monkey-patches XMLHttpRequest, and requests an unused high-privilege permission. No code obfuscation or DOM XSS risks were found. The overall risk is HIGH and the script is NOT approved for safe use.
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：https://nominatim.openstreetmap.org） |
-| 隐私采集 | ❌ 检测到（localStorage: stores settings (keybinds, UI preferences)） |
+| 隐私采集 | ❌ 检测到（Reads/writes settings to localStorage） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -45,25 +45,25 @@ title: "CheatGuessr | GeoGuessr Cheat"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Transmission  
-> The script sends latitude and longitude coordinates to the public OpenStreetMap Nominatim API to reverse geocode the location when the user requests detailed location information. This is a third-party data transmission, but only coordinates are sent, not user-identifiable data.  
+**⛔ CRITICAL** — Data Exfiltration  
+> The script sends latitude and longitude coordinates to the public OpenStreetMap Nominatim API to retrieve location details. This constitutes data transmission to a third-party server.  
 > 位置：fetchLocationDetails() function  
-> 建议：Document this behavior for transparency. If possible, allow users to disable this feature.
+> 建议：Warn users about the external API call and avoid sending sensitive or user-identifiable data. Consider making this feature optional.
 
 **🟠 MEDIUM** — Privacy Collection  
-> The script stores user settings in localStorage under the key 'geoGuessrHelper'. This includes keybinds and UI preferences, but no sensitive or personal data.  
+> The script reads and writes settings to localStorage under the key 'geoGuessrHelper'.  
 > 位置：loadSettings() and saveSettings() functions  
-> 建议：No action needed unless sensitive data is added in the future.
+> 建议：Ensure no sensitive or personal data is stored. Document the usage for transparency.
 
 **🟠 MEDIUM** — Sensitive API Usage  
-> The script modifies XMLHttpRequest.prototype.open to intercept certain Google Maps API calls and extract coordinates. This is a form of monkey-patching but does not execute remote code or introduce direct RCE risk.  
+> The script modifies XMLHttpRequest.prototype.open to intercept Google Maps API responses and extract coordinates. This is a form of monkey-patching and may break site functionality or introduce compatibility/security risks.  
 > 位置：XMLHttpRequest.prototype.open override  
-> 建议：Monitor for future changes that could introduce RCE or data exfiltration.
+> 建议：Limit the scope of monkey-patching and restore the original function when not needed.
 
 **🟠 MEDIUM** — Permission Abuse  
-> The script requests the GM_webRequest permission, but does not use any GM_* APIs in the provided code.  
+> The script requests the GM_webRequest permission, but does not use any GM_webRequest API in the code.  
 > 位置：@grant GM_webRequest in metadata  
-> 建议：Remove unused permissions to reduce attack surface.
+> 建议：Remove unnecessary permissions to reduce attack surface.
 
 ---
 

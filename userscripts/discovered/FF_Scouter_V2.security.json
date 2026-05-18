@@ -1,5 +1,5 @@
 {
-  "approved": true,
+  "approved": false,
   "data_transmission": {
     "destinations": [
       "ffscouter.com"
@@ -9,67 +9,67 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "Script uses GM_xmlhttpRequest to communicate with ffscouter.com. While this is declared in @connect, the exact data sent is not visible in the provided code excerpt. If user or page data is sent, this could be a privacy concern.",
-      "location": "GM_xmlhttpRequest calls (likely throughout script, but not fully visible in excerpt)",
-      "recommendation": "Review all GM_xmlhttpRequest payloads to ensure no sensitive user data (such as cookies, authentication tokens, or personal information) is transmitted. Document what is sent and why.",
+      "description": "脚本通过 GM_xmlhttpRequest 向 ffscouter.com 发送请求，可能包含用户数据（如 Torn 用户 ID、目标信息等），存在数据外传风险。",
+      "location": "多处 GM_xmlhttpRequest 调用（通过 @connect ffscouter.com）",
+      "recommendation": "明确告知用户数据用途，最小化传输内容，建议在隐私政策中说明。",
       "severity": "CRITICAL",
-      "type": "Data Transmission"
+      "type": "数据外传"
     },
     {
-      "description": "The script requests persistent storage permissions (GM_setValue, GM_getValue, etc.) and registers menu commands, but does not appear to access cookies, localStorage, or sessionStorage directly. No evidence of keylogging or clipboard access.",
-      "location": "Global scope and function calls",
-      "recommendation": "Ensure no future code additions introduce privacy-invasive behaviors. Avoid collecting more data than necessary.",
-      "severity": "MEDIUM",
-      "type": "Privacy Collection"
+      "description": "脚本申请了 GM_setValue、GM_getValue、GM_listValues、GM_deleteValue 权限，但未发现敏感信息（如 cookie、localStorage、sessionStorage、IndexedDB、表单、剪贴板、指纹）被采集。",
+      "location": "全局",
+      "recommendation": "继续避免采集敏感隐私信息。",
+      "severity": "LOW",
+      "type": "隐私采集"
     },
     {
-      "description": "No use of eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection detected in the provided code. No @require for remote scripts.",
-      "location": "Global scope and all visible functions",
-      "recommendation": "Continue to avoid dynamic code execution and remote script loading. If adding @require, pin versions and use trusted sources.",
-      "severity": "HIGH",
-      "type": "Remote Code Execution"
+      "description": "脚本未发现 eval、new Function、setTimeout(string)、setInterval(string) 等动态执行代码方式，也未见动态 script 标签或 @require 加载远程 JS。",
+      "location": "全局",
+      "recommendation": "保持当前实现，避免远程代码执行风险。",
+      "severity": "LOW",
+      "type": "远程代码执行"
     },
     {
-      "description": "No evidence of code obfuscation, base64 decoding, or minified/obfuscated code in the provided excerpt.",
-      "location": "Global scope and all visible code",
-      "recommendation": "Maintain code readability and avoid obfuscation for transparency.",
-      "severity": "HIGH",
-      "type": "Code Obfuscation"
+      "description": "脚本未发现明显的代码混淆、base64 解码、字符串数组映射或高度压缩单行代码。",
+      "location": "全局",
+      "recommendation": "保持代码可读性，便于社区审计。",
+      "severity": "LOW",
+      "type": "代码混淆"
     },
     {
-      "description": "No direct insertion of user input or URL parameters into innerHTML/outerHTML without sanitization detected. No document.write usage.",
-      "location": "DOM manipulation sections (CSS injection, etc.)",
-      "recommendation": "Always sanitize any user-controlled input before inserting into the DOM.",
-      "severity": "HIGH",
+      "description": "脚本未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未见 document.write() 注入不可信内容。",
+      "location": "全局",
+      "recommendation": "继续避免 DOM XSS 风险。",
+      "severity": "LOW",
       "type": "DOM XSS"
     },
     {
-      "description": "Script requests several GM_* permissions, but all appear to be used. No evidence of unused high-privilege grants.",
-      "location": "@grant metadata and code usage",
-      "recommendation": "Periodically audit granted permissions to ensure least privilege.",
-      "severity": "MEDIUM",
-      "type": "Permission Usage"
-    },
-    {
-      "description": "No use of geolocation, WebRTC, MediaDevices, or Notification API detected. No clipboard read access.",
-      "location": "Global scope and all visible code",
-      "recommendation": "Continue to avoid sensitive browser APIs unless strictly necessary.",
-      "severity": "MEDIUM",
-      "type": "Sensitive API Usage"
-    },
-    {
-      "description": "@require is not used. No supply chain risk from third-party libraries in the provided code.",
-      "location": "@require metadata",
-      "recommendation": "If adding dependencies, use official CDNs and pin versions/hashes.",
-      "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
-    },
-    {
-      "description": "No evidence of frame busting, clickjacking, or hidden iframes for data extraction.",
-      "location": "DOM manipulation sections",
-      "recommendation": "Continue to avoid iframe-based risks.",
+      "description": "脚本申请了 GM_registerMenuCommand、GM_addStyle 等权限，均有实际使用，未见权限滥用。",
+      "location": "元数据与全局",
+      "recommendation": "仅申请实际需要的权限。",
       "severity": "LOW",
-      "type": "Clickjacking/Iframe"
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。",
+      "location": "全局",
+      "recommendation": "继续避免敏感 API 滥用。",
+      "severity": "LOW",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "未见 @require 加载第三方库，供应链风险较低。",
+      "location": "元数据",
+      "recommendation": "如需加载第三方库，建议使用官方 CDN 并锁定版本哈希。",
+      "severity": "LOW",
+      "type": "供应链风险"
+    },
+    {
+      "description": "脚本未见修改 frame 保护策略或创建隐藏 iframe。",
+      "location": "全局",
+      "recommendation": "继续避免 ClickJacking/iframe 风险。",
+      "severity": "LOW",
+      "type": "ClickJacking/iframe"
     }
   ],
   "obfuscation_detected": false,
@@ -77,12 +77,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "LOW",
+  "risk_level": "MEDIUM",
   "script_name": "FF Scouter V2",
-  "security_score": 72,
-  "summary": "The script communicates with ffscouter.com using GM_xmlhttpRequest, which is declared and expected for its functionality. No evidence of privacy-invasive data collection, code obfuscation, remote code execution, or DOM XSS is present in the provided code. All granted permissions appear to be used appropriately. The main risk is the potential for sensitive data transmission to ffscouter.com, which should be reviewed in detail. Overall, the script is low risk but should be periodically audited for changes.",
+  "security_score": 75,
+  "summary": "FF Scouter V2 主要安全风险为通过 GM_xmlhttpRequest 向 ffscouter.com 外传数据（如用户 ID、目标信息等），属于 CRITICAL 级别。未发现隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用、供应链风险或 iframe 风险。建议开发者公开数据用途并最小化传输内容。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-11T06:53:06.203048+00:00",
+  "analyzed_at": "2026-05-18T06:24:16.160926+00:00",
   "slug": "FF_Scouter_V2"
 }

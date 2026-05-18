@@ -7,25 +7,18 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "无法评估脚本实际行为，因为未提供完整代码。仅根据元数据分析。",
+      "description": "未提供完整代码，无法检测实际数据外传、隐私采集、远程代码执行等实现细节。仅根据元数据分析。",
       "location": "N/A",
-      "recommendation": "请补充完整代码以获得更准确的安全审查。",
+      "recommendation": "建议补充完整脚本代码以进行全面安全审查。",
       "severity": "LOW",
       "type": "代码缺失"
     },
     {
-      "description": "脚本申请了 GM_openInTab、GM_notification、GM_setClipboard 等中等敏感权限，但未见实际用途。",
-      "location": "@grant 元数据",
-      "recommendation": "仅申请实际需要的权限，避免权限滥用。",
+      "description": "脚本申请了 GM_openInTab、GM_notification、GM_setClipboard 等中高权限，但元数据未见实际用途说明。",
+      "location": "@grant",
+      "recommendation": "建议仅申请实际使用的权限，避免权限滥用。",
       "severity": "MEDIUM",
       "type": "权限滥用"
-    },
-    {
-      "description": "脚本未通过 @require 加载第三方库，供应链风险较低。",
-      "location": "@require 元数据",
-      "recommendation": "如需加载第三方库，建议使用可信官方 CDN 并锁定版本。",
-      "severity": "LOW",
-      "type": "供应链风险"
     }
   ],
   "obfuscation_detected": false,
@@ -36,9 +29,9 @@
   "risk_level": "LOW",
   "script_name": "Github Enhancement - High Speed Download",
   "security_score": 89,
-  "summary": "由于未提供完整代码，无法检测到实际的数据外传、隐私采集、远程代码执行等高危行为。仅从元数据分析，脚本权限申请较多但未见实际用途，存在一定权限滥用风险。未发现供应链和代码混淆风险。建议补充完整代码以获得更准确的安全评估。",
+  "summary": "仅根据元数据分析，未发现明显的高危安全风险。脚本未包含任何代码，无法检测数据外传、隐私采集、远程代码执行等实际行为。存在中高权限申请，建议最小化权限。整体风险较低，但建议补充完整代码以获得准确评估。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-11T05:52:04.206546+00:00",
+  "analyzed_at": "2026-05-18T06:05:47.760469+00:00",
   "slug": "GitHub_20Issue_20Link_20Status"
 }

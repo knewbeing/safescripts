@@ -1,5 +1,5 @@
 {
-  "approved": true,
+  "approved": false,
   "data_transmission": {
     "destinations": [
       "https://nominatim.openstreetmap.org"
@@ -9,30 +9,30 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script sends latitude and longitude coordinates to the public OpenStreetMap Nominatim API to reverse geocode the location when the user requests detailed location information. This is a third-party data transmission, but only coordinates are sent, not user-identifiable data.",
+      "description": "The script sends latitude and longitude coordinates to the public OpenStreetMap Nominatim API to retrieve location details. This constitutes data transmission to a third-party server.",
       "location": "fetchLocationDetails() function",
-      "recommendation": "Document this behavior for transparency. If possible, allow users to disable this feature.",
+      "recommendation": "Warn users about the external API call and avoid sending sensitive or user-identifiable data. Consider making this feature optional.",
       "severity": "CRITICAL",
-      "type": "Data Transmission"
+      "type": "Data Exfiltration"
     },
     {
-      "description": "The script stores user settings in localStorage under the key 'geoGuessrHelper'. This includes keybinds and UI preferences, but no sensitive or personal data.",
+      "description": "The script reads and writes settings to localStorage under the key 'geoGuessrHelper'.",
       "location": "loadSettings() and saveSettings() functions",
-      "recommendation": "No action needed unless sensitive data is added in the future.",
+      "recommendation": "Ensure no sensitive or personal data is stored. Document the usage for transparency.",
       "severity": "MEDIUM",
       "type": "Privacy Collection"
     },
     {
-      "description": "The script modifies XMLHttpRequest.prototype.open to intercept certain Google Maps API calls and extract coordinates. This is a form of monkey-patching but does not execute remote code or introduce direct RCE risk.",
+      "description": "The script modifies XMLHttpRequest.prototype.open to intercept Google Maps API responses and extract coordinates. This is a form of monkey-patching and may break site functionality or introduce compatibility/security risks.",
       "location": "XMLHttpRequest.prototype.open override",
-      "recommendation": "Monitor for future changes that could introduce RCE or data exfiltration.",
+      "recommendation": "Limit the scope of monkey-patching and restore the original function when not needed.",
       "severity": "MEDIUM",
       "type": "Sensitive API Usage"
     },
     {
-      "description": "The script requests the GM_webRequest permission, but does not use any GM_* APIs in the provided code.",
+      "description": "The script requests the GM_webRequest permission, but does not use any GM_webRequest API in the code.",
       "location": "@grant GM_webRequest in metadata",
-      "recommendation": "Remove unused permissions to reduce attack surface.",
+      "recommendation": "Remove unnecessary permissions to reduce attack surface.",
       "severity": "MEDIUM",
       "type": "Permission Abuse"
     }
@@ -40,16 +40,16 @@
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "localStorage: stores settings (keybinds, UI preferences)"
+      "Reads/writes settings to localStorage"
     ],
     "detected": true
   },
-  "risk_level": "MEDIUM",
+  "risk_level": "HIGH",
   "script_name": "CheatGuessr | GeoGuessr Cheat",
-  "security_score": 59,
-  "summary": "The script does not contain code obfuscation, remote code execution, or DOM XSS risks. It does transmit coordinates to a third-party (OpenStreetMap Nominatim) for reverse geocoding, which is a privacy consideration but not a critical leak of user data. It stores settings in localStorage and requests an unused GM_webRequest permission. No supply chain or iframe/clickjacking risks detected. Overall, the script is medium risk due to third-party data transmission and minor privacy/permission issues.",
+  "security_score": 52,
+  "summary": "The script transmits coordinates to a third-party API (OpenStreetMap Nominatim), which is a critical data exfiltration risk. It also collects settings in localStorage, monkey-patches XMLHttpRequest, and requests an unused high-privilege permission. No code obfuscation or DOM XSS risks were found. The overall risk is HIGH and the script is NOT approved for safe use.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-11T06:37:41.168724+00:00",
+  "analyzed_at": "2026-05-18T06:19:40.262138+00:00",
   "slug": "CheatGuessr_GeoGuessr_Cheat"
 }

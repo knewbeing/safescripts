@@ -36,9 +36,9 @@ title: "EasyTube V4.0 — 广告跳过、SponsorBlock 和 HD 下载器（无卡�
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：64/100　　**分析时间**：2026-05-11
+**风险等级**：🟡 LOW　　**安全评分**：75/100　　**分析时间**：2026-05-18
 
-> The script is generally safe and well-structured. It communicates with two third-party APIs (SponsorBlock and evdfrance.fr) as expected for its features, but does not transmit sensitive user data. No code obfuscation, XSS, or remote code execution risks were found. Permissions are appropriate. The main risk is the transmission of video IDs to third-party APIs, which is necessary for functionality but should be disclosed to users. Overall, the script is low risk for privacy and security.
+> The script is well-structured and does not exhibit code obfuscation, remote code execution, or DOM XSS risks. It transmits video IDs and segment categories to SponsorBlock and uses evdfrance.fr for downloads, but does not send sensitive user data. User settings are stored locally via GM_setValue/GM_getValue. No evidence of privacy-invasive behavior, permission abuse, or supply chain risk. Overall, the script is considered low risk, with the main concern being third-party API usage for SponsorBlock and downloads. Users should be aware of the privacy policy of these third-party services.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -52,24 +52,49 @@ title: "EasyTube V4.0 — 广告跳过、SponsorBlock 和 HD 下载器（无卡�
 ### 发现的问题
 
 **⛔ CRITICAL** — Data Transmission  
-> The script uses GM_xmlhttpRequest to communicate with sponsor.ajay.app (SponsorBlock API) and evdfrance.fr (for video download). These are third-party servers. However, only video IDs and segment categories are sent to SponsorBlock, and download requests are user-initiated. No evidence of user credentials, cookies, or sensitive data being sent.  
-> 位置：CFG.sbApi, download logic (not fully shown in snippet)  
-> 建议：Ensure only minimal, necessary data is sent. Do not send cookies or user-identifiable data.
+> The script sends requests to sponsor.ajay.app (SponsorBlock API) and evdfrance.fr (for video download). These are third-party servers. However, only video IDs and segment categories are sent to SponsorBlock, and download requests are user-initiated. No evidence of user credentials, cookies, or sensitive data being sent.  
+> 位置：GM_xmlhttpRequest usage for SponsorBlock and download feature  
+> 建议：Ensure only necessary data (video IDs, categories) are sent. Do not transmit user credentials or cookies. Document privacy policy for users.
 
-**🟠 MEDIUM** — Privacy Collection  
-> The script stores and retrieves user settings (ad skip, SponsorBlock, quality) using GM_setValue/GM_getValue. No evidence of sensitive data (passwords, cookies, form fields) being accessed or transmitted.  
-> 位置：GM_setValue/GM_getValue usage  
-> 建议：Continue to avoid collecting sensitive user data. Document all stored keys for transparency.
+**⛔ CRITICAL** — Privacy Collection  
+> The script uses GM_getValue and GM_setValue to store user settings (ad skip, SponsorBlock, quality). No evidence of reading cookies, localStorage, or sessionStorage directly. No keylogger or clipboard access detected.  
+> 位置：Settings management section  
+> 建议：Continue to avoid collecting sensitive user data. Make privacy practices transparent.
+
+**🔴 HIGH** — Remote Code Execution  
+> No use of eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection detected. No @require of remote scripts. No document.write usage.  
+> 位置：Full script  
+> 建议：Maintain current practice of avoiding dynamic code execution.
+
+**🔴 HIGH** — Obfuscation  
+> No code obfuscation detected. Code is readable, not minified, and does not use base64 or unicode obfuscation.  
+> 位置：Full script  
+> 建议：Maintain code transparency for user trust.
+
+**🔴 HIGH** — DOM XSS  
+> No direct DOM XSS risk found. No user input or URL parameters are inserted into innerHTML/outerHTML without sanitization. No document.write with untrusted content.  
+> 位置：DOM manipulation sections  
+> 建议：Continue to avoid inserting untrusted data into the DOM.
 
 **🟠 MEDIUM** — Permission Usage  
-> The script requests GM_xmlhttpRequest permission, which is necessary for SponsorBlock and download features. No evidence of unused high-privilege grants or permission overreach.  
-> 位置：@grant metadata  
-> 建议：Only request permissions actually used in code.
+> @grant permissions match actual usage (GM_addStyle, GM_xmlhttpRequest, GM_setValue, GM_getValue). No unused high-risk permissions. No use of GM_download or GM_openInTab.  
+> 位置：Metadata block and code  
+> 建议：Only request permissions actually used by the script.
 
-**🟠 MEDIUM** — Supply Chain Risk  
-> The script loads no remote scripts via @require or dynamic script tags. All logic is contained in the script itself. No supply chain risk detected.  
-> 位置：Metadata and code review  
-> 建议：If adding @require in the future, use official CDNs and fixed versions.
+**🟠 MEDIUM** — Sensitive API  
+> No use of sensitive APIs such as geolocation, RTCPeerConnection, MediaDevices, or Notification API. No clipboard read access.  
+> 位置：Full script  
+> 建议：Continue to avoid unnecessary sensitive API usage.
+
+**🟠 MEDIUM** — Supply Chain  
+> No @require of third-party libraries. All code is local to the script. No supply chain risk from external dependencies.  
+> 位置：Metadata block  
+> 建议：If adding dependencies in the future, use official CDNs and fixed versions.
+
+**🟡 LOW** — Clickjacking/Iframe  
+> No iframe manipulation or frame protection bypass detected. No hidden iframes created.  
+> 位置：Full script  
+> 建议：Maintain current practice to avoid clickjacking risks.
 
 ---
 

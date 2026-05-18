@@ -20,7 +20,7 @@
 // @description:zh-CN    隐蔽式 GeoGuessr 辅助器｜按 Tab 打开设置菜单｜地图标点｜发送 Discord｜在 Google 地图中打开当前位置
 // @description:ja    検出されにくい GeoGuessr 支援ツール｜Tabキーで設定メニューを開く｜マップにピンを配置｜Discord送信｜Googleマップで現在地を開く
 // @namespace    https://greasyfork.org/en/users/1588266-woggieboost
-// @version    10.2
+// @version    10.4
 // @author    woggieboost
 // @license    MIT
 // @include    *://*.geoguessr.com/*
@@ -60,8 +60,7 @@
         if (url.includes('geoguessr')) return PLATFORM.GEOGUESSR;
         if (url.includes('worldguessr')) return PLATFORM.WORLDGUESSR;
         if (url.includes('openguessr')) return PLATFORM.OPENGUESSR;
-        if (url.includes('freeguessr')) return PLATFORM.FREEGUESSR;
-        if (url.includes('guesswhereyouare')) return PLATFORM.FREEGUESSR;
+        if (url.includes('guesswhereyouare') || url.includes('freeguessr')) return PLATFORM.FREEGUESSR;
         if (url.includes('geoduel')) return PLATFORM.GEODUEL;
         return null;
     }
@@ -198,7 +197,6 @@
 
     }
 
-
     // ========== Common Config ==========
     const DEFAULT_HOTKEYS = {
         openPanel: 'tab',
@@ -253,10 +251,6 @@
 
     function saveFeatureToggles() {
         GM_setValue('featureToggles', state.featureToggles);
-    }
-
-    function generateClass(prefix) {
-        return String(prefix) + Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
     }
 
     function getMainDomain() {
@@ -455,18 +449,14 @@
 
     // Coordinate getter
     async function getCoordinates() {
-        if (platform === PLATFORM.GEOGUESSR) {
-            try {
+        try {
+            if (platform === PLATFORM.GEOGUESSR) {
                 return {
                     lat: state.streetView?.location?.latLng.lat?.(),
                     lng: state.streetView?.location?.latLng.lng?.()
                 };
-            } catch (e) {
-                return { lat: undefined, lng: undefined };
             }
-        } else {
-            try {
-
+            else {
                 if(platform == PLATFORM.FREEGUESSR){
                     const iframeObj= document.querySelector('.iframeWithStreetView');
                     const fiberKey = Object.keys(iframeObj).find(k => k.startsWith('__reactFiber'));
@@ -482,7 +472,6 @@
                       document.querySelector('[title="Street View"]');
 
                 if (iframe && (iframe.src || iframe.data)) {
-
                     const loc = new URL(iframe.src || iframe.data).searchParams.get('location');
                     if (loc) {
                         const [lat, lng] = loc.split(',').map(Number);
@@ -494,19 +483,16 @@
                         return {lat:metadata?.[1]?.[0]?.[5]?.[0]?.[1]?.[0]?.[2], lng:metadata?.[1]?.[0]?.[5]?.[0]?.[1]?.[0]?.[3] };
                     }
                 }
-            } catch (e) {
-                console.error('Failed to extract coordinates:', e);
             }
+        }
+        catch (e) {
             return { lat: undefined, lng: undefined };
         }
     }
 
     // Location description getter
     function getLocationDescription() {
-        if (platform === PLATFORM.GEOGUESSR) {
-            return state.streetView?.location?.description || 'Unknown';
-        }
-        return 'Unknown';
+        return state.streetView?.location?.description || 'Unknown';
     }
 
     // Nickname getter/setter
@@ -518,19 +504,21 @@
                 document.querySelector("[class*='live-players-count_count']");
         }
         else if (platform == PLATFORM.GEODUEL){
-            state.nicknameEl = document.querySelector('[data-testid="multiplier-badge"] span')||
-                document.evaluate(
-                "//p[text()='Round']",
-                document,
-                null,
-                XPathResult.FIRST_ORDERED_NODE_TYPE,
-                null
-            ).singleNodeValue || null;
-            state.nicknameEl.style.display = 'flex'
+            if(!state.nicknameEl){
+                state.nicknameEl = document.querySelector('[data-testid="multiplier-badge"] span')||
+                    document.evaluate(
+                    "//p[text()='Round']",
+                    document,
+                    null,
+                    XPathResult.FIRST_ORDERED_NODE_TYPE,
+                    null
+                ).singleNodeValue || null;
+                state.nicknameEl.style.display = 'flex'
+            }
         }
         else {
             const elements = document.querySelectorAll('.player-name');
-            state.nicknameEl = elements[1] || null
+            state.nicknameEl = elements[1] || null;
         }
 
         return state.nicknameEl ;
@@ -580,7 +568,6 @@
 
     // Logo element creator for OpenGuessr/WorldGuessr
     function createLogoElement() {
-
         if (platform === PLATFORM.WORLDGUESSR) {
             const logoEl = document.querySelector('.navbar__title');
             if (!logoEl) return null;
@@ -677,6 +664,27 @@
                 }
             }
         }
+    }
+
+    function toggleAddressControl(){
+        GM_addStyle(`
+            #panorama-iframe, .iframeWithStreetView {
+                top: 0 !important;
+                height: 100% !important;
+            }
+            #streetview {
+                height: 100% !important;
+                transform:translateY(0) !important;
+            }
+            iframe[src*="google.com/maps/embed"] {
+                top: 0 !important;
+                height: 100% !important;
+            }
+            .css-1dcvk4r, .logo, .navbar {
+                display: none !important;
+            }`
+                   )
+
     }
 
     // ========== Map Marker Management ==========
@@ -1134,7 +1142,6 @@
                             state.lastCoord = [lat, lng];
                             state.currentAddress = await getAddress(lat, lng);
                             updateAddressDisplay();
-
                             if (state.mapMarker) {
                                 state.mapMarker.setLatLng([lat, lng]);
                             }

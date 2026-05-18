@@ -1,0 +1,55 @@
+{
+  "slug": "Duolingo_PRO",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/473310-duolingo-pro",
+  "source_repo": "473310",
+  "raw_url": "https://update.greasyfork.org/scripts/473310/Duolingo%20PRO.user.js",
+  "filename": "Duolingo_PRO.user.js",
+  "name": "Duolingo PRO",
+  "version": "3.1BETA.04.5",
+  "description": "The fastest Duolingo XP farmer, with free gems, Duolingo Max & more. Working as of May 2026.",
+  "match": [
+    "*://*.duolingo.com/*",
+    "*://*.duolingo.cn/*"
+  ],
+  "grant": [
+    "GM_log"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Duolingo PRO\n// @namespace  http://duolingopro.net\n// @version  3.1BETA.04.5\n// @description  The fastest Duolingo XP farmer, with free gems, Duolingo Max & more. Working as of May 2026.\n// @author  anonymousHackerIV\n// @match  *://*.duolingo.com/*\n// @match  *://*.duolingo.cn/*\n// @icon  https://www.duolingopro.net/static/favicons/dlp/128/light/primary.png\n// @grant  GM_log\n// @antifeature  payment\n// @downloadURL  https://update.greasyfork.org/scripts/473310/Duolingo%20PRO.user.js\n// @updateURL  https://update.greasyfork.org/scripts/473310/Duolingo%20PRO.meta.js",
+  "sha256": "5aa8b1ac5fd7833d8e7fa95a4823e8c5e9a0f288ad4cd3c882a25e66e4380cd7",
+  "discovered_at": "2026-05-18T06:15:08.103598+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 49671,
+  "good_ratings": 150,
+  "bad_ratings": 34,
+  "summary": {
+    "applicable_sites": [
+      "多邻国国际站",
+      "多邻国中国站"
+    ],
+    "description": "本脚本可帮助用户在多邻国网站上快速刷取经验值（XP），免费获取宝石和高级功能（如Duolingo Max）。适用于多邻国国际站和中国站。安装后可自动提升学习进度，节省大量时间。",
+    "permissions": [
+      {
+        "explanation": "用于在控制台输出调试信息，方便开发者排查问题。",
+        "grant": "GM_log"
+      }
+    ],
+    "tags": [
+      "多邻国",
+      "学习辅助",
+      "自动化",
+      "经验值",
+      "刷宝石",
+      "高级功能"
+    ],
+    "usage": [
+      "1. 安装脚本后，打开多邻国官网或中国站。",
+      "2. 登录你的多邻国账号。",
+      "3. 脚本会自动运行，无需手动操作，即可体验加速刷经验和免费宝石等功能。"
+    ],
+    "zh_name": "多邻国PRO增强版"
+  }
+}

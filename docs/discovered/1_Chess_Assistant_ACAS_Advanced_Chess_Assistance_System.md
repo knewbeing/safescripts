@@ -4,15 +4,15 @@ title: "🏆 [#1 Chess Assistant] A.C.A.S（高级国际象棋辅助系统）"
 
 # 🏆 [#1 Chess Assistant] A.C.A.S（高级国际象棋辅助系统）
 
-`国际象棋`  `辅助工具`  `实时分析`  `策略建议`  `游戏插件`  `提升棋力`
+`国际象棋`  `辅助工具`  `实时分析`  `策略建议`  `棋类游戏`  `自动化`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/1_Chess_Assistant_ACAS_Advanced_Chess_Assistance_System.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**2.4.3**　　发现时间：**2026-05-11**　　来源：[GreasyFork](https://greasyfork.org/scripts/459137-1-chess-assistant-a-c-a-s-advanced-chess-assistance-system) <Badge type="tip" text="GreasyFork" />　　安装量：**56,804**　　评分：👍34 / 👎6
+> 版本：**2.4.3**　　发现时间：**2026-05-18**　　来源：[GreasyFork](https://greasyfork.org/scripts/459137-1-chess-assistant-a-c-a-s-advanced-chess-assistance-system) <Badge type="tip" text="GreasyFork" />　　安装量：**57,358**　　评分：👍36 / 👎6
 
 ## 功能介绍
 
-本脚本为国际象棋玩家提供实时走法分析和策略辅助，帮助提升棋艺。支持多家主流国际象棋网站，自动分析棋局并给出建议。适合希望提高水平或需要辅助决策的用户。
+本脚本为国际象棋玩家提供实时走法分析和策略辅助，帮助提升棋艺水平。支持多家主流国际象棋网站，自动集成分析工具。安装后即可在对局时获得智能建议和辅助提示。适合希望提升棋力的用户使用。
 
 ## 适用网站
 
@@ -21,8 +21,8 @@ title: "🏆 [#1 Chess Assistant] A.C.A.S（高级国际象棋辅助系统）"
 - PlayStrategy
 - PyChess
 - Chess.org
-- PaperGames
-- Coolmath Games（国际象棋）
+- PaperGames 国际象棋
+- Coolmath Games 国际象棋
 - Immortal Game
 - World Chess
 - Chess.net
@@ -31,34 +31,35 @@ title: "🏆 [#1 Chess Assistant] A.C.A.S（高级国际象棋辅助系统）"
 - GameKnot
 - ChessAnytime
 - EdChess
-- A.C.A.S 官网
+- A.C.A.S 官方主页
+- 本地测试环境
 
 ## 使用方法
 
-1. 1. 安装脚本后，访问支持的国际象棋网站。
-2. 2. 进入棋局页面，脚本会自动启动并显示辅助界面。
-3. 3. 根据界面提示查看走法分析和策略建议。
-4. 4. 可通过脚本菜单或设置自定义功能和偏好。
+1. 1. 安装 Tampermonkey 插件并添加本脚本。
+2. 2. 打开支持的国际象棋网站，开始或加入棋局。
+3. 3. 页面会自动显示辅助分析和建议，无需额外操作。
+4. 4. 可通过脚本菜单或界面按钮调整设置或查看帮助。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
 | `GM_getValue / GM.getValue` | 用于读取和保存脚本设置或数据。 |
-| `GM_setValue / GM.setValue` | 用于保存脚本设置或数据。 |
+| `GM_setValue / GM.setValue` | 用于保存用户设置或脚本数据。 |
 | `GM_deleteValue / GM.deleteValue` | 用于删除已保存的数据。 |
-| `GM_listValues / GM.listValues` | 用于列出所有已保存的数据项。 |
-| `GM_openInTab / GM.openInTab` | 在新标签页打开相关链接或页面。 |
-| `GM_registerMenuCommand` | 在脚本菜单中添加自定义命令，方便用户操作。 |
-| `GM_setClipboard` | 将内容复制到剪贴板，便于分享棋谱等。 |
-| `GM_notification` | 在桌面弹出通知，提醒用户重要信息。 |
-| `unsafeWindow` | 允许脚本访问网页的原始窗口对象，实现更高级功能。 |
+| `GM_listValues / GM.listValues` | 用于列出所有已保存的数据键名。 |
+| `GM_openInTab / GM.openInTab` | 用于在新标签页打开相关链接或页面。 |
+| `GM_registerMenuCommand` | 用于在脚本菜单中添加自定义命令，方便用户操作。 |
+| `GM_setClipboard` | 用于复制内容到剪贴板。 |
+| `GM_notification` | 用于在桌面弹出通知提醒用户。 |
+| `unsafeWindow` | 允许脚本访问网页的原始窗口对象，实现更深层次的功能。 |
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：84/100　　**分析时间**：2026-05-11
+**风险等级**：🟠 MEDIUM　　**安全评分**：76/100　　**分析时间**：2026-05-18
 
-> 该脚本主代码未检测到数据外传、隐私采集、远程代码执行、混淆或 DOM XSS 风险。主要风险点为：1）@grant 申请了未实际使用的高权限，存在权限滥用隐患；2）@require 加载的第三方库未锁定具体版本，存在供应链污染风险。建议移除未用高权限，并固定依赖版本。未发现关键隐私或安全威胁，但建议完整审查所有 @require 的外部依赖代码。
+> The script does not directly transmit data to third-party servers or collect sensitive user data in the visible code. However, it requests several high-privilege grants (unsafeWindow, GM_openInTab, GM_setClipboard, GM_notification) that are not clearly used in the visible code, which increases the attack surface if the script or its dependencies are compromised. Additionally, @require is used to load external scripts without version pinning, introducing supply chain risk. No code obfuscation or DOM XSS risks were detected in the visible code. The overall risk is MEDIUM, mainly due to permission over-request and supply chain concerns.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -71,15 +72,30 @@ title: "🏆 [#1 Chess Assistant] A.C.A.S（高级国际象棋辅助系统）"
 
 ### 发现的问题
 
-**🟠 MEDIUM** — 权限滥用  
-> @grant 申请了 GM_openInTab、unsafeWindow、GM_setClipboard、GM_notification 等高权限，但主代码未见实际使用。  
-> 位置：元数据 @grant  
-> 建议：仅申请实际需要的权限，移除未使用的高权限。
+**🟠 MEDIUM** — Permission Abuse  
+> The script requests and uses the 'unsafeWindow' grant, which can be abused to access or modify the page's JavaScript context and may increase the risk of privilege escalation or data leakage.  
+> 位置：UserScript metadata (@grant unsafeWindow)  
+> 建议：Remove 'unsafeWindow' unless strictly necessary. If required, ensure all interactions are strictly controlled and sanitized.
 
-**🟠 MEDIUM** — 供应链风险  
-> @require 加载了三个外部脚本（LegacyGMjs.js、CommLinkjs.js、UniversalBoardDrawerjs.js），均来自 update.greasyfork.org，URL 未锁定具体版本哈希，仅通过 query 参数区分。  
-> 位置：元数据 @require  
-> 建议：建议使用带有版本哈希的 CDN 或固定版本，防止供应链污染。
+**🟠 MEDIUM** — Permission Abuse  
+> The script requests 'GM_openInTab', which can be abused to open arbitrary URLs in new tabs, potentially for phishing or unwanted navigation.  
+> 位置：UserScript metadata (@grant GM_openInTab, GM.openInTab)  
+> 建议：Only request 'GM_openInTab' if absolutely necessary. Remove if not used.
+
+**🟠 MEDIUM** — Permission Abuse  
+> The script requests 'GM_setClipboard', which can be abused to overwrite the user's clipboard.  
+> 位置：UserScript metadata (@grant GM_setClipboard)  
+> 建议：Only request 'GM_setClipboard' if necessary. Remove if not used.
+
+**🟠 MEDIUM** — Permission Abuse  
+> The script requests 'GM_notification', which can be abused to send unwanted notifications.  
+> 位置：UserScript metadata (@grant GM_notification)  
+> 建议：Only request 'GM_notification' if necessary. Remove if not used.
+
+**🟠 MEDIUM** — Supply Chain Risk  
+> The script uses @require to load external scripts from update.greasyfork.org, but the URLs are not version-pinned with a hash, which may introduce supply chain risk if the remote files are tampered with.  
+> 位置：UserScript metadata (@require ...)  
+> 建议：Pin @require URLs to a specific version or hash, and only use trusted sources.
 
 ---
 

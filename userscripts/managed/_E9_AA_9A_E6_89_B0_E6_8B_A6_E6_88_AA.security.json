@@ -14,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "骚扰拦截",
   "security_score": 100,
-  "summary": "该脚本仅通过 CSS 选择器批量移除页面上的骚扰元素（如弹窗、悬浮按钮等），未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、XSS 注入、权限滥用或供应链风险。未使用任何网络请求、未监听用户输入、未访问敏感 API。@grant 为 none，权限最小化。整体安全性极高。",
+  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。元数据未申请任何 @grant 权限，且代码结构清晰，无可疑行为。整体安全性高。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-11T05:56:07.978084+00:00",
+  "analyzed_at": "2026-05-18T06:07:16.634505+00:00",
   "slug": "_E9_AA_9A_E6_89_B0_E6_8B_A6_E6_88_AA"
 }

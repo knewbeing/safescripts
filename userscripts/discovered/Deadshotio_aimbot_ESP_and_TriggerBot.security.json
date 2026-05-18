@@ -7,24 +7,40 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script requests the 'unsafeWindow' grant, which allows full access to the page's JavaScript context. This increases the risk of privilege escalation or unintended interaction with page scripts.",
-      "location": "Metadata block (@grant unsafeWindow)",
-      "recommendation": "Only request 'unsafeWindow' if absolutely necessary. Review if the script can function without it.",
+      "description": "脚本申请了 @grant unsafeWindow 权限，允许脚本访问页面的原始 window 对象，可能被滥用进行高权限操作。",
+      "location": "@grant 元数据",
+      "recommendation": "仅在确有必要时申请 unsafeWindow，建议最小化权限申请。",
       "severity": "MEDIUM",
-      "type": "Permission Abuse"
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本通过 hook WebAssembly 实例和内存，分析游戏实体数据，属于高级作弊行为，但未发现数据外传。",
+      "location": "核心逻辑",
+      "recommendation": "确认脚本不会将敏感数据发送到第三方服务器。",
+      "severity": "LOW",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本未发现任何网络请求、数据外传、远程代码加载、eval 或混淆代码。",
+      "location": "全局",
+      "recommendation": "保持代码开源透明，防止后续版本引入恶意行为。",
+      "severity": "LOW",
+      "type": "代码安全"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [],
+    "details": [
+      "Hook WebAssembly 内存，分析游戏实体数据"
+    ],
     "detected": false
   },
   "risk_level": "LOW",
   "script_name": "Deadshot.io aimbot, ESP and TriggerBot",
-  "security_score": 92,
-  "summary": "The script does not perform any network requests, data exfiltration, or privacy-invasive actions. It does not use eval, dynamic code execution, or obfuscation techniques. The only notable risk is the use of the 'unsafeWindow' grant, which is not inherently malicious but increases the attack surface. No supply chain or XSS risks were detected.",
+  "security_score": 89,
+  "summary": "该脚本主要通过 hook WebAssembly 实例和内存，分析 deadshot.io 游戏中的实体数据，实现 aimbot、ESP 等功能。未检测到任何数据外传、隐私采集、远程代码执行、混淆或 XSS 风险。唯一的中等风险为申请了 unsafeWindow 权限，建议最小化权限。整体安全性较高，但属于游戏作弊脚本，存在被游戏官方检测和封禁的风险。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-11T06:48:09.237754+00:00",
+  "analyzed_at": "2026-05-18T06:21:51.987453+00:00",
   "slug": "Deadshotio_aimbot_ESP_and_TriggerBot"
 }

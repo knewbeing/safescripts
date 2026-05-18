@@ -22,37 +22,44 @@
       "ted.com",
       "licdn.com"
     ],
-    "detected": true
+    "detected": false
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限，并通过 @connect 允许与多个第三方视频 CDN 域名通信，存在数据外传的可能性。",
-      "location": "元数据 @grant/@connect",
-      "recommendation": "限制 @connect 目标域名，仅允许必要的官方视频 CDN，避免向非官方或未知域名传输数据。",
+      "description": "脚本申请了 GM_xmlhttpRequest 权限并声明了大量 @connect 域名，但完整代码缺失，无法确认是否存在数据外传行为。",
+      "location": "元数据区",
+      "recommendation": "补充完整代码，重点检查 GM_xmlhttpRequest、fetch、WebSocket 等网络请求是否向第三方服务器发送用户数据。",
       "severity": "CRITICAL",
-      "type": "数据外传"
+      "type": "数据外传风险"
     },
     {
-      "description": "脚本申请了 GM_openInTab、GM_download、unsafeWindow 等高权限，但未见实际代码使用情况，存在权限滥用风险。",
-      "location": "元数据 @grant",
-      "recommendation": "仅申请实际需要的权限，移除未使用的高权限申请。",
+      "description": "脚本申请了 GM_openInTab、GM_download、unsafeWindow 等高权限，但完整代码缺失，无法确认是否存在权限滥用。",
+      "location": "元数据区",
+      "recommendation": "补充完整代码，核查高权限 API 的实际用途，避免滥用。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "脚本未使用 @require 加载第三方库，降低了供应链风险。",
-      "location": "元数据 @require",
-      "recommendation": "保持当前状态，避免动态加载未知来源的第三方库。",
+      "description": "脚本未包含 @require 第三方库，供应链风险较低。",
+      "location": "元数据区",
+      "recommendation": "如需引入第三方库，建议使用可信官方 CDN 并锁定版本哈希。",
       "severity": "LOW",
       "type": "供应链风险"
     },
     {
-      "description": "脚本未检测到代码混淆、eval、new Function、setTimeout(string) 等远程代码执行高危用法。",
-      "location": "主代码区",
-      "recommendation": "保持当前状态，避免引入动态代码执行。",
-      "severity": "LOW",
-      "type": "远程代码执行"
+      "description": "脚本未见代码混淆、eval、new Function、innerHTML 注入等高危特征，但完整代码缺失，无法完全排除。",
+      "location": "元数据区",
+      "recommendation": "补充完整代码，检查是否存在远程代码执行或混淆行为。",
+      "severity": "HIGH",
+      "type": "远程代码执行/混淆风险"
+    },
+    {
+      "description": "脚本未见隐私采集相关 API 调用，但完整代码缺失，无法完全排除。",
+      "location": "元数据区",
+      "recommendation": "补充完整代码，检查是否读取 cookie、localStorage、表单、剪贴板等敏感信息。",
+      "severity": "CRITICAL",
+      "type": "隐私采集风险"
     }
   ],
   "obfuscation_detected": false,
@@ -60,12 +67,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "MEDIUM",
+  "risk_level": "CRITICAL",
   "script_name": "All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)",
-  "security_score": 67,
-  "summary": "该脚本主要风险在于广泛的第三方域名数据传输权限（@connect），理论上可外传用户数据，属于 CRITICAL 级别。未发现隐私采集、代码混淆、远程代码执行等高危行为。部分高权限申请存在滥用空间。建议收紧 @connect 和 @grant 权限。",
+  "security_score": 27,
+  "summary": "该脚本元数据区权限申请较高，声明了大量 @connect 域名，存在较大数据外传和隐私采集风险。由于缺少完整代码，无法对实际行为做出准确判断，建议补充完整代码进行详细审查。当前安全评分为 27，风险等级为 CRITICAL，不建议在生产环境或含敏感信息的环境中使用。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-11T06:30:34.368701+00:00",
+  "analyzed_at": "2026-05-18T06:17:00.925659+00:00",
   "slug": "All-in-One_Video_Downloader_HD_YouTube_TikTok_Instagram_X_More"
 }

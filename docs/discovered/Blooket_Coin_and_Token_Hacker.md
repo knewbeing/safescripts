@@ -30,9 +30,9 @@ title: "Blooket Coin and Token Hacker"
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：97/100　　**分析时间**：2026-05-11
+**风险等级**：🟢 SAFE　　**安全评分**：97/100　　**分析时间**：2026-05-18
 
-> 该 UserScript 仅在本地操作页面内容，不进行任何数据外传、隐私采集、远程代码执行或供应链依赖。未检测到高危或关键安全风险。主要操作为通过 prompt 获取用户输入并更新页面文本内容，未涉及敏感 API、网络请求或代码混淆。整体安全性高。
+> 该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、供应链风险或高危 DOM 注入行为。仅通过 prompt 获取用户输入并本地修改页面显示，不涉及网络请求或敏感 API。整体安全性高。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -45,20 +45,10 @@ title: "Blooket Coin and Token Hacker"
 
 ### 发现的问题
 
-**🟡 LOW** — DOM XSS  
-> 脚本通过 prompt 获取用户输入，但未将用户输入直接插入 innerHTML/outerHTML，仅用于文本内容和 alert，无 XSS 风险。  
-> 位置：addCoinsAndTokens()  
-> 建议：如需插入 HTML，需进行转义。当前实现安全。
-
-**🟡 LOW** — Data Transmission  
-> 脚本未使用任何网络请求或外部通信 API，无数据外传行为。  
-> 位置：全局  
-> 建议：保持此状态，勿添加外部通信代码。
-
-**🟡 LOW** — Permission Usage  
-> 脚本未申请任何 @grant 权限，实际代码也未使用 GM_* API，权限申请合理。  
-> 位置：元数据  
-> 建议：保持最小权限原则。
+**🟡 LOW** — DOM Manipulation  
+> Uses prompt() to collect user input, but does not sanitize or escape the input before inserting into the DOM via textContent. However, textContent is safe from XSS.  
+> 位置：updateBalanceDisplay function  
+> 建议：No action needed for textContent, but avoid using innerHTML with unsanitized input.
 
 ---
 

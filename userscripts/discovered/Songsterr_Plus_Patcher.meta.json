@@ -17,21 +17,21 @@
   "require": [],
   "metadata_raw": "// @name  Songsterr Plus Patcher\n// @namespace  https://github.com/Strikeless\n// @version  1.2.2\n// @description  Trick Songsterr to unlock plus features.\n// @license  The Unlicense\n// @supportURL  https://github.com/Strikeless/SongsterrPlusPatcher\n// @match  http*://*.songsterr.com/*\n// @run-at  document-start\n// @grant  unsafeWindow\n// @downloadURL  https://update.greasyfork.org/scripts/500019/Songsterr%20Plus%20Patcher.user.js\n// @updateURL  https://update.greasyfork.org/scripts/500019/Songsterr%20Plus%20Patcher.meta.js",
   "sha256": "2ea320b5a9f9c7013d8bb97c6b8b64ea2a26a57fbe30fc1c34c47c9953d2cb17",
-  "discovered_at": "2026-05-11T06:14:22.364684+00:00",
+  "discovered_at": "2026-05-18T06:11:29.690964+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 14507,
+  "install_count": 14989,
   "good_ratings": 14,
   "bad_ratings": 3,
   "summary": {
     "applicable_sites": [
-      "Songsterr（曲谱网站）"
+      "Songsterr（吉他谱网站）"
     ],
-    "description": "本脚本可让用户在 Songsterr 网站上免费体验 Plus 会员的高级功能，无需付费订阅。通过拦截网站请求，模拟已开通 Plus 会员状态，从而解锁受限功能。适合想要使用 Songsterr Plus 功能但不想付费的用户。",
+    "description": "本脚本可免费解锁 Songsterr 网站上的 Plus 会员功能，让用户无需付费即可使用高级功能。安装后，访问 Songsterr 时会自动生效，无需额外操作。",
     "permissions": [
       {
-        "explanation": "允许脚本访问和修改网页的全局变量，实现对网站核心功能的干预。",
+        "explanation": "允许脚本访问和修改网页的全局变量，实现对网站功能的深度控制。",
         "grant": "unsafeWindow"
       }
     ],
@@ -39,12 +39,12 @@
       "音乐",
       "会员破解",
       "功能增强",
-      "Songsterr",
-      "免费体验"
+      "吉他谱",
+      "Songsterr"
     ],
     "usage": [
-      "1. 安装 Tampermonkey 插件并添加本脚本。",
-      "2. 打开 Songsterr 网站，页面会自动解锁 Plus 会员功能。",
+      "1. 安装脚本后，直接访问 Songsterr 网站。",
+      "2. 进入任意乐谱页面，即可自动享受 Plus 会员功能。",
       "3. 如遇异常弹窗，按提示操作或反馈问题。"
     ],
     "zh_name": "Songsterr Plus 解锁补丁"

@@ -4,15 +4,15 @@ title: "Quillbot 高级功能解锁"
 
 # Quillbot 高级功能解锁
 
-`功能解锁`  `写作辅助`  `Quillbot`  `高级功能`  `免费体验`
+`功能解锁`  `辅助工具`  `写作增强`  `教育学习`  `Quillbot`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/Quillbot_Premium_Unlocker.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**1.0.0**　　发现时间：**2026-05-11**　　来源：[GreasyFork](https://greasyfork.org/scripts/465276-quillbot-premium-unlocker) <Badge type="tip" text="GreasyFork" />　　安装量：**201,724**　　评分：👍30 / 👎21
+> 版本：**1.0.0**　　发现时间：**2026-05-18**　　来源：[GreasyFork](https://greasyfork.org/scripts/465276-quillbot-premium-unlocker) <Badge type="tip" text="GreasyFork" />　　安装量：**202,418**　　评分：👍30 / 👎21
 
 ## 功能介绍
 
-本脚本可在 Quillbot 网站上解锁高级（Premium）功能，让普通用户也能免费体验高级模式、语法检查等特权。安装后，部分原本需要付费的功能将自动开放，无需额外设置。适合希望免费使用 Quillbot 高级功能的用户。
+本脚本可免费解锁 Quillbot 网站上的高级（Premium）功能，让用户无需付费即可体验高级模式、词数限制提升等特权。脚本通过拦截网站请求，模拟高级账户状态，提升使用体验和兼容性。
 
 ## 适用网站
 
@@ -20,9 +20,9 @@ title: "Quillbot 高级功能解锁"
 
 ## 使用方法
 
-1. 1. 安装脚本后，访问 Quillbot 官网（quillbot.com）。
-2. 2. 脚本会自动解锁高级功能，无需手动操作。
-3. 3. 直接使用高级模式、语法检查等原本需付费的功能。
+1. 1. 安装 Tampermonkey 插件并添加本脚本。
+2. 2. 打开 Quillbot 网站，脚本会自动生效。
+3. 3. 直接使用高级功能，无需额外设置。
 
 ## 权限说明
 
