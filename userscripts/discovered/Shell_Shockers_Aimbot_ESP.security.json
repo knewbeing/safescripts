@@ -1,0 +1,46 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "The script requests @grant unsafeWindow, which allows access to the page's JS context and can be abused if the script is malicious or compromised.",
+      "location": "Metadata (@grant unsafeWindow)",
+      "recommendation": "Only use unsafeWindow if strictly necessary. Consider removing or limiting its use.",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "The script loads Babylon.js from jsdelivr CDN via @require. While jsdelivr is a reputable CDN, the version is fixed, reducing supply chain risk.",
+      "location": "Metadata (@require https://cdn.jsdelivr.net/npm/babylonjs@7.15.0/babylon.min.js)",
+      "recommendation": "Ensure the CDN and version are trusted and monitor for upstream vulnerabilities.",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    },
+    {
+      "description": "The script reads and writes settings to localStorage, which is a standard practice for storing user preferences. No sensitive data is stored.",
+      "location": "localStorage access (SETTINGS_KEY)",
+      "recommendation": "Do not store sensitive information in localStorage.",
+      "severity": "LOW",
+      "type": "Privacy Collection"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [
+      "Reads and writes settings to localStorage"
+    ],
+    "detected": false
+  },
+  "risk_level": "LOW",
+  "script_name": "Shell Shockers Aimbot + ESP",
+  "security_score": 89,
+  "summary": "The script does not transmit data externally, does not collect sensitive user information, and does not execute remote code or use dangerous APIs. It requests unsafeWindow, which is a medium risk, and loads Babylon.js from a reputable CDN with a fixed version. No code obfuscation or DOM XSS risks detected. Overall, the script is considered low risk with a security score of 89.",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-05-25T06:35:25.973704+00:00",
+  "slug": "Shell_Shockers_Aimbot_ESP"
+}

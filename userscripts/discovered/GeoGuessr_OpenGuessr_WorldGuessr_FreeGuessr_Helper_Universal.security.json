@@ -10,47 +10,69 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 GM_xmlhttpRequest 发送地理坐标到 nominatim.openstreetmap.org 进行逆地理编码。虽然该服务为公开地图 API，但用户的地理坐标被外传到第三方。",
+      "description": "脚本通过 GM_xmlhttpRequest 向 discord.com 发送地理位置数据（send location to discord），可能包含用户行为、坐标等敏感信息，属于数据外传。",
+      "location": "sendToDiscord 功能相关代码（未完整展示，但描述和 @connect 指明用途）",
+      "recommendation": "仅允许用户主动触发发送，明确提示用户数据将被外传；避免自动上报；建议用户自行配置 webhook，避免硬编码。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本通过 GM_xmlhttpRequest 向 nominatim.openstreetmap.org 查询地理位置反查，传递用户坐标数据。",
       "location": "_getAddress() 函数",
-      "recommendation": "仅在用户明确同意时发送地理坐标，或在隐私政策中明确说明。",
+      "recommendation": "仅在用户主动操作时调用，避免自动批量查询；提示用户数据将被发送至第三方。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本支持“send location to discord”功能，意味着用户的地理坐标可能被发送到 discord.com（如 Webhook），属于敏感数据外传。",
-      "location": "功能描述及 @connect discord.com 权限",
-      "recommendation": "确保用户知情并同意，避免自动发送敏感信息到第三方。",
-      "severity": "CRITICAL",
-      "type": "数据外传"
+      "description": "脚本读取并操作 localStorage（Storage.prototype.setItem Proxy），但未发现敏感数据采集或外传行为。",
+      "location": "WORLDGUESSR 分支",
+      "recommendation": "确保不采集或外传用户敏感信息。",
+      "severity": "MEDIUM",
+      "type": "隐私采集"
     },
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限，并允许连接 discord.com 和 nominatim.openstreetmap.org，具备外传数据能力。",
+      "description": "脚本申请 GM_xmlhttpRequest 高权限，并允许连接 discord.com（第三方），存在权限滥用风险。",
       "location": "元数据 @grant/@connect",
-      "recommendation": "最小化权限申请，仅申请实际需要的域名。",
+      "recommendation": "仅申请实际需要的权限，避免过度授权。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "脚本调用 Notification API 发送通知，可能被滥用骚扰用户。",
+      "description": "脚本调用 Notification API，可能被滥用发送通知。",
       "location": "sendNotification() 函数",
-      "recommendation": "仅在用户主动授权后使用通知功能。",
+      "recommendation": "仅在用户明确授权和操作下使用通知功能。",
       "severity": "MEDIUM",
       "type": "敏感 API 调用"
+    },
+    {
+      "description": "脚本未固定第三方服务版本（如 nominatim.openstreetmap.org），但未加载第三方 JS，供应链风险较低。",
+      "location": "@connect nominatim.openstreetmap.org",
+      "recommendation": "如需加载第三方库，建议固定版本哈希。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    },
+    {
+      "description": "脚本在部分平台修改 Element.prototype.setAttribute，可能影响 iframe sandbox 属性，存在 ClickJacking/iframe 风险。",
+      "location": "setAttribute Proxy（非 geoguessr 平台）",
+      "recommendation": "避免破坏 iframe sandbox 保护，确保页面安全。",
+      "severity": "LOW",
+      "type": "ClickJacking/iframe 风险"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "地理坐标（用户在地图上的操作）"
+      "localStorage 操作",
+      "地理坐标采集"
     ],
     "detected": true
   },
-  "risk_level": "HIGH",
+  "risk_level": "CRITICAL",
   "script_name": "GeoGuessr OpenGuessr WorldGuessr FreeGuessr Helper Universal",
-  "security_score": 42,
-  "summary": "该脚本存在高风险的数据外传行为，尤其是将用户地理坐标发送到第三方（nominatim.openstreetmap.org 和 discord.com）。虽然未发现代码混淆、远程代码执行或 DOM XSS 风险，但涉及敏感数据的外传和部分权限滥用。建议加强用户知情同意机制，最小化权限申请，并限制敏感数据的自动外传。",
+  "security_score": 34,
+  "summary": "该脚本存在严重的数据外传风险，尤其是向 discord.com 和 nominatim.openstreetmap.org 发送用户地理位置数据。部分功能涉及敏感 API 调用和权限滥用，且在部分平台修改 iframe sandbox 属性，存在低级别 ClickJacking 风险。未发现代码混淆、远程代码执行或 DOM XSS 注入问题。整体安全风险为 CRITICAL，不建议在敏感环境下使用。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-11T06:55:48.231170+00:00",
+  "analyzed_at": "2026-05-25T06:31:20.207035+00:00",
   "slug": "GeoGuessr_OpenGuessr_WorldGuessr_FreeGuessr_Helper_Universal"
 }

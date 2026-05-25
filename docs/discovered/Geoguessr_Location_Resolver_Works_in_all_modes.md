@@ -32,9 +32,9 @@ title: "GeoGuessr 地点解析助手"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-05-11
+**风险等级**：🟡 LOW　　**安全评分**：81/100　　**分析时间**：2026-05-25
 
-> 该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。主要通过拦截 Google Maps API 响应获取坐标，并自动在 Geoguessr 页面上标记位置。未发现将用户数据发送到第三方服务器的行为。存在未使用的 GM_webRequest 权限声明，建议移除。整体安全风险较低。
+> The script does not transmit data externally, does not collect sensitive user information, and avoids XSS/DOM injection risks. It requests an unused GM_webRequest permission, which should be removed. No obfuscation or supply chain risks detected. Overall, the script is safe with minor improvements recommended.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -47,25 +47,25 @@ title: "GeoGuessr 地点解析助手"
 
 ### 发现的问题
 
-**🟠 MEDIUM** — Permission misuse  
-> @grant 仅申请了 GM_webRequest，实际代码未使用该 API。  
-> 位置：元数据 @grant  
-> 建议：移除未使用的权限声明，最小化权限。
+**🟠 MEDIUM** — Network interception  
+> Script overrides XMLHttpRequest.prototype.open to intercept Google Maps API responses, but does not transmit data externally.  
+> 位置：XMLHttpRequest.prototype.open override  
+> 建议：Monitor for future changes; ensure no data is sent to third-party servers.
 
-**🟡 LOW** — Network interception  
-> 脚本拦截 XMLHttpRequest 并读取 Google Maps API 的响应内容，但未将数据外传。  
-> 位置：XMLHttpRequest.prototype.open 拦截  
-> 建议：确保未来不会添加任何外传逻辑。
+**🟠 MEDIUM** — Permission  
+> Script requests GM_webRequest permission, but does not use it in the code.  
+> 位置：@grant GM_webRequest  
+> 建议：Remove unused permission to minimize attack surface.
 
-**🟡 LOW** — Keyboard event  
-> 脚本监听键盘事件，但未将输入内容外传。  
-> 位置：document.addEventListener('keydown', ...)  
-> 建议：仅监听必要的快捷键，避免记录敏感输入。
+**🟡 LOW** — Event listener  
+> Script listens for keydown events to trigger actions, but does not collect or transmit input data.  
+> 位置：document.addEventListener("keydown", onKeyDown)  
+> 建议：Ensure no sensitive input is captured or transmitted.
 
 **🟡 LOW** — DOM manipulation  
-> 脚本通过 React 内部属性操作页面元素，存在一定维护风险。  
-> 位置：placeMarker, placeMarkerStreaks 函数  
-> 建议：关注 Geoguessr 页面结构变更，避免脚本失效。
+> Script manipulates DOM and React internals to place markers, but does not insert untrusted content or expose XSS vectors.  
+> 位置：placeMarker, placeMarkerStreaks functions  
+> 建议：Continue to avoid inserting user-controlled data into innerHTML.
 
 ---
 

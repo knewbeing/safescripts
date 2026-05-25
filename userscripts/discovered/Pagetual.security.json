@@ -1,0 +1,86 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [
+      "wedata.net",
+      "githubusercontent.com",
+      "ghproxy.com",
+      "ghp.ci",
+      "hoothin.github.io",
+      "*"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "脚本申请了广泛的网络请求权限（@connect *），允许向任意域名发送请求，存在数据外传风险。虽然主要用于自动翻页，但无法保证不会被滥用。",
+      "location": "元数据 @connect *",
+      "recommendation": "限制 @connect 域名范围，仅允许必要的目标；审查所有网络请求代码，确保不携带敏感数据。",
+      "severity": "CRITICAL",
+      "type": "Data Transmission"
+    },
+    {
+      "description": "脚本申请了 GM_openInTab 权限，但代码中未见明显使用，属于高权限滥用风险。",
+      "location": "元数据 @grant GM_openInTab",
+      "recommendation": "移除未使用的高权限申请，或确保使用场景安全。",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "脚本申请了 GM_setClipboard 权限，但代码中未见明显使用，属于高权限滥用风险。",
+      "location": "元数据 @grant GM_setClipboard",
+      "recommendation": "移除未使用的高权限申请，或确保使用场景安全。",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "脚本申请了 GM_notification 权限，可能被滥用发送通知。",
+      "location": "元数据 @grant GM_notification",
+      "recommendation": "仅在用户明确操作时使用通知功能。",
+      "severity": "MEDIUM",
+      "type": "Sensitive API Usage"
+    },
+    {
+      "description": "脚本申请了 GM_getValue/GM_setValue/GM_deleteValue 权限，涉及本地存储，但未见敏感数据采集。",
+      "location": "元数据 @grant GM_getValue, GM_setValue, GM_deleteValue",
+      "recommendation": "确保存储内容不含敏感用户信息。",
+      "severity": "LOW",
+      "type": "Sensitive API Usage"
+    },
+    {
+      "description": "脚本未使用 eval/new Function/setTimeout(string)/setInterval(string) 等远程代码执行方式，未见明显混淆。",
+      "location": "主代码段",
+      "recommendation": "保持代码透明，避免动态执行外部代码。",
+      "severity": "LOW",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "脚本未见 DOM XSS 注入风险，未直接插入用户输入到 innerHTML/outerHTML。",
+      "location": "主代码段",
+      "recommendation": "继续保持安全的 DOM 操作方式。",
+      "severity": "LOW",
+      "type": "DOM XSS"
+    },
+    {
+      "description": "脚本未见供应链风险（未 @require 第三方库），但网络请求目标包含 githubusercontent.com 等，需关注外部内容安全。",
+      "location": "元数据 @connect githubusercontent.com",
+      "recommendation": "如需加载第三方库，固定版本哈希并使用官方 CDN。",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "HIGH",
+  "script_name": "Pagetual",
+  "security_score": 52,
+  "summary": "Pagetual 脚本主要用于自动翻页，未见明显隐私采集或代码混淆，但申请了广泛的网络请求权限（@connect *），存在数据外传风险。部分高权限（GM_openInTab、GM_setClipboard、GM_notification）未见实际使用，建议收紧权限申请。整体风险较高，建议仅在可信环境下使用。",
+  "supply_chain_risk": true,
+  "websocket_usage": false,
+  "analyzed_at": "2026-05-25T06:34:32.028105+00:00",
+  "slug": "Pagetual"
+}

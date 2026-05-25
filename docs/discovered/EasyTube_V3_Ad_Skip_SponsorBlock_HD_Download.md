@@ -30,9 +30,9 @@ title: "EasyTube V3 — Ad Skip, SponsorBlock & HD Download⬇️🚀"
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：67/100　　**分析时间**：2026-05-18
+**风险等级**：🔴 HIGH　　**安全评分**：52/100　　**分析时间**：2026-05-25
 
-> The script transmits YouTube video IDs to third-party APIs (SponsorBlock and Cobalt downloaders) to provide its core features. No evidence of sensitive data (cookies, credentials, clipboard, or keylogging) collection or transmission. No code obfuscation, remote code execution, or DOM XSS risks detected. Permissions are appropriate for the functionality. Supply chain risk is moderate due to reliance on public Cobalt instances. Overall, the script is safe for most users, but privacy-conscious users should be aware of the data sent to external services.
+> The script transmits YouTube video IDs and possibly other metadata to third-party servers (SponsorBlock and multiple Cobalt instances) for ad skipping and video downloading. No evidence of sensitive privacy collection or code execution risks. Supply chain risk exists due to reliance on unofficial Cobalt APIs. Users should be aware of potential privacy implications and supply chain risks.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -45,25 +45,40 @@ title: "EasyTube V3 — Ad Skip, SponsorBlock & HD Download⬇️🚀"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Exfiltration  
-> Script sends requests to third-party APIs (SponsorBlock and multiple Cobalt instances) using GM_xmlhttpRequest. These requests include the current YouTube video ID, which may be considered user activity data.  
-> 位置：CFG.sbApi, CFG.cobaltInstances, SponsorBlock and download logic  
-> 建议：Clearly inform users about data transmission. Consider proxying requests or minimizing data sent if privacy is a concern.
+**⛔ CRITICAL** — Data Transmission  
+> Script uses GM_xmlhttpRequest to access SponsorBlock API and multiple Cobalt instances for video download. These are third-party servers and may receive YouTube video IDs and possibly other metadata.  
+> 位置：CFG.sbApi, CFG.cobaltInstances, GM_xmlhttpRequest usage  
+> 建议：Review privacy policy of SponsorBlock and Cobalt instances. Limit data sent to only necessary video IDs. Warn users about potential privacy implications.
+
+**🟠 MEDIUM** — Privacy Collection  
+> Script stores toggle settings and state using GM_setValue/GM_getValue. No evidence of sensitive data collection (cookies, form fields, clipboard, etc.), but persistent storage is used.  
+> 位置：GM_setValue, GM_getValue  
+> 建议：Ensure only non-sensitive preferences are stored. Do not store user credentials or personal information.
 
 **🟠 MEDIUM** — Supply Chain Risk  
-> All third-party endpoints are hardcoded and well-known (SponsorBlock and Cobalt public instances). No dynamic code loading or @require from untrusted sources.  
-> 位置：CFG.sbApi, CFG.cobaltInstances  
-> 建议：Continue to monitor the trustworthiness of these endpoints.
+> Script connects to multiple Cobalt instances for video download. These are not official YouTube APIs and may pose supply chain risks.  
+> 位置：@connect cobalt.api.timelessnesses.me, @connect api.cobalt.tools, @connect co.wuk.sh  
+> 建议：Warn users about potential supply chain risks. Prefer official or well-known APIs when possible.
 
-**🟡 LOW** — Privacy Collection  
-> Script stores and retrieves user settings (ad, sponsorblock, quality toggles) using GM_setValue/GM_getValue. No sensitive data (like cookies or passwords) is accessed.  
-> 位置：Persistent state section (S object, save function)  
-> 建议：No action needed unless sensitive data is stored in the future.
+**🟡 LOW** — Remote Code Execution  
+> No evidence of eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection. No @require of remote JS libraries.  
+> 位置：Full script review  
+> 建议：Continue to avoid remote code execution patterns.
 
-**🟡 LOW** — Permission Usage  
-> The script requests GM_xmlhttpRequest permission, which is necessary for cross-origin API calls, but does not request unnecessary high-privilege grants.  
-> 位置：UserScript metadata block (@grant)  
-> 建议：Maintain least privilege. No excessive permissions detected.
+**🟡 LOW** — Code Obfuscation  
+> No evidence of code obfuscation, base64 decoding, unicode encoding, or minified single-line code.  
+> 位置：Full script review  
+> 建议：Maintain readable, non-obfuscated code.
+
+**🟡 LOW** — DOM XSS  
+> No evidence of DOM XSS or injection. User input is not inserted into innerHTML/outerHTML, nor is document.write used.  
+> 位置：Full script review  
+> 建议：Continue to sanitize any future user input before DOM insertion.
+
+**🟡 LOW** — Permission Abuse  
+> Script requests GM_xmlhttpRequest, GM_setValue, GM_getValue, GM_addStyle. All are used in code. No evidence of unused high-privilege grants.  
+> 位置：Metadata block  
+> 建议：Do not request unnecessary permissions.
 
 ---
 

@@ -1,0 +1,97 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [
+      "cdn.jsdelivr.net",
+      "i.instagram.com",
+      "raw.githubusercontent.com"
+    ],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "脚本申请了 GM_xmlhttpRequest 权限，并声明 @connect 到 cdn.jsdelivr.net、i.instagram.com、raw.githubusercontent.com，但代码中仅用于资源加载和 Instagram API交互，未检测到用户数据或敏感信息外传到非官方或第三方服务器。",
+      "location": "元数据与主代码",
+      "recommendation": "持续监控后续版本，确保 GM_xmlhttpRequest 仅用于资源和媒体下载，不用于数据上报。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本通过 @require 加载 mediabunny 和 jQuery，均为官方 CDN 且固定了版本哈希，供应链风险较低。",
+      "location": "元数据",
+      "recommendation": "建议定期检查依赖库安全性，防止 CDN 被污染。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    },
+    {
+      "description": "脚本申请了 GM_openInTab 权限，但实际代码仅用于打开新标签页下载资源，未发现滥用。",
+      "location": "元数据与主代码",
+      "recommendation": "建议仅申请实际需要的权限，避免权限滥用。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本未检测到 eval、new Function、setTimeout(string)、setInterval(string)等远程代码执行风险，也未动态加载未固定版本的 JS。",
+      "location": "主代码",
+      "recommendation": "保持代码透明，避免动态执行外部代码。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本未检测到 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板读取、键盘监听等隐私采集行为。",
+      "location": "主代码",
+      "recommendation": "保持用户隐私保护，避免采集敏感信息。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本未检测到代码混淆（如 atob/btoa、字符串数组映射、unicode 混淆、大量单行压缩代码）。",
+      "location": "主代码",
+      "recommendation": "保持代码可读性，便于社区审查。",
+      "severity": "HIGH",
+      "type": "代码混淆"
+    },
+    {
+      "description": "脚本未检测到 DOM XSS 风险（如用户输入或 URL 参数直接插入 innerHTML/outerHTML、document.write 注入、iframe src 操作）。",
+      "location": "主代码",
+      "recommendation": "继续避免直接插入不可信内容。",
+      "severity": "HIGH",
+      "type": "DOM XSS / 注入"
+    },
+    {
+      "description": "脚本未检测到敏感 API 调用（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。",
+      "location": "主代码",
+      "recommendation": "避免调用敏感 API，保护用户隐私。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "脚本未检测到 WebSocket、EventSource、navigator.sendBeacon 等实时数据外传行为。",
+      "location": "主代码",
+      "recommendation": "持续监控，防止未来引入实时数据上报。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本未检测到修改 frame 保护策略或创建隐藏 iframe 用于数据提取。",
+      "location": "主代码",
+      "recommendation": "继续避免 iframe 风险。",
+      "severity": "LOW",
+      "type": "ClickJacking / iframe 风险"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "LOW",
+  "script_name": "IG Helper",
+  "security_score": 81,
+  "summary": "IG Helper 用户脚本整体安全性较高，未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 调用等高风险行为。依赖库均为官方 CDN 且固定版本哈希，供应链风险较低。部分权限申请（如 GM_openInTab）建议持续关注。整体评分为 81，风险等级为 LOW，建议定期复审依赖库和权限使用情况。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-05-25T06:33:21.238482+00:00",
+  "slug": "IG_Helper"
+}

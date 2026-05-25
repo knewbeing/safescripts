@@ -46,13 +46,13 @@ title: "Magic Userscript+ ：显示站点所有 UserJS"
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：67/100　　**分析时间**：2026-05-18
+**风险等级**：🟢 SAFE　　**安全评分**：89/100　　**分析时间**：2026-05-25
 
-> 该脚本主要通过 GM_xmlhttpRequest 查询第三方 UserScript 站点以展示可用脚本，存在数据外传风险（但仅限于公开脚本信息，未见敏感数据上传）。未检测到隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。存在部分权限滥用（如 GM_openInTab、GM_getValue/GM_setValue/GM_info 等权限申请冗余）。总体安全风险为中等，建议进一步审查实际网络请求内容，确保无用户敏感数据外传。
+> 该脚本仅包含元数据，无实际代码，未检测到任何安全风险。存在权限过度申请，建议精简 @grant 权限。整体安全性高。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：greasyfork.org, sleazyfork.org, github.com） |
+| 数据外传 | ✅ 未检测到 |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
@@ -61,20 +61,15 @@ title: "Magic Userscript+ ：显示站点所有 UserJS"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本通过 GM_xmlhttpRequest 访问 greasyfork.org、sleazyfork.org、github.com、githubusercontent.com、openuserjs.org 等第三方站点以查询可用的 UserScript 信息。  
-> 位置：@connect 元数据、网络请求相关代码（假定）  
-> 建议：确保仅请求公开的脚本信息，不上传用户敏感数据、cookie、页面内容等。
+**🟠 MEDIUM** — Permission Overgrant  
+> 申请了高权限（GM_openInTab、GM_xmlhttpRequest），但未实际使用。  
+> 位置：元数据 @grant  
+> 建议：建议仅申请实际需要的权限，减少权限滥用风险。
 
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_openInTab 权限，但实际用途未明，存在被滥用的可能。  
-> 位置：@grant 元数据  
-> 建议：仅在确有必要时申请 GM_openInTab 权限，并限制其用途。
-
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_getValue/GM_setValue/GM_info 等高权限，但未见实际用途说明。  
-> 位置：@grant 元数据  
-> 建议：仅申请实际需要的权限，避免权限冗余。
+**🟡 LOW** — No Code  
+> 脚本未包含任何实际代码，仅有元数据。未检测到任何安全风险。  
+> 位置：N/A  
+> 建议：无代码无需安全加固，建议后续补充代码后再进行安全审查。
 
 ---
 

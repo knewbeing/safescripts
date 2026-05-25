@@ -33,9 +33,65 @@ title: "GreenCloudVPS 自动下单助手"
 
 ## 安全分析
 
-::: info 等待分析
-安全分析将在下次流水线运行时自动更新。
-:::
+**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-05-25
+
+> 该 UserScript 仅自动化页面点击操作，未涉及任何数据外传、隐私采集、远程代码执行、代码混淆、DOM 注入、权限滥用、敏感 API 调用、供应链风险或 iframe 操作。安全评分为 100，风险极低。
+
+| 检查项 | 结果 |
+|--------|------|
+| 数据外传 | ✅ 未检测到 |
+| 隐私采集 | ✅ 未检测到 |
+| 代码混淆 | ✅ 未检测到 |
+| WebSocket/SSE | ✅ 未使用 |
+| DOM XSS 风险 | ✅ 未检测到 |
+| 供应链风险 | ✅ 可信 |
+
+### 发现的问题
+
+**⛔ CRITICAL** — Data Transmission  
+> 脚本未检测到任何网络请求（如 fetch、GM_xmlhttpRequest、WebSocket 等），不存在数据外传风险。  
+> 位置：全局  
+> 建议：保持当前状态，避免添加任何外部数据传输逻辑。
+
+**⛔ CRITICAL** — Privacy Collection  
+> 脚本未读取 cookie、localStorage、sessionStorage、IndexedDB，也未监听键盘输入或表单字段，未涉及隐私采集。  
+> 位置：全局  
+> 建议：继续避免采集用户敏感信息。
+
+**🔴 HIGH** — Remote Code Execution  
+> 脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行相关 API。  
+> 位置：RAFInterval、全局  
+> 建议：避免动态执行字符串代码。
+
+**🔴 HIGH** — Code Obfuscation  
+> 脚本未检测到任何代码混淆、压缩或 base64/unicode 编码。  
+> 位置：全局  
+> 建议：保持代码可读性，避免混淆。
+
+**🔴 HIGH** — DOM XSS/Injection  
+> 脚本未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，也未使用 document.write()，不存在 DOM XSS 风险。  
+> 位置：全局  
+> 建议：继续避免插入不可信内容到 DOM。
+
+**🟠 MEDIUM** — Permission Abuse  
+> 脚本未申请任何 Tampermonkey/Greasemonkey权限（@grant none），不存在权限滥用风险。  
+> 位置：元数据  
+> 建议：仅申请必要权限。
+
+**🟠 MEDIUM** — Sensitive API Usage  
+> 脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。  
+> 位置：全局  
+> 建议：避免调用敏感 API。
+
+**🟠 MEDIUM** — Supply Chain Risk  
+> 脚本未通过 @require 加载任何第三方库，不存在供应链风险。  
+> 位置：元数据  
+> 建议：如需加载第三方库，建议使用官方 CDN 并固定版本。
+
+**🟡 LOW** — ClickJacking/iframe Risk  
+> 脚本未操作 iframe，也未修改 frame 保护策略，不存在 ClickJacking/iframe 风险。  
+> 位置：全局  
+> 建议：避免创建隐藏 iframe 或修改 frame 保护。
 
 ---
 

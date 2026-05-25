@@ -4,46 +4,46 @@ title: "导出ChatGPT/Gemini/Grok聊天为Markdown"
 
 # 导出ChatGPT/Gemini/Grok聊天为Markdown
 
-`聊天记录`  `导出工具`  `Markdown`  `ChatGPT`  `Grok`  `Gemini`
+`聊天记录导出`  `Markdown格式`  `ChatGPT`  `Gemini`  `Grok`  `知识整理`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/Export_ChatGPTGeminiGrok_conversations_as_Markdown.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**1.1.1**　　发现时间：**2026-05-18**　　来源：[GreasyFork](https://greasyfork.org/scripts/543471-export-chatgpt-gemini-grok-conversations-as-markdown) <Badge type="tip" text="GreasyFork" />　　安装量：**36,773**　　评分：👍3 / 👎2
+> 版本：**1.1.1**　　发现时间：**2026-05-25**　　来源：[GreasyFork](https://greasyfork.org/scripts/543471-export-chatgpt-gemini-grok-conversations-as-markdown) <Badge type="tip" text="GreasyFork" />　　安装量：**37,743**　　评分：👍3 / 👎2
 
 ## 功能介绍
 
-本脚本可将 ChatGPT、Grok 和 Google Gemini 网站上的聊天记录导出为标准 Markdown 格式，方便在 Typora 等 Markdown 编辑器中查看和整理。适合需要保存或整理对话内容的用户使用。
+本脚本可以将 ChatGPT、Gemini 和 Grok 网站上的聊天记录导出为标准 Markdown 格式，方便在 Typora 等 Markdown 编辑器中打开和保存。导出的内容排版规范，适合长期保存和整理。
 
 ## 适用网站
 
-- ChatGPT
-- Grok
-- Google Gemini
+- ChatGPT官网
+- Grok官网
+- Gemini官网
 
 ## 使用方法
 
-1. 安装脚本后，进入 ChatGPT、Grok 或 Google Gemini 网站。
-2. 在页面右上角或脚本菜单中找到“导出为 Markdown”按钮。
-3. 点击按钮，选择要导出的聊天记录。
-4. 保存生成的 Markdown 文件，即可在 Typora 等编辑器中打开。
+1. 安装脚本后，进入 ChatGPT、Gemini 或 Grok 网站。
+2. 在页面右上角或菜单中找到“导出为 Markdown”按钮。
+3. 点击按钮，选择导出当前聊天记录。
+4. 保存或在 Typora 等 Markdown 编辑器中打开导出的文件。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `GM_registerMenuCommand` | 在脚本菜单中添加导出功能按钮，方便用户操作。 |
-| `GM_openInTab` | 可在新标签页中打开导出的内容或相关页面。 |
-| `GM.openInTab` | 可在新标签页中打开导出的内容或相关页面（兼容不同脚本管理器）。 |
-| `GM_addStyle` | 为导出界面或按钮添加自定义样式。 |
-| `GM_setValue` | 保存用户的设置或导出历史，便于下次使用。 |
-| `GM_getValue` | 读取用户的设置或导出历史，实现个性化体验。 |
-| `GM_xmlhttpRequest` | 实现跨域网络请求，便于导出或上传数据。 |
+| `GM_registerMenuCommand` | 用于在用户菜单中添加导出功能按钮。 |
+| `GM_openInTab` | 允许脚本在新标签页中打开导出的文件或页面。 |
+| `GM.openInTab` | 允许脚本在新标签页中打开导出的文件或页面（新版API）。 |
+| `GM_addStyle` | 用于动态添加自定义样式，优化导出界面。 |
+| `GM_setValue` | 用于保存用户设置或导出历史。 |
+| `GM_getValue` | 用于读取用户设置或导出历史。 |
+| `GM_xmlhttpRequest` | 用于发送网络请求，可能用于获取聊天数据或上传文件。 |
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：84/100　　**分析时间**：2026-05-18
+**风险等级**：🟡 LOW　　**安全评分**：84/100　　**分析时间**：2026-05-25
 
-> 该脚本主要功能为导出 ChatGPT/Gemini/Grok 网站的聊天记录为 Markdown 文件。经审查，未发现任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 或供应链风险。仅存在未使用的高权限申请（GM_xmlhttpRequest、GM_openInTab），建议移除以最小化权限。整体安全性高，风险极低。
+> 该脚本仅在本地导出聊天记录为 Markdown，没有任何数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。唯一风险为申请了未使用的高权限（GM_xmlhttpRequest、GM_openInTab），建议移除以提升安全性。整体安全性较高，适合公开使用。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -57,14 +57,14 @@ title: "导出ChatGPT/Gemini/Grok聊天为Markdown"
 ### 发现的问题
 
 **🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_xmlhttpRequest 权限，但实际代码未发现任何网络请求、数据外传或第三方服务器通信。  
-> 位置：@grant 元数据与主代码  
-> 建议：如无实际用途，建议移除 GM_xmlhttpRequest 权限。
+> 脚本申请了 GM_xmlhttpRequest 权限，但代码未使用该 API进行任何网络请求，也未向第三方服务器发送数据。  
+> 位置：元数据 @grant GM_xmlhttpRequest  
+> 建议：如无实际用途，建议移除 GM_xmlhttpRequest 权限以减少攻击面。
 
 **🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_openInTab/GM.openInTab 权限，但主代码未发现相关调用。  
-> 位置：@grant 元数据与主代码  
-> 建议：如无实际用途，建议移除 GM_openInTab/GM.openInTab 权限。
+> 脚本申请了 GM_openInTab 和 GM.openInTab 权限，但代码未使用该 API进行任何操作。  
+> 位置：元数据 @grant GM_openInTab, GM.openInTab  
+> 建议：如无实际用途，建议移除 GM_openInTab 和 GM.openInTab 权限。
 
 ---
 

@@ -9,14 +9,14 @@
     {
       "description": "申请了 unsafeWindow 权限，但实际代码未使用 unsafeWindow，属于高权限滥用。",
       "location": "UserScript metadata (@grant unsafeWindow)",
-      "recommendation": "移除未使用的高权限申请，减少攻击面。",
+      "recommendation": "移除未使用的高权限申请，避免潜在安全风险。",
       "severity": "MEDIUM",
       "type": "Permission Abuse"
     },
     {
-      "description": "通过 @require 加载了第三方库 three.js，虽然使用官方 unpkg CDN，但未固定版本哈希，存在供应链污染风险。",
+      "description": "通过 @require 加载了第三方库 three.js，虽然来源为 unpkg 官方 CDN，但未固定版本哈希，存在供应链污染风险。",
       "location": "UserScript metadata (@require https://unpkg.com/three@0.150.0/build/three.min.js)",
-      "recommendation": "建议使用官方 CDN 并固定版本哈希，避免供应链攻击。",
+      "recommendation": "建议使用固定版本哈希或官方 CDN，避免供应链污染。",
       "severity": "MEDIUM",
       "type": "Supply Chain Risk"
     }
@@ -29,9 +29,9 @@
   "risk_level": "LOW",
   "script_name": "Krunker Cheat v2",
   "security_score": 89,
-  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要安全问题为权限滥用（unsafeWindow）和供应链风险（未固定版本哈希的第三方库）。整体风险较低，但建议修正上述问题以提升安全性。",
+  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要安全问题为权限滥用（unsafeWindow）和供应链风险（未固定版本哈希的第三方库）。整体风险较低，但建议移除未使用的高权限申请，并固定第三方库版本以提升安全性。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-04-27T05:13:16.276994+00:00",
+  "analyzed_at": "2026-05-25T06:33:35.031847+00:00",
   "slug": "Krunker_Cheat_v2"
 }

@@ -1,26 +1,54 @@
 {
-  "approved": true,
+  "approved": false,
   "data_transmission": {
     "destinations": [
-      "garticphone.com"
+      "garticphone.com (via WebSocket)"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 WebSocket 发送自动生成的绘图数据包到 garticphone.com 服务器。",
-      "location": "sendPackets 函数、customWebSocket 类",
-      "recommendation": "仅与目标站点通信，未发现向第三方或恶意服务器发送数据。",
+      "description": "The script establishes a WebSocket connection to garticphone.com and sends game drawing data packets, including user actions and possibly game state.",
+      "location": "customWebSocket class, sendPackets function",
+      "recommendation": "Ensure only necessary game data is transmitted; avoid sending sensitive or unrelated user information.",
       "severity": "CRITICAL",
-      "type": "数据外传"
+      "type": "Data Transmission"
     },
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限，但实际代码未使用该 API。",
-      "location": "元数据 @grant",
-      "recommendation": "移除未使用的高权限申请，减少权限滥用风险。",
+      "description": "The script modifies Node.prototype.appendChild to intercept and rewrite scripts loaded from external sources, potentially allowing remote code execution if the editScript function is abused.",
+      "location": "Node.prototype.appendChild Proxy",
+      "recommendation": "Restrict script rewriting to trusted sources and validate edited code before execution.",
+      "severity": "HIGH",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "The script uses unsafeWindow to override WebSocket globally, which may introduce compatibility and security risks.",
+      "location": "unsafeWindow.WebSocket = customWebSocket",
+      "recommendation": "Limit unsafeWindow usage and ensure no leakage of sensitive data or unintended side effects.",
+      "severity": "HIGH",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "The script requests GM_xmlhttpRequest permission but does not use it in the code, indicating potential permission overreach.",
+      "location": "@grant GM_xmlhttpRequest in metadata",
+      "recommendation": "Remove unused permissions to minimize attack surface.",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "The script requests GM_log permission but does not use it in the code, indicating potential permission overreach.",
+      "location": "@grant GM_log in metadata",
+      "recommendation": "Remove unused permissions to minimize attack surface.",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "The script uses fetch to load external resources, but only from the same domain (garticphone.com). No third-party data exfiltration detected.",
+      "location": "requestText, requestBuffer functions",
+      "recommendation": "Monitor for future changes that may introduce third-party requests.",
+      "severity": "LOW",
+      "type": "Data Transmission"
     }
   ],
   "obfuscation_detected": false,
@@ -28,12 +56,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "LOW",
+  "risk_level": "HIGH",
   "script_name": "Gartic Phone Draw Bot",
-  "security_score": 67,
-  "summary": "该脚本主要通过 WebSocket 与 garticphone.com 服务器通信，实现自动绘图功能。未发现向第三方服务器外传数据、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。存在未使用的 GM_xmlhttpRequest 权限申请，建议移除。整体风险较低。",
+  "security_score": 37,
+  "summary": "The script transmits drawing/game data via WebSocket to garticphone.com, intercepts and rewrites loaded scripts (potential remote code execution risk), and requests unused permissions. No evidence of privacy collection or code obfuscation. The main risks are data transmission (CRITICAL) and remote code execution (HIGH).",
   "supply_chain_risk": false,
   "websocket_usage": true,
-  "analyzed_at": "2026-05-11T06:54:03.624846+00:00",
+  "analyzed_at": "2026-05-25T06:31:04.320827+00:00",
   "slug": "Gartic_Phone_Draw_Bot"
 }

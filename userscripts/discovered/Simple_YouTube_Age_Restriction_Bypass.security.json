@@ -1,0 +1,89 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [
+      "https://youtube-proxy.zerody.one",
+      "https://ny.4everproxy.com"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "Script uses XMLHttpRequest to fetch YouTube player base.js and possibly interacts with proxy servers for unlocking age-restricted videos. The proxy servers are third-party and may receive video IDs and possibly other metadata.",
+      "location": "ACCOUNT_PROXY_SERVER_HOST and VIDEO_PROXY_SERVER_HOST variables; XMLHttpRequest usage in getSignatureTimestamp()",
+      "recommendation": "Ensure proxy servers are trusted and review their privacy policy. Avoid sending unnecessary user data.",
+      "severity": "CRITICAL",
+      "type": "Data Transmission"
+    },
+    {
+      "description": "No evidence of privacy collection such as reading cookies, localStorage, sessionStorage, IndexedDB, clipboard, or keylogging.",
+      "location": "Entire script",
+      "recommendation": "Maintain current practice; do not add privacy-invasive features.",
+      "severity": "LOW",
+      "type": "Privacy Collection"
+    },
+    {
+      "description": "Script uses eval() to inject itself into the main window context for compatibility with Greasemonkey sandbox restrictions.",
+      "location": "window.eval('(' + iife.toString() + ')(true);')",
+      "recommendation": "Avoid using eval() where possible. If necessary for compatibility, ensure injected code is strictly controlled and not influenced by external input.",
+      "severity": "HIGH",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "No evidence of code obfuscation, minification, or base64/unicode string encoding.",
+      "location": "Entire script",
+      "recommendation": "Maintain readable code for transparency.",
+      "severity": "LOW",
+      "type": "Code Obfuscation"
+    },
+    {
+      "description": "No DOM XSS risk detected. User input and URL parameters are not directly inserted into innerHTML/outerHTML or document.write().",
+      "location": "Entire script",
+      "recommendation": "Continue to sanitize any future user input before DOM insertion.",
+      "severity": "LOW",
+      "type": "DOM XSS"
+    },
+    {
+      "description": "No excessive or unused permissions. @grant none is used.",
+      "location": "Metadata block",
+      "recommendation": "Maintain minimal permission usage.",
+      "severity": "LOW",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "No sensitive API calls (geolocation, RTCPeerConnection, MediaDevices, Clipboard API, Notification API) detected.",
+      "location": "Entire script",
+      "recommendation": "Avoid adding sensitive API calls unless strictly necessary.",
+      "severity": "LOW",
+      "type": "Sensitive API Usage"
+    },
+    {
+      "description": "Proxy servers are hardcoded and not official YouTube endpoints. Supply chain risk exists if these proxies are compromised.",
+      "location": "ACCOUNT_PROXY_SERVER_HOST and VIDEO_PROXY_SERVER_HOST variables",
+      "recommendation": "Allow users to configure their own trusted proxy or use official endpoints where possible.",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    },
+    {
+      "description": "No clickjacking or iframe manipulation detected.",
+      "location": "Entire script",
+      "recommendation": "Maintain current practice.",
+      "severity": "LOW",
+      "type": "ClickJacking / iframe Risk"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "HIGH",
+  "script_name": "Simple YouTube Age Restriction Bypass",
+  "security_score": 57,
+  "summary": "The script is generally transparent and does not collect privacy-sensitive data or abuse permissions. However, it relies on third-party proxy servers for bypassing YouTube age restrictions, which introduces a critical data transmission risk and a medium supply chain risk. The use of eval() for sandbox bypass is a high risk but is controlled. No evidence of DOM XSS, code obfuscation, or sensitive API abuse. Users should be aware of the risks associated with proxy server usage.",
+  "supply_chain_risk": true,
+  "websocket_usage": false,
+  "analyzed_at": "2026-05-25T06:35:42.569844+00:00",
+  "slug": "Simple_YouTube_Age_Restriction_Bypass"
+}

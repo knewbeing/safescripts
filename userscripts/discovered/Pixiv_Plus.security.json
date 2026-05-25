@@ -1,0 +1,91 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [
+      "i.pximg.net",
+      "i-f.pximg.net",
+      "i-cf.pximg.net",
+      "www.pixiv.net"
+    ],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "脚本使用 GM.xmlHttpRequest 和 GM_xmlhttpRequest，但仅允许连接 Pixiv 官方图片 CDN（i.pximg.net、i-f.pximg.net、i-cf.pximg.net），未发现向第三方服务器发送用户数据或页面内容。",
+      "location": "元数据 @connect 和代码网络请求部分",
+      "recommendation": "保持仅连接官方 CDN，避免添加第三方数据上报。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本未监听键盘输入、未读取剪贴板内容、未访问敏感隐私 API，仅通过 Pixiv 官方接口获取用户和作品信息。",
+      "location": "代码 userApi/illustApi 及事件监听部分",
+      "recommendation": "继续避免采集用户敏感信息，勿扩展至表单/密码等隐私字段。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    },
+    {
+      "description": "未发现 eval/new Function/setTimeout(string) 等远程代码执行风险，也未动态加载未固定版本的脚本。",
+      "location": "主代码及 @require 部分",
+      "recommendation": "保持不使用动态执行字符串代码，@require 建议固定版本哈希。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "未发现代码混淆、base64 解码执行、字符串数组映射或高度压缩单行代码。",
+      "location": "主代码",
+      "recommendation": "保持代码可读性，避免混淆。",
+      "severity": "HIGH",
+      "type": "代码混淆"
+    },
+    {
+      "description": "未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未发现 document.write 注入风险。",
+      "location": "主代码",
+      "recommendation": "如需插入用户内容，务必转义。",
+      "severity": "HIGH",
+      "type": "DOM XSS / 注入"
+    },
+    {
+      "description": "申请了 unsafeWindow、GM.xmlHttpRequest、GM.setClipboard、GM.setValue、GM.getValue 等高权限，但实际代码仅用到部分功能，存在权限冗余。",
+      "location": "元数据 @grant 部分",
+      "recommendation": "精简 @grant 权限，仅申请实际用到的功能。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "未调用 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API 等敏感接口。",
+      "location": "主代码",
+      "recommendation": "继续避免调用敏感 API。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "@require 加载的第三方库均来自 greasyfork 官方 CDN，版本号已固定，供应链风险较低。",
+      "location": "元数据 @require 部分",
+      "recommendation": "保持使用官方 CDN，固定版本哈希。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    },
+    {
+      "description": "未发现修改 frame 保护策略或创建隐藏 iframe 用于数据提取。",
+      "location": "主代码",
+      "recommendation": "继续避免 iframe 风险。",
+      "severity": "LOW",
+      "type": "ClickJacking / iframe 风险"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "LOW",
+  "script_name": "Pixiv Plus",
+  "security_score": 100,
+  "summary": "Pixiv Plus 用户脚本未发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 调用等高风险行为。所有网络请求均指向 Pixiv 官方 CDN，@require 第三方库来源可信且版本固定。存在部分权限冗余，建议精简 @grant 权限。整体安全风险极低，适合公开使用。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-05-25T06:34:58.758403+00:00",
+  "slug": "Pixiv_Plus"
+}

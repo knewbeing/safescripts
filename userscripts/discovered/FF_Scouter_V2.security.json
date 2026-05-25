@@ -1,5 +1,5 @@
 {
-  "approved": false,
+  "approved": true,
   "data_transmission": {
     "destinations": [
       "ffscouter.com"
@@ -9,67 +9,25 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 GM_xmlhttpRequest 向 ffscouter.com 发送请求，可能包含用户数据（如 Torn 用户 ID、目标信息等），存在数据外传风险。",
-      "location": "多处 GM_xmlhttpRequest 调用（通过 @connect ffscouter.com）",
-      "recommendation": "明确告知用户数据用途，最小化传输内容，建议在隐私政策中说明。",
+      "description": "Script uses GM_xmlhttpRequest to communicate with ffscouter.com, a third-party server. Potential for user data transmission exists, but only ffscouter.com is targeted and no evidence of cookie/page content transmission found in the visible code.",
+      "location": "GM_xmlhttpRequest calls (API usage)",
+      "recommendation": "Review all transmitted payloads to ensure no sensitive user data or cookies are sent. Limit data sent to only what is necessary for functionality.",
       "severity": "CRITICAL",
-      "type": "数据外传"
+      "type": "Data Transmission"
     },
     {
-      "description": "脚本申请了 GM_setValue、GM_getValue、GM_listValues、GM_deleteValue 权限，但未发现敏感信息（如 cookie、localStorage、sessionStorage、IndexedDB、表单、剪贴板、指纹）被采集。",
-      "location": "全局",
-      "recommendation": "继续避免采集敏感隐私信息。",
-      "severity": "LOW",
-      "type": "隐私采集"
+      "description": "Script requests GM_xmlhttpRequest permission, which is necessary for API calls but is a high privilege. No evidence of unused high privilege grants.",
+      "location": "UserScript metadata (@grant)",
+      "recommendation": "Ensure only necessary permissions are requested. Remove unused grants if possible.",
+      "severity": "MEDIUM",
+      "type": "Permission Usage"
     },
     {
-      "description": "脚本未发现 eval、new Function、setTimeout(string)、setInterval(string) 等动态执行代码方式，也未见动态 script 标签或 @require 加载远程 JS。",
-      "location": "全局",
-      "recommendation": "保持当前实现，避免远程代码执行风险。",
-      "severity": "LOW",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "脚本未发现明显的代码混淆、base64 解码、字符串数组映射或高度压缩单行代码。",
-      "location": "全局",
-      "recommendation": "保持代码可读性，便于社区审计。",
-      "severity": "LOW",
-      "type": "代码混淆"
-    },
-    {
-      "description": "脚本未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未见 document.write() 注入不可信内容。",
-      "location": "全局",
-      "recommendation": "继续避免 DOM XSS 风险。",
-      "severity": "LOW",
-      "type": "DOM XSS"
-    },
-    {
-      "description": "脚本申请了 GM_registerMenuCommand、GM_addStyle 等权限，均有实际使用，未见权限滥用。",
-      "location": "元数据与全局",
-      "recommendation": "仅申请实际需要的权限。",
-      "severity": "LOW",
-      "type": "权限滥用"
-    },
-    {
-      "description": "脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。",
-      "location": "全局",
-      "recommendation": "继续避免敏感 API 滥用。",
-      "severity": "LOW",
-      "type": "敏感 API 调用"
-    },
-    {
-      "description": "未见 @require 加载第三方库，供应链风险较低。",
-      "location": "元数据",
-      "recommendation": "如需加载第三方库，建议使用官方 CDN 并锁定版本哈希。",
-      "severity": "LOW",
-      "type": "供应链风险"
-    },
-    {
-      "description": "脚本未见修改 frame 保护策略或创建隐藏 iframe。",
-      "location": "全局",
-      "recommendation": "继续避免 ClickJacking/iframe 风险。",
-      "severity": "LOW",
-      "type": "ClickJacking/iframe"
+      "description": "Script uses @connect ffscouter.com, which is a third-party domain. Supply chain risk is present if the server is compromised.",
+      "location": "UserScript metadata (@connect)",
+      "recommendation": "Ensure ffscouter.com is trustworthy and monitor for supply chain risks.",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
     }
   ],
   "obfuscation_detected": false,
@@ -79,10 +37,10 @@
   },
   "risk_level": "MEDIUM",
   "script_name": "FF Scouter V2",
-  "security_score": 75,
-  "summary": "FF Scouter V2 主要安全风险为通过 GM_xmlhttpRequest 向 ffscouter.com 外传数据（如用户 ID、目标信息等），属于 CRITICAL 级别。未发现隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用、供应链风险或 iframe 风险。建议开发者公开数据用途并最小化传输内容。",
-  "supply_chain_risk": false,
+  "security_score": 67,
+  "summary": "FF Scouter V2 communicates with a third-party server (ffscouter.com) using GM_xmlhttpRequest, which is necessary for its functionality. No evidence of privacy-invasive data collection, code obfuscation, or DOM XSS risks in the visible code. Supply chain risk exists due to reliance on an external API. Permissions requested are appropriate for the script's purpose. Overall, the script is reasonably safe but should be monitored for supply chain and data transmission risks.",
+  "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-18T06:24:16.160926+00:00",
+  "analyzed_at": "2026-05-25T06:30:41.596865+00:00",
   "slug": "FF_Scouter_V2"
 }

@@ -17,36 +17,36 @@
   "require": [],
   "metadata_raw": "// @name  Deadshot.io aimbot, ESP and TriggerBot\n// @namespace  https://tampermonkey.net/\n// @version  1.0\n// @description  Deadshot.io aimbot, chams and esp latest 2026\n// @author  echida\n// @match  *://*deadshot.io/*\n// @icon  https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSv5gTOWbgv4X5e2ZWGh0OGEscrLGG_41ZKFA&s\n// @grant  unsafeWindow\n// @run-at  document-start\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/574487/Deadshotio%20aimbot%2C%20ESP%20and%20TriggerBot.user.js\n// @updateURL  https://update.greasyfork.org/scripts/574487/Deadshotio%20aimbot%2C%20ESP%20and%20TriggerBot.meta.js",
   "sha256": "9d98231403d2f364fabe160994a2f0e5ab7d033c7c38ed8c8fd84d7a59c28131",
-  "discovered_at": "2026-05-11T06:20:36.082289+00:00",
+  "discovered_at": "2026-05-25T06:23:59.050948+00:00",
   "ai_reason": "",
   "target_roles": "",
-  "is_new": true,
-  "install_count": 639,
+  "is_new": false,
+  "install_count": 1156,
   "good_ratings": 0,
   "bad_ratings": 1,
   "summary": {
     "applicable_sites": [
       "Deadshot.io"
     ],
-    "description": "本脚本为 Deadshot.io 游戏提供自动瞄准（Aimbot）、透视（ESP）、自动开枪（TriggerBot）等辅助功能，帮助玩家更容易发现和击败对手。安装后可自动增强游戏体验，无需手动配置。适合希望提升射击效率和游戏表现的用户。",
+    "description": "本脚本为 Deadshot.io 游戏提供自动瞄准（aimbot）、透视（ESP）、自动开枪（TriggerBot）等辅助功能，帮助玩家更轻松地发现敌人并提升射击准确率。安装后，游戏内会自动启用这些增强功能，无需手动设置。",
     "permissions": [
       {
-        "explanation": "允许脚本访问和修改页面的全局变量，便于与游戏内部数据交互。",
+        "explanation": "允许脚本访问和修改页面的全局变量，实现游戏功能增强。",
         "grant": "unsafeWindow"
       }
     ],
     "tags": [
       "游戏辅助",
-      "射击游戏",
       "自动瞄准",
       "透视",
-      "作弊",
+      "射击游戏",
+      "作弊工具",
       "Deadshot.io"
     ],
     "usage": [
-      "1. 安装脚本后，进入 Deadshot.io 网站。",
+      "1. 安装脚本后，进入 Deadshot.io 游戏网站。",
       "2. 游戏加载后，辅助功能会自动启用。",
-      "3. 享受自动瞄准、透视和自动开枪等增强功能。"
+      "3. 可根据需要在游戏内体验自动瞄准、透视和自动开枪等功能。"
     ],
     "zh_name": "Deadshot.io 辅助脚本"
   }

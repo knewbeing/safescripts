@@ -1,0 +1,48 @@
+{
+  "slug": "HWHNewCharacterExt",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/553713-hwhnewcharacterext",
+  "source_repo": "553713",
+  "raw_url": "https://update.greasyfork.org/scripts/553713/HWHNewCharacterExt.user.js",
+  "filename": "HWHNewCharacterExt.user.js",
+  "name": "HWHNewCharacterExt",
+  "version": "2.59",
+  "description": "Extension for HeroWarsHelper script",
+  "match": [
+    "https://www.hero-wars.com/*",
+    "https://apps-1701433570146040.apps.fbsbx.com/*"
+  ],
+  "grant": [],
+  "require": [],
+  "metadata_raw": "// @name  HWHNewCharacterExt\n// @name:en  HWHNewCharacterExt\n// @name:ru  HWHNewCharacterExt\n// @namespace  HWHNewCharacterExt\n// @version  2.59\n// @description  Extension for HeroWarsHelper script\n// @description:en  Extension for HeroWarsHelper script\n// @description:ru  Расширение для скрипта HeroWarsHelper\n// @author  ZingerY, Green\n// @license  Copyright Green\n// @icon  https://i.ibb.co/xtmhK7zS/icon.png\n// @match  https://www.hero-wars.com/*\n// @match  https://apps-1701433570146040.apps.fbsbx.com/*\n// @run-at  document-start\n// @downloadURL  https://update.greasyfork.org/scripts/553713/HWHNewCharacterExt.user.js\n// @updateURL  https://update.greasyfork.org/scripts/553713/HWHNewCharacterExt.meta.js",
+  "sha256": "d4300794cfcf248960417f5f2ffef168c5d808673e09f1aeab0ad2ae247bbca4",
+  "discovered_at": "2026-05-25T06:24:20.985007+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 1769,
+  "good_ratings": 5,
+  "bad_ratings": 0,
+  "summary": {
+    "applicable_sites": [
+      "Hero Wars官网",
+      "Facebook小游戏平台"
+    ],
+    "description": "此脚本是HeroWarsHelper脚本的扩展，主要用于在Hero Wars游戏中增加新角色相关功能。它可以帮助玩家追踪新英雄或泰坦的任务进度，并在活动期间提供提示和进度反馈。",
+    "permissions": [],
+    "tags": [
+      "游戏辅助",
+      "Hero Wars",
+      "角色扩展",
+      "任务追踪",
+      "活动提示"
+    ],
+    "usage": [
+      "1. 安装Tampermonkey插件。",
+      "2. 在Hero Wars官网或Facebook小游戏平台打开游戏。",
+      "3. 确保已安装HeroWarsHelper主脚本。",
+      "4. 脚本自动运行，活动期间会显示新角色任务相关提示。"
+    ],
+    "zh_name": "新角色扩展"
+  }
+}

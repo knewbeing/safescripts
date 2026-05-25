@@ -7,83 +7,55 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "申请了 GM_openInTab 权限，但仅用于打开反馈页面（github/greasyfork），未被滥用。",
-      "location": "GM_openInTab 调用",
-      "recommendation": "如无必要可移除 GM_openInTab 权限，但当前用途安全。",
+      "description": "申请了 GM_openInTab 权限，但仅用于打开反馈页面（GitHub 和 GreasyFork），未涉及敏感数据或恶意跳转。",
+      "location": "GM_openInTab in menu registration",
+      "recommendation": "如无必要可移除该权限，但当前用途安全。",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "Permission Usage"
     },
     {
-      "description": "脚本使用 localStorage 和 GM_getValue/GM_setValue 存储音量设置，但未采集敏感隐私数据。",
-      "location": "localStorage/GM_getValue/GM_setValue",
-      "recommendation": "确保仅存储必要的非敏感数据。",
-      "severity": "LOW",
-      "type": "隐私采集"
+      "description": "脚本申请了 GM_notification 权限，但未在代码中实际使用。",
+      "location": "Metadata block (@grant GM_notification)",
+      "recommendation": "移除未使用的高权限申请，减少权限滥用风险。",
+      "severity": "MEDIUM",
+      "type": "Permission Usage"
     },
     {
-      "description": "脚本未使用 eval、Function、动态 script 标签等远程代码执行风险操作。",
-      "location": "全局代码审查",
-      "recommendation": "保持当前安全实践。",
+      "description": "脚本申请了 GM_registerMenuCommand 和 GM_unregisterMenuCommand 权限，实际用于菜单功能，符合用途。",
+      "location": "Metadata block (@grant GM_registerMenuCommand, GM_unregisterMenuCommand)",
+      "recommendation": "无风险，合理使用。",
       "severity": "LOW",
-      "type": "远程代码执行"
+      "type": "Permission Usage"
     },
     {
-      "description": "未检测到任何网络请求（GM_xmlhttpRequest、fetch、WebSocket、sendBeacon、EventSource）。",
-      "location": "全局代码审查",
-      "recommendation": "保持当前安全实践。",
+      "description": "脚本申请了 GM_getValue 和 GM_setValue 权限，实际用于存储和读取音量设置，符合用途。",
+      "location": "Metadata block (@grant GM_getValue, GM_setValue)",
+      "recommendation": "无风险，合理使用。",
       "severity": "LOW",
-      "type": "数据外传"
+      "type": "Permission Usage"
     },
     {
-      "description": "未检测到代码混淆、压缩或 base64/unicode 混淆特征。",
-      "location": "全局代码审查",
-      "recommendation": "保持代码可读性。",
+      "description": "脚本使用 localStorage 存储当前网站音量，但未外传数据。",
+      "location": "volumeChangeEvent, menu registration",
+      "recommendation": "无风险，合理使用。",
       "severity": "LOW",
-      "type": "代码混淆"
-    },
-    {
-      "description": "未检测到 DOM XSS 或注入风险，未直接插入用户输入到 innerHTML/outerHTML。",
-      "location": "全局代码审查",
-      "recommendation": "保持当前安全实践。",
-      "severity": "LOW",
-      "type": "DOM XSS"
-    },
-    {
-      "description": "未检测到敏感 API 调用（地理位置、摄像头、剪贴板等）。",
-      "location": "全局代码审查",
-      "recommendation": "保持当前安全实践。",
-      "severity": "LOW",
-      "type": "敏感 API"
-    },
-    {
-      "description": "未检测到供应链风险，未使用 @require 加载第三方库。",
-      "location": "元数据",
-      "recommendation": "保持当前安全实践。",
-      "severity": "LOW",
-      "type": "供应链风险"
-    },
-    {
-      "description": "未检测到 ClickJacking 或 iframe 风险。",
-      "location": "全局代码审查",
-      "recommendation": "保持当前安全实践。",
-      "severity": "LOW",
-      "type": "ClickJacking/iframe"
+      "type": "Privacy Storage"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "localStorage: html5_xiu_currentVolume",
-      "GM_getValue/GM_setValue: menu_defaultVolume, menu_forcedToEnable"
+      "localStorage: 存储当前网站音量",
+      "GM_getValue/GM_setValue: 存储全局/网站音量设置"
     ],
     "detected": false
   },
-  "risk_level": "SAFE",
+  "risk_level": "LOW",
   "script_name": "HTML5 Video Audio Default Volume",
-  "security_score": 92,
-  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 调用、供应链风险或 iframe 风险。唯一中等风险为 GM_openInTab 权限申请，但实际用途安全。整体安全性高，适合公开使用。",
+  "security_score": 89,
+  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。所有敏感 API 和权限申请均为合理用途，唯一风险为申请了未使用的 GM_notification 权限和 GM_openInTab（仅用于反馈页面）。整体安全性高，建议移除未使用权限以进一步提升安全性。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-04-27T05:12:52.767268+00:00",
+  "analyzed_at": "2026-05-25T06:32:54.485130+00:00",
   "slug": "HTML5Volume"
 }

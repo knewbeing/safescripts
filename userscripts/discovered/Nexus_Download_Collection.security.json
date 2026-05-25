@@ -1,0 +1,40 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [
+      "api-router.nexusmods.com",
+      "www.nexusmods.com"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "Script uses fetch and GM_xmlhttpRequest to communicate with api-router.nexusmods.com and www.nexusmods.com. All requests are to first-party domains and do not transmit user data beyond what is required for mod download functionality.",
+      "location": "fetchMods(), fetchDownloadLink()",
+      "recommendation": "Ensure only necessary data is sent and avoid transmitting sensitive information.",
+      "severity": "CRITICAL",
+      "type": "Data Transmission"
+    },
+    {
+      "description": "Script requests multiple @grant permissions (GM.xmlHttpRequest, GM_xmlhttpRequest, GM_setValue, GM_getValue, GM.setValue, GM.getValue, GM_addStyle), but only uses GM_xmlhttpRequest, GM.getValue, GM.setValue, and GM_addStyle in code.",
+      "location": "Metadata block",
+      "recommendation": "Remove unused permissions (GM.xmlHttpRequest, GM_setValue, GM_getValue) to minimize attack surface.",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "LOW",
+  "script_name": "Nexus Download Collection",
+  "security_score": 64,
+  "summary": "该脚本主要用于批量下载 Nexus Mods 集合中的所有 mod。所有网络请求均指向 NexusMods 官方域名，未发现数据外传至第三方或隐私采集行为。未检测到远程代码执行、代码混淆、DOM XSS、敏感 API 调用、供应链风险或 iframe 风险。存在权限申请冗余，建议精简。整体安全风险较低。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-05-25T06:34:00.049916+00:00",
+  "slug": "Nexus_Download_Collection"
+}

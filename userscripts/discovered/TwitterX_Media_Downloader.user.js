@@ -9,7 +9,7 @@
 // @description:zh-TW  一鍵下載 Twitter/X 圖片和影片，支援自訂檔名與下載歷史紀錄。
 // @author      ShanksSU
 // @namespace    https://github.com/ShanksSU/twitter-media-downloader
-// @version     0.3.0
+// @version     0.3.1
 // @match       https://twitter.com/*
 // @match       https://x.com/*
 // @icon        https://www.google.com/s2/favicons?sz=64&domain=x.com
@@ -482,9 +482,24 @@ class UIManager {
         }
 
         this.historyBtn.innerHTML = `<label>${this.app.storage.history.length}</label>`;
-        document.body.appendChild(this.historyBtn);
-
         this.historyBtn.onclick = () => this.showModal();
+
+        const mountToHeader = () => {
+            const header = document.querySelector('header[role="banner"]');
+            if (header) {
+                header.style.position = 'relative';
+                header.appendChild(this.historyBtn);
+                return true;
+            }
+            return false;
+        };
+
+        if (!mountToHeader()) {
+            const observer = new MutationObserver(() => {
+                if (mountToHeader()) observer.disconnect();
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+        }
     }
 
     updateHistoryCount() {
@@ -1074,7 +1089,7 @@ class TwitterMediaDownloaderApp {
                 let mp4Variants = media.video_info?.variants?.filter(n => n.content_type === 'video/mp4') || [];
                 info.url = media.type === 'photo'
                     ? media.media_url_https + ':orig'
-                    : (mp4Variants.length > 0 ? mp4Variants.reduce((a, b) => (a.bitrate || 0) >= (b.bitrate || 0) ? a : b).url : media.video_info?.variants[0]?.url);
+                : (mp4Variants.length > 0 ? mp4Variants.reduce((a, b) => (a.bitrate || 0) >= (b.bitrate || 0) ? a : b).url : media.video_info?.variants[0]?.url);
 
                 if (!info.url) {
                     if (--tasksLeft === 0) this.ui.setButtonStatus(btn, 'failed', 'NO_URL');

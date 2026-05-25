@@ -71,7 +71,7 @@
 // @description:zh-CN 一款多合一、快速且免费的在线视频下载器。支持从 YouTube、TikTok、抖音、Instagram、Facebook、Threads、TED、小红书、X（Twitter）等平台下载视频。享受无水印、高质量、流畅便捷的下载体验
 // @description:zh-TW 一款多合一、快速且免費的線上視頻下載器。支援從 YouTube、TikTok、抖音、Instagram、Facebook、Threads、TED、小紅書、X（Twitter）等平台下載視頻。享受無水印、高質量、流暢便捷的下載體驗
 // @namespace   AllInOneDownloader_Daniel
-// @version     1.0.10
+// @version     1.0.11
 // @author      Daniel
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADQAAAAwCAYAAABe6Vn9AAACZElEQVR4AeyZbVKDMBCGgYuJ/9WT2CNoqx6hnkT9T72YuA+WDg0M2SSblnFwWCfNfuR9EhqatiqM/+72bX3/3jZirccaYo2HL8yByrLYishazHfVx1hfXJDfHEhG18BIWHeFxHYJvn85gHxjZvWvQFmn16D4ukIGk5i1xLpCWafXoPi6QgaTmLXEukJZp9eg+LpCBpOYtYR6hTi7yPnGe84JVSs1feemlrG1ddVAx7OL+cd9jdDj2JpQ+wOeatTwIPVEqleobYuXcB3zGVqvjH2rjVUDfW3KQ3kFKGAY2xyIgh+bcndJqFAYNKpXiGDsUlAxMOgLBiIpN1QsDNqigEjMBZUCg65oIJKtoVJh0JQERAErKAsY9CQDUSQVygoGLSZAFIqFsoRBhxkQxUKheKaFPDQZw2emQAymhQKGWHIszRwIcQhFMO0pw0fMlC+1rwN62Lc7zblkLsY9syAY4a5A+vAN+8mdq63xwUDNikb795sOr6NNziyjH7AQDgAmhQ9sAPRJ+3QBQ+6pI7IBg4A/VzQia4zSEIbAoQMA7POxvHU3AGLJGcYntp+6Wy6xyFk6AhF61jnxghhiJ1xJXeZAqEEotzLtKcsFw1hZgCjMrQwUBkBvcp83ABOTw7IBIRYoDIDepF/9/YDEBl9qoODKV0pYIlC3vcuuWMqcHMTca9a/OCB5Zn3327s8t0bfNPn8iwP6KYrTqoi40ftt6C8m/iRnoveKXbJ5bPudUTaUG1fK0E/b9S8OSATWArIVsQ1tMfea9S8RyAUIel3Jm2z0xguqsKzgt4oPjv8BCgbZ6l9/AQAA//9HnEu0AAAABklEQVQDAI1HmgBXKvxdAAAAAElFTkSuQmCC
 // @include     https://www.ted.com/*
@@ -1028,7 +1028,7 @@
 	      /licdn\.com/
 	    ];
 	    const currentHost = window.location.host;
-	    return hosts.some((rule) => rule.test(currentHost));
+	    return hosts.some((rule) => rule.test(currentHost)) && document.contentType !== "text/html";
 	  },
 	  getLanguage: function() {
 	    const lang = CommonUtils.getSupportedLang();

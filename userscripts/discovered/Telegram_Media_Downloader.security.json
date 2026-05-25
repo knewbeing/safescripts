@@ -4,64 +4,83 @@
     "destinations": [],
     "detected": false
   },
+  "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本未检测到任何网络请求向第三方服务器发送数据，也未发现用户数据被上传或上报。",
-      "location": "全脚本",
-      "recommendation": "继续保持不向第三方服务器发送用户数据，确保用户隐私安全。",
+      "description": "脚本使用 fetch API 仅向 Telegram 源站请求媒体内容，没有向第三方服务器发送数据，也未携带用户敏感信息。",
+      "location": "tel_download_video() -> fetch(url)",
+      "recommendation": "确保 fetch 请求目标仅为 Telegram 官方域名，避免修改为第三方。",
       "severity": "CRITICAL",
-      "type": "数据外传"
+      "type": "Data Transmission"
     },
     {
-      "description": "脚本未读取 document.cookie、localStorage、sessionStorage，也未监听键盘输入事件，也未访问浏览器指纹相关API。",
-      "location": "全脚本",
-      "recommendation": "无隐私采集行为，符合隐私保护要求。",
+      "description": "未发现 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板读取、键盘监听等隐私采集行为。",
+      "location": "全局代码审查",
+      "recommendation": "保持现有状态，勿添加隐私采集代码。",
       "severity": "CRITICAL",
-      "type": "隐私采集"
+      "type": "Privacy Collection"
     },
     {
-      "description": "脚本未使用 eval、new Function、setTimeout(string) 等远程代码执行相关API，也未通过 @require 或动态 script 标签加载远程JS。",
-      "location": "全脚本",
-      "recommendation": "避免使用动态代码执行，防止远程代码注入风险。",
+      "description": "未使用 eval、new Function、setTimeout(string)、setInterval(string)、innerHTML 执行脚本等远程代码执行风险。",
+      "location": "全局代码审查",
+      "recommendation": "避免动态执行字符串代码。",
       "severity": "HIGH",
-      "type": "远程代码执行"
+      "type": "Remote Code Execution"
     },
     {
-      "description": "脚本未声明 @grant 权限，且代码中未使用任何 GM_* API，权限申请与实际使用一致，无权限滥用。",
+      "description": "代码未混淆，无 base64 解码、字符串数组映射、unicode 混淆或高度压缩单行代码。",
+      "location": "全局代码审查",
+      "recommendation": "保持代码可读性，勿混淆。",
+      "severity": "HIGH",
+      "type": "Code Obfuscation"
+    },
+    {
+      "description": "未发现用户输入或 URL 参数直接插入 innerHTML/outerHTML，未发现 document.write 注入风险。",
+      "location": "createProgressBar(), updateProgress() 等 DOM 操作",
+      "recommendation": "如需插入用户输入，务必转义。",
+      "severity": "HIGH",
+      "type": "DOM XSS/Injection"
+    },
+    {
+      "description": "未申请任何 @grant 权限，未滥用高权限 API。",
       "location": "元数据与代码",
-      "recommendation": "保持权限最小化原则，避免申请未使用的高权限。",
-      "severity": "HIGH",
-      "type": "权限滥用"
-    },
-    {
-      "description": "脚本未调用 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等敏感API。",
-      "location": "全脚本",
-      "recommendation": "无敏感API调用，降低潜在风险。",
+      "recommendation": "如需申请权限，按需申请，避免多余高权限。",
       "severity": "MEDIUM",
-      "type": "敏感 API 调用"
+      "type": "Permission Abuse"
     },
     {
-      "description": "脚本代码结构清晰，无明显混淆、base64解码或字符串拼接执行特征。",
-      "location": "全脚本",
-      "recommendation": "保持代码可读性，避免混淆带来的安全隐患。",
+      "description": "未调用敏感 API（地理位置、RTCPeerConnection、MediaDevices、Clipboard、Notification）。",
+      "location": "全局代码审查",
+      "recommendation": "如需调用敏感 API，需征得用户同意。",
       "severity": "MEDIUM",
-      "type": "代码混淆"
+      "type": "Sensitive API Usage"
     },
     {
-      "description": "脚本未使用 @require 加载任何外部依赖，所有代码均为本地实现。",
+      "description": "未使用 @require 加载第三方库，无供应链风险。",
       "location": "元数据",
-      "recommendation": "如需引入外部库，建议使用可信CDN并固定版本。",
+      "recommendation": "如需加载第三方库，使用官方 CDN 并固定版本。",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    },
+    {
+      "description": "未修改 frame 保护策略，未创建隐藏 iframe。",
+      "location": "全局代码审查",
+      "recommendation": "如需使用 iframe，需明确用途并防范 clickjacking。",
       "severity": "LOW",
-      "type": "外部依赖"
+      "type": "ClickJacking / iframe Risk"
     }
   ],
+  "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
     "detected": false
   },
-  "risk_level": "LOW",
+  "risk_level": "SAFE",
   "script_name": "Telegram Media Downloader",
-  "summary": "该脚本主要功能为在 Telegram Web 应用中下载受限的媒体文件。经审查，脚本未发现任何数据外传、隐私采集或远程代码执行行为，且无权限滥用和敏感API调用。代码未混淆且无外部依赖，整体安全性较高。建议继续保持最小权限原则，避免引入不必要的外部依赖。",
-  "analyzed_at": "2026-04-15T20:42:17.757560+00:00",
+  "security_score": 100,
+  "summary": "该脚本仅用于在 Telegram 官方 Web 应用中下载媒体内容，无数据外传、隐私采集、远程代码执行、混淆、DOM 注入、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。安全评分为 100，风险等级 SAFE。建议持续保持代码透明与安全，勿添加高风险功能。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-05-25T06:36:21.106630+00:00",
   "slug": "Telegram_Media_Downloader"
 }

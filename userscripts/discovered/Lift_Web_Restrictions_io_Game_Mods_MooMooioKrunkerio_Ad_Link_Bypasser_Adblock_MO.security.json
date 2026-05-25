@@ -3,90 +3,83 @@
   "data_transmission": {
     "destinations": [
       "ksw2-moomoo.glitch.me",
-      "external URLs via Utils.loadModule (dynamic)"
+      "external URLs via Utils.loadModule (potentially arbitrary)"
     ],
     "detected": true
   },
   "dom_xss_risk": true,
   "issues": [
     {
-      "description": "The script uses XMLHttpRequest to fetch external code and executes it via a[a][a](x.responseText), which is equivalent to eval(). This is a remote code execution vulnerability.",
+      "description": "The script uses XMLHttpRequest to fetch external code and executes it via a[a][a](x.responseText), which is equivalent to eval(). This allows remote code execution from arbitrary URLs.",
       "location": "Utils.loadModule function",
-      "recommendation": "Remove dynamic code loading and execution. Only load trusted, versioned scripts via @require.",
+      "recommendation": "Remove dynamic code loading and execution. Only load trusted, versioned libraries via @require.",
       "severity": "CRITICAL",
       "type": "Remote Code Execution"
     },
     {
-      "description": "The script executes code using eval-like construct (a[a][a]), which is equivalent to eval().",
-      "location": "Utils.loadModule function",
-      "recommendation": "Avoid using eval or similar constructs. Use safe, static code.",
-      "severity": "HIGH",
-      "type": "Unsafe Code Execution"
-    },
-    {
-      "description": "The script loads modules from arbitrary URLs via XMLHttpRequest, which can be abused for supply chain attacks.",
-      "location": "Utils.loadModule function",
-      "recommendation": "Restrict module loading to trusted, versioned sources.",
-      "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
-    },
-    {
-      "description": "The script uses innerHTML and removes elements, but also allows dynamic code execution from external sources, which can lead to DOM XSS.",
-      "location": "Utils.loadModule and deleteElement/watchAndDelete functions",
-      "recommendation": "Sanitize all inputs and avoid executing code from untrusted sources.",
-      "severity": "HIGH",
-      "type": "DOM XSS Risk"
-    },
-    {
-      "description": "The script uses GM.getValue and GM.setValue to store and retrieve user data (count, id), which could be used for tracking.",
-      "location": "Initialization block (uuidv4, GM.getValue/setValue)",
-      "recommendation": "Clarify what data is stored and why. Avoid persistent identifiers unless necessary.",
-      "severity": "MEDIUM",
+      "description": "The script stores and retrieves a UUID and a usage count in GM storage, which could be used for tracking users across sessions.",
+      "location": "uuidv4 and GM.getValue/GM.setValue usage",
+      "recommendation": "Do not store persistent identifiers unless strictly necessary. Document the purpose and limit scope.",
+      "severity": "CRITICAL",
       "type": "Privacy Collection"
     },
     {
-      "description": "The script requests high privileges (@grant unsafeWindow, GM_getTabs, GM_saveTab, etc.), some of which may not be used or are excessive.",
-      "location": "Metadata block",
-      "recommendation": "Reduce privilege scope to only what is needed.",
-      "severity": "MEDIUM",
-      "type": "Permission Abuse"
+      "description": "The script connects to ksw2-moomoo.glitch.me and uses GM_getTab/GM_saveTab to store tab objects, potentially transmitting user session data to a third-party server.",
+      "location": "CONTROLLER_PAGE logic",
+      "recommendation": "Avoid sending user data to third-party servers. Use local storage only.",
+      "severity": "CRITICAL",
+      "type": "Data Transmission"
     },
     {
-      "description": "The script loads third-party libraries from GreasyFork and jQuery from CDN, but does not pin versions with hashes.",
-      "location": "@require statements",
-      "recommendation": "Pin dependencies to specific versions and use hashes if possible.",
-      "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
-    },
-    {
-      "description": "The script uses a code obfuscation technique (a[a][a]) to execute code, which makes auditing difficult.",
+      "description": "The script uses a[a][a](...) pattern, which is a form of obfuscation and indirect eval.",
       "location": "Utils.loadModule function",
-      "recommendation": "Remove obfuscation and use clear, readable code.",
+      "recommendation": "Avoid obfuscation and indirect code execution. Use clear, auditable code.",
       "severity": "HIGH",
       "type": "Code Obfuscation"
     },
     {
-      "description": "The script creates hidden iframes and manipulates frame contexts, which may be used for clickjacking or data extraction.",
-      "location": "isIFrame and CONTROLLER_PAGE logic",
-      "recommendation": "Avoid unnecessary iframe manipulation unless required for functionality.",
+      "description": "The script uses innerHTML and document.getElementById, and may insert untrusted content without sanitization.",
+      "location": "Utils.deleteElement and watchAndDelete functions",
+      "recommendation": "Sanitize all user input before inserting into the DOM.",
+      "severity": "HIGH",
+      "type": "DOM XSS Risk"
+    },
+    {
+      "description": "The script requests high privileges (unsafeWindow, GM_getTabs, GM_saveTab) but does not use all of them in the visible code.",
+      "location": "@grant section",
+      "recommendation": "Reduce privilege scope to only what is necessary.",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "The script loads third-party libraries from greasyfork.org and code.jquery.com, but does not fix versions for msgpack.js and scijs.js (greasyfork URLs are mutable).",
+      "location": "@require section",
+      "recommendation": "Pin all dependencies to versioned URLs or hashes.",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    },
+    {
+      "description": "The script may create or manipulate iframes for recaptcha bypass and other purposes, which could be used for clickjacking or data extraction.",
+      "location": "recaptcha/api2/bframe logic",
+      "recommendation": "Avoid manipulating iframes unless necessary. Document all iframe usage.",
       "severity": "LOW",
-      "type": "ClickJacking/Iframe Risk"
+      "type": "ClickJacking / iframe Risk"
     }
   ],
   "obfuscation_detected": true,
   "privacy_collection": {
     "details": [
-      "Persistent unique identifier (uuidv4) stored via GM.setValue",
-      "Usage counter stored via GM.setValue"
+      "Persistent UUID generation and storage",
+      "Usage count tracking"
     ],
     "detected": true
   },
   "risk_level": "CRITICAL",
   "script_name": "Lift Web Restrictions: .io Game Mods (MooMoo.io/Krunker.io/..), Ad Link Bypasser, Adblock, & MORE!",
   "security_score": 0,
-  "summary": "This userscript presents critical security risks, including remote code execution via dynamic external code loading and eval-like constructs, code obfuscation, DOM XSS potential, excessive privilege requests, privacy collection (persistent identifiers), and supply chain risks. It is not safe for use in its current form.",
+  "summary": "This userscript presents critical security risks, including remote code execution via dynamic loading and eval, persistent user tracking, third-party data transmission, code obfuscation, DOM XSS risk, excessive permissions, and supply chain vulnerabilities. It is not safe for use in its current form.",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-04-27T05:13:29.502670+00:00",
+  "analyzed_at": "2026-05-25T06:33:44.943012+00:00",
   "slug": "Lift_Web_Restrictions_io_Game_Mods_MooMooioKrunkerio_Ad_Link_Bypasser_Adblock_MO"
 }

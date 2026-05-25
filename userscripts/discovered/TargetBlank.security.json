@@ -4,14 +4,19 @@
     "destinations": [],
     "detected": false
   },
+  "dom_xss_risk": false,
   "issues": [],
+  "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
     "detected": false
   },
   "risk_level": "SAFE",
   "script_name": "新标签页打开链接",
-  "summary": "该脚本仅修改网页中链接的打开方式，强制所有链接在新标签页打开。未发现任何网络请求、用户数据读取、远程代码执行或权限滥用行为。代码清晰无混淆，且未依赖外部资源。整体安全，无隐私或安全风险。",
-  "analyzed_at": "2026-04-15T20:42:10.151161+00:00",
+  "security_score": 100,
+  "summary": "该脚本仅操作页面链接和表单的 target 属性，使其在新标签页打开，无任何数据外传、隐私采集、远程代码执行、混淆、XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码结构清晰，无安全隐患，安全评分为 100。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-05-25T06:36:11.997568+00:00",
   "slug": "TargetBlank"
 }

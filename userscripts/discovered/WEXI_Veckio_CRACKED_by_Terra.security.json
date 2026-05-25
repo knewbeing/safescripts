@@ -1,0 +1,69 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [
+      "Arbitrary URL via loadscript(url) (fetch)"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "The script uses fetch to load arbitrary external JavaScript via the loadscript(url) function, then executes it using new Function(code). This allows remote code execution if the URL is attacker-controlled.",
+      "location": "loadscript(url) function",
+      "recommendation": "Restrict external script loading to trusted, versioned sources. Avoid dynamic code execution from untrusted URLs.",
+      "severity": "CRITICAL",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "The script uses new Function(code) to execute fetched code, which is equivalent to eval and poses a high risk of arbitrary code execution.",
+      "location": "loadscript(url) function",
+      "recommendation": "Avoid using new Function or eval for executing remote code. Use static, vetted scripts.",
+      "severity": "HIGH",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "The script reads and writes to localStorage for storing user input (key gate overlay). While not critical, this is a privacy collection vector.",
+      "location": "wxKeyGate function",
+      "recommendation": "Ensure no sensitive information is stored in localStorage. Consider encrypting or minimizing stored data.",
+      "severity": "MEDIUM",
+      "type": "Privacy Collection"
+    },
+    {
+      "description": "The script deletes the IndexedDB database 'UnityCache', which may impact game functionality or user data.",
+      "location": "indexedDB.deleteDatabase(\"UnityCache\")",
+      "recommendation": "Warn users before deleting browser storage. Only delete if necessary and with user consent.",
+      "severity": "MEDIUM",
+      "type": "Sensitive API Usage"
+    },
+    {
+      "description": "No code obfuscation detected, but the script is incomplete and may be minified or obfuscated in other parts.",
+      "location": "General code structure",
+      "recommendation": "Review full script for obfuscation or hidden malicious logic.",
+      "severity": "LOW",
+      "type": "Obfuscation"
+    },
+    {
+      "description": "No supply chain risk detected in @require, but the loadscript function allows arbitrary external code loading, which is a supply chain risk.",
+      "location": "loadscript(url) function",
+      "recommendation": "Only load scripts from trusted, versioned sources. Avoid dynamic URLs.",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [
+      "localStorage usage for storing user input"
+    ],
+    "detected": true
+  },
+  "risk_level": "CRITICAL",
+  "script_name": "WEXI Veck.io CRACKED by Terra",
+  "security_score": 35,
+  "summary": "This script poses a critical security risk due to remote code execution via fetch and new Function, allowing arbitrary external code to run in the user's browser. It also collects user input in localStorage and deletes IndexedDB databases. Use with extreme caution; do not approve for general use.",
+  "supply_chain_risk": true,
+  "websocket_usage": false,
+  "analyzed_at": "2026-05-25T06:38:48.804466+00:00",
+  "slug": "WEXI_Veckio_CRACKED_by_Terra"
+}

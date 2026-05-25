@@ -1,18 +1,18 @@
 ---
-title: "CheatGuessr 通用辅助器"
+title: "CheatGuessr 通用地理猜谜辅助"
 ---
 
-# CheatGuessr 通用辅助器
+# CheatGuessr 通用地理猜谜辅助
 
-`游戏辅助`  `地图工具`  `GeoGuessr`  `作弊工具`  `位置分享`
+`地理猜谜`  `游戏辅助`  `地图工具`  `位置分享`  `隐蔽功能`  `社交集成`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/CheatGuessr_Universal_GeoGuessr_OpenGuessr_WorldGuessr_FreeGuessr_GeoDuels.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**10.4**　　发现时间：**2026-05-18**　　来源：[GreasyFork](https://greasyfork.org/scripts/572651-cheatguessr-universal-geoguessr-openguessr-worldguessr-freeguessr-geoduels) <Badge type="tip" text="GreasyFork" />　　安装量：**3,361**　　评分：👍4 / 👎1
+> 版本：**10.82**　　发现时间：**2026-05-25**　　来源：[GreasyFork](https://greasyfork.org/scripts/572651-cheatguessr-universal-geoguessr-openguessr-worldguessr-freeguessr-geoduels) <Badge type="tip" text="GreasyFork" />　　安装量：**4,052**　　评分：👍5 / 👎2
 
 ## 功能介绍
 
-本脚本是一款隐蔽的 GeoGuessr 及其同类网站辅助工具。它允许你通过按 Tab 键打开设置菜单，在地图上标记位置，并可将位置信息发送到 Discord 或在 Google 地图中打开。适合需要辅助定位和分享的用户使用。
+本脚本为 GeoGuessr 及类似地理猜谜网站提供隐蔽式辅助功能。按 Tab 键可打开设置菜单，支持在地图上标点、将位置发送到 Discord，以及在 Google 地图中打开当前位置。
 
 ## 适用网站
 
@@ -26,28 +26,29 @@ title: "CheatGuessr 通用辅助器"
 
 ## 使用方法
 
-1. 安装脚本后，进入支持的网站（如 GeoGuessr）。
-2. 按下 Tab 键即可打开脚本的设置菜单。
-3. 根据需要在地图上标记位置，或选择发送到 Discord、在 Google 地图中查看。
+1. 安装脚本后，进入支持的地理猜谜网站。
+2. 按 Tab 键打开脚本设置菜单。
+3. 在地图上标记当前位置，或选择发送到 Discord。
+4. 可一键在 Google 地图中查看当前地点。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `GM_setValue` | 用于在本地保存脚本的设置和用户数据。 |
-| `GM_getValue` | 用于读取之前保存的设置和数据。 |
-| `GM_xmlhttpRequest` | 用于向外部网站（如 Discord、地图服务）发送网络请求，实现分享和定位功能。 |
+| `GM_setValue` | 用于保存脚本的设置和数据。 |
+| `GM_getValue` | 用于读取脚本保存的设置和数据。 |
+| `GM_xmlhttpRequest` | 用于与外部网站（如 Discord、地理服务）通信，实现发送位置等功能。 |
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：34/100　　**分析时间**：2026-05-18
+**风险等级**：⛔ CRITICAL　　**安全评分**：25/100　　**分析时间**：2026-05-25
 
-> This script transmits user-selected location data to Discord (a third-party server) and interacts with OpenStreetMap's API. It modifies native prototypes, which can cause reliability issues, and disables anti-cheat mechanisms on several platforms. There is no evidence of code obfuscation or DOM XSS, but the script collects and transmits user data (map pins) externally. The overall risk is HIGH due to data exfiltration, prototype modification, and anti-cheat bypass.
+> This script transmits map/location data to third-party servers (discord.com, nominatim.openstreetmap.org) and monitors keyboard input for hotkeys. There is a risk of user/game data exfiltration and privacy leakage. Notification API is used but not abused. No code obfuscation or DOM XSS detected. Supply chain risk is low as no @require external scripts are used. Overall, the script poses CRITICAL risk due to data transmission and privacy concerns.
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：discord.com, nominatim.openstreetmap.org） |
-| 隐私采集 | ❌ 检测到（Sends user-selected map pin/location to Discord via network request） |
+| 隐私采集 | ❌ 检测到（Keyboard input (hotkeys) is monitored., Map pin/location data may be sent externally.） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -55,30 +56,30 @@ title: "CheatGuessr 通用辅助器"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data exfiltration  
-> The script uses GM_xmlhttpRequest and has @connect permissions for discord.com and nominatim.openstreetmap.org. It includes a feature to send map pins to Discord, which may transmit user-selected location data to a third-party server.  
+**⛔ CRITICAL** — Data Exfiltration  
+> Script uses GM_xmlhttpRequest to send data to discord.com, likely for sharing map pins or game data. This is a third-party server and may transmit user/game information.  
 > 位置：GM_xmlhttpRequest usage, @connect discord.com  
-> 建议：Warn users that sending data to Discord may expose location information. Limit data sent and make user consent explicit.
+> 建议：Ensure only minimal, non-sensitive data is sent. Warn users about external transmission.
 
-**🔴 HIGH** — Code reliability risk  
-> The script modifies native prototypes (e.g., Array.prototype.push, Element.prototype.setAttribute, Storage.prototype.setItem, String.prototype.startsWith, fetch) via Proxy. This can have unpredictable side effects and may break page or other scripts’ functionality.  
-> 位置：Multiple locations (Array.prototype, Element.prototype, etc.)  
-> 建议：Limit prototype modifications to the minimum required scope. Avoid global monkey-patching unless strictly necessary.
+**⛔ CRITICAL** — Data Exfiltration  
+> Script uses GM_xmlhttpRequest to nominatim.openstreetmap.org for geocoding. While this is a public API, user coordinates or map data may be transmitted.  
+> 位置：GM_xmlhttpRequest usage, @connect nominatim.openstreetmap.org  
+> 建议：Avoid sending sensitive or identifiable user data. Document what is sent.
 
-**🔴 HIGH** — Anti-cheat bypass  
-> The script disables or bypasses anti-cheat and ban mechanisms on target platforms by intercepting analytics and ban-related storage.  
-> 位置：Platform-specific blocks (e.g., gtag, Storage.setItem, banned property)  
-> 建议：Inform users of the ethical and ToS implications. Such bypasses may violate platform rules.
+**⛔ CRITICAL** — Privacy Collection  
+> Script listens for keyboard events (hotkeys) and may transmit map pin data to Discord. If user input or coordinates are sent, this is a privacy risk.  
+> 位置：Hotkey handlers, sendToDiscord feature  
+> 建议：Limit data sent to Discord, avoid transmitting user input or sensitive information.
 
-**🟠 MEDIUM** — Sensitive API usage  
-> The script requests Notification API permission and can send notifications to the user.  
-> 位置：state.notificationPermission, Notification.permission  
-> 建议：Ensure notifications are not abused for spam or phishing. Only use with clear user intent.
+**🟠 MEDIUM** — Sensitive API Usage  
+> Script requests Notification API permission and may send notifications.  
+> 位置：state.notificationPermission, Notification API usage  
+> 建议：Ensure notifications are not abused or spammed.
 
-**🟠 MEDIUM** — Permission overgrant  
-> The script grants GM_xmlhttpRequest but does not appear to use it for arbitrary third-party communication beyond the declared @connect domains. However, the permission is high and could be abused if the code is modified.  
-> 位置：@grant GM_xmlhttpRequest  
-> 建议：Restrict @grant permissions to only those required. Review code for any dynamic or user-influenced network requests.
+**🟡 LOW** — Permission Usage  
+> Script grants GM_xmlhttpRequest but does not appear to use GM_download or GM_openInTab. Permissions are appropriate.  
+> 位置：@grant section  
+> 建议：Do not request unnecessary permissions.
 
 ---
 

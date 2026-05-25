@@ -19,12 +19,45 @@
   "require": [],
   "metadata_raw": "// @name  Gartic Phone Draw Bot\n// @namespace  http://tampermonkey.net/\n// @version  0.1\n// @license  GNU\n// @description  Auto drawing bot!\n// @author  petmshall (peter-marshall5)\n// @match  *://garticphone.com/*\n// @connect  garticphone.com\n// @exclude  *://garticphone.com/_next/*\n// @icon  https://www.google.com/s2/favicons?domain=garticphone.com\n// @grant  unsafeWindow\n// @grant  GM_xmlhttpRequest\n// @grant  GM_log\n// @run-at  document-start\n// @downloadURL  https://update.greasyfork.org/scripts/495177/Gartic%20Phone%20Draw%20Bot.user.js\n// @updateURL  https://update.greasyfork.org/scripts/495177/Gartic%20Phone%20Draw%20Bot.meta.js",
   "sha256": "707e3d01a569f29a13f2bcadf0e81618f62f68e75b03971fd1dd8fddc9471770",
-  "discovered_at": "2026-05-04T06:06:01.004528+00:00",
+  "discovered_at": "2026-05-25T06:23:34.727236+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 11021,
+  "install_count": 11720,
   "good_ratings": 0,
   "bad_ratings": 1,
-  "summary": {}
+  "summary": {
+    "applicable_sites": [
+      "Gartic Phone"
+    ],
+    "description": "本脚本可以自动在 Gartic Phone 游戏中进行绘画，模拟机器人自动作画。适合需要快速完成画图任务或想体验自动绘图功能的用户。",
+    "permissions": [
+      {
+        "explanation": "允许脚本访问和修改网页中的全局变量，增强与页面的交互能力。",
+        "grant": "unsafeWindow"
+      },
+      {
+        "explanation": "用于发送网络请求，获取外部资源或数据。",
+        "grant": "GM_xmlhttpRequest"
+      },
+      {
+        "explanation": "用于输出调试信息，方便开发者查看脚本运行情况。",
+        "grant": "GM_log"
+      }
+    ],
+    "tags": [
+      "自动绘图",
+      "游戏辅助",
+      "Gartic Phone",
+      "机器人",
+      "网页增强",
+      "娱乐"
+    ],
+    "usage": [
+      "安装脚本后，进入 Gartic Phone 网站。",
+      "开始游戏时，自动绘图功能会自动激活。",
+      "无需手动操作，机器人会自动完成画图任务。"
+    ],
+    "zh_name": "Gartic Phone自动绘图机器人"
+  }
 }

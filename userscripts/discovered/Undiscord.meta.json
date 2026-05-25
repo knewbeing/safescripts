@@ -19,37 +19,37 @@
   "require": [],
   "metadata_raw": "// @name  Undiscord\n// @description  Delete all messages in a Discord channel or DM (Bulk deletion)\n// @version  5.2.6\n// @author  victornpb\n// @homepageURL  https://github.com/victornpb/undiscord\n// @supportURL  https://github.com/victornpb/undiscord/discussions\n// @match  https://*.discord.com/app\n// @match  https://*.discord.com/channels/*\n// @match  https://*.discord.com/login\n// @license  MIT\n// @namespace  https://github.com/victornpb/deleteDiscordMessages\n// @icon  https://victornpb.github.io/undiscord/images/icon128.png\n// @contributionURL  https://www.buymeacoffee.com/vitim\n// @grant  none\n// @attribution  Original project (https://github.com/victornpb/undiscord)\n// @downloadURL  https://update.greasyfork.org/scripts/406540/Undiscord.user.js\n// @updateURL  https://update.greasyfork.org/scripts/406540/Undiscord.meta.js",
   "sha256": "4d42ecae318125986cd6932f249a13c1e9ebe318135cdaac49761d7fb9be4317",
-  "discovered_at": "2026-05-18T06:09:18.340499+00:00",
+  "discovered_at": "2026-05-25T06:19:46.722734+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 559590,
+  "install_count": 560882,
   "good_ratings": 51,
   "bad_ratings": 8,
   "summary": {
     "applicable_sites": [
       "Discord"
     ],
-    "description": "该脚本可以帮助用户批量删除自己在 Discord 频道或私聊中的消息。安装后会在 Discord 网页版界面中添加一个操作窗口，方便一键清理历史消息。适合需要快速整理或清空聊天记录的用户。",
+    "description": "该脚本可以批量删除 Discord 频道或私信中的所有消息，帮助用户快速清理聊天记录。安装后会在 Discord 网页端添加操作界面，方便一键删除大量消息。",
     "permissions": [
       {
-        "explanation": "脚本无需额外权限，仅在网页内运行。",
+        "explanation": "脚本不需要额外权限，所有操作都在网页端完成。",
         "grant": "none"
       }
     ],
     "tags": [
       "消息管理",
       "批量删除",
+      "聊天清理",
       "Discord",
-      "聊天记录",
-      "自动化"
+      "隐私保护"
     ],
     "usage": [
-      "1. 安装脚本后，打开 Discord 网页版。",
-      "2. 在界面中会出现 Undiscord 操作窗口。",
-      "3. 按提示选择要删除消息的频道或私聊。",
-      "4. 点击开始删除按钮，等待脚本自动清理消息。"
+      "安装脚本后，打开 Discord 网页端。",
+      "进入需要清理消息的频道或私信页面。",
+      "点击页面上新增的 Undiscord 操作窗口。",
+      "按照提示选择删除范围并确认，即可批量删除消息。"
     ],
-    "zh_name": "Discord消息批量删除"
+    "zh_name": "批量删除Discord消息"
   }
 }

@@ -10,68 +10,62 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script allows sending location data (coordinates/address) to Discord via webhook, which is a third-party server. This is a form of data exfiltration and may leak user activity or sensitive information.",
-      "location": "sendToDiscord function, GM_xmlhttpRequest to discord.com",
-      "recommendation": "Warn users and make this feature opt-in with clear consent. Do not send any user-identifiable or sensitive data without explicit permission.",
+      "description": "Script sends data to discord.com via GM_xmlhttpRequest, potentially including game coordinates and user actions.",
+      "location": "sendToDiscord feature, GM_xmlhttpRequest usage",
+      "recommendation": "Limit data sent to Discord, avoid transmitting sensitive or user-identifiable information.",
       "severity": "CRITICAL",
       "type": "Data Exfiltration"
     },
     {
-      "description": "The script sends latitude and longitude to nominatim.openstreetmap.org for reverse geocoding. While this is a public API, it still transmits user location data to a third party.",
-      "location": "_getAddress function, GM_xmlhttpRequest to nominatim.openstreetmap.org",
-      "recommendation": "Inform users about this behavior. Consider proxying requests or minimizing data sent.",
+      "description": "Script sends latitude and longitude to nominatim.openstreetmap.org for reverse geocoding.",
+      "location": "_getAddress function, GM_xmlhttpRequest usage",
+      "recommendation": "Ensure only necessary data is sent; avoid leaking user/game context.",
       "severity": "CRITICAL",
       "type": "Data Exfiltration"
     },
     {
-      "description": "The script requests Notification API permission and can send browser notifications. This can be abused for spam or phishing if not properly controlled.",
+      "description": "Script requests Notification API permission and sends notifications.",
       "location": "requestNotificationPermission, sendNotification",
-      "recommendation": "Limit notification usage and ensure it is only used for legitimate user actions.",
+      "recommendation": "Ensure notifications are not abused for spam or phishing.",
       "severity": "MEDIUM",
       "type": "Sensitive API Usage"
     },
     {
-      "description": "The script applies Proxy wrappers to native prototypes (e.g., Array.prototype.push, Element.prototype.setAttribute, Storage.prototype.setItem, String.prototype.startsWith, fetch). This can have unpredictable side effects and may break page functionality or introduce security issues if not carefully handled.",
-      "location": "Multiple locations (platform-specific blocks)",
-      "recommendation": "Minimize prototype pollution and avoid Proxying global prototypes unless absolutely necessary.",
+      "description": "Script applies Proxy wrappers to built-in methods (setAttribute, push, fetch, setItem) to bypass anti-cheat and tracking.",
+      "location": "Proxy usage throughout platform-specific blocks",
+      "recommendation": "Carefully review Proxy logic to avoid breaking site functionality or introducing security issues.",
       "severity": "HIGH",
-      "type": "Code Safety"
+      "type": "Remote Code Execution / Tampering"
     },
     {
-      "description": "The script grants GM_xmlhttpRequest but does not appear to use it for any purpose other than the two documented endpoints. No excessive permissions detected.",
-      "location": "@grant GM_xmlhttpRequest",
-      "recommendation": "No action needed unless new endpoints are added.",
+      "description": "Script modifies iframe sandbox attributes, potentially weakening frame protection.",
+      "location": "Element.prototype.setAttribute Proxy (non-geoguessr platforms)",
+      "recommendation": "Do not remove sandbox attributes unless absolutely necessary.",
       "severity": "LOW",
-      "type": "Permissions"
+      "type": "ClickJacking / iframe Risk"
     },
     {
-      "description": "No code obfuscation, eval, or dynamic code execution detected in the provided code.",
-      "location": "N/A",
-      "recommendation": "N/A",
-      "severity": "LOW",
-      "type": "Obfuscation"
-    },
-    {
-      "description": "No supply chain risk detected (no @require or external scripts loaded).",
-      "location": "N/A",
-      "recommendation": "N/A",
-      "severity": "LOW",
-      "type": "Supply Chain"
+      "description": "Script grants GM_xmlhttpRequest but only uses it for specific external requests; no evidence of excessive permission usage.",
+      "location": "Metadata @grant section",
+      "recommendation": "Review permissions regularly and remove unused grants.",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "Sends coordinates to third-party APIs (Discord, OpenStreetMap Nominatim)"
+      "Latitude/longitude coordinates are collected and sent to external services.",
+      "Notification permission is requested."
     ],
     "detected": true
   },
   "risk_level": "CRITICAL",
   "script_name": "CheatGuessr Universal | GeoGuessr | OpenGuessr | WorldGuessr | FreeGuessr",
-  "security_score": 50,
-  "summary": "This script transmits user location data (coordinates/address) to third-party servers (Discord and OpenStreetMap Nominatim) via GM_xmlhttpRequest. This is a critical privacy and data exfiltration risk. It also uses Proxy to patch native prototypes, which can introduce stability and security issues. Notification API is used, but not in a clearly abusive way. No code obfuscation or supply chain risks detected. Overall, the script poses a CRITICAL risk due to data exfiltration and privacy concerns. User consent and transparency are required. Not recommended for use in sensitive environments.",
+  "security_score": 22,
+  "summary": "This script transmits game coordinates and user actions to third-party servers (discord.com, nominatim.openstreetmap.org), which constitutes critical data exfiltration and privacy risk. It also manipulates browser APIs and site internals to bypass anti-cheat, which may introduce high security risks. Notification API usage is present but not abused. No code obfuscation or DOM XSS detected. Supply chain risk is low as no @require external scripts are used. Overall, the script is not safe for sensitive environments and should not be approved.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-18T06:19:57.233875+00:00",
+  "analyzed_at": "2026-05-25T06:28:30.116374+00:00",
   "slug": "CheatGuessr_Universal_GeoGuessr_OpenGuessr_WorldGuessr_FreeGuessr"
 }

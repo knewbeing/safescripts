@@ -6,7 +6,7 @@
   "raw_url": "https://update.greasyfork.org/scripts/535292/FF%20Scouter%20V2.user.js",
   "filename": "FF_Scouter_V2.user.js",
   "name": "FF Scouter V2",
-  "version": "2.76",
+  "version": "2.77",
   "description": "Shows the expected Fair Fight score against targets and faction war status",
   "match": [
     "https://www.torn.com/*"
@@ -21,62 +21,63 @@
     "GM_addStyle"
   ],
   "require": [],
-  "metadata_raw": "// @name  FF Scouter V2\n// @namespace  Violentmonkey Scripts\n// @match  https://www.torn.com/*\n// @version  2.76\n// @author  rDacted, Weav3r, xentac, Glasnost\n// @description  Shows the expected Fair Fight score against targets and faction war status\n// @grant  GM_xmlhttpRequest\n// @grant  GM_setValue\n// @grant  GM_getValue\n// @grant  GM_listValues\n// @grant  GM_deleteValue\n// @grant  GM_registerMenuCommand\n// @grant  GM_addStyle\n// @connect  ffscouter.com\n// @license  GPL-3.0\n// @downloadURL  https://update.greasyfork.org/scripts/535292/FF%20Scouter%20V2.user.js\n// @updateURL  https://update.greasyfork.org/scripts/535292/FF%20Scouter%20V2.meta.js",
-  "sha256": "d9433cdbc97abd49fdb9505ba66ecb5871d8c7fdab2c5c164f44aa3511b5779d",
-  "discovered_at": "2026-05-18T06:12:16.314802+00:00",
+  "metadata_raw": "// @name  FF Scouter V2\n// @namespace  Violentmonkey Scripts\n// @match  https://www.torn.com/*\n// @version  2.77\n// @author  rDacted, Weav3r, xentac, Glasnost\n// @description  Shows the expected Fair Fight score against targets and faction war status\n// @grant  GM_xmlhttpRequest\n// @grant  GM_setValue\n// @grant  GM_getValue\n// @grant  GM_listValues\n// @grant  GM_deleteValue\n// @grant  GM_registerMenuCommand\n// @grant  GM_addStyle\n// @connect  ffscouter.com\n// @license  GPL-3.0\n// @downloadURL  https://update.greasyfork.org/scripts/535292/FF%20Scouter%20V2.user.js\n// @updateURL  https://update.greasyfork.org/scripts/535292/FF%20Scouter%20V2.meta.js",
+  "sha256": "785e4510a197fc33397b0a91dace999c6555d9a29d01237840ae35e708c52975",
+  "discovered_at": "2026-05-25T06:22:16.064407+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 15220,
+  "install_count": 15768,
   "good_ratings": 3,
   "bad_ratings": 2,
   "summary": {
     "applicable_sites": [
-      "Torn 城市（Torn.com）"
+      "Torn 城市游戏"
     ],
-    "description": "本脚本可在 Torn 游戏网站上显示你与目标玩家的 Fair Fight（公平对战）分数预估，并展示帮派战争状态。让你更方便地评估对手实力和当前帮派战况。",
+    "description": "此脚本在 Torn 游戏网站上显示目标玩家的公平战斗分数和帮派战争状态，帮助玩家更好地评估对手和战局。",
     "permissions": [
       {
-        "explanation": "用于向外部网站（如 ffscouter.com）请求数据，获取对战分数和状态信息。",
+        "explanation": "用于发送网络请求获取外部数据。",
         "grant": "GM_xmlhttpRequest"
       },
       {
-        "explanation": "用于在本地保存脚本设置或缓存数据，提升使用体验。",
+        "explanation": "用于保存脚本设置和缓存信息。",
         "grant": "GM_setValue"
       },
       {
-        "explanation": "用于读取本地保存的数据，如用户设置或缓存内容。",
+        "explanation": "用于读取脚本保存的数据。",
         "grant": "GM_getValue"
       },
       {
-        "explanation": "用于获取所有本地保存的数据键名，方便管理和清理缓存。",
+        "explanation": "用于列出所有已保存的数据键。",
         "grant": "GM_listValues"
       },
       {
-        "explanation": "用于删除本地保存的数据，清理无用缓存。",
+        "explanation": "用于删除脚本保存的数据。",
         "grant": "GM_deleteValue"
       },
       {
-        "explanation": "用于在油猴菜单中添加自定义命令，方便用户手动操作脚本功能。",
+        "explanation": "用于在脚本菜单中添加自定义操作入口。",
         "grant": "GM_registerMenuCommand"
       },
       {
-        "explanation": "用于为页面添加自定义样式，使脚本内容更美观易用。",
+        "explanation": "用于为页面添加自定义样式，优化显示效果。",
         "grant": "GM_addStyle"
       }
     ],
     "tags": [
       "游戏辅助",
-      "Torn",
-      "对战分析",
+      "数据展示",
       "帮派管理",
-      "数据展示"
+      "Torn",
+      "战斗分析",
+      "网页增强"
     ],
     "usage": [
-      "1. 安装脚本后，登录 Torn 游戏网站。",
-      "2. 浏览玩家或帮派页面时，系统会自动显示 Fair Fight 分数和帮派战争状态。",
-      "3. 如需调整设置，可在油猴脚本菜单中找到相关选项。"
+      "安装脚本后，访问 Torn 游戏网站。",
+      "在目标玩家或帮派页面，会自动显示公平战斗分数和战争状态。",
+      "如需调整脚本设置，可通过浏览器插件菜单操作。"
     ],
-    "zh_name": "公平对战分数助手"
+    "zh_name": "公平战斗分数助手"
   }
 }

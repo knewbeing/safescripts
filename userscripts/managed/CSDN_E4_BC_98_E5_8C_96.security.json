@@ -10,25 +10,32 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限，但代码中未见主动的数据外传行为，且 @connect 仅限 csdn 官方域名。",
-      "location": "元数据与主代码",
-      "recommendation": "保持 @connect 仅限目标站点，避免外传用户数据。",
-      "severity": "MEDIUM",
-      "type": "权限申请"
-    },
-    {
-      "description": "脚本通过 @require 加载了多个第三方库，均来自 jsdelivr 官方 CDN，并且指定了明确的版本号或 commit 哈希。",
-      "location": "元数据",
-      "recommendation": "继续保持使用可信 CDN 并锁定版本，防止供应链污染。",
+      "description": "@require 加载了多个第三方库，部分为作者自有仓库（CoverUMD），其余为 npm 包，均通过 jsdelivr CDN 并固定版本/哈希。",
+      "location": "元数据 @require",
+      "recommendation": "定期审查 CoverUMD 仓库代码，确保无供应链污染。npm 包建议只用官方源。",
       "severity": "MEDIUM",
       "type": "供应链风险"
     },
     {
-      "description": "脚本申请了 unsafeWindow 权限，但主代码未见高危操作。",
-      "location": "元数据",
-      "recommendation": "如无必要可移除 unsafeWindow 权限。",
+      "description": "申请了 GM_xmlhttpRequest 权限，但代码未见实际使用（主代码段未调用），仅允许连接 blog.csdn.net 和 mp-action.csdn.net。",
+      "location": "元数据 @grant/@connect",
+      "recommendation": "如无实际用途，建议移除 GM_xmlhttpRequest 权限。",
       "severity": "MEDIUM",
-      "type": "权限申请"
+      "type": "权限滥用"
+    },
+    {
+      "description": "申请了 unsafeWindow 权限，但主代码未见实际使用。",
+      "location": "元数据 @grant",
+      "recommendation": "如无实际用途，建议移除 unsafeWindow 权限。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "主代码段存在部分压缩/混淆工具生成的辅助函数（如 __toESM），但整体可读性良好，无明显混淆行为。",
+      "location": "主代码段",
+      "recommendation": "保持源码可读性，避免混淆。",
+      "severity": "LOW",
+      "type": "代码混淆"
     }
   ],
   "obfuscation_detected": false,
@@ -38,10 +45,10 @@
   },
   "risk_level": "LOW",
   "script_name": "CSDN优化",
-  "security_score": 84,
-  "summary": "该脚本主要用于优化 CSDN 站点体验，屏蔽广告、优化排版等。未检测到数据外传、隐私采集、远程代码执行、混淆、DOM XSS 等高危行为。所有 @require 依赖均为可信 CDN 且锁定版本。权限申请略高于实际需求（如 GM_xmlhttpRequest、unsafeWindow），但未见滥用。整体安全风险较低。",
-  "supply_chain_risk": false,
+  "security_score": 81,
+  "summary": "该脚本主要用于优化 CSDN 页面体验，屏蔽广告、自动展开内容等。未检测到数据外传、隐私采集、远程代码执行、DOM XSS、WebSocket、敏感 API 调用等高风险行为。供应链风险和权限滥用为主要扣分项，建议定期审查依赖库和精简权限。整体安全性较高，适合公开使用。",
+  "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-18T06:05:33.679599+00:00",
+  "analyzed_at": "2026-05-25T06:17:21.684690+00:00",
   "slug": "CSDN_E4_BC_98_E5_8C_96"
 }

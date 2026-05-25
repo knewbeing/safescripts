@@ -36,9 +36,30 @@ title: "百度/搜狗/谷歌搜索去重定向"
 
 ## 安全分析
 
-::: info 等待分析
-安全分析将在下次流水线运行时自动更新。
-:::
+**风险等级**：🟠 MEDIUM　　**安全评分**：67/100　　**分析时间**：2026-05-25
+
+> 脚本主要用于去除搜索结果重定向，未发现隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 调用、供应链风险、ClickJacking/iframe 风险。唯一的 CRITICAL 风险为 GM_xmlhttpRequest 向 baidu.com/sogou.com发起请求，但未携带敏感用户数据，属于功能性请求。整体风险为 MEDIUM，安全性较高。
+
+| 检查项 | 结果 |
+|--------|------|
+| 数据外传 | ❌ 检测到（目标：www.baidu.com, baidu.com, sogou.com） |
+| 隐私采集 | ✅ 未检测到 |
+| 代码混淆 | ✅ 未检测到 |
+| WebSocket/SSE | ✅ 未使用 |
+| DOM XSS 风险 | ✅ 未检测到 |
+| 供应链风险 | ✅ 可信 |
+
+### 发现的问题
+
+**⛔ CRITICAL** — 数据外传  
+> 脚本使用 GM_xmlhttpRequest 向 baidu.com 和 sogou.com 发起 GET 请求，目的是解析重定向链接，未携带用户敏感数据，仅请求搜索结果页面。  
+> 位置：resetURL() 和 GM_xmlhttpRequest 调用  
+> 建议：确认请求仅用于解析重定向，无用户数据或 cookie 外传，且目标为搜索引擎自身。
+
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 GM_xmlhttpRequest 权限，并实际使用，未申请其他高权限。  
+> 位置：@grant 元数据  
+> 建议：权限申请与实际使用相符，无滥用。
 
 ---
 

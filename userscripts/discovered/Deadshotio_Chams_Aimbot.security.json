@@ -7,25 +7,11 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "使用了 @grant unsafeWindow，允许脚本访问页面的全局对象，增加潜在攻击面，但本脚本未滥用。",
-      "location": "元数据 @grant",
-      "recommendation": "仅在确有必要时申请 unsafeWindow 权限。",
+      "description": "申请了 unsafeWindow 权限，但实际代码未使用 unsafeWindow。此权限可导致脚本与页面 JS 相互访问，增加攻击面。",
+      "location": "metadata (@grant unsafeWindow)",
+      "recommendation": "移除 @grant unsafeWindow，除非确实需要与页面脚本交互。",
       "severity": "MEDIUM",
       "type": "权限滥用"
-    },
-    {
-      "description": "脚本通过 document.body.appendChild(menu) 和 document.createElement('style') 动态插入 UI，但未插入任何外部脚本或基于用户输入的内容，XSS 风险较低。",
-      "location": "createUI 函数",
-      "recommendation": "确保所有插入 DOM 的内容均为静态或受控内容。",
-      "severity": "LOW",
-      "type": "DOM 注入"
-    },
-    {
-      "description": "未检测到任何网络请求、数据外传、WebSocket、EventSource、sendBeacon 等外联行为。",
-      "location": "全局",
-      "recommendation": "保持无外传，勿添加任何数据上报逻辑。",
-      "severity": "CRITICAL",
-      "type": "数据外传（无问题，仅说明）"
     }
   ],
   "obfuscation_detected": false,
@@ -35,10 +21,10 @@
   },
   "risk_level": "LOW",
   "script_name": "Deadshot.io Chams & Aimbot",
-  "security_score": 89,
-  "summary": "该脚本主要通过 WebGL Hook 和 MouseEvent 属性代理实现游戏辅助功能。未检测到数据外传、隐私采集、远程代码执行、代码混淆、供应链风险或 WebSocket 使用。唯一中等风险为申请了 unsafeWindow 权限，但未发现滥用。整体安全性较高。",
+  "security_score": 92,
+  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 调用、供应链风险或 iframe 风险。唯一问题是申请了未使用的 unsafeWindow 高权限，建议移除。整体安全风险较低。未发现关键安全隐患。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-18T06:21:19.934474+00:00",
+  "analyzed_at": "2026-05-25T06:29:17.307941+00:00",
   "slug": "Deadshotio_Chams_Aimbot"
 }

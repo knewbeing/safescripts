@@ -64,14 +64,14 @@ title: 🏷️ 小鱼标签 (UTags) - 为链接添加用户标签
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：50/100　　**分析时间**：2026-05-18
+**风险等级**：⛔ CRITICAL　　**安全评分**：50/100　　**分析时间**：2026-05-25
 
-> 该脚本元数据存在严重安全隐患：1) 允许向任意域名发起网络请求（@connect *），2) 申请了高权限网络 API（GM_xmlhttpRequest），3) 申请了大量 GM_* 权限但无代码佐证实际用途。由于未提供脚本主体，无法排查更深层次的安全问题。强烈建议仅在可信环境下使用，并限制网络权限。
+> 该脚本元数据存在严重安全风险：@connect * 允许任意域名数据外传，GM.xmlHttpRequest/GM_xmlhttpRequest 权限可向第三方服务器发送数据，且涉及用户数据存储和同步。未提供完整代码，无法进一步审查实际数据处理和外传行为。建议严格限制网络权限、审查数据处理逻辑，并避免敏感信息外传。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：dav.jianguoyun.com, localhost, *） |
-| 隐私采集 | ✅ 未检测到 |
+| 数据外传 | ❌ 检测到（目标：dav.jianguoyun.com, localhost, any domain (*)） |
+| 隐私采集 | ❌ 检测到（GM.getValue/GM.setValue/GM.deleteValue/GM.addValueChangeListener 可用于存储和同步用户标签、备注等数据） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -79,25 +79,35 @@ title: 🏷️ 小鱼标签 (UTags) - 为链接添加用户标签
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本声明 @connect *，允许向任意域名发起网络请求，存在数据外传高风险。  
-> 位置：元数据 @connect  
-> 建议：严格限制 @connect 域名范围，仅允许必要的可信后端。
+**⛔ CRITICAL** — Data Exfiltration  
+> @connect * 允许脚本向任意域名发起网络请求，存在严重的数据外传风险。  
+> 位置：metadata (@connect *)  
+> 建议：限制 @connect 域名范围，仅允许必要的可信域名。
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本申请 GM.xmlHttpRequest/GM_xmlhttpRequest 权限，结合 @connect *，可向任意第三方服务器发送数据。  
-> 位置：元数据 @grant  
-> 建议：仅申请实际需要的权限，并限制网络请求目标。
+**⛔ CRITICAL** — Data Exfiltration  
+> 脚本申请 GM.xmlHttpRequest 和 GM_xmlhttpRequest 权限，可用于向第三方服务器发送数据。  
+> 位置：metadata (@grant GM.xmlHttpRequest, GM_xmlhttpRequest)  
+> 建议：仅申请必要的网络权限，并审查实际代码用途。
 
-**🔴 HIGH** — 代码不可审查  
-> 未提供脚本主体代码，无法确认是否存在隐私采集、远程代码执行、DOM XSS、混淆等高危行为。  
-> 位置：代码缺失  
-> 建议：提供完整脚本代码以进行全面安全审查。
+**🔴 HIGH** — Privacy Collection  
+> 脚本申请 GM.getValue, GM.setValue, GM.deleteValue, GM.addValueChangeListener 权限，可能涉及用户数据存储和同步。  
+> 位置：metadata (@grant GM.getValue, GM.setValue, GM.deleteValue, GM.addValueChangeListener)  
+> 建议：确保用户数据仅本地存储，不外传敏感信息。
 
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了较多 GM_* 权限（如 GM_addElement、GM.registerMenuCommand 等），但未见实际代码，存在权限滥用可能。  
-> 位置：元数据 @grant  
-> 建议：仅申请实际使用的权限，移除未用权限。
+**🔴 HIGH** — DOM Manipulation  
+> 脚本申请 GM_addElement 权限，允许动态插入元素，若与 innerHTML/outerHTML 配合可能导致 XSS。  
+> 位置：metadata (@grant GM_addElement)  
+> 建议：插入内容需严格过滤，避免插入不可信脚本。
+
+**🟠 MEDIUM** — Permission Abuse  
+> 脚本申请 GM.registerMenuCommand 权限，允许注册菜单命令，若与敏感操作结合可能被滥用。  
+> 位置：metadata (@grant GM.registerMenuCommand)  
+> 建议：菜单命令需限制敏感操作，避免误触发。
+
+**🟡 LOW** — Permission Usage  
+> 脚本申请 GM.info 权限，允许访问脚本元信息，通常风险较低。  
+> 位置：metadata (@grant GM.info)  
+> 建议：仅用于显示脚本信息，无需敏感操作。
 
 ---
 

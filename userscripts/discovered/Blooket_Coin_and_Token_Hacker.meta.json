@@ -17,12 +17,37 @@
   "require": [],
   "metadata_raw": "// @name  Blooket Coin and Token Hacker\n// @namespace  http://tampermonkey.net/\n// @version  1.0\n// @description  Add coins and tokens to your Blooket account\n// @author  You\n// @match  https://dashboard.blooket.com/market\n// @grant  none\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/516991/Blooket%20Coin%20and%20Token%20Hacker.user.js\n// @updateURL  https://update.greasyfork.org/scripts/516991/Blooket%20Coin%20and%20Token%20Hacker.meta.js",
   "sha256": "94f205fc28b9af1fb52cdd6dc490dde783a9078f8f032dc50e222f85b16a6686",
-  "discovered_at": "2026-04-16T06:45:22.430803+00:00",
+  "discovered_at": "2026-05-25T06:23:50.995049+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 10504,
+  "install_count": 11952,
   "good_ratings": 1,
-  "bad_ratings": 0,
-  "summary": {}
+  "bad_ratings": 4,
+  "summary": {
+    "applicable_sites": [
+      "Blooket"
+    ],
+    "description": "该脚本可以让用户在Blooket市场页面上，输入想要的金币和代币数量，并将其显示为已添加到账户。操作简单，主要用于页面展示，实际不会影响真实账户余额。",
+    "permissions": [
+      {
+        "explanation": "脚本无需特殊权限，仅操作页面内容。",
+        "grant": "none"
+      }
+    ],
+    "tags": [
+      "Blooket",
+      "游戏辅助",
+      "虚拟货币",
+      "页面修改",
+      "娱乐",
+      "学生"
+    ],
+    "usage": [
+      "安装脚本后，进入Blooket市场页面。",
+      "页面加载时会弹出窗口，输入想添加的金币和代币数量。",
+      "确认后，页面会显示你输入的金币和代币数。"
+    ],
+    "zh_name": "Blooket金币代币助手"
+  }
 }

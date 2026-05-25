@@ -1,0 +1,44 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "The script creates a custom overlay UI and collects user input (access code) via an input field. However, it does not transmit this data externally.",
+      "location": "createOverlay function",
+      "recommendation": "Ensure that no future code additions transmit sensitive user input externally.",
+      "severity": "LOW",
+      "type": "UI input collection"
+    },
+    {
+      "description": "The script uses innerHTML to insert static HTML into the overlay. The content is not influenced by user input, so XSS risk is minimal.",
+      "location": "createOverlay function",
+      "recommendation": "If user input is ever inserted into innerHTML, sanitize it to prevent XSS.",
+      "severity": "LOW",
+      "type": "DOM manipulation"
+    },
+    {
+      "description": "No permissions are requested (@grant none), minimizing privilege abuse risk.",
+      "location": "metadata block",
+      "recommendation": "Maintain minimal permissions unless strictly necessary.",
+      "severity": "LOW",
+      "type": "Permissions"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "SAFE",
+  "script_name": "Omoggle cheats",
+  "security_score": 94,
+  "summary": "The script does not transmit data externally, does not collect sensitive information, and does not use dangerous APIs or obfuscated code. It creates a UI overlay for access code input, but the input is only used locally. No supply chain or privilege risks detected. Overall, the script is safe with minor UI input collection and DOM manipulation concerns.",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-05-25T06:34:14.436820+00:00",
+  "slug": "Omoggle_cheats"
+}

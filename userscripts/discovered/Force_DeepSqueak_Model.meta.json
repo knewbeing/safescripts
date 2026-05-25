@@ -1,0 +1,67 @@
+{
+  "slug": "Force_DeepSqueak_Model",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/543645-force-deepsqueak-model",
+  "source_repo": "543645",
+  "raw_url": "https://update.greasyfork.org/scripts/543645/Force%20DeepSqueak%20Model.user.js",
+  "filename": "Force_DeepSqueak_Model.user.js",
+  "name": "Force DeepSqueak Model",
+  "version": "1.0",
+  "description": "Force the current chat's model to newer deepsqueak model",
+  "match": [
+    "https://character.ai/*"
+  ],
+  "grant": [
+    "GM_registerMenuCommand",
+    "GM_setValue",
+    "GM_getValue",
+    "GM_xmlhttpRequest"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Force DeepSqueak Model\n// @version  1.0\n// @author  Grok\n// @description  Force the current chat's model to newer deepsqueak model\n// @match  https://character.ai/*\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=character.ai\n// @grant  GM_registerMenuCommand\n// @grant  GM_setValue\n// @grant  GM_getValue\n// @grant  GM_xmlhttpRequest\n// @run-at  document-start\n// @namespace  https://greasyfork.org/users/1446999\n// @downloadURL  https://update.greasyfork.org/scripts/543645/Force%20DeepSqueak%20Model.user.js\n// @updateURL  https://update.greasyfork.org/scripts/543645/Force%20DeepSqueak%20Model.meta.js",
+  "sha256": "41156006353878c1cd192bfdea440fa55f728af4ecc3360850f0cab0ec5bab7c",
+  "discovered_at": "2026-05-25T06:23:38.920357+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 982,
+  "good_ratings": 5,
+  "bad_ratings": 0,
+  "summary": {
+    "applicable_sites": [
+      "Character.AI"
+    ],
+    "description": "本脚本可强制将当前聊天使用的模型切换为最新的 DeepSqueak 模型。它会拦截并记录最近的网络请求，并允许用户重放这些请求，从而实现模型切换。适合希望体验新模型的 Character.AI 用户。",
+    "permissions": [
+      {
+        "explanation": "在菜单中添加自定义命令，方便用户操作脚本功能。",
+        "grant": "GM_registerMenuCommand"
+      },
+      {
+        "explanation": "保存脚本设置或数据，例如请求历史。",
+        "grant": "GM_setValue"
+      },
+      {
+        "explanation": "读取脚本保存的数据，如请求历史。",
+        "grant": "GM_getValue"
+      },
+      {
+        "explanation": "发送自定义网络请求，支持重放和修改请求内容。",
+        "grant": "GM_xmlhttpRequest"
+      }
+    ],
+    "tags": [
+      "AI聊天",
+      "模型切换",
+      "Character.AI",
+      "增强功能",
+      "网络请求拦截"
+    ],
+    "usage": [
+      "安装脚本后，进入 Character.AI 网站。",
+      "在页面右上角或脚本菜单中找到“强制使用 DeepSqueak 模型”命令。",
+      "点击该命令，确认后即可切换当前聊天模型为 DeepSqueak。"
+    ],
+    "zh_name": "强制使用 DeepSqueak 模型"
+  }
+}

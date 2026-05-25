@@ -9,16 +9,16 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本声明了 @grant GM_xmlhttpRequest 权限，但实际代码未发现任何 GM_xmlhttpRequest 的调用。",
-      "location": "元数据头部",
-      "recommendation": "移除未使用的高权限 @grant 以减少权限滥用风险。",
+      "description": "申请了 GM_xmlhttpRequest 权限，但代码未实际使用该 API进行任何网络请求。未检测到数据外传行为。",
+      "location": "元数据 @grant 和代码全局",
+      "recommendation": "若不需要 GM_xmlhttpRequest，建议移除该权限。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "脚本声明了 @grant unsafeWindow 权限，但实际代码未发现对 unsafeWindow 的访问。",
-      "location": "元数据头部",
-      "recommendation": "移除未使用的高权限 @grant 以减少权限滥用风险。",
+      "description": "申请了 unsafeWindow 权限，但代码未实际使用 unsafeWindow。该权限可能被滥用。",
+      "location": "元数据 @grant 和代码全局",
+      "recommendation": "若不需要 unsafeWindow，建议移除该权限。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     }
@@ -30,10 +30,10 @@
   },
   "risk_level": "LOW",
   "script_name": "Gemini NanoBanana Watermark Remover",
-  "security_score": 84,
-  "summary": "该脚本主要用于在 Gemini Google 页面移除图片水印。代码结构清晰，无混淆，无远程代码执行、DOM XSS、隐私数据采集或数据外传行为。仅声明了对 googleusercontent.com 的网络访问权限，但未实际发起任何网络请求。存在未使用的高权限 @grant 声明，建议移除以进一步降低风险。整体安全风险较低。",
+  "security_score": 89,
+  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险等高危行为。仅申请了未实际使用的高权限（GM_xmlhttpRequest、unsafeWindow），存在一定权限滥用风险。总体安全性较高，建议移除未使用的高权限以进一步提升安全性。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-11T06:54:42.791162+00:00",
+  "analyzed_at": "2026-05-25T06:31:09.283027+00:00",
   "slug": "Gemini_NanoBanana_Watermark_Remover"
 }

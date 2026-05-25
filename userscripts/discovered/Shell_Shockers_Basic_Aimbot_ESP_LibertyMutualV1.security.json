@@ -1,0 +1,37 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "申请了 unsafeWindows 权限，但实际代码仅用于访问 unsafeWindow 和原型链操作，没有明显滥用或高风险操作。",
+      "location": "元数据 @grant unsafeWindows",
+      "recommendation": "仅申请必要权限，避免高权限滥用。建议移除未使用的高权限。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "通过 @require 加载 babylonjs 和 crypto-js，均为官方 CDN 且固定版本，供应链风险较低，但仍需关注第三方库安全。",
+      "location": "元数据 @require",
+      "recommendation": "定期检查第三方库安全，确保 CDN 官方可信且版本固定。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "LOW",
+  "script_name": "Shell Shockers Basic Aimbot + ESP: LibertyMutualV1",
+  "security_score": 89,
+  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要风险为申请了高权限（unsafeWindows）和第三方库供应链风险，但均为官方 CDN 且版本固定。整体安全性较高，建议关注权限申请和第三方库安全。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-05-25T06:35:31.732853+00:00",
+  "slug": "Shell_Shockers_Basic_Aimbot_ESP_LibertyMutualV1"
+}

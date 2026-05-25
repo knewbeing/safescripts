@@ -1,0 +1,86 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "脚本未检测到任何外部数据传输行为（如 GM_xmlhttpRequest、fetch、WebSocket、sendBeacon 等），也未发现将用户数据发送到第三方服务器。",
+      "location": "全局",
+      "recommendation": "保持现有状态，避免添加任何外部数据传输逻辑。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本未检测到任何隐私采集行为，如读取 cookie、localStorage、sessionStorage、IndexedDB、剪贴板、监听键盘输入等。",
+      "location": "全局",
+      "recommendation": "保持现有状态，避免添加隐私采集逻辑。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等动态执行代码方式，也未通过 innerHTML/outerHTML 插入外部脚本。",
+      "location": "全局",
+      "recommendation": "保持现有状态，避免引入远程代码执行风险。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本未检测到任何代码混淆特征，如 base64 解码执行、字符串数组映射、unicode 混淆或高度压缩单行代码。",
+      "location": "全局",
+      "recommendation": "保持代码可读性，避免混淆。",
+      "severity": "HIGH",
+      "type": "代码混淆"
+    },
+    {
+      "description": "脚本未检测到 DOM XSS 风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未操作 iframe src 为 javascript: 协议。",
+      "location": "全局",
+      "recommendation": "保持现有状态，确保所有插入 DOM 的内容均为可信数据。",
+      "severity": "HIGH",
+      "type": "DOM XSS / 注入"
+    },
+    {
+      "description": "脚本申请的 @grant 权限与实际代码使用相符，无权限滥用现象。",
+      "location": "元数据与全局",
+      "recommendation": "仅申请实际需要的权限。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API）。",
+      "location": "全局",
+      "recommendation": "避免调用敏感 API，除非确有必要且需征得用户同意。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "脚本未通过 @require 加载第三方库，无供应链风险。",
+      "location": "元数据",
+      "recommendation": "如需加载第三方库，建议使用官方 CDN 并固定版本哈希。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    },
+    {
+      "description": "脚本未检测到 ClickJacking 或 iframe 风险，未修改 frame 保护策略，也未创建隐藏 iframe 用于数据提取。",
+      "location": "全局",
+      "recommendation": "保持现有状态，避免 iframe 滥用。",
+      "severity": "LOW",
+      "type": "ClickJacking / iframe 风险"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "SAFE",
+  "script_name": "Twitter/X Media Downloader",
+  "security_score": 100,
+  "summary": "该脚本仅在 Twitter/X 页面上实现媒体下载功能，未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。安全评分为 100，属于安全脚本。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-05-25T06:38:12.508117+00:00",
+  "slug": "TwitterX_Media_Downloader"
+}

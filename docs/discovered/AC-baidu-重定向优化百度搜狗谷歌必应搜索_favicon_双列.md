@@ -30,13 +30,13 @@ title: "AC-baidu-重定向优化百度搜狗谷歌必应搜索_favicon_双列"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：44/100　　**分析时间**：2026-05-18
+**风险等级**：🔴 HIGH　　**安全评分**：47/100　　**分析时间**：2026-05-25
 
-> 该脚本主要功能为优化搜索引擎重定向和界面样式，但存在严重的安全隐患。最关键问题为 @connect * 及 GM_xmlhttpRequest 权限组合，允许任意数据外传，理论上可被滥用为隐私泄露或恶意行为。脚本未检测到明显的隐私采集、代码混淆或 DOM XSS 问题，但存在供应链风险和权限滥用。建议严格限制网络请求目标、精简权限、并确保所有外部依赖来源可信。
+> 该脚本未发现实际敏感数据外传、隐私采集、远程代码执行、DOM XSS 或代码混淆行为，但元数据中存在严重权限滥用（@connect *）、供应链风险（第三方库和样式文件来源不可信），以及部分未使用的高权限申请。建议收紧权限、优化供应链安全。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：*） |
+| 数据外传 | ✅ 未检测到 |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
@@ -45,30 +45,25 @@ title: "AC-baidu-重定向优化百度搜狗谷歌必应搜索_favicon_双列"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本通过 @connect * 允许任意域名的网络请求，存在数据外传的高风险。虽然主功能为重定向优化，但未限制目标域名，理论上可外传任意数据。  
-> 位置：元数据 @connect *  
-> 建议：移除 @connect *，仅保留实际需要访问的域名。
+**⛔ CRITICAL** — Permission Risk  
+> @connect * 允许任意域名的网络请求，存在数据外传风险，虽然代码未见实际敏感数据外传，但此权限极高。  
+> 位置：UserScript metadata (@connect *)  
+> 建议：移除 @connect *，只保留实际需要的域名，避免潜在数据外传。
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本申请了 GM_xmlhttpRequest 权限，结合 @connect *，可向任意域名发送请求，存在数据外传风险。  
-> 位置：元数据 @grant GM_xmlhttpRequest  
-> 建议：限制 @connect 域名范围，代码中应严格校验请求目标。
+**🟠 MEDIUM** — Permission Abuse  
+> 大量 @grant 权限申请（GM_xmlhttpRequest、unsafeWindow等），部分未在代码中实际使用，存在权限滥用风险。  
+> 位置：UserScript metadata (@grant)  
+> 建议：仅申请实际需要的权限，移除未使用的高权限项。
 
-**🟠 MEDIUM** — 供应链风险  
-> 脚本通过 @require 加载了 less.js 和 vue.runtime.global.prod.js，来源为 registry.npmmirror.com，虽然为知名镜像，但未锁定哈希，存在供应链被污染的可能。  
-> 位置：元数据 @require  
-> 建议：建议使用官方 CDN 并锁定具体版本哈希，或自行托管已审核的文件。
+**🟠 MEDIUM** — Supply Chain Risk  
+> @require 加载第三方库（less.js、vue.js）来源为 registry.npmmirror.com，非官方CDN，存在供应链风险。  
+> 位置：UserScript metadata (@require)  
+> 建议：建议使用官方CDN并固定版本哈希，避免供应链污染。
 
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了大量 GM_* 权限（如 GM_getValue、GM_setValue、GM_addValueChangeListener、unsafeWindow 等），部分权限未必全部用到，存在权限滥用嫌疑。  
-> 位置：元数据 @grant  
-> 建议：仅申请实际使用的最小权限集，移除未用权限。
-
-**🟠 MEDIUM** — 供应链风险  
-> 脚本通过 @resource 加载了多个 less/css 文件，部分来源为 ibaidu.tujidu.com 和 gitcode.net，非官方 CDN，存在供应链风险。  
-> 位置：元数据 @resource  
-> 建议：建议托管在可信赖的官方 CDN 或自行托管，确保资源安全。
+**🟠 MEDIUM** — Supply Chain Risk  
+> @resource 加载大量样式文件，部分来源为 ibaidu.tujidu.com 和 gitcode.net，非官方域名，存在供应链风险。  
+> 位置：UserScript metadata (@resource)  
+> 建议：建议使用可信官方源并固定版本，避免样式文件被篡改。
 
 ---
 

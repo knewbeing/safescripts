@@ -2,23 +2,46 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
-      "update.greasyfork.org (for @require)"
+      "Shortlink service domains (varies per site)",
+      "GreasyFork CDN (for @require)",
+      "Potentially other domains via GM_xmlhttpRequest"
     ],
-    "detected": false
+    "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 @require 加载了 https://update.greasyfork.org/scripts/528923/1588272/MonkeyConfig%20Mod.js，存在供应链风险。该 URL 来源为 GreasyFork，但未固定版本哈希，未来可能被篡改。",
-      "location": "@require 元数据",
-      "recommendation": "建议使用官方 CDN 并固定版本哈希，或将依赖代码本地化。",
+      "description": "The script uses GM_xmlhttpRequest, which can send requests to arbitrary domains. While this is necessary for bypassing shortlinks, it can potentially transmit user data depending on implementation.",
+      "location": "Main script logic (not fully visible in provided code, but GM_xmlhttpRequest is granted)",
+      "recommendation": "Ensure only minimal, non-sensitive data is sent to third-party domains. Review full implementation for data sent.",
+      "severity": "CRITICAL",
+      "type": "Data Transmission"
+    },
+    {
+      "description": "The script grants GM_openInTab, which allows opening new tabs. This can be abused for phishing or unwanted navigation if not properly controlled.",
+      "location": "Metadata block (@grant GM_openInTab)",
+      "recommendation": "Restrict usage to only trusted URLs and avoid opening tabs automatically without user consent.",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "The script grants GM_setClipboard, which can overwrite clipboard contents. This can be abused for clipboard hijacking.",
+      "location": "Metadata block (@grant GM_setClipboard)",
+      "recommendation": "Ensure clipboard operations are only performed with explicit user action.",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "The script uses @require to load MonkeyConfig Mod.js from GreasyFork CDN. While GreasyFork is generally trusted, the URL is not version-hashed and could be updated without notice.",
+      "location": "Metadata block (@require https://update.greasyfork.org/scripts/528923/1588272/MonkeyConfig%20Mod.js)",
+      "recommendation": "Use a version-hashed or integrity-checked URL to prevent supply chain attacks.",
       "severity": "MEDIUM",
       "type": "Supply Chain Risk"
     },
     {
-      "description": "脚本申请了 GM_openInTab、GM_setClipboard、GM_xmlhttpRequest 等高权限，但在提供的代码片段中未见实际使用，存在权限滥用的可能。",
-      "location": "@grant 元数据",
-      "recommendation": "仅申请实际需要的权限，移除未使用的高权限。",
+      "description": "The script grants GM_xmlhttpRequest, which is a high privilege and should be justified. If used for bypassing shortlinks, it is expected, but must be reviewed for abuse.",
+      "location": "Metadata block (@grant GM_xmlhttpRequest)",
+      "recommendation": "Limit GM_xmlhttpRequest usage to only necessary domains and avoid sending sensitive data.",
       "severity": "MEDIUM",
       "type": "Permission Abuse"
     }
@@ -28,12 +51,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "MEDIUM",
+  "risk_level": "HIGH",
   "script_name": "Bypass All Shortlinks",
-  "security_score": 84,
-  "summary": "该脚本未发现明显的数据外传、隐私采集、远程代码执行、DOM XSS 或代码混淆行为。主要风险为供应链依赖未锁定版本和权限申请过多。建议锁定依赖版本并精简权限。",
+  "security_score": 52,
+  "summary": "The script is designed to bypass shortlink services and grants several high privileges, including GM_xmlhttpRequest, GM_openInTab, and GM_setClipboard. While these are necessary for its functionality, they pose risks if abused. The use of @require from GreasyFork CDN is generally safe, but not version-hashed. No evidence of privacy collection, code obfuscation, or DOM XSS was found in the provided code. The main risk is data transmission to third-party domains and potential permission abuse.",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-18T06:18:10.805241+00:00",
+  "analyzed_at": "2026-05-25T06:27:56.586777+00:00",
   "slug": "Bypass_All_Shortlinks"
 }

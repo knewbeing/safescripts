@@ -4,52 +4,68 @@
     "destinations": [
       "dav.jianguoyun.com",
       "localhost",
-      "*"
+      "any domain (*)"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本声明 @connect *，允许向任意域名发起网络请求，存在数据外传高风险。",
-      "location": "元数据 @connect",
-      "recommendation": "严格限制 @connect 域名范围，仅允许必要的可信后端。",
+      "description": "@connect * 允许脚本向任意域名发起网络请求，存在严重的数据外传风险。",
+      "location": "metadata (@connect *)",
+      "recommendation": "限制 @connect 域名范围，仅允许必要的可信域名。",
       "severity": "CRITICAL",
-      "type": "数据外传"
+      "type": "Data Exfiltration"
     },
     {
-      "description": "脚本申请 GM.xmlHttpRequest/GM_xmlhttpRequest 权限，结合 @connect *，可向任意第三方服务器发送数据。",
-      "location": "元数据 @grant",
-      "recommendation": "仅申请实际需要的权限，并限制网络请求目标。",
+      "description": "脚本申请 GM.xmlHttpRequest 和 GM_xmlhttpRequest 权限，可用于向第三方服务器发送数据。",
+      "location": "metadata (@grant GM.xmlHttpRequest, GM_xmlhttpRequest)",
+      "recommendation": "仅申请必要的网络权限，并审查实际代码用途。",
       "severity": "CRITICAL",
-      "type": "数据外传"
+      "type": "Data Exfiltration"
     },
     {
-      "description": "脚本申请了较多 GM_* 权限（如 GM_addElement、GM.registerMenuCommand 等），但未见实际代码，存在权限滥用可能。",
-      "location": "元数据 @grant",
-      "recommendation": "仅申请实际使用的权限，移除未用权限。",
-      "severity": "MEDIUM",
-      "type": "权限滥用"
-    },
-    {
-      "description": "未提供脚本主体代码，无法确认是否存在隐私采集、远程代码执行、DOM XSS、混淆等高危行为。",
-      "location": "代码缺失",
-      "recommendation": "提供完整脚本代码以进行全面安全审查。",
+      "description": "脚本申请 GM.getValue, GM.setValue, GM.deleteValue, GM.addValueChangeListener 权限，可能涉及用户数据存储和同步。",
+      "location": "metadata (@grant GM.getValue, GM.setValue, GM.deleteValue, GM.addValueChangeListener)",
+      "recommendation": "确保用户数据仅本地存储，不外传敏感信息。",
       "severity": "HIGH",
-      "type": "代码不可审查"
+      "type": "Privacy Collection"
+    },
+    {
+      "description": "脚本申请 GM_addElement 权限，允许动态插入元素，若与 innerHTML/outerHTML 配合可能导致 XSS。",
+      "location": "metadata (@grant GM_addElement)",
+      "recommendation": "插入内容需严格过滤，避免插入不可信脚本。",
+      "severity": "HIGH",
+      "type": "DOM Manipulation"
+    },
+    {
+      "description": "脚本申请 GM.registerMenuCommand 权限，允许注册菜单命令，若与敏感操作结合可能被滥用。",
+      "location": "metadata (@grant GM.registerMenuCommand)",
+      "recommendation": "菜单命令需限制敏感操作，避免误触发。",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "脚本申请 GM.info 权限，允许访问脚本元信息，通常风险较低。",
+      "location": "metadata (@grant GM.info)",
+      "recommendation": "仅用于显示脚本信息，无需敏感操作。",
+      "severity": "LOW",
+      "type": "Permission Usage"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [],
-    "detected": false
+    "details": [
+      "GM.getValue/GM.setValue/GM.deleteValue/GM.addValueChangeListener 可用于存储和同步用户标签、备注等数据"
+    ],
+    "detected": true
   },
   "risk_level": "CRITICAL",
   "script_name": "🏷️ UTags - Add usertags to links",
   "security_score": 50,
-  "summary": "该脚本元数据存在严重安全隐患：1) 允许向任意域名发起网络请求（@connect *），2) 申请了高权限网络 API（GM_xmlhttpRequest），3) 申请了大量 GM_* 权限但无代码佐证实际用途。由于未提供脚本主体，无法排查更深层次的安全问题。强烈建议仅在可信环境下使用，并限制网络权限。",
+  "summary": "该脚本元数据存在严重安全风险：@connect * 允许任意域名数据外传，GM.xmlHttpRequest/GM_xmlhttpRequest 权限可向第三方服务器发送数据，且涉及用户数据存储和同步。未提供完整代码，无法进一步审查实际数据处理和外传行为。建议严格限制网络权限、审查数据处理逻辑，并避免敏感信息外传。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-18T06:06:47.351202+00:00",
+  "analyzed_at": "2026-05-25T06:18:18.314468+00:00",
   "slug": "Refined_20GitHub_20_SSE_"
 }

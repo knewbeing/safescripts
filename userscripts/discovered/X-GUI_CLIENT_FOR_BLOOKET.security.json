@@ -1,0 +1,88 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "The script creates hidden iframes, which can be used for data extraction or clickjacking, though in this case it appears unused for malicious purposes.",
+      "location": "(() => { let iframe = document.querySelector(\"iframe\"); ... })",
+      "recommendation": "Remove unnecessary hidden iframe creation unless required for functionality.",
+      "severity": "LOW",
+      "type": "iframe risk"
+    },
+    {
+      "description": "The script reads and writes to localStorage for settings and popup dismissal state. No sensitive data is stored, but localStorage is used.",
+      "location": "localStorage.getItem, localStorage.setItem",
+      "recommendation": "Ensure only non-sensitive, non-personal data is stored in localStorage.",
+      "severity": "MEDIUM",
+      "type": "privacy collection"
+    },
+    {
+      "description": "The script does not use any network requests (fetch, GM_xmlhttpRequest, WebSocket, etc.) to transmit data externally.",
+      "location": "N/A",
+      "recommendation": "No issue detected.",
+      "severity": "LOW",
+      "type": "data transmission"
+    },
+    {
+      "description": "No use of eval, new Function, or dynamic script injection detected.",
+      "location": "N/A",
+      "recommendation": "No issue detected.",
+      "severity": "LOW",
+      "type": "remote code execution"
+    },
+    {
+      "description": "No code obfuscation detected. The script is readable and not minified or obfuscated.",
+      "location": "N/A",
+      "recommendation": "No issue detected.",
+      "severity": "LOW",
+      "type": "code obfuscation"
+    },
+    {
+      "description": "No DOM XSS risk detected. User input is not inserted into innerHTML or document.write.",
+      "location": "box.innerHTML (static content)",
+      "recommendation": "No issue detected.",
+      "severity": "LOW",
+      "type": "DOM XSS"
+    },
+    {
+      "description": "No excessive or unused permissions. @grant is set to none.",
+      "location": "// @grant none",
+      "recommendation": "No issue detected.",
+      "severity": "LOW",
+      "type": "permission abuse"
+    },
+    {
+      "description": "No sensitive browser APIs (geolocation, camera, microphone, clipboard, notifications) are used.",
+      "location": "N/A",
+      "recommendation": "No issue detected.",
+      "severity": "LOW",
+      "type": "sensitive API"
+    },
+    {
+      "description": "No supply chain risk. No @require or external JS libraries loaded except Google Fonts via CSS @import.",
+      "location": "@import url('https://fonts.googleapis.com/css?family=Titan+One');",
+      "recommendation": "No issue detected.",
+      "severity": "LOW",
+      "type": "supply chain"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [
+      "localStorage used for settings and popup dismissal state"
+    ],
+    "detected": true
+  },
+  "risk_level": "LOW",
+  "script_name": "X-GUI CLIENT FOR BLOOKET",
+  "security_score": 89,
+  "summary": "The script does not transmit data externally, does not collect sensitive information, and does not execute remote code. It uses localStorage for settings and popup state, and creates a hidden iframe (not used for malicious purposes). No obfuscation, DOM XSS, or supply chain risks detected. Overall, the script is safe with minor privacy and iframe risks.",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-05-25T06:39:06.136007+00:00",
+  "slug": "X-GUI_CLIENT_FOR_BLOOKET"
+}

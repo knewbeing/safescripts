@@ -10,54 +10,55 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script uses GM_xmlhttpRequest and has @connect permissions for discord.com and nominatim.openstreetmap.org. It includes a feature to send map pins to Discord, which may transmit user-selected location data to a third-party server.",
+      "description": "Script uses GM_xmlhttpRequest to send data to discord.com, likely for sharing map pins or game data. This is a third-party server and may transmit user/game information.",
       "location": "GM_xmlhttpRequest usage, @connect discord.com",
-      "recommendation": "Warn users that sending data to Discord may expose location information. Limit data sent and make user consent explicit.",
+      "recommendation": "Ensure only minimal, non-sensitive data is sent. Warn users about external transmission.",
       "severity": "CRITICAL",
-      "type": "Data exfiltration"
+      "type": "Data Exfiltration"
     },
     {
-      "description": "The script requests Notification API permission and can send notifications to the user.",
-      "location": "state.notificationPermission, Notification.permission",
-      "recommendation": "Ensure notifications are not abused for spam or phishing. Only use with clear user intent.",
+      "description": "Script uses GM_xmlhttpRequest to nominatim.openstreetmap.org for geocoding. While this is a public API, user coordinates or map data may be transmitted.",
+      "location": "GM_xmlhttpRequest usage, @connect nominatim.openstreetmap.org",
+      "recommendation": "Avoid sending sensitive or identifiable user data. Document what is sent.",
+      "severity": "CRITICAL",
+      "type": "Data Exfiltration"
+    },
+    {
+      "description": "Script listens for keyboard events (hotkeys) and may transmit map pin data to Discord. If user input or coordinates are sent, this is a privacy risk.",
+      "location": "Hotkey handlers, sendToDiscord feature",
+      "recommendation": "Limit data sent to Discord, avoid transmitting user input or sensitive information.",
+      "severity": "CRITICAL",
+      "type": "Privacy Collection"
+    },
+    {
+      "description": "Script requests Notification API permission and may send notifications.",
+      "location": "state.notificationPermission, Notification API usage",
+      "recommendation": "Ensure notifications are not abused or spammed.",
       "severity": "MEDIUM",
-      "type": "Sensitive API usage"
+      "type": "Sensitive API Usage"
     },
     {
-      "description": "The script grants GM_xmlhttpRequest but does not appear to use it for arbitrary third-party communication beyond the declared @connect domains. However, the permission is high and could be abused if the code is modified.",
-      "location": "@grant GM_xmlhttpRequest",
-      "recommendation": "Restrict @grant permissions to only those required. Review code for any dynamic or user-influenced network requests.",
-      "severity": "MEDIUM",
-      "type": "Permission overgrant"
-    },
-    {
-      "description": "The script modifies native prototypes (e.g., Array.prototype.push, Element.prototype.setAttribute, Storage.prototype.setItem, String.prototype.startsWith, fetch) via Proxy. This can have unpredictable side effects and may break page or other scripts’ functionality.",
-      "location": "Multiple locations (Array.prototype, Element.prototype, etc.)",
-      "recommendation": "Limit prototype modifications to the minimum required scope. Avoid global monkey-patching unless strictly necessary.",
-      "severity": "HIGH",
-      "type": "Code reliability risk"
-    },
-    {
-      "description": "The script disables or bypasses anti-cheat and ban mechanisms on target platforms by intercepting analytics and ban-related storage.",
-      "location": "Platform-specific blocks (e.g., gtag, Storage.setItem, banned property)",
-      "recommendation": "Inform users of the ethical and ToS implications. Such bypasses may violate platform rules.",
-      "severity": "HIGH",
-      "type": "Anti-cheat bypass"
+      "description": "Script grants GM_xmlhttpRequest but does not appear to use GM_download or GM_openInTab. Permissions are appropriate.",
+      "location": "@grant section",
+      "recommendation": "Do not request unnecessary permissions.",
+      "severity": "LOW",
+      "type": "Permission Usage"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "Sends user-selected map pin/location to Discord via network request"
+      "Keyboard input (hotkeys) is monitored.",
+      "Map pin/location data may be sent externally."
     ],
     "detected": true
   },
-  "risk_level": "HIGH",
+  "risk_level": "CRITICAL",
   "script_name": "CheatGuessr Universal | GeoGuessr | OpenGuessr | WorldGuessr | FreeGuessr | GeoDuels",
-  "security_score": 34,
-  "summary": "This script transmits user-selected location data to Discord (a third-party server) and interacts with OpenStreetMap's API. It modifies native prototypes, which can cause reliability issues, and disables anti-cheat mechanisms on several platforms. There is no evidence of code obfuscation or DOM XSS, but the script collects and transmits user data (map pins) externally. The overall risk is HIGH due to data exfiltration, prototype modification, and anti-cheat bypass.",
+  "security_score": 25,
+  "summary": "This script transmits map/location data to third-party servers (discord.com, nominatim.openstreetmap.org) and monitors keyboard input for hotkeys. There is a risk of user/game data exfiltration and privacy leakage. Notification API is used but not abused. No code obfuscation or DOM XSS detected. Supply chain risk is low as no @require external scripts are used. Overall, the script poses CRITICAL risk due to data transmission and privacy concerns.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-18T06:20:19.051795+00:00",
+  "analyzed_at": "2026-05-25T06:28:39.093481+00:00",
   "slug": "CheatGuessr_Universal_GeoGuessr_OpenGuessr_WorldGuessr_FreeGuessr_GeoDuels"
 }

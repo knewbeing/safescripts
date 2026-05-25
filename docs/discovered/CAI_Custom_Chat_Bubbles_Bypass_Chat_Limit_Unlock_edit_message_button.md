@@ -30,9 +30,9 @@ title: "C.AI Custom Chat Bubbles + Bypass Chat Limit (Unlock edit message button
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：76/100　　**分析时间**：2026-05-18
+**风险等级**：🟡 LOW　　**安全评分**：81/100　　**分析时间**：2026-05-25
 
-> 该脚本主要用于美化 character.ai 聊天界面和绕过聊天限制。未检测到用户数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。存在部分中等风险：1）申请了 GM_xmlhttpRequest 权限但未发现敏感数据外传，2）重写 fetch/XHR 可能影响兼容性，3）@require 依赖未锁定哈希存在供应链风险。整体安全性较高，建议关注依赖安全和权限最小化。
+> 该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要风险为权限冗余和依赖库供应链风险，整体安全性较高。建议移除未使用的高权限申请，并持续关注依赖库安全。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -41,24 +41,24 @@ title: "C.AI Custom Chat Bubbles + Bypass Chat Limit (Unlock edit message button
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ⚠️ 存在风险 |
+| 供应链风险 | ✅ 可信 |
 
 ### 发现的问题
 
-**🟠 MEDIUM** — 权限申请  
-> 申请了 GM_xmlhttpRequest 权限，但实际代码未发现对用户数据的外传，仅用于与 translate.googleapis.com 通信，且未检测到敏感数据传输。  
-> 位置：@grant, @connect 元数据及代码全局  
-> 建议：确保 GM_xmlhttpRequest 仅用于必要的第三方 API，避免传输敏感信息。
-
-**🟠 MEDIUM** — 敏感 API 拦截  
-> 脚本重写 fetch 和 XMLHttpRequest 以拦截对 neo.character.ai/feature_limits 的请求，实现“Bypass Chat Limit”功能。此行为可能影响页面正常功能，存在一定兼容性和维护风险。  
-> 位置：window.fetch, XMLHttpRequest.prototype.open  
-> 建议：建议详细测试兼容性，确保不会影响其他正常请求。
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 GM_xmlhttpRequest 权限并声明 @connect translate.googleapis.com，但代码中未发现实际 GM_xmlhttpRequest 调用，也未发现 fetch/XMLHttpRequest/WebSocket 向第三方服务器发送用户数据或页面内容。  
+> 位置：元数据与主代码  
+> 建议：确保 GM_xmlhttpRequest 仅用于可信目的，避免未来代码变更导致数据外传。
 
 **🟠 MEDIUM** — 供应链风险  
-> @require 加载了 turndown 库，来源为 unpkg.com，属于主流 CDN，但未锁定具体文件哈希，存在一定供应链风险。  
-> 位置：@require https://unpkg.com/turndown@7.1.3/lib/turndown.browser.umd.js  
-> 建议：建议使用带有版本哈希的 CDN 链接，或自行托管依赖。
+> 脚本通过 @require 加载 turndown 库，来源为 unpkg.com 官方 CDN，版本号已固定（7.1.3），供应链风险较低。  
+> 位置：元数据  
+> 建议：建议定期检查依赖库安全性，确保 CDN 未被污染。
+
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 GM_setValue 和 GM_getValue 权限，但主代码未发现实际使用，存在权限冗余。  
+> 位置：元数据  
+> 建议：建议移除未使用的高权限申请，减少攻击面。
 
 ---
 

@@ -1,0 +1,54 @@
+{
+  "slug": "Omoggle_cheats",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/577511-omoggle-cheats",
+  "source_repo": "577511",
+  "raw_url": "https://update.greasyfork.org/scripts/577511/Omoggle%20cheats.user.js",
+  "filename": "Omoggle_cheats.user.js",
+  "name": "Omoggle cheats",
+  "version": "1.0",
+  "description": "Omoggle hacks! Set custom score + Autofarm + Custom WinRate + Live Spoof + AFK Cam + many more! Join https://discord.gg/zsmdMQjgfx for more details",
+  "match": [
+    "*://*/*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Omoggle cheats\n// @namespace  https://example.com\n// @version  1.0\n// @description  Omoggle hacks! Set custom score + Autofarm + Custom WinRate + Live Spoof + AFK Cam + many more! Join https://discord.gg/zsmdMQjgfx for more details\n// @match  *://*/*\n// @grant  none\n// @run-at  document-idle\n// @downloadURL  https://update.greasyfork.org/scripts/577511/Omoggle%20cheats.user.js\n// @updateURL  https://update.greasyfork.org/scripts/577511/Omoggle%20cheats.meta.js",
+  "sha256": "2046ca763614030d26f4a107fedfaf85c695d2c3c32522800f59a5629d35e2bd",
+  "discovered_at": "2026-05-25T06:22:34.894359+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 533,
+  "good_ratings": 2,
+  "bad_ratings": 0,
+  "summary": {
+    "applicable_sites": [
+      "Omoggle 网站"
+    ],
+    "description": "本脚本为 Omoggle 网站提供作弊功能，包括自定义分数、自动刷分、自定义胜率、实时伪装、挂机摄像头等。安装后会弹出一个界面，用户需输入访问码才能使用这些功能。适合希望在 Omoggle 上获得更多控制和便利的用户。",
+    "permissions": [
+      {
+        "explanation": "脚本不需要额外权限，仅操作网页内容。",
+        "grant": "none"
+      }
+    ],
+    "tags": [
+      "作弊",
+      "自动化",
+      "Omoggle",
+      "刷分",
+      "胜率调整",
+      "工具"
+    ],
+    "usage": [
+      "安装脚本后，访问 Omoggle 网站。",
+      "页面会弹出一个输入访问码的界面。",
+      "输入有效访问码后，点击“LOAD”按钮。",
+      "解锁并使用脚本提供的各种作弊功能。"
+    ],
+    "zh_name": "Omoggle作弊工具"
+  }
+}

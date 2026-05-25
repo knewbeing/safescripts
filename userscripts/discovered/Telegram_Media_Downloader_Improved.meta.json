@@ -17,31 +17,31 @@
   "require": [],
   "metadata_raw": "// @name  Telegram Media Downloader (Improved)\n// @name:zh-CN  Telegram图片视频下载器 (Improved)\n// @version  1.4\n// @namespace  Original: https://github.com/Neet-Nestor/Telegram-Media-Downloader\n// @description  Download images, GIFs, videos, and voice messages on the Telegram webapp from private channels that disable downloading and restrict saving content\n// @description:zh-cn  从禁止下载的Telegram频道中下载图片、视频及语音消息\n// @author  Original: Nestor Qin, Update: Finomosec\n// @license  GNU GPLv3\n// @website  https://github.com/Neet-Nestor/Telegram-Media-Downloader\n// @match  https://web.telegram.org/*\n// @match  https://webk.telegram.org/*\n// @match  https://webz.telegram.org/*\n// @icon  https://img.icons8.com/color/452/telegram-app--v5.png\n// @downloadURL  https://update.greasyfork.org/scripts/525471/Telegram%20Media%20Downloader%20%28Improved%29.user.js\n// @updateURL  https://update.greasyfork.org/scripts/525471/Telegram%20Media%20Downloader%20%28Improved%29.meta.js",
   "sha256": "0233cf65ac636a21e296255d2eb030391015145884ebb7afa01c15d9bff32a20",
-  "discovered_at": "2026-05-18T06:11:34.226634+00:00",
+  "discovered_at": "2026-05-25T06:21:46.537799+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 27908,
+  "install_count": 28399,
   "good_ratings": 7,
   "bad_ratings": 4,
   "summary": {
     "applicable_sites": [
       "Telegram网页版"
     ],
-    "description": "这个脚本可以让你在Telegram网页版中下载原本被禁止下载的图片、视频、GIF和语音消息，尤其适用于那些不允许保存内容的私密频道。安装后，你可以直接在网页上下载所需的媒体文件。",
+    "description": "该脚本允许用户在Telegram网页版中下载图片、视频、GIF和语音消息，即使频道禁止下载和保存内容。适用于私密频道和限制下载的场景。",
     "permissions": [],
     "tags": [
-      "Telegram",
       "下载工具",
-      "图片视频下载",
+      "Telegram",
+      "图片视频",
       "语音消息",
-      "私密频道",
-      "网页增强"
+      "内容保存",
+      "私密频道"
     ],
     "usage": [
-      "1. 安装脚本后，打开Telegram网页版（web.telegram.org等）。",
-      "2. 进入你想下载媒体的频道或聊天页面。",
-      "3. 在消息旁会出现下载按钮，点击即可保存图片、视频或语音消息。"
+      "安装脚本后，打开Telegram网页版。",
+      "进入你想下载内容的频道或聊天。",
+      "在消息旁会出现下载按钮，点击即可保存图片、视频或语音。"
     ],
     "zh_name": "Telegram图片视频下载器 (Improved)"
   }

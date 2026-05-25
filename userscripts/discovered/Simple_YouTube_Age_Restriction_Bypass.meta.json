@@ -20,24 +20,24 @@
   "require": [],
   "metadata_raw": "// @name  Simple YouTube Age Restriction Bypass\n// @description  Watch age restricted videos on YouTube without login and without age verification 😎\n// @description:de  Schaue YouTube Videos mit Altersbeschränkungen ohne Anmeldung und ohne dein Alter zu bestätigen 😎\n// @description:fr  Regardez des vidéos YouTube avec des restrictions d'âge sans vous inscrire et sans confirmer votre âge 😎\n// @description:it  Guarda i video con restrizioni di età su YouTube senza login e senza verifica dell'età 😎\n// @icon  https://github.com/zerodytrash/Simple-YouTube-Age-Restriction-Bypass/raw/v2.5.4/src/extension/icon/icon_64.png\n// @version  2.5.9\n// @author  Zerody (https://github.com/zerodytrash)\n// @namespace  https://github.com/zerodytrash/Simple-YouTube-Age-Restriction-Bypass/\n// @supportURL  https://github.com/zerodytrash/Simple-YouTube-Age-Restriction-Bypass/issues\n// @license  MIT\n// @match  https://www.youtube.com/*\n// @match  https://www.youtube-nocookie.com/*\n// @match  https://m.youtube.com/*\n// @match  https://music.youtube.com/*\n// @grant  none\n// @run-at  document-start\n// @compatible  chrome\n// @compatible  firefox\n// @compatible  opera\n// @compatible  edge\n// @compatible  safari\n// @downloadURL  https://update.greasyfork.org/scripts/519077/Simple%20YouTube%20Age%20Restriction%20Bypass.user.js\n// @updateURL  https://update.greasyfork.org/scripts/519077/Simple%20YouTube%20Age%20Restriction%20Bypass.meta.js",
   "sha256": "38e01449e0f7c346709c84ed9eb5927b114b7eb0a4824f3f432e8844b6d811ae",
-  "discovered_at": "2026-05-11T06:25:20.257709+00:00",
+  "discovered_at": "2026-05-25T06:24:02.974728+00:00",
   "ai_reason": "",
   "target_roles": "",
-  "is_new": true,
-  "install_count": 7841,
+  "is_new": false,
+  "install_count": 8307,
   "good_ratings": 3,
   "bad_ratings": 2,
   "summary": {
     "applicable_sites": [
-      "YouTube官网",
-      "YouTube无痕模式",
+      "YouTube主站",
+      "YouTube无Cookie版",
       "YouTube移动版",
       "YouTube音乐"
     ],
-    "description": "本脚本让你无需登录或验证年龄即可观看YouTube上受年龄限制的视频。安装后，自动绕过年龄验证页面，无需手动操作。适用于主站、无痕、移动和音乐版YouTube。",
+    "description": "本脚本让用户无需登录或进行年龄验证即可观看YouTube上的年龄限制视频。它自动绕过相关限制，让受限视频可以正常播放。",
     "permissions": [
       {
-        "explanation": "脚本不需要额外权限，直接在网页中运行。",
+        "explanation": "脚本不需要特殊权限，仅在网页上运行。",
         "grant": "none"
       }
     ],
@@ -46,12 +46,13 @@
       "视频解锁",
       "年龄限制",
       "免登录",
-      "观看优化"
+      "观看提升",
+      "娱乐"
     ],
     "usage": [
-      "1. 安装脚本后，访问任意YouTube网站。",
-      "2. 遇到年龄限制视频时，页面会自动解锁，无需额外操作。",
-      "3. 直接点击播放即可观看受限内容。"
+      "安装脚本后，访问YouTube任意页面。",
+      "遇到年龄限制视频时，直接点击播放即可自动解锁。",
+      "无需额外操作或登录账号。"
     ],
     "zh_name": "YouTube年龄限制绕过"
   }

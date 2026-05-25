@@ -1,0 +1,60 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "脚本通过 localStorage 存储和读取用户设置与按键绑定，但未外传数据。",
+      "location": "StorageManager.loadBinds/loadSettings/saveBinds/saveSettings",
+      "recommendation": "确保 localStorage 仅用于本地配置，不存储敏感信息。",
+      "severity": "MEDIUM",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本未申请任何 @grant 权限，实际代码也未使用高权限 API。",
+      "location": "元数据 @grant none",
+      "recommendation": "保持最小权限原则，避免申请不必要的高权限。",
+      "severity": "LOW",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本未使用网络请求、WebSocket、EventSource等数据外传方式。",
+      "location": "全局代码审查",
+      "recommendation": "继续保持无数据外传，避免后续版本引入外部通信。",
+      "severity": "LOW",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本未使用 eval/new Function/setTimeout(string) 等远程代码执行方式。",
+      "location": "全局代码审查",
+      "recommendation": "避免引入动态执行字符串代码的功能。",
+      "severity": "LOW",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本未加载任何第三方库，无供应链风险。",
+      "location": "元数据与代码",
+      "recommendation": "如需引入第三方库，建议固定版本并使用官方 CDN。",
+      "severity": "LOW",
+      "type": "供应链风险"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [
+      "localStorage: 存储和读取用户设置与按键绑定"
+    ],
+    "detected": true
+  },
+  "risk_level": "LOW",
+  "script_name": "Click Helper [bloxd io/bloxd/bloxd.io]",
+  "security_score": 89,
+  "summary": "该脚本未检测到数据外传、远程代码执行、代码混淆、DOM XSS、敏感 API 调用或供应链风险。唯一涉及隐私采集的是对 localStorage 的使用，仅用于本地配置。整体安全风险较低，建议持续关注后续版本是否引入网络通信或敏感 API。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-05-25T06:28:55.754621+00:00",
+  "slug": "Click_Helper_bloxd_iobloxdbloxdio"
+}

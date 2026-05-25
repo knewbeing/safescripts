@@ -23,29 +23,45 @@
   "require": [],
   "metadata_raw": "// @name  Nexus Download Collection\n// @namespace  NDC\n// @version  0.9.10\n// @description  Download every mods of a collection in a single click\n// @author  Drigtime\n// @match  https://www.nexusmods.com/*\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=nexusmods.com\n// @compatible  chrome\n// @compatible  edge\n// @compatible  firefox\n// @compatible  safari\n// @compatible  brave\n// @grant  GM.xmlHttpRequest\n// @grant  GM_xmlhttpRequest\n// @grant  GM_setValue\n// @grant  GM_getValue\n// @grant  GM.setValue\n// @grant  GM.getValue\n// @grant  GM_addStyle\n// @connect  nexusmods.com\n// @downloadURL  https://update.greasyfork.org/scripts/483337/Nexus%20Download%20Collection.user.js\n// @updateURL  https://update.greasyfork.org/scripts/483337/Nexus%20Download%20Collection.meta.js",
   "sha256": "6d5580b416fab0e88b0797f637271088f4977af56c207f09f8bef9f716ce6dd0",
-  "discovered_at": "2026-05-18T06:11:59.481070+00:00",
+  "discovered_at": "2026-05-25T06:22:11.892136+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 18904,
+  "install_count": 19214,
   "good_ratings": 82,
   "bad_ratings": 6,
   "summary": {
     "applicable_sites": [
       "Nexus Mods"
     ],
-    "description": "本脚本为 Nexus Mods 网站的合集页面添加“一键下载全部模组”功能。用户可以通过一个按钮，快速批量下载合集中的所有模组，省去逐个下载的繁琐操作。适合需要批量管理和下载模组的用户。",
+    "description": "该脚本为 Nexus Mods 网站的合集页面添加“一键下载”功能，允许用户一次性下载合集中的所有模组。省去了逐个点击下载的繁琐操作，提升下载效率。",
     "permissions": [
       {
-        "explanation": "允许脚本向 Nexus Mods 网站发送网络请求，以获取和下载模组信息。",
-        "grant": "GM.xmlHttpRequest / GM_xmlhttpRequest"
+        "explanation": "允许脚本发送跨域网络请求，用于批量下载模组数据。",
+        "grant": "GM.xmlHttpRequest"
       },
       {
-        "explanation": "用于在本地存储和读取脚本的配置信息或下载进度。",
-        "grant": "GM_setValue / GM_getValue / GM.setValue / GM.getValue"
+        "explanation": "允许脚本发送跨域网络请求，用于批量下载模组数据。",
+        "grant": "GM_xmlhttpRequest"
       },
       {
-        "explanation": "允许脚本动态添加自定义样式，使界面按钮和提示更美观。",
+        "explanation": "允许脚本保存设置或下载进度到本地浏览器。",
+        "grant": "GM_setValue"
+      },
+      {
+        "explanation": "允许脚本读取本地保存的设置或下载进度。",
+        "grant": "GM_getValue"
+      },
+      {
+        "explanation": "允许脚本保存设置或下载进度到本地浏览器。",
+        "grant": "GM.setValue"
+      },
+      {
+        "explanation": "允许脚本读取本地保存的设置或下载进度。",
+        "grant": "GM.getValue"
+      },
+      {
+        "explanation": "允许脚本自定义页面样式，优化界面显示。",
         "grant": "GM_addStyle"
       }
     ],
@@ -54,12 +70,12 @@
       "模组下载",
       "批量操作",
       "游戏工具",
-      "网站增强"
+      "效率提升"
     ],
     "usage": [
-      "1. 安装脚本后，访问 Nexus Mods 网站的合集页面。",
-      "2. 在合集页面会出现“一键下载全部模组”按钮。",
-      "3. 点击按钮即可自动批量下载该合集下的所有模组。"
+      "安装脚本后，访问 Nexus Mods 网站的合集页面。",
+      "在合集页面会出现“一键下载”按钮。",
+      "点击按钮即可自动下载该合集中的所有模组。"
     ],
     "zh_name": "Nexus合集一键下载"
   }

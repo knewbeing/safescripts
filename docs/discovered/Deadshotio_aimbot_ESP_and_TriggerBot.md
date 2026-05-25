@@ -4,15 +4,15 @@ title: "Deadshot.io 辅助脚本"
 
 # Deadshot.io 辅助脚本
 
-`游戏辅助`  `射击游戏`  `自动瞄准`  `透视`  `作弊`  `Deadshot.io`
+`游戏辅助`  `自动瞄准`  `透视`  `射击游戏`  `作弊工具`  `Deadshot.io`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/Deadshotio_aimbot_ESP_and_TriggerBot.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**1.0**　　发现时间：**2026-05-11**　　来源：[GreasyFork](https://greasyfork.org/scripts/574487-deadshot-io-aimbot-esp-and-triggerbot) <Badge type="tip" text="GreasyFork" />　　安装量：**639**　　评分：👍0 / 👎1
+> 版本：**1.0**　　发现时间：**2026-05-25**　　来源：[GreasyFork](https://greasyfork.org/scripts/574487-deadshot-io-aimbot-esp-and-triggerbot) <Badge type="tip" text="GreasyFork" />　　安装量：**1,156**　　评分：👍0 / 👎1
 
 ## 功能介绍
 
-本脚本为 Deadshot.io 游戏提供自动瞄准（Aimbot）、透视（ESP）、自动开枪（TriggerBot）等辅助功能，帮助玩家更容易发现和击败对手。安装后可自动增强游戏体验，无需手动配置。适合希望提升射击效率和游戏表现的用户。
+本脚本为 Deadshot.io 游戏提供自动瞄准（aimbot）、透视（ESP）、自动开枪（TriggerBot）等辅助功能，帮助玩家更轻松地发现敌人并提升射击准确率。安装后，游戏内会自动启用这些增强功能，无需手动设置。
 
 ## 适用网站
 
@@ -20,21 +20,21 @@ title: "Deadshot.io 辅助脚本"
 
 ## 使用方法
 
-1. 1. 安装脚本后，进入 Deadshot.io 网站。
+1. 1. 安装脚本后，进入 Deadshot.io 游戏网站。
 2. 2. 游戏加载后，辅助功能会自动启用。
-3. 3. 享受自动瞄准、透视和自动开枪等增强功能。
+3. 3. 可根据需要在游戏内体验自动瞄准、透视和自动开枪等功能。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `unsafeWindow` | 允许脚本访问和修改页面的全局变量，便于与游戏内部数据交互。 |
+| `unsafeWindow` | 允许脚本访问和修改页面的全局变量，实现游戏功能增强。 |
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-05-18
+**风险等级**：🔴 HIGH　　**安全评分**：77/100　　**分析时间**：2026-05-25
 
-> 该脚本主要通过 hook WebAssembly 实例和内存，分析 deadshot.io 游戏中的实体数据，实现 aimbot、ESP 等功能。未检测到任何数据外传、隐私采集、远程代码执行、混淆或 XSS 风险。唯一的中等风险为申请了 unsafeWindow 权限，建议最小化权限。整体安全性较高，但属于游戏作弊脚本，存在被游戏官方检测和封禁的风险。
+> 该脚本未发现数据外传和隐私采集行为，但存在权限滥用（unsafeWindow）、敏感 API 操作（WASM 拦截）、自动化用户行为，以及游戏作弊风险。未检测到代码混淆、DOM XSS、供应链风险和 WebSocket 使用。整体安全风险较高，不建议普通用户使用。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -47,20 +47,25 @@ title: "Deadshot.io 辅助脚本"
 
 ### 发现的问题
 
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 @grant unsafeWindow 权限，允许脚本访问页面的原始 window 对象，可能被滥用进行高权限操作。  
-> 位置：@grant 元数据  
-> 建议：仅在确有必要时申请 unsafeWindow，建议最小化权限申请。
+**🔴 HIGH** — 敏感 API 调用  
+> 脚本通过覆盖 WebAssembly.instantiate 和 WebAssembly.instantiateStreaming，拦截并操作 WASM 实例，可能用于作弊或绕过安全机制。  
+> 位置：WebAssembly.instantiate 重写  
+> 建议：避免拦截和操作底层 WASM 实例，除非完全了解其安全影响。
 
-**🟡 LOW** — 隐私采集  
-> 脚本通过 hook WebAssembly 实例和内存，分析游戏实体数据，属于高级作弊行为，但未发现数据外传。  
+**🔴 HIGH** — 行为风险  
+> 脚本大量操作 WASM 内存、拦截渲染流程、分析实体数据，属于游戏作弊行为，可能违反 deadshot.io 平台规则。  
 > 位置：核心逻辑  
-> 建议：确认脚本不会将敏感数据发送到第三方服务器。
+> 建议：避免开发和使用作弊脚本，遵守平台规则。
 
-**🟡 LOW** — 代码安全  
-> 脚本未发现任何网络请求、数据外传、远程代码加载、eval 或混淆代码。  
-> 位置：全局  
-> 建议：保持代码开源透明，防止后续版本引入恶意行为。
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 @grant unsafeWindow 权限，允许脚本访问和修改页面的全局对象，可能导致权限滥用和安全边界突破。  
+> 位置：元数据 @grant unsafeWindow  
+> 建议：仅在必要时申请 unsafeWindow，避免滥用高权限。建议移除或限制使用。
+
+**🟠 MEDIUM** — 敏感 API 调用  
+> 脚本通过 window.ipcRenderer.send 模拟鼠标移动事件，可能用于自动化操作（如 aimbot、triggerbot），涉及用户行为自动化。  
+> 位置：window.ipcRenderer.send  
+> 建议：自动化用户行为需谨慎，避免滥用导致账号封禁或违反平台规则。
 
 ---
 

@@ -36,9 +36,9 @@ title: "Chess.com象棋辅助增强版"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：35/100　　**分析时间**：2026-05-18
+**风险等级**：⛔ CRITICAL　　**安全评分**：42/100　　**分析时间**：2026-05-25
 
-> 该脚本存在严重的安全隐患，主要体现在允许任意域名的数据外传（@connect *），以及通过外部 CDN 动态加载 JS/WASM 引擎，存在远程代码执行和供应链污染风险。未发现明显的隐私采集、代码混淆或 DOM XSS 问题，但权限申请存在冗余。强烈建议移除 @connect * 并限制外部依赖来源。
+> 该脚本存在严重安全风险，主要体现在数据外传（@connect * 允许任意域名）、供应链风险（动态加载外部 JS/WASM，部分未固定版本哈希）、权限滥用（申请高权限但未限制用途）。未检测到隐私采集、代码混淆、DOM XSS 或 WebSocket 使用。建议移除 @connect *，仅允许可信域名，固定第三方库版本哈希，并限制高权限申请。当前安全评分为 42，风险等级为 CRITICAL。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -51,30 +51,25 @@ title: "Chess.com象棋辅助增强版"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> @connect * 允许任意域名的网络请求，存在数据外传和隐私泄露的高风险。  
+**⛔ CRITICAL** — Data Exfiltration  
+> @connect * 允许任意域名的网络请求，存在严重数据外传风险。脚本可向任意第三方服务器发送数据。  
 > 位置：metadata (@connect *)  
-> 建议：移除 @connect *，仅允许必要的可信域名。
+> 建议：移除 @connect *，仅允许可信域名。严格限制网络请求目标。
 
-**🔴 HIGH** — 远程代码执行/供应链风险  
-> 脚本通过 GM_xmlhttpRequest、fetch 方式加载外部 JS/WASM 引擎（unpkg.com、cdnjs.cloudflare.com），存在远程代码执行和供应链污染风险。  
-> 位置：LOCAL_ENGINES/jsUrl/wasmUrl  
-> 建议：仅允许固定版本哈希的官方 CDN，避免可变 URL。
+**🟠 MEDIUM** — Supply Chain Risk  
+> 脚本通过 GM_xmlhttpRequest、fetch、XHR 加载外部 JS/WASM 引擎，部分 URL（如 unpkg.com、cdnjs.cloudflare.com）未固定版本哈希，存在供应链风险。  
+> 位置：LOCAL_ENGINES 配置、@resource stockfish.js  
+> 建议：使用官方 CDN 并固定版本哈希，避免加载可变/未知来源的 JS/WASM。
 
-**🟠 MEDIUM** — 权限滥用  
-> @grant 申请了 GM_xmlhttpRequest，但用途不明，可能被滥用进行隐私数据外传。  
+**🟠 MEDIUM** — Permission Abuse  
+> 申请了 GM_xmlhttpRequest 高权限，但未限制用途，结合 @connect * 存在滥用风险。  
 > 位置：metadata (@grant GM_xmlhttpRequest)  
-> 建议：仅在确有必要时申请 GM_xmlhttpRequest，并限制请求目标域名。
+> 建议：仅申请必要权限，移除未使用或高风险权限。
 
-**🟠 MEDIUM** — 权限滥用  
-> @grant 申请了 GM_getValue/GM_setValue，但未见实际用途，存在权限冗余。  
-> 位置：metadata (@grant GM_getValue/GM_setValue)  
-> 建议：移除未使用的高权限申请。
-
-**🟠 MEDIUM** — 供应链风险  
-> @resource 加载了外部 JS（stockfish.js），存在远程代码执行和供应链风险。  
-> 位置：@resource stockfish.js https://unpkg.com/stockfish@18.0.5/bin/stockfish-18-single.js  
-> 建议：仅允许固定版本哈希的官方 CDN，避免可变 URL。
+**🟠 MEDIUM** — Supply Chain Risk  
+> 脚本动态加载外部 JS/WASM 引擎（如 stockfish.js），部分资源通过 unpkg.com/cdnjs，未验证完整性。  
+> 位置：LOCAL_ENGINES 配置、@resource stockfish.js  
+> 建议：使用 Subresource Integrity (SRI) 或固定版本哈希，避免加载被篡改的第三方代码。
 
 ---
 

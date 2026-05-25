@@ -1,17 +1,59 @@
 {
-  "approved": true,
+  "approved": false,
   "data_transmission": {
-    "destinations": [],
-    "detected": false
+    "destinations": [
+      "hub.whtrys.space",
+      "dgithub.xyz",
+      "kkgithub.com",
+      "github.site",
+      "github.store",
+      "bgithub.xyz"
+    ],
+    "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "未提供完整代码，无法检测实际的数据外传、隐私采集、远程代码执行等实现细节。仅根据元数据分析。",
-      "location": "全局",
-      "recommendation": "建议补充完整脚本代码以进行全面安全审查。",
-      "severity": "LOW",
-      "type": "代码缺失"
+      "description": "脚本通过 @match 匹配多个第三方加速域名，可能将用户的下载请求、GitHub 文件、甚至 Cookie 等数据转发到这些非官方服务器，存在数据外传风险。",
+      "location": "元数据 @match",
+      "recommendation": "仅允许官方 CDN 或可信域名，避免将用户数据转发到未知第三方服务器。",
+      "severity": "CRITICAL",
+      "type": "Data Transmission"
+    },
+    {
+      "description": "脚本未提供完整代码，无法确认是否存在隐私采集行为，如读取 cookie、localStorage、表单数据等，但存在潜在风险。",
+      "location": "代码缺失",
+      "recommendation": "补充完整代码以便进一步审查，确保不采集用户敏感信息。",
+      "severity": "CRITICAL",
+      "type": "Privacy Collection"
+    },
+    {
+      "description": "脚本未提供完整代码，无法确认是否存在远程代码执行风险，如 eval、动态 script 加载等。",
+      "location": "代码缺失",
+      "recommendation": "补充完整代码以便进一步审查，避免使用 eval、动态加载未固定版本的第三方库。",
+      "severity": "HIGH",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "脚本未提供完整代码，无法确认是否存在代码混淆行为。",
+      "location": "代码缺失",
+      "recommendation": "补充完整代码以便进一步审查，避免使用混淆技术。",
+      "severity": "HIGH",
+      "type": "Obfuscation"
+    },
+    {
+      "description": "脚本申请了 GM_openInTab、GM_notification、GM_setClipboard 等高权限，但未提供代码说明实际用途，存在权限滥用风险。",
+      "location": "元数据 @grant",
+      "recommendation": "仅申请实际需要的权限，避免滥用高权限。",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "脚本通过 @require 加载第三方库的风险未体现，但通过 @match 访问多个非官方域名，存在供应链风险。",
+      "location": "元数据 @match",
+      "recommendation": "仅使用官方或可信 CDN，避免供应链污染。",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
     }
   ],
   "obfuscation_detected": false,
@@ -19,12 +61,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "LOW",
+  "risk_level": "CRITICAL",
   "script_name": "Github Enhancement - High Speed Download",
-  "security_score": 97,
-  "summary": "仅根据元数据分析，未发现明显的高危安全风险。未检测到数据外传、隐私采集、远程代码执行、代码混淆等问题。脚本申请的权限与功能描述基本匹配，无异常高权限滥用。由于缺少完整代码，无法排查实现层面的安全隐患。",
-  "supply_chain_risk": false,
+  "security_score": 27,
+  "summary": "该脚本通过 @match 匹配多个非官方加速域名，存在严重的数据外传和供应链风险。由于未提供完整代码，无法进一步确认隐私采集、远程代码执行、代码混淆等风险。建议补充完整代码并严格限制数据传输目标，仅允许官方或可信域名。当前安全评分较低，不建议在敏感环境下使用。",
+  "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-18T06:06:09.674352+00:00",
+  "analyzed_at": "2026-05-25T06:17:53.133340+00:00",
   "slug": "Github_20_E5_A2_9E_E5_BC_BA_20-_20_E9_AB_98_E9_80_9F_E4_B8_8B_E8_BD_BD"
 }

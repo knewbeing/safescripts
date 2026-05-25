@@ -8,30 +8,23 @@
       "githubusercontent.com",
       "openuserjs.org"
     ],
-    "detected": true
+    "detected": false
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 GM_xmlhttpRequest 访问 greasyfork.org、sleazyfork.org、github.com、githubusercontent.com、openuserjs.org 等第三方站点以查询可用的 UserScript 信息。",
-      "location": "@connect 元数据、网络请求相关代码（假定）",
-      "recommendation": "确保仅请求公开的脚本信息，不上传用户敏感数据、cookie、页面内容等。",
-      "severity": "CRITICAL",
-      "type": "数据外传"
+      "description": "脚本未包含任何实际代码，仅有元数据。未检测到任何安全风险。",
+      "location": "N/A",
+      "recommendation": "无代码无需安全加固，建议后续补充代码后再进行安全审查。",
+      "severity": "LOW",
+      "type": "No Code"
     },
     {
-      "description": "脚本申请了 GM_openInTab 权限，但实际用途未明，存在被滥用的可能。",
-      "location": "@grant 元数据",
-      "recommendation": "仅在确有必要时申请 GM_openInTab 权限，并限制其用途。",
+      "description": "申请了高权限（GM_openInTab、GM_xmlhttpRequest），但未实际使用。",
+      "location": "元数据 @grant",
+      "recommendation": "建议仅申请实际需要的权限，减少权限滥用风险。",
       "severity": "MEDIUM",
-      "type": "权限滥用"
-    },
-    {
-      "description": "脚本申请了 GM_getValue/GM_setValue/GM_info 等高权限，但未见实际用途说明。",
-      "location": "@grant 元数据",
-      "recommendation": "仅申请实际需要的权限，避免权限冗余。",
-      "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "Permission Overgrant"
     }
   ],
   "obfuscation_detected": false,
@@ -39,12 +32,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "MEDIUM",
+  "risk_level": "SAFE",
   "script_name": "Magic Userscript+ : Show Site All UserJS",
-  "security_score": 67,
-  "summary": "该脚本主要通过 GM_xmlhttpRequest 查询第三方 UserScript 站点以展示可用脚本，存在数据外传风险（但仅限于公开脚本信息，未见敏感数据上传）。未检测到隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。存在部分权限滥用（如 GM_openInTab、GM_getValue/GM_setValue/GM_info 等权限申请冗余）。总体安全风险为中等，建议进一步审查实际网络请求内容，确保无用户敏感数据外传。",
+  "security_score": 89,
+  "summary": "该脚本仅包含元数据，无实际代码，未检测到任何安全风险。存在权限过度申请，建议精简 @grant 权限。整体安全性高。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-18T06:06:23.538154+00:00",
+  "analyzed_at": "2026-05-25T06:17:58.715558+00:00",
   "slug": "Magic_20Userscript_2B_20_3A_20Show_20Site_20All_20UserJS"
 }

@@ -1,0 +1,116 @@
+{
+  "slug": "Pixiv_Plus",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/34153-pixiv-plus",
+  "source_repo": "34153",
+  "raw_url": "https://update.greasyfork.org/scripts/34153/Pixiv%20Plus.user.js",
+  "filename": "Pixiv_Plus.user.js",
+  "name": "Pixiv Plus",
+  "version": "0.9.5",
+  "description": "Focus on immersive experience, 1. Block ads, directly access popular pictures 2. Use user to enter the way to search 3. Search pid , uid and author 4. Display original image and size, picture rename, download original image | gif map | Zip|multiple map zip 5. display artist id, artist background image 6. auto load comment 7. dynamic markup work type 8. remove redirection 9. single page sort 10. control panel select desired function github: https://github.com/Ahaochan/Tampermonkey, welcome to star and fork.",
+  "match": [
+    "http://www.pixiv.net/",
+    "http*://www.pixiv.net*"
+  ],
+  "grant": [
+    "unsafeWindow",
+    "GM.xmlHttpRequest",
+    "GM.setClipboard",
+    "GM.setValue",
+    "GM.getValue",
+    "GM_addStyle",
+    "GM_xmlhttpRequest",
+    "GM_registerMenuCommand",
+    "GM_unregisterMenuCommand",
+    "GM_setClipboard",
+    "GM_setValue",
+    "GM_getValue"
+  ],
+  "require": [
+    "https://update.greasyfork.org/scripts/505351/1435420/jquery%20221.js",
+    "https://update.greasyfork.org/scripts/518632/1489865/jszip-min-js.js",
+    "https://update.greasyfork.org/scripts/498746/1399668/FileSaver.js",
+    "https://greasyfork.org/scripts/2963-gif-js/code/gifjs.js?version=8596",
+    "https://greasyfork.org/scripts/375359-gm4-polyfill-1-0-1/code/gm4-polyfill-101.js?version=652238"
+  ],
+  "metadata_raw": "// @name  Pixiv Plus\n// @name:zh-CN  Pixiv 增强\n// @name:zh-TW  Pixiv 增強\n// @namespace  https://github.com/Ahaochan/Tampermonkey\n// @version  0.9.5\n// @icon  https://www.pixiv.net/favicon.ico\n// @description  Focus on immersive experience, 1. Block ads, directly access popular pictures 2. Use user to enter the way to search 3. Search pid , uid and author 4. Display original image and size, picture rename, download original image | gif map | Zip|multiple map zip 5. display artist id, artist background image 6. auto load comment 7. dynamic markup work type 8. remove redirection 9. single page sort 10. control panel select desired function github: https://github.com/Ahaochan/Tampermonkey, welcome to star and fork.\n// @description:ja  没入型体験に焦点を当てる、1.人気の写真に直接アクセスする広告をブロックする2.検索する方法を入力するためにユーザーを使用する3.検索pid uid と創作家 4.元の画像とサイズを表示する Zip | multiple map zip 5.アーティストID、アーティストの背景画像を表示します。6.自動ロードコメントを追加します。7.動的マークアップ作業タイプを指定します。8.リダイレクトを削除します。9.シングルページソート10.コントロールパネルを選択します。github：https://github.com/Ahaochan/Tampermonkey、スターとフォークへようこそ。\n// @description:zh-CN  专注沉浸式体验，1.屏蔽广告,直接访问热门图片 2.使用users入り的方式搜索 3.搜索pid、uid和作者 4.显示原图及尺寸，图片重命名，下载原图|gif图|动图帧zip|多图zip 5.显示画师id、画师背景图 6.自动加载评论 7.对动态标记作品类型 8.去除重定向 9.单页排序 10.控制面板选择想要的功能 github:https://github.com/Ahaochan/Tampermonkey，欢迎star和fork。\n// @description:zh-TW  專注沉浸式體驗，1.屏蔽廣告,直接訪問熱門圖片2.使用users入り的方式搜索3.搜索pid、uid和作者 4.顯示原圖及尺寸，圖片重命名，下載原圖|gif圖|動圖幀zip|多圖zip 5.顯示畫師id、畫師背景圖6.自動加載評論7.對動態標記作品類型8.去除重定向9.單頁排序10.控制面板選擇想要的功能github:https://github.com/Ahaochan/Tampermonkey，歡迎star和fork。\n// @author  Ahaochan\n// @include  http*://www.pixiv.net*\n// @match  http://www.pixiv.net/\n// @connect  i.pximg.net\n// @connect  i-f.pximg.net\n// @connect  i-cf.pximg.net\n// @license  GPL-3.0\n// @supportURL  https://github.com/Ahaochan/Tampermonkey\n// @grant  unsafeWindow\n// @grant  GM.xmlHttpRequest\n// @grant  GM.setClipboard\n// @grant  GM.setValue\n// @grant  GM.getValue\n// @grant  GM_addStyle\n// @grant  GM_xmlhttpRequest\n// @grant  GM_registerMenuCommand\n// @grant  GM_unregisterMenuCommand\n// @grant  GM_setClipboard\n// @grant  GM_setValue\n// @grant  GM_getValue\n// @require  https://update.greasyfork.org/scripts/505351/1435420/jquery%20221.js\n// @require  https://update.greasyfork.org/scripts/518632/1489865/jszip-min-js.js\n// @require  https://update.greasyfork.org/scripts/498746/1399668/FileSaver.js\n// @require  https://greasyfork.org/scripts/2963-gif-js/code/gifjs.js?version=8596\n// @require  https://greasyfork.org/scripts/375359-gm4-polyfill-1-0-1/code/gm4-polyfill-101.js?version=652238\n// @run-at  document-end\n// @downloadURL  https://update.greasyfork.org/scripts/34153/Pixiv%20Plus.user.js\n// @updateURL  https://update.greasyfork.org/scripts/34153/Pixiv%20Plus.meta.js",
+  "sha256": "5f1f8b55398ee610bd3482cd556ffb308a8a6272a753760ee316429074427cb1",
+  "discovered_at": "2026-05-25T06:24:24.758551+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 398355,
+  "good_ratings": 1297,
+  "bad_ratings": 8,
+  "summary": {
+    "applicable_sites": [
+      "Pixiv"
+    ],
+    "description": "本脚本为 Pixiv 网站提供增强功能，包括屏蔽广告、直接访问热门图片、支持多种搜索方式（如pid、uid、作者），显示原图及尺寸、图片重命名与批量下载（支持原图、GIF、动图帧zip、多图zip），展示画师信息与背景图，自动加载评论，支持作品类型动态标记、去除重定向、单页排序，并提供控制面板自定义功能。",
+    "permissions": [
+      {
+        "explanation": "允许脚本访问和操作页面的全局对象，增强与网站的交互能力。",
+        "grant": "unsafeWindow"
+      },
+      {
+        "explanation": "用于发送网络请求，获取图片等资源。",
+        "grant": "GM.xmlHttpRequest"
+      },
+      {
+        "explanation": "允许脚本将内容复制到剪贴板，方便用户操作。",
+        "grant": "GM.setClipboard"
+      },
+      {
+        "explanation": "用于存储自定义设置或数据，提升脚本个性化体验。",
+        "grant": "GM.setValue"
+      },
+      {
+        "explanation": "用于读取脚本存储的数据，保持用户偏好。",
+        "grant": "GM.getValue"
+      },
+      {
+        "explanation": "允许脚本添加自定义样式，优化页面显示。",
+        "grant": "GM_addStyle"
+      },
+      {
+        "explanation": "用于发送网络请求，获取图片等资源（与GM.xmlHttpRequest类似）。",
+        "grant": "GM_xmlhttpRequest"
+      },
+      {
+        "explanation": "允许脚本在菜单中注册自定义命令，方便用户操作。",
+        "grant": "GM_registerMenuCommand"
+      },
+      {
+        "explanation": "允许脚本移除自定义菜单命令，管理功能入口。",
+        "grant": "GM_unregisterMenuCommand"
+      },
+      {
+        "explanation": "允许脚本将内容复制到剪贴板，方便用户操作（与GM.setClipboard类似）。",
+        "grant": "GM_setClipboard"
+      },
+      {
+        "explanation": "用于存储自定义设置或数据（与GM.setValue类似）。",
+        "grant": "GM_setValue"
+      },
+      {
+        "explanation": "用于读取脚本存储的数据（与GM.getValue类似）。",
+        "grant": "GM_getValue"
+      }
+    ],
+    "tags": [
+      "图片下载",
+      "广告屏蔽",
+      "批量操作",
+      "画师信息",
+      "评论增强",
+      "界面优化"
+    ],
+    "usage": [
+      "安装脚本后，打开 Pixiv 网站。",
+      "页面会自动屏蔽广告并显示增强功能。",
+      "通过控制面板选择需要的功能，如图片下载、批量操作等。",
+      "可直接搜索图片、画师或作品，自动加载评论。"
+    ],
+    "zh_name": "Pixiv 增强"
+  }
+}

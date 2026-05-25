@@ -20,11 +20,11 @@
 // @description:zh-CN    隐蔽式 GeoGuessr 辅助器｜按 Tab 打开设置菜单｜地图标点｜发送 Discord｜在 Google 地图中打开当前位置
 // @description:ja    検出されにくい GeoGuessr 支援ツール｜Tabキーで設定メニューを開く｜マップにピンを配置｜Discord送信｜Googleマップで現在地を開く
 // @namespace    https://greasyfork.org/en/users/1588266-woggieboost
-// @version    10.4
+// @version    10.82
 // @author    woggieboost
 // @license    MIT
 // @include    *://*.geoguessr.com/*
-// @include    *://openguessr.com/*
+// @include    *://*openguessr.com/*
 // @include    *://*.worldguessr.*/*
 // @include    *://*worldguessrgame.*/*
 // @include    *://freeguessr.com/*
@@ -504,17 +504,9 @@
                 document.querySelector("[class*='live-players-count_count']");
         }
         else if (platform == PLATFORM.GEODUEL){
-            if(!state.nicknameEl){
-                state.nicknameEl = document.querySelector('[data-testid="multiplier-badge"] span')||
-                    document.evaluate(
-                    "//p[text()='Round']",
-                    document,
-                    null,
-                    XPathResult.FIRST_ORDERED_NODE_TYPE,
-                    null
-                ).singleNodeValue || null;
-                state.nicknameEl.style.display = 'flex'
-            }
+            state.nicknameEl = document.querySelector('span.inline-flex.max-w-full.items-center.gap-1\\.5 > span');
+            state.nicknameEl.className = '';
+            state.nicknameEl.style.whiteSpace='normal';
         }
         else {
             const elements = document.querySelectorAll('.player-name');
@@ -986,8 +978,13 @@
 
             const fiberNode = container[fiberKey];
             state.streetView =
-                fiberNode.return.return.return.sibling.memoizedProps.panorama ||
-                fiberNode.return.updateQueue.lastEffect.next.next.next.next.next.next.next.next.next.next.next.deps[0];
+                fiberNode.child?.memoizedProps?.panorama||
+                fiberNode.return?.memoizedProps?.panorama||
+                fiberNode.return?.return?.updateQueue?.lastEffect?.deps?.[0]||
+                fiberNode.return?.return?.return?.sibling?.memoizedProps?.panorama ||
+                fiberNode.return?.return?.return?.return?.sibling?.memoizedProps?.panorama||
+                fiberNode.return?.updateQueue?.lastEffect?.next?.next?.next?.next?.next?.next?.next?.next?.next?.next?.next?.deps?.[0]||
+                fiberNode.return?.updateQueue?.lastEffect?.deps?.[0];
         } catch (err) {
             state.streetView = null;
         }

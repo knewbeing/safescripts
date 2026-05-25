@@ -1,0 +1,86 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "脚本未检测到任何网络请求（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource），也未向第三方服务器发送数据。",
+      "location": "全局代码",
+      "recommendation": "保持现有状态，避免添加任何数据外传逻辑。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本未读取 document.cookie、localStorage、sessionStorage、IndexedDB，也未监听键盘输入、表单字段或剪贴板内容。",
+      "location": "全局代码",
+      "recommendation": "保持现有状态，避免添加任何隐私采集逻辑。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string)，也未通过 innerHTML/outerHTML 插入外部脚本或动态加载远程 JS。",
+      "location": "全局代码",
+      "recommendation": "保持现有状态，避免引入远程代码执行风险。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本未检测到任何代码混淆、base64 解码、字符串数组映射或高度压缩的单行代码。",
+      "location": "全局代码",
+      "recommendation": "保持代码可读性，避免混淆。",
+      "severity": "HIGH",
+      "type": "代码混淆"
+    },
+    {
+      "description": "脚本未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，也未通过 document.write() 插入不可信内容。",
+      "location": "全局代码",
+      "recommendation": "保持现有状态，避免 DOM XSS 风险。",
+      "severity": "HIGH",
+      "type": "DOM XSS / 注入"
+    },
+    {
+      "description": "脚本未申请任何 @grant 权限，实际代码也未使用高权限 API。",
+      "location": "元数据",
+      "recommendation": "保持最小权限原则。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。",
+      "location": "全局代码",
+      "recommendation": "避免调用敏感 API。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "脚本未通过 @require 加载第三方库，未检测到供应链风险。",
+      "location": "元数据",
+      "recommendation": "如需加载第三方库，建议固定版本哈希并使用官方 CDN。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    },
+    {
+      "description": "脚本未修改 frame 保护策略，也未创建隐藏 iframe 用于数据提取。",
+      "location": "全局代码",
+      "recommendation": "避免 iframe 风险。",
+      "severity": "LOW",
+      "type": "ClickJacking / iframe 风险"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "SAFE",
+  "script_name": "Twitter/X(网页版)视频/原始图片/gif一键下载.[limbopro]",
+  "security_score": 100,
+  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码结构清晰，权限申请为 none，安全性极高。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-05-25T06:38:22.028475+00:00",
+  "slug": "TwitterX_网页版_视频原始图片gif一键下载_limbopro"
+}

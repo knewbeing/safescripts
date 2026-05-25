@@ -1,0 +1,57 @@
+{
+  "slug": "Youtube_Ads_BYPASSER",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/536712-youtube-ads-bypasser",
+  "source_repo": "536712",
+  "raw_url": "https://update.greasyfork.org/scripts/536712/Youtube%20Ads%20BYPASSER%F0%9F%91%BB.user.js",
+  "filename": "Youtube_Ads_BYPASSER.user.js",
+  "name": "Youtube Ads BYPASSER👻",
+  "version": "7.2.3",
+  "description": "Automatically skip YouTube ads instantly. Undetected by YouTube ad blocker warnings. Created by DarkShadow44.",
+  "match": [
+    "https://www.youtube.com/*",
+    "https://m.youtube.com/*",
+    "https://music.youtube.com/*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Youtube Ads BYPASSER👻\n// @name:ar  تخطي إعلانات YouTube تلقائيًا بواسطة DarkShadow44\n// @name:es  Saltar Automáticamente Anuncios De YouTube por DarkShadow44\n// @name:fr  Ignorer Automatiquement Les Publicités YouTube par DarkShadow44\n// @name:hi  YouTube विज्ञापन स्वचालित रूप से छोड़ें DarkShadow44 द्वारा\n// @name:id  Lewati Otomatis Iklan YouTube oleh DarkShadow44\n// @name:ja  YouTube 広告を自動スキップ by DarkShadow44\n// @name:ko  YouTube 광고 자동 건너뛰기 by DarkShadow44\n// @name:nl  YouTube-Advertenties Automatisch Overslaan door DarkShadow44\n// @name:pt-BR  Pular Automaticamente Anúncios Do YouTube por DarkShadow44\n// @name:ru  Автоматический Пропуск Рекламы На YouTube от DarkShadow44\n// @name:vi  Tự Động Bỏ Qua Quảng Cáo YouTube bởi DarkShadow44\n// @name:zh-CN  自动跳过 YouTube 广告 by DarkShadow44\n// @name:zh-TW  自動跳過 YouTube 廣告 by DarkShadow44\n// @namespace  https://github.com/DarkShadow44/userscripts\n// @version  7.2.3\n// @description  Automatically skip YouTube ads instantly. Undetected by YouTube ad blocker warnings. Created by DarkShadow44.\n// @description:ar  تخطي إعلانات YouTube تلقائيًا على الفور. دون أن يتم اكتشاف ذلك من خلال تحذيرات أداة حظر الإعلانات في YouTube. مُحسَّن بواسطة DarkShadow44.\n// @description:es  Omite automáticamente los anuncios de YouTube al instante. Sin que te detecten las advertencias del bloqueador de anuncios de YouTube. Mejorado por DarkShadow44.\n// @description:fr  Ignorez automatiquement et instantanément les publicités YouTube. Non détecté par les avertissements du bloqueur de publicités YouTube. Amélioré par DarkShadow44.\n// @description:hi  YouTube विज्ञापनों को स्वचालित रूप से तुरंत छोड़ दें। YouTube विज्ञापन अवरोधक चेतावनियों द्वारा पता नहीं लगाया गया। DarkShadow44 द्वारा संवर्धित।\n// @description:id  Lewati iklan YouTube secara otomatis secara instan. Tidak terdeteksi oleh peringatan pemblokir iklan YouTube. Ditingkatkan oleh DarkShadow44.\n// @description:ja  YouTube 広告を即座に自動的にスキップします。YouTube 広告ブロッカーの警告には検出されません。DarkShadow44 によって強化されました。\n// @description:ko  YouTube 광고를 즉시 자동으로 건너뜁니다. YouTube 광고 차단 경고에 감지되지 않습니다. DarkShadow44에 의해 향상되었습니다.\n// @description:nl  Sla YouTube-advertenties direct automatisch over. Ongemerkt door YouTube-adblockerwaarschuwingen. Verbeterd door DarkShadow44.\n// @description:pt-BR  Pule anúncios do YouTube instantaneamente. Não detectado pelos avisos do bloqueador de anúncios do YouTube. Aprimorado por DarkShadow44.\n// @description:ru  Автоматически пропускать рекламу YouTube мгновенно. Не обнаруживается предупреждениями блокировщиков рекламы YouTube. Улучшено DarkShadow44.\n// @description:vi  Tự động bỏ qua quảng cáo YouTube ngay lập tức. Không bị phát hiện bởi cảnh báo trình chặn quảng cáo của YouTube. Được cải tiến bởi DarkShadow44.\n// @description:zh-CN  立即自动跳过 YouTube 广告。不会被 YouTube 广告拦截器警告检测到。由 DarkShadow44 增强。\n// @description:zh-TW  立即自動跳過 YouTube 廣告。 YouTube 廣告攔 chặn器警告未被偵測到。由 DarkShadow44 增強。\n// @author  DarkShadow44\n// @icon  https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBLAC4_sqnWL80QVwS35yIcoMOOOz4Z63TcM9tyE977As_mXuzVqhitmPMZCrEF-CW74I&usqp=CAU\n// @match  https://www.youtube.com/*\n// @match  https://m.youtube.com/*\n// @match  https://music.youtube.com/*\n// @exclude  https://studio.youtube.com/*\n// @grant  none\n// @license  MIT\n// @compatible  firefox\n// @compatible  chrome\n// @compatible  opera\n// @compatible  safari\n// @compatible  edge\n// @homepage  https://github.com/DarkShadow44/userscripts/tree/main/scripts/Auto-Skip-YouTube-Ads-Enhanced\n// @downloadURL  https://update.greasyfork.org/scripts/536712/Youtube%20Ads%20BYPASSER%F0%9F%91%BB.user.js\n// @updateURL  https://update.greasyfork.org/scripts/536712/Youtube%20Ads%20BYPASSER%F0%9F%91%BB.meta.js",
+  "sha256": "3b92ddae280eea5258c86f66f1772724a9bc2b3362f79b337981e82976b8fd3d",
+  "discovered_at": "2026-05-25T06:22:08.448394+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 3739,
+  "good_ratings": 3,
+  "bad_ratings": 1,
+  "summary": {
+    "applicable_sites": [
+      "YouTube官网",
+      "YouTube移动版",
+      "YouTube音乐"
+    ],
+    "description": "本脚本可自动跳过YouTube视频中的广告，无需手动点击跳过按钮。它不会被YouTube的广告拦截警告检测到，使用过程流畅自然。",
+    "permissions": [
+      {
+        "explanation": "脚本不需要额外权限，直接运行在网页上。",
+        "grant": "none"
+      }
+    ],
+    "tags": [
+      "广告屏蔽",
+      "视频优化",
+      "YouTube",
+      "自动化",
+      "无痕跳过",
+      "用户体验"
+    ],
+    "usage": [
+      "安装Tampermonkey插件。",
+      "在Tampermonkey中添加此脚本。",
+      "打开YouTube网站，观看视频时广告会自动跳过，无需任何操作。"
+    ],
+    "zh_name": "自动跳过 YouTube 广告"
+  }
+}

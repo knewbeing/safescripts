@@ -1,0 +1,67 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [
+      "*",
+      "www.google.com",
+      "www.google.com.hk",
+      "www.google.co.jp",
+      "ipv4.google.com",
+      "image.baidu.com",
+      "www.tineye.com",
+      "hoothin.com"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "@connect * 允许脚本向任意域名发起网络请求，存在数据外传风险，且部分功能可能涉及图片批量下载、反向搜索等，可能会上传图片 URL 或页面内容到第三方。",
+      "location": "metadata (@connect *)",
+      "recommendation": "限制 @connect 域名范围，仅允许必要的第三方服务；审查所有 GM_xmlhttpRequest/fetch 调用，确保不上传敏感数据。",
+      "severity": "CRITICAL",
+      "type": "Data Exfiltration"
+    },
+    {
+      "description": "脚本申请了 GM_xmlhttpRequest/GM.xmlHttpRequest 权限，结合 @connect *，存在任意外部通信能力。",
+      "location": "metadata (@grant GM_xmlhttpRequest, GM.xmlHttpRequest)",
+      "recommendation": "移除不必要的全域网络权限，确保仅用于图片下载等安全用途。",
+      "severity": "CRITICAL",
+      "type": "Data Exfiltration"
+    },
+    {
+      "description": "脚本申请了 unsafeWindow 权限，可能导致与页面脚本交互，存在远程代码执行风险。",
+      "location": "metadata (@grant unsafeWindow)",
+      "recommendation": "移除 unsafeWindow 权限，或确保仅用于安全场景。",
+      "severity": "HIGH",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "脚本申请了 GM_openInTab、GM_download、GM_notification 等高权限，但代码片段未见实际使用，存在权限滥用风险。",
+      "location": "metadata (@grant GM_openInTab, GM_download, GM_notification)",
+      "recommendation": "仅申请实际需要的权限，移除未使用的高权限。",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "@require 加载的第三方库未固定版本哈希，存在供应链风险。",
+      "location": "metadata (@require ...)",
+      "recommendation": "使用官方 CDN 并固定版本哈希，避免 update.greasyfork.org 变更导致供应链污染。",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "CRITICAL",
+  "script_name": "Picviewer CE+",
+  "security_score": 34,
+  "summary": "Picviewer CE+ 存在严重安全风险：@connect * 允许任意外部通信，结合 GM_xmlhttpRequest 权限，存在数据外传隐患；unsafeWindow 权限可能导致远程代码执行；部分高权限申请未见实际使用，存在权限滥用；@require 第三方库未固定版本哈希，存在供应链风险。建议严格限制网络权限、移除不必要高权限、固定第三方库版本。",
+  "supply_chain_risk": true,
+  "websocket_usage": false,
+  "analyzed_at": "2026-05-25T06:34:40.226425+00:00",
+  "slug": "Picviewer_CE"
+}

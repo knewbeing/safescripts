@@ -1,0 +1,91 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [
+      "api.torn.com",
+      "weav3r.dev"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "脚本通过 fetch 向 api.torn.com 发起请求，携带用户 API Key，属于用户数据外传行为。虽然目标为官方 API，但涉及敏感数据。",
+      "location": "AIO.getMarket() 方法",
+      "recommendation": "确保 API Key 仅用于官方 Torn API，避免泄露给第三方。建议对 API Key 做本地加密存储。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本元数据 @connect weav3r.dev，可能存在后续 GM_xmlhttpRequest 向 weav3r.dev 发起请求的风险（如 Bazaar 数据、统计等）。",
+      "location": "元数据 @connect weav3r.dev",
+      "recommendation": "检查所有向 weav3r.dev 的请求，确认不携带用户敏感信息或 Cookie。建议明确数据类型和用途。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本存储和读取 API Key，属于隐私采集行为。虽然仅用于 Torn API，但存储敏感信息。",
+      "location": "AIO.getApiKey()、AIO.set('apiKey', ...)",
+      "recommendation": "建议对 API Key 做本地加密存储，并在 UI 中明确告知用户用途。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本申请 GM.xmlHttpRequest 和 GM_xmlhttpRequest 高权限，但实际代码中仅使用 fetch，存在权限滥用风险。",
+      "location": "元数据 @grant GM.xmlHttpRequest, GM_xmlHttpRequest",
+      "recommendation": "移除未使用的高权限申请，减少攻击面。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本通过 fetch 动态请求 Torn API，未发现远程代码执行、eval、innerHTML 注入等高风险操作。",
+      "location": "全局代码审查",
+      "recommendation": "保持代码安全，避免后续引入 eval 或动态脚本加载。",
+      "severity": "LOW",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "未发现代码混淆、base64 解码、字符串映射等混淆特征。",
+      "location": "全局代码审查",
+      "recommendation": "保持代码可读性，便于社区审查。",
+      "severity": "LOW",
+      "type": "代码混淆"
+    },
+    {
+      "description": "未发现 DOM XSS、用户输入直接插入 innerHTML/outerHTML 的风险。",
+      "location": "AIO.showWarning() 等 UI 相关代码",
+      "recommendation": "继续保持安全的 DOM 操作，避免后续引入不可信内容。",
+      "severity": "LOW",
+      "type": "DOM XSS"
+    },
+    {
+      "description": "未发现敏感 API 调用（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等）。",
+      "location": "全局代码审查",
+      "recommendation": "如需调用敏感 API，需征得用户明确同意。",
+      "severity": "LOW",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "未发现 @require 加载第三方库，供应链风险较低。",
+      "location": "元数据 @require 缺失",
+      "recommendation": "如需引入第三方库，建议固定版本哈希并使用官方 CDN。",
+      "severity": "LOW",
+      "type": "供应链风险"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [
+      "存储和读取用户 API Key"
+    ],
+    "detected": true
+  },
+  "risk_level": "CRITICAL",
+  "script_name": "Torn Toolbox",
+  "security_score": 17,
+  "summary": "该脚本存在数据外传和隐私采集的 CRITICAL 风险，主要体现在 API Key 的存储和向官方及第三方服务器发起请求。未发现远程代码执行、代码混淆、DOM XSS 等高风险行为。建议移除未使用的高权限申请，并对 API Key 做本地加密存储。整体风险等级为 CRITICAL，安全评分为 17。请谨慎使用。若后续代码有向 weav3r.dev 发送用户数据行为，风险将进一步提升。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-05-25T06:37:53.928835+00:00",
+  "slug": "Torn_Toolbox"
+}

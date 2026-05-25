@@ -37,20 +37,65 @@ title: 密码显示助手
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：92/100　　**分析时间**：2026-05-18
+**风险等级**：🟡 LOW　　**安全评分**：92/100　　**分析时间**：2026-05-25
 
-> 该脚本仅在本地操作页面密码输入框，将密码内容以明文方式显示，未发现任何数据外传、远程代码执行、代码混淆、XSS 或供应链风险。主要的隐私风险为本地读取和显示密码字段内容，但未发现将数据发送到外部服务器。权限申请合理，无滥用高权限行为。整体安全性较高，但用户需注意本地明文显示密码带来的隐私风险。
+> 脚本仅在本地显示密码输入框内容，无任何数据外传、远程代码执行、混淆、XSS、敏感 API 调用或供应链风险。唯一的隐私采集行为是读取密码字段，但未外传。整体安全风险极低，适合个人使用。
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ✅ 未检测到 |
-| 隐私采集 | ❌ 检测到（Reads password field values from input[type='password'] elements to display them in clear text on user interaction (focus, hover, double-click, or always).） |
+| 隐私采集 | ❌ 检测到（读取 input[type='password'] 的 value，仅用于本地显示） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
 | 供应链风险 | ✅ 可信 |
 
-### 未发现安全问题 ✅
+### 发现的问题
+
+**⛔ CRITICAL** — 隐私采集  
+> 脚本会读取和操作页面上的密码输入框（input[type='password']），但未将内容外传。  
+> 位置：全局事件监听与 input 元素处理  
+> 建议：确保仅在本地显示密码，不要将密码内容发送到外部。
+
+**⛔ CRITICAL** — 数据外传  
+> 未检测到任何网络请求（GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource、sendBeacon 等）。  
+> 位置：全局代码  
+> 建议：保持无数据外传，确保用户隐私安全。
+
+**🔴 HIGH** — 远程代码执行  
+> 未检测到 eval、new Function、setTimeout(string)、setInterval(string)、innerHTML 执行脚本、document.write 插入脚本等远程代码执行风险。  
+> 位置：全局代码  
+> 建议：继续避免动态执行代码。
+
+**🔴 HIGH** — 代码混淆  
+> 未检测到代码混淆（无 base64 解码、字符串数组映射、unicode 混淆、高度压缩单行代码）。  
+> 位置：全局代码  
+> 建议：保持代码可读性，便于安全审查。
+
+**🔴 HIGH** — DOM XSS  
+> 未检测到 DOM XSS 风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML。  
+> 位置：全局代码  
+> 建议：继续避免插入不可信内容。
+
+**🟠 MEDIUM** — 权限滥用  
+> @grant 权限申请与实际代码使用一致，无高权限滥用。  
+> 位置：元数据与代码  
+> 建议：仅申请必要权限。
+
+**🟠 MEDIUM** — 敏感 API 调用  
+> 未检测到敏感 API 调用（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API）。  
+> 位置：全局代码  
+> 建议：继续避免调用敏感 API。
+
+**🟠 MEDIUM** — 供应链风险  
+> 未使用 @require 加载第三方库，无供应链风险。  
+> 位置：元数据  
+> 建议：如需加载第三方库，建议固定版本哈希并使用官方 CDN。
+
+**🟡 LOW** — ClickJacking / iframe 风险  
+> 未检测到修改 frame 保护策略或创建隐藏 iframe。  
+> 位置：全局代码  
+> 建议：继续避免 iframe 风险。
 
 ---
 

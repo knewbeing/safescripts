@@ -1,0 +1,71 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [
+      "dqsljvtekg760.cloudfront.net",
+      "d3d3l6a6rcgkaf.cloudfront.net"
+    ],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "Script requests @require for alphaTab library from jsdelivr CDN. The CDN is reputable, but version is fixed to 1.8.1, reducing supply chain risk.",
+      "location": "@require https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.1/dist/alphaTab.min.js",
+      "recommendation": "Monitor for upstream vulnerabilities in alphaTab. Prefer SRI hash if possible.",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    },
+    {
+      "description": "Script requests @connect permissions for two CloudFront endpoints, but no actual GM_xmlhttpRequest or fetch calls are present in the visible code. No evidence of data exfiltration.",
+      "location": "@connect dqsljvtekg760.cloudfront.net, @connect d3d3l6a6rcgkaf.cloudfront.net",
+      "recommendation": "Remove unused @connect permissions if not required.",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "Script uses localStorage to store logging and YouTube audio-only mode preferences. No sensitive data is stored.",
+      "location": "localStorage.getItem/setItem(LOG_KEY), localStorage.getItem/setItem('songsterr_yt_audio_only')",
+      "recommendation": "No action needed unless sensitive data is stored.",
+      "severity": "LOW",
+      "type": "Privacy Collection"
+    },
+    {
+      "description": "Script grants unsafeWindow, which allows access to the page context. No evidence of malicious use, but this is a high-privilege grant.",
+      "location": "@grant unsafeWindow",
+      "recommendation": "Remove unsafeWindow if not strictly required.",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "Script grants GM_xmlhttpRequest, but no usage is found in the code. Unused high privilege.",
+      "location": "@grant GM_xmlhttpRequest",
+      "recommendation": "Remove GM_xmlhttpRequest if not used.",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "Script grants GM_addStyle, which is used for style injection. This is a standard privilege.",
+      "location": "@grant GM_addStyle",
+      "recommendation": "No action needed.",
+      "severity": "LOW",
+      "type": "Permission Usage"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [
+      "localStorage: logging toggle",
+      "localStorage: YouTube audio-only mode"
+    ],
+    "detected": false
+  },
+  "risk_level": "LOW",
+  "script_name": "🎸 Songsterr Ultimate (Premium Unlocked)",
+  "security_score": 81,
+  "summary": "The script does not transmit user data externally, does not collect sensitive information, and does not use eval or obfuscated code. It requests some high privileges (unsafeWindow, GM_xmlhttpRequest, @connect) that are not fully utilized, which is a minor risk. Supply chain risk is mitigated by fixed version @require. No DOM XSS or injection risks detected. Overall, the script is safe for use with minor permission and supply chain concerns.",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-05-25T06:35:56.490419+00:00",
+  "slug": "Songsterr_Ultimate_Premium_Unlocked"
+}

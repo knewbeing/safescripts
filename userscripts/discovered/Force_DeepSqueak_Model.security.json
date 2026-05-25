@@ -1,0 +1,70 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [
+      "character.ai (same-origin, as per @match)",
+      "Any URL captured by XHR interception (potentially third-party if user interacts with such endpoints)"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "The script intercepts all XMLHttpRequests and allows replaying them using GM_xmlhttpRequest. If the captured requests target third-party endpoints, user data could be transmitted externally.",
+      "location": "XHR interception and replay logic",
+      "recommendation": "Restrict replay to known safe endpoints or warn users about potential data exfiltration.",
+      "severity": "CRITICAL",
+      "type": "Data Exfiltration Risk"
+    },
+    {
+      "description": "The script captures request bodies, headers, and URLs, which may include sensitive information depending on user actions. However, it does not actively read cookies, localStorage, or form fields.",
+      "location": "XHR interception logic",
+      "recommendation": "Ensure only non-sensitive requests are replayed; add user warnings.",
+      "severity": "MEDIUM",
+      "type": "Potential Privacy Collection"
+    },
+    {
+      "description": "GM_xmlhttpRequest is granted and used for replaying requests, which is appropriate but could be abused if the script logic changes.",
+      "location": "@grant and replay logic",
+      "recommendation": "Review permission usage regularly; avoid unnecessary high-privilege grants.",
+      "severity": "MEDIUM",
+      "type": "Permission Usage"
+    },
+    {
+      "description": "No evidence of eval, new Function, or dynamic script injection. No code obfuscation detected.",
+      "location": "Entire script",
+      "recommendation": "Maintain code clarity and avoid dynamic code execution.",
+      "severity": "LOW",
+      "type": "Obfuscation/Remote Code Execution"
+    },
+    {
+      "description": "No DOM XSS or injection risks found. User input is not inserted into the DOM.",
+      "location": "Entire script",
+      "recommendation": "Continue to avoid unsafe DOM manipulation.",
+      "severity": "LOW",
+      "type": "DOM XSS"
+    },
+    {
+      "description": "No supply chain risk: no @require or external library usage.",
+      "location": "Metadata",
+      "recommendation": "If adding dependencies, use official sources and fixed versions.",
+      "severity": "LOW",
+      "type": "Supply Chain"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [
+      "Captures request bodies and headers via XHR interception, which may include sensitive data depending on user actions."
+    ],
+    "detected": true
+  },
+  "risk_level": "HIGH",
+  "script_name": "Force DeepSqueak Model",
+  "security_score": 49,
+  "summary": "The script intercepts and replays XHR requests, which can lead to data exfiltration if requests target third-party endpoints or contain sensitive information. No code obfuscation, DOM XSS, or supply chain risks detected. Permissions are appropriate but should be monitored. User should be warned about replaying potentially sensitive requests.",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-05-25T06:30:55.214997+00:00",
+  "slug": "Force_DeepSqueak_Model"
+}

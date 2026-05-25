@@ -1,0 +1,30 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "@require 加载了 https://greasyfork.org/scripts/456228/code/456228.js?version=1309113，存在供应链风险（第三方代码，未固定哈希，版本号可变）",
+      "location": "UserScript 元数据 @require",
+      "recommendation": "建议仅使用官方可信 CDN，并固定版本哈希或完整文件内容，避免供应链污染",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "LOW",
+  "script_name": "Bypass Pahe Links",
+  "security_score": 92,
+  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用等高风险行为。唯一风险为 @require 加载第三方库，存在一定供应链风险。整体安全性较高，但建议关注第三方依赖的安全性。",
+  "supply_chain_risk": true,
+  "websocket_usage": false,
+  "analyzed_at": "2026-05-25T06:28:01.761842+00:00",
+  "slug": "Bypass_Pahe_Links"
+}

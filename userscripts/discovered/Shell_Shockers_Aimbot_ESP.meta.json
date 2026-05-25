@@ -1,0 +1,56 @@
+{
+  "slug": "Shell_Shockers_Aimbot_ESP",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/578477-shell-shockers-aimbot-esp",
+  "source_repo": "578477",
+  "raw_url": "https://update.greasyfork.org/scripts/578477/Shell%20Shockers%20Aimbot%20%2B%20ESP.user.js",
+  "filename": "Shell_Shockers_Aimbot_ESP.user.js",
+  "name": "Shell Shockers Aimbot + ESP",
+  "version": "2.0",
+  "description": "shellshock.io aimbot. Hold RMB to snap to nearest enemy (with optional lead/prediction). Press V to toggle red wireframe ESP boxes + tracers (see through walls). Press ` (backtick) to show/hide the settings menu.",
+  "match": [
+    "https://shellshock.io/*"
+  ],
+  "grant": [
+    "unsafeWindow"
+  ],
+  "require": [
+    "https://cdn.jsdelivr.net/npm/babylonjs@7.15.0/babylon.min.js"
+  ],
+  "metadata_raw": "// @name  Shell Shockers Aimbot + ESP\n// @namespace  REPLACE_AFTER_GREASYFORK_SIGNUP\n// @version  2.0\n// @author  REPLACE_AFTER_GREASYFORK_SIGNUP\n// @license  GPL-3.0\n// @match  https://shellshock.io/*\n// @grant  unsafeWindow\n// @run-at  document-start\n// @require  https://cdn.jsdelivr.net/npm/babylonjs@7.15.0/babylon.min.js\n// @description  shellshock.io aimbot. Hold RMB to snap to nearest enemy (with optional lead/prediction). Press V to toggle red wireframe ESP boxes + tracers (see through walls). Press ` (backtick) to show/hide the settings menu.\n// @downloadURL  https://update.greasyfork.org/scripts/578477/Shell%20Shockers%20Aimbot%20%2B%20ESP.user.js\n// @updateURL  https://update.greasyfork.org/scripts/578477/Shell%20Shockers%20Aimbot%20%2B%20ESP.meta.js",
+  "sha256": "986fafceb3a78a85c2254630144aa7fd94b67926065174a1dbd96af251f565d3",
+  "discovered_at": "2026-05-25T06:23:30.535351+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 268,
+  "good_ratings": 2,
+  "bad_ratings": 1,
+  "summary": {
+    "applicable_sites": [
+      "Shell Shockers"
+    ],
+    "description": "本脚本为 shellshock.io 游戏提供自动瞄准和透视功能。按住鼠标右键可自动锁定最近的敌人，按 V 键可切换红色透视框和射线（可穿墙显示敌人），按 ` 键可显示或隐藏设置菜单。",
+    "permissions": [
+      {
+        "explanation": "允许脚本访问和修改网页的全局变量，实现高级功能。",
+        "grant": "unsafeWindow"
+      }
+    ],
+    "tags": [
+      "游戏辅助",
+      "自动瞄准",
+      "透视",
+      "射击游戏",
+      "Shell Shockers",
+      "增强体验"
+    ],
+    "usage": [
+      "安装脚本后，进入 shellshock.io 游戏页面。",
+      "按住鼠标右键自动瞄准最近敌人。",
+      "按 V 键切换透视显示敌人位置。",
+      "按 ` 键打开或关闭设置菜单。"
+    ],
+    "zh_name": "蛋壳射击自动瞄准+透视"
+  }
+}

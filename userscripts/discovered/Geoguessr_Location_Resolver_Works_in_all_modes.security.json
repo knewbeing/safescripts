@@ -7,32 +7,32 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本拦截 XMLHttpRequest 并读取 Google Maps API 的响应内容，但未将数据外传。",
-      "location": "XMLHttpRequest.prototype.open 拦截",
-      "recommendation": "确保未来不会添加任何外传逻辑。",
-      "severity": "LOW",
+      "description": "Script overrides XMLHttpRequest.prototype.open to intercept Google Maps API responses, but does not transmit data externally.",
+      "location": "XMLHttpRequest.prototype.open override",
+      "recommendation": "Monitor for future changes; ensure no data is sent to third-party servers.",
+      "severity": "MEDIUM",
       "type": "Network interception"
     },
     {
-      "description": "脚本监听键盘事件，但未将输入内容外传。",
-      "location": "document.addEventListener('keydown', ...)",
-      "recommendation": "仅监听必要的快捷键，避免记录敏感输入。",
+      "description": "Script listens for keydown events to trigger actions, but does not collect or transmit input data.",
+      "location": "document.addEventListener(\"keydown\", onKeyDown)",
+      "recommendation": "Ensure no sensitive input is captured or transmitted.",
       "severity": "LOW",
-      "type": "Keyboard event"
+      "type": "Event listener"
     },
     {
-      "description": "脚本通过 React 内部属性操作页面元素，存在一定维护风险。",
-      "location": "placeMarker, placeMarkerStreaks 函数",
-      "recommendation": "关注 Geoguessr 页面结构变更，避免脚本失效。",
+      "description": "Script manipulates DOM and React internals to place markers, but does not insert untrusted content or expose XSS vectors.",
+      "location": "placeMarker, placeMarkerStreaks functions",
+      "recommendation": "Continue to avoid inserting user-controlled data into innerHTML.",
       "severity": "LOW",
       "type": "DOM manipulation"
     },
     {
-      "description": "@grant 仅申请了 GM_webRequest，实际代码未使用该 API。",
-      "location": "元数据 @grant",
-      "recommendation": "移除未使用的权限声明，最小化权限。",
+      "description": "Script requests GM_webRequest permission, but does not use it in the code.",
+      "location": "@grant GM_webRequest",
+      "recommendation": "Remove unused permission to minimize attack surface.",
       "severity": "MEDIUM",
-      "type": "Permission misuse"
+      "type": "Permission"
     }
   ],
   "obfuscation_detected": false,
@@ -42,10 +42,10 @@
   },
   "risk_level": "LOW",
   "script_name": "Geoguessr Location Resolver (Works in all modes)",
-  "security_score": 89,
-  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。主要通过拦截 Google Maps API 响应获取坐标，并自动在 Geoguessr 页面上标记位置。未发现将用户数据发送到第三方服务器的行为。存在未使用的 GM_webRequest 权限声明，建议移除。整体安全风险较低。",
+  "security_score": 81,
+  "summary": "The script does not transmit data externally, does not collect sensitive user information, and avoids XSS/DOM injection risks. It requests an unused GM_webRequest permission, which should be removed. No obfuscation or supply chain risks detected. Overall, the script is safe with minor improvements recommended.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-11T06:56:29.821746+00:00",
+  "analyzed_at": "2026-05-25T06:31:25.920352+00:00",
   "slug": "Geoguessr_Location_Resolver_Works_in_all_modes"
 }

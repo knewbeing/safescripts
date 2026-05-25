@@ -1,0 +1,22 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "SAFE",
+  "script_name": "Telegram Media Downloader (Improved)",
+  "security_score": 100,
+  "summary": "该脚本仅在 Telegram Web 页面上运行，核心功能为本地下载媒体文件。未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码结构清晰，未申请任何 @grant 权限，也未加载第三方库。整体安全性极高。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-05-25T06:37:29.829398+00:00",
+  "slug": "Telegram_Media_Downloader_Improved"
+}

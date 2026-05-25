@@ -1,0 +1,101 @@
+{
+  "slug": "IG_Helper",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/404535-ig-helper",
+  "source_repo": "404535",
+  "raw_url": "https://update.greasyfork.org/scripts/404535/IG%20Helper.user.js",
+  "filename": "IG_Helper.user.js",
+  "name": "IG Helper",
+  "version": "3.19.2",
+  "description": "Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.",
+  "match": [
+    "https://*.instagram.com/*"
+  ],
+  "grant": [
+    "GM_addStyle",
+    "GM_getResourceText",
+    "GM_getValue",
+    "GM_info",
+    "GM_notification",
+    "GM_openInTab",
+    "GM_registerMenuCommand",
+    "GM_setValue",
+    "GM_unregisterMenuCommand",
+    "GM_xmlhttpRequest"
+  ],
+  "require": [
+    "https://cdn.jsdelivr.net/npm/mediabunny@1.34.5/dist/bundles/mediabunny.min.cjs#sha256-wUFR+x2bDvpqgMAVGy2CvGvULyjTGvGy4UUAm8rae5U=",
+    "https://code.jquery.com/jquery-3.7.1.min.js#sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+  ],
+  "metadata_raw": "// @name  IG Helper\n// @name:ar  أداة IG\n// @name:de  IG-Helfer\n// @name:es  Ayudante de IG\n// @name:fr  Assistant IG\n// @name:id  Asisten IG\n// @name:it  Assistente IG\n// @name:ja  IG助手\n// @name:ko  IG조수\n// @name:pt-BR  Assistente do IG\n// @name:ro  IG Helper\n// @name:ru  Помощник IG\n// @name:th  ตัวช่วย IG\n// @name:tr  IG Yardımcısı\n// @name:vi  Trợ lý IG\n// @name:zh-CN  IG小助手\n// @name:zh-TW  IG小精靈\n// @namespace  https://github.snkms.com/\n// @version  3.19.2\n// @description  Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.\n// @description:ar  نزّل صورًا ومقاطع فيديو من منشورات Instagram بنقرة واحدة، بما في ذلك القصص وReels وصور الملف الشخصي.\n// @description:de  Lade Fotos und Videos aus Instagram-Beiträgen mit einem Klick herunter, einschließlich Stories, Reels und Profilbildern.\n// @description:es  Descarga fotos y videos de publicaciones de Instagram con un clic, incluyendo Stories, Reels y fotos de perfil.\n// @description:fr  Téléchargez en un clic les photos et vidéos des publications Instagram, y compris les Stories, les Reels et les photos de profil.\n// @description:id  Unduh foto dan video dari postingan Instagram dalam satu klik, termasuk Stories, Reels, dan foto profil.\n// @description:it  Scarica foto e video dai post di Instagram con un solo clic, incluse Storie, Reels e foto del profilo.\n// @description:ja  Instagramの投稿の写真や動画をワンクリックでダウンロード。ストーリー、リール、プロフィール写真にも対応。\n// @description:ko  한 번의 클릭으로 Instagram 게시물의 사진과 동영상을 다운로드하고, 스토리, 릴스, 프로필 사진도 지원합니다.\n// @description:pt-BR  Baixe fotos e vídeos de publicações do Instagram com um clique, incluindo Stories, Reels e fotos de perfil.\n// @description:ro  Descarcă cu un singur clic fotografii și videoclipuri din postările Instagram, inclusiv storyuri, reels și fotografii de profil.\n// @description:ru  Скачивайте фото и видео из публикаций Instagram в один клик, включая Stories, Reels и фото профиля.\n// @description:th  ดาวน์โหลดรูปภาพและวิดีโอจากโพสต์ Instagram ได้ในคลิกเดียว รวมถึง Stories, Reels และรูปโปรไฟล์.\n// @description:tr  Instagram gönderilerindeki fotoğraf ve videoları tek tıkla indirin; Hikayeler, Reels ve profil fotoğrafları da dahildir.\n// @description:vi  Tải xuống ảnh và video từ bài viết trên Instagram chỉ với một cú nhấp, bao gồm Stories, Reels và ảnh đại diện.\n// @description:zh-CN  一键下载 Instagram 帖子中的照片和视频，还包括快拍、Reels 和头像。\n// @description:zh-TW  一鍵下載 Instagram 貼文中的照片、影片，還包含限時動態、Reels 與大頭貼。\n// @author  SN-Koarashi (5026)\n// @match  https://*.instagram.com/*\n// @grant  GM_addStyle\n// @grant  GM_getResourceText\n// @grant  GM_getValue\n// @grant  GM_info\n// @grant  GM_notification\n// @grant  GM_openInTab\n// @grant  GM_registerMenuCommand\n// @grant  GM_setValue\n// @grant  GM_unregisterMenuCommand\n// @grant  GM_xmlhttpRequest\n// @connect  cdn.jsdelivr.net\n// @connect  i.instagram.com\n// @connect  raw.githubusercontent.com\n// @require  https://cdn.jsdelivr.net/npm/mediabunny@1.34.5/dist/bundles/mediabunny.min.cjs#sha256-wUFR+x2bDvpqgMAVGy2CvGvULyjTGvGy4UUAm8rae5U=\n// @require  https://code.jquery.com/jquery-3.7.1.min.js#sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=\n// @resource  INTERNAL_CSS https://cdn.jsdelivr.net/gh/SN-Koarashi/ig-helper@master/style.css\n// @resource  LOCALE_MANIFEST https://cdn.jsdelivr.net/gh/SN-Koarashi/ig-helper@master/locale/manifest.json\n// @supportURL  https://github.com/SN-Koarashi/ig-helper/\n// @contributionURL  https://ko-fi.com/snkoarashi\n// @icon  https://www.google.com/s2/favicons?domain=www.instagram.com&sz=32\n// @compatible  chrome >= 100\n// @compatible  edge >= 100\n// @compatible  firefox >= 100\n// @license  GPL-3.0-only\n// @run-at  document-idle\n// @downloadURL  https://update.greasyfork.org/scripts/404535/IG%20Helper.user.js\n// @updateURL  https://update.greasyfork.org/scripts/404535/IG%20Helper.meta.js",
+  "sha256": "a4bbc42449daef8355585ebffd7da9fc31e2ad4e5477e7229ecba68e0cead379",
+  "discovered_at": "2026-05-25T06:22:39.433325+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 47189,
+  "good_ratings": 121,
+  "bad_ratings": 6,
+  "summary": {
+    "applicable_sites": [
+      "Instagram"
+    ],
+    "description": "本脚本可让你在 Instagram 上一键下载帖子中的照片和视频，包括快拍（Stories）、Reels 和头像。使用后，页面会出现下载按钮，方便保存你喜欢的内容。",
+    "permissions": [
+      {
+        "explanation": "用于动态添加或修改页面样式，让下载按钮更美观。",
+        "grant": "GM_addStyle"
+      },
+      {
+        "explanation": "用于读取脚本内置资源文件，如样式表和多语言配置。",
+        "grant": "GM_getResourceText"
+      },
+      {
+        "explanation": "用于存储和读取用户设置或脚本状态。",
+        "grant": "GM_getValue"
+      },
+      {
+        "explanation": "用于获取当前脚本的相关信息，如版本号。",
+        "grant": "GM_info"
+      },
+      {
+        "explanation": "用于在下载完成或出错时弹出通知提醒。",
+        "grant": "GM_notification"
+      },
+      {
+        "explanation": "用于在新标签页打开下载的图片或视频。",
+        "grant": "GM_openInTab"
+      },
+      {
+        "explanation": "用于在浏览器菜单中添加自定义命令，方便用户操作。",
+        "grant": "GM_registerMenuCommand"
+      },
+      {
+        "explanation": "用于保存用户设置或脚本状态。",
+        "grant": "GM_setValue"
+      },
+      {
+        "explanation": "用于移除自定义菜单命令。",
+        "grant": "GM_unregisterMenuCommand"
+      },
+      {
+        "explanation": "用于发送网络请求，获取图片或视频资源。",
+        "grant": "GM_xmlhttpRequest"
+      }
+    ],
+    "tags": [
+      "Instagram",
+      "下载工具",
+      "图片视频保存",
+      "社交媒体",
+      "一键操作",
+      "浏览器脚本"
+    ],
+    "usage": [
+      "安装脚本后，打开 Instagram 网站。",
+      "浏览帖子、快拍、Reels 或个人主页。",
+      "在内容旁会出现下载按钮，点击即可保存图片或视频。"
+    ],
+    "zh_name": "IG小助手"
+  }
+}

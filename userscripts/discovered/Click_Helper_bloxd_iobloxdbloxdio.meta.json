@@ -1,0 +1,89 @@
+{
+  "slug": "Click_Helper_bloxd_iobloxdbloxdio",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/531448-click-helper-bloxd-io-bloxd-bloxd-io",
+  "source_repo": "531448",
+  "raw_url": "https://update.greasyfork.org/scripts/531448/Click%20Helper%20%5Bbloxd%20iobloxdbloxdio%5D.user.js",
+  "filename": "Click_Helper_bloxd_iobloxdbloxdio.user.js",
+  "name": "Click Helper [bloxd io/bloxd/bloxd.io]",
+  "version": "1.5.1.9",
+  "description": "Auto Clicker (L/R), Custom CPS, Account Generator, Killaura, Aimbot, BHOP, ViewModel, Player ESP.",
+  "match": [
+    "*://*.bloxd.io/*",
+    "*://*.bloxd.com/*",
+    "*://*.bloxd.dev/*",
+    "*://*.bloxdhop.io/*",
+    "*://*.eviltower.io/*",
+    "*://*.doodlecube.io/*",
+    "*://*.playbloxd.com/*",
+    "*://*.bloxdk12.com/*",
+    "*://*.bloxdunblocked.*/*",
+    "*://*.unbloxd.*/*",
+    "*://*.buildminecreate.com/*",
+    "*://*.buildhub.*/*",
+    "*://*.skillhub.vip/*",
+    "*://*.classcraft.*/*",
+    "*://*.collabspace.space/*",
+    "*://*.creativebuilding.*/*",
+    "*://*.bedwars.space/*",
+    "*://*.bedwarsonline.net/*",
+    "*://*.iogamesunblocked.com/*",
+    "*://*.unblockedgames.club/*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Click Helper [bloxd io/bloxd/bloxd.io]\n// @namespace  https://bloxd.io\n// @icon  https://i.ibb.co/rfmXMwQz/Click-Helper-Icon.png\n// @version  1.5.1.9\n// @description  Auto Clicker (L/R), Custom CPS, Account Generator, Killaura, Aimbot, BHOP, ViewModel, Player ESP.\n// @author  MakeItOrBreakIt\n// @license  MIT\n// @match  *://*.bloxd.io/*\n// @match  *://*.bloxd.com/*\n// @match  *://*.bloxd.dev/*\n// @match  *://*.bloxdhop.io/*\n// @match  *://*.eviltower.io/*\n// @match  *://*.doodlecube.io/*\n// @match  *://*.playbloxd.com/*\n// @match  *://*.bloxdk12.com/*\n// @match  *://*.bloxdunblocked.*/*\n// @match  *://*.unbloxd.*/*\n// @match  *://*.buildminecreate.com/*\n// @match  *://*.buildhub.*/*\n// @match  *://*.skillhub.vip/*\n// @match  *://*.classcraft.*/*\n// @match  *://*.collabspace.space/*\n// @match  *://*.creativebuilding.*/*\n// @match  *://*.bedwars.space/*\n// @match  *://*.bedwarsonline.net/*\n// @match  *://*.iogamesunblocked.com/*\n// @match  *://*.unblockedgames.club/*\n// @grant  none\n// @run-at  document-start\n// @downloadURL  https://update.greasyfork.org/scripts/531448/Click%20Helper%20%5Bbloxd%20iobloxdbloxdio%5D.user.js\n// @updateURL  https://update.greasyfork.org/scripts/531448/Click%20Helper%20%5Bbloxd%20iobloxdbloxdio%5D.meta.js",
+  "sha256": "1815021f64f46b36367c1771cabf81dac07009d6b988ddc6aa0cf1ab54e93086",
+  "discovered_at": "2026-05-25T06:22:55.369150+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 5050,
+  "good_ratings": 16,
+  "bad_ratings": 3,
+  "summary": {
+    "applicable_sites": [
+      "Bloxd.io 系列网站",
+      "Eviltower.io",
+      "Doodlecube.io",
+      "Playbloxd.com",
+      "Bloxdk12.com",
+      "Bloxdunblocked 系列网站",
+      "Unbloxd 系列网站",
+      "Buildminecreate.com",
+      "Buildhub 系列网站",
+      "Skillhub.vip",
+      "Classcraft 系列网站",
+      "Collabspace.space",
+      "Creativebuilding 系列网站",
+      "Bedwars.space",
+      "Bedwarsonline.net",
+      "Iogamesunblocked.com",
+      "Unblockedgames.club"
+    ],
+    "description": "此脚本为 Bloxd.io 及相关游戏网站提供自动点击、账号生成、辅助瞄准、自动攻击、透视玩家等功能，帮助玩家提升游戏体验和操作效率。支持自定义点击速度和多种游戏辅助工具。",
+    "permissions": [
+      {
+        "explanation": "脚本无需额外权限，仅在网页内运行。",
+        "grant": "none"
+      }
+    ],
+    "tags": [
+      "游戏辅助",
+      "自动点击",
+      "账号生成",
+      "瞄准辅助",
+      "玩家透视",
+      "Bloxd.io"
+    ],
+    "usage": [
+      "安装 Tampermonkey 插件。",
+      "在 Tampermonkey 中添加此脚本。",
+      "进入支持的网站，脚本会自动生效。",
+      "按页面提示或快捷键使用自动点击、辅助瞄准等功能。"
+    ],
+    "zh_name": "点击助手（Bloxd.io 游戏专用）"
+  }
+}

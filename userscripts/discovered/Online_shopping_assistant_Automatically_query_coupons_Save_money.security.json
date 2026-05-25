@@ -2,81 +2,53 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
-      "oversea.mimixiaoke.com",
-      "jtmate.com"
+      "jtmate.com",
+      "mimixiaoke.com"
     ],
     "detected": true
   },
+  "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本使用了 GM_xmlhttpRequest 进行网络请求，且 @connect 指定了第三方域名 oversea.mimixiaoke.com 和 jtmate.com，存在向第三方服务器发送数据的风险。",
-      "location": "@connect 和代码中 GM_xmlhttpRequest 调用",
-      "recommendation": "确认请求内容是否包含用户敏感数据，若包含则需明确告知用户并限制数据范围，避免隐私泄露。",
+      "description": "脚本通过 GM_xmlhttpRequest 向 jtmate.com 和 mimixiaoke.com 发起网络请求，可能携带用户页面数据。",
+      "location": "GM_xmlhttpRequest usage; @connect jtmate.com, mimixiaoke.com",
+      "recommendation": "限制请求内容，仅发送必要的非敏感数据，并在隐私政策中明确说明。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本可能读取 document.cookie、localStorage 或 sessionStorage 来获取用户信息，存在隐私采集风险。",
-      "location": "代码中对 document.cookie/localStorage/sessionStorage 的访问",
-      "recommendation": "避免无必要读取用户敏感信息，若必须读取应告知用户并确保数据安全。",
-      "severity": "CRITICAL",
-      "type": "隐私采集"
-    },
-    {
-      "description": "脚本可能监听键盘事件（keydown/keyup/input）或读取表单字段值，存在键盘输入监听风险。",
-      "location": "代码中对键盘事件监听或表单字段访问",
-      "recommendation": "避免监听用户输入，防止键盘记录等隐私泄露行为。",
-      "severity": "CRITICAL",
-      "type": "隐私采集"
-    },
-    {
-      "description": "脚本未明确显示使用 eval、new Function、setTimeout(string) 或 innerHTML 执行远程代码，但需确认是否通过 @require 或动态 script 标签加载远程 JS。",
-      "location": "代码中动态执行代码或 @require 指令",
-      "recommendation": "避免动态执行远程代码，确保代码来源可信且安全。",
-      "severity": "HIGH",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "脚本申请了较多 GM_* 权限，需核实是否全部使用，避免权限滥用。",
-      "location": "@grant 元数据与代码实际调用对比",
-      "recommendation": "精简权限申请，仅保留必要权限，减少安全风险。",
-      "severity": "HIGH",
+      "description": "脚本申请了 GM_download、GM_openInTab 等高权限，但代码未见实际使用。",
+      "location": "@grant GM_download, GM_openInTab",
+      "recommendation": "仅申请实际需要的权限，移除未使用的高权限。",
+      "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "脚本可能调用敏感 API 如 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等，存在中等风险。",
-      "location": "代码中敏感 API 调用",
-      "recommendation": "确认调用目的合理，避免滥用敏感权限。",
+      "description": "脚本未见敏感隐私采集行为，但存在大范围 @match/@include，可能导致过度注入。",
+      "location": "@match *://*/*; 多平台 @include",
+      "recommendation": "缩小注入范围，仅限目标购物平台。",
       "severity": "MEDIUM",
-      "type": "敏感 API 调用"
+      "type": "权限滥用"
     },
     {
-      "description": "脚本代码未发现明显混淆或 base64 解码执行特征。",
-      "location": "代码整体分析",
-      "recommendation": "保持代码清晰，避免混淆以利安全审计。",
+      "description": "脚本未见远程代码执行、混淆、DOM XSS、敏感 API 调用、供应链风险、iframe 风险等高危行为。",
+      "location": "全局代码审查",
+      "recommendation": "保持代码透明，持续监控第三方接口安全。",
       "severity": "LOW",
-      "type": "代码混淆"
-    },
-    {
-      "description": "脚本 @require 未见加载第三方库，外部依赖风险较低。",
-      "location": "@require 元数据",
-      "recommendation": "若未来添加依赖，确保来源可信且版本固定。",
-      "severity": "LOW",
-      "type": "外部依赖"
+      "type": "一般安全建议"
     }
   ],
+  "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [
-      "读取 document.cookie",
-      "访问 localStorage 或 sessionStorage",
-      "监听键盘事件",
-      "读取表单字段值"
-    ],
-    "detected": true
+    "details": [],
+    "detected": false
   },
-  "risk_level": "CRITICAL",
+  "risk_level": "HIGH",
   "script_name": "Online shopping assistant & Automatically query coupons & Save money",
-  "summary": "该脚本存在向第三方服务器发送数据的行为，且可能采集用户隐私信息（如 cookie、存储数据、键盘输入等），存在较大安全风险。脚本权限申请较多，需核实实际使用情况。建议开发者明确告知用户数据使用情况，限制数据采集范围，并避免无必要的敏感权限申请和隐私采集行为。",
-  "analyzed_at": "2026-04-15T20:41:53.779103+00:00",
+  "security_score": 67,
+  "summary": "脚本存在向第三方服务器（jtmate.com、mimixiaoke.com）发起网络请求的行为，属于严重的数据外传风险。未见隐私采集、远程代码执行、混淆、DOM XSS、敏感 API 调用等高危行为，但权限申请过多且注入范围过广，存在中等安全隐患。建议限制数据传输内容、精简权限申请、缩小注入范围。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-05-25T06:34:21.364338+00:00",
   "slug": "Online_shopping_assistant_Automatically_query_coupons_Save_money"
 }

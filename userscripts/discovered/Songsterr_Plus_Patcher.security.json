@@ -1,0 +1,37 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "Uses @grant unsafeWindow, which exposes privileged script context to the page and may increase attack surface if the page is compromised.",
+      "location": "Metadata (@grant unsafeWindow)",
+      "recommendation": "Avoid using unsafeWindow unless strictly necessary. Consider alternatives such as GM_* APIs or direct window access if possible.",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "Modifies innerHTML of the #state element with JSON data. If the JSON is not properly sanitized or if user input is injected, this could theoretically lead to DOM XSS, but in this script the data is controlled.",
+      "location": "window.addEventListener('DOMContentLoaded')",
+      "recommendation": "Ensure that only trusted data is written to innerHTML. Prefer textContent for JSON if possible.",
+      "severity": "LOW",
+      "type": "DOM Manipulation"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "LOW",
+  "script_name": "Songsterr Plus Patcher",
+  "security_score": 89,
+  "summary": "The script does not transmit data externally, does not collect privacy-sensitive information, and does not execute remote code or use obfuscation. The main risk is the use of @grant unsafeWindow, which is a medium-level concern. There is minor DOM manipulation risk, but no evidence of XSS or injection. Overall, the script is considered low risk.",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-05-25T06:35:47.608765+00:00",
+  "slug": "Songsterr_Plus_Patcher"
+}

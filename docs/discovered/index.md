@@ -5,7 +5,7 @@ outline: false
 
 # 发现的热门脚本
 
-> 共 **100** 个脚本　·　2026-05-18 06:39 UTC
+> 共 **111** 个脚本　·　2026-05-25 06:43 UTC
 
 每天从 GitHub、GreasyFork、Gitee、GitLab 自动发现。重点收录对**PM/PdM/Dev/Arch**有提效价值的脚本。
 

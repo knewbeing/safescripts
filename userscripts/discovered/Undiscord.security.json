@@ -1,67 +1,44 @@
 {
   "approved": true,
   "data_transmission": {
-    "destinations": [],
-    "detected": false
+    "destinations": [
+      "https://discord.com/api/v9/channels/{channel_id}/messages",
+      "https://discord.com/api/v9/users/@me/messages",
+      "https://discord.com/api/v9/channels/{channel_id}/messages/{message_id}"
+    ],
+    "detected": true
   },
+  "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本未使用任何网络请求API（如GM_xmlhttpRequest、fetch、XMLHttpRequest等），无数据外传行为。",
-      "location": "全脚本",
-      "recommendation": "无需修改，保持无外传行为。",
+      "description": "脚本通过 fetch/XHR 向 Discord 官方 API 批量发送删除消息请求，涉及用户的消息数据操作。所有请求均指向 Discord 官方域名，无第三方数据外传。",
+      "location": "网络请求相关代码",
+      "recommendation": "提醒用户此操作会批量删除消息，需确保自身账号安全。无第三方数据外传风险。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本未读取document.cookie、localStorage、sessionStorage，也未监听键盘事件或读取表单字段，无隐私采集行为。",
-      "location": "全脚本",
-      "recommendation": "无需修改，保持无隐私采集行为。",
+      "description": "脚本会读取页面中的消息内容、用户 Token（通常通过页面变量或 localStorage），用于批量删除操作。未检测到将这些数据发送到非 Discord 官方服务器。",
+      "location": "Token/消息读取相关代码",
+      "recommendation": "提醒用户此脚本会访问敏感数据（Token、消息内容），但仅用于本地和 Discord 官方 API 操作。",
       "severity": "CRITICAL",
       "type": "隐私采集"
-    },
-    {
-      "description": "脚本未使用eval、new Function、setTimeout字符串参数或动态加载远程脚本，无远程代码执行风险。",
-      "location": "全脚本",
-      "recommendation": "无需修改，避免引入远程代码执行。",
-      "severity": "HIGH",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "脚本声明@grant none，且代码中未使用任何高权限API，权限申请合理，无权限滥用。",
-      "location": "元数据与代码",
-      "recommendation": "无需修改，权限申请与使用匹配。",
-      "severity": "HIGH",
-      "type": "权限滥用"
-    },
-    {
-      "description": "脚本未调用navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API等敏感API。",
-      "location": "全脚本",
-      "recommendation": "无需修改，避免调用敏感API。",
-      "severity": "MEDIUM",
-      "type": "敏感API调用"
-    },
-    {
-      "description": "脚本代码未发现明显混淆、base64解码或字符串拼接执行特征，代码清晰。",
-      "location": "全脚本",
-      "recommendation": "保持代码清晰，避免混淆。",
-      "severity": "MEDIUM",
-      "type": "代码混淆"
-    },
-    {
-      "description": "脚本无@require字段，无外部依赖，避免供应链风险。",
-      "location": "元数据",
-      "recommendation": "保持无外部依赖或使用可信固定版本依赖。",
-      "severity": "LOW",
-      "type": "外部依赖"
     }
   ],
+  "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [],
-    "detected": false
+    "details": [
+      "读取用户 Token（通常通过 localStorage 或页面变量）",
+      "读取消息内容用于批量删除"
+    ],
+    "detected": true
   },
-  "risk_level": "SAFE",
+  "risk_level": "CRITICAL",
   "script_name": "Undiscord",
-  "summary": "该UserScript未发现任何数据外传或隐私采集行为，未使用远程代码执行手段，权限申请合理且无滥用，未调用敏感API，代码无混淆且无外部依赖，整体安全性高。",
-  "analyzed_at": "2026-04-15T20:42:25.118228+00:00",
+  "security_score": 50,
+  "summary": "脚本仅与 Discord 官方 API 通信，无第三方数据外传或追踪行为。存在敏感数据读取（Token、消息内容），但用途明确。无远程代码执行、混淆、DOM XSS、权限滥用、供应链风险等问题。整体风险主要在于批量操作敏感数据，建议用户谨慎使用。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-05-25T06:38:27.960279+00:00",
   "slug": "Undiscord"
 }
