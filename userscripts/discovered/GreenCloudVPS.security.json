@@ -5,71 +5,7 @@
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [
-    {
-      "description": "脚本未检测到任何网络请求（如 fetch、GM_xmlhttpRequest、WebSocket 等），不存在数据外传风险。",
-      "location": "全局",
-      "recommendation": "保持当前状态，避免添加任何外部数据传输逻辑。",
-      "severity": "CRITICAL",
-      "type": "Data Transmission"
-    },
-    {
-      "description": "脚本未读取 cookie、localStorage、sessionStorage、IndexedDB，也未监听键盘输入或表单字段，未涉及隐私采集。",
-      "location": "全局",
-      "recommendation": "继续避免采集用户敏感信息。",
-      "severity": "CRITICAL",
-      "type": "Privacy Collection"
-    },
-    {
-      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行相关 API。",
-      "location": "RAFInterval、全局",
-      "recommendation": "避免动态执行字符串代码。",
-      "severity": "HIGH",
-      "type": "Remote Code Execution"
-    },
-    {
-      "description": "脚本未检测到任何代码混淆、压缩或 base64/unicode 编码。",
-      "location": "全局",
-      "recommendation": "保持代码可读性，避免混淆。",
-      "severity": "HIGH",
-      "type": "Code Obfuscation"
-    },
-    {
-      "description": "脚本未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，也未使用 document.write()，不存在 DOM XSS 风险。",
-      "location": "全局",
-      "recommendation": "继续避免插入不可信内容到 DOM。",
-      "severity": "HIGH",
-      "type": "DOM XSS/Injection"
-    },
-    {
-      "description": "脚本未申请任何 Tampermonkey/Greasemonkey权限（@grant none），不存在权限滥用风险。",
-      "location": "元数据",
-      "recommendation": "仅申请必要权限。",
-      "severity": "MEDIUM",
-      "type": "Permission Abuse"
-    },
-    {
-      "description": "脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。",
-      "location": "全局",
-      "recommendation": "避免调用敏感 API。",
-      "severity": "MEDIUM",
-      "type": "Sensitive API Usage"
-    },
-    {
-      "description": "脚本未通过 @require 加载任何第三方库，不存在供应链风险。",
-      "location": "元数据",
-      "recommendation": "如需加载第三方库，建议使用官方 CDN 并固定版本。",
-      "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
-    },
-    {
-      "description": "脚本未操作 iframe，也未修改 frame 保护策略，不存在 ClickJacking/iframe 风险。",
-      "location": "全局",
-      "recommendation": "避免创建隐藏 iframe 或修改 frame 保护。",
-      "severity": "LOW",
-      "type": "ClickJacking/iframe Risk"
-    }
-  ],
+  "issues": [],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
@@ -78,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "GreenCloudVPS",
   "security_score": 100,
-  "summary": "该 UserScript 仅自动化页面点击操作，未涉及任何数据外传、隐私采集、远程代码执行、代码混淆、DOM 注入、权限滥用、敏感 API 调用、供应链风险或 iframe 操作。安全评分为 100，风险极低。",
+  "summary": "该脚本未检测到任何安全或隐私风险。代码未包含任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。所有操作均为本地页面自动化点击，无外部通信或敏感数据处理。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-25T06:32:47.835169+00:00",
+  "analyzed_at": "2026-06-01T07:01:51.413574+00:00",
   "slug": "GreenCloudVPS"
 }

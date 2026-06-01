@@ -32,9 +32,9 @@ title: "Blooket金币代币助手"
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：97/100　　**分析时间**：2026-05-25
+**风险等级**：🟢 SAFE　　**安全评分**：94/100　　**分析时间**：2026-06-01
 
-> 该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。仅通过 prompt 获取用户输入并更新页面显示，无敏感权限申请或外部依赖。整体安全风险极低，适合在受信环境下使用。
+> This UserScript does not perform any network requests, does not collect or transmit user data, and does not use dangerous or obfuscated code. It only modifies the page's DOM in a safe manner and interacts with the user via prompt and alert. No critical, high, or medium security issues detected. The script is considered safe, though its functionality is limited to local display changes and does not actually hack or modify server-side data.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -47,20 +47,15 @@ title: "Blooket金币代币助手"
 
 ### 发现的问题
 
-**🟡 LOW** — Input Handling  
-> Uses prompt to collect user input and updates DOM with those values. No network requests or external data transmission detected.  
+**🟡 LOW** — DOM Interaction  
+> The script uses prompt and alert to interact with the user, but does not process or insert user input into the DOM in a way that would cause XSS.  
 > 位置：addCoinsAndTokens function  
-> 建议：Ensure user input is validated and not used in unsafe DOM operations. Current usage is safe.
+> 建议：No action needed unless future code inserts user input into the DOM via innerHTML.
 
-**🟡 LOW** — Permission Usage  
-> No permissions (@grant none) requested, so no risk of privilege escalation or misuse.  
-> 位置：Metadata block  
-> 建议：Maintain minimal permissions for best security.
-
-**🟡 LOW** — Supply Chain  
-> No supply chain risk detected. No @require or external script loading.  
-> 位置：Metadata block  
-> 建议：Continue avoiding external dependencies unless necessary.
+**🟡 LOW** — DOM Manipulation  
+> The script attempts to update the DOM with user-provided values, but only uses textContent, which is safe from XSS.  
+> 位置：updateBalanceDisplay function  
+> 建议：Continue using textContent instead of innerHTML for user input.
 
 ---
 

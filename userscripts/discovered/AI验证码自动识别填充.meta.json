@@ -1,0 +1,76 @@
+{
+  "slug": "AI验证码自动识别填充",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/540822-ai%E9%AA%8C%E8%AF%81%E7%A0%81%E8%87%AA%E5%8A%A8%E8%AF%86%E5%88%AB%E5%A1%AB%E5%85%85",
+  "source_repo": "540822",
+  "raw_url": "https://update.greasyfork.org/scripts/540822/AI%E9%AA%8C%E8%AF%81%E7%A0%81%E8%87%AA%E5%8A%A8%E8%AF%86%E5%88%AB%E5%A1%AB%E5%85%85.user.js",
+  "filename": "AI验证码自动识别填充.user.js",
+  "name": "AI验证码自动识别填充",
+  "version": "1.2.2",
+  "description": "自动识别网页上的验证码并填充到输入框中，点击识别图标触发识别。",
+  "match": [
+    "*://*/*"
+  ],
+  "grant": [
+    "GM_addStyle",
+    "GM_getValue",
+    "GM_registerMenuCommand",
+    "GM_setValue",
+    "GM_xmlhttpRequest"
+  ],
+  "require": [
+    "https://unpkg.com/vue@3.4.38/dist/vue.global.prod.js"
+  ],
+  "metadata_raw": "// @name  AI验证码自动识别填充\n// @namespace  https://github.com/anghunk/UserScript\n// @version  1.2.2\n// @author  anghunk\n// @description  自动识别网页上的验证码并填充到输入框中，点击识别图标触发识别。\n// @license  Apache-2.0\n// @icon  https://raw.githubusercontent.com/anghunk/UserScript/refs/heads/main/CAPTCHA-automatic-recognition/src/assets/logo.png\n// @match  *://*/*\n// @require  https://unpkg.com/vue@3.4.38/dist/vue.global.prod.js\n// @grant  GM_addStyle\n// @grant  GM_getValue\n// @grant  GM_registerMenuCommand\n// @grant  GM_setValue\n// @grant  GM_xmlhttpRequest\n// @downloadURL  https://update.greasyfork.org/scripts/540822/AI%E9%AA%8C%E8%AF%81%E7%A0%81%E8%87%AA%E5%8A%A8%E8%AF%86%E5%88%AB%E5%A1%AB%E5%85%85.user.js\n// @updateURL  https://update.greasyfork.org/scripts/540822/AI%E9%AA%8C%E8%AF%81%E7%A0%81%E8%87%AA%E5%8A%A8%E8%AF%86%E5%88%AB%E5%A1%AB%E5%85%85.meta.js",
+  "sha256": "563f4b7b1de5fcdcf032fed330ba06190218ddba7cce6def66097558137d6757",
+  "discovered_at": "2026-06-01T06:53:39.598121+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 612,
+  "good_ratings": 16,
+  "bad_ratings": 0,
+  "summary": {
+    "applicable_sites": [
+      "所有网站"
+    ],
+    "description": "本脚本可以自动识别网页上的验证码图片，并将识别结果填入输入框。用户只需点击验证码旁的识别图标，即可触发识别，无需手动输入验证码。",
+    "permissions": [
+      {
+        "explanation": "用于添加脚本自定义的样式，让识别图标和界面更美观。",
+        "grant": "GM_addStyle"
+      },
+      {
+        "explanation": "用于保存和读取脚本设置或识别结果。",
+        "grant": "GM_getValue"
+      },
+      {
+        "explanation": "用于在浏览器菜单中添加脚本相关的快捷操作。",
+        "grant": "GM_registerMenuCommand"
+      },
+      {
+        "explanation": "用于保存脚本的配置或临时数据。",
+        "grant": "GM_setValue"
+      },
+      {
+        "explanation": "用于发送网络请求，识别验证码时与AI服务通信。",
+        "grant": "GM_xmlhttpRequest"
+      }
+    ],
+    "tags": [
+      "验证码",
+      "自动填写",
+      "AI识别",
+      "网页辅助",
+      "效率提升",
+      "通用脚本"
+    ],
+    "usage": [
+      "安装脚本后，访问需要输入验证码的网站。",
+      "在验证码输入框旁会出现一个识别图标。",
+      "点击识别图标，脚本会自动识别并填写验证码。",
+      "如有需要，可在浏览器菜单中调整脚本设置。"
+    ],
+    "zh_name": "AI验证码自动识别填充"
+  }
+}

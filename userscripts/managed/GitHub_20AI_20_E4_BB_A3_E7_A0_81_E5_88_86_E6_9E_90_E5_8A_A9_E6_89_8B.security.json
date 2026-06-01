@@ -1,22 +1,11 @@
 {
   "approved": true,
   "data_transmission": {
-    "destinations": [
-      "https://zread.ai",
-      "https://deepwiki.com"
-    ],
+    "destinations": [],
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [
-    {
-      "description": "脚本在页面插入按钮，按钮点击后通过 window.open 跳转到 zread.ai 或 deepwiki.com，但未直接进行任何数据外传或网络请求。",
-      "location": "按钮点击事件",
-      "recommendation": "确保跳转目标网站可信，避免用户误导。",
-      "severity": "LOW",
-      "type": "External Navigation"
-    }
-  ],
+  "issues": [],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
@@ -24,10 +13,10 @@
   },
   "risk_level": "SAFE",
   "script_name": "GitHub AI 代码分析助手",
-  "security_score": 97,
-  "summary": "该脚本仅在 GitHub 仓库页面插入 AI 分析按钮，未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用或供应链风险。唯一风险为跳转到第三方网站，属于低风险。整体安全性高。",
+  "security_score": 100,
+  "summary": "该脚本仅在 GitHub 仓库页面插入本地按钮和下拉菜单，未检测到任何网络请求、数据外传、隐私采集、远程代码执行、代码混淆、XSS 风险或供应链风险。未申请任何 @grant 权限，未加载远程 JS。整体实现安全，未发现安全隐患。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-25T06:17:27.925382+00:00",
+  "analyzed_at": "2026-06-01T06:46:13.791376+00:00",
   "slug": "GitHub_20AI_20_E4_BB_A3_E7_A0_81_E5_88_86_E6_9E_90_E5_8A_A9_E6_89_8B"
 }

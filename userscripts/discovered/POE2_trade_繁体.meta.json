@@ -1,0 +1,69 @@
+{
+  "slug": "POE2_trade_繁体",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/520190-poe2-trade-%E7%B9%81%E4%BD%93",
+  "source_repo": "520190",
+  "raw_url": "https://update.greasyfork.org/scripts/520190/POE2%20trade%20%E7%B9%81%E4%BD%93.user.js",
+  "filename": "POE2_trade_繁体.user.js",
+  "name": "POE2 trade 繁体",
+  "version": "4.26",
+  "description": "POE2 交易网站繁体以及搜索优化 - 放课后",
+  "match": [
+    "https://www.pathofexile.com/trade2*",
+    "https://pathofexile.com/trade2*"
+  ],
+  "grant": [
+    "GM_xmlhttpRequest",
+    "GM_setValue",
+    "GM_getValue",
+    "unsafeWindow"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  POE2 trade 繁体\n// @namespace  http://tampermonkey.net/\n// @version  4.26\n// @description  POE2 交易网站繁体以及搜索优化 - 放课后\n// @author  放课后\n// @match  https://www.pathofexile.com/trade2*\n// @match  https://pathofexile.com/trade2*\n// @grant  GM_xmlhttpRequest\n// @grant  GM_setValue\n// @grant  GM_getValue\n// @grant  unsafeWindow\n// @license  MIT\n// @run-at  document-start\n// @downloadURL  https://update.greasyfork.org/scripts/520190/POE2%20trade%20%E7%B9%81%E4%BD%93.user.js\n// @updateURL  https://update.greasyfork.org/scripts/520190/POE2%20trade%20%E7%B9%81%E4%BD%93.meta.js",
+  "sha256": "746c81ffa83226be329e1bd28a73da3a87218fefe8730739bef4bd5fe241a085",
+  "discovered_at": "2026-06-01T06:53:18.612795+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 17417,
+  "good_ratings": 18,
+  "bad_ratings": 1,
+  "summary": {
+    "applicable_sites": [
+      "流亡黯道交易网站"
+    ],
+    "description": "本脚本将流亡黯道（POE2）交易网站的界面内容转换为繁体中文，并优化搜索功能，方便繁体用户浏览和查找物品。",
+    "permissions": [
+      {
+        "explanation": "允许脚本发送网络请求，获取外部数据。",
+        "grant": "GM_xmlhttpRequest"
+      },
+      {
+        "explanation": "允许脚本保存设置或数据到本地浏览器。",
+        "grant": "GM_setValue"
+      },
+      {
+        "explanation": "允许脚本读取本地保存的数据。",
+        "grant": "GM_getValue"
+      },
+      {
+        "explanation": "允许脚本访问和操作网页的原始窗口对象。",
+        "grant": "unsafeWindow"
+      }
+    ],
+    "tags": [
+      "繁体中文",
+      "游戏辅助",
+      "界面优化",
+      "交易网站",
+      "流亡黯道",
+      "搜索增强"
+    ],
+    "usage": [
+      "安装脚本后，打开流亡黯道交易网站。",
+      "网页内容会自动显示为繁体中文。",
+      "搜索物品时可体验优化后的搜索功能。"
+    ],
+    "zh_name": "POE2交易繁体版"
+  }
+}

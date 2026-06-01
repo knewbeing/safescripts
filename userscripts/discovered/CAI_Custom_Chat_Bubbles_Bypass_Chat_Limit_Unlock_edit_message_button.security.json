@@ -9,25 +9,32 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限并声明 @connect translate.googleapis.com，但代码中未发现实际 GM_xmlhttpRequest 调用，也未发现 fetch/XMLHttpRequest/WebSocket 向第三方服务器发送用户数据或页面内容。",
-      "location": "元数据与主代码",
-      "recommendation": "确保 GM_xmlhttpRequest 仅用于可信目的，避免未来代码变更导致数据外传。",
+      "description": "The script requests @connect permission for translate.googleapis.com and grants GM_xmlhttpRequest, but no actual data transmission to third-party endpoints is present in the provided code. However, the permission could be used for network requests.",
+      "location": "Metadata block (@grant, @connect)",
+      "recommendation": "Restrict @connect and @grant permissions to only those strictly necessary. Review any future code changes for actual data transmission.",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "Permission Overprovision"
     },
     {
-      "description": "脚本通过 @require 加载 turndown 库，来源为 unpkg.com 官方 CDN，版本号已固定（7.1.3），供应链风险较低。",
-      "location": "元数据",
-      "recommendation": "建议定期检查依赖库安全性，确保 CDN 未被污染。",
-      "severity": "MEDIUM",
-      "type": "供应链风险"
+      "description": "The script overrides window.fetch and XMLHttpRequest.prototype.open to block requests to 'neo.character.ai/feature_limits', but does not exfiltrate user data or send it to third-party servers.",
+      "location": "window.fetch, XMLHttpRequest.prototype.open",
+      "recommendation": "Ensure that no user data is sent to untrusted endpoints in future updates.",
+      "severity": "LOW",
+      "type": "Network Interception"
     },
     {
-      "description": "脚本申请了 GM_setValue 和 GM_getValue 权限，但主代码未发现实际使用，存在权限冗余。",
-      "location": "元数据",
-      "recommendation": "建议移除未使用的高权限申请，减少攻击面。",
+      "description": "The script uses localStorage to store feature toggles (e.g., 'cai_adv_fake_verify', 'cai_bypass_limit'), but does not collect or transmit sensitive user data.",
+      "location": "localStorage usage",
+      "recommendation": "Do not store sensitive information in localStorage. Current usage is safe.",
+      "severity": "LOW",
+      "type": "Local Storage Usage"
+    },
+    {
+      "description": "The script uses @require to load turndown.js from unpkg.com, a reputable CDN, but does not pin a specific file hash.",
+      "location": "@require https://unpkg.com/turndown@7.1.3/lib/turndown.browser.umd.js",
+      "recommendation": "Pin the dependency to a specific version and hash if possible to prevent supply chain attacks.",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "Supply Chain Risk"
     }
   ],
   "obfuscation_detected": false,
@@ -38,9 +45,9 @@
   "risk_level": "LOW",
   "script_name": "C.AI Custom Chat Bubbles + Bypass Chat Limit (Unlock edit message button)",
   "security_score": 81,
-  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要风险为权限冗余和依赖库供应链风险，整体安全性较高。建议移除未使用的高权限申请，并持续关注依赖库安全。",
-  "supply_chain_risk": false,
+  "summary": "The script does not exfiltrate user data, collect sensitive information, or execute remote code. It mainly customizes UI and bypasses certain feature limits by intercepting network requests. Permissions are slightly overprovisioned, and a third-party library is loaded from a reputable CDN without a hash. No obfuscation or XSS risks detected. Overall, the script is low risk but should improve supply chain hygiene and permission minimization.",
+  "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-25T06:28:10.285098+00:00",
+  "analyzed_at": "2026-06-01T06:56:19.385698+00:00",
   "slug": "CAI_Custom_Chat_Bubbles_Bypass_Chat_Limit_Unlock_edit_message_button"
 }

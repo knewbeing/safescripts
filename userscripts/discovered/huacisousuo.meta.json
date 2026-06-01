@@ -1,0 +1,53 @@
+{
+  "slug": "huacisousuo",
+  "platform": "github",
+  "source_url": "https://raw.githubusercontent.com/limbopro/Adblock4limbo/44674b73b0134dfaa8322984bca4a8b966428bf6/Adguard/huacisousuo.user.js",
+  "source_repo": "limbopro/Adblock4limbo",
+  "raw_url": "https://raw.githubusercontent.com/limbopro/Adblock4limbo/44674b73b0134dfaa8322984bca4a8b966428bf6/Adguard/huacisousuo.user.js",
+  "filename": "huacisousuo.user.js",
+  "name": "Limbopro 网页划词搜索神器（a 标签优化版）",
+  "version": "1.3",
+  "description": "将按钮替换为 a 标签，支持谷歌搜索、影视搜索、番号搜索，适配移动端与 PC。",
+  "match": [
+    "https://*/*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Limbopro 网页划词搜索神器（a 标签优化版）\n// @namespace  https://limbopro.com\n// @version  1.3\n// @description  将按钮替换为 a 标签，支持谷歌搜索、影视搜索、番号搜索，适配移动端与 PC。\n// @author  limbopro & Gemini\n// @match  https://*/*\n// @icon  https://limbopro.com/favicon.ico\n// @grant  none\n// @license  MIT\n// @run-at  document-idle",
+  "sha256": "125d286229e0964935d06dce67d9f66894a263e7da374a6b97a6601643423e47",
+  "discovered_at": "2026-06-01T06:48:48.061561+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": null,
+  "good_ratings": null,
+  "bad_ratings": null,
+  "summary": {
+    "applicable_sites": [
+      "所有HTTPS网页"
+    ],
+    "description": "本脚本让你在网页上选中文字后，弹出搜索选项，可以用谷歌、影视、番号等搜索相关内容。按钮已优化为链接，适配手机和电脑，操作更方便。",
+    "permissions": [
+      {
+        "explanation": "脚本无需特殊权限，仅操作网页内容。",
+        "grant": "none"
+      }
+    ],
+    "tags": [
+      "划词搜索",
+      "网页工具",
+      "谷歌搜索",
+      "影视搜索",
+      "番号搜索",
+      "移动端适配"
+    ],
+    "usage": [
+      "安装脚本后，打开任意HTTPS网页。",
+      "用鼠标或手指选中你想搜索的文字。",
+      "弹出的搜索菜单中点击对应链接，即可跳转搜索结果。"
+    ],
+    "zh_name": "Limbopro 网页划词搜索神器"
+  }
+}

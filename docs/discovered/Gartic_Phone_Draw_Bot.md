@@ -1,18 +1,18 @@
 ---
-title: "Gartic Phone自动绘图机器人"
+title: "Gartic Phone自动绘画机器人"
 ---
 
-# Gartic Phone自动绘图机器人
+# Gartic Phone自动绘画机器人
 
-`自动绘图`  `游戏辅助`  `Gartic Phone`  `机器人`  `网页增强`  `娱乐`
+`自动绘画`  `游戏辅助`  `Gartic Phone`  `效率提升`  `脚本工具`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/Gartic_Phone_Draw_Bot.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**0.1**　　发现时间：**2026-05-25**　　来源：[GreasyFork](https://greasyfork.org/scripts/495177-gartic-phone-draw-bot) <Badge type="tip" text="GreasyFork" />　　安装量：**11,720**　　评分：👍0 / 👎1
+> 版本：**0.1**　　发现时间：**2026-06-01**　　来源：[GreasyFork](https://greasyfork.org/scripts/495177-gartic-phone-draw-bot) <Badge type="tip" text="GreasyFork" />　　安装量：**11,967**　　评分：👍0 / 👎1
 
 ## 功能介绍
 
-本脚本可以自动在 Gartic Phone 游戏中进行绘画，模拟机器人自动作画。适合需要快速完成画图任务或想体验自动绘图功能的用户。
+该脚本可以在 Gartic Phone 游戏中自动绘制图画，帮助用户快速完成绘画任务。它通过修改游戏脚本，实现自动化操作，适合不擅长绘画或想提高效率的玩家。
 
 ## 适用网站
 
@@ -20,27 +20,28 @@ title: "Gartic Phone自动绘图机器人"
 
 ## 使用方法
 
-1. 安装脚本后，进入 Gartic Phone 网站。
-2. 开始游戏时，自动绘图功能会自动激活。
-3. 无需手动操作，机器人会自动完成画图任务。
+1. 安装 Tampermonkey 插件。
+2. 在 Tampermonkey 中添加此脚本。
+3. 进入 Gartic Phone 网站，开始游戏。
+4. 脚本会自动进行绘画，无需手动操作。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `unsafeWindow` | 允许脚本访问和修改网页中的全局变量，增强与页面的交互能力。 |
-| `GM_xmlhttpRequest` | 用于发送网络请求，获取外部资源或数据。 |
+| `unsafeWindow` | 允许脚本访问和修改网页中的全局变量，实现自动绘画功能。 |
+| `GM_xmlhttpRequest` | 用于发送网络请求，获取绘画数据或与服务器通信。 |
 | `GM_log` | 用于输出调试信息，方便开发者查看脚本运行情况。 |
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：37/100　　**分析时间**：2026-05-25
+**风险等级**：🟠 MEDIUM　　**安全评分**：67/100　　**分析时间**：2026-06-01
 
-> The script transmits drawing/game data via WebSocket to garticphone.com, intercepts and rewrites loaded scripts (potential remote code execution risk), and requests unused permissions. No evidence of privacy collection or code obfuscation. The main risks are data transmission (CRITICAL) and remote code execution (HIGH).
+> 该脚本主要通过 WebSocket 与 garticphone.com 服务器通信，实现自动绘图功能。未发现隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。存在数据外传（仅限目标站点）、未使用的高权限申请（GM_xmlhttpRequest）和对 WebSocket 的全局代理（可能影响页面其他功能）。建议移除未使用的权限，并限制 WebSocket 代理范围。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：garticphone.com (via WebSocket)） |
+| 数据外传 | ❌ 检测到（目标：garticphone.com） |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ⚠️ 使用 |
@@ -49,35 +50,20 @@ title: "Gartic Phone自动绘图机器人"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Transmission  
-> The script establishes a WebSocket connection to garticphone.com and sends game drawing data packets, including user actions and possibly game state.  
-> 位置：customWebSocket class, sendPackets function  
-> 建议：Ensure only necessary game data is transmitted; avoid sending sensitive or unrelated user information.
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过 WebSocket 发送数据包到 garticphone.com 服务器，内容为自动绘图生成的数据。  
+> 位置：sendPackets()、customWebSocket 类  
+> 建议：确认仅发送游戏相关数据，不包含用户敏感信息。
 
-**🔴 HIGH** — Remote Code Execution  
-> The script modifies Node.prototype.appendChild to intercept and rewrite scripts loaded from external sources, potentially allowing remote code execution if the editScript function is abused.  
-> 位置：Node.prototype.appendChild Proxy  
-> 建议：Restrict script rewriting to trusted sources and validate edited code before execution.
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 GM_xmlhttpRequest 权限，但实际代码未使用该 API。  
+> 位置：@grant 元数据  
+> 建议：移除未使用的高权限申请，减少权限滥用风险。
 
-**🔴 HIGH** — Remote Code Execution  
-> The script uses unsafeWindow to override WebSocket globally, which may introduce compatibility and security risks.  
-> 位置：unsafeWindow.WebSocket = customWebSocket  
-> 建议：Limit unsafeWindow usage and ensure no leakage of sensitive data or unintended side effects.
-
-**🟠 MEDIUM** — Permission Abuse  
-> The script requests GM_xmlhttpRequest permission but does not use it in the code, indicating potential permission overreach.  
-> 位置：@grant GM_xmlhttpRequest in metadata  
-> 建议：Remove unused permissions to minimize attack surface.
-
-**🟠 MEDIUM** — Permission Abuse  
-> The script requests GM_log permission but does not use it in the code, indicating potential permission overreach.  
-> 位置：@grant GM_log in metadata  
-> 建议：Remove unused permissions to minimize attack surface.
-
-**🟡 LOW** — Data Transmission  
-> The script uses fetch to load external resources, but only from the same domain (garticphone.com). No third-party data exfiltration detected.  
-> 位置：requestText, requestBuffer functions  
-> 建议：Monitor for future changes that may introduce third-party requests.
+**🟠 MEDIUM** — 敏感 API 调用  
+> 脚本通过 Proxy 劫持 WebSocket 构造函数，可能影响页面其他 WebSocket 行为。  
+> 位置：customWebSocket 类  
+> 建议：确保只影响目标 WebSocket，避免副作用。
 
 ---
 

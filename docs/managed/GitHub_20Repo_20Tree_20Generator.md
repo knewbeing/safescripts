@@ -35,9 +35,9 @@ title: "GitHub仓库目录树生成器"
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-05-25
+**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-06-01
 
-> 该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。所有第三方库均来自可信 CDN 且版本固定。整体安全性极高，适合公开使用。
+> 该 UserScript 代码结构清晰，无任何数据外传、隐私采集、远程代码执行、混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。所有 @require 均为可信 CDN 且锁定版本，@grant 权限与实际用途匹配。整体安全性极高，适合公开分发。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -51,49 +51,39 @@ title: "GitHub仓库目录树生成器"
 ### 发现的问题
 
 **⛔ CRITICAL** — Data Transmission  
-> 脚本未检测到任何网络请求（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource、sendBeacon），不存在数据外传行为。  
+> 脚本未检测到任何网络请求（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource 等），无数据外传行为。  
 > 位置：全局  
-> 建议：保持当前实现，避免添加任何外部数据传输逻辑。
+> 建议：保持当前实现，勿添加外传逻辑。
 
 **⛔ CRITICAL** — Privacy Collection  
-> 脚本未检测到任何隐私采集行为（如读取 cookie、localStorage、sessionStorage、IndexedDB、剪贴板、监听键盘输入并外传、访问指纹 API）。  
+> 未检测到任何隐私采集行为（如读取 cookie、localStorage、sessionStorage、IndexedDB、剪贴板、表单、指纹等）。  
 > 位置：全局  
-> 建议：保持当前实现，避免添加任何隐私采集逻辑。
+> 建议：保持当前实现，勿采集用户隐私数据。
 
 **🔴 HIGH** — Remote Code Execution  
-> 脚本未检测到远程代码执行风险（未使用 eval、new Function、setTimeout(string)、setInterval(string)、innerHTML 插入外部脚本、document.write 插入脚本内容）。  
+> 未检测到 eval、new Function、setTimeout(string)、setInterval(string)、动态 script 标签、document.write 等远程代码执行风险。  
 > 位置：全局  
-> 建议：保持当前实现，避免动态执行字符串代码。
+> 建议：保持当前实现，避免动态执行代码。
 
 **🔴 HIGH** — Obfuscation  
-> 脚本未检测到代码混淆（无 base64 解码执行、字符串数组映射、unicode 混淆、高度压缩单行代码）。  
+> 未检测到代码混淆、base64 解码、字符串数组映射、unicode 混淆或高度压缩代码。  
 > 位置：全局  
 > 建议：保持代码可读性，避免混淆。
 
 **🔴 HIGH** — DOM XSS  
-> 脚本未检测到 DOM XSS/注入风险（未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未使用 document.write 插入不可信内容，未操作 iframe src 为 javascript:）。  
+> 未检测到 DOM XSS 风险（如用户输入/URL参数直接插入 innerHTML/outerHTML、document.write 注入、iframe src 操作等）。  
 > 位置：全局  
-> 建议：如需插入用户输入，务必进行转义。
+> 建议：如后续处理用户输入，需严格转义。
 
-**🟠 MEDIUM** — Permission Abuse  
-> 脚本申请的 @grant 权限与实际代码使用一致，无权限滥用。  
-> 位置：元数据与代码对比  
+**🟠 MEDIUM** — Permission Usage  
+> @grant 仅申请了 GM_addStyle、GM_setClipboard、GM_download，均有实际用途，无权限滥用。  
+> 位置：元数据 @grant  
 > 建议：仅申请实际需要的权限。
 
-**🟠 MEDIUM** — Supply Chain Risk  
-> 脚本通过 @require 加载的第三方库均来自官方 CDN（cdnjs），且版本号固定，无供应链风险。  
-> 位置：元数据  
-> 建议：继续使用可信 CDN 并固定版本。
-
-**🟠 MEDIUM** — Sensitive API  
-> 脚本未检测到敏感 API 调用（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API 读取、Notification API）。  
-> 位置：全局  
-> 建议：避免调用敏感 API，除非确有必要且用户知情。
-
-**🟡 LOW** — ClickJacking/iframe  
-> 脚本未检测到 ClickJacking 或 iframe 风险（未修改 frame 保护策略，未创建隐藏 iframe 用于数据提取）。  
-> 位置：全局  
-> 建议：保持当前实现，避免 iframe 滥用。
+**🟠 MEDIUM** — Supply Chain  
+> @require 加载的第三方库均来自官方 CDN（cdnjs），且指定了固定版本。  
+> 位置：元数据 @require  
+> 建议：继续使用可信 CDN 并锁定版本。
 
 ---
 

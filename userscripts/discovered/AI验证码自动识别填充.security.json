@@ -1,0 +1,46 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [
+      "https://unpkg.com/vue@3.4.38/dist/vue.global.prod.js"
+    ],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "脚本通过 @require 加载了 Vue.js 生产环境版本，虽然为官方 CDN，但未锁定具体哈希，存在供应链污染风险。",
+      "location": "@require https://unpkg.com/vue@3.4.38/dist/vue.global.prod.js",
+      "recommendation": "建议使用官方 CDN 并锁定具体版本哈希，或使用可信 CDN（如 jsdelivr、cdnjs）并指定精确版本。",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    },
+    {
+      "description": "脚本申请了 GM_xmlhttpRequest 权限，但在提供的代码片段中未见实际使用。若后续代码存在将验证码图片或页面内容上传到第三方服务器用于 AI 识别，则存在数据外传和隐私泄露风险。",
+      "location": "@grant GM_xmlhttpRequest",
+      "recommendation": "仅在必要时申请 GM_xmlhttpRequest 权限，并确保所有外发请求目的明确、透明。",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "脚本申请了 GM_getValue/GM_setValue/GM_registerMenuCommand 等权限，但在当前代码片段中未见实际使用。",
+      "location": "@grant GM_getValue, GM_setValue, GM_registerMenuCommand",
+      "recommendation": "建议仅申请实际需要的权限，减少权限滥用风险。",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "MEDIUM",
+  "script_name": "AI验证码自动识别填充",
+  "security_score": 76,
+  "summary": "该脚本主要通过样式和 @require 加载 Vue.js，未见明显的数据外传、隐私采集、远程代码执行或混淆行为。主要风险为供应链风险（未锁定第三方库版本）和权限滥用（申请了未使用的高权限）。如后续代码涉及验证码图片上传到第三方服务器，则需重点关注数据外传和隐私泄露风险。",
+  "supply_chain_risk": true,
+  "websocket_usage": false,
+  "analyzed_at": "2026-06-01T06:54:44.724107+00:00",
+  "slug": "AI验证码自动识别填充"
+}

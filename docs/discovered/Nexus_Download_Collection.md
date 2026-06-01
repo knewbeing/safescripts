@@ -38,13 +38,13 @@ title: "Nexus合集一键下载"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：64/100　　**分析时间**：2026-05-25
+**风险等级**：🟡 LOW　　**安全评分**：75/100　　**分析时间**：2026-06-01
 
-> 该脚本主要用于批量下载 Nexus Mods 集合中的所有 mod。所有网络请求均指向 NexusMods 官方域名，未发现数据外传至第三方或隐私采集行为。未检测到远程代码执行、代码混淆、DOM XSS、敏感 API 调用、供应链风险或 iframe 风险。存在权限申请冗余，建议精简。整体安全风险较低。
+> 该脚本仅与 nexusmods.com 官方域名通信，未发现隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链或 iframe 风险。主要风险为数据外传（仅限目标站点），整体安全性较高。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：api-router.nexusmods.com, www.nexusmods.com） |
+| 数据外传 | ❌ 检测到（目标：nexusmods.com, api-router.nexusmods.com） |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
@@ -53,15 +53,50 @@ title: "Nexus合集一键下载"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Transmission  
-> Script uses fetch and GM_xmlhttpRequest to communicate with api-router.nexusmods.com and www.nexusmods.com. All requests are to first-party domains and do not transmit user data beyond what is required for mod download functionality.  
-> 位置：fetchMods(), fetchDownloadLink()  
-> 建议：Ensure only necessary data is sent and avoid transmitting sensitive information.
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过 fetch 向 nexusmods.com 及其子域名（api-router.nexusmods.com）发送请求以获取和下载 mod 信息。未发现向第三方域名或非官方服务器发送数据。  
+> 位置：fetchMods, fetchDownloadLink, fetch  
+> 建议：仅与目标站点通信，避免向未知服务器发送数据。
 
-**🟠 MEDIUM** — Permission Abuse  
-> Script requests multiple @grant permissions (GM.xmlHttpRequest, GM_xmlhttpRequest, GM_setValue, GM_getValue, GM.setValue, GM.getValue, GM_addStyle), but only uses GM_xmlhttpRequest, GM.getValue, GM.setValue, and GM_addStyle in code.  
-> 位置：Metadata block  
-> 建议：Remove unused permissions (GM.xmlHttpRequest, GM_setValue, GM_getValue) to minimize attack surface.
+**⛔ CRITICAL** — 隐私采集  
+> 脚本未检测到对 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板、表单字段、键盘事件的读取或监听。  
+> 位置：全局  
+> 建议：继续保持，不采集用户隐私数据。
+
+**🔴 HIGH** — 远程代码执行  
+> 未检测到 eval、new Function、setTimeout(string)、setInterval(string)、动态 script 标签、@require 远程 JS、document.write 等远程代码执行风险。  
+> 位置：全局  
+> 建议：避免动态执行字符串代码。
+
+**🔴 HIGH** — 代码混淆  
+> 未检测到代码混淆、base64 解码、字符串数组映射、unicode 混淆或高度压缩单行代码。  
+> 位置：全局  
+> 建议：保持代码可读性，便于安全审计。
+
+**🔴 HIGH** — DOM XSS  
+> 未检测到用户输入或 URL 参数直接插入 innerHTML/outerHTML，未发现 DOM XSS 风险。  
+> 位置：全局  
+> 建议：插入 HTML 时始终进行转义。
+
+**🟠 MEDIUM** — 权限滥用  
+> @grant 权限与实际代码使用基本匹配，未发现高权限滥用。  
+> 位置：元数据  
+> 建议：仅申请实际需要的权限。
+
+**🟠 MEDIUM** — 敏感 API 调用  
+> 未检测到敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）调用。  
+> 位置：全局  
+> 建议：避免调用敏感 API。
+
+**🟠 MEDIUM** — 供应链风险  
+> 未检测到 @require 加载第三方库，未发现供应链风险。  
+> 位置：元数据  
+> 建议：如需第三方库，建议固定版本哈希并使用可信 CDN。
+
+**🟡 LOW** — ClickJacking / iframe 风险  
+> 未检测到脚本修改 frame 保护策略或创建隐藏 iframe。  
+> 位置：全局  
+> 建议：避免创建隐藏 iframe 进行数据提取。
 
 ---
 

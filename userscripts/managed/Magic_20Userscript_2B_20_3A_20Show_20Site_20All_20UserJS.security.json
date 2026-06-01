@@ -13,18 +13,25 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本未包含任何实际代码，仅有元数据。未检测到任何安全风险。",
+      "description": "脚本未提供完整代码，无法分析实际实现，仅根据元数据进行静态分析。",
       "location": "N/A",
-      "recommendation": "无代码无需安全加固，建议后续补充代码后再进行安全审查。",
+      "recommendation": "建议补充完整代码以进行全面安全审查。",
       "severity": "LOW",
-      "type": "No Code"
+      "type": "代码缺失"
     },
     {
-      "description": "申请了高权限（GM_openInTab、GM_xmlhttpRequest），但未实际使用。",
-      "location": "元数据 @grant",
-      "recommendation": "建议仅申请实际需要的权限，减少权限滥用风险。",
+      "description": "脚本声明了 GM_xmlhttpRequest 权限，并通过 @connect 允许访问多个第三方域名，但未见实际代码调用。",
+      "location": "元数据 @grant/@connect",
+      "recommendation": "仅在实际需要时申请和使用相关权限，避免权限滥用。",
       "severity": "MEDIUM",
-      "type": "Permission Overgrant"
+      "type": "权限申请"
+    },
+    {
+      "description": "脚本声明了 GM_openInTab 权限，但未见实际代码调用。",
+      "location": "元数据 @grant",
+      "recommendation": "仅在实际需要时申请和使用相关权限，避免权限滥用。",
+      "severity": "MEDIUM",
+      "type": "权限申请"
     }
   ],
   "obfuscation_detected": false,
@@ -32,12 +39,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "SAFE",
+  "risk_level": "LOW",
   "script_name": "Magic Userscript+ : Show Site All UserJS",
-  "security_score": 89,
-  "summary": "该脚本仅包含元数据，无实际代码，未检测到任何安全风险。存在权限过度申请，建议精简 @grant 权限。整体安全性高。",
+  "security_score": 81,
+  "summary": "本次安全审查仅基于元数据，未检测到实际的数据外传、隐私采集、远程代码执行、混淆、DOM XSS 等高危行为。脚本声明了部分高权限（如 GM_xmlhttpRequest、GM_openInTab），存在一定权限滥用风险，但未见实际代码调用。建议补充完整代码以进行深入分析。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-25T06:17:58.715558+00:00",
+  "analyzed_at": "2026-06-01T06:47:00.782546+00:00",
   "slug": "Magic_20Userscript_2B_20_3A_20Show_20Site_20All_20UserJS"
 }

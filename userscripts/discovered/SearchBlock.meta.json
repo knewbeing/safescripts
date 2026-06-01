@@ -17,7 +17,7 @@
   "require": [],
   "metadata_raw": "// @name  AC-有道取词+翻译-库文件\n// @description  库文件，不能直接调用的\n// @version  1.8\n// @namespace  youdao\n// @author  AC\n// @include  *\n// @icon  https://gitee.com/remixAC/GM_script/raw/master/images/head.jpg\n// @run-at  document-end\n// @connect  xbaidu.ntaow.com\n// @grant  GM_xmlhttpRequest\n// @note  V1.0 2019-02-21 用于跟随搜狗的API更新",
   "sha256": "ac531634d5be1b24efb47a49d0f0d316018c59870f496a415274a37acbc671a3",
-  "discovered_at": "2026-05-18T06:08:11.481675+00:00",
+  "discovered_at": "2026-06-01T06:48:27.247512+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
@@ -28,24 +28,26 @@
     "applicable_sites": [
       "所有网站"
     ],
-    "description": "本脚本是一个库文件，提供有道取词和翻译的基础功能，不能单独使用。它用于配合其他脚本，实现网页上的取词和翻译操作。用户无需直接操作此脚本。",
+    "description": "本脚本是一个库文件，主要用于获取有道取词和翻译相关的密钥信息，不能单独使用。它为其他脚本提供必要的数据支持，帮助实现取词和翻译功能。",
     "permissions": [
       {
-        "explanation": "允许脚本在后台发送网络请求，用于获取翻译所需的密钥。",
+        "explanation": "允许脚本发送跨域网络请求，用于获取翻译密钥等数据。",
         "grant": "GM_xmlhttpRequest"
       }
     ],
     "tags": [
       "翻译",
       "取词",
+      "辅助工具",
+      "库文件",
       "有道",
-      "脚本库",
-      "辅助工具"
+      "脚本依赖"
     ],
     "usage": [
-      "无需单独安装或操作此脚本。",
-      "请配合主脚本或相关取词翻译脚本一起使用。"
+      "本脚本不能直接使用。",
+      "需配合其他取词或翻译脚本一起安装。",
+      "安装后无需操作，其他脚本会自动调用其功能。"
     ],
-    "zh_name": "有道取词翻译库文件"
+    "zh_name": "AC-有道取词+翻译-库文件"
   }
 }

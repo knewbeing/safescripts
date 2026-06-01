@@ -7,93 +7,72 @@
     ],
     "detected": true
   },
-  "dom_xss_risk": true,
+  "dom_xss_risk": false,
   "issues": [
     {
-      "description": "Script defines server endpoints (duolingopro.net, api.duolingopro.net) and references feedback sending, XP/gem requests, and server-side processing. These likely involve transmitting user data, XP/gem requests, and possibly page content to third-party servers.",
-      "location": "Global variables and systemText, feedback, XP/gem request logic",
-      "recommendation": "Review all network requests for user data leakage; restrict transmission to only necessary, non-sensitive data; disclose all data sent to users.",
+      "description": "Script defines external server endpoints (duolingopro.net, api.duolingopro.net) and references them as API endpoints. Although the code snippet is incomplete, the presence of these endpoints and the script's description (XP farming, gems, etc.) strongly suggest network requests to these third-party servers, likely transmitting user actions or data.",
+      "location": "Global scope, variables serverURL and apiURL",
+      "recommendation": "Review all network requests. Do not transmit user data or authentication tokens to third-party servers unless strictly necessary and with user consent.",
       "severity": "CRITICAL",
       "type": "Data Exfiltration"
     },
     {
-      "description": "Script reads document.cookie to extract language setting. Potential for reading other cookies, including session/auth tokens.",
+      "description": "Script reads document.cookie to extract the 'lang' value. This is a privacy-sensitive operation, as cookies may contain session or user information.",
       "location": "let systemLanguage = document.cookie.split('; ').find(row => row.startsWith('lang=')).split('=')[1];",
-      "recommendation": "Limit cookie access to only non-sensitive values; avoid reading authentication/session cookies.",
+      "recommendation": "Limit cookie access to only necessary keys. Do not transmit cookie values externally.",
       "severity": "CRITICAL",
       "type": "Privacy Collection"
     },
     {
-      "description": "Script references navigator.language and Intl.Locale, which are browser fingerprinting vectors.",
+      "description": "Script uses navigator.language and Intl.Locale to infer user region and measurement system. While not highly sensitive, this is a form of browser fingerprinting.",
       "location": "const region = new Intl.Locale(navigator.language).maximize().region;",
-      "recommendation": "Avoid collecting fingerprinting information unless strictly necessary; disclose to users.",
+      "recommendation": "Avoid collecting unnecessary browser fingerprinting data unless required for functionality.",
       "severity": "HIGH",
       "type": "Privacy Collection"
     },
     {
-      "description": "Script uses innerHTML to inject Terms & Conditions and other UI elements, including user-provided feedback. Potential DOM XSS if user input is not sanitized.",
-      "location": "systemText, feedback UI, Terms & Conditions display",
-      "recommendation": "Sanitize all user input before inserting into DOM via innerHTML.",
+      "description": "Script is not minified or obfuscated, but the code is incomplete. If the rest of the script contains obfuscated or minified code, this would increase risk.",
+      "location": "N/A (based on provided code)",
+      "recommendation": "Avoid code obfuscation. Publish readable source code for transparency.",
       "severity": "HIGH",
-      "type": "DOM XSS"
-    },
-    {
-      "description": "Script defines external server endpoints and likely uses fetch/XMLHttpRequest to communicate with them, but actual network request code is not shown in the snippet.",
-      "location": "serverURL, apiURL variables",
-      "recommendation": "Ensure all network requests are secure (HTTPS), and avoid sending sensitive user data.",
-      "severity": "HIGH",
-      "type": "Data Transmission"
-    },
-    {
-      "description": "No evidence of code obfuscation or minification in the provided snippet.",
-      "location": "Global code structure",
-      "recommendation": "Maintain transparency; avoid obfuscation.",
-      "severity": "LOW",
       "type": "Obfuscation"
     },
     {
-      "description": "No evidence of eval, new Function, or dynamic script loading in the provided snippet.",
-      "location": "Global code structure",
-      "recommendation": "Avoid dynamic code execution.",
-      "severity": "LOW",
+      "description": "Script does not use eval, new Function, or dynamic script injection in the provided snippet. However, the script is incomplete and may contain such patterns elsewhere.",
+      "location": "N/A (based on provided code)",
+      "recommendation": "Avoid dynamic code execution. Only use static, auditable code.",
+      "severity": "HIGH",
       "type": "Remote Code Execution"
     },
     {
-      "description": "Script only requests GM_log permission, which is low risk and matches usage.",
-      "location": "@grant GM_log",
-      "recommendation": "Do not request unnecessary permissions.",
+      "description": "@grant only requests GM_log, which is low risk. No evidence of permission abuse in the provided code.",
+      "location": "Metadata block",
+      "recommendation": "Only request permissions actually used by the script.",
       "severity": "LOW",
       "type": "Permission Usage"
     },
     {
-      "description": "No evidence of supply chain risk (@require) in metadata or code.",
-      "location": "Metadata block",
-      "recommendation": "If using external libraries, fix version and use trusted sources.",
-      "severity": "LOW",
-      "type": "Supply Chain"
-    },
-    {
-      "description": "No evidence of WebSocket/EventSource usage in the provided snippet.",
-      "location": "Global code structure",
-      "recommendation": "Avoid persistent connections unless necessary.",
-      "severity": "LOW",
-      "type": "WebSocket Usage"
+      "description": "Script references external download and update URLs (GreasyFork). Supply chain risk is low if only official sources are used, but if the script or its dependencies are loaded from duolingopro.net, risk increases.",
+      "location": "@downloadURL, @updateURL",
+      "recommendation": "Pin dependencies to specific versions and use trusted CDNs only.",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "Reads document.cookie for language",
-      "Uses navigator.language and Intl.Locale (fingerprinting)"
+      "Reads document.cookie for 'lang' value",
+      "Reads navigator.language and infers region"
     ],
     "detected": true
   },
   "risk_level": "CRITICAL",
   "script_name": "Duolingo PRO",
-  "security_score": 0,
-  "summary": "This script transmits data to third-party servers (duolingopro.net), reads cookies, and uses browser fingerprinting vectors. It also injects user input into the DOM, creating potential XSS risks. The script is not obfuscated and only requests GM_log permission. Due to critical data exfiltration and privacy collection risks, the script is not approved.",
-  "supply_chain_risk": false,
+  "security_score": 25,
+  "summary": "This script defines and likely uses third-party endpoints (duolingopro.net, api.duolingopro.net) for core functionality, which presents a critical risk of user data exfiltration. It reads cookies and browser locale, which are privacy-sensitive. The script's purpose (XP farming, free gems, etc.) and the presence of external API endpoints strongly suggest that user actions and possibly authentication data are transmitted to these servers. The script is not obfuscated in the provided snippet, but the code is incomplete. There is no evidence of DOM XSS or dynamic code execution in the visible code, but the overall risk is CRITICAL due to data exfiltration and privacy collection. Use with extreme caution.",
+  "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-25T06:30:05.315442+00:00",
+  "analyzed_at": "2026-06-01T06:59:44.953339+00:00",
   "slug": "Duolingo_PRO"
 }

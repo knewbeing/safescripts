@@ -7,25 +7,67 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "@require 加载的第三方库（Vue 和 jQuery）来自 jsdelivr 官方 CDN，但未固定版本哈希，存在供应链污染风险。",
+      "description": "脚本未检测到任何外部数据传输（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource、sendBeacon 等），也未发现任何数据上报、统计或追踪行为。",
+      "location": "全局",
+      "recommendation": "保持现状，勿添加任何外传逻辑。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "未检测到对 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板、表单字段、键盘输入监听并外传等隐私采集行为。",
+      "location": "全局",
+      "recommendation": "保持现状，勿采集用户隐私数据。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    },
+    {
+      "description": "未检测到 eval、new Function、setTimeout(string)、setInterval(string)、动态 script 标签加载远程 JS、document.write 插入脚本等远程代码执行风险。",
+      "location": "全局",
+      "recommendation": "保持现状，避免动态执行外部代码。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "未检测到代码混淆（无 base64 解码、字符串数组映射、unicode 混淆、高度压缩单行代码等）。",
+      "location": "全局",
+      "recommendation": "保持代码可读性，便于安全审计。",
+      "severity": "HIGH",
+      "type": "代码混淆"
+    },
+    {
+      "description": "未检测到 DOM XSS 风险（未发现用户输入或 URL 参数直接插入 innerHTML/outerHTML、document.write、iframe src=javascript: 等）。",
+      "location": "全局",
+      "recommendation": "插入 HTML 时始终进行转义。",
+      "severity": "HIGH",
+      "type": "DOM XSS / 注入"
+    },
+    {
+      "description": "脚本申请了部分高权限（如 unsafeWindow、GM_setValue、GM_getValue、GM_registerMenuCommand），但均有实际用途，未发现权限滥用。",
+      "location": "元数据 @grant",
+      "recommendation": "仅申请实际需要的权限，定期复查。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "未检测到敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API）调用。",
+      "location": "全局",
+      "recommendation": "如需调用敏感 API，需征得用户同意。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "@require 加载的第三方库（Vue 2.7.16、jQuery 3.6.4）均来自官方 CDN（jsdelivr），且为固定版本，供应链风险较低。",
       "location": "元数据 @require",
-      "recommendation": "建议使用带有完整版本号和哈希的 CDN URL，或官方 CDN，避免使用可变/latest 路径。",
+      "recommendation": "如需加载第三方库，务必使用可信 CDN 并锁定版本。",
       "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
+      "type": "供应链风险"
     },
     {
-      "description": "申请了 unsafeWindow 权限，允许脚本访问页面全局对象，可能被滥用或引发安全问题。",
-      "location": "元数据 @grant unsafeWindow",
-      "recommendation": "仅在确实需要与页面脚本交互时使用 unsafeWindow，避免滥用。",
-      "severity": "MEDIUM",
-      "type": "Permission Abuse"
-    },
-    {
-      "description": "申请了 window.onurlchange 权限，但代码中未使用该 API，属于高权限未使用。",
-      "location": "元数据 @grant window.onurlchange",
-      "recommendation": "移除未使用的高权限申请，减少攻击面。",
-      "severity": "MEDIUM",
-      "type": "Permission Abuse"
+      "description": "未检测到脚本修改 frame 保护策略或创建隐藏 iframe 用于数据提取。",
+      "location": "全局",
+      "recommendation": "如需操作 iframe，需明确告知用户。",
+      "severity": "LOW",
+      "type": "ClickJacking / iframe 风险"
     }
   ],
   "obfuscation_detected": false,
@@ -33,12 +75,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "LOW",
+  "risk_level": "SAFE",
   "script_name": "HTML5视频播放工具",
-  "security_score": 81,
-  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、WebSocket 使用等高危行为。主要风险为供应链风险（未固定版本哈希的第三方库）和权限滥用（申请了未使用的高权限）。整体安全性较高，建议修正供应链和权限申请问题以进一步提升安全性。",
-  "supply_chain_risk": true,
+  "security_score": 100,
+  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链或 iframe 风险。所有 @grant 权限均有实际用途，@require 的第三方库来源可信且锁定版本。整体安全性高，适合普通用户使用。建议持续关注第三方库安全更新，避免未来潜在风险。",
+  "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-25T06:32:59.965765+00:00",
+  "analyzed_at": "2026-06-01T07:02:17.237029+00:00",
   "slug": "HTML5视频播放工具"
 }

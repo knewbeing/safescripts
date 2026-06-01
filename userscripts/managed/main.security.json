@@ -1,82 +1,33 @@
 {
-  "approved": true,
+  "approved": false,
   "data_transmission": {
     "destinations": [
-      "https://fanyi.iflyrec.com/TJHZTranslationService/v2/textAutoTranslation"
+      "fanyi.iflyrec.com"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 GM_xmlhttpRequest 向 fanyi.iflyrec.com 发送翻译请求，可能包含页面内容（如菜单、描述等文本）。",
-      "location": "函数 transDesc、transBySelector、翻译相关逻辑",
-      "recommendation": "确保发送内容仅为非敏感页面文本，不包含用户隐私或敏感数据。建议在请求前过滤敏感信息。",
+      "description": "脚本通过 GM_xmlhttpRequest 访问第三方翻译接口 https://fanyi.iflyrec.com，可能传递页面内容进行翻译。",
+      "location": "TRANS_ENGINES 配置与后续网络请求逻辑",
+      "recommendation": "仅允许用户主动触发翻译请求，明确告知用户数据将被发送到第三方服务器。避免自动上传页面内容。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "@require 加载的 locals.js 文件来自 raw.githubusercontent.com，属于可信官方仓库，但未固定版本哈希，仅通过 query 参数标识版本。",
+      "description": "@require 加载的 locals.js 文件来自 raw.githubusercontent.com，虽然为 GitHub 官方 CDN，但未锁定具体 commit 哈希，存在一定供应链风险。",
       "location": "@require https://raw.githubusercontent.com/maboloshi/github-chinese/gh-pages/locals.js?v1.9.4-2026-05-21",
-      "recommendation": "建议使用固定 commit hash 或 release 版本，避免供应链污染风险。",
+      "recommendation": "建议使用特定 commit 哈希锁定依赖，防止上游代码被篡改。",
       "severity": "MEDIUM",
       "type": "供应链风险"
     },
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限，并实际用于翻译接口调用，权限使用合理。",
-      "location": "元数据 @grant",
-      "recommendation": "无风险，权限申请与实际用途一致。",
-      "severity": "LOW",
+      "description": "脚本申请了 GM_xmlhttpRequest、GM_getValue、GM_setValue、GM_registerMenuCommand、GM_unregisterMenuCommand、GM_notification 等多项权限，但部分权限如 GM_notification 在当前代码片段未见实际使用。",
+      "location": "元数据 @grant 字段",
+      "recommendation": "仅申请实际使用的权限，减少权限滥用风险。",
+      "severity": "MEDIUM",
       "type": "权限滥用"
-    },
-    {
-      "description": "脚本未检测到 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险。",
-      "location": "主脚本代码",
-      "recommendation": "保持当前安全实践，避免动态执行字符串代码。",
-      "severity": "LOW",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "脚本未检测到 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板读取等隐私采集行为。",
-      "location": "主脚本代码",
-      "recommendation": "保持当前安全实践，避免采集用户隐私数据。",
-      "severity": "LOW",
-      "type": "隐私采集"
-    },
-    {
-      "description": "未检测到代码混淆、base64 解码、字符串数组映射、unicode 混淆等特征。",
-      "location": "主脚本代码",
-      "recommendation": "保持代码可读性，避免混淆。",
-      "severity": "LOW",
-      "type": "代码混淆"
-    },
-    {
-      "description": "未检测到 DOM XSS 风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML。",
-      "location": "主脚本代码",
-      "recommendation": "保持当前安全实践，避免 XSS 注入。",
-      "severity": "LOW",
-      "type": "DOM XSS / 注入"
-    },
-    {
-      "description": "未检测到敏感 API 调用（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API）。",
-      "location": "主脚本代码",
-      "recommendation": "保持当前安全实践，避免调用敏感 API。",
-      "severity": "LOW",
-      "type": "敏感 API 调用"
-    },
-    {
-      "description": "未检测到 WebSocket、EventSource、navigator.sendBeacon 等网络请求。",
-      "location": "主脚本代码",
-      "recommendation": "保持当前安全实践，避免使用实时数据外传通道。",
-      "severity": "LOW",
-      "type": "数据外传"
-    },
-    {
-      "description": "未检测到 ClickJacking 或 iframe 风险，未修改 frame 保护策略或创建隐藏 iframe。",
-      "location": "主脚本代码",
-      "recommendation": "保持当前安全实践，避免 iframe 滥用。",
-      "severity": "LOW",
-      "type": "ClickJacking / iframe 风险"
     }
   ],
   "obfuscation_detected": false,
@@ -86,10 +37,10 @@
   },
   "risk_level": "HIGH",
   "script_name": "GitHub 中文化插件",
-  "security_score": 52,
-  "summary": "该脚本主要用于 GitHub 页面汉化，未检测到隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 调用等高风险行为。唯一的 CRITICAL 风险为通过 GM_xmlhttpRequest 向第三方翻译接口发送页面内容，存在数据外传风险。供应链风险为 MEDIUM，因 @require 未固定版本哈希。总体安全评分为 52，建议关注数据外传内容及供应链固定版本。",
+  "security_score": 42,
+  "summary": "该脚本主要功能为本地化 GitHub 界面，未发现明显的隐私采集、代码混淆或 DOM XSS 风险。主要安全隐患为通过 GM_xmlhttpRequest 将页面内容发送到第三方翻译接口（fanyi.iflyrec.com），存在数据外传风险。@require 依赖未锁定 commit 哈希，存在一定供应链风险。部分申请的权限未见实际使用，建议精简。总体风险等级为 HIGH，不建议在敏感环境下直接使用。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-25T06:18:42.518025+00:00",
+  "analyzed_at": "2026-06-01T06:48:41.139760+00:00",
   "slug": "main"
 }

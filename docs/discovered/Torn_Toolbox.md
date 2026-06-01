@@ -30,14 +30,14 @@ title: "Torn Toolbox"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：17/100　　**分析时间**：2026-05-25
+**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-01
 
-> 该脚本存在数据外传和隐私采集的 CRITICAL 风险，主要体现在 API Key 的存储和向官方及第三方服务器发起请求。未发现远程代码执行、代码混淆、DOM XSS 等高风险行为。建议移除未使用的高权限申请，并对 API Key 做本地加密存储。整体风险等级为 CRITICAL，安全评分为 17。请谨慎使用。若后续代码有向 weav3r.dev 发送用户数据行为，风险将进一步提升。
+> 该脚本主要与 Torn 官方 API 通信，未发现隐私数据采集、远程代码执行、代码混淆或 DOM XSS 风险。存在未使用的 @connect 和 @grant 权限，建议精简元数据以进一步降低权限暴露。整体安全风险低。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：api.torn.com, weav3r.dev） |
-| 隐私采集 | ❌ 检测到（存储和读取用户 API Key） |
+| 数据外传 | ❌ 检测到（目标：api.torn.com） |
+| 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -45,50 +45,40 @@ title: "Torn Toolbox"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本通过 fetch 向 api.torn.com 发起请求，携带用户 API Key，属于用户数据外传行为。虽然目标为官方 API，但涉及敏感数据。  
-> 位置：AIO.getMarket() 方法  
-> 建议：确保 API Key 仅用于官方 Torn API，避免泄露给第三方。建议对 API Key 做本地加密存储。
-
-**⛔ CRITICAL** — 数据外传  
-> 脚本元数据 @connect weav3r.dev，可能存在后续 GM_xmlhttpRequest 向 weav3r.dev 发起请求的风险（如 Bazaar 数据、统计等）。  
-> 位置：元数据 @connect weav3r.dev  
-> 建议：检查所有向 weav3r.dev 的请求，确认不携带用户敏感信息或 Cookie。建议明确数据类型和用途。
-
-**⛔ CRITICAL** — 隐私采集  
-> 脚本存储和读取 API Key，属于隐私采集行为。虽然仅用于 Torn API，但存储敏感信息。  
-> 位置：AIO.getApiKey()、AIO.set('apiKey', ...)  
-> 建议：建议对 API Key 做本地加密存储，并在 UI 中明确告知用户用途。
-
 **🟠 MEDIUM** — 权限滥用  
-> 脚本申请 GM.xmlHttpRequest 和 GM_xmlhttpRequest 高权限，但实际代码中仅使用 fetch，存在权限滥用风险。  
-> 位置：元数据 @grant GM.xmlHttpRequest, GM_xmlHttpRequest  
-> 建议：移除未使用的高权限申请，减少攻击面。
+> 脚本申请了 GM.xmlHttpRequest/GM_xmlhttpRequest 权限，但实际仅使用 fetch 进行网络请求。  
+> 位置：元数据 @grant  
+> 建议：建议移除未使用的 GM.xmlHttpRequest/GM_xmlhttpRequest 权限。
+
+**🟡 LOW** — 数据外传  
+> 脚本通过 fetch 请求 Torn 官方 API（api.torn.com），未发现向第三方服务器发送用户数据。  
+> 位置：AIO.getMarket (fetch https://api.torn.com/torn/)  
+> 建议：仅与官方 API 通信，避免向未知第三方域名发送数据。
+
+**🟡 LOW** — 权限滥用  
+> 脚本声明 @connect weav3r.dev，但代码中未发现实际向 weav3r.dev 发起网络请求。  
+> 位置：元数据 @connect  
+> 建议：如无实际用途，建议移除 @connect weav3r.dev，减少权限暴露。
+
+**🟡 LOW** — 隐私采集  
+> 脚本未发现对用户输入、cookie、localStorage、sessionStorage、IndexedDB、剪贴板等隐私数据的读取和外传。  
+> 位置：全局  
+> 建议：保持现状，勿采集用户隐私数据。
 
 **🟡 LOW** — 远程代码执行  
-> 脚本通过 fetch 动态请求 Torn API，未发现远程代码执行、eval、innerHTML 注入等高风险操作。  
-> 位置：全局代码审查  
-> 建议：保持代码安全，避免后续引入 eval 或动态脚本加载。
+> 脚本未发现 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险。  
+> 位置：全局  
+> 建议：继续避免动态执行字符串代码。
 
 **🟡 LOW** — 代码混淆  
-> 未发现代码混淆、base64 解码、字符串映射等混淆特征。  
-> 位置：全局代码审查  
-> 建议：保持代码可读性，便于社区审查。
+> 脚本未发现代码混淆、base64 解码、字符串数组映射、unicode 混淆等特征。  
+> 位置：全局  
+> 建议：保持代码可读性，便于安全审计。
 
 **🟡 LOW** — DOM XSS  
-> 未发现 DOM XSS、用户输入直接插入 innerHTML/outerHTML 的风险。  
-> 位置：AIO.showWarning() 等 UI 相关代码  
-> 建议：继续保持安全的 DOM 操作，避免后续引入不可信内容。
-
-**🟡 LOW** — 敏感 API 调用  
-> 未发现敏感 API 调用（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等）。  
-> 位置：全局代码审查  
-> 建议：如需调用敏感 API，需征得用户明确同意。
-
-**🟡 LOW** — 供应链风险  
-> 未发现 @require 加载第三方库，供应链风险较低。  
-> 位置：元数据 @require 缺失  
-> 建议：如需引入第三方库，建议固定版本哈希并使用官方 CDN。
+> 脚本未发现 DOM XSS 风险（未将用户输入直接插入 innerHTML/outerHTML）。  
+> 位置：全局  
+> 建议：继续避免插入不可信内容到 DOM。
 
 ---
 

@@ -1,5 +1,5 @@
 {
-  "approved": true,
+  "approved": false,
   "data_transmission": {
     "destinations": [
       "sponsor.ajay.app",
@@ -10,90 +10,68 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "Script uses GM_xmlhttpRequest to communicate with sponsor.ajay.app for SponsorBlock functionality. This is a third-party API, but only video ID and category data are sent, not sensitive user data.",
-      "location": "CFG.sbApi and related SponsorBlock logic",
-      "recommendation": "Ensure only minimal, non-sensitive data is sent. Review SponsorBlock privacy policy.",
+      "description": "The script uses GM_xmlhttpRequest to communicate with sponsor.ajay.app (SponsorBlock API) and evdfrance.fr (video download service). These are third-party servers. While SponsorBlock is a well-known public API, evdfrance.fr is less known and may pose a privacy risk if user data is sent.",
+      "location": "Network requests for SponsorBlock and download features",
+      "recommendation": "Review the data sent to these endpoints. Ensure no sensitive user data, cookies, or identifiers are transmitted. Consider warning users about third-party data sharing.",
       "severity": "CRITICAL",
-      "type": "Data Transmission"
+      "type": "Data Exfiltration"
     },
     {
-      "description": "Script uses GM_xmlhttpRequest to communicate with evdfrance.fr for video download functionality. This may transmit video IDs and possibly other metadata.",
-      "location": "evdfrance.fr download logic",
-      "recommendation": "Ensure only necessary data is sent. Review evdfrance.fr privacy and security.",
-      "severity": "CRITICAL",
-      "type": "Data Transmission"
-    },
-    {
-      "description": "Script uses GM_getValue and GM_setValue to store user settings locally. No evidence of sensitive data collection or exfiltration.",
-      "location": "S object and save() function",
-      "recommendation": "Do not store sensitive information. Current usage is acceptable.",
-      "severity": "MEDIUM",
+      "description": "The script stores and retrieves user settings using GM_setValue and GM_getValue. No evidence of sensitive data (like cookies, passwords, or form data) being collected or transmitted.",
+      "location": "Settings persistence logic",
+      "recommendation": "Continue to avoid collecting sensitive information. Document what is stored for transparency.",
+      "severity": "LOW",
       "type": "Privacy Collection"
     },
     {
-      "description": "No evidence of eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection.",
+      "description": "The script requests GM_xmlhttpRequest permission, which is necessary for SponsorBlock and download features, but does not appear to request unnecessary high-privilege grants.",
+      "location": "UserScript metadata block",
+      "recommendation": "Limit @grant permissions to only those required. No action needed unless new permissions are added.",
+      "severity": "LOW",
+      "type": "Permission Usage"
+    },
+    {
+      "description": "The script does not use eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection. No evidence of remote code execution.",
       "location": "Full script review",
-      "recommendation": "Maintain strict avoidance of dynamic code execution.",
-      "severity": "HIGH",
+      "recommendation": "Maintain this practice. Avoid introducing dynamic code execution.",
+      "severity": "LOW",
       "type": "Remote Code Execution"
     },
     {
-      "description": "No evidence of code obfuscation, base64 decoding, unicode encoding, or minified/obfuscated code.",
+      "description": "The script does not use obfuscation, base64 encoding, or minified code. Code is readable and maintainable.",
       "location": "Full script review",
-      "recommendation": "Maintain code clarity and transparency.",
-      "severity": "HIGH",
+      "recommendation": "Continue to publish unobfuscated code for transparency.",
+      "severity": "LOW",
       "type": "Code Obfuscation"
     },
     {
-      "description": "No evidence of DOM XSS or injection vulnerabilities. User input is not inserted into innerHTML/outerHTML.",
+      "description": "The script does not manipulate iframe src, frame protection, or create hidden iframes.",
       "location": "Full script review",
-      "recommendation": "Continue to avoid unsafe DOM manipulation.",
-      "severity": "HIGH",
-      "type": "DOM XSS/Injection"
-    },
-    {
-      "description": "Script requests GM_xmlhttpRequest, GM_addStyle, GM_setValue, GM_getValue. All are used appropriately. No evidence of unused high privileges.",
-      "location": "Metadata block (@grant)",
-      "recommendation": "Do not request unnecessary permissions.",
-      "severity": "MEDIUM",
-      "type": "Permission Abuse"
-    },
-    {
-      "description": "No evidence of sensitive API usage (geolocation, RTCPeerConnection, MediaDevices, Clipboard API, Notification API).",
-      "location": "Full script review",
-      "recommendation": "Avoid introducing sensitive API calls.",
-      "severity": "MEDIUM",
-      "type": "Sensitive API Usage"
-    },
-    {
-      "description": "Third-party APIs used: sponsor.ajay.app (SponsorBlock, widely trusted), evdfrance.fr (video download, less known). No @require third-party JS libraries.",
-      "location": "Metadata block (@connect)",
-      "recommendation": "Monitor evdfrance.fr for supply chain risks.",
-      "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
-    },
-    {
-      "description": "No evidence of clickjacking or iframe manipulation.",
-      "location": "Full script review",
-      "recommendation": "Continue to avoid iframe risks.",
+      "recommendation": "Maintain this practice.",
       "severity": "LOW",
-      "type": "ClickJacking/Iframe Risk"
+      "type": "ClickJacking / iframe Risk"
+    },
+    {
+      "description": "The script uses @require only for its own code (no external libraries).",
+      "location": "UserScript metadata block",
+      "recommendation": "If adding external libraries, use official CDNs and fixed versions.",
+      "severity": "LOW",
+      "type": "Supply Chain Risk"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "Stores settings (ad skip, SponsorBlock, quality) locally via GM_setValue/GM_getValue.",
-      "No evidence of document.cookie, localStorage, sessionStorage, IndexedDB, clipboard, or keylogger behavior."
+      "Stores user settings (ad skip, SponsorBlock, quality) via GM_setValue/GM_getValue."
     ],
     "detected": false
   },
   "risk_level": "HIGH",
   "script_name": "EasyTube V4.0 — Ad Skip & SponsorBlock & HD Download⬇️🚀 (No Lag)",
-  "security_score": 24,
-  "summary": "The script is generally well-written and avoids code obfuscation, dynamic code execution, DOM XSS, and sensitive API usage. However, it communicates with two third-party servers (sponsor.ajay.app and evdfrance.fr) for SponsorBlock and video download features, which introduces CRITICAL data transmission risks. No evidence of privacy collection or exfiltration beyond necessary video metadata. Supply chain risk is moderate due to reliance on evdfrance.fr. Overall, the script is functional but carries high risk due to external data transmission.",
-  "supply_chain_risk": true,
+  "security_score": 50,
+  "summary": "The script provides ad skipping, SponsorBlock, and HD download features for YouTube. It communicates with two third-party servers: sponsor.ajay.app (SponsorBlock API, widely used) and evdfrance.fr (for video downloads, less known). No evidence of sensitive data collection, code obfuscation, or remote code execution. The main risk is data transmission to third-party endpoints, especially evdfrance.fr, which may receive video URLs or identifiers. Users should be aware of this external data sharing. Overall, the script is well-written and transparent, but the third-party data transmission is a significant privacy consideration.",
+  "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-25T06:30:29.292954+00:00",
+  "analyzed_at": "2026-06-01T07:00:19.657168+00:00",
   "slug": "EasyTube_V40_Ad_Skip_SponsorBlock_HD_Download_No_Lag"
 }

@@ -10,18 +10,18 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "@require 加载的第三方库（LegacyGMjs.js, CommLinkjs.js, UniversalBoardDrawerjs.js）均来自 update.greasyfork.org，未固定版本哈希，存在供应链风险。",
-      "location": "UserScript metadata (@require)",
-      "recommendation": "建议使用官方 CDN 并固定版本哈希，避免供应链污染。",
+      "description": "@require 加载的第三方库（LegacyGMjs.js、CommLinkjs.js、UniversalBoardDrawerjs.js）均来自 greasyfork.org 的 update 子域，非官方 CDN，且未锁定具体版本哈希。",
+      "location": "@require 元数据",
+      "recommendation": "建议使用官方 CDN 或可信源，并锁定具体版本哈希，避免供应链污染。",
       "severity": "MEDIUM",
       "type": "Supply Chain Risk"
     },
     {
-      "description": "脚本申请了 GM_openInTab、GM_setClipboard、GM_notification、unsafeWindow 等高权限，但代码中未见全部使用，存在权限滥用风险。",
-      "location": "UserScript metadata (@grant)",
-      "recommendation": "仅申请实际需要的权限，移除未使用的高权限。",
+      "description": "脚本申请了 GM_openInTab、GM_notification、unsafeWindow 等高权限，但主代码未见实际使用。",
+      "location": "@grant 元数据",
+      "recommendation": "仅申请实际需要的权限，减少潜在攻击面。",
       "severity": "MEDIUM",
-      "type": "Permission Abuse"
+      "type": "Permission Overuse"
     }
   ],
   "obfuscation_detected": false,
@@ -32,9 +32,9 @@
   "risk_level": "MEDIUM",
   "script_name": "🏆 [#1 Chess Assistant] A.C.A.S (Advanced Chess Assistance System)",
   "security_score": 84,
-  "summary": "脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆和 DOM XSS 风险。主要风险为供应链风险（@require 未固定版本哈希）和权限滥用（申请高权限但未全部使用）。建议加强第三方库管理和权限最小化。整体安全性为中等，适合在受控环境下使用。",
+  "summary": "该脚本主逻辑未发现明显的数据外传、隐私采集、远程代码执行或 XSS 风险。主要安全隐患为供应链风险（@require 加载的第三方库未锁定哈希且非官方 CDN）和权限滥用（申请了未实际使用的高权限）。建议加强第三方依赖管理和最小化权限申请。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-25T06:24:59.597846+00:00",
+  "analyzed_at": "2026-06-01T06:54:10.212548+00:00",
   "slug": "1_Chess_Assistant_ACAS_Advanced_Chess_Assistance_System"
 }

@@ -35,9 +35,9 @@ title: "YouTube年龄限制绕过"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：57/100　　**分析时间**：2026-05-25
+**风险等级**：🟠 MEDIUM　　**安全评分**：52/100　　**分析时间**：2026-06-01
 
-> The script is generally transparent and does not collect privacy-sensitive data or abuse permissions. However, it relies on third-party proxy servers for bypassing YouTube age restrictions, which introduces a critical data transmission risk and a medium supply chain risk. The use of eval() for sandbox bypass is a high risk but is controlled. No evidence of DOM XSS, code obfuscation, or sensitive API abuse. Users should be aware of the risks associated with proxy server usage.
+> 该脚本通过代理服务器绕过 YouTube 年龄限制，涉及向第三方服务器发送部分视频请求数据，存在一定的数据外传风险。未发现隐私采集、键盘监听、表单读取、指纹收集等高危行为。代码结构清晰，无混淆。主要风险在于依赖第三方代理服务器，建议高级用户自行部署代理。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -46,54 +46,29 @@ title: "YouTube年龄限制绕过"
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ⚠️ 存在风险 |
+| 供应链风险 | ✅ 可信 |
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Transmission  
-> Script uses XMLHttpRequest to fetch YouTube player base.js and possibly interacts with proxy servers for unlocking age-restricted videos. The proxy servers are third-party and may receive video IDs and possibly other metadata.  
-> 位置：ACCOUNT_PROXY_SERVER_HOST and VIDEO_PROXY_SERVER_HOST variables; XMLHttpRequest usage in getSignatureTimestamp()  
-> 建议：Ensure proxy servers are trusted and review their privacy policy. Avoid sending unnecessary user data.
+**⛔ CRITICAL** — 数据外传  
+> 脚本包含对第三方代理服务器（https://youtube-proxy.zerody.one 和 https://ny.4everproxy.com）的网络请求，用于绕过 YouTube 年龄限制。部分请求可能包含视频 ID、认证头等信息，但未发现直接传输用户 Cookie、表单、剪贴板或敏感隐私数据。  
+> 位置：ACCOUNT_PROXY_SERVER_HOST, VIDEO_PROXY_SERVER_HOST 相关逻辑  
+> 建议：建议用户自行部署代理服务器，或信任作者提供的服务器。
 
-**🔴 HIGH** — Remote Code Execution  
-> Script uses eval() to inject itself into the main window context for compatibility with Greasemonkey sandbox restrictions.  
+**🔴 HIGH** — 远程代码执行  
+> 脚本通过 eval 注入自身到页面主环境（Firefox 兼容性 hack），但未发现动态加载远程代码或执行外部不可信内容。  
 > 位置：window.eval('(' + iife.toString() + ')(true);')  
-> 建议：Avoid using eval() where possible. If necessary for compatibility, ensure injected code is strictly controlled and not influenced by external input.
+> 建议：尽量避免 eval，或确保注入内容安全可控。
 
-**🟠 MEDIUM** — Supply Chain Risk  
-> Proxy servers are hardcoded and not official YouTube endpoints. Supply chain risk exists if these proxies are compromised.  
-> 位置：ACCOUNT_PROXY_SERVER_HOST and VIDEO_PROXY_SERVER_HOST variables  
-> 建议：Allow users to configure their own trusted proxy or use official endpoints where possible.
+**🟡 LOW** — 代码混淆  
+> 脚本未混淆，结构清晰，便于审计。  
+> 位置：全局  
+> 建议：无
 
-**🟡 LOW** — Privacy Collection  
-> No evidence of privacy collection such as reading cookies, localStorage, sessionStorage, IndexedDB, clipboard, or keylogging.  
-> 位置：Entire script  
-> 建议：Maintain current practice; do not add privacy-invasive features.
-
-**🟡 LOW** — Code Obfuscation  
-> No evidence of code obfuscation, minification, or base64/unicode string encoding.  
-> 位置：Entire script  
-> 建议：Maintain readable code for transparency.
-
-**🟡 LOW** — DOM XSS  
-> No DOM XSS risk detected. User input and URL parameters are not directly inserted into innerHTML/outerHTML or document.write().  
-> 位置：Entire script  
-> 建议：Continue to sanitize any future user input before DOM insertion.
-
-**🟡 LOW** — Permission Abuse  
-> No excessive or unused permissions. @grant none is used.  
-> 位置：Metadata block  
-> 建议：Maintain minimal permission usage.
-
-**🟡 LOW** — Sensitive API Usage  
-> No sensitive API calls (geolocation, RTCPeerConnection, MediaDevices, Clipboard API, Notification API) detected.  
-> 位置：Entire script  
-> 建议：Avoid adding sensitive API calls unless strictly necessary.
-
-**🟡 LOW** — ClickJacking / iframe Risk  
-> No clickjacking or iframe manipulation detected.  
-> 位置：Entire script  
-> 建议：Maintain current practice.
+**🟡 LOW** — 权限滥用  
+> 脚本未申请任何 @grant 权限，实际权限最小化。  
+> 位置：@grant none  
+> 建议：无
 
 ---
 

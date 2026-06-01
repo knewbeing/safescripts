@@ -35,9 +35,9 @@ title: "多邻国 DuoHacker"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：39/100　　**分析时间**：2026-05-25
+**风险等级**：⛔ CRITICAL　　**安全评分**：42/100　　**分析时间**：2026-06-01
 
-> Duolingo DuoHacker 用户脚本存在严重的数据外传风险，允许与多个非官方第三方域通信（如 api.twisk.fun、raw.githubusercontent.com、greasyfork.org），可能导致用户数据泄露或被追踪。此外，脚本申请了高权限但主代码段未见实际使用，存在权限滥用和供应链风险。未发现隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。建议严格限制网络请求目标，仅允许官方域名，并移除未使用的高权限。
+> 该脚本声明了高权限（GM_xmlhttpRequest）和多个第三方 @connect 域名，包括非官方服务器（api.twisk.fun），存在严重的数据外传和供应链风险。主代码片段未见实际数据收集或外传实现，但元数据配置已构成高风险。建议严格限制 @connect 域名和 @grant 权限，仅保留必要项。未发现代码混淆、DOM XSS、隐私采集或远程代码执行行为。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -51,29 +51,24 @@ title: "多邻国 DuoHacker"
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本申请了 GM_xmlhttpRequest 权限，并声明 @connect 到多个第三方域，包括 api.twisk.fun、raw.githubusercontent.com、greasyfork.org 等。这些域非 Duolingo 官方，存在数据外传风险。  
-> 位置：UserScript 元数据 @grant/@connect  
-> 建议：限制 @connect 仅允许 Duolingo 官方域，移除非必要的第三方域名，避免用户数据外传。
+> 脚本声明了 @grant GM_xmlhttpRequest 权限，并通过 @connect 允许向多个第三方域名发起网络请求，包括 api.twisk.fun（非官方域名）。虽然主代码片段未见实际请求，但权限和域名声明存在数据外传风险。  
+> 位置：元数据区  
+> 建议：仅允许必要的 @connect 域名，移除不必要的第三方域名，限制 GM_xmlhttpRequest 的使用范围。
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本允许与 api.twisk.fun 进行网络通信，该域名非 Duolingo 官方，可能用于统计、追踪或数据上报。  
-> 位置：UserScript 元数据 @connect  
-> 建议：移除 api.twisk.fun 的 @connect 权限，或明确说明用途并公开代码实现。
-
-**🟠 MEDIUM** — 供应链风险  
-> 脚本允许与 raw.githubusercontent.com、greasyfork.org 等第三方域通信，存在供应链风险，可能被用于加载远程代码或数据。  
-> 位置：UserScript 元数据 @connect  
-> 建议：仅允许可信 CDN 和官方域名，避免供应链污染。
+> 脚本允许 @connect raw.githubusercontent.com、avatars.githubusercontent.com、fonts.googleapis.com、greasyfork.org、api.twisk.fun 等第三方域名，存在供应链和数据外传风险。  
+> 位置：元数据区  
+> 建议：仅允许可信、必要的第三方域名，避免通过不受信任的域名加载资源或传输数据。
 
 **🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_xmlhttpRequest 权限，但主代码段未见实际使用，存在权限滥用风险。  
-> 位置：UserScript 元数据 @grant  
-> 建议：仅申请实际需要的权限，移除未使用的高权限。
+> 脚本声明了 GM_xmlhttpRequest 权限，但主代码未见实际使用，存在权限滥用风险。  
+> 位置：元数据区  
+> 建议：移除未使用的高权限 @grant 权限，最小化权限申请。
 
-**🟡 LOW** — 数据外传  
-> 脚本动态插入 Google Fonts 字体（fonts.googleapis.com），可能泄露用户访问行为。  
-> 位置：document.head.appendChild(_fontLink)  
-> 建议：如无必要，避免加载外部字体资源，或在隐私政策中说明。
+**🟠 MEDIUM** — 供应链风险  
+> 脚本通过 @connect fonts.googleapis.com 并动态插入字体样式，存在供应链风险（如字体 CDN 被污染）。  
+> 位置：主代码  
+> 建议：建议固定字体文件版本或使用本地字体，减少外部依赖。
 
 ---
 

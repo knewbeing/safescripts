@@ -1,54 +1,49 @@
 ---
-title: GitHub增强 - 高速下载
+title: "Github 增强 - 高速下载"
 ---
 
-# GitHub增强 - 高速下载
+# Github 增强 - 高速下载
 
-`GitHub增强`  `高速下载`  `代码管理`  `项目文件下载`  `公益加速`  `用户脚本`
+`下载加速`  `Github增强`  `文件管理`  `公益加速`  `开发者工具`  `快捷操作`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/managed/GitHub_20Issue_20Link_20Status.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**2.6.37**　　最后更新：**2026-04-15**
+> 版本：**2.6.38**　　最后更新：**2026-06-01**
 
 ## 功能介绍
 
-该脚本为GitHub及相关镜像站点提供高速下载功能，支持Git Clone/SSH、Release、Raw文件及代码压缩包的快速下载。它利用公益加速服务提升下载速度，并支持项目列表中的单文件快捷下载。安装后可方便地通过菜单操作实现高速下载体验。
+本脚本为 Github 提供高速下载功能，支持加速 Git Clone/SSH、Release、Raw、Code(ZIP) 等文件的下载，并可在项目列表中实现单文件快捷下载。通过公益加速源，大幅提升下载速度和体验。
 
 ## 适用网站
 
-- GitHub
-- hub.whtrys.space
-- dgithub.xyz
-- kkgithub.com
-- github.site
-- github.store
+- Github
 - bgithub.xyz
 
 ## 使用方法
 
-1. 安装脚本后访问GitHub或支持的镜像站点。
-2. 在页面右上角或菜单中找到高速下载相关选项。
-3. 选择需要下载的文件类型或项目文件，点击开始高速下载。
-4. 根据提示完成下载，享受加速服务。
+1. 安装脚本后，访问 Github 网站。
+2. 在项目页面或文件列表中，会出现高速下载按钮或菜单。
+3. 点击对应按钮即可通过加速源下载文件。
+4. 如需自定义加速源或反馈问题，可在菜单中操作。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `GM_registerMenuCommand` | 注册自定义菜单命令，方便用户操作脚本功能。 |
-| `GM_unregisterMenuCommand` | 注销已注册的菜单命令，管理菜单项。 |
-| `GM_openInTab` | 在新标签页打开链接，用于快速下载或跳转。 |
-| `GM_getValue` | 获取脚本存储的配置信息，保存用户设置。 |
-| `GM_setValue` | 保存配置信息，记住用户偏好。 |
-| `GM_notification` | 显示桌面通知，提醒下载状态或错误。 |
-| `GM_setClipboard` | 将内容复制到剪贴板，方便分享或使用。 |
-| `window.onurlchange` | 监听URL变化，动态响应页面切换。 |
+| `GM_registerMenuCommand` | 用于在浏览器菜单中添加自定义命令，方便用户操作。 |
+| `GM_unregisterMenuCommand` | 用于移除自定义菜单命令，保持界面整洁。 |
+| `GM_openInTab` | 用于在新标签页打开链接，便于下载和浏览。 |
+| `GM_getValue` | 用于存储和读取用户的设置或偏好。 |
+| `GM_setValue` | 用于保存用户设置或状态信息。 |
+| `GM_notification` | 用于在浏览器弹出通知，提醒用户操作结果。 |
+| `GM_setClipboard` | 用于复制下载链接到剪贴板，方便用户粘贴使用。 |
+| `window.onurlchange` | 用于监听网址变化，确保脚本在页面切换时正常工作。 |
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：67/100　　**分析时间**：2026-05-25
+**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-01
 
-> 由于未提供完整脚本代码，无法对核心安全项进行审查，存在未知风险。元数据未见明显供应链风险或代码混淆，但高权限申请需警惕。建议补充完整代码以获得准确安全评估。
+> The script does not collect or transmit user data, does not execute remote code, and does not use obfuscation. It generates download links pointing to third-party acceleration services, but does not itself transmit data to them unless the user clicks the links. There is minor permission over-provisioning. Overall, the script is safe for use, with a low security risk. Users should be aware that using third-party acceleration services may expose their download activity to those services.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -61,16 +56,16 @@ title: GitHub增强 - 高速下载
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 代码缺失  
-> 无法审查脚本实际代码内容，仅有元数据。无法判断是否存在数据外传、隐私采集、远程代码执行等风险。  
-> 位置：全局  
-> 建议：请提供完整脚本代码以便进行全面安全审查。
+**🟠 MEDIUM** — Permission over-provisioning  
+> The script requests several GM_* permissions, including GM_openInTab, GM_notification, GM_setClipboard, and window.onurlchange. Not all of these are strictly necessary for the core download link generation functionality.  
+> 位置：@grant metadata block  
+> 建议：Review and minimize permissions to only those required for core functionality. Remove unnecessary permissions to reduce attack surface.
 
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_openInTab、GM_notification、GM_setClipboard 等高权限，但未见实际代码使用情况。  
-> 位置：元数据 @grant  
-> 建议：仅申请实际需要的权限，避免权限滥用。
+**🟡 LOW** — Third-party download link generation  
+> The script constructs download URLs using a list of public acceleration proxy services. These URLs are used to facilitate high-speed downloads from GitHub. However, the script itself does not send user data, cookies, or page content to these services; it only generates download links for the user to click.  
+> 位置：download_url_us, clone_url, clone_ssh_url, raw_url arrays and related logic  
+> 建议：Clearly inform users that clicking these links will send requests to third-party acceleration services, and users should be aware of the privacy policy of those services.
 
 ---
 
-*文档由 SafeScripts 自动生成 · [查看原始脚本](https://greasyfork.org/scripts/412245-github-issue-link-status/code/GitHub%20Issue%20Link%20Status.user.js)*
+*文档由 SafeScripts 自动生成 · [查看原始脚本](https://update.greasyfork.org/scripts/412245/GitHub%20Issue%20Link%20Status.user.js)*

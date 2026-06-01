@@ -10,32 +10,46 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 GM_xmlhttpRequest 向 jtmate.com 和 mimixiaoke.com 发起网络请求，可能携带用户页面数据。",
-      "location": "GM_xmlhttpRequest usage; @connect jtmate.com, mimixiaoke.com",
-      "recommendation": "限制请求内容，仅发送必要的非敏感数据，并在隐私政策中明确说明。",
+      "description": "脚本通过 GM_xmlhttpRequest 向 jtmate.com 和 mimixiaoke.com 发送网络请求，可能外传用户行为、页面内容或其他敏感信息。",
+      "location": "多处 GM_xmlhttpRequest 调用",
+      "recommendation": "仅允许必要的最小数据传输，公开所有外传数据结构，增加用户可控性和透明度。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本申请了 GM_download、GM_openInTab 等高权限，但代码未见实际使用。",
-      "location": "@grant GM_download, GM_openInTab",
+      "description": "脚本申请了 GM_openInTab、GM_download、GM_setClipboard 等高权限，但部分权限未在代码中实际使用，存在权限滥用风险。",
+      "location": "元数据 @grant",
       "recommendation": "仅申请实际需要的权限，移除未使用的高权限。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "脚本未见敏感隐私采集行为，但存在大范围 @match/@include，可能导致过度注入。",
-      "location": "@match *://*/*; 多平台 @include",
-      "recommendation": "缩小注入范围，仅限目标购物平台。",
-      "severity": "MEDIUM",
-      "type": "权限滥用"
+      "description": "脚本未使用 eval、new Function、setTimeout(string) 等远程代码执行高危 API，未发现远程代码注入风险。",
+      "location": "全局",
+      "recommendation": "保持当前实现，避免引入动态代码执行。",
+      "severity": "LOW",
+      "type": "远程代码执行"
     },
     {
-      "description": "脚本未见远程代码执行、混淆、DOM XSS、敏感 API 调用、供应链风险、iframe 风险等高危行为。",
-      "location": "全局代码审查",
-      "recommendation": "保持代码透明，持续监控第三方接口安全。",
+      "description": "脚本未发现明显的代码混淆、base64 解码、字符串数组映射或高度压缩单行代码。",
+      "location": "全局",
+      "recommendation": "保持代码可读性，便于社区审计。",
       "severity": "LOW",
-      "type": "一般安全建议"
+      "type": "代码混淆"
+    },
+    {
+      "description": "脚本未发现对 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板、表单字段、指纹 API 的访问。",
+      "location": "全局",
+      "recommendation": "如需采集用户数据，需明确告知用户并最小化采集范围。",
+      "severity": "LOW",
+      "type": "隐私采集"
+    },
+    {
+      "description": "@require 未使用，未发现供应链风险。",
+      "location": "元数据",
+      "recommendation": "如需引入第三方库，建议使用可信 CDN 并锁定版本哈希。",
+      "severity": "LOW",
+      "type": "供应链风险"
     }
   ],
   "obfuscation_detected": false,
@@ -46,9 +60,9 @@
   "risk_level": "HIGH",
   "script_name": "Online shopping assistant & Automatically query coupons & Save money",
   "security_score": 67,
-  "summary": "脚本存在向第三方服务器（jtmate.com、mimixiaoke.com）发起网络请求的行为，属于严重的数据外传风险。未见隐私采集、远程代码执行、混淆、DOM XSS、敏感 API 调用等高危行为，但权限申请过多且注入范围过广，存在中等安全隐患。建议限制数据传输内容、精简权限申请、缩小注入范围。",
+  "summary": "该脚本主要风险为通过 GM_xmlhttpRequest 向第三方服务器（jtmate.com、mimixiaoke.com）发送数据，存在用户数据外传和隐私泄露的高风险。部分高权限申请未实际使用，存在权限滥用隐患。未发现远程代码执行、代码混淆、DOM XSS、隐私采集、供应链等其他高风险问题。建议开发者公开所有外传数据结构，最小化权限申请，提升用户透明度和控制权。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-25T06:34:21.364338+00:00",
+  "analyzed_at": "2026-06-01T07:03:53.146128+00:00",
   "slug": "Online_shopping_assistant_Automatically_query_coupons_Save_money"
 }

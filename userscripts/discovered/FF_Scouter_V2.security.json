@@ -9,24 +9,52 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "Script uses GM_xmlhttpRequest to communicate with ffscouter.com, a third-party server. Potential for user data transmission exists, but only ffscouter.com is targeted and no evidence of cookie/page content transmission found in the visible code.",
-      "location": "GM_xmlhttpRequest calls (API usage)",
-      "recommendation": "Review all transmitted payloads to ensure no sensitive user data or cookies are sent. Limit data sent to only what is necessary for functionality.",
+      "description": "The script uses GM_xmlhttpRequest to communicate with ffscouter.com, which is a third-party server. This is declared in @connect and is expected for the script's functionality. However, only ffscouter.com is used, and no evidence of sending cookies or sensitive user data is present in the provided code segment.",
+      "location": "GM_xmlhttpRequest usage (potentially elsewhere in the script)",
+      "recommendation": "Ensure only necessary and minimal data is sent. Do not transmit cookies, authentication tokens, or sensitive user data unless required and documented.",
       "severity": "CRITICAL",
       "type": "Data Transmission"
     },
     {
-      "description": "Script requests GM_xmlhttpRequest permission, which is necessary for API calls but is a high privilege. No evidence of unused high privilege grants.",
-      "location": "UserScript metadata (@grant)",
-      "recommendation": "Ensure only necessary permissions are requested. Remove unused grants if possible.",
+      "description": "The script requests several GM_* permissions, including GM_setValue, GM_getValue, GM_listValues, GM_deleteValue, GM_registerMenuCommand, and GM_addStyle. All are used for local storage, UI, and style injection, which matches the script's functionality. No evidence of permission abuse is found.",
+      "location": "@grant metadata block",
+      "recommendation": "Only request permissions that are actually used. Remove unused permissions to reduce attack surface.",
       "severity": "MEDIUM",
       "type": "Permission Usage"
     },
     {
-      "description": "Script uses @connect ffscouter.com, which is a third-party domain. Supply chain risk is present if the server is compromised.",
-      "location": "UserScript metadata (@connect)",
-      "recommendation": "Ensure ffscouter.com is trustworthy and monitor for supply chain risks.",
-      "severity": "MEDIUM",
+      "description": "The script loads CSS via GM_addStyle and manipulates the DOM, but does not appear to insert untrusted user input into innerHTML or use document.write. No DOM XSS risk is detected in the provided code.",
+      "location": "GM_addStyle and DOM manipulation",
+      "recommendation": "Continue to avoid inserting untrusted data into the DOM via innerHTML or document.write.",
+      "severity": "LOW",
+      "type": "DOM XSS"
+    },
+    {
+      "description": "The script does not use eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection. No remote code execution risk is detected in the provided code.",
+      "location": "Global script scope",
+      "recommendation": "Continue to avoid dynamic code execution patterns.",
+      "severity": "LOW",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "The script does not use obfuscation techniques such as atob/btoa, string arrays, or unicode escapes. Code is readable and not minified/obfuscated.",
+      "location": "Global script scope",
+      "recommendation": "Maintain code transparency for user trust and security.",
+      "severity": "LOW",
+      "type": "Obfuscation"
+    },
+    {
+      "description": "The script does not access document.cookie, localStorage, sessionStorage, IndexedDB, or listen to keyboard events. No privacy collection is detected in the provided code.",
+      "location": "Global script scope",
+      "recommendation": "Continue to avoid unnecessary access to user data or browser storage.",
+      "severity": "LOW",
+      "type": "Privacy Collection"
+    },
+    {
+      "description": "The script uses @require only for its own update/download URLs, not for loading third-party libraries. No supply chain risk is detected in the provided code.",
+      "location": "@require metadata block",
+      "recommendation": "If third-party libraries are added, use official CDNs and fixed versions/hashes.",
+      "severity": "LOW",
       "type": "Supply Chain Risk"
     }
   ],
@@ -35,12 +63,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "MEDIUM",
+  "risk_level": "LOW",
   "script_name": "FF Scouter V2",
-  "security_score": 67,
-  "summary": "FF Scouter V2 communicates with a third-party server (ffscouter.com) using GM_xmlhttpRequest, which is necessary for its functionality. No evidence of privacy-invasive data collection, code obfuscation, or DOM XSS risks in the visible code. Supply chain risk exists due to reliance on an external API. Permissions requested are appropriate for the script's purpose. Overall, the script is reasonably safe but should be monitored for supply chain and data transmission risks.",
-  "supply_chain_risk": true,
+  "security_score": 89,
+  "summary": "FF Scouter V2 communicates with its own backend (ffscouter.com) using GM_xmlhttpRequest, as expected for its functionality. No evidence of privacy-invasive behavior, code obfuscation, remote code execution, or DOM XSS is found in the provided code. Permissions requested match usage, and no supply chain risk is present. The main risk is the transmission of data to a third-party server, which is necessary for the script's features. Overall, the script is low risk, but users should be aware that some data is sent to ffscouter.com.",
+  "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-25T06:30:41.596865+00:00",
+  "analyzed_at": "2026-06-01T07:00:43.381029+00:00",
   "slug": "FF_Scouter_V2"
 }

@@ -33,70 +33,55 @@ title: "多邻国PRO增强版"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：0/100　　**分析时间**：2026-05-25
+**风险等级**：⛔ CRITICAL　　**安全评分**：25/100　　**分析时间**：2026-06-01
 
-> This script transmits data to third-party servers (duolingopro.net), reads cookies, and uses browser fingerprinting vectors. It also injects user input into the DOM, creating potential XSS risks. The script is not obfuscated and only requests GM_log permission. Due to critical data exfiltration and privacy collection risks, the script is not approved.
+> This script defines and likely uses third-party endpoints (duolingopro.net, api.duolingopro.net) for core functionality, which presents a critical risk of user data exfiltration. It reads cookies and browser locale, which are privacy-sensitive. The script's purpose (XP farming, free gems, etc.) and the presence of external API endpoints strongly suggest that user actions and possibly authentication data are transmitted to these servers. The script is not obfuscated in the provided snippet, but the code is incomplete. There is no evidence of DOM XSS or dynamic code execution in the visible code, but the overall risk is CRITICAL due to data exfiltration and privacy collection. Use with extreme caution.
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：https://www.duolingopro.net, https://api.duolingopro.net） |
-| 隐私采集 | ❌ 检测到（Reads document.cookie for language, Uses navigator.language and Intl.Locale (fingerprinting)） |
+| 隐私采集 | ❌ 检测到（Reads document.cookie for 'lang' value, Reads navigator.language and infers region） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
-| DOM XSS 风险 | ❌ 存在风险 |
-| 供应链风险 | ✅ 可信 |
+| DOM XSS 风险 | ✅ 未检测到 |
+| 供应链风险 | ⚠️ 存在风险 |
 
 ### 发现的问题
 
 **⛔ CRITICAL** — Data Exfiltration  
-> Script defines server endpoints (duolingopro.net, api.duolingopro.net) and references feedback sending, XP/gem requests, and server-side processing. These likely involve transmitting user data, XP/gem requests, and possibly page content to third-party servers.  
-> 位置：Global variables and systemText, feedback, XP/gem request logic  
-> 建议：Review all network requests for user data leakage; restrict transmission to only necessary, non-sensitive data; disclose all data sent to users.
+> Script defines external server endpoints (duolingopro.net, api.duolingopro.net) and references them as API endpoints. Although the code snippet is incomplete, the presence of these endpoints and the script's description (XP farming, gems, etc.) strongly suggest network requests to these third-party servers, likely transmitting user actions or data.  
+> 位置：Global scope, variables serverURL and apiURL  
+> 建议：Review all network requests. Do not transmit user data or authentication tokens to third-party servers unless strictly necessary and with user consent.
 
 **⛔ CRITICAL** — Privacy Collection  
-> Script reads document.cookie to extract language setting. Potential for reading other cookies, including session/auth tokens.  
+> Script reads document.cookie to extract the 'lang' value. This is a privacy-sensitive operation, as cookies may contain session or user information.  
 > 位置：let systemLanguage = document.cookie.split('; ').find(row => row.startsWith('lang=')).split('=')[1];  
-> 建议：Limit cookie access to only non-sensitive values; avoid reading authentication/session cookies.
+> 建议：Limit cookie access to only necessary keys. Do not transmit cookie values externally.
 
 **🔴 HIGH** — Privacy Collection  
-> Script references navigator.language and Intl.Locale, which are browser fingerprinting vectors.  
+> Script uses navigator.language and Intl.Locale to infer user region and measurement system. While not highly sensitive, this is a form of browser fingerprinting.  
 > 位置：const region = new Intl.Locale(navigator.language).maximize().region;  
-> 建议：Avoid collecting fingerprinting information unless strictly necessary; disclose to users.
+> 建议：Avoid collecting unnecessary browser fingerprinting data unless required for functionality.
 
-**🔴 HIGH** — DOM XSS  
-> Script uses innerHTML to inject Terms & Conditions and other UI elements, including user-provided feedback. Potential DOM XSS if user input is not sanitized.  
-> 位置：systemText, feedback UI, Terms & Conditions display  
-> 建议：Sanitize all user input before inserting into DOM via innerHTML.
+**🔴 HIGH** — Obfuscation  
+> Script is not minified or obfuscated, but the code is incomplete. If the rest of the script contains obfuscated or minified code, this would increase risk.  
+> 位置：N/A (based on provided code)  
+> 建议：Avoid code obfuscation. Publish readable source code for transparency.
 
-**🔴 HIGH** — Data Transmission  
-> Script defines external server endpoints and likely uses fetch/XMLHttpRequest to communicate with them, but actual network request code is not shown in the snippet.  
-> 位置：serverURL, apiURL variables  
-> 建议：Ensure all network requests are secure (HTTPS), and avoid sending sensitive user data.
+**🔴 HIGH** — Remote Code Execution  
+> Script does not use eval, new Function, or dynamic script injection in the provided snippet. However, the script is incomplete and may contain such patterns elsewhere.  
+> 位置：N/A (based on provided code)  
+> 建议：Avoid dynamic code execution. Only use static, auditable code.
 
-**🟡 LOW** — Obfuscation  
-> No evidence of code obfuscation or minification in the provided snippet.  
-> 位置：Global code structure  
-> 建议：Maintain transparency; avoid obfuscation.
-
-**🟡 LOW** — Remote Code Execution  
-> No evidence of eval, new Function, or dynamic script loading in the provided snippet.  
-> 位置：Global code structure  
-> 建议：Avoid dynamic code execution.
+**🟠 MEDIUM** — Supply Chain Risk  
+> Script references external download and update URLs (GreasyFork). Supply chain risk is low if only official sources are used, but if the script or its dependencies are loaded from duolingopro.net, risk increases.  
+> 位置：@downloadURL, @updateURL  
+> 建议：Pin dependencies to specific versions and use trusted CDNs only.
 
 **🟡 LOW** — Permission Usage  
-> Script only requests GM_log permission, which is low risk and matches usage.  
-> 位置：@grant GM_log  
-> 建议：Do not request unnecessary permissions.
-
-**🟡 LOW** — Supply Chain  
-> No evidence of supply chain risk (@require) in metadata or code.  
+> @grant only requests GM_log, which is low risk. No evidence of permission abuse in the provided code.  
 > 位置：Metadata block  
-> 建议：If using external libraries, fix version and use trusted sources.
-
-**🟡 LOW** — WebSocket Usage  
-> No evidence of WebSocket/EventSource usage in the provided snippet.  
-> 位置：Global code structure  
-> 建议：Avoid persistent connections unless necessary.
+> 建议：Only request permissions actually used by the script.
 
 ---
 

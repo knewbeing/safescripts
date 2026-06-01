@@ -1,24 +1,26 @@
 {
   "approved": true,
   "data_transmission": {
-    "destinations": [],
+    "destinations": [
+      "Multiple public GitHub acceleration proxy services (e.g., gh.h233.eu.org, gh-proxy.org, ghproxy.net, wget.la, gitclone.com, githubfast.com, etc.)"
+    ],
     "detected": false
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "无法审查脚本实际代码内容，仅有元数据。无法判断是否存在数据外传、隐私采集、远程代码执行等风险。",
-      "location": "全局",
-      "recommendation": "请提供完整脚本代码以便进行全面安全审查。",
-      "severity": "CRITICAL",
-      "type": "代码缺失"
+      "description": "The script constructs download URLs using a list of public acceleration proxy services. These URLs are used to facilitate high-speed downloads from GitHub. However, the script itself does not send user data, cookies, or page content to these services; it only generates download links for the user to click.",
+      "location": "download_url_us, clone_url, clone_ssh_url, raw_url arrays and related logic",
+      "recommendation": "Clearly inform users that clicking these links will send requests to third-party acceleration services, and users should be aware of the privacy policy of those services.",
+      "severity": "LOW",
+      "type": "Third-party download link generation"
     },
     {
-      "description": "脚本申请了 GM_openInTab、GM_notification、GM_setClipboard 等高权限，但未见实际代码使用情况。",
-      "location": "元数据 @grant",
-      "recommendation": "仅申请实际需要的权限，避免权限滥用。",
+      "description": "The script requests several GM_* permissions, including GM_openInTab, GM_notification, GM_setClipboard, and window.onurlchange. Not all of these are strictly necessary for the core download link generation functionality.",
+      "location": "@grant metadata block",
+      "recommendation": "Review and minimize permissions to only those required for core functionality. Remove unnecessary permissions to reduce attack surface.",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "Permission over-provisioning"
     }
   ],
   "obfuscation_detected": false,
@@ -26,12 +28,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "CRITICAL",
+  "risk_level": "LOW",
   "script_name": "Github Enhancement - High Speed Download",
-  "security_score": 67,
-  "summary": "由于未提供完整脚本代码，无法对核心安全项进行审查，存在未知风险。元数据未见明显供应链风险或代码混淆，但高权限申请需警惕。建议补充完整代码以获得准确安全评估。",
+  "security_score": 89,
+  "summary": "The script does not collect or transmit user data, does not execute remote code, and does not use obfuscation. It generates download links pointing to third-party acceleration services, but does not itself transmit data to them unless the user clicks the links. There is minor permission over-provisioning. Overall, the script is safe for use, with a low security risk. Users should be aware that using third-party acceleration services may expose their download activity to those services.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-25T06:17:32.763173+00:00",
+  "analyzed_at": "2026-06-01T06:46:22.172659+00:00",
   "slug": "GitHub_20Issue_20Link_20Status"
 }

@@ -33,60 +33,55 @@ title: "Deadshot.io 辅助脚本"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：40/100　　**分析时间**：2026-05-25
+**风险等级**：🟠 MEDIUM　　**安全评分**：84/100　　**分析时间**：2026-06-01
 
-> 该脚本未检测到数据外传和隐私采集行为，但存在 unsafeWindow 权限滥用、WebAssembly 内存捕获、轻度代码混淆等高风险特征。未检测到远程代码执行、DOM XSS、供应链风险。整体安全评分为 40，风险等级为 HIGH，不建议在生产环境或含敏感数据场景使用。
+> 该脚本主要实现游戏辅助功能（AIMBOT/ESP/CHAMS），未发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险等高危行为。主要风险为申请了高权限（unsafeWindow），以及通过 WebAssembly hook、canvas 事件等方式访问游戏内存和玩家状态，属于敏感操作。建议移除不必要的高权限，确保仅在可信环境下运行。整体安全评分为 84，风险等级为 MEDIUM。
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ✅ 未检测到 |
 | 隐私采集 | ✅ 未检测到 |
-| 代码混淆 | ❌ 检测到 |
+| 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
 | 供应链风险 | ✅ 可信 |
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本未检测到任何网络请求（GM_xmlhttpRequest、fetch、WebSocket、sendBeacon、EventSource），无数据外传行为。  
-> 位置：全局代码  
-> 建议：保持无外传行为，勿添加任何第三方数据上报。
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 @grant unsafeWindow 权限，但实际代码中未见必须依赖该权限的场景，存在权限滥用风险。  
+> 位置：元数据 @grant  
+> 建议：如非必要，移除 @grant unsafeWindow，降低潜在攻击面。
 
-**⛔ CRITICAL** — 隐私采集  
-> 脚本未检测到 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板读取、键盘监听等隐私采集行为。  
-> 位置：全局代码  
-> 建议：保持无隐私采集行为，勿添加任何用户敏感数据读取。
+**🟠 MEDIUM** — 敏感 API 调用  
+> 脚本通过 WebAssembly hook、canvas 事件、内存操作等方式，可能间接访问游戏内存和玩家状态，属于高敏感度操作。  
+> 位置：核心逻辑  
+> 建议：仅在可信环境下运行此类脚本，警惕潜在隐私泄露风险。
 
-**🔴 HIGH** — 权限滥用  
-> 脚本申请了 unsafeWindow 权限，允许脚本与页面 JS 进行高权限交互，可能被滥用导致远程代码执行或数据泄露。  
-> 位置：元数据 @grant unsafeWindow  
-> 建议：仅在必要时申请 unsafeWindow，建议移除或限制其使用范围。
+**🟡 LOW** — 数据外传  
+> 脚本未发现任何数据外传、网络请求、WebSocket、fetch、GM_xmlhttpRequest 等外联行为。  
+> 位置：全局  
+> 建议：保持此状态，切勿添加外部数据传输逻辑。
 
-**🔴 HIGH** — 敏感 API 调用  
-> 脚本通过覆盖 WebAssembly.instantiate 和 WebAssembly.instantiateStreaming，捕获 WASM 内存实例，可能用于读取游戏内部数据结构。这属于高风险行为，可能被用于作弊或敏感数据采集。  
-> 位置：WebAssembly.instantiate 重写  
-> 建议：避免对 WebAssembly API 进行全局重写，限制只在必要场景下使用。
+**🟡 LOW** — 远程代码执行  
+> 脚本未发现 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行高危 API。  
+> 位置：全局  
+> 建议：保持此状态，避免引入动态代码执行。
 
-**🔴 HIGH** — 代码混淆  
-> 脚本包含部分字符串混淆（如 SIGKEY、ENCODED_SIGS、_decodeSig），但整体未高度混淆。存在轻度混淆特征。  
-> 位置：SIGKEY、ENCODED_SIGS、_decodeSig  
-> 建议：避免使用混淆技术，提升代码可读性和安全透明度。
+**🟡 LOW** — 代码混淆  
+> 脚本未发现代码混淆、base64 解码、字符串数组映射、unicode 混淆等特征。  
+> 位置：全局  
+> 建议：保持代码可读性，便于安全审计。
 
-**🔴 HIGH** — 远程代码执行  
-> 脚本未检测到 eval、new Function、setTimeout(string)、setInterval(string)、innerHTML/outerHTML 插入脚本、document.write 等远程代码执行风险。  
-> 位置：全局代码  
-> 建议：保持无动态代码执行，勿添加任何可执行字符串。
+**🟡 LOW** — DOM XSS  
+> 脚本未发现 DOM XSS、用户输入未转义插入 innerHTML/outerHTML、document.write 等注入风险。  
+> 位置：全局  
+> 建议：如需操作 DOM，务必转义用户输入。
 
-**🔴 HIGH** — DOM XSS / 注入  
-> 脚本未检测到 DOM XSS 或注入风险（未直接插入用户输入到 innerHTML/outerHTML、未操作 iframe src 为 javascript:）。  
-> 位置：全局代码  
-> 建议：保持无 DOM 注入风险，勿信任用户输入。
-
-**🟠 MEDIUM** — 供应链风险  
-> 脚本未检测到供应链风险（无 @require 第三方库加载）。  
+**🟡 LOW** — 供应链风险  
+> 脚本未发现 @require 加载第三方库，无供应链风险。  
 > 位置：元数据  
-> 建议：如需加载第三方库，务必使用官方 CDN 并固定版本哈希。
+> 建议：如需引入第三方库，务必使用可信源并锁定版本。
 
 ---
 

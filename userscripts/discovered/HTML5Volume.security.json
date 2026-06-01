@@ -7,55 +7,31 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "申请了 GM_openInTab 权限，但仅用于打开反馈页面（GitHub 和 GreasyFork），未涉及敏感数据或恶意跳转。",
-      "location": "GM_openInTab in menu registration",
-      "recommendation": "如无必要可移除该权限，但当前用途安全。",
+      "description": "脚本申请了 GM_openInTab 权限，但仅用于打开开发者反馈页面，无滥用行为。",
+      "location": "@grant 元数据与 GM_openInTab 调用",
+      "recommendation": "保持用途透明，勿用于自动化或恶意跳转。",
       "severity": "MEDIUM",
-      "type": "Permission Usage"
+      "type": "权限使用"
     },
     {
-      "description": "脚本申请了 GM_notification 权限，但未在代码中实际使用。",
-      "location": "Metadata block (@grant GM_notification)",
-      "recommendation": "移除未使用的高权限申请，减少权限滥用风险。",
-      "severity": "MEDIUM",
-      "type": "Permission Usage"
-    },
-    {
-      "description": "脚本申请了 GM_registerMenuCommand 和 GM_unregisterMenuCommand 权限，实际用于菜单功能，符合用途。",
-      "location": "Metadata block (@grant GM_registerMenuCommand, GM_unregisterMenuCommand)",
-      "recommendation": "无风险，合理使用。",
+      "description": "脚本使用 GM_getValue/GM_setValue 和 localStorage 存储音量设置，无敏感信息采集。",
+      "location": "GM_getValue/GM_setValue, localStorage",
+      "recommendation": "确保不存储敏感/隐私数据。",
       "severity": "LOW",
-      "type": "Permission Usage"
-    },
-    {
-      "description": "脚本申请了 GM_getValue 和 GM_setValue 权限，实际用于存储和读取音量设置，符合用途。",
-      "location": "Metadata block (@grant GM_getValue, GM_setValue)",
-      "recommendation": "无风险，合理使用。",
-      "severity": "LOW",
-      "type": "Permission Usage"
-    },
-    {
-      "description": "脚本使用 localStorage 存储当前网站音量，但未外传数据。",
-      "location": "volumeChangeEvent, menu registration",
-      "recommendation": "无风险，合理使用。",
-      "severity": "LOW",
-      "type": "Privacy Storage"
+      "type": "本地存储使用"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [
-      "localStorage: 存储当前网站音量",
-      "GM_getValue/GM_setValue: 存储全局/网站音量设置"
-    ],
+    "details": [],
     "detected": false
   },
-  "risk_level": "LOW",
+  "risk_level": "SAFE",
   "script_name": "HTML5 Video Audio Default Volume",
   "security_score": 89,
-  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。所有敏感 API 和权限申请均为合理用途，唯一风险为申请了未使用的 GM_notification 权限和 GM_openInTab（仅用于反馈页面）。整体安全性高，建议移除未使用权限以进一步提升安全性。",
+  "summary": "该脚本仅操作本地 HTML5 视频/音频音量设置，未检测到任何数据外传、隐私采集、远程代码执行、混淆、XSS、供应链风险或敏感 API 滥用。权限申请合理，整体安全性高。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-25T06:32:54.485130+00:00",
+  "analyzed_at": "2026-06-01T07:01:58.089726+00:00",
   "slug": "HTML5Volume"
 }

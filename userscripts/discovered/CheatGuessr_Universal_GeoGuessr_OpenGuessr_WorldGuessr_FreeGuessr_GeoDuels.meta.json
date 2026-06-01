@@ -25,13 +25,13 @@
   "require": [],
   "metadata_raw": "// @name  CheatGuessr Universal | GeoGuessr | OpenGuessr | WorldGuessr | FreeGuessr | GeoDuels\n// @name:ru  CheatGuessr Universal｜GeoGuessr｜OpenGuessr｜WorldGuessr｜FreeGuessr｜GeoDuels\n// @name:fr  CheatGuessr Universal｜GeoGuessr｜OpenGuessr｜WorldGuessr｜FreeGuessr｜GeoDuels\n// @name:es  CheatGuessr Universal｜GeoGuessr｜OpenGuessr｜WorldGuessr｜FreeGuessr｜GeoDuels\n// @name:sv  CheatGuessr Universal｜GeoGuessr｜OpenGuessr｜WorldGuessr｜FreeGuessr｜GeoDuels\n// @name:de  CheatGuessr Universal｜GeoGuessr｜OpenGuessr｜WorldGuessr｜FreeGuessr｜GeoDuels\n// @name:it  CheatGuessr Universal｜GeoGuessr｜OpenGuessr｜WorldGuessr｜FreeGuessr｜GeoDuels\n// @name:pl  CheatGuessr Universal｜GeoGuessr｜OpenGuessr｜WorldGuessr｜FreeGuessr｜GeoDuels\n// @name:zh-CN  CheatGuessr Universal｜GeoGuessr｜OpenGuessr｜WorldGuessr｜FreeGuessr｜GeoDuels\n// @name:ja  CheatGuessr Universal｜GeoGuessr｜OpenGuessr｜WorldGuessr｜FreeGuessr｜GeoDuels\n// @description  Undetectable GeoGuessr cheat tool | Press Tab to open the settings menu | pin on map & send to discord & open in google maps\n// @description:ru  Незаметный инструмент для GeoGuessr｜Tab открывает меню настроек｜метки на карте｜отправка в Discord｜открытие локации в Google Maps\n// @description:fr  Outil GeoGuessr discret et difficile à détecter｜Appuyez sur Tab pour ouvrir les paramètres｜placer un repère｜envoyer sur Discord｜ouvrir dans Google Maps\n// @description:es  Herramienta discreta para GeoGuessr｜Pulsa Tab para abrir el menú de ajustes｜marcar en el mapa｜enviar a Discord｜abrir ubicación en Google Maps\n// @description:sv  Diskret verktyg för GeoGuessr｜Tryck på Tab för att öppna inställningsmenyn｜placera markörer på kartan｜skicka till Discord｜öppna plats i Google Maps\n// @description:de  Unauffälliges GeoGuessr-Tool｜Tab öffnet das Einstellungsmenü｜Marker auf der Karte｜an Discord senden｜in Google Maps öffnen\n// @description:it  Strumento discreto per GeoGuessr｜Premi Tab per aprire le impostazioni｜aggiungi marker sulla mappa｜invia su Discord｜apri in Google Maps\n// @description:pl  Dyskretne narzędzie do GeoGuessr｜Tab otwiera menu ustawień｜znaczniki na mapie｜wysyłanie do Discorda｜otwieranie w Google Maps\n// @description:zh-CN  隐蔽式 GeoGuessr 辅助器｜按 Tab 打开设置菜单｜地图标点｜发送 Discord｜在 Google 地图中打开当前位置\n// @description:ja  検出されにくい GeoGuessr 支援ツール｜Tabキーで設定メニューを開く｜マップにピンを配置｜Discord送信｜Googleマップで現在地を開く\n// @namespace  https://greasyfork.org/en/users/1588266-woggieboost\n// @version  10.82\n// @author  woggieboost\n// @license  MIT\n// @include  *://*.geoguessr.com/*\n// @include  *://*openguessr.com/*\n// @include  *://*.worldguessr.*/*\n// @include  *://*worldguessrgame.*/*\n// @include  *://freeguessr.com/*\n// @include  *://geoduels.io/*\n// @include  *://guesswhereyouare.com/*\n// @grant  GM_setValue\n// @grant  GM_getValue\n// @grant  GM_xmlhttpRequest\n// @connect  discord.com\n// @connect  nominatim.openstreetmap.org\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=geoguessr.com\n// @downloadURL  https://update.greasyfork.org/scripts/572651/CheatGuessr%20Universal%20%7C%20GeoGuessr%20%7C%20OpenGuessr%20%7C%20WorldGuessr%20%7C%20FreeGuessr%20%7C%20GeoDuels.user.js\n// @updateURL  https://update.greasyfork.org/scripts/572651/CheatGuessr%20Universal%20%7C%20GeoGuessr%20%7C%20OpenGuessr%20%7C%20WorldGuessr%20%7C%20FreeGuessr%20%7C%20GeoDuels.meta.js",
   "sha256": "e0b304f26a515531baaddf763700ad0e5913860bce475631cb1996b239d7e854",
-  "discovered_at": "2026-05-25T06:20:37.964490+00:00",
+  "discovered_at": "2026-06-01T06:50:23.951289+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 4052,
+  "install_count": 4667,
   "good_ratings": 5,
-  "bad_ratings": 2,
+  "bad_ratings": 3,
   "summary": {
     "applicable_sites": [
       "GeoGuessr",
@@ -42,18 +42,18 @@
       "GeoDuels",
       "GuessWhereYouAre"
     ],
-    "description": "本脚本为 GeoGuessr 及类似地理猜谜网站提供隐蔽式辅助功能。按 Tab 键可打开设置菜单，支持在地图上标点、将位置发送到 Discord，以及在 Google 地图中打开当前位置。",
+    "description": "本脚本为地理猜谜类游戏提供隐蔽式辅助功能。用户可通过按 Tab 键打开设置菜单，在地图上标记位置，并可将位置发送到 Discord 或在 Google 地图中打开。适用于多款地理猜谜网站。",
     "permissions": [
       {
-        "explanation": "用于保存脚本的设置和数据。",
+        "explanation": "用于保存脚本设置和用户数据。",
         "grant": "GM_setValue"
       },
       {
-        "explanation": "用于读取脚本保存的设置和数据。",
+        "explanation": "用于读取脚本设置和用户数据。",
         "grant": "GM_getValue"
       },
       {
-        "explanation": "用于与外部网站（如 Discord、地理服务）通信，实现发送位置等功能。",
+        "explanation": "用于与外部网站（如 Discord、地理定位服务）通信，实现发送位置等功能。",
         "grant": "GM_xmlhttpRequest"
       }
     ],
@@ -62,14 +62,14 @@
       "游戏辅助",
       "地图工具",
       "位置分享",
-      "隐蔽功能",
-      "社交集成"
+      "社交分享",
+      "自动化"
     ],
     "usage": [
       "安装脚本后，进入支持的地理猜谜网站。",
-      "按 Tab 键打开脚本设置菜单。",
-      "在地图上标记当前位置，或选择发送到 Discord。",
-      "可一键在 Google 地图中查看当前地点。"
+      "在游戏页面按 Tab 键打开设置菜单。",
+      "根据菜单提示，在地图上标记位置。",
+      "可选择将位置发送到 Discord 或在 Google 地图中查看。"
     ],
     "zh_name": "CheatGuessr 通用地理猜谜辅助"
   }

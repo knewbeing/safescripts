@@ -32,9 +32,9 @@ title: "Deadshot.io 辅助脚本"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：77/100　　**分析时间**：2026-05-25
+**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-01
 
-> 该脚本未发现数据外传和隐私采集行为，但存在权限滥用（unsafeWindow）、敏感 API 操作（WASM 拦截）、自动化用户行为，以及游戏作弊风险。未检测到代码混淆、DOM XSS、供应链风险和 WebSocket 使用。整体安全风险较高，不建议普通用户使用。
+> 该 UserScript 主要通过 hook WebAssembly 和渲染流程实现游戏辅助功能（如 aimbot、ESP、TriggerBot），未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。唯一的中等风险为申请了 unsafeWindow 权限，理论上增加了攻击面，但当前代码未见滥用。整体安全性较高，但建议持续关注后续更新及第三方依赖变更。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -47,25 +47,15 @@ title: "Deadshot.io 辅助脚本"
 
 ### 发现的问题
 
-**🔴 HIGH** — 敏感 API 调用  
-> 脚本通过覆盖 WebAssembly.instantiate 和 WebAssembly.instantiateStreaming，拦截并操作 WASM 实例，可能用于作弊或绕过安全机制。  
-> 位置：WebAssembly.instantiate 重写  
-> 建议：避免拦截和操作底层 WASM 实例，除非完全了解其安全影响。
-
-**🔴 HIGH** — 行为风险  
-> 脚本大量操作 WASM 内存、拦截渲染流程、分析实体数据，属于游戏作弊行为，可能违反 deadshot.io 平台规则。  
-> 位置：核心逻辑  
-> 建议：避免开发和使用作弊脚本，遵守平台规则。
-
 **🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 @grant unsafeWindow 权限，允许脚本访问和修改页面的全局对象，可能导致权限滥用和安全边界突破。  
+> 使用了 @grant unsafeWindow，提升了脚本权限，可能导致与页面脚本的隔离被打破，增加潜在攻击面。  
 > 位置：元数据 @grant unsafeWindow  
-> 建议：仅在必要时申请 unsafeWindow，避免滥用高权限。建议移除或限制使用。
+> 建议：仅在确有必要时使用 unsafeWindow，避免滥用高权限。
 
-**🟠 MEDIUM** — 敏感 API 调用  
-> 脚本通过 window.ipcRenderer.send 模拟鼠标移动事件，可能用于自动化操作（如 aimbot、triggerbot），涉及用户行为自动化。  
-> 位置：window.ipcRenderer.send  
-> 建议：自动化用户行为需谨慎，避免滥用导致账号封禁或违反平台规则。
+**🟡 LOW** — 供应链风险  
+> 脚本会 hook WebAssembly 实例和渲染流程，分析游戏内存和渲染状态，但未发现有外部数据传输行为。  
+> 位置：全局  
+> 建议：持续关注后续版本，防止后门或外传代码注入。
 
 ---
 

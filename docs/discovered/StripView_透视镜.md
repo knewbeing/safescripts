@@ -54,9 +54,9 @@ title: "StripView 透视镜"
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-05-25
+**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-01
 
-> 该脚本仅注入CSS并实现视频透视镜功能，无任何数据外传、隐私采集、远程代码执行、混淆、DOM XSS、权限滥用、敏感API调用、供应链风险或iframe风险。安全评分100，风险极低。
+> 该脚本主要功能为在视频页面上提供可拖拽的透视镜效果。代码结构清晰，无混淆，无远程代码执行风险，无隐私采集行为。虽然声明了 @connect sv.acreatorhub.com，但在已提供的代码中未发现任何实际的数据外传或网络请求实现。未发现 DOM XSS、敏感 API 滥用、WebSocket 使用、剪贴板访问、键盘监听等高危行为。整体安全性较高，建议关注后续版本是否引入实际的网络请求。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -69,50 +69,20 @@ title: "StripView 透视镜"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本声明 @connect sv.acreatorhub.com，但完整代码未发现任何网络请求（GM_xmlhttpRequest、fetch、WebSocket等）实际调用。  
-> 位置：元数据与代码  
-> 建议：如后续代码补全或更新，需检查是否有数据外传行为。当前版本未检测到。
-
-**⛔ CRITICAL** — 隐私采集  
-> 脚本未读取 cookie、localStorage、sessionStorage、IndexedDB，也未监听键盘输入、表单字段、剪贴板等敏感信息。  
-> 位置：完整代码  
-> 建议：保持现有设计，避免后续添加隐私采集逻辑。
-
-**🔴 HIGH** — 远程代码执行  
-> 脚本未使用 eval、new Function、setTimeout(string)、setInterval(string)，也未动态加载远程脚本。  
-> 位置：完整代码  
-> 建议：保持现有安全实践，避免远程代码执行风险。
-
-**🔴 HIGH** — 代码混淆  
-> 脚本未发现混淆特征（base64解码、字符串数组映射、unicode混淆、高度压缩单行代码）。  
-> 位置：完整代码  
-> 建议：保持代码可读性，避免混淆。
-
-**🔴 HIGH** — DOM XSS  
-> 脚本未将用户输入或URL参数直接插入innerHTML/outerHTML，未发现DOM XSS风险。  
-> 位置：完整代码  
-> 建议：如后续涉及用户输入，需严格转义。
+**⛔ CRITICAL** — 数据外传声明  
+> 脚本元数据声明了 @connect sv.acreatorhub.com，但在已提供的代码片段中未发现任何实际的网络请求代码（如 fetch、GM_xmlhttpRequest、XMLHttpRequest、WebSocket 等）。  
+> 位置：元数据与主代码  
+> 建议：如未来代码补全后出现网络请求，需检查其内容和目的。当前未发现数据外传实现。
 
 **🟠 MEDIUM** — 权限滥用  
-> 仅申请GM_addStyle权限，未滥用高权限（如GM_download、GM_openInTab等）。  
-> 位置：元数据  
-> 建议：保持最小权限原则。
-
-**🟠 MEDIUM** — 敏感API调用  
-> 未调用敏感API（地理位置、RTCPeerConnection、MediaDevices、Clipboard、Notification等）。  
-> 位置：完整代码  
-> 建议：避免后续添加敏感API调用。
+> 脚本未申请除 GM_addStyle 外的高权限，也未使用 GM_download、GM_openInTab 等敏感权限。  
+> 位置：@grant 元数据  
+> 建议：保持最小权限原则，避免申请未使用的高权限。
 
 **🟠 MEDIUM** — 供应链风险  
-> 未通过@require加载第三方库，无供应链风险。  
+> 脚本未通过 @require 加载任何第三方库，降低了供应链风险。  
 > 位置：元数据  
-> 建议：如需引入第三方库，建议固定版本哈希并使用官方CDN。
-
-**🟡 LOW** — ClickJacking/iframe风险  
-> 未修改frame保护策略，未创建隐藏iframe用于数据提取。  
-> 位置：完整代码  
-> 建议：保持现有安全设计。
+> 建议：如需引入第三方库，建议使用可信 CDN 并锁定版本。
 
 ---
 

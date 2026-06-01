@@ -1,0 +1,58 @@
+{
+  "slug": "contentFarm",
+  "platform": "github",
+  "source_url": "https://raw.githubusercontent.com/limbopro/Adblock4limbo/44674b73b0134dfaa8322984bca4a8b966428bf6/Adguard/contentFarm.user.js",
+  "source_repo": "limbopro/Adblock4limbo",
+  "raw_url": "https://raw.githubusercontent.com/limbopro/Adblock4limbo/44674b73b0134dfaa8322984bca4a8b966428bf6/Adguard/contentFarm.user.js",
+  "filename": "contentFarm.user.js",
+  "name": "屏蔽内容农场（with 油猴脚本）",
+  "version": "0.3.4",
+  "description": "利用 JavaScript/CSS 屏蔽「内容农场」在谷歌搜索结果中的呈现，顺便在清除谷歌搜索结果中的Adsense广告，还你清爽的 Google 中文搜索体验！",
+  "match": [
+    "https://www.google.com/search*",
+    "https://www.google.com.hk/search*",
+    "https://www.bing.com/search*",
+    "https://www.bing.com/?FORM*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  屏蔽内容农场（with 油猴脚本）\n// @namespace  http://tampermonkey.net/\n// @version  0.3.4\n// @description  利用 JavaScript/CSS 屏蔽「内容农场」在谷歌搜索结果中的呈现，顺便在清除谷歌搜索结果中的Adsense广告，还你清爽的 Google 中文搜索体验！\n// @author  limbopro\n// @license  MIT\n// @match  https://www.google.com/search*\n// @match  https://www.google.com.hk/search*\n// @match  https://www.bing.com/search*\n// @match  https://www.bing.com/?FORM*\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=google.com.hk\n// @run-at  document-end\n// @grant  none",
+  "sha256": "a99cd92cef91054102cae2e24cda00395f8af2105445cd23582f4f373632d6ea",
+  "discovered_at": "2026-06-01T06:48:41.418274+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": null,
+  "good_ratings": null,
+  "bad_ratings": null,
+  "summary": {
+    "applicable_sites": [
+      "谷歌搜索",
+      "谷歌香港搜索",
+      "必应搜索"
+    ],
+    "description": "该脚本可以自动屏蔽谷歌和必应搜索结果中的内容农场网站，并去除谷歌搜索页面上的Adsense广告，让你的中文搜索体验更加清爽。",
+    "permissions": [
+      {
+        "explanation": "脚本不需要额外权限，直接在网页上运行。",
+        "grant": "none"
+      }
+    ],
+    "tags": [
+      "广告屏蔽",
+      "内容农场过滤",
+      "搜索优化",
+      "谷歌",
+      "必应",
+      "清爽体验"
+    ],
+    "usage": [
+      "安装脚本后，访问谷歌或必应搜索页面。",
+      "搜索任意内容，内容农场结果和广告会自动被隐藏。",
+      "无需手动操作，脚本自动生效。"
+    ],
+    "zh_name": "屏蔽内容农场"
+  }
+}

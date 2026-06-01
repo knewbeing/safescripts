@@ -1,54 +1,49 @@
 ---
-title: GitHub增强 - 高速下载
+title: "Github增强-高速下载"
 ---
 
-# GitHub增强 - 高速下载
+# Github增强-高速下载
 
-`GitHub增强`  `高速下载`  `文件管理`  `公益加速`  `项目下载`  `用户脚本`
+`下载加速`  `Github增强`  `文件管理`  `公益加速`  `开发工具`  `便捷操作`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/managed/GithubEnhanced-High-Speed-Download.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**2.6.37**　　最后更新：**2026-04-15**
+> 版本：**2.6.38**　　最后更新：**2026-06-01**
 
 ## 功能介绍
 
-该脚本为GitHub提供高速下载功能，支持Git Clone/SSH、Release、Raw文件及代码压缩包等多种文件类型的快速下载。它利用公益加速源提升下载速度，并支持项目列表中的单文件快捷下载。安装后可显著提升GitHub相关资源的下载效率。
+本脚本为 Github 提供高速下载功能，支持加速 Git Clone/SSH、Release、Raw、Code(ZIP) 等文件。用户可在项目列表中快速下载单个文件，提升下载速度，适合经常需要下载 Github 文件的用户。
 
 ## 适用网站
 
-- GitHub
-- hub.whtrys.space
-- dgithub.xyz
-- kkgithub.com
-- github.site
-- github.store
-- bgithub.xyz
+- Github
+- bgithub加速镜像
 
 ## 使用方法
 
-1. 安装脚本后访问GitHub相关页面。
-2. 在页面菜单或脚本菜单中选择高速下载选项。
-3. 根据需要选择下载方式（Git Clone、Release、Raw等）。
-4. 脚本自动使用公益加速源加快下载速度。
+1. 安装脚本后，访问 Github 或 bgithub 镜像网站。
+2. 在文件、代码或 Release 页面会出现高速下载按钮。
+3. 点击按钮即可通过加速源下载对应文件。
+4. 可在浏览器菜单中切换加速源或反馈问题。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `GM_registerMenuCommand` | 添加自定义菜单命令，方便用户操作脚本功能 |
-| `GM_unregisterMenuCommand` | 移除已注册的菜单命令，管理菜单项 |
-| `GM_openInTab` | 在新标签页打开链接，用于快速访问下载地址 |
-| `GM_getValue` | 读取脚本存储的数据，保存用户设置 |
-| `GM_setValue` | 保存数据到脚本存储，保持用户配置 |
-| `GM_notification` | 显示桌面通知，提醒下载状态或操作结果 |
-| `GM_setClipboard` | 将内容复制到剪贴板，方便用户粘贴下载链接等信息 |
-| `window.onurlchange` | 监听URL变化，动态响应页面内容变化 |
+| `GM_registerMenuCommand` | 用于在浏览器菜单中添加自定义命令，方便用户操作。 |
+| `GM_unregisterMenuCommand` | 用于移除自定义菜单命令，保持界面整洁。 |
+| `GM_openInTab` | 用于在新标签页打开加速下载链接，便于多任务操作。 |
+| `GM_getValue` | 用于保存用户设置，如加速源选择等。 |
+| `GM_setValue` | 用于存储用户偏好和配置，提升使用体验。 |
+| `GM_notification` | 用于在下载完成或操作时弹出通知，提醒用户。 |
+| `GM_setClipboard` | 用于复制下载链接到剪贴板，方便用户粘贴使用。 |
+| `window.onurlchange` | 用于监听页面地址变化，确保脚本功能在页面切换时生效。 |
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-05-25
+**风险等级**：🟡 LOW　　**安全评分**：97/100　　**分析时间**：2026-06-01
 
-> 该脚本当前代码为空，仅包含元数据，无任何功能实现，因此不存在安全风险。未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。安全评分为100分。
+> 该脚本主要通过在 GitHub 页面上提供加速下载链接，未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。所有外部请求均为用户主动点击下载时触发，未发现自动上报或追踪行为。权限申请合理，无滥用敏感 API。供应链风险极低（无 @require），整体安全性高。
 
 | 检查项 | 结果 |
 |--------|------|

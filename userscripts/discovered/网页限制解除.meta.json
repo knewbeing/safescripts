@@ -17,35 +17,37 @@
   "require": [],
   "metadata_raw": "// @namespace  https://www.github.com/Cat7373/\n// @name  网页限制解除\n// @name:en  Remove web limits\n// @name:zh  网页限制解除\n// @name:zh-CN  网页限制解除\n// @name:zh-TW  網頁限制解除\n// @name:ja  ウェブの規制緩和\n// @description  通杀大部分网站，可以解除禁止复制、剪切、选择文本、右键菜单的限制。\n// @description:en  Pass to kill most of the site, you can lift the restrictions prohibited to copy, cut, select the text, right-click menu.\n// @description:zh  通杀大部分网站，可以解除禁止复制、剪切、选择文本、右键菜单的限制。\n// @description:zh-CN  通杀大部分网站，可以解除禁止复制、剪切、选择文本、右键菜单的限制。\n// @description:zh-TW  通殺大部分網站，可以解除禁止復制、剪切、選擇文本、右鍵菜單的限制。\n// @description:ja  サイトのほとんどを殺すために渡し、あなたは、コピー切り取り、テキスト、右クリックメニューを選択することは禁止の制限を解除することができます。\n// @homepageURL  https://cat7373.github.io/remove-web-limits/\n// @supportURL  https://github.com/Cat7373/remove-web-limits/issues/\n// @author  Cat73\n// @version  1.3\n// @license  LGPLv3\n// @compatible  chrome Chrome_46.0.2490.86 + TamperMonkey + 脚本_1.3 测试通过\n// @compatible  firefox Firefox_42.0 + GreaseMonkey + 脚本_1.2.1 测试通过\n// @compatible  opera Opera_33.0.1990.115 + TamperMonkey + 脚本_1.1.3 测试通过\n// @compatible  safari 未测试\n// @match  *://*/*\n// @grant  none\n// @run-at  document-start\n// @downloadURL  https://update.greasyfork.org/scripts/14146/%E7%BD%91%E9%A1%B5%E9%99%90%E5%88%B6%E8%A7%A3%E9%99%A4.user.js\n// @updateURL  https://update.greasyfork.org/scripts/14146/%E7%BD%91%E9%A1%B5%E9%99%90%E5%88%B6%E8%A7%A3%E9%99%A4.meta.js",
   "sha256": "9db3940a48ab75a3ba4f9136af324453cba86c6dd81e089789f1da10d6d200a3",
-  "discovered_at": "2026-05-25T06:24:11.621337+00:00",
+  "discovered_at": "2026-06-01T06:51:40.325487+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 1016450,
+  "install_count": 1016737,
   "good_ratings": 2585,
   "bad_ratings": 1,
   "summary": {
     "applicable_sites": [
       "所有网站"
     ],
-    "description": "本脚本可以解除大多数网站对复制、剪切、选择文本和右键菜单的限制，让用户自由操作网页内容。安装后，您可以在被限制的网站上正常使用复制、粘贴和右键功能。",
+    "description": "该脚本可以解除大多数网站对复制、剪切、选择文本和右键菜单的限制，让用户自由操作网页内容。",
     "permissions": [
       {
-        "explanation": "脚本不需要额外权限，直接运行即可。",
+        "explanation": "脚本不需要额外权限，所有操作仅在网页自身完成。",
         "grant": "none"
       }
     ],
     "tags": [
       "复制解锁",
       "右键菜单",
-      "网页限制解除",
       "文本选择",
+      "网页辅助",
       "通用脚本",
-      "办公辅助"
+      "权限解除"
     ],
     "usage": [
-      "安装脚本后，无需设置，自动生效。",
-      "遇到无法复制或右键的网站，刷新页面即可解除限制。"
+      "安装 Tampermonkey 插件。",
+      "在 Tampermonkey 中添加此脚本。",
+      "刷新或重新打开需要解除限制的网站。",
+      "即可自由复制、剪切、选择文本和使用右键菜单。"
     ],
     "zh_name": "网页限制解除"
   }

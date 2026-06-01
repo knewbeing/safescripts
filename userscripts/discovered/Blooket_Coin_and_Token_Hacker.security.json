@@ -7,25 +7,18 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "Uses prompt to collect user input and updates DOM with those values. No network requests or external data transmission detected.",
+      "description": "The script uses prompt and alert to interact with the user, but does not process or insert user input into the DOM in a way that would cause XSS.",
       "location": "addCoinsAndTokens function",
-      "recommendation": "Ensure user input is validated and not used in unsafe DOM operations. Current usage is safe.",
+      "recommendation": "No action needed unless future code inserts user input into the DOM via innerHTML.",
       "severity": "LOW",
-      "type": "Input Handling"
+      "type": "DOM Interaction"
     },
     {
-      "description": "No permissions (@grant none) requested, so no risk of privilege escalation or misuse.",
-      "location": "Metadata block",
-      "recommendation": "Maintain minimal permissions for best security.",
+      "description": "The script attempts to update the DOM with user-provided values, but only uses textContent, which is safe from XSS.",
+      "location": "updateBalanceDisplay function",
+      "recommendation": "Continue using textContent instead of innerHTML for user input.",
       "severity": "LOW",
-      "type": "Permission Usage"
-    },
-    {
-      "description": "No supply chain risk detected. No @require or external script loading.",
-      "location": "Metadata block",
-      "recommendation": "Continue avoiding external dependencies unless necessary.",
-      "severity": "LOW",
-      "type": "Supply Chain"
+      "type": "DOM Manipulation"
     }
   ],
   "obfuscation_detected": false,
@@ -35,10 +28,10 @@
   },
   "risk_level": "SAFE",
   "script_name": "Blooket Coin and Token Hacker",
-  "security_score": 97,
-  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。仅通过 prompt 获取用户输入并更新页面显示，无敏感权限申请或外部依赖。整体安全风险极低，适合在受信环境下使用。",
+  "security_score": 94,
+  "summary": "This UserScript does not perform any network requests, does not collect or transmit user data, and does not use dangerous or obfuscated code. It only modifies the page's DOM in a safe manner and interacts with the user via prompt and alert. No critical, high, or medium security issues detected. The script is considered safe, though its functionality is limited to local display changes and does not actually hack or modify server-side data.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-25T06:27:47.656459+00:00",
+  "analyzed_at": "2026-06-01T06:55:50.624648+00:00",
   "slug": "Blooket_Coin_and_Token_Hacker"
 }

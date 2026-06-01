@@ -10,63 +10,62 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 GM_xmlhttpRequest 向 nominatim.openstreetmap.org 发送地理坐标请求，可能包含用户游戏位置数据。",
-      "location": "function _getAddress(lat, lng)",
-      "recommendation": "仅在用户明确同意时发送请求，并限制数据内容。",
+      "description": "脚本通过 GM_xmlhttpRequest 向 nominatim.openstreetmap.org 发送地理坐标，获取地址信息。",
+      "location": "_getAddress() 函数",
+      "recommendation": "仅允许必要的地理查询，避免发送敏感信息。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本通过 GM_xmlhttpRequest 向 Discord Webhook（用户输入）发送地理坐标、地址、地图截图等敏感信息。",
-      "location": "function sendToDiscord(embed)",
-      "recommendation": "确保用户知晓数据内容和风险，避免自动发送敏感信息。",
+      "description": "脚本通过 GM_xmlhttpRequest 向用户配置的 Discord Webhook 发送地理坐标、地址、地图截图等信息。",
+      "location": "sendToDiscord() 函数",
+      "recommendation": "警告用户不要填写第三方 Webhook，防止敏感信息泄露。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本读取页面中的地理坐标信息（lat/lng），并结合地址解析后外传到第三方。",
-      "location": "function getCoordinates()",
-      "recommendation": "限制采集范围，避免采集其他敏感数据。",
-      "severity": "CRITICAL",
-      "type": "隐私采集"
-    },
-    {
-      "description": "脚本申请 GM_xmlhttpRequest 权限并实际使用，存在数据外传风险。",
-      "location": "@grant GM_xmlhttpRequest",
-      "recommendation": "仅申请必要权限，减少攻击面。",
+      "description": "脚本申请了 GM_xmlhttpRequest 权限，并允许 @connect 到 discord.com 和 nominatim.openstreetmap.org，存在外传风险。",
+      "location": "元数据 @grant/@connect",
+      "recommendation": "限制 @connect 域名，最小化权限。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "脚本申请 @connect discord.com 和 nominatim.openstreetmap.org，允许任意外部通信。",
-      "location": "@connect discord.com, @connect nominatim.openstreetmap.org",
-      "recommendation": "限制 connect 域名，仅允许必要的 API。",
+      "description": "脚本未检测到代码混淆，但部分功能依赖用户输入 Discord Webhook，存在供应链风险（如钓鱼 Webhook）。",
+      "location": "sendToDiscord() 函数",
+      "recommendation": "提醒用户仅使用可信 Webhook。",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "供应链风险"
     },
     {
-      "description": "脚本未检测到远程代码执行、混淆、DOM XSS、敏感 API 调用、供应链风险、iframe 风险等问题。",
-      "location": "全局",
-      "recommendation": "保持代码透明，避免引入高风险操作。",
+      "description": "脚本通过 Notification API 发送通知，可能被滥用。",
+      "location": "sendNotification() 函数",
+      "recommendation": "仅在用户明确授权后使用通知。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "脚本通过 GM_setValue/GM_getValue 存储和读取用户设置，包括 Discord Webhook URL。",
+      "location": "全局状态管理",
+      "recommendation": "确保存储内容不包含敏感信息。",
       "severity": "LOW",
-      "type": "一般安全建议"
+      "type": "隐私采集"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "读取地理坐标（lat/lng）",
-      "解析地址信息",
-      "结合用户操作发送到第三方"
+      "存储 Discord Webhook URL 到本地",
+      "存储用户热键、功能开关设置"
     ],
     "detected": true
   },
   "risk_level": "CRITICAL",
   "script_name": "CheatGuessr Universal (Works in GeoGuessr | OpenGuessr | WorldGuessr | FreeGuessr)",
-  "security_score": 25,
-  "summary": "该脚本存在严重的数据外传和隐私采集风险，尤其是自动或手动将用户地理位置、地址等敏感信息发送到 Discord Webhook 和第三方地理解析服务。未检测到远程代码执行、混淆、DOM XSS、供应链风险等问题，但权限申请较宽泛。建议仅在完全信任环境下使用，并确保用户知晓所有数据流向和风险。",
-  "supply_chain_risk": false,
+  "security_score": 50,
+  "summary": "该脚本存在严重的数据外传风险：会将地理坐标、地址等信息通过 GM_xmlhttpRequest 发送到 nominatim.openstreetmap.org 进行反查，并允许用户配置 Discord Webhook，将地理信息主动推送到 Discord 服务器。若 Webhook 配置为第三方地址，可能导致敏感信息泄露。脚本未发现代码混淆和 DOM XSS 问题，但存在权限滥用、供应链风险和敏感 API 调用等中等风险。总体安全性较低，不建议在含有敏感信息的环境下使用。",
+  "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-25T06:28:47.508469+00:00",
+  "analyzed_at": "2026-06-01T06:57:07.400713+00:00",
   "slug": "CheatGuessr_Universal_Works_in_GeoGuessr_OpenGuessr_WorldGuessr_FreeGuessr"
 }

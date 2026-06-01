@@ -38,9 +38,9 @@ title: "HTML5 视频音频默认音量"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-05-25
+**风险等级**：🟢 SAFE　　**安全评分**：89/100　　**分析时间**：2026-06-01
 
-> 该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。所有敏感 API 和权限申请均为合理用途，唯一风险为申请了未使用的 GM_notification 权限和 GM_openInTab（仅用于反馈页面）。整体安全性高，建议移除未使用权限以进一步提升安全性。
+> 该脚本仅操作本地 HTML5 视频/音频音量设置，未检测到任何数据外传、隐私采集、远程代码执行、混淆、XSS、供应链风险或敏感 API 滥用。权限申请合理，整体安全性高。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -53,30 +53,15 @@ title: "HTML5 视频音频默认音量"
 
 ### 发现的问题
 
-**🟠 MEDIUM** — Permission Usage  
-> 申请了 GM_openInTab 权限，但仅用于打开反馈页面（GitHub 和 GreasyFork），未涉及敏感数据或恶意跳转。  
-> 位置：GM_openInTab in menu registration  
-> 建议：如无必要可移除该权限，但当前用途安全。
+**🟠 MEDIUM** — 权限使用  
+> 脚本申请了 GM_openInTab 权限，但仅用于打开开发者反馈页面，无滥用行为。  
+> 位置：@grant 元数据与 GM_openInTab 调用  
+> 建议：保持用途透明，勿用于自动化或恶意跳转。
 
-**🟠 MEDIUM** — Permission Usage  
-> 脚本申请了 GM_notification 权限，但未在代码中实际使用。  
-> 位置：Metadata block (@grant GM_notification)  
-> 建议：移除未使用的高权限申请，减少权限滥用风险。
-
-**🟡 LOW** — Permission Usage  
-> 脚本申请了 GM_registerMenuCommand 和 GM_unregisterMenuCommand 权限，实际用于菜单功能，符合用途。  
-> 位置：Metadata block (@grant GM_registerMenuCommand, GM_unregisterMenuCommand)  
-> 建议：无风险，合理使用。
-
-**🟡 LOW** — Permission Usage  
-> 脚本申请了 GM_getValue 和 GM_setValue 权限，实际用于存储和读取音量设置，符合用途。  
-> 位置：Metadata block (@grant GM_getValue, GM_setValue)  
-> 建议：无风险，合理使用。
-
-**🟡 LOW** — Privacy Storage  
-> 脚本使用 localStorage 存储当前网站音量，但未外传数据。  
-> 位置：volumeChangeEvent, menu registration  
-> 建议：无风险，合理使用。
+**🟡 LOW** — 本地存储使用  
+> 脚本使用 GM_getValue/GM_setValue 和 localStorage 存储音量设置，无敏感信息采集。  
+> 位置：GM_getValue/GM_setValue, localStorage  
+> 建议：确保不存储敏感/隐私数据。
 
 ---
 

@@ -38,14 +38,14 @@ title: "地理猜谜助手通用版"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：34/100　　**分析时间**：2026-05-25
+**风险等级**：🔴 HIGH　　**安全评分**：42/100　　**分析时间**：2026-06-01
 
-> 该脚本存在严重的数据外传风险，尤其是向 discord.com 和 nominatim.openstreetmap.org 发送用户地理位置数据。部分功能涉及敏感 API 调用和权限滥用，且在部分平台修改 iframe sandbox 属性，存在低级别 ClickJacking 风险。未发现代码混淆、远程代码执行或 DOM XSS 注入问题。整体安全风险为 CRITICAL，不建议在敏感环境下使用。
+> This script transmits user location data to discord.com and nominatim.openstreetmap.org, which are third-party services. It does not appear to collect sensitive user input (e.g., passwords, cookies), nor does it use eval or dynamic code execution. There is no evidence of code obfuscation or DOM XSS. However, the use of Notification API, modification of native prototypes, and broad permissions increase the risk profile. The main critical risk is data exfiltration of user coordinates.
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：discord.com, nominatim.openstreetmap.org） |
-| 隐私采集 | ❌ 检测到（localStorage 操作, 地理坐标采集） |
+| 隐私采集 | ❌ 检测到（Reads and stores user hotkey and feature toggle preferences via GM_getValue/GM_setValue., Sends user coordinates to third-party services.） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -53,40 +53,30 @@ title: "地理猜谜助手通用版"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本通过 GM_xmlhttpRequest 向 discord.com 发送地理位置数据（send location to discord），可能包含用户行为、坐标等敏感信息，属于数据外传。  
-> 位置：sendToDiscord 功能相关代码（未完整展示，但描述和 @connect 指明用途）  
-> 建议：仅允许用户主动触发发送，明确提示用户数据将被外传；避免自动上报；建议用户自行配置 webhook，避免硬编码。
+**⛔ CRITICAL** — Data Exfiltration  
+> The script sends location data to discord.com via GM_xmlhttpRequest, which may include user coordinates or game-related information. This is a third-party server and may be used for tracking or data collection.  
+> 位置：send location to discord (feature, implied by description and GM_xmlhttpRequest usage)  
+> 建议：Warn users about data transmission to discord.com. Only send minimal necessary data and allow users to opt-out.
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本通过 GM_xmlhttpRequest 向 nominatim.openstreetmap.org 查询地理位置反查，传递用户坐标数据。  
-> 位置：_getAddress() 函数  
-> 建议：仅在用户主动操作时调用，避免自动批量查询；提示用户数据将被发送至第三方。
+**⛔ CRITICAL** — Data Exfiltration  
+> The script sends reverse geocoding requests to nominatim.openstreetmap.org with user coordinates to obtain address information.  
+> 位置：_getAddress() function using GM_xmlhttpRequest  
+> 建议：Inform users that their coordinates are sent to a third-party geocoding service. Consider caching or minimizing requests.
 
-**🟠 MEDIUM** — 隐私采集  
-> 脚本读取并操作 localStorage（Storage.prototype.setItem Proxy），但未发现敏感数据采集或外传行为。  
-> 位置：WORLDGUESSR 分支  
-> 建议：确保不采集或外传用户敏感信息。
+**🟠 MEDIUM** — Sensitive API Usage  
+> The script requests Notification API permission and can send browser notifications.  
+> 位置：requestNotificationPermission(), sendNotification()  
+> 建议：Ensure notifications are not abused for spam. Only use with user consent.
 
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请 GM_xmlhttpRequest 高权限，并允许连接 discord.com（第三方），存在权限滥用风险。  
-> 位置：元数据 @grant/@connect  
-> 建议：仅申请实际需要的权限，避免过度授权。
+**🟠 MEDIUM** — Sensitive API Usage  
+> The script applies Proxy wrappers to native prototypes (e.g., Array.prototype.push, Element.prototype.setAttribute, Storage.prototype.setItem, String.prototype.startsWith, fetch) to bypass anti-cheat and detection mechanisms.  
+> 位置：Multiple locations, e.g., platform-specific blocks  
+> 建议：Modifying native prototypes can introduce compatibility and security risks. Limit scope and document changes.
 
-**🟠 MEDIUM** — 敏感 API 调用  
-> 脚本调用 Notification API，可能被滥用发送通知。  
-> 位置：sendNotification() 函数  
-> 建议：仅在用户明确授权和操作下使用通知功能。
-
-**🟠 MEDIUM** — 供应链风险  
-> 脚本未固定第三方服务版本（如 nominatim.openstreetmap.org），但未加载第三方 JS，供应链风险较低。  
-> 位置：@connect nominatim.openstreetmap.org  
-> 建议：如需加载第三方库，建议固定版本哈希。
-
-**🟡 LOW** — ClickJacking/iframe 风险  
-> 脚本在部分平台修改 Element.prototype.setAttribute，可能影响 iframe sandbox 属性，存在 ClickJacking/iframe 风险。  
-> 位置：setAttribute Proxy（非 geoguessr 平台）  
-> 建议：避免破坏 iframe sandbox 保护，确保页面安全。
+**🟠 MEDIUM** — Permission Usage  
+> The script requests GM_xmlhttpRequest permission, which allows arbitrary cross-origin requests.  
+> 位置：@grant GM_xmlhttpRequest  
+> 建议：Ensure this permission is strictly necessary and not abused.
 
 ---
 

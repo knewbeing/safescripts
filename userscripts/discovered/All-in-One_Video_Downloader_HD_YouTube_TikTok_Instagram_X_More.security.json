@@ -20,53 +20,27 @@
       "douyinmusicpromotion.com",
       "cdninstagram.com",
       "ted.com",
-      "licdn.com"
+      "licdn.com",
+      "sc-cdn.net",
+      "pinimg.com"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限，并通过 @connect 指定了多个第三方视频 CDN 域名，存在数据外传风险。",
+      "description": "脚本申请了 GM_xmlhttpRequest 权限并通过 @connect 允许访问多个第三方视频 CDN 域名，存在数据外传的潜在风险。",
       "location": "元数据 @grant/@connect",
-      "recommendation": "确保所有网络请求仅用于视频下载，不携带用户敏感信息、Cookie、页面内容等。",
+      "recommendation": "仅允许必要的域名，避免向非视频内容相关的第三方服务器发送用户数据。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本申请了 GM_openInTab、GM_download、unsafeWindow 等高权限，但代码未展示实际用途，存在权限滥用风险。",
+      "description": "脚本申请了 GM_openInTab、GM_download、unsafeWindow 等高权限，但代码未见实际使用，存在权限滥用风险。",
       "location": "元数据 @grant",
-      "recommendation": "仅申请实际需要的最低权限，避免滥用高权限。",
+      "recommendation": "仅申请实际需要的权限，移除未使用的高权限。",
       "severity": "MEDIUM",
       "type": "权限滥用"
-    },
-    {
-      "description": "未见代码混淆、eval、动态 script 加载等远程代码执行风险。",
-      "location": "代码结构",
-      "recommendation": "保持代码透明，避免混淆和动态执行。",
-      "severity": "LOW",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "未见敏感隐私采集（如 document.cookie、localStorage、剪贴板、表单监听等）。",
-      "location": "代码结构",
-      "recommendation": "继续保持不采集用户隐私。",
-      "severity": "LOW",
-      "type": "隐私采集"
-    },
-    {
-      "description": "未见 DOM XSS 注入风险（如 innerHTML/outerHTML 插入用户输入）。",
-      "location": "代码结构",
-      "recommendation": "继续避免直接插入用户输入到 DOM。",
-      "severity": "LOW",
-      "type": "DOM XSS"
-    },
-    {
-      "description": "未见供应链风险（无 @require 第三方库）。",
-      "location": "元数据",
-      "recommendation": "如需引入第三方库，建议固定版本哈希并使用官方 CDN。",
-      "severity": "LOW",
-      "type": "供应链风险"
     }
   ],
   "obfuscation_detected": false,
@@ -74,12 +48,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "HIGH",
+  "risk_level": "MEDIUM",
   "script_name": "All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)",
   "security_score": 67,
-  "summary": "脚本主要风险为数据外传（大量第三方 CDN 网络请求），并申请了高权限但未见实际用途，存在权限滥用隐患。未见隐私采集、代码混淆、远程代码执行、DOM XSS、供应链风险等问题。建议严格限制网络请求用途、精简权限申请。",
+  "summary": "该脚本主要用于在主流视频网站下载视频，元数据中申请了大量第三方 CDN 域名的网络访问权限（@connect），存在一定的数据外传风险，尤其是如果后续代码实现中滥用 GM_xmlhttpRequest 可能导致用户数据泄露。脚本还申请了部分高权限但未见实际使用，建议最小化权限。未发现隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。整体安全风险为中等，建议仅在信任环境下使用。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-25T06:26:16.895891+00:00",
+  "analyzed_at": "2026-06-01T06:55:04.728878+00:00",
   "slug": "All-in-One_Video_Downloader_HD_YouTube_TikTok_Instagram_X_More"
 }

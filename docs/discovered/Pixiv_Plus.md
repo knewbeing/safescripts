@@ -44,9 +44,9 @@ title: "Pixiv 增强"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：100/100　　**分析时间**：2026-05-25
+**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-01
 
-> Pixiv Plus 用户脚本未发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 调用等高风险行为。所有网络请求均指向 Pixiv 官方 CDN，@require 第三方库来源可信且版本固定。存在部分权限冗余，建议精简 @grant 权限。整体安全风险极低，适合公开使用。
+> 该脚本主要功能为增强 Pixiv 使用体验，未发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危安全问题。所有网络请求均指向 Pixiv 官方域名，@require 的第三方库来源可信且锁定版本。部分 @grant 权限如 unsafeWindow、GM.setClipboard 具有一定风险，但当前代码未见滥用。整体安全风险较低，建议定期复查依赖库和权限申请。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -60,49 +60,39 @@ title: "Pixiv 增强"
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本使用 GM.xmlHttpRequest 和 GM_xmlhttpRequest，但仅允许连接 Pixiv 官方图片 CDN（i.pximg.net、i-f.pximg.net、i-cf.pximg.net），未发现向第三方服务器发送用户数据或页面内容。  
-> 位置：元数据 @connect 和代码网络请求部分  
-> 建议：保持仅连接官方 CDN，避免添加第三方数据上报。
+> 脚本通过 @grant 申请了 GM.xmlHttpRequest/GM_xmlhttpRequest，但实际代码仅通过 jQuery.ajax 访问 pixiv.net 站内 API，未见向第三方域名发送数据。  
+> 位置：全局  
+> 建议：确保所有网络请求仅指向 Pixiv 官方域名，避免未来代码变更导致数据外传。
 
 **⛔ CRITICAL** — 隐私采集  
-> 脚本未监听键盘输入、未读取剪贴板内容、未访问敏感隐私 API，仅通过 Pixiv 官方接口获取用户和作品信息。  
-> 位置：代码 userApi/illustApi 及事件监听部分  
-> 建议：继续避免采集用户敏感信息，勿扩展至表单/密码等隐私字段。
+> 脚本未见读取 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板、表单字段、键盘输入等敏感信息。  
+> 位置：全局  
+> 建议：保持不采集用户隐私数据，勿添加相关代码。
 
 **🔴 HIGH** — 远程代码执行  
-> 未发现 eval/new Function/setTimeout(string) 等远程代码执行风险，也未动态加载未固定版本的脚本。  
-> 位置：主代码及 @require 部分  
-> 建议：保持不使用动态执行字符串代码，@require 建议固定版本哈希。
+> 未发现 eval、new Function、setTimeout(string)、setInterval(string)、动态 script 标签、document.write 插入脚本等远程代码执行风险。  
+> 位置：全局  
+> 建议：继续避免使用动态代码执行相关 API。
 
 **🔴 HIGH** — 代码混淆  
-> 未发现代码混淆、base64 解码执行、字符串数组映射或高度压缩单行代码。  
-> 位置：主代码  
-> 建议：保持代码可读性，避免混淆。
+> 未发现代码混淆、base64 解码执行、字符串数组映射、unicode 混淆或高度压缩单行代码。  
+> 位置：全局  
+> 建议：保持代码可读性，便于社区安全审查。
 
 **🔴 HIGH** — DOM XSS / 注入  
-> 未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未发现 document.write 注入风险。  
-> 位置：主代码  
-> 建议：如需插入用户内容，务必转义。
+> 未见将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未见 document.write 注入不可信内容。  
+> 位置：全局  
+> 建议：如需插入动态内容，务必进行转义。
 
 **🟠 MEDIUM** — 权限滥用  
-> 申请了 unsafeWindow、GM.xmlHttpRequest、GM.setClipboard、GM.setValue、GM.getValue 等高权限，但实际代码仅用到部分功能，存在权限冗余。  
-> 位置：元数据 @grant 部分  
-> 建议：精简 @grant 权限，仅申请实际用到的功能。
-
-**🟠 MEDIUM** — 敏感 API 调用  
-> 未调用 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API 等敏感接口。  
-> 位置：主代码  
-> 建议：继续避免调用敏感 API。
+> @grant 申请了 unsafeWindow、GM.setClipboard、GM.setValue、GM.getValue、GM_addStyle、GM_registerMenuCommand、GM_unregisterMenuCommand 等，部分权限如 unsafeWindow、GM.setClipboard 具有一定风险，但当前代码未见滥用。  
+> 位置：元数据 @grant  
+> 建议：仅申请实际需要的权限，避免高权限冗余。
 
 **🟠 MEDIUM** — 供应链风险  
-> @require 加载的第三方库均来自 greasyfork 官方 CDN，版本号已固定，供应链风险较低。  
-> 位置：元数据 @require 部分  
-> 建议：保持使用官方 CDN，固定版本哈希。
-
-**🟡 LOW** — ClickJacking / iframe 风险  
-> 未发现修改 frame 保护策略或创建隐藏 iframe 用于数据提取。  
-> 位置：主代码  
-> 建议：继续避免 iframe 风险。
+> @require 加载的第三方库均来自 greasyfork 官方 CDN，且为具体版本号，供应链风险较低。  
+> 位置：元数据 @require  
+> 建议：如需加载第三方库，优先选择可信 CDN 并锁定版本。
 
 ---
 

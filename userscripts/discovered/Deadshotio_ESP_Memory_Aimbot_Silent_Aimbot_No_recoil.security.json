@@ -2,46 +2,39 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
-      "deadshot-cheat.netlify.app"
+      "https://deadshot-cheat.netlify.app/index.js"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 GM_xmlhttpRequest 向 deadshot-cheat.netlify.app 发起网络请求，动态加载并执行远程 JavaScript 代码，存在数据外传和远程代码执行风险。",
-      "location": "fetchAndCacheCode() 函数，GM_xmlhttpRequest 调用",
-      "recommendation": "禁止动态加载和执行远程代码，移除对第三方服务器的请求。",
+      "description": "脚本通过 GM_xmlhttpRequest 动态从第三方服务器 deadshot-cheat.netlify.app 拉取并执行远程 JavaScript 代码，存在严重的数据外传和远程代码执行风险。",
+      "location": "fetchAndCacheCode() & eval(customCode)",
+      "recommendation": "禁止从不受信任的第三方服务器动态加载和执行代码，改为本地集成或固定版本哈希的可信 CDN。",
       "severity": "CRITICAL",
-      "type": "Data Exfiltration & Remote Code Execution"
+      "type": "远程代码执行 & 数据外传"
     },
     {
-      "description": "脚本使用 eval() 执行从第三方服务器获取的代码，存在远程代码执行风险。",
-      "location": "patchImports() 函数，(0, eval)(customCode)",
-      "recommendation": "禁止使用 eval 执行外部代码，采用本地受信任代码。",
+      "description": "使用 eval() 执行远程拉取的代码，极易导致任意代码执行（RCE），攻击面极大。",
+      "location": "mod[TARGET_METHOD] = (...args) => { (0, eval)(customCode); ... }",
+      "recommendation": "严禁使用 eval 执行外部代码，尤其是网络动态获取的内容。",
       "severity": "HIGH",
-      "type": "Remote Code Execution"
+      "type": "远程代码执行"
     },
     {
-      "description": "脚本通过 WebAssembly.instantiate 和 WebAssembly.instantiateStreaming 的 monkey patch，允许远程代码在 WASM 导入时执行，增加攻击面。",
-      "location": "WebAssembly.instantiate/instantiateStreaming 重写",
-      "recommendation": "避免修改 WebAssembly API，禁止远程代码注入。",
-      "severity": "HIGH",
-      "type": "Remote Code Execution"
-    },
-    {
-      "description": "脚本申请了 GM_xmlhttpRequest、unsafeWindow 等高权限，但实际用途仅为远程代码加载，存在权限滥用风险。",
-      "location": "元数据 @grant",
-      "recommendation": "仅申请必要权限，移除未使用或高风险权限。",
+      "description": "申请了 GM_xmlhttpRequest、unsafeWindow 等高权限，且实际使用 GM_xmlhttpRequest 进行远程通信，unsafeWindow 未直接使用但存在滥用风险。",
+      "location": "@grant",
+      "recommendation": "仅申请实际需要的最低权限，移除未使用的高权限。",
       "severity": "MEDIUM",
-      "type": "Permission Abuse"
+      "type": "权限滥用"
     },
     {
-      "description": "脚本通过 @connect deadshot-cheat.netlify.app 允许与第三方服务器通信，存在供应链风险，且未固定版本哈希。",
-      "location": "元数据 @connect",
-      "recommendation": "仅允许官方可信域名，固定版本哈希，避免供应链污染。",
+      "description": "通过 @connect deadshot-cheat.netlify.app 允许与第三方服务器通信，增加供应链和数据外传风险。",
+      "location": "@connect",
+      "recommendation": "仅允许可信域名通信，避免第三方动态代码注入。",
       "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
+      "type": "供应链风险"
     }
   ],
   "obfuscation_detected": false,
@@ -51,10 +44,10 @@
   },
   "risk_level": "CRITICAL",
   "script_name": "Deadshot.io ESP & Memory Aimbot & Silent Aimbot & No recoil",
-  "security_score": 35,
-  "summary": "该脚本存在严重安全风险：动态加载并执行第三方服务器的代码，使用 eval，修改 WebAssembly API，申请高权限并允许与非官方域名通信。未检测到隐私采集和代码混淆，但远程代码执行和数据外传风险极高，建议禁止使用。",
+  "security_score": 0,
+  "summary": "该脚本存在极高安全风险：动态从第三方服务器拉取并 eval 执行远程代码，属于严重的远程代码执行和数据外传行为，极易被用于注入恶意代码、窃取用户数据或劫持浏览器环境。强烈不建议安装和使用。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-25T06:29:25.338973+00:00",
+  "analyzed_at": "2026-06-01T06:57:56.404088+00:00",
   "slug": "Deadshotio_ESP_Memory_Aimbot_Silent_Aimbot_No_recoil"
 }

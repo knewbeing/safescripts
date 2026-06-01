@@ -34,9 +34,9 @@ title: "新角色扩展"
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-05-25
+**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-06-01
 
-> 该脚本仅为 HeroWarsHelper 的扩展，未包含任何网络请求、隐私采集、远程代码执行、混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码结构清晰，安全性极高。
+> 该脚本主要为 HeroWarsHelper 扩展提供多语言文本和界面提示，未检测到任何网络请求、隐私数据采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用或供应链风险。代码结构清晰，未发现安全隐患。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -47,52 +47,7 @@ title: "新角色扩展"
 | DOM XSS 风险 | ✅ 未检测到 |
 | 供应链风险 | ✅ 可信 |
 
-### 发现的问题
-
-**⛔ CRITICAL** — Data Transmission  
-> 脚本未包含任何网络请求（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket 等），没有数据外传行为。  
-> 位置：全局代码  
-> 建议：保持现有状态，避免添加任何外部数据传输逻辑。
-
-**⛔ CRITICAL** — Privacy Collection  
-> 脚本未访问 cookie、localStorage、sessionStorage、IndexedDB，也未监听键盘输入或读取表单字段，未涉及隐私采集。  
-> 位置：全局代码  
-> 建议：保持现有状态，避免添加任何隐私采集逻辑。
-
-**🔴 HIGH** — Remote Code Execution  
-> 脚本未使用 eval、new Function、setTimeout(string)、setInterval(string)，也未动态加载远程 JS，无远程代码执行风险。  
-> 位置：全局代码  
-> 建议：避免使用动态代码执行相关 API。
-
-**🔴 HIGH** — Code Obfuscation  
-> 脚本未混淆，无 base64 解码、字符串数组映射、unicode 混淆或高度压缩单行代码。  
-> 位置：全局代码  
-> 建议：保持代码可读性，避免混淆。
-
-**🔴 HIGH** — DOM XSS/Injection  
-> 脚本未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未操作 iframe src 为 javascript:，无 DOM XSS 风险。  
-> 位置：全局代码  
-> 建议：如需插入用户输入，务必进行转义。
-
-**🟠 MEDIUM** — Permission Abuse  
-> 脚本未声明任何 @grant 权限，未滥用权限。  
-> 位置：元数据  
-> 建议：仅申请必要权限。
-
-**🟠 MEDIUM** — Sensitive API Usage  
-> 脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。  
-> 位置：全局代码  
-> 建议：避免调用敏感 API。
-
-**🟠 MEDIUM** — Supply Chain Risk  
-> 脚本未通过 @require 加载第三方库，无供应链风险。  
-> 位置：元数据  
-> 建议：如需加载第三方库，建议使用官方 CDN 并固定版本哈希。
-
-**🟡 LOW** — ClickJacking/iframe Risk  
-> 脚本未修改 frame 保护策略，也未创建隐藏 iframe，无 ClickJacking/iframe 风险。  
-> 位置：全局代码  
-> 建议：避免修改 frame 保护策略或创建隐藏 iframe。
+### 未发现安全问题 ✅
 
 ---
 

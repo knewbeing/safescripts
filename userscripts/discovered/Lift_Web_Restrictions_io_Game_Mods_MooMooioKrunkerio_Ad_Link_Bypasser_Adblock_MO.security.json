@@ -3,83 +3,69 @@
   "data_transmission": {
     "destinations": [
       "ksw2-moomoo.glitch.me",
-      "external URLs via Utils.loadModule (potentially arbitrary)"
+      "arbitrary URLs via Utils.loadModule"
     ],
     "detected": true
   },
   "dom_xss_risk": true,
   "issues": [
     {
-      "description": "The script uses XMLHttpRequest to fetch external code and executes it via a[a][a](x.responseText), which is equivalent to eval(). This allows remote code execution from arbitrary URLs.",
+      "description": "The script uses a function (Utils.loadModule) that fetches remote code via XMLHttpRequest and executes it using a[a][a](x.responseText), which is equivalent to eval(). This allows for arbitrary remote code execution.",
       "location": "Utils.loadModule function",
-      "recommendation": "Remove dynamic code loading and execution. Only load trusted, versioned libraries via @require.",
+      "recommendation": "Remove dynamic code execution and only use static, trusted code. Avoid eval or similar constructs.",
       "severity": "CRITICAL",
       "type": "Remote Code Execution"
     },
     {
-      "description": "The script stores and retrieves a UUID and a usage count in GM storage, which could be used for tracking users across sessions.",
-      "location": "uuidv4 and GM.getValue/GM.setValue usage",
-      "recommendation": "Do not store persistent identifiers unless strictly necessary. Document the purpose and limit scope.",
-      "severity": "CRITICAL",
-      "type": "Privacy Collection"
-    },
-    {
-      "description": "The script connects to ksw2-moomoo.glitch.me and uses GM_getTab/GM_saveTab to store tab objects, potentially transmitting user session data to a third-party server.",
-      "location": "CONTROLLER_PAGE logic",
-      "recommendation": "Avoid sending user data to third-party servers. Use local storage only.",
-      "severity": "CRITICAL",
-      "type": "Data Transmission"
-    },
-    {
-      "description": "The script uses a[a][a](...) pattern, which is a form of obfuscation and indirect eval.",
+      "description": "The script uses a[a][a](x.responseText), which is a highly obfuscated way to call the Function constructor (equivalent to eval). This is a strong sign of code obfuscation.",
       "location": "Utils.loadModule function",
-      "recommendation": "Avoid obfuscation and indirect code execution. Use clear, auditable code.",
+      "recommendation": "Avoid obfuscation and use clear, readable code. Remove dynamic code execution.",
       "severity": "HIGH",
       "type": "Code Obfuscation"
     },
     {
-      "description": "The script uses innerHTML and document.getElementById, and may insert untrusted content without sanitization.",
-      "location": "Utils.deleteElement and watchAndDelete functions",
-      "recommendation": "Sanitize all user input before inserting into the DOM.",
-      "severity": "HIGH",
-      "type": "DOM XSS Risk"
+      "description": "The script makes network requests to ksw2-moomoo.glitch.me and potentially other arbitrary URLs via Utils.loadModule, which can be used for data exfiltration.",
+      "location": "Utils.loadModule, CONTROLLER_PAGE logic",
+      "recommendation": "Restrict network requests to trusted domains and avoid sending user data.",
+      "severity": "CRITICAL",
+      "type": "Data Exfiltration"
     },
     {
-      "description": "The script requests high privileges (unsafeWindow, GM_getTabs, GM_saveTab) but does not use all of them in the visible code.",
-      "location": "@grant section",
-      "recommendation": "Reduce privilege scope to only what is necessary.",
+      "description": "The script requests high-privilege grants such as unsafeWindow, GM_getTabs, GM_getTab, GM_saveTab, but does not use all of them in the visible code. This is a sign of permission overreach.",
+      "location": "Metadata block (@grant)",
+      "recommendation": "Only request the minimum necessary permissions.",
       "severity": "MEDIUM",
-      "type": "Permission Abuse"
+      "type": "Permission Overreach"
     },
     {
-      "description": "The script loads third-party libraries from greasyfork.org and code.jquery.com, but does not fix versions for msgpack.js and scijs.js (greasyfork URLs are mutable).",
-      "location": "@require section",
-      "recommendation": "Pin all dependencies to versioned URLs or hashes.",
+      "description": "The script loads third-party libraries via @require from GreasyFork and CDN (jQuery), but does not pin versions with hashes, exposing to supply chain risks.",
+      "location": "Metadata block (@require)",
+      "recommendation": "Pin dependencies to specific versions and use trusted CDNs with integrity hashes.",
       "severity": "MEDIUM",
       "type": "Supply Chain Risk"
     },
     {
-      "description": "The script may create or manipulate iframes for recaptcha bypass and other purposes, which could be used for clickjacking or data extraction.",
-      "location": "recaptcha/api2/bframe logic",
-      "recommendation": "Avoid manipulating iframes unless necessary. Document all iframe usage.",
-      "severity": "LOW",
-      "type": "ClickJacking / iframe Risk"
+      "description": "The script uses innerHTML/outerHTML in some modules (not fully visible in the snippet), and the code structure suggests possible direct DOM manipulation with user input, which may lead to DOM XSS.",
+      "location": "General code structure, incomplete code",
+      "recommendation": "Sanitize all user input before inserting into the DOM.",
+      "severity": "HIGH",
+      "type": "DOM XSS Risk"
     }
   ],
   "obfuscation_detected": true,
   "privacy_collection": {
     "details": [
-      "Persistent UUID generation and storage",
-      "Usage count tracking"
+      "The script generates a UUID and stores it in GM storage, which may be used for tracking.",
+      "The script increments a counter in GM storage, which may be used for analytics."
     ],
     "detected": true
   },
   "risk_level": "CRITICAL",
   "script_name": "Lift Web Restrictions: .io Game Mods (MooMoo.io/Krunker.io/..), Ad Link Bypasser, Adblock, & MORE!",
   "security_score": 0,
-  "summary": "This userscript presents critical security risks, including remote code execution via dynamic loading and eval, persistent user tracking, third-party data transmission, code obfuscation, DOM XSS risk, excessive permissions, and supply chain vulnerabilities. It is not safe for use in its current form.",
+  "summary": "This userscript poses a critical security risk. It contains dynamic remote code execution, obfuscated code, potential data exfiltration to third-party servers, permission overreach, supply chain risks, and privacy tracking. It should NOT be approved or installed.",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-25T06:33:44.943012+00:00",
+  "analyzed_at": "2026-06-01T07:03:01.751867+00:00",
   "slug": "Lift_Web_Restrictions_io_Game_Mods_MooMooioKrunkerio_Ad_Link_Bypasser_Adblock_MO"
 }

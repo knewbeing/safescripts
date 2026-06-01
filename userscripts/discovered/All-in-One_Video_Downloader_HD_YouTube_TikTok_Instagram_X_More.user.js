@@ -71,7 +71,7 @@
 // @description:zh-CN 一款多合一、快速且免费的在线视频下载器。支持从 YouTube、TikTok、抖音、Instagram、Facebook、Threads、TED、小红书、X（Twitter）等平台下载视频。享受无水印、高质量、流畅便捷的下载体验
 // @description:zh-TW 一款多合一、快速且免費的線上視頻下載器。支援從 YouTube、TikTok、抖音、Instagram、Facebook、Threads、TED、小紅書、X（Twitter）等平台下載視頻。享受無水印、高質量、流暢便捷的下載體驗
 // @namespace   AllInOneDownloader_Daniel
-// @version     1.0.11
+// @version     1.0.12
 // @author      Daniel
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADQAAAAwCAYAAABe6Vn9AAACZElEQVR4AeyZbVKDMBCGgYuJ/9WT2CNoqx6hnkT9T72YuA+WDg0M2SSblnFwWCfNfuR9EhqatiqM/+72bX3/3jZirccaYo2HL8yByrLYishazHfVx1hfXJDfHEhG18BIWHeFxHYJvn85gHxjZvWvQFmn16D4ukIGk5i1xLpCWafXoPi6QgaTmLXEukJZp9eg+LpCBpOYtYR6hTi7yPnGe84JVSs1feemlrG1ddVAx7OL+cd9jdDj2JpQ+wOeatTwIPVEqleobYuXcB3zGVqvjH2rjVUDfW3KQ3kFKGAY2xyIgh+bcndJqFAYNKpXiGDsUlAxMOgLBiIpN1QsDNqigEjMBZUCg65oIJKtoVJh0JQERAErKAsY9CQDUSQVygoGLSZAFIqFsoRBhxkQxUKheKaFPDQZw2emQAymhQKGWHIszRwIcQhFMO0pw0fMlC+1rwN62Lc7zblkLsY9syAY4a5A+vAN+8mdq63xwUDNikb795sOr6NNziyjH7AQDgAmhQ9sAPRJ+3QBQ+6pI7IBg4A/VzQia4zSEIbAoQMA7POxvHU3AGLJGcYntp+6Wy6xyFk6AhF61jnxghhiJ1xJXeZAqEEotzLtKcsFw1hZgCjMrQwUBkBvcp83ABOTw7IBIRYoDIDepF/9/YDEBl9qoODKV0pYIlC3vcuuWMqcHMTca9a/OCB5Zn3327s8t0bfNPn8iwP6KYrTqoi40ftt6C8m/iRnoveKXbJ5bPudUTaUG1fK0E/b9S8OSATWArIVsQ1tMfea9S8RyAUIel3Jm2z0xguqsKzgt4oPjv8BCgbZ6l9/AQAA//9HnEu0AAAABklEQVQDAI1HmgBXKvxdAAAAAElFTkSuQmCC
 // @include     https://www.ted.com/*
@@ -84,6 +84,8 @@
 // @include     https://www.douyin.com/*
 // @include     https://www.xiaohongshu.com/*
 // @include     https://www.facebook.com/*
+// @include     https://www.snapchat.com/*
+// @include     https://www.pinterest.com/*
 // @include     https://*.googlevideo.com/*
 // @include     https://*.tiktokcdn.com/*
 // @include     https://*.douyinvod.com/*
@@ -102,6 +104,8 @@
 // @include     https://*.douyinmusicpromotion.com/*
 // @include     https://*.cdninstagram.com/*
 // @include     https://*.licdn.com/*
+// @include     https://*.sc-cdn.net/*
+// @include     https://*.pinimg.com/*
 // @connect     googlevideo.com
 // @connect     tiktokcdn.com
 // @connect     snssdk.com
@@ -121,6 +125,8 @@
 // @connect     cdninstagram.com
 // @connect     ted.com
 // @connect     licdn.com
+// @connect     sc-cdn.net
+// @connect     pinimg.com
 // @noframes
 // @license     MIT
 // @run-at      document-start
@@ -197,7 +203,7 @@
 	    }
 	    return supportedLanguages[langCode] || "en";
 	  },
-	  openInTab: function(url, options = { "active": true, "insert": true, "setParent": true }) {
+	  openInTab: function(url, options = { active: true, insert: true, setParent: true }) {
 	    if (typeof GM_openInTab === "function") {
 	      GM_openInTab(url, options);
 	    } else {
@@ -205,7 +211,7 @@
 	    }
 	  },
 	  genrateDownloadSvg: function(color = "#FFF", width = 25, height = 25) {
-	    let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+	    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 	    svg.setAttribute("t", "1768806429307");
 	    svg.setAttribute("class", "icon");
 	    svg.setAttribute("viewBox", "0 0 1024 1024");
@@ -214,8 +220,11 @@
 	    svg.setAttribute("p-id", "21520");
 	    svg.setAttribute("width", width);
 	    svg.setAttribute("height", height);
-	    let path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-	    path.setAttribute("d", "M684.5 512H573.1V389.8c0-11.2-9.1-20.4-20.4-20.4h-81.5c-11.3 0-20.4 9.1-20.4 20.4v122.4l-112.4 0.6c-4 0-7.1 2.3-8.5 5.5 0 0.1-0.1 0.1-0.1 0.2-0.3 0.6-0.3 1.3-0.4 2-0.1 0.6-0.3 1.2-0.2 1.8 0 0.1-0.1 0.3-0.1 0.4 0 0.4 0.2 0.7 0.3 1.1 0.2 0.8 0.3 1.6 0.7 2.4 0.2 0.4 0.4 0.7 0.6 1 0.3 0.6 0.6 1.2 1 1.7l168.2 188c0.4 0.4 0.8 0.6 1.2 1 0.2 0.2 0.3 0.5 0.6 0.7 0.2 0.2 0.5 0.2 0.8 0.4 0.7 0.4 1.4 0.7 2.1 1 0.2 0.1 0.5 0.2 0.7 0.2 2.9 0.9 6 0.6 8.3-1.3 0.5-0.4 0.8-1.1 1.2-1.6 0.3-0.2 0.6-0.4 0.9-0.7l175.2-187.8c0.5-0.6 0.8-1.3 1.2-1.9 0.2-0.3 0.4-0.5 0.5-0.9 0.4-0.8 0.6-1.6 0.7-2.3 0.1-0.4 0.3-0.6 0.3-1v-1c0.6-5.4-3.6-9.7-9.1-9.7zM471.3 349.1h81.5c11.3 0 20.4-9.1 20.4-20.4v-20.4c0-11.2-9.1-20.4-20.4-20.4h-81.5c-11.3 0-20.4 9.1-20.4 20.4v20.4c0 11.3 9.1 20.4 20.4 20.4zM512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64z m0 814.6c-202.4 0-366.5-164.1-366.5-366.6 0-202.4 164.1-366.5 366.5-366.5S878.5 309.6 878.5 512 714.4 878.6 512 878.6z");
+	    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+	    path.setAttribute(
+	      "d",
+	      "M684.5 512H573.1V389.8c0-11.2-9.1-20.4-20.4-20.4h-81.5c-11.3 0-20.4 9.1-20.4 20.4v122.4l-112.4 0.6c-4 0-7.1 2.3-8.5 5.5 0 0.1-0.1 0.1-0.1 0.2-0.3 0.6-0.3 1.3-0.4 2-0.1 0.6-0.3 1.2-0.2 1.8 0 0.1-0.1 0.3-0.1 0.4 0 0.4 0.2 0.7 0.3 1.1 0.2 0.8 0.3 1.6 0.7 2.4 0.2 0.4 0.4 0.7 0.6 1 0.3 0.6 0.6 1.2 1 1.7l168.2 188c0.4 0.4 0.8 0.6 1.2 1 0.2 0.2 0.3 0.5 0.6 0.7 0.2 0.2 0.5 0.2 0.8 0.4 0.7 0.4 1.4 0.7 2.1 1 0.2 0.1 0.5 0.2 0.7 0.2 2.9 0.9 6 0.6 8.3-1.3 0.5-0.4 0.8-1.1 1.2-1.6 0.3-0.2 0.6-0.4 0.9-0.7l175.2-187.8c0.5-0.6 0.8-1.3 1.2-1.9 0.2-0.3 0.4-0.5 0.5-0.9 0.4-0.8 0.6-1.6 0.7-2.3 0.1-0.4 0.3-0.6 0.3-1v-1c0.6-5.4-3.6-9.7-9.1-9.7zM471.3 349.1h81.5c11.3 0 20.4-9.1 20.4-20.4v-20.4c0-11.2-9.1-20.4-20.4-20.4h-81.5c-11.3 0-20.4 9.1-20.4 20.4v20.4c0 11.3 9.1 20.4 20.4 20.4zM512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64z m0 814.6c-202.4 0-366.5-164.1-366.5-366.6 0-202.4 164.1-366.5 366.5-366.5S878.5 309.6 878.5 512 714.4 878.6 512 878.6z"
+	    );
 	    path.setAttribute("fill", color);
 	    svg.appendChild(path);
 	    return svg;
@@ -251,6 +260,60 @@
 	      level++;
 	    }
 	    return null;
+	  },
+	  onLocationChange: function(callback) {
+	    if (typeof callback !== "function") {
+	      return;
+	    }
+	    if (!this._locationChangeListeners) {
+	      this._locationChangeListeners = /* @__PURE__ */ new Set();
+	    }
+	    this._locationChangeListeners.add(callback);
+	    if (window.__tm_history_patch_v1__) {
+	      return;
+	    }
+	    window.__tm_history_patch_v1__ = true;
+	    const utils = this;
+	    let lastHref = location.href;
+	    let scheduled = false;
+	    const notify = () => {
+	      if (scheduled) {
+	        return;
+	      }
+	      scheduled = true;
+	      requestAnimationFrame(() => {
+	        scheduled = false;
+	        const href = location.href;
+	        if (href === lastHref) {
+	          return;
+	        }
+	        lastHref = href;
+	        utils._locationChangeListeners.forEach((cb) => {
+	          try {
+	            cb(href);
+	          } catch (e) {
+	          }
+	        });
+	      });
+	    };
+	    const patch = (type) => {
+	      const raw = history[type];
+	      if (raw.__tm_patched__) {
+	        return;
+	      }
+	      function wrappedState() {
+	        const ret = raw.apply(this, arguments);
+	        notify();
+	        return ret;
+	      }
+	      wrappedState.__tm_patched__ = true;
+	      wrappedState.__original__ = raw;
+	      history[type] = wrappedState;
+	    };
+	    patch("pushState");
+	    patch("replaceState");
+	    window.addEventListener("popstate", notify);
+	    window.addEventListener("hashchange", notify);
 	  }
 	};
 
@@ -385,6 +448,38 @@
 	          top = rect.top + rect.height / 2 - buttonSize / 2;
 	          left = rect.right - buttonSize - edgeOffset;
 	          break;
+	        case "right-top-quarter":
+	          top = rect.top + rect.height * 0.25 - buttonSize / 2;
+	          left = rect.right - buttonSize - edgeOffset;
+	          break;
+	        case "right-three-quarter":
+	          top = rect.top + rect.height * 0.75 - buttonSize / 2;
+	          left = rect.right - buttonSize - edgeOffset;
+	          break;
+	        case "left-top-quarter":
+	          top = rect.top + rect.height * 0.25 - buttonSize / 2;
+	          left = rect.left + edgeOffset;
+	          break;
+	        case "left-three-quarter":
+	          top = rect.top + rect.height * 0.75 - buttonSize / 2;
+	          left = rect.left + edgeOffset;
+	          break;
+	        case "top-left-quarter":
+	          top = rect.top + edgeOffset;
+	          left = rect.left + rect.width * 0.25 - buttonSize / 2;
+	          break;
+	        case "top-three-quarter":
+	          top = rect.top + edgeOffset;
+	          left = rect.left + rect.width * 0.75 - buttonSize / 2;
+	          break;
+	        case "bottom-left-quarter":
+	          top = rect.bottom - buttonSize - edgeOffset;
+	          left = rect.left + rect.width * 0.25 - buttonSize / 2;
+	          break;
+	        case "bottom-three-quarter":
+	          top = rect.bottom - buttonSize - edgeOffset;
+	          left = rect.left + rect.width * 0.75 - buttonSize / 2;
+	          break;
 	        case "top-center":
 	        default:
 	          top = rect.top + edgeOffset;
@@ -474,11 +569,8 @@
 	      event.preventDefault();
 	      event.stopPropagation();
 	      if (typeof onClick === "function") {
-	        try {
-	          onClick(state.activeTarget);
-	        } catch (error) {
-	          console.error("DownloadHud onClick error", error);
-	        }
+	        Promise.resolve(onClick(state.activeTarget)).catch((error) => {
+	        });
 	      }
 	    };
 	    const onScroll = () => {
@@ -537,7 +629,15 @@
 	        "top-center",
 	        "bottom-center",
 	        "left-center",
-	        "right-center"
+	        "right-center",
+	        "top-left-quarter",
+	        "top-three-quarter",
+	        "bottom-left-quarter",
+	        "bottom-three-quarter",
+	        "right-top-quarter",
+	        "right-three-quarter",
+	        "left-top-quarter",
+	        "left-three-quarter"
 	      ]);
 	      if (validPositions.has(position)) {
 	        state.buttonPosition = position;
@@ -569,18 +669,20 @@
 	      ...hoverButtonOptions
 	    } = spec;
 	    if (typeof getDownloadUrl !== "function") {
-	      console.error("DownloadHud.mountVideoHoverDownload: getDownloadUrl is required");
 	      return null;
 	    }
 	    return this.createHoverDownloadButton({
 	      ...hoverButtonOptions,
-	      onClick: (target) => {
+	      onClick: async (target) => {
 	        if (!target) {
 	          return;
 	        }
-	        const url = getDownloadUrl(target);
-	        if (url && !String(url).includes("undefined")) {
-	          invokeDownload(url);
+	        try {
+	          const url = await Promise.resolve(getDownloadUrl(target));
+	          if (url && !String(url).includes("undefined")) {
+	            invokeDownload(url);
+	          }
+	        } catch (error) {
 	        }
 	      }
 	    });
@@ -681,16 +783,24 @@
 	    const downloadHud = DownloadHud.mountVideoHoverDownload({
 	      getDownloadUrl: (target) => this.getPlayUrl(target)
 	    });
-	    setInterval(() => {
+	    const updateButtonPosition = () => {
 	      const pathname = window.location.pathname;
 	      if (/^\/@[^/]+$/.test(pathname)) {
 	        downloadHud.setButtonPosition("bottom-center");
 	      } else if (/\/@[^/]+\/video\/.+$/.test(pathname)) {
-	        downloadHud.setButtonPosition("right-center");
+	        if (document.querySelector("[aria-label='Close']")) {
+	          downloadHud.setButtonPosition("right-three-quarter");
+	        } else {
+	          downloadHud.setButtonPosition("top-center");
+	        }
 	      } else {
 	        downloadHud.setButtonPosition("top-center");
 	      }
-	    }, 700);
+	    };
+	    CommonUtils.onLocationChange(() => {
+	      updateButtonPosition();
+	    });
+	    updateButtonPosition();
 	  },
 	  start: function() {
 	    const isRun = /\.tiktok\.com/.test(window.location.host);
@@ -717,9 +827,9 @@
 	        if (btnLen <= 1) {
 	          return;
 	        }
-	        const buttonsWithNumber = Array.from(buttons).filter((btn) => /\d/.test(btn.textContent || ""));
+	        let buttonsWithNumber = Array.from(buttons).filter((btn) => /\d/.test(btn.textContent || ""));
 	        if (buttonsWithNumber.length === 0) {
-	          return;
+	          buttonsWithNumber = buttons;
 	        }
 	        const lastButton = buttonsWithNumber[buttonsWithNumber.length - 1];
 	        const shareButton = lastButton.parentElement;
@@ -1025,7 +1135,9 @@
 	      /douyinmusicpromotion\.com/,
 	      /cdninstagram\.com/,
 	      /ted\.com/,
-	      /licdn\.com/
+	      /licdn\.com/,
+	      /sc-cdn\.net/,
+	      /pinimg\.com/
 	    ];
 	    const currentHost = window.location.host;
 	    return hosts.some((rule) => rule.test(currentHost)) && document.contentType !== "text/html";
@@ -1456,7 +1568,6 @@
 	      };
 	      const onerror = (err) => {
 	        this.currentRequest = null;
-	        console.error("download error", err);
 	        progressText.textContent = language.downloadFailed;
 	        this.showToast(language.downloadFailedToast);
 	        this.setIdleState(doms, language);
@@ -1568,7 +1679,6 @@
 	      const match = fileName.match(/\.([a-zA-Z0-9]+)$/);
 	      return match ? match[1].toLowerCase() : null;
 	    } catch (error) {
-	      console.error("getFileExtension error", error);
 	    }
 	    return null;
 	  },
@@ -1696,23 +1806,7 @@
 	      scheduleInject();
 	    });
 	    observer.observe(document.documentElement, { childList: true, subtree: true });
-	    const onLocationChange = () => {
-	      scheduleInject();
-	    };
-	    window.addEventListener("popstate", onLocationChange);
-	    window.addEventListener("hashchange", onLocationChange);
-	    const rawPushState = history.pushState;
-	    history.pushState = function(...args) {
-	      const ret = rawPushState.apply(this, args);
-	      onLocationChange();
-	      return ret;
-	    };
-	    const rawReplaceState = history.replaceState;
-	    history.replaceState = function(...args) {
-	      const ret = rawReplaceState.apply(this, args);
-	      onLocationChange();
-	      return ret;
-	    };
+	    CommonUtils.onLocationChange(scheduleInject);
 	    scheduleInject();
 	  },
 	  generateHtml: function() {
@@ -1761,6 +1855,60 @@
 	  }
 	};
 
+	const PinterestDownloader = {
+	  getPlayUrl: function(target) {
+	    const aElement = target.closest('a[href*="/pin/"]');
+	    if (aElement) {
+	      return aElement.href;
+	    }
+	    return window.location.href;
+	  },
+	  run: function() {
+	    DownloadHud.mountVideoHoverDownload({
+	      getDownloadUrl: (target) => this.getPlayUrl(target)
+	    });
+	  },
+	  start: function() {
+	    const isRun = /\www.pinterest\.com/.test(window.location.host);
+	    if (isRun) {
+	      this.run();
+	    }
+	  }
+	};
+
+	const SnapchatDownloader = {
+	  getPlayUrl: async function(target) {
+	    return window.location.href;
+	  },
+	  run: function() {
+	    const downloadHud = DownloadHud.mountVideoHoverDownload({
+	      getDownloadUrl: (target) => this.getPlayUrl(target)
+	    });
+	    const patterns = [
+	      /^https:\/\/www\.snapchat\.com\/@[^/]+\/[^/?]+(?:\?.*)?$/i,
+	      /^https:\/\/www\.snapchat\.com\/(?:@[^/]+\/)?spotlight\/[^/?]+(?:\?.*)?$/i,
+	      /^https:\/\/www\.snapchat\.com\/spotlight\/[^/]+(?:\?.*)?$/i,
+	      /^https:\/\/www\.snapchat\.com\/p\/[^/]+\/[^/?]+(?:\?.*)?$/i
+	    ];
+	    const isSnapchatUrl = (url) => patterns.some((re) => re.test(url));
+	    const updateHud = () => {
+	      if (isSnapchatUrl(window.location.href)) {
+	        downloadHud.enable();
+	      } else {
+	        downloadHud.disable();
+	      }
+	    };
+	    CommonUtils.onLocationChange(updateHud);
+	    updateHud();
+	  },
+	  start: function() {
+	    const isRun = /\www.snapchat\.com/.test(window.location.host);
+	    if (isRun) {
+	      this.run();
+	    }
+	  }
+	};
+
 	[
 	  YouTubeDownloader,
 	  TiktokDownloader,
@@ -1771,7 +1919,9 @@
 	  XiaoHongShuDownloader,
 	  Downloader,
 	  TedDownloader,
-	  FacebookDownloader
+	  FacebookDownloader,
+	  PinterestDownloader,
+	  SnapchatDownloader
 	].forEach((m) => m.start());
 
 }());

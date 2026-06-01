@@ -2,31 +2,31 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
-      "http://xbaidu.ntaow.com/newcss/sogoukey.php"
+      "xbaidu.ntaow.com"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 GM_xmlhttpRequest 向第三方服务器 xbaidu.ntaow.com 发起 GET 请求，可能泄露用户访问页面的 Referer 信息。",
+      "description": "脚本通过 GM_xmlhttpRequest 向第三方服务器 xbaidu.ntaow.com 发起网络请求，可能导致用户数据外传风险。虽然当前请求未携带页面内容或用户数据，但第三方服务器可追踪请求行为。",
       "location": "GM_xmlhttpRequest 调用",
-      "recommendation": "仅允许请求可信域名，避免请求第三方服务器，或明确告知用户数据传输风险。",
+      "recommendation": "仅允许可信服务器通信，避免向第三方服务器发送敏感信息。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限，并实际使用该权限进行网络请求。",
-      "location": "@grant GM_xmlhttpRequest",
-      "recommendation": "确认该权限为必要且安全使用，避免滥用。",
-      "severity": "MEDIUM",
-      "type": "权限滥用"
+      "description": "@grant 仅申请了 GM_xmlhttpRequest，未发现权限滥用。",
+      "location": "元数据 @grant",
+      "recommendation": "无须修改。",
+      "severity": "LOW",
+      "type": "权限申请"
     },
     {
-      "description": "脚本通过 @connect 指定了 xbaidu.ntaow.com，允许所有页面向该域名发起请求，存在供应链风险。",
-      "location": "@connect xbaidu.ntaow.com",
-      "recommendation": "仅允许必要的可信域名，避免供应链污染。",
-      "severity": "MEDIUM",
+      "description": "@require 未使用，未发现供应链风险。",
+      "location": "元数据 @require",
+      "recommendation": "无须修改。",
+      "severity": "LOW",
       "type": "供应链风险"
     }
   ],
@@ -35,12 +35,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "CRITICAL",
+  "risk_level": "HIGH",
   "script_name": "AC-有道取词+翻译-库文件",
-  "security_score": 42,
-  "summary": "该脚本存在严重的数据外传风险，向第三方服务器发起网络请求，可能泄露用户隐私。未检测到隐私采集、代码混淆、DOM XSS、远程代码执行等高风险行为，但存在权限滥用和供应链风险。建议谨慎使用，并限制网络请求目标。",
-  "supply_chain_risk": true,
+  "security_score": 75,
+  "summary": "该脚本作为库文件，主要通过 GM_xmlhttpRequest 请求第三方服务器获取密钥。未发现隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。但存在向第三方服务器发起请求的行为，存在一定数据外传和追踪风险。建议仅在可信环境下使用。",
+  "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-25T06:35:18.295625+00:00",
+  "analyzed_at": "2026-06-01T07:06:11.717666+00:00",
   "slug": "SearchBlock"
 }

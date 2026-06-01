@@ -1,40 +1,39 @@
 ---
-title: "YouTube 节能优化器"
+title: "YouTube节能助手"
 ---
 
-# YouTube 节能优化器
+# YouTube节能助手
 
-`YouTube`  `性能优化`  `省电`  `视频播放`  `自动化`  `浏览器加速`
+`YouTube`  `节能`  `性能优化`  `视频播放`  `省电`  `浏览器辅助`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/YouTube_CPU_Tamer_by_AnimationFrame.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**2025.02.24.0**　　发现时间：**2026-05-18**　　来源：[GreasyFork](https://greasyfork.org/scripts/431573-youtube-cpu-tamer-by-animationframe) <Badge type="tip" text="GreasyFork" />　　安装量：**54,091**　　评分：👍71 / 👎1
+> 版本：**2025.02.24.0**　　发现时间：**2026-06-01**　　来源：[GreasyFork](https://greasyfork.org/scripts/431573-youtube-cpu-tamer-by-animationframe) <Badge type="tip" text="GreasyFork" />　　安装量：**54,633**　　评分：👍71 / 👎1
 
 ## 功能介绍
 
-本脚本可减少在 YouTube 观看视频时浏览器的能耗，降低 CPU 占用。适用于 YouTube 主站、嵌入视频、直播聊天和 YouTube 音乐。安装后无需手动操作，自动优化播放体验。
+本脚本能降低浏览器播放YouTube视频时的CPU和能源消耗，帮助电脑更省电、运行更流畅。适用于所有YouTube页面，包括嵌入和直播聊天。
 
 ## 适用网站
 
-- YouTube
-- YouTube（嵌入视频）
-- YouTube 无痕模式
-- YouTube 直播聊天
-- YouTube 直播回放
-- YouTube 音乐
+- YouTube主站
+- YouTube嵌入页面
+- YouTube无痕嵌入页面
+- YouTube直播聊天
+- YouTube直播回放聊天
+- YouTube音乐
 
 ## 使用方法
 
-1. 1. 安装 Tampermonkey 插件。
-2. 2. 在 Tampermonkey 中添加本脚本。
-3. 3. 打开 YouTube 或 YouTube 音乐，正常观看视频即可。
-4. 4. 无需额外设置，脚本自动生效。
+1. 安装Tampermonkey扩展。
+2. 在Tampermonkey中添加此脚本。
+3. 打开YouTube网站，脚本自动生效，无需手动操作。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `none` | 脚本不请求任何特殊权限，运行时不会获取额外浏览器数据。 |
+| `none` | 脚本不需要额外权限，直接在页面运行。 |
 
 ## 安全分析
 

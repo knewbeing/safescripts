@@ -33,9 +33,9 @@ title: "蛋壳射击自动瞄准+透视"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-05-25
+**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-01
 
-> The script does not transmit data externally, does not collect sensitive user information, and does not execute remote code or use dangerous APIs. It requests unsafeWindow, which is a medium risk, and loads Babylon.js from a reputable CDN with a fixed version. No code obfuscation or DOM XSS risks detected. Overall, the script is considered low risk with a security score of 89.
+> 该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要风险为申请了高权限（unsafeWindow）和供应链依赖（Babylon.js），但未发现实际滥用。整体安全性较高，建议定期复查依赖库和权限申请。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -44,24 +44,24 @@ title: "蛋壳射击自动瞄准+透视"
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ✅ 可信 |
+| 供应链风险 | ⚠️ 存在风险 |
 
 ### 发现的问题
 
-**🟠 MEDIUM** — Permission Abuse  
-> The script requests @grant unsafeWindow, which allows access to the page's JS context and can be abused if the script is malicious or compromised.  
-> 位置：Metadata (@grant unsafeWindow)  
-> 建议：Only use unsafeWindow if strictly necessary. Consider removing or limiting its use.
+**🟠 MEDIUM** — Permission Risk  
+> The script requests @grant unsafeWindow, which provides high-privilege access to the page context and can be abused if the script is compromised.  
+> 位置：// @grant unsafeWindow (metadata) and multiple uses in code  
+> 建议：Only request unsafeWindow if absolutely necessary. Review all code paths that interact with unsafeWindow for potential risks.
 
 **🟠 MEDIUM** — Supply Chain Risk  
-> The script loads Babylon.js from jsdelivr CDN via @require. While jsdelivr is a reputable CDN, the version is fixed, reducing supply chain risk.  
-> 位置：Metadata (@require https://cdn.jsdelivr.net/npm/babylonjs@7.15.0/babylon.min.js)  
-> 建议：Ensure the CDN and version are trusted and monitor for upstream vulnerabilities.
+> The script loads Babylon.js from jsdelivr CDN via @require. While jsdelivr is a reputable CDN, supply chain risk exists if the CDN is compromised or the library is updated with malicious code.  
+> 位置：@require https://cdn.jsdelivr.net/npm/babylonjs@7.15.0/babylon.min.js  
+> 建议：Pin to a specific version (already done) and periodically verify the integrity of the library.
 
-**🟡 LOW** — Privacy Collection  
-> The script reads and writes settings to localStorage, which is a standard practice for storing user preferences. No sensitive data is stored.  
-> 位置：localStorage access (SETTINGS_KEY)  
-> 建议：Do not store sensitive information in localStorage.
+**🟡 LOW** — Privacy Risk  
+> The script stores and loads settings from localStorage, which may include user preferences but not sensitive data. No evidence of exfiltration found.  
+> 位置：localStorage.getItem / setItem (settings persistence)  
+> 建议：Ensure only non-sensitive data is stored. Do not store credentials or personal information.
 
 ---
 

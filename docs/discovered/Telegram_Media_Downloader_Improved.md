@@ -4,15 +4,15 @@ title: "Telegram图片视频下载器 (Improved)"
 
 # Telegram图片视频下载器 (Improved)
 
-`下载工具`  `Telegram`  `图片视频`  `语音消息`  `内容保存`  `私密频道`
+`下载工具`  `Telegram`  `图片视频`  `突破限制`  `社交媒体`  `实用工具`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/Telegram_Media_Downloader_Improved.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**1.4**　　发现时间：**2026-05-25**　　来源：[GreasyFork](https://greasyfork.org/scripts/525471-telegram-media-downloader-improved) <Badge type="tip" text="GreasyFork" />　　安装量：**28,399**　　评分：👍7 / 👎4
+> 版本：**1.4**　　发现时间：**2026-06-01**　　来源：[GreasyFork](https://greasyfork.org/scripts/525471-telegram-media-downloader-improved) <Badge type="tip" text="GreasyFork" />　　安装量：**28,847**　　评分：👍7 / 👎4
 
 ## 功能介绍
 
-该脚本允许用户在Telegram网页版中下载图片、视频、GIF和语音消息，即使频道禁止下载和保存内容。适用于私密频道和限制下载的场景。
+该脚本可以让你在Telegram网页版中下载图片、视频、GIF和语音消息，即使频道禁止下载和保存内容。适用于私密频道和群组，突破下载限制。
 
 ## 适用网站
 
@@ -32,9 +32,9 @@ title: "Telegram图片视频下载器 (Improved)"
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-05-25
+**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-06-01
 
-> 该脚本仅在 Telegram Web 页面上运行，核心功能为本地下载媒体文件。未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码结构清晰，未申请任何 @grant 权限，也未加载第三方库。整体安全性极高。
+> 该脚本主要用于在 Telegram Web 客户端页面上添加媒体下载功能。代码未发现任何数据外传、隐私采集、远程代码执行、混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。所有操作均在本地页面 DOM 上进行，未与第三方服务器通信。
 
 | 检查项 | 结果 |
 |--------|------|

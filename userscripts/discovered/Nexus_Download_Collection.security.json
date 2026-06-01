@@ -2,26 +2,75 @@
   "approved": true,
   "data_transmission": {
     "destinations": [
-      "api-router.nexusmods.com",
-      "www.nexusmods.com"
+      "nexusmods.com",
+      "api-router.nexusmods.com"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "Script uses fetch and GM_xmlhttpRequest to communicate with api-router.nexusmods.com and www.nexusmods.com. All requests are to first-party domains and do not transmit user data beyond what is required for mod download functionality.",
-      "location": "fetchMods(), fetchDownloadLink()",
-      "recommendation": "Ensure only necessary data is sent and avoid transmitting sensitive information.",
+      "description": "脚本通过 fetch 向 nexusmods.com 及其子域名（api-router.nexusmods.com）发送请求以获取和下载 mod 信息。未发现向第三方域名或非官方服务器发送数据。",
+      "location": "fetchMods, fetchDownloadLink, fetch",
+      "recommendation": "仅与目标站点通信，避免向未知服务器发送数据。",
       "severity": "CRITICAL",
-      "type": "Data Transmission"
+      "type": "数据外传"
     },
     {
-      "description": "Script requests multiple @grant permissions (GM.xmlHttpRequest, GM_xmlhttpRequest, GM_setValue, GM_getValue, GM.setValue, GM.getValue, GM_addStyle), but only uses GM_xmlhttpRequest, GM.getValue, GM.setValue, and GM_addStyle in code.",
-      "location": "Metadata block",
-      "recommendation": "Remove unused permissions (GM.xmlHttpRequest, GM_setValue, GM_getValue) to minimize attack surface.",
+      "description": "脚本未检测到对 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板、表单字段、键盘事件的读取或监听。",
+      "location": "全局",
+      "recommendation": "继续保持，不采集用户隐私数据。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    },
+    {
+      "description": "未检测到 eval、new Function、setTimeout(string)、setInterval(string)、动态 script 标签、@require 远程 JS、document.write 等远程代码执行风险。",
+      "location": "全局",
+      "recommendation": "避免动态执行字符串代码。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "未检测到代码混淆、base64 解码、字符串数组映射、unicode 混淆或高度压缩单行代码。",
+      "location": "全局",
+      "recommendation": "保持代码可读性，便于安全审计。",
+      "severity": "HIGH",
+      "type": "代码混淆"
+    },
+    {
+      "description": "未检测到用户输入或 URL 参数直接插入 innerHTML/outerHTML，未发现 DOM XSS 风险。",
+      "location": "全局",
+      "recommendation": "插入 HTML 时始终进行转义。",
+      "severity": "HIGH",
+      "type": "DOM XSS"
+    },
+    {
+      "description": "@grant 权限与实际代码使用基本匹配，未发现高权限滥用。",
+      "location": "元数据",
+      "recommendation": "仅申请实际需要的权限。",
       "severity": "MEDIUM",
-      "type": "Permission Abuse"
+      "type": "权限滥用"
+    },
+    {
+      "description": "未检测到敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）调用。",
+      "location": "全局",
+      "recommendation": "避免调用敏感 API。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "未检测到 @require 加载第三方库，未发现供应链风险。",
+      "location": "元数据",
+      "recommendation": "如需第三方库，建议固定版本哈希并使用可信 CDN。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    },
+    {
+      "description": "未检测到脚本修改 frame 保护策略或创建隐藏 iframe。",
+      "location": "全局",
+      "recommendation": "避免创建隐藏 iframe 进行数据提取。",
+      "severity": "LOW",
+      "type": "ClickJacking / iframe 风险"
     }
   ],
   "obfuscation_detected": false,
@@ -31,10 +80,10 @@
   },
   "risk_level": "LOW",
   "script_name": "Nexus Download Collection",
-  "security_score": 64,
-  "summary": "该脚本主要用于批量下载 Nexus Mods 集合中的所有 mod。所有网络请求均指向 NexusMods 官方域名，未发现数据外传至第三方或隐私采集行为。未检测到远程代码执行、代码混淆、DOM XSS、敏感 API 调用、供应链风险或 iframe 风险。存在权限申请冗余，建议精简。整体安全风险较低。",
+  "security_score": 75,
+  "summary": "该脚本仅与 nexusmods.com 官方域名通信，未发现隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链或 iframe 风险。主要风险为数据外传（仅限目标站点），整体安全性较高。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-25T06:34:00.049916+00:00",
+  "analyzed_at": "2026-06-01T07:03:22.385228+00:00",
   "slug": "Nexus_Download_Collection"
 }

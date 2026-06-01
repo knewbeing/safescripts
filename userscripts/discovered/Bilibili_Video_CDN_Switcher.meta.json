@@ -40,12 +40,59 @@
   "require": [],
   "metadata_raw": "// @name  Bilibili Video CDN Switcher\n// @name:zh-CN  Bilibili CDN切换\n// @name:zh-TW  Bilibili CDN切換\n// @name:ja  BilibiliビデオCDNスイッチャー\n// @name:en  Bilibili Video CDN Switcher\n// @namespace  mailto:1332019995@qq.com\n// @copyright  Free For Personal Use\n// @license  No License\n// @version  0.1.2\n// @description  修改哔哩哔哩播放时的所用CDN 加快视频加载 番剧加速 视频加速\n// @description:zh-CN  修改哔哩哔哩播放时的所用CDN 加快视频加载 番剧加速 视频加速\n// @description:en  Modify Bilibili's CDN during playback to speed up video loading, supporting Animes & Videos\n// @description:zh-TW  修改 Bilibili 播放時的所用CDN 加快影片載入 番劇加速 影片加速\n// @description:ja  ビリビリ動画（Bilibili）の動画再生時のCDNを変更して、動画読み込み速度の向上、アニメとビデオ読込高速化\n// @author  1332019995@qq.com\n// @run-at  document-start\n// @match  https://www.bilibili.com/video/*\n// @match  https://www.bilibili.com/bangumi/play/*\n// @match  https://www.bilibili.com/blackboard/*\n// @match  https://live.bilibili.com/blanc/*\n// @match  https://www.bilibili.com/?*\n// @match  https://www.bilibili.com/\n// @match  https://www.bilibili.com/mooc/*\n// @match  https://www.bilibili.com/v/*\n// @match  https://www.bilibili.com/documentary/*\n// @match  https://www.bilibili.com/variety/*\n// @match  https://www.bilibili.com/tv/*\n// @match  https://www.bilibili.com/guochuang/*\n// @match  https://www.bilibili.com/movie/*\n// @match  https://www.bilibili.com/anime/*\n// @match  https://www.bilibili.com/match/*\n// @match  https://www.bilibili.com/cheese/*\n// @match  https://music.bilibili.com/pc/music-center/*\n// @match  https://search.bilibili.com/*\n// @match  https://m.bilibili.com/video/*\n// @match  https://m.bilibili.com/bangumi/play/*\n// @match  https://m.bilibili.com/?*\n// @match  https://m.bilibili.com/\n// @icon  https://i0.hdslb.com/bfs/static/jinkela/long/images/512.png\n// @grant  GM_getValue\n// @grant  GM_setValue\n// @grant  unsafeWindow\n// @downloadURL  https://update.greasyfork.org/scripts/500213/Bilibili%20Video%20CDN%20Switcher.user.js\n// @updateURL  https://update.greasyfork.org/scripts/500213/Bilibili%20Video%20CDN%20Switcher.meta.js",
   "sha256": "7b8c6d8e634b5cbd21157a496df852d3e17c8cea5e455602a781883d26fcecfc",
-  "discovered_at": "2026-05-04T06:01:59.416249+00:00",
+  "discovered_at": "2026-06-01T06:49:34.570872+00:00",
   "ai_reason": "",
   "target_roles": "",
-  "is_new": true,
-  "install_count": 6465,
-  "good_ratings": 20,
+  "is_new": false,
+  "install_count": 7405,
+  "good_ratings": 28,
   "bad_ratings": 0,
-  "summary": {}
+  "summary": {
+    "applicable_sites": [
+      "B站主站",
+      "B站番剧",
+      "B站直播",
+      "B站课程",
+      "B站音乐",
+      "B站搜索",
+      "B站纪录片",
+      "B站综艺",
+      "B站电视",
+      "B站国创",
+      "B站电影",
+      "B站动漫",
+      "B站赛事",
+      "B站奶酪",
+      "B站移动端"
+    ],
+    "description": "本脚本可以切换哔哩哔哩（B站）视频播放时使用的CDN服务器，提升视频加载速度，尤其适用于番剧和普通视频。用户可自定义CDN地址，优化观看体验。",
+    "permissions": [
+      {
+        "explanation": "用于读取脚本设置，比如是否启用或自定义CDN。",
+        "grant": "GM_getValue"
+      },
+      {
+        "explanation": "用于保存脚本设置，如切换CDN后的状态。",
+        "grant": "GM_setValue"
+      },
+      {
+        "explanation": "允许脚本访问和修改页面的原始窗口对象，实现高级功能。",
+        "grant": "unsafeWindow"
+      }
+    ],
+    "tags": [
+      "视频加速",
+      "B站",
+      "CDN切换",
+      "自定义设置",
+      "番剧优化",
+      "观看体验提升"
+    ],
+    "usage": [
+      "安装脚本后，访问B站任意视频、番剧或相关页面。",
+      "如需自定义CDN，可在脚本设置中修改CustomCDN变量。",
+      "视频播放时会自动使用优化后的CDN，无需额外操作。"
+    ],
+    "zh_name": "Bilibili CDN切换"
+  }
 }

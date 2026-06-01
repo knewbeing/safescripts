@@ -7,32 +7,18 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "Script overrides XMLHttpRequest.prototype.open to intercept Google Maps API responses, but does not transmit data externally.",
+      "description": "The script overrides XMLHttpRequest.prototype.open to intercept Google Maps API responses, but does not transmit any data to third-party servers.",
       "location": "XMLHttpRequest.prototype.open override",
-      "recommendation": "Monitor for future changes; ensure no data is sent to third-party servers.",
-      "severity": "MEDIUM",
+      "recommendation": "Monitor for any future changes that may introduce data exfiltration.",
+      "severity": "LOW",
       "type": "Network interception"
     },
     {
-      "description": "Script listens for keydown events to trigger actions, but does not collect or transmit input data.",
-      "location": "document.addEventListener(\"keydown\", onKeyDown)",
-      "recommendation": "Ensure no sensitive input is captured or transmitted.",
-      "severity": "LOW",
-      "type": "Event listener"
-    },
-    {
-      "description": "Script manipulates DOM and React internals to place markers, but does not insert untrusted content or expose XSS vectors.",
-      "location": "placeMarker, placeMarkerStreaks functions",
-      "recommendation": "Continue to avoid inserting user-controlled data into innerHTML.",
-      "severity": "LOW",
-      "type": "DOM manipulation"
-    },
-    {
-      "description": "Script requests GM_webRequest permission, but does not use it in the code.",
-      "location": "@grant GM_webRequest",
-      "recommendation": "Remove unused permission to minimize attack surface.",
+      "description": "The script requests the GM_webRequest permission, but does not use any GM_* APIs in the code.",
+      "location": "@grant GM_webRequest in metadata",
+      "recommendation": "Remove unused permissions to reduce attack surface.",
       "severity": "MEDIUM",
-      "type": "Permission"
+      "type": "Permission misuse"
     }
   ],
   "obfuscation_detected": false,
@@ -42,10 +28,10 @@
   },
   "risk_level": "LOW",
   "script_name": "Geoguessr Location Resolver (Works in all modes)",
-  "security_score": 81,
-  "summary": "The script does not transmit data externally, does not collect sensitive user information, and avoids XSS/DOM injection risks. It requests an unused GM_webRequest permission, which should be removed. No obfuscation or supply chain risks detected. Overall, the script is safe with minor improvements recommended.",
+  "security_score": 89,
+  "summary": "The script does not transmit any user data externally, does not collect sensitive information, and does not execute remote or obfuscated code. It overrides XMLHttpRequest to extract coordinates from Google Maps API responses, but this data is only used locally. The only notable issue is the unnecessary GM_webRequest permission, which should be removed to minimize potential risk.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-25T06:31:25.920352+00:00",
+  "analyzed_at": "2026-06-01T07:01:34.022954+00:00",
   "slug": "Geoguessr_Location_Resolver_Works_in_all_modes"
 }

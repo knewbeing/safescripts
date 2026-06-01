@@ -25,7 +25,7 @@
 // @name:uz             YouTube +
 // @name:vi             YouTube +
 // @namespace           by
-// @version             2.5
+// @version             2.5.1
 // @author              diorhc
 // @description         Вкладки для информации, комментариев, видео, плейлиста и скачивание видео и другие функции ↴
 // @description:ar      Tabview YouTube and download and other features ↴
@@ -80,11 +80,26 @@
 // @grant               unsafeWindow
 // @grant               GM_addElement
 // @connect             api.livecounts.io
+// @connect             livecounts.io
 // @connect             cnv.cx
 // @connect             mp3yt.is
-// @connect             *
+// @connect             returnyoutubedislikeapi.com
+// @connect             translate.googleapis.com
+// @connect             ldpccocxlrdsyejfhrvc.supabase.co
+// @connect             raw.githubusercontent.com
+// @connect             cdn.jsdelivr.net
+// @connect             greasyfork.org
+// @connect             update.greasyfork.org
 // @connect             youtube.com
+// @connect             www.youtube.com
+// @connect             m.youtube.com
 // @connect             googlevideo.com
+// @connect             i.ytimg.com
+// @connect             ytimg.com
+// @connect             yt3.ggpht.com
+// @connect             yt3.googleusercontent.com
+// @connect             fonts.googleapis.com
+// @connect             www.gstatic.com
 // @connect             self
 // @run-at              document-start
 // @noframes
@@ -98,6 +113,11 @@
 if (window._ytpDefaults) {
 return;
 }
+const TIMEOUTS = Object.freeze({
+SHORT_UI: 80,
+CHAT_URL_CHANGED: 136,
+LONG_OPERATION: 4e3
+});
 window._ytpDefaults = Object.freeze({
 debounce: (fn, ms, options = {}) => {
 let timeout = null;
@@ -127,16 +147,34 @@ inThrottle = !1;
 }
 };
 },
-$: (sel, ctx = document) => ctx.querySelector(sel),
-$$: (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel)),
-byId: id => document.getElementById(id),
-sanitizeHTML: html => "string" != typeof html ? "" : html.replace(/[<>&"'\/`=]/g, ""),
+SETTINGS_KEY: "youtube_plus_settings",
+SVG_NS: "http://www.w3.org/2000/svg",
+TIMEOUTS,
+createHTML: html => "function" == typeof window._ytplusCreateHTML ? window._ytplusCreateHTML(html) : "string" == typeof html ? html : String(html ?? ""),
+setSafeHTML: (element, html, sanitize = !0) => {
+if (!(element instanceof HTMLElement)) {
+return;
+}
+if (window.YouTubeSafeDOM?.setHTML) {
+window.YouTubeSafeDOM.setHTML(element, html, {
+sanitize
+});
+return;
+}
+if (window.YouTubeSecurityUtils?.setInnerHTMLSafe) {
+window.YouTubeSecurityUtils.setInnerHTMLSafe(element, html, sanitize);
+return;
+}
+const safeText = String(html || "");
+element.replaceChildren(document.createTextNode(safeText));
+},
 t: key => key || ""
 });
 })();
 
 !(function() {
 "use strict";
+const setTimeout_ = setTimeout;
 const LOG_LEVELS = {
 error: 0,
 warn: 1,
@@ -196,7 +234,7 @@ data: void 0 !== data ? data : void 0
 };
 logBuffer.push(entry);
 logBuffer.length > 200 && logBuffer.splice(0, logBuffer.length - 200);
-"error" === level ? void 0 !== data ? console.error(formatted, data) : console.error(formatted) : ("warn" === level || "debug" === currentLevel) && (void 0 !== data ? console.warn(formatted, data) : console.warn(formatted));
+"error" === level ? void 0 !== data ? window.console.error(formatted, data) : window.console.error(formatted) : ("warn" === level || "debug" === currentLevel) && (void 0 !== data ? window.console.warn(formatted, data) : window.console.warn(formatted));
 }
 const logger = {
 error(module, message, data) {
@@ -259,21 +297,499 @@ log("debug", moduleName, message, data);
 }
 })
 };
-"undefined" != typeof window && (window.YouTubePlusLogger = logger);
-"undefined" != typeof module && module.exports && (module.exports = {
-logger,
-LOG_LEVELS
+const ErrorSeverity_LOW = "low", ErrorSeverity_MEDIUM = "medium", ErrorSeverity_HIGH = "high", ErrorSeverity_CRITICAL = "critical";
+const errorBoundaryConfig = {
+maxErrors: 10,
+errorWindow: 6e4,
+enableLogging: !0,
+enableRecovery: !0,
+storageKey: "youtube_plus_errors"
+};
+const errorState = {
+errors: [],
+errorCount: 0,
+lastErrorTime: 0,
+isRecovering: !1
+};
+const categorizeSeverity = error => {
+const message = error.message?.toLowerCase() || "";
+return message.includes("cannot read") || message.includes("undefined") || message.includes("null") ? ErrorSeverity_MEDIUM : message.includes("network") || message.includes("fetch") || message.includes("timeout") ? ErrorSeverity_LOW : message.includes("syntax") || message.includes("reference") || message.includes("type") ? ErrorSeverity_HIGH : message.includes("security") || message.includes("csp") ? ErrorSeverity_CRITICAL : ErrorSeverity_MEDIUM;
+};
+const getErrorRate = () => {
+const now = Date.now();
+const oneMinuteAgo = now - 6e4;
+return errorState.errors.filter(e => new Date(e.timestamp).getTime() > oneMinuteAgo).length;
+};
+const isErrorRateExceeded = () => {
+const now = Date.now();
+const windowStart = now - errorBoundaryConfig.errorWindow;
+const recentErrors = errorState.errors.filter(e => new Date(e.timestamp).getTime() > windowStart);
+return recentErrors.length >= errorBoundaryConfig.maxErrors;
+};
+const showErrorNotification = error => {
+try {
+const Y = window.YouTubeUtils;
+if (!Y || !Y.NotificationManager || "function" != typeof Y.NotificationManager.show) {
+return;
+}
+const severity = categorizeSeverity(error);
+let message = "An error occurred";
+let duration = 3e3;
+if (severity === ErrorSeverity_LOW) {
+message = "A minor issue occurred. Functionality should continue normally.";
+duration = 2e3;
+} else if (severity === ErrorSeverity_MEDIUM) {
+message = "An error occurred. Some features may not work correctly.";
+duration = 3e3;
+} else if (severity === ErrorSeverity_HIGH) {
+message = "A serious error occurred. Please refresh the page if issues persist.";
+duration = 5e3;
+} else if (severity === ErrorSeverity_CRITICAL) {
+message = "A critical error occurred. YouTube+ may not function properly. Please report this issue.";
+duration = 7e3;
+}
+Y.NotificationManager.show(message, {
+duration,
+type: "error"
 });
+} catch (notificationError) {
+window.console.error("[YouTube+][ErrorBoundary] Failed to show error notification", notificationError);
+}
+};
+const attemptRecovery = (error, context) => {
+if (!errorBoundaryConfig.enableRecovery || errorState.isRecovering) {
+return;
+}
+const severity = categorizeSeverity(error);
+if (severity !== ErrorSeverity_CRITICAL) {
+errorState.isRecovering = !0;
+try {
+severity !== ErrorSeverity_LOW && getErrorRate() <= 5 && showErrorNotification(error);
+window.YouTubePlusErrorRecovery?.attemptRecovery && window.YouTubePlusErrorRecovery.attemptRecovery(error, context);
+setTimeout_(() => {
+errorState.isRecovering = !1;
+}, 5e3);
+} catch (recoveryError) {
+window.console.error("[YouTube+][ErrorBoundary] Recovery attempt failed", recoveryError);
+errorState.isRecovering = !1;
+}
+} else {
+showErrorNotification(error);
+}
+};
+const logBoundaryError = (error, context = {}) => {
+if (!errorBoundaryConfig.enableLogging) {
+return;
+}
+const normalizedError = error instanceof Error ? error : new Error(String(error));
+const fallbackMessage = normalizedError.message?.trim() || "";
+if (!fallbackMessage && !normalizedError.stack && !context.filename) {
+return;
+}
+const displayMessage = fallbackMessage || (context.filename ? `Error in ${context.filename}:${context.lineno}` : "Unknown error");
+const errorInfo = {
+timestamp: (new Date).toISOString(),
+message: displayMessage,
+stack: normalizedError.stack,
+severity: categorizeSeverity(normalizedError),
+context: {
+url: window.location.href,
+userAgent: navigator.userAgent,
+...context
+}
+};
+logger.error("ErrorBoundary", displayMessage, errorInfo);
+errorState.errors.push(errorInfo);
+errorState.errors.length > 50 && errorState.errors.shift();
+try {
+const stored = JSON.parse(localStorage.getItem(errorBoundaryConfig.storageKey) || "[]");
+stored.push(errorInfo);
+stored.length > 20 && stored.shift();
+localStorage.setItem(errorBoundaryConfig.storageKey, JSON.stringify(stored));
+} catch (e) {}
+};
+const withErrorBoundary = (fn, context = "unknown") => function(...args) {
+try {
+return fn.call(this, ...args);
+} catch (error) {
+const normalizedError = error instanceof Error ? error : new Error(String(error));
+logBoundaryError(normalizedError, {
+module: context,
+args
+});
+attemptRecovery(normalizedError, {
+module: context
+});
+return null;
+}
+};
+const withAsyncErrorBoundary = (fn, context = "unknown") => async function(...args) {
+try {
+return await fn.call(this, ...args);
+} catch (error) {
+const normalizedError = error instanceof Error ? error : new Error(String(error));
+logBoundaryError(normalizedError, {
+module: context,
+args
+});
+attemptRecovery(normalizedError, {
+module: context
+});
+return null;
+}
+};
+const getErrorStats = () => ({
+totalErrors: errorState.errorCount,
+recentErrors: errorState.errors.length,
+lastErrorTime: errorState.lastErrorTime,
+isRecovering: errorState.isRecovering,
+errorsByType: errorState.errors.reduce((acc, e) => {
+acc[e.severity] = (acc[e.severity] || 0) + 1;
+return acc;
+}, {})
+});
+const clearErrors = () => {
+errorState.errors = [];
+errorState.errorCount = 0;
+errorState.lastErrorTime = 0;
+try {
+localStorage.removeItem(errorBoundaryConfig.storageKey);
+} catch (e) {}
+};
+const handleError = event => {
+const error = event.error || new Error(event.message);
+const message = (error.message || event.message || "").trim();
+if (message.includes("ResizeObserver loop")) {
+return !1;
+}
+const source = event.filename || "";
+const isCrossOriginSource = source && !source.startsWith(window.location.origin) && !/YouTube\+/.test(source);
+if (!message && isCrossOriginSource) {
+return !1;
+}
+if (!message || "(no message)" === message && isCrossOriginSource) {
+return !1;
+}
+errorState.errorCount++;
+errorState.lastErrorTime = Date.now();
+logBoundaryError(error, {
+type: "uncaught",
+filename: event.filename,
+lineno: event.lineno,
+colno: event.colno
+});
+if (isErrorRateExceeded()) {
+logger.error("ErrorBoundary", "Error rate exceeded");
+return !1;
+}
+attemptRecovery(error, {
+type: "uncaught"
+});
+return !1;
+};
+const handleUnhandledRejection = event => {
+const error = event.reason instanceof Error ? event.reason : new Error(String(event.reason));
+errorState.errorCount++;
+errorState.lastErrorTime = Date.now();
+logBoundaryError(error, {
+type: "unhandledRejection",
+promise: event.promise
+});
+isErrorRateExceeded() ? logger.error("ErrorBoundary", "Promise rejection rate exceeded") : attemptRecovery(error, {
+type: "unhandledRejection"
+});
+};
+logger.withErrorBoundary = withErrorBoundary;
+logger.withAsyncErrorBoundary = withAsyncErrorBoundary;
+logger.getErrorStats = getErrorStats;
+logger.clearErrors = clearErrors;
+logger.logError = logBoundaryError;
+logger.getErrorRate = getErrorRate;
+logger.config = errorBoundaryConfig;
+if ("undefined" != typeof window) {
+window.addEventListener("error", handleError, !0);
+window.addEventListener("unhandledrejection", handleUnhandledRejection, !0);
+window.YouTubePlusLogger = logger;
+window.YouTubeErrorBoundary = {
+withErrorBoundary,
+withAsyncErrorBoundary,
+getErrorStats,
+clearErrors,
+logError: logBoundaryError,
+getErrorRate,
+config: errorBoundaryConfig
+};
+}
 })();
 
 !(function() {
 "use strict";
 const modules = new Map;
 const pendingCallbacks = new Map;
+class LazyLoader {
+constructor() {
+this.modules = new Map;
+this.loadedModules = new Set;
+this.stats = {
+totalModules: 0,
+loadedModules: 0,
+blockedModules: 0
+};
+this.isIdle = !1;
+this.isReadyLoading = !1;
+this.idleCallbackId = null;
+this.navListenerAttached = !1;
+this.navRetryScheduled = !1;
+this.readyListenerAttached = !1;
+}
+resetReloadableModules() {
+let resetCount = 0;
+for (const [name, module] of this.modules.entries()) {
+if (module.reloadOnNavigate && module.loaded) {
+module.loaded = !1;
+this.loadedModules.delete(name) && (this.stats.loadedModules = Math.max(0, this.stats.loadedModules - 1));
+resetCount++;
+}
+}
+return resetCount;
+}
+async retryBlockedModules() {
+let loaded = 0;
+for (const [name, module] of this.modules.entries()) {
+const shouldRetry = module.reloadOnNavigate ? !module.shouldLoad || module.shouldLoad() : !!module.shouldLoad && module.shouldLoad();
+if (!module.loaded && shouldRetry) {
+try {
+const ok = await this.load(name);
+ok && loaded++;
+} catch (e) {}
+}
+}
+return loaded;
+}
+attachNavRetry() {
+if (this.navListenerAttached || "undefined" == typeof window) {
+return;
+}
+this.navListenerAttached = !0;
+const schedule = () => {
+if (this.navRetryScheduled) {
+return;
+}
+this.navRetryScheduled = !0;
+const run = () => {
+this.navRetryScheduled = !1;
+this.resetReloadableModules();
+this.retryBlockedModules().catch(() => {});
+for (const [name, module] of this.modules.entries()) {
+if (module.loaded && module.onNavigate) {
+try {
+module.onNavigate();
+} catch (err) {
+window.YouTubeUtils?.logger?.warn?.(`[LazyLoader] onNavigate("${name}") threw`, err);
+}
+}
+}
+try {
+window.dispatchEvent(new CustomEvent("ytp:nav-refresh"));
+} catch (err) {}
+try {
+document.querySelector(".ytp-plus-settings-modal") && document.dispatchEvent(new CustomEvent("youtube-plus-settings-modal-opened", {
+bubbles: !0,
+detail: {
+__ytpLazyReplay: !0
+}
+}));
+} catch (err) {}
+};
+"function" == typeof requestIdleCallback ? requestIdleCallback(run, {
+timeout: 1500
+}) : setTimeout(run, 250);
+};
+try {
+window.addEventListener("yt-navigate-finish", schedule, {
+passive: !0
+});
+document.addEventListener("yt-page-data-updated", schedule, {
+passive: !0
+});
+window.addEventListener("popstate", schedule, {
+passive: !0
+});
+document.addEventListener("youtube-plus-settings-modal-opened", event => {
+(event => {
+try {
+return Boolean(event?.detail?.__ytpLazyReplay);
+} catch (e) {
+return !1;
+}
+})(event) || schedule();
+});
+} catch (e) {}
+}
+register(name, fn, options = {}) {
+if (this.modules.has(name)) {
+window.YouTubeUtils?.logger?.warn?.(`[LazyLoader] Module "${name}" already registered`);
+return;
+}
+const moduleConfig = {
+fn,
+priority: options.priority || 0,
+delay: options.delay || 0,
+dependencies: options.dependencies || [],
+shouldLoad: "function" == typeof options.shouldLoad ? options.shouldLoad : null,
+reloadOnNavigate: !0 === options.reloadOnNavigate,
+loadOnReady: !1 !== options.loadOnReady,
+loaded: !1,
+onNavigate: "function" == typeof options.onNavigate ? options.onNavigate : null
+};
+this.modules.set(name, moduleConfig);
+this.stats.totalModules++;
+window.YouTubeUtils?.logger?.debug?.(`[LazyLoader] Registered module "${name}" (priority: ${moduleConfig.priority})`);
+}
+async load(name) {
+const module = this.modules.get(name);
+if (!module) {
+window.YouTubeUtils?.logger?.warn?.(`[LazyLoader] Module "${name}" not found`);
+return !1;
+}
+if (module.loaded) {
+return !0;
+}
+if (module.shouldLoad && !module.shouldLoad()) {
+this.stats.blockedModules++;
+this.attachNavRetry();
+return !1;
+}
+for (const dep of module.dependencies) {
+this.loadedModules.has(dep) || await this.load(dep);
+}
+module.delay > 0 && await new Promise(resolve => setTimeout(resolve, module.delay));
+try {
+await module.fn();
+module.loaded = !0;
+this.loadedModules.add(name);
+this.stats.loadedModules++;
+return !0;
+} catch (error) {
+window.console.error(`[LazyLoader] Failed to load module "${name}":`, error);
+window.YouTubeUtils?.logger?.error?.(`[LazyLoader] Module "${name}" load failed`, error);
+return !1;
+}
+}
+async loadAll() {
+const sortedModules = Array.from(this.modules.entries()).sort((a, b) => b[1].priority - a[1].priority);
+let loadedCount = 0;
+for (const [name, module] of sortedModules) {
+if (!module.loaded) {
+const success = await this.load(name);
+success && loadedCount++;
+}
+}
+return loadedCount;
+}
+loadOnReady() {
+if (this.isReadyLoading) {
+return;
+}
+this.attachNavRetry();
+const loadModules = () => {
+if (!this.isReadyLoading) {
+this.isReadyLoading = !0;
+this.loadAll().catch(() => {});
+}
+};
+if ("undefined" == typeof document || "loading" !== document.readyState) {
+loadModules();
+return;
+}
+if (this.readyListenerAttached) {
+return;
+}
+this.readyListenerAttached = !0;
+const onReadyStateChange = () => {
+if ("loading" !== document.readyState) {
+document.removeEventListener("readystatechange", onReadyStateChange);
+loadModules();
+}
+};
+document.addEventListener("readystatechange", onReadyStateChange, {
+passive: !0
+});
+window.addEventListener("yt-navigate-finish", () => {
+document.removeEventListener("readystatechange", onReadyStateChange);
+loadModules();
+}, {
+passive: !0,
+once: !0
+});
+}
+loadOnIdle(timeout = 2e3) {
+if (this.isIdle) {
+return;
+}
+this.isIdle = !0;
+const loadModules = async () => {
+await this.loadAll();
+};
+this.attachNavRetry();
+this.idleCallbackId = "undefined" != typeof requestIdleCallback ? requestIdleCallback(loadModules, {
+timeout
+}) : setTimeout(loadModules, timeout);
+}
+cancelIdleLoading() {
+if (this.isIdle) {
+void 0 !== window.cancelIdleCallback && this.idleCallbackId ? window.cancelIdleCallback(this.idleCallbackId) : this.idleCallbackId && clearTimeout(this.idleCallbackId);
+this.isIdle = !1;
+this.idleCallbackId = null;
+}
+}
+cancelReadyLoading() {
+this.isReadyLoading = !1;
+this.readyListenerAttached = !1;
+}
+isLoaded(name) {
+return this.loadedModules.has(name);
+}
+getStats() {
+return {
+...this.stats,
+loadingPercentage: this.stats.totalModules > 0 ? this.stats.loadedModules / this.stats.totalModules * 100 : 0,
+unloadedModules: this.stats.totalModules - this.stats.loadedModules,
+blockedModules: this.stats.blockedModules
+};
+}
+clear() {
+this.cancelIdleLoading();
+this.cancelReadyLoading();
+this.modules.clear();
+this.loadedModules.clear();
+this.stats = {
+totalModules: 0,
+loadedModules: 0,
+blockedModules: 0
+};
+this.navListenerAttached = !1;
+this.navRetryScheduled = !1;
+}
+}
+const lazyLoader = new LazyLoader;
+const lazyLoaderApi = {
+LazyLoader,
+register: (name, fn, options) => lazyLoader.register(name, fn, options),
+load: name => lazyLoader.load(name),
+loadAll: () => lazyLoader.loadAll(),
+loadOnIdle: timeout => lazyLoader.loadOnIdle(timeout),
+loadOnReady: () => lazyLoader.loadOnReady(),
+isLoaded: name => lazyLoader.isLoaded(name),
+getStats: () => lazyLoader.getStats(),
+clear: () => lazyLoader.clear(),
+retryBlockedModules: () => lazyLoader.retryBlockedModules(),
+attachNavRetry: () => lazyLoader.attachNavRetry()
+};
 const registry = {
 register(name, moduleExport) {
 if (!name || "string" != typeof name) {
-console.warn("[YouTube+ Registry] Invalid module name:", name);
+window.console.warn("[YouTube+ Registry] Invalid module name:", name);
 return;
 }
 modules.set(name, moduleExport);
@@ -301,7 +817,7 @@ for (const cb of pending) {
 try {
 cb(moduleExport);
 } catch (e) {
-console.error(`[YouTube+ Registry] Callback error for "${name}":`, e);
+window.console.error(`[YouTube+ Registry] Callback error for "${name}":`, e);
 }
 }
 pendingCallbacks.delete(name);
@@ -314,7 +830,7 @@ if (modules.has(name)) {
 try {
 callback(modules.get(name));
 } catch (e) {
-console.error(`[YouTube+ Registry] onReady callback error for "${name}":`, e);
+window.console.error(`[YouTube+ Registry] onReady callback error for "${name}":`, e);
 }
 } else {
 pendingCallbacks.has(name) || pendingCallbacks.set(name, new Set);
@@ -333,17 +849,18 @@ modules.delete(name);
 clear() {
 modules.clear();
 pendingCallbacks.clear();
-}
+lazyLoader.clear();
+},
+lazyLoader: lazyLoaderApi
 };
-"undefined" != typeof window && (window.YouTubePlusRegistry = registry);
-"undefined" != typeof module && module.exports && (module.exports = {
-registry
-});
+if ("undefined" != typeof window) {
+window.YouTubePlusLazyLoader = lazyLoaderApi;
+window.YouTubePlusRegistry = registry;
+}
 })();
 
 !(function() {
 "use strict";
-const qs = selector => window.YouTubeDOMCache && "function" == typeof window.YouTubeDOMCache.get ? window.YouTubeDOMCache.get(selector) : document.querySelector(selector);
 const $ = (sel, ctx) => {
 const cache = window.YouTubeDOMCache;
 return cache && "function" == typeof cache.querySelector ? cache.querySelector(sel, ctx) : cache && "function" == typeof cache.get && !ctx ? cache.get(sel) : (ctx || document).querySelector(sel);
@@ -356,7 +873,6 @@ const byId = id => {
 const cache = window.YouTubeDOMCache;
 return cache && "function" == typeof cache.getElementById ? cache.getElementById(id) : document.getElementById(id);
 };
-const escapeRegex = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const t = (key, params = {}) => {
 if (window.YouTubePlusI18n?.t) {
 return window.YouTubePlusI18n.t(key, params);
@@ -366,14 +882,28 @@ return "";
 }
 let result = String(key);
 for (const [k, v] of Object.entries(params || {})) {
-result = result.replace(new RegExp(`\\{${escapeRegex(k)}\\}`, "g"), String(v));
+const token = `{${k}}`;
+result = result.split(token).join(String(v));
 }
 return result;
+};
+const getLanguage = () => {
+if (window.YouTubePlusI18n?.getLanguage) {
+return window.YouTubePlusI18n.getLanguage();
+}
+const htmlLang = document.documentElement?.lang || navigator.language || "en";
+return String(htmlLang || "en").toLowerCase();
+};
+const setSafeHTML = (element, html, sanitize = !0) => {
+element instanceof HTMLElement && (window.YouTubeSafeDOM?.setHTML ? window.YouTubeSafeDOM.setHTML(element, html, {
+sanitize
+}) : window._ytpDefaults?.setSafeHTML?.(element, html, sanitize));
 };
 const SETTINGS_KEY = "youtube_plus_settings";
 const isStudioPage = () => {
 try {
-return location.hostname.includes("studio.youtube.com");
+const host = String(location.hostname || "").toLowerCase();
+return "studio.youtube.com" === host || host.endsWith(".studio.youtube.com");
 } catch (e) {
 return !1;
 }
@@ -387,6 +917,34 @@ return !1 !== parsed[featureKey];
 }
 } catch (e) {}
 return defaultValue;
+};
+const getPathname = urlLike => {
+try {
+return urlLike ? new URL(urlLike, window.location.origin).pathname || "" : window.location.pathname || "";
+} catch (e) {
+return "";
+}
+};
+const isWatchPage = urlLike => "/watch" === getPathname(urlLike);
+const isShortsPage = urlLike => getPathname(urlLike).startsWith("/shorts");
+const isChannelPage = urlLike => {
+const pathname = getPathname(urlLike);
+return pathname.startsWith("/@") || pathname.startsWith("/channel/") || pathname.startsWith("/c/");
+};
+const formatTime = seconds => {
+if (!Number.isFinite(seconds) || seconds < 0) {
+return "0:00";
+}
+const totalSeconds = Math.floor(seconds);
+const h = Math.floor(totalSeconds / 3600);
+const m = Math.floor(totalSeconds % 3600 / 60);
+const s = totalSeconds % 60;
+return h > 0 ? `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}` : `${m}:${String(s).padStart(2, "0")}`;
+};
+const onDomReady = cb => {
+"function" == typeof cb && ("loading" === document.readyState ? document.addEventListener("DOMContentLoaded", cb, {
+once: !0
+}) : cb());
 };
 const logError = (module, message, error) => {
 try {
@@ -402,10 +960,10 @@ timestamp: (new Date).toISOString(),
 userAgent: "undefined" != typeof navigator ? navigator.userAgent : "unknown",
 url: "undefined" != typeof window ? window.location.href : "unknown"
 };
-console.error(`[YouTube+][${module}] ${message}:`, error);
-console.warn("[YouTube+] Error details:", errorDetails);
+window.console.error(`[YouTube+][${module}] ${message}:`, error);
+window.console.warn("[YouTube+] Error details:", errorDetails);
 } catch (loggingError) {
-console.error("[YouTube+] Error logging failed:", loggingError);
+window.console.error("[YouTube+] Error logging failed:", loggingError);
 }
 };
 const debounce = (fn, ms, options = {}) => {
@@ -422,7 +980,7 @@ if (options.leading && null === timeout) {
 try {
 fn.apply(this, args);
 } catch (e) {
-console.error("[YouTube+] Debounced function error:", e);
+window.console.error("[YouTube+] Debounced function error:", e);
 }
 }
 timeout = setTimeout(() => {
@@ -430,7 +988,7 @@ if (!isDestroyed && !options.leading) {
 try {
 fn.apply(lastThis, lastArgs);
 } catch (e) {
-console.error("[YouTube+] Debounced function error:", e);
+window.console.error("[YouTube+] Debounced function error:", e);
 }
 }
 timeout = null;
@@ -465,31 +1023,55 @@ return lastResult;
 };
 const StyleManager = (function() {
 const styles = new Map;
-return {
-add(id, css) {
-try {
-let el = document.getElementById(id);
-styles.set(id, css);
-if (!el) {
-el = document.createElement("style");
-el.id = id;
-if (!document.head) {
-document.addEventListener("DOMContentLoaded", () => {
-const target = document.getElementById(id);
-if (!target && document.head) {
-const lateEl = document.createElement("style");
-lateEl.id = id;
-document.head.appendChild(lateEl);
-lateEl.textContent = Array.from(styles.values()).join("\n\n");
+let element = null;
+const ensureElement = () => {
+if (element?.isConnected) {
+return element;
 }
+const existing = document.getElementById("youtube-plus-styles");
+if (existing) {
+element = existing;
+return element;
+}
+if (!document.head && !document.documentElement) {
+return null;
+}
+const created = document.createElement("style");
+created.id = "youtube-plus-styles";
+created.type = "text/css";
+(document.head || document.documentElement).appendChild(created);
+element = created;
+return element;
+};
+const render = () => {
+try {
+const host = ensureElement();
+if (!host) {
+document.addEventListener("DOMContentLoaded", () => {
+const lateHost = ensureElement();
+lateHost && (lateHost.textContent = Array.from(styles.values()).join("\n\n"));
 }, {
 once: !0
 });
 return;
 }
-document.head.appendChild(el);
+host.textContent = Array.from(styles.values()).join("\n\n");
+} catch (e) {
+logError("StyleManager", "render failed", e);
 }
-el.textContent = Array.from(styles.values()).join("\n\n");
+};
+return {
+styles,
+add(id, css) {
+try {
+if ("string" != typeof id || !id) {
+return;
+}
+if ("string" != typeof css) {
+return;
+}
+styles.set(id, css);
+render();
 } catch (e) {
 logError("StyleManager", "add failed", e);
 }
@@ -497,61 +1079,21 @@ logError("StyleManager", "add failed", e);
 remove(id) {
 try {
 styles.delete(id);
-const el = document.getElementById(id);
-el && el.remove();
+render();
 } catch (e) {
 logError("StyleManager", "remove failed", e);
 }
 },
 clear() {
-for (const styleId of Array.from(styles.keys())) {
-this.remove(styleId);
+try {
+styles.clear();
+if (element) {
+element.remove();
+element = null;
 }
+} catch (e) {
+logError("StyleManager", "clear failed", e);
 }
-};
-})();
-const EventDelegator = (() => {
-const delegations = new Map;
-return {
-delegate(parent, selector, event, handler) {
-const delegateHandler = e => {
-const target = e.target;
-const match = target.closest(selector);
-match && parent.contains(match) && handler.call(match, e);
-};
-parent.addEventListener(event, delegateHandler, {
-passive: !0
-});
-const key = `${event}_${selector}`;
-delegations.has(parent) || delegations.set(parent, new Map);
-delegations.get(parent).set(key, delegateHandler);
-return () => {
-parent.removeEventListener(event, delegateHandler);
-const parentMap = delegations.get(parent);
-if (parentMap) {
-parentMap.delete(key);
-0 === parentMap.size && delegations.delete(parent);
-}
-};
-},
-clearFor(parent) {
-const parentMap = delegations.get(parent);
-if (parentMap) {
-parentMap.forEach((handler, key) => {
-const event = key.split("_")[0];
-parent.removeEventListener(event, handler);
-});
-delegations.delete(parent);
-}
-},
-clearAll() {
-delegations.forEach((map, parent) => {
-map.forEach((handler, key) => {
-const event = key.split("_")[0];
-parent.removeEventListener(event, handler);
-});
-});
-delegations.clear();
 }
 };
 })();
@@ -723,43 +1265,80 @@ const waitForElement = (selector, timeout = 5e3, parent = document) => new Promi
 if (!selector || "string" != typeof selector) {
 return reject(new Error("Invalid selector"));
 }
+let subId = null;
+let fallbackTimer = null;
+let timeoutTimer = null;
+const finalize = () => {
+if (subId && window.YouTubeMutationCoordinator?.unsubscribe) {
 try {
+window.YouTubeMutationCoordinator.unsubscribe(subId);
+} catch (e) {}
+}
+subId = null;
+if (fallbackTimer) {
+clearInterval(fallbackTimer);
+fallbackTimer = null;
+}
+if (timeoutTimer) {
+clearTimeout(timeoutTimer);
+timeoutTimer = null;
+}
+};
+const tryResolve = () => {
 const el = parent.querySelector(selector);
-if (el) {
-return resolve(el);
+if (!el) {
+return !1;
+}
+finalize();
+resolve(el);
+return !0;
+};
+try {
+if (tryResolve()) {
+return;
 }
 } catch (e) {
 return reject(e);
 }
-const obs = new MutationObserver(() => {
-const el = parent.querySelector(selector);
-if (el) {
+const coordinator = window.YouTubeMutationCoordinator;
+if (coordinator?.watchTarget && parent instanceof Node) {
+subId = `utils::waitForElement::${Date.now()}::${Math.random().toString(36).slice(2, 8)}`;
+coordinator.watchTarget(subId, parent, () => {
 try {
-obs.disconnect();
-} catch (e) {}
-resolve(el);
+tryResolve();
+} catch (e) {
+finalize();
+reject(e);
 }
-});
-obs.observe(parent, {
+}, {
 childList: !0,
+attributes: !1,
 subtree: !0
 });
-const id = setTimeout(() => {
+} else {
+fallbackTimer = setInterval(() => {
 try {
-obs.disconnect();
-} catch (e) {}
+tryResolve();
+} catch (e) {
+finalize();
+reject(e);
+}
+}, 120);
+}
+timeoutTimer = setTimeout(() => {
+finalize();
 reject(new Error("timeout"));
 }, timeout);
-cleanupManager.registerTimeout(id);
+cleanupManager.registerTimeout(timeoutTimer);
 });
 const sanitizeHTML = html => {
 if ("string" != typeof html) {
 return "";
 }
-if (html.length > 1e6) {
-console.warn("[YouTube+] HTML content too large, truncating");
-html = html.substring(0, 1e6);
+if (window.YouTubeSafeDOM?.sanitizeHTML) {
+return window.YouTubeSafeDOM.sanitizeHTML(html);
 }
+html.length > 1e6 && (html = html.substring(0, 1e6));
 const map = {
 "<": "&lt;",
 ">": "&gt;",
@@ -821,7 +1400,7 @@ if (!Object.prototype.hasOwnProperty.call(source, key)) {
 continue;
 }
 if (dangerousKeys.includes(key)) {
-console.warn(`[YouTube+][Security] Blocked attempt to set dangerous key: ${key}`);
+window.console.warn(`[YouTube+][Security] Blocked attempt to set dangerous key: ${key}`);
 continue;
 }
 const value = source[key];
@@ -912,37 +1491,6 @@ return !1;
 }
 }
 };
-const DOMCache = (() => {
-const cache = new Map;
-return {
-get(selector, parent = document) {
-const key = `${selector}_${parent === document ? "doc" : ""}`;
-const cached = cache.get(key);
-if (cached && Date.now() - cached.timestamp < 5e3) {
-return cached.element;
-}
-const element = parent.querySelector(selector);
-if (element) {
-cache.set(key, {
-element,
-timestamp: Date.now()
-});
-if (cache.size > 200) {
-const oldestKey = cache.keys().next().value;
-cache.delete(oldestKey);
-}
-}
-return element;
-},
-clear(selector) {
-const keys = Array.from(cache.keys()).filter(k => k.startsWith(selector));
-keys.forEach(k => cache.delete(k));
-},
-clearAll() {
-cache.clear();
-}
-};
-})();
 const ScrollManager = (() => {
 const listeners = new WeakMap;
 return {
@@ -1036,7 +1584,7 @@ type: "pushState"
 }
 }));
 } catch (e) {
-console.warn("[YouTube+] pushState event error:", e);
+window.console.warn("[YouTube+] pushState event error:", e);
 }
 return result;
 };
@@ -1049,7 +1597,7 @@ type: "replaceState"
 }
 }));
 } catch (e) {
-console.warn("[YouTube+] replaceState event error:", e);
+window.console.warn("[YouTube+] replaceState event error:", e);
 }
 return result;
 };
@@ -1108,6 +1656,52 @@ timerId = null;
 }
 };
 };
+const createVisibilityAwareInterval = (callback, delay, options = {}) => {
+const label = options.label || "visibility-interval";
+let intervalId = null;
+let stopped = !1;
+const tick = () => {
+if (!(stopped || "undefined" != typeof document && document.hidden)) {
+try {
+callback();
+} catch (e) {
+logError("VisibilityInterval", `${label} tick failed`, e);
+}
+}
+};
+const pause = () => {
+if (null !== intervalId) {
+clearInterval(intervalId);
+intervalId = null;
+}
+};
+const resume = () => {
+if (!(stopped || null !== intervalId || "undefined" != typeof document && document.hidden)) {
+intervalId = setInterval(tick, delay);
+"function" == typeof cleanupManager?.registerInterval && cleanupManager.registerInterval(intervalId);
+}
+};
+const visibilityHandler = () => {
+"undefined" != typeof document && (document.hidden ? pause() : resume());
+};
+"function" == typeof cleanupManager?.registerListener && "undefined" != typeof document ? cleanupManager.registerListener(document, "visibilitychange", visibilityHandler, {
+passive: !0
+}) : "undefined" != typeof document && document.addEventListener("visibilitychange", visibilityHandler, {
+passive: !0
+});
+resume();
+return {
+stop() {
+stopped = !0;
+pause();
+},
+pause,
+resume,
+get active() {
+return null !== intervalId;
+}
+};
+};
 const ObserverRegistry = (() => {
 let _active = 0;
 let _peak = 0;
@@ -1148,8 +1742,8 @@ intervals: cleanupManager.intervals?.size ?? "n/a",
 timeouts: cleanupManager.timeouts?.size ?? "n/a",
 listeners: "function" == typeof cleanupManager.getListenerStats ? cleanupManager.getListenerStats() : "n/a"
 } : null;
-console.warn("[YouTube+ Diagnostics] ObserverRegistry:", stats);
-cmStats && console.warn("[YouTube+ Diagnostics] CleanupManager:", cmStats);
+window.console.warn("[YouTube+ Diagnostics] ObserverRegistry:", stats);
+cmStats && window.console.warn("[YouTube+ Diagnostics] CleanupManager:", cmStats);
 return {
 observers: stats,
 cleanup: cmStats
@@ -1189,16 +1783,14 @@ _enabled = loadFeatureEnabled(featureKey, defaultEnabled);
 };
 };
 if ("undefined" != typeof window) {
-const wAny = window;
-wAny.YouTubeUtils || (wAny.YouTubeUtils = {});
-const U = wAny.YouTubeUtils;
+const winGlobal = window;
+winGlobal.YouTubeUtils || (winGlobal.YouTubeUtils = {});
+const U = winGlobal.YouTubeUtils;
 U.logError = U.logError || logError;
 U.debounce = U.debounce || debounce;
 U.throttle = U.throttle || throttle;
 U.StyleManager = U.StyleManager || StyleManager;
 U.cleanupManager = U.cleanupManager || cleanupManager;
-U.EventDelegator = U.EventDelegator || EventDelegator;
-U.DOMCache = U.DOMCache || DOMCache;
 U.ScrollManager = U.ScrollManager || ScrollManager;
 U.createElement = U.createElement || createElement;
 U.waitForElement = U.waitForElement || waitForElement;
@@ -1225,27 +1817,35 @@ return !1;
 })();
 return {
 debug: function(...args) {
-isDebugEnabled && console?.warn && console.warn("[YouTube+][DEBUG]", ...args);
+isDebugEnabled && window.console?.warn && window.console.warn("[YouTube+][DEBUG]", ...args);
 },
 info: function(...args) {
-isDebugEnabled && console?.warn && console.warn("[YouTube+][INFO]", ...args);
+isDebugEnabled && window.console?.warn && window.console.warn("[YouTube+][INFO]", ...args);
 },
 warn: function(...args) {
-console?.warn && console.warn("[YouTube+]", ...args);
+window.console?.warn && window.console.warn("[YouTube+]", ...args);
 },
 error: function(...args) {
-console?.error && console.error("[YouTube+]", ...args);
+window.console?.error && window.console.error("[YouTube+]", ...args);
 }
 };
 })();
 U.retryWithBackoff = U.retryWithBackoff || retryWithBackoff;
 "function" != typeof U.createRetryScheduler && (U.createRetryScheduler = createRetryScheduler);
+"function" != typeof U.createVisibilityAwareInterval && (U.createVisibilityAwareInterval = createVisibilityAwareInterval);
 U.ObserverRegistry = U.ObserverRegistry || ObserverRegistry;
 U.$ = U.$ || $;
 U.$$ = U.$$ || $$;
 U.byId = U.byId || byId;
 U.t = U.t || t;
+U.getLanguage = U.getLanguage || getLanguage;
+U.setSafeHTML = U.setSafeHTML || setSafeHTML;
+U.onDomReady = U.onDomReady || onDomReady;
 U.loadFeatureEnabled = U.loadFeatureEnabled || loadFeatureEnabled;
+U.isWatchPage = U.isWatchPage || isWatchPage;
+U.isShortsPage = U.isShortsPage || isShortsPage;
+U.isChannelPage = U.isChannelPage || isChannelPage;
+U.formatTime = U.formatTime || formatTime;
 U.createFeatureToggle = U.createFeatureToggle || createFeatureToggle;
 U.SETTINGS_KEY = U.SETTINGS_KEY || SETTINGS_KEY;
 U.isStudioPage = U.isStudioPage || isStudioPage;
@@ -1289,10 +1889,10 @@ cleanupManager: cm,
 retrySchedulers: retryMetrics,
 timestamp: (new Date).toISOString()
 };
-console.warn("[YouTube+ Diagnostics] Observers:", obs);
-console.warn("[YouTube+ Diagnostics] CleanupManager:", cm);
-retryMetrics && console.warn("[YouTube+ Diagnostics] RetrySchedulers:", retryMetrics);
-verbose && console.warn("[YouTube+ Diagnostics]", JSON.stringify(report, null, 2));
+window.console.warn("[YouTube+ Diagnostics] Observers:", obs);
+window.console.warn("[YouTube+ Diagnostics] CleanupManager:", cm);
+retryMetrics && window.console.warn("[YouTube+ Diagnostics] RetrySchedulers:", retryMetrics);
+verbose && window.console.warn("[YouTube+ Diagnostics]", JSON.stringify(report, null, 2));
 return report;
 });
 U.channelStatsHelpers = U.channelStatsHelpers || null;
@@ -1329,9 +1929,9 @@ w.__ytp_timers_wrapped = !0;
 logError("utils", "timer wrapper failed", e);
 }
 try {
-const wAny2 = window;
-if (!wAny2.__ytp_nav_cleanup_registered) {
-wAny2.__ytp_nav_cleanup_registered = !0;
+const navCleanupHost = window;
+if (!navCleanupHost.__ytp_nav_cleanup_registered) {
+navCleanupHost.__ytp_nav_cleanup_registered = !0;
 document.addEventListener("yt-navigate-start", () => {
 try {
 U.cleanupManager.cleanup();
@@ -1378,7 +1978,7 @@ return null;
 },
 extractSubscriberCountFromPage() {
 try {
-const el = qs("yt-formatted-string#subscriber-count") || qs('[id*="subscriber-count"]');
+const el = $("yt-formatted-string#subscriber-count") || $('[id*="subscriber-count"]');
 if (!el) {
 return 0;
 }
@@ -1401,16 +2001,296 @@ timestamp: Date.now()
 
 !(function() {
 "use strict";
-function escapeHtml(html) {
-if (!html || "string" != typeof html) {
+const styleManager = window.YouTubeUtils?.StyleManager;
+styleManager?.add && styleManager.add("yt-plus-design-system", "\n    :root{\n      --yt-accent:#ff0000;\n      --yt-accent-secondary:#1976d2;\n      --yt-accent-secondary-light:#42a5f5;\n      --yt-accent-secondary-ghost:rgba(25,118,210,0.28);\n      --yt-accent-secondary-light-ghost:rgba(66,165,245,0.4);\n      --yt-accent-secondary-shadow:rgba(25,118,210,0.25);\n      --yt-primary-soft:rgba(33,150,243,.12);\n      --yt-primary-soft-hover:rgba(33,150,243,.22);\n      --yt-primary-border:rgba(33,150,243,.25);\n      --yt-primary-text:#2196f3;\n      --yt-surface-soft:rgba(255,255,255,.08);\n      --yt-surface-active:rgba(255,255,255,.12);\n      --yt-surface-active-strong:rgba(255,255,255,.14);\n      --yt-surface-border-strong:rgba(255,255,255,.15);\n      --yt-surface-overlay-soft:rgba(255,255,255,.1);\n      --yt-surface-overlay-subtle:rgba(255,255,255,.04);\n      --yt-surface-overlay-faint:rgba(255,255,255,.02);\n      --yt-surface-overlay-border:rgba(255,255,255,.06);\n      --yt-danger-soft:rgba(255,59,59,0.15);\n      --yt-danger-soft-hover:rgba(255,59,59,0.25);\n      --yt-danger-border:rgba(255,59,59,0.3);\n      --yt-danger-text:#ff5c5c;\n      --yt-danger-ghost:rgba(255,0,0,.12);\n      --yt-danger-shadow:rgba(255,0,0,.3);\n      --yt-danger-shadow-strong:rgba(255,0,0,.35);\n      --yt-danger-card-bg-start:rgba(255,0,0,.28);\n      --yt-danger-card-bg-end:rgba(255,0,0,.16);\n      --yt-danger-card-border:rgba(255,0,0,.45);\n      --yt-danger-card-inset:rgba(255,0,0,.22);\n      --yt-success:#4caf50;\n      --yt-success-soft:rgba(76,175,80,0.2);\n      --yt-success-soft-hover:rgba(76,175,80,.22);\n      --yt-danger:#f44336;\n      --yt-warning:#ffc107;\n      --yt-warning-soft:rgba(255,193,7,0.2);\n      --yt-shadow-soft:rgba(0,0,0,.2);\n      --yt-shadow-soft-strong:rgba(0,0,0,.3);\n      --yt-shadow-inset-soft:rgba(0,0,0,.04);\n      --yt-shadow-inset-strong:rgba(0,0,0,.35);\n      --yt-shadow-flyout:rgba(0,0,0,.5);\n       --yt-shadow-notification:rgba(0,0,0,.3);\n       --yt-shadow-deep-1:rgba(0,0,0,.15);\n       --yt-shadow-deep-2:rgba(0,0,0,.1);\n       --yt-shadow-deep-3:rgba(0,0,0,.06);\n       --yt-shadow-deep-4:rgba(0,0,0,.09);\n       --yt-border-light:rgba(0,0,0,.25);\n       --yt-overlay-strong:rgba(0,0,0,.55);\n       --yt-overlay-deep:rgba(0,0,0,.2);\n       --yt-overlay-faint:rgba(0,0,0,.15);\n       --yt-tab-color-accent:#ff4533;\n       --yt-scrollbar-outline:rgba(127,127,127,.5);\n       --yt-panel-overlay-subtle:rgba(0,0,0,.05);\n      --yt-scrollbar-thumb:rgba(144,144,144,.5);\n      --yt-scrollbar-thumb-hover:rgba(170,170,170,.7);\n      --yt-panel-overlay-weak:rgba(0,0,0,.02);\n      --yt-badge-bg-light:rgba(255,255,255,.1);\n      --yt-badge-bg-dark:rgba(0,0,0,.05);\n      --yt-text-dark-primary:#0f0f0f;\n      --yt-playall-accent-purple:#bf4bcc;\n      --yt-playall-accent-blue:#2b66da;\n      --yt-search-highlight-bg:rgba(255,99,71,.12);\n      --yt-search-highlight-border:rgba(255,99,71,.25);\n      --yt-search-highlight-border-strong:rgba(255,99,71,.4);\n      --yt-search-highlight-faint:rgba(255,99,71,.1);\n      --yt-search-highlight-hover:rgba(255,99,71,.22);\n      --yt-search-highlight-accent:#ff5c5c;\n      --yt-shorts-shadow-deep:rgba(0,0,0,.4);\n      --yt-shorts-overlay-gray:rgba(155,155,155,.15);\n      --yt-shorts-border-light:rgba(255,255,255,.2);\n      --yt-shorts-shadow-blue:rgba(31,38,135,.37);\n      --yt-shorts-feedback-bg-dark:rgba(34,34,34,.7);\n      --yt-shorts-feedback-bg-light:rgba(255,255,255,.95);\n      --yt-shorts-border-dark:rgba(0,0,0,.08);\n      --yt-shorts-help-bg-light:rgba(255,255,255,.98);\n      --yt-shorts-header-bg:rgba(255,255,255,.05);\n      --yt-shorts-header-bg-light:rgba(0,0,0,.04);\n      --yt-shorts-kbd-bg:rgba(255,255,255,.15);\n      --yt-shorts-kbd-border:rgba(255,255,255,.2);\n      --yt-shorts-kbd-bg-light:rgba(0,0,0,.06);\n      --yt-shorts-kbd-hover:rgba(255,255,255,.22);\n      --yt-shorts-text-secondary:rgba(255,255,255,.92);\n      --yt-shorts-footer-bg:rgba(255,255,255,.05);\n      --yt-shorts-footer-bg-light:rgba(0,0,0,.04);\n      --yt-shorts-panel-header:rgba(255,255,255,.1);\n      --yt-shorts-panel-header-bg:rgba(255,255,255,.05);\n      --yt-shorts-feedback-bg:rgba(255,255,255,.15);\n      --yt-shorts-feedback-border:rgba(255,255,255,.2);\n      --yt-shorts-help-bg:rgba(255,255,255,.15);\n      --yt-shorts-help-border:rgba(255,255,255,.2);\n      --yt-shorts-kbd-non-editable:rgba(0,0,0,.08);\n      --yt-muted-text:#666;\n      --yt-success-accent:#10c56a;\n      --yt-success-accent-soft:rgba(16,197,106,0.15);\n      --yt-surface-contrast:#111;\n      --yt-progress-track:#e0e0e0;\n      --yt-progress-fill:#1a73e8;\n      --yt-modal-surface:rgba(20,20,20,.64);\n      --yt-radius-xs:6px;\n      --yt-radius-sm:10px;\n      --yt-radius-md:14px;\n      --yt-radius-lg:20px;\n      --yt-space-sm:8px;\n      --yt-space-md:16px;\n      --yt-space-lg:24px;\n      --yt-transition-fast:all .14s cubic-bezier(.2,.8,.2,1);\n      --yt-transition-default:all .24s cubic-bezier(.2,.8,.2,1);\n      --yt-glass-blur:blur(18px) saturate(180%);\n      --yt-glass-blur-light:blur(12px) saturate(160%);\n      --yt-glass-blur-heavy:blur(24px) saturate(200%);\n      --yt-z-overlay:1000;\n      --yt-z-flyout:20000;\n      --yt-z-modal:100000;\n      --yt-stats-icon-views-bg:rgba(59,130,246,0.15);\n      --yt-stats-icon-views:#3b82f6;\n      --yt-stats-icon-likes-bg:rgba(34,197,94,0.15);\n      --yt-stats-icon-likes:#22c55e;\n      --yt-stats-icon-dislikes-bg:rgba(239,68,68,0.15);\n      --yt-stats-icon-dislikes:#ef4444;\n      --yt-stats-icon-comments-bg:rgba(168,85,247,0.15);\n      --yt-stats-icon-comments:#a855f7;\n      --yt-stats-icon-viewers-bg:rgba(234,179,8,0.15);\n      --yt-stats-icon-viewers:#eab308;\n      --yt-stats-icon-subscribers-bg:rgba(236,72,153,0.15);\n      --yt-stats-icon-subscribers:#ec4899;\n      --yt-stats-icon-videos-bg:rgba(14,165,233,0.15);\n      --yt-stats-icon-videos:#0ea5e9;\n      --yt-stats-card-bg-dark:rgba(255,255,255,0.05);\n      --yt-stats-card-bg-light:rgba(0,0,0,0.03);\n      --yt-stats-card-border-dark:rgba(255,255,255,0.08);\n      --yt-stats-card-border-light:rgba(0,0,0,0.1);\n      --yt-stats-text-secondary-dark:rgba(255,255,255,0.65);\n      --yt-stats-text-secondary-light:rgba(0,0,0,0.6);\n      --yt-stats-text-label:rgba(255,255,255,0.72);\n      --yt-stats-text-exact-dark:rgba(255,255,255,0.5);\n      --yt-stats-text-exact-light:rgba(0,0,0,0.5);\n      --yt-stats-text-value-dark:#fff;\n      --yt-stats-text-value-light:#111;\n      --yt-stats-error:#ff6b6b;\n      --yt-stats-link-color:#0b61d6;\n      --yt-stats-link-hover:#e6f0ff;\n      --yt-stats-link-hover-dark:#0647a6;\n      --yt-stats-loader-text-dark:#fff;\n      --yt-stats-loader-text-light:#666;\n      --yt-stats-shadow-hover:rgba(0,0,0,0.3);\n      --yt-stats-shadow-deep:rgba(0,0,0,0.32);\n      --yt-stats-modal-shadow:rgba(0,0,0,0.45);\n      --yt-stats-bg-overlay-dark:rgba(28,28,28,0.75);\n      --yt-stats-img-border-dark:rgba(255,255,255,0.06);\n      --yt-stats-img-border-light:rgba(0,0,0,0.06);\n      --yt-stats-button-bg-dark:rgba(24,24,24,0.68);\n      --yt-stats-button-border-dark:rgba(255,255,255,0.08);\n      --yt-stats-button-border-light:rgba(0,0,0,0.06);\n      --yt-stats-button-bg-light:rgba(255,255,255,0.12);\n      --yt-stats-author-name-bright:rgba(255,255,255,0.9);\n      --yt-stats-author-name-light:rgba(0,0,0,0.8);\n      --yt-stats-channel-button-bg:rgba(0,0,0,0.4);\n      --yt-stats-channel-button-border:rgba(255,255,255,0.1);\n      --yt-stats-channel-button-hover:rgba(0,0,0,0.6);\n      --yt-stats-channel-button-hover-border:rgba(255,255,255,0.3);\n      --yt-stats-channel-menu-bg:rgba(28,28,28,0.75);\n      --yt-stats-channel-menu-border:rgba(255,255,255,0.08);\n      --yt-stats-channel-menu-item-bg:rgba(255,255,255,0.02);\n      --yt-stats-channel-label-text:#eee;\n      --yt-stats-channel-input-bg:rgba(255,255,255,0.1);\n      --yt-stats-channel-input-hover:rgba(255,255,255,0.15);\n      --yt-stats-channel-select-option-bg:#333;\n      --yt-stats-channel-range-bg:rgba(255,255,255,0.2);\n      --yt-stats-channel-range-thumb:#3ea6ff;\n      --yt-stats-channel-checkbox-border:rgba(255,255,255,0.4);\n      --yt-stats-channel-text-value:#bbb;\n      --yt-stats-channel-text-shadow:rgba(0,0,0,0.3);\n      --yt-stats-link-color:#0b61d6;\n      --yt-stats-link-hover-dark:#0647a6;\n      --yt-stats-positive-indicator:#1ed760;\n      --yt-stats-negative-indicator:#f3727f;\n      --yt-stats-channel-filter-shadow:rgba(0,0,0,0.5);\n      --yt-timecode-panel-bg-dark:rgba(34,34,34,0.75);\n      --yt-timecode-panel-bg-light:rgba(255,255,255,0.95);\n      --yt-timecode-panel-border-dark:rgba(255,255,255,0.12);\n      --yt-timecode-panel-border-light:rgba(0,0,0,0.08);\n      --yt-timecode-panel-color-dark:#fff;\n      --yt-timecode-panel-color-light:#222;\n      --yt-timecode-panel-shadow:rgba(0,0,0,0.45);\n      --yt-timecode-active-bg-start:rgba(255,68,68,0.12);\n      --yt-timecode-active-bg-end:rgba(255,68,68,0.04);\n      --yt-timecode-active-border:#ff6666;\n      --yt-timecode-active-inset:rgba(255,68,68,0.03);\n      --yt-timecode-chapter:#ff4444;\n      --yt-timecode-toggle-active-start:#ff6b6b;\n      --yt-timecode-export-success-bg:rgba(0,220,0,0.8);\n      --yt-update-card-shadow:rgba(6,10,20,0.45);\n      --yt-update-available-dot:#ff4444;\n      --yt-update-available-text:#ff6666;\n      --yt-update-install-bg-start:#ff4500;\n      --yt-update-install-bg-end:#ff6b35;\n      --yt-update-install-shadow:rgba(255,69,0,0.3);\n      --yt-thumbnail-overlay-idle:rgba(0,0,0,0.3);\n      --yt-thumbnail-overlay-hover:rgba(0,0,0,0.7);\n      --yt-thumbnail-overlay-active:rgba(0,0,0,0.9);\n    }\n\n    html[dark],html:not([dark]):not([light]){\n      --yt-bg-primary:rgba(15,15,15,.85);\n      --yt-bg-secondary:rgba(28,28,28,.85);\n      --yt-bg-tertiary:rgba(34,34,34,.85);\n      --yt-text-primary:#fff;\n      --yt-text-secondary:#aaa;\n      --yt-border-color:rgba(255,255,255,.2);\n      --yt-hover-bg:rgba(255,255,255,.1);\n      --yt-shadow:0 4px 12px rgba(0,0,0,.25);\n      --yt-glass-bg:rgba(50,50,50,.5);\n      --yt-glass-border:rgba(255,255,255,.2);\n      --yt-glass-shadow:0 8px 32px rgba(0,0,0,.2);\n      --yt-modal-bg:rgba(0,0,0,.75);\n      --yt-notification-bg:rgba(28,28,28,.9);\n      --yt-panel-bg:rgba(34,34,34,.3);\n      --yt-header-bg:rgba(20,20,20,.6);\n      --yt-input-bg:rgba(255,255,255,.1);\n      --yt-button-bg:rgba(255,255,255,.2);\n      --yt-text-stroke:#fff;\n    }\n\n    html[light]{\n      --yt-bg-primary:rgba(255,255,255,.85);\n      --yt-bg-secondary:rgba(248,248,248,.85);\n      --yt-bg-tertiary:rgba(240,240,240,.85);\n      --yt-text-primary:#030303;\n      --yt-text-secondary:#606060;\n      --yt-border-color:rgba(0,0,0,.2);\n      --yt-hover-bg:rgba(0,0,0,.05);\n      --yt-shadow:0 4px 12px rgba(0,0,0,.15);\n      --yt-glass-bg:rgba(255,255,255,.7);\n      --yt-glass-border:rgba(0,0,0,.1);\n      --yt-glass-shadow:0 8px 32px rgba(0,0,0,.1);\n      --yt-modal-bg:rgba(0,0,0,.5);\n      --yt-notification-bg:rgba(255,255,255,.95);\n      --yt-panel-bg:rgba(255,255,255,.7);\n      --yt-header-bg:rgba(248,248,248,.8);\n      --yt-input-bg:rgba(0,0,0,.05);\n      --yt-button-bg:rgba(0,0,0,.1);\n      --yt-text-stroke:#030303;\n    }\n\n    .ytp-plus-btn{\n      padding:var(--yt-space-sm) var(--yt-space-md);\n      border-radius:18px;\n      border:1px solid var(--yt-glass-border);\n      font-size:14px;\n      font-weight:500;\n      cursor:pointer;\n      color:var(--yt-text-primary);\n      background:var(--yt-button-bg);\n      transition:var(--yt-transition-default);\n    }\n    .ytp-plus-btn:hover{\n      transform:translateY(-1px);\n      box-shadow:var(--yt-shadow);\n      background:var(--yt-hover-bg);\n    }\n    .ytp-plus-btn--primary{\n      background:transparent;\n    }\n    .ytp-plus-btn--primary:hover{\n      background:var(--yt-accent);\n      color:#fff;\n      box-shadow:0 6px 16px rgba(255,0,0,.35);\n    }\n\n    .ytp-plus-panel{\n      background:var(--yt-glass-bg);\n      border:1px solid var(--yt-glass-border);\n      border-radius:var(--yt-radius-md);\n      box-shadow:var(--yt-glass-shadow);\n      color:var(--yt-text-primary);\n    }\n\n    .ytp-plus-modal-overlay{\n      position:fixed;\n      inset:0;\n      background:var(--yt-modal-bg);\n      display:flex;\n      align-items:center;\n      justify-content:center;\n      z-index:var(--yt-z-modal);\n      backdrop-filter:blur(8px) saturate(140%);\n      -webkit-backdrop-filter:blur(8px) saturate(140%);\n      animation:ytEnhanceFadeIn .25s ease-out;\n    }\n\n    .ytp-plus-modal-content{\n      background:var(--yt-glass-bg);\n      border:1.5px solid var(--yt-glass-border);\n      border-radius:24px;\n      color:var(--yt-text-primary);\n      box-shadow:0 12px 40px rgba(0,0,0,.45);\n      backdrop-filter:blur(14px) saturate(140%);\n      -webkit-backdrop-filter:blur(14px) saturate(140%);\n      animation:ytEnhanceScaleIn .28s cubic-bezier(.4,0,.2,1);\n    }\n\n    @keyframes ytEnhanceFadeIn{from{opacity:0;}to{opacity:1;}}\n    @keyframes ytEnhanceScaleIn{from{opacity:0;transform:scale(.92) translateY(10px);}to{opacity:1;transform:scale(1) translateY(0);}}\n    @keyframes fadeInModal{from{opacity:0}to{opacity:1}}\n    @keyframes scaleInModal{from{transform:scale(0.95);opacity:0}to{transform:scale(1);opacity:1}}\n    @keyframes spin{to{transform:rotate(360deg)}}\n    @keyframes dash{0%{stroke-dashoffset:80}50%{stroke-dashoffset:10}100%{stroke-dashoffset:80}}\n    @keyframes slideInFromBottom{from{transform:translateY(100%);opacity:0;}to{transform:translateY(0);opacity:1;}}\n    @keyframes slideOutToBottom{from{transform:translateY(0);opacity:1;}to{transform:translateY(100%);opacity:0;}}\n\n    @keyframes ytp-resume-fadein{from{opacity:0;}to{opacity:1;}}\n\n    @media (prefers-reduced-motion: reduce){\n      *,*::before,*::after{\n        animation:none !important;\n        transition:none !important;\n      }\n    }\n  ");
+})();
+
+!(function() {
+"use strict";
+"undefined" != typeof window && (window.YouTubePlusDesignSystem = {
+...window.YouTubePlusDesignSystem || {},
+initGlassDropdown: function initGlassDropdown(config) {
+const resolveElement = target => target ? "string" == typeof target ? document.querySelector(target) : target : null;
+const dropdown = resolveElement(config?.dropdown);
+const hiddenSelect = resolveElement(config?.hiddenSelect);
+if (!dropdown || !hiddenSelect) {
+return () => {};
+}
+const toggle = dropdown.querySelector(".glass-dropdown__toggle");
+const list = dropdown.querySelector(".glass-dropdown__list");
+const label = dropdown.querySelector(".glass-dropdown__label");
+if (!toggle || !list || !label) {
+return () => {};
+}
+let items = Array.from(list.querySelectorAll(".glass-dropdown__item"));
+let idx = items.findIndex(it => "true" === it.getAttribute("aria-selected"));
+idx < 0 && (idx = 0);
+const closeList = () => {
+dropdown.setAttribute("aria-expanded", "false");
+list.style.display = "none";
+};
+const openList = () => {
+dropdown.setAttribute("aria-expanded", "true");
+list.style.display = "block";
+items = Array.from(list.querySelectorAll(".glass-dropdown__item"));
+};
+closeList();
+const selectedItem = items[idx];
+if (selectedItem) {
+hiddenSelect.value = selectedItem.getAttribute("data-value") || "";
+label.textContent = selectedItem.textContent || "";
+}
+const handleToggleClick = () => {
+const expanded = "true" === dropdown.getAttribute("aria-expanded");
+expanded ? closeList() : openList();
+};
+const handleDocumentClick = e => {
+const target = e.target;
+target && !dropdown.contains(target) && closeList();
+};
+const handleListClick = e => {
+const source = e.target instanceof Element ? e.target : null;
+const item = source?.closest(".glass-dropdown__item");
+if (!(item instanceof HTMLElement)) {
+return;
+}
+const value = item.getAttribute("data-value") || "";
+hiddenSelect.value = value;
+list.querySelectorAll(".glass-dropdown__item").forEach(li => li.removeAttribute("aria-selected"));
+item.setAttribute("aria-selected", "true");
+idx = items.indexOf(item);
+label.textContent = item.textContent || "";
+hiddenSelect.dispatchEvent(new Event("change", {
+bubbles: !0
+}));
+closeList();
+};
+const handleKeyDown = e => {
+const expanded = "true" === dropdown.getAttribute("aria-expanded");
+if ("ArrowDown" === e.key) {
+e.preventDefault();
+expanded || openList();
+idx = Math.min(idx + 1, items.length - 1);
+items.forEach(it => it.removeAttribute("aria-selected"));
+items[idx]?.setAttribute("aria-selected", "true");
+items[idx]?.scrollIntoView({
+block: "nearest"
+});
+} else if ("ArrowUp" === e.key) {
+e.preventDefault();
+expanded || openList();
+idx = Math.max(idx - 1, 0);
+items.forEach(it => it.removeAttribute("aria-selected"));
+items[idx]?.setAttribute("aria-selected", "true");
+items[idx]?.scrollIntoView({
+block: "nearest"
+});
+} else if ("Enter" === e.key || " " === e.key) {
+e.preventDefault();
+if (!expanded) {
+openList();
+return;
+}
+const item = items[idx];
+if (!item) {
+return;
+}
+hiddenSelect.value = item.getAttribute("data-value") || "";
+hiddenSelect.dispatchEvent(new Event("change", {
+bubbles: !0
+}));
+label.textContent = item.textContent || "";
+closeList();
+} else {
+"Escape" === e.key && closeList();
+}
+};
+toggle.addEventListener("click", handleToggleClick);
+list.addEventListener("click", handleListClick);
+dropdown.addEventListener("keydown", handleKeyDown);
+window.YouTubeUtils?.cleanupManager?.registerListener ? window.YouTubeUtils.cleanupManager.registerListener(document, "click", handleDocumentClick) : document.addEventListener("click", handleDocumentClick);
+return () => {
+toggle.removeEventListener("click", handleToggleClick);
+list.removeEventListener("click", handleListClick);
+dropdown.removeEventListener("keydown", handleKeyDown);
+document.removeEventListener("click", handleDocumentClick);
+};
+}
+});
+})();
+
+!(function() {
+"use strict";
+const BLOCKED_TAGS = new Set([ "SCRIPT", "IFRAME", "OBJECT", "EMBED", "LINK", "META", "STYLE", "BASE", "FORM" ]);
+const URL_ATTRS = new Set([ "href", "src", "xlink:href", "formaction", "action", "poster" ]);
+let trustedTypesFacade = null;
+function getTrustedTypesPolicy() {
+if ("undefined" == typeof window || void 0 === window.trustedTypes) {
+return null;
+}
+const existing = window.YouTubeTrustedTypes;
+if (existing?.policy) {
+return existing.policy;
+}
+try {
+const policy = window.trustedTypes.createPolicy("youtubeplus#sanitize", {
+createHTML: value => "string" != typeof value ? String(value ?? "") : value.replace(/<script\b[\s\S]*?<\/script\s*>/gi, "").replace(/<iframe\b[\s\S]*?<\/iframe\s*>/gi, "").replace(/<object\b[\s\S]*?<\/object\s*>/gi, "").replace(/<embed\b[^>]*\/?>/gi, "").replace(/\s+on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "").replace(/javascript\s*:/gi, "").replace(/data\s*:\s*text\/html/gi, "blocked:"),
+createScriptURL: value => {
+if ("string" != typeof value) {
+return String(value ?? "");
+}
+try {
+const url = new URL(value, location.origin);
+if (url.origin === location.origin) {
+return value;
+}
+if (url.hostname.endsWith(".googleapis.com") || url.hostname.endsWith(".youtube.com")) {
+return value;
+}
+} catch (e) {}
+window.console.warn("[YouTube+][Security] Blocked untrusted script URL:", value);
+return "about:blank";
+},
+createScript: value => "string" == typeof value ? value : String(value ?? "")
+});
+"undefined" != typeof window && window.YouTubeTrustedTypes && (window.YouTubeTrustedTypes.policy = policy);
+return policy;
+} catch (e) {
+return existing?.policy || null;
+}
+}
+function createTrustedHTML(html) {
+const normalized = "string" == typeof html ? html : String(html ?? "");
+const policy = getTrustedTypesPolicy();
+return policy ? policy.createHTML(normalized) : normalized;
+}
+function createTrustedScriptURL(url) {
+const normalized = "string" == typeof url ? url : String(url ?? "");
+const policy = getTrustedTypesPolicy();
+return policy ? policy.createScriptURL(normalized) : normalized;
+}
+function createTrustedScript(value) {
+const normalized = "string" == typeof value ? value : String(value ?? "");
+const policy = getTrustedTypesPolicy();
+return policy ? policy.createScript(normalized) : normalized;
+}
+function createFragment(html) {
+const range = document.createRange();
+const root = document.body || document.documentElement;
+root && range.selectNode(root);
+const safeHTML = (function normalizeHTMLForSink(html) {
+return null == html ? "" : "string" == typeof html && "undefined" != typeof window && void 0 !== window.trustedTypes ? createTrustedHTML(html) : html;
+})(html);
+return range.createContextualFragment(safeHTML);
+}
+function escapeHTML(input) {
+if ("string" != typeof input || 0 === input.length) {
 return "";
 }
 const div = document.createElement("div");
-div.textContent = html;
+div.textContent = input;
 return div.innerHTML;
 }
+function isSafeUrl(value) {
+if ("string" != typeof value) {
+return !1;
+}
+const normalized = value.trim();
+if (!normalized) {
+return !0;
+}
+if (normalized.startsWith("#") || normalized.startsWith("/")) {
+return !0;
+}
+const lower = normalized.toLowerCase();
+if (lower.startsWith("javascript:")) {
+return !1;
+}
+if (lower.startsWith("vbscript:")) {
+return !1;
+}
+if (lower.startsWith("data:") && !lower.startsWith("data:image/")) {
+return !1;
+}
+try {
+const url = new URL(normalized, location.origin);
+return [ "http:", "https:", "mailto:", "tel:", "blob:" ].includes(url.protocol);
+} catch (e) {
+return !1;
+}
+}
+function sanitizeHTML(html) {
+if ("string" != typeof html || 0 === html.length) {
+return "";
+}
+const fragment = createFragment(createTrustedHTML(html));
+const showElement = window.NodeFilter && window.NodeFilter.SHOW_ELEMENT || 1;
+const walker = document.createTreeWalker(fragment, showElement);
+const toRemove = [];
+for (;walker.nextNode(); ) {
+const element = walker.currentNode;
+if (BLOCKED_TAGS.has(element.tagName)) {
+toRemove.push(element);
+continue;
+}
+const attrs = Array.from(element.attributes);
+for (const attr of attrs) {
+const name = attr.name.toLowerCase();
+const value = attr.value;
+name.startsWith("on") || "srcdoc" === name ? element.removeAttribute(attr.name) : URL_ATTRS.has(name) && !isSafeUrl(value) && element.removeAttribute(attr.name);
+}
+}
+for (const el of toRemove) {
+el.remove();
+}
+const container = document.createElement("div");
+container.append(fragment);
+return container.innerHTML;
+}
 function createSafeHTML(html) {
-return "function" == typeof window._ytplusCreateHTML ? window._ytplusCreateHTML(html) : html;
+const sanitized = sanitizeHTML(html);
+return createTrustedHTML(sanitized);
+}
+function setHTML(element, html, options = {}) {
+if (!(element instanceof HTMLElement)) {
+return;
+}
+const shouldSanitize = !1 !== options.sanitize;
+const content = shouldSanitize ? createSafeHTML(html) : html;
+const fragment = createFragment(content || "");
+element.replaceChildren(fragment);
+}
+function setText(element, text) {
+element instanceof HTMLElement && (element.textContent = "string" == typeof text ? text : "");
+}
+function renderTemplateClone(element, html) {
+if (!(element instanceof Element)) {
+return;
+}
+const trusted = createTrustedHTML("string" == typeof html ? html : String(html ?? ""));
+const fragment = createFragment(trusted);
+element.replaceChildren(fragment);
+}
+function isValidVideoId(id) {
+return !(!id || "string" != typeof id) && /^[a-zA-Z0-9_-]{11}$/.test(id);
+}
+function isValidChannelId(id) {
+return !(!id || "string" != typeof id) && /^UC[a-zA-Z0-9_-]{22}$/.test(id);
+}
+function isYouTubeUrl(url) {
+if (!url || "string" != typeof url) {
+return !1;
+}
+try {
+const parsed = new URL(url);
+const hostname = parsed.hostname.toLowerCase();
+return "www.youtube.com" === hostname || "youtube.com" === hostname || "m.youtube.com" === hostname || "music.youtube.com" === hostname || hostname.endsWith(".youtube.com");
+} catch (e) {
+return !1;
+}
+}
+function sanitizeText(text) {
+return text && "string" == typeof text ? text.replace(/[<>]/g, "").replace(/javascript:/gi, "").replace(/on\w+=/gi, "").trim() : "";
 }
 function sanitizeAttribute(attrName, attrValue) {
 if (!attrName || "string" != typeof attrName) {
@@ -1420,21 +2300,43 @@ if (null == attrValue) {
 return "";
 }
 if (/^on[a-z]/i.test(attrName)) {
-console.warn(`[Security] Blocked event handler attribute: ${attrName}`);
+window.console.warn(`[Security] Blocked event handler attribute: ${attrName}`);
 return null;
 }
 const valueStr = String(attrValue);
-if ("href" === attrName.toLowerCase() || "src" === attrName.toLowerCase()) {
+const lowerName = attrName.toLowerCase();
+if ("href" === lowerName || "src" === lowerName) {
 if (/^javascript:/i.test(valueStr)) {
-console.warn(`[Security] Blocked javascript protocol in ${attrName}`);
+window.console.warn(`[Security] Blocked javascript protocol in ${attrName}`);
 return null;
 }
 if (valueStr.toLowerCase().startsWith("data:") && !valueStr.toLowerCase().startsWith("data:image/")) {
-console.warn(`[Security] Blocked non-image data: URI in ${attrName}`);
+window.console.warn(`[Security] Blocked non-image data: URI in ${attrName}`);
 return null;
 }
 }
 return valueStr;
+}
+function setAttributeSafe(element, attrName, attrValue) {
+if (!(element instanceof HTMLElement)) {
+window.console.error("[Security] Invalid element for setAttributeSafe");
+return !1;
+}
+const sanitizedValue = sanitizeAttribute(attrName, attrValue);
+if (null === sanitizedValue) {
+return !1;
+}
+try {
+element.setAttribute(attrName, sanitizedValue);
+return !0;
+} catch (e) {
+window.console.error("[Security] setAttribute failed:", e);
+return !1;
+}
+}
+function validateNumber(value, min = -Infinity, max = Infinity) {
+const num = Number(value);
+return isNaN(num) || !isFinite(num) || num < min || num > max ? null : num;
 }
 class RateLimiter {
 constructor(maxRequests = 10, timeWindow = 6e4, maxKeys = 100) {
@@ -1448,7 +2350,7 @@ const now = Date.now();
 const requests = this.requests.get(key) || [];
 const recentRequests = requests.filter(time => now - time < this.timeWindow);
 if (recentRequests.length >= this.maxRequests) {
-console.warn(`[Security] Rate limit exceeded for ${key}. Max ${this.maxRequests} requests per ${this.timeWindow}ms.`);
+window.console.warn(`[Security] Rate limit exceeded for ${key}. Max ${this.maxRequests} requests per ${this.timeWindow}ms.`);
 return !1;
 }
 recentRequests.push(now);
@@ -1456,7 +2358,7 @@ this.requests.set(key, recentRequests);
 if (this.requests.size > this.maxKeys) {
 const keysToDelete = this.requests.size - this.maxKeys;
 const iter = this.requests.keys();
-for (let i = 0; i < keysToDelete; i++) {
+for (let i = 0; i < keysToDelete; i += 1) {
 const oldest = iter.next().value;
 oldest !== key && this.requests.delete(oldest);
 }
@@ -1467,69 +2369,10 @@ clear() {
 this.requests.clear();
 }
 }
-if ("undefined" != typeof window) {
-window.YouTubeSecurityUtils = {
-isValidVideoId: function isValidVideoId(id) {
-return !(!id || "string" != typeof id) && /^[a-zA-Z0-9_-]{11}$/.test(id);
-},
-isValidChannelId: function isValidChannelId(id) {
-return !(!id || "string" != typeof id) && /^UC[a-zA-Z0-9_-]{22}$/.test(id);
-},
-isYouTubeUrl: function isYouTubeUrl(url) {
-if (!url || "string" != typeof url) {
-return !1;
-}
-try {
-const parsed = new URL(url);
-const hostname = parsed.hostname.toLowerCase();
-return "www.youtube.com" === hostname || "youtube.com" === hostname || "m.youtube.com" === hostname || "music.youtube.com" === hostname || hostname.endsWith(".youtube.com");
-} catch (e) {
-return !1;
-}
-},
-sanitizeText: function sanitizeText(text) {
-return text && "string" == typeof text ? text.replace(/[<>]/g, "").replace(/javascript:/gi, "").replace(/on\w+=/gi, "").trim() : "";
-},
-escapeHtml,
-createSafeHTML,
-setInnerHTMLSafe: function setInnerHTMLSafe(element, html, sanitize = !1) {
-if (!(element && element instanceof HTMLElement)) {
-console.error("[Security] Invalid element for setInnerHTMLSafe");
-return;
-}
-const content = sanitize ? escapeHtml(html) : html;
-element.innerHTML = createSafeHTML(content);
-},
-setTextContentSafe: function setTextContentSafe(element, text) {
-element && element instanceof HTMLElement ? element.textContent = text || "" : console.error("[Security] Invalid element for setTextContentSafe");
-},
-sanitizeAttribute,
-setAttributeSafe: function setAttributeSafe(element, attrName, attrValue) {
-if (!(element && element instanceof HTMLElement)) {
-console.error("[Security] Invalid element for setAttributeSafe");
-return !1;
-}
-const sanitizedValue = sanitizeAttribute(attrName, attrValue);
-if (null === sanitizedValue) {
-return !1;
-}
-try {
-element.setAttribute(attrName, sanitizedValue);
-return !0;
-} catch (error) {
-console.error("[Security] setAttribute failed:", error);
-return !1;
-}
-},
-validateNumber: function validateNumber(value, min = -Infinity, max = Infinity) {
-const num = Number(value);
-return isNaN(num) || !isFinite(num) || num < min || num > max ? null : num;
-},
-RateLimiter,
-fetchWithTimeout: function fetchWithTimeout(url, options = {}, timeout = 1e4) {
+function fetchWithTimeout(url, options = {}, timeout = 1e4) {
 return Promise.race([ fetch(url, options), new Promise((_, reject) => setTimeout(() => reject(new Error("Request timeout")), timeout)) ]);
-},
-validateJSONSchema: function validateJSONSchema(data, schema) {
+}
+function validateJSONSchema(data, schema) {
 if (!data || "object" != typeof data) {
 return !1;
 }
@@ -1540,29 +2383,110 @@ const schemaObj = schema;
 const dataObj = data;
 for (const key in schemaObj) {
 if (schemaObj[key].required && !(key in dataObj)) {
-console.warn(`[Security] Missing required field: ${key}`);
+window.console.warn(`[Security] Missing required field: ${key}`);
 return !1;
 }
 if (key in dataObj && schemaObj[key].type && typeof dataObj[key] !== schemaObj[key].type) {
-console.warn(`[Security] Invalid type for field ${key}: expected ${schemaObj[key].type}, got ${typeof dataObj[key]}`);
+window.console.warn(`[Security] Invalid type for field ${key}: expected ${schemaObj[key].type}, got ${typeof dataObj[key]}`);
 return !1;
 }
 }
 return !0;
 }
+if ("undefined" != typeof window) {
+trustedTypesFacade = {
+policyName: "youtubeplus#sanitize",
+isSupported: void 0 !== window.trustedTypes,
+getPolicy: getTrustedTypesPolicy,
+createHTML: createTrustedHTML,
+createScriptURL: createTrustedScriptURL,
+createScript: createTrustedScript
+};
+window.YouTubeTrustedTypes = trustedTypesFacade;
+window._ytplusCreateHTML = createTrustedHTML;
+!(function installDefaultTrustedTypesPolicy() {
+if ("undefined" == typeof window || void 0 === window.trustedTypes) {
+return;
+}
+if (window.trustedTypes.defaultPolicy) {
+return;
+}
+const namedPolicy = getTrustedTypesPolicy();
+try {
+window.trustedTypes.createPolicy("default", {
+createHTML: value => {
+const safeValue = "string" == typeof value ? value : String(value ?? "");
+return namedPolicy ? namedPolicy.createHTML(safeValue) : safeValue;
+},
+createScriptURL: value => {
+const safeValue = "string" == typeof value ? value : String(value ?? "");
+return namedPolicy ? namedPolicy.createScriptURL(safeValue) : safeValue;
+},
+createScript: value => "string" == typeof value ? value : String(value ?? "")
+});
+} catch (e) {}
+})();
+window.YouTubeSafeDOM = {
+escapeHTML,
+sanitizeHTML,
+createSafeHTML,
+createFragment,
+createTrustedHTML,
+createTrustedScriptURL,
+createTrustedScript,
+createTrustedInlineScript: createTrustedScript,
+getTrustedTypesPolicy,
+setHTML,
+renderTemplateClone,
+setText,
+isSafeUrl,
+isValidVideoId,
+isValidChannelId,
+isYouTubeUrl,
+sanitizeText,
+sanitizeAttribute,
+setAttributeSafe,
+validateNumber,
+RateLimiter,
+fetchWithTimeout,
+validateJSONSchema
+};
+window.YouTubeSecurityUtils = {
+isValidVideoId,
+isValidChannelId,
+isYouTubeUrl,
+sanitizeText,
+escapeHtml: escapeHTML,
+createSafeHTML,
+setInnerHTMLSafe(element, html, sanitize = !1) {
+setHTML(element, html, {
+sanitize
+});
+},
+renderTemplateClone,
+setTextContentSafe(element, text) {
+setText(element, text || "");
+},
+sanitizeAttribute,
+setAttributeSafe,
+validateNumber,
+RateLimiter,
+fetchWithTimeout,
+validateJSONSchema
 };
 window.YouTubePlusSecurity = window.YouTubeSecurityUtils;
 }
+"undefined" != typeof module && module.exports && (module.exports = window.YouTubeSafeDOM);
 })();
+
+const basicSetTimeout_ = setTimeout;
 
 const YouTubeUtils = (() => {
 "use strict";
 const Security = window.YouTubePlusSecurity || {};
 const Storage = window.YouTubePlusStorage || {};
-const Performance = window.YouTubePlusPerformance || {};
-const t = window.YouTubeUtils?.t || (key => key || "");
 const logError = (module, message, error) => {
-console.error(`[YouTube+][${module}] ${message}:`, error);
+window.console.error(`[YouTube+][${module}] ${message}:`, error);
 };
 const safeExecute = Security.safeExecute || ((fn, context = "Unknown") => function(...args) {
 try {
@@ -1580,8 +2504,15 @@ logError(context, "Async execution failed", error);
 return null;
 }
 });
-const sanitizeHTML = Security.sanitizeHTML || (html => "string" != typeof html ? "" : html.replace(/[<>&"'\/`=]/g, ""));
-const isValidURL = Security.isValidURL || (url => {
+const sanitizeHTML = window.YouTubeSafeDOM?.sanitizeHTML || window.YouTubeUtils?.sanitizeHTML || Security.sanitizeHTML || (html => "string" != typeof html ? "" : html.replace(/[<>&"'\/`=]/g, ""));
+const isValidURL = url => {
+if ("function" == typeof Security.isValidURL) {
+try {
+return !!Security.isValidURL(url);
+} catch (e) {
+return !1;
+}
+}
 if ("string" != typeof url) {
 return !1;
 }
@@ -1591,7 +2522,7 @@ return [ "http:", "https:" ].includes(parsed.protocol);
 } catch (e) {
 return !1;
 }
-});
+};
 const storage = Storage || {
 get: (key, defaultValue = null) => {
 try {
@@ -1618,34 +2549,8 @@ return !1;
 }
 }
 };
-const debounce = window.YouTubeUtils?.debounce || Performance?.debounce || ((func, wait, options = {}) => {
-let timeout = null;
-const debounced = function(...args) {
-null !== timeout && clearTimeout(timeout);
-options.leading && null === timeout && func.call(this, ...args);
-timeout = setTimeout(() => {
-options.leading || func.call(this, ...args);
-timeout = null;
-}, wait);
-};
-debounced.cancel = () => {
-null !== timeout && clearTimeout(timeout);
-timeout = null;
-};
-return debounced;
-});
-const throttle = window.YouTubeUtils?.throttle || Performance?.throttle || ((func, limit) => {
-let inThrottle = !1;
-return function(...args) {
-if (!inThrottle) {
-func.call(this, ...args);
-inThrottle = !0;
-setTimeout(() => {
-inThrottle = !1;
-}, limit);
-}
-};
-});
+const debounce = window._ytpDefaults.debounce;
+const throttle = window._ytpDefaults.throttle;
 const createElement = (tag, props = {}, children = []) => {
 if (!/^[a-z][a-z0-9-]*$/i.test(tag)) {
 logError("createElement", "Invalid tag name", new Error(`Tag "${tag}" is not allowed`));
@@ -1653,21 +2558,38 @@ return document.createElement("div");
 }
 const element = document.createElement(tag);
 Object.entries(props).forEach(([key, value]) => {
+const normalizedKey = String(key || "").toLowerCase();
 if ("className" === key) {
 element.className = value;
 } else if ("style" === key && "object" == typeof value) {
 Object.assign(element.style || {}, value);
 } else if (key.startsWith("on") && "function" == typeof value) {
 element.addEventListener(key.substring(2).toLowerCase(), value);
+} else if (normalizedKey.startsWith("on")) {
+logError("createElement", `Blocked unsafe event attribute ${key}`, new Error("Event handlers must be functions"));
 } else if ("dataset" === key && "object" == typeof value) {
 Object.assign(element.dataset || {}, value);
 } else if ("innerHTML" === key || "outerHTML" === key) {
 logError("createElement", "Direct HTML injection prevented", new Error("Use children array instead"));
-} else {
+} else if ("href" !== normalizedKey && "src" !== normalizedKey && "action" !== normalizedKey || "string" != typeof value) {
 try {
 element.setAttribute(key, value);
 } catch (e) {
 logError("createElement", `Failed to set attribute ${key}`, e);
+}
+} else {
+const trimmed = value.trim();
+const isProtocolRelative = trimmed.startsWith("//");
+const isRelative = trimmed.startsWith("/") || trimmed.startsWith("./") || trimmed.startsWith("../");
+const isAnchor = trimmed.startsWith("#");
+if (!(isRelative || isAnchor || isProtocolRelative || isValidURL(trimmed))) {
+logError("createElement", `Blocked unsafe URL for ${key}`, new Error("Only http/https and safe relative URLs are allowed"));
+return;
+}
+try {
+element.setAttribute(key, trimmed);
+} catch (e) {
+logError("createElement", `Failed to set URL attribute ${key}`, e);
 }
 }
 });
@@ -1677,6 +2599,18 @@ children.forEach(child => {
 return element;
 };
 const selectorCache = new Map;
+const cleanupWaitResources = (timeoutId, controller, subId, fallbackTimerId) => {
+controller.abort();
+if (subId && window.YouTubeMutationCoordinator?.unsubscribe) {
+try {
+window.YouTubeMutationCoordinator.unsubscribe(subId);
+} catch (e) {
+logError("waitForElement", "Coordinator unsubscribe failed", e);
+}
+}
+null !== fallbackTimerId && clearInterval(fallbackTimerId);
+clearTimeout(timeoutId);
+};
 const cleanupManager = {
 observers: new Set,
 listeners: new Map,
@@ -1844,49 +2778,11 @@ target[last] = value;
 this.save(settings);
 }
 };
-const StyleManager = {
+const StyleManager = window.YouTubeUtils?.StyleManager || {
 styles: new Map,
-element: null,
-add(id, css) {
-if ("string" == typeof id && id) {
-if ("string" == typeof css) {
-this.styles.set(id, css);
-this.update();
-} else {
-logError("StyleManager", "Invalid CSS", new Error("CSS must be a string"));
-}
-} else {
-logError("StyleManager", "Invalid style ID", new Error("ID must be a non-empty string"));
-}
-},
-remove(id) {
-this.styles.delete(id);
-this.update();
-},
-update() {
-try {
-if (!this.element) {
-this.element = document.createElement("style");
-this.element.id = "youtube-plus-styles";
-this.element.type = "text/css";
-(document.head || document.documentElement).appendChild(this.element);
-}
-this.element.textContent = Array.from(this.styles.values()).join("\n");
-} catch (error) {
-logError("StyleManager", "Failed to update styles", error);
-}
-},
-clear() {
-this.styles.clear();
-if (this.element) {
-try {
-this.element.remove();
-} catch (e) {
-logError("StyleManager", "Failed to remove style element", e);
-}
-this.element = null;
-}
-}
+add() {},
+remove() {},
+clear() {}
 };
 const NotificationManager = {
 queue: [],
@@ -1947,8 +2843,8 @@ notification.appendChild(messageSpan);
 if (action && action.text && "function" == typeof action.callback) {
 const actionBtn = createElement("button", {
 style: {
-background: "rgba(255,255,255,0.2)",
-border: "1px solid rgba(255,255,255,0.3)",
+background: "var(--yt-button-bg)",
+border: "1px solid var(--yt-glass-border)",
 color: "white",
 padding: "4px 12px",
 borderRadius: "4px",
@@ -1972,16 +2868,24 @@ id: _notifContainerId,
 className: "youtube-enhancer-notification-container"
 });
 try {
-document.body.appendChild(_notifContainer);
+const appendRoot = document.body || document.documentElement;
+if (!appendRoot) {
+return null;
+}
+appendRoot.appendChild(_notifContainer);
 } catch (e) {
-document.body.appendChild(notification);
+const appendRoot = document.body || document.documentElement;
+if (appendRoot) {
+appendRoot.appendChild(notification);
 this.activeNotifications.add(notification);
+}
 }
 }
 try {
 _notifContainer.insertBefore(notification, _notifContainer.firstChild);
 } catch (e) {
-document.body.appendChild(notification);
+const appendRoot = document.body || document.documentElement;
+appendRoot && appendRoot.appendChild(notification);
 }
 try {
 notification.style.pointerEvents = "auto";
@@ -1991,7 +2895,7 @@ try {
 notification.style.animation = "slideInFromBottom 0.38s ease-out forwards";
 } catch (e) {}
 if (duration > 0) {
-const timeoutId = setTimeout(() => this.remove(notification), duration);
+const timeoutId = basicSetTimeout_(() => this.remove(notification), duration);
 cleanupManager.registerTimeout(timeoutId);
 }
 if (this.activeNotifications.size > this.maxVisible) {
@@ -2009,7 +2913,7 @@ if (notification && notification.isConnected) {
 try {
 try {
 notification.style.animation = "slideOutToBottom 0.32s ease-in forwards";
-const timeoutId = setTimeout(() => {
+const timeoutId = basicSetTimeout_(() => {
 try {
 notification.remove();
 this.activeNotifications.delete(notification);
@@ -2044,8 +2948,6 @@ logError("NotificationManager", "Failed to clear notification", e);
 this.activeNotifications.clear();
 }
 };
-StyleManager.add("notification-animations", "\n    @keyframes slideInFromBottom {\n      from { transform: translateY(100%); opacity: 0; }\n      to { transform: translateY(0); opacity: 1; }\n    }\n\n    @keyframes slideOutToBottom {\n      from { transform: translateY(0); opacity: 1; }\n      to { transform: translateY(100%); opacity: 0; }\n    }\n  ");
-StyleManager.add("shared-keyframes", "\n    @keyframes fadeInModal{from{opacity:0}to{opacity:1}}\n    @keyframes scaleInModal{from{transform:scale(0.95);opacity:0}to{transform:scale(1);opacity:1}}\n    @keyframes spin{to{transform:rotate(360deg)}}\n    @keyframes dash{0%{stroke-dashoffset:80}50%{stroke-dashoffset:10}100%{stroke-dashoffset:80}}\n  ");
 window.addEventListener("beforeunload", () => {
 cleanupManager.cleanup();
 selectorCache.clear();
@@ -2063,6 +2965,10 @@ const cacheCleanupInterval = setInterval(() => {
 timeout: 2e3
 }) : cacheCleanup();
 }, 3e4);
+const globalObject = "undefined" != typeof window ? window : globalThis;
+const previousCacheCleanupInterval = globalObject.__ytpBasicCacheCleanupIntervalId;
+previousCacheCleanupInterval && clearInterval(previousCacheCleanupInterval);
+globalObject.__ytpBasicCacheCleanupIntervalId = cacheCleanupInterval;
 cleanupManager.registerInterval(cacheCleanupInterval);
 cleanupManager.registerListener(window, "unhandledrejection", event => {
 logError("Global", "Unhandled promise rejection", event.reason);
@@ -2135,57 +3041,41 @@ resolve(element);
 return;
 }
 const controller = new AbortController;
-let observer = null;
-const timeoutId = setTimeout(() => {
-((observer, timeoutId, controller) => {
-controller.abort();
-if (observer) {
-try {
-observer.disconnect();
-} catch (e) {
-logError("waitForElement", "Observer disconnect failed", e);
-}
-}
-clearTimeout(timeoutId);
-})(observer, timeoutId, controller);
+let subId = null;
+let fallbackTimerId = null;
+const timeoutId = basicSetTimeout_(() => {
+cleanupWaitResources(timeoutId, controller, subId, fallbackTimerId);
 reject(new Error(`Element ${selector} not found within ${timeout}ms`));
 }, timeout);
-observer = ((parent, selector, resolve, timeoutId) => new MutationObserver(() => {
+const settleWithElement = () => {
 try {
-const element = parent.querySelector(selector);
-if (element) {
-clearTimeout(timeoutId);
-resolve(element);
+const foundElement = parent.querySelector(selector);
+if (!foundElement) {
+return !1;
 }
+cleanupWaitResources(timeoutId, controller, subId, fallbackTimerId);
+resolve(foundElement);
+return !0;
 } catch (e) {
-logError("waitForElement", "Observer callback error", e);
+cleanupWaitResources(timeoutId, controller, subId, fallbackTimerId);
+reject(new Error(`Invalid selector: ${selector}`));
+return !0;
 }
-}))(parent, selector, resolve, timeoutId);
-const observeError = ((observer, parent) => {
-try {
-if (!(parent instanceof Element) && parent !== document) {
-throw new Error("Parent does not support observation");
-}
-observer.observe(parent, {
+};
+const coordinator = window.YouTubeMutationCoordinator;
+if (coordinator?.watchTarget) {
+subId = `basic::waitForElement::${Date.now()}::${Math.random().toString(36).slice(2, 8)}`;
+coordinator.watchTarget(subId, parent, () => {
+settleWithElement();
+}, {
 childList: !0,
+attributes: !1,
 subtree: !0
 });
-return null;
-} catch (e) {
-try {
-observer.observe(parent, {
-childList: !0,
-subtree: !0
-});
-return null;
-} catch (e) {
-return new Error("Failed to observe DOM");
-}
-}
-})(observer, parent);
-if (observeError) {
-clearTimeout(timeoutId);
-reject(observeError);
+} else {
+fallbackTimerId = setInterval(() => {
+settleWithElement();
+}, 120);
 }
 }),
 cleanupManager,
@@ -2207,7 +3097,7 @@ if (i === retries - 1) {
 throw error;
 }
 await new Promise(resolve => {
-setTimeout(resolve, delay * (i + 1));
+basicSetTimeout_(resolve, delay * (i + 1));
 });
 }
 }
@@ -2217,7 +3107,7 @@ const start = performance.now();
 try {
 const result = fn.apply(this, args);
 const duration = performance.now() - start;
-duration > 100 && console.warn(`[YouTube+][Performance] ${label} took ${duration.toFixed(2)}ms`);
+duration > 100 && window.console.warn(`[YouTube+][Performance] ${label} took ${duration.toFixed(2)}ms`);
 return result;
 } catch (error) {
 logError("Performance", `${label} failed`, error);
@@ -2229,14 +3119,23 @@ const start = performance.now();
 try {
 const result = await fn.apply(this, args);
 const duration = performance.now() - start;
-duration > 100 && console.warn(`[YouTube+][Performance] ${label} took ${duration.toFixed(2)}ms`);
+duration > 100 && window.console.warn(`[YouTube+][Performance] ${label} took ${duration.toFixed(2)}ms`);
 return result;
 } catch (error) {
 logError("Performance", `${label} failed`, error);
 throw error;
 }
 },
-t
+t: (key, params = {}) => {
+const i18n = window.YouTubePlusI18n;
+const translator = i18n?.translate || i18n?.t;
+if ("function" == typeof translator) {
+try {
+return translator(key, params);
+} catch (e) {}
+}
+return window._ytpDefaults.t(key);
+}
 };
 })();
 
@@ -2248,7 +3147,7 @@ for (const k of Object.keys(YouTubeUtils)) {
 void 0 === existing[k] && (existing[k] = YouTubeUtils[k]);
 }
 } catch (e) {
-console.error("[YouTube+] Failed to merge core utilities:", e);
+window.console.error("[YouTube+] Failed to merge core utilities:", e);
 }
 window.YouTubeUtils && YouTubeUtils.logger && YouTubeUtils.logger.debug && YouTubeUtils.logger.debug("[YouTube+ v2.4.5] Core utilities merged");
 window.YouTubePlusDebug = {
@@ -2273,7 +3172,7 @@ notifications: YouTubeUtils.NotificationManager.activeNotifications.size
 };
 if (!sessionStorage.getItem("youtube_plus_started")) {
 sessionStorage.setItem("youtube_plus_started", "true");
-setTimeout(() => {
+basicSetTimeout_(() => {
 YouTubeUtils.NotificationManager && YouTubeUtils.NotificationManager.show("YouTube+ v2.4.5 loaded", {
 type: "success",
 duration: 2e3,
@@ -2285,7 +3184,7 @@ position: "bottom-right"
 
 !(function() {
 "use strict";
-const _createHTML = window._ytplusCreateHTML || (s => s);
+const _setSafeHTML = window.YouTubeUtils.setSafeHTML;
 const {t} = YouTubeUtils;
 const YouTubeEnhancer = {
 speedControl: {
@@ -2320,7 +3219,8 @@ transparentHeader: !0,
 hideSideGuide: !0,
 cleanSideGuide: !1,
 fixFeedLayout: !0,
-sideVideosColumns: 1,
+sideVideosColumnsEnabled: !1,
+sideVideosColumns: 0,
 betterCaptions: !0,
 playerBlur: !0,
 theaterEnhancements: !0,
@@ -2403,7 +3303,7 @@ globalSettings.downloadSites && "object" == typeof globalSettings.downloadSites 
 }
 } catch (e) {}
 } catch (e) {
-console.error("Error loading settings:", e);
+window.console.error("Error loading settings:", e);
 }
 },
 init() {
@@ -2431,7 +3331,7 @@ this.settings.loopHotkeys = lh;
 try {
 this.saveSettings();
 } catch (e) {
-console.warn("[YouTube+] Failed to save migrated loop hotkeys", e);
+window.console.warn("[YouTube+] Failed to save migrated loop hotkeys", e);
 }
 }
 } catch (e) {}
@@ -2446,7 +3346,7 @@ const parsed = Number(savedSpeed);
 Number.isFinite(parsed) && parsed > 0 && parsed <= 16 && (this.speedControl.currentSpeed = parsed);
 }
 } catch (e) {
-console.warn("[YouTube+] Speed restore error:", e);
+window.console.warn("[YouTube+] Speed restore error:", e);
 }
 this.settings.loopHotkeys = this.settings.loopHotkeys || {};
 this.settings.loopHotkeys.toggleLoop = this.normalizeSpeedHotkey(this.settings.loopHotkeys.toggleLoop, "r");
@@ -2455,7 +3355,7 @@ this.settings.loopHotkeys.setPointB = this.normalizeSpeedHotkey(this.settings.lo
 this.settings.loopHotkeys.resetPoints = this.normalizeSpeedHotkey(this.settings.loopHotkeys.resetPoints, "o");
 this.loadLoopState();
 } catch (error) {
-console.warn("[YouTube+][Basic]", "Failed to load settings during init:", error);
+window.console.warn("[YouTube+][Basic]", "Failed to load settings during init:", error);
 }
 this.insertStyles();
 this.addSettingsButtonToHeader();
@@ -2714,9 +3614,9 @@ if (null !== this.loopControl.pointA && null === this.loopControl.pointB) {
 const startPercent = this.loopControl.pointA / video.duration * 100;
 indicator.style.left = `${startPercent}%`;
 indicator.style.width = "2px";
-indicator.style.background = "linear-gradient(90deg,#1976d2,#42a5f5)";
-indicator.style.borderLeft = "2px solid #1976d2";
-indicator.style.borderRight = "2px solid #1976d2";
+indicator.style.background = "linear-gradient(90deg,var(--yt-accent-secondary),var(--yt-accent-secondary-light))";
+indicator.style.borderLeft = "2px solid var(--yt-accent-secondary)";
+indicator.style.borderRight = "2px solid var(--yt-accent-secondary)";
 indicator.style.display = "block";
 return;
 }
@@ -2724,9 +3624,9 @@ if (null !== this.loopControl.pointB && null === this.loopControl.pointA) {
 const bPercent = this.loopControl.pointB / video.duration * 100;
 indicator.style.left = `${bPercent}%`;
 indicator.style.width = "2px";
-indicator.style.background = "linear-gradient(90deg,#1976d2,#42a5f5)";
-indicator.style.borderLeft = "2px solid #1976d2";
-indicator.style.borderRight = "2px solid #1976d2";
+indicator.style.background = "linear-gradient(90deg,var(--yt-accent-secondary),var(--yt-accent-secondary-light))";
+indicator.style.borderLeft = "2px solid var(--yt-accent-secondary)";
+indicator.style.borderRight = "2px solid var(--yt-accent-secondary)";
 indicator.style.display = "block";
 return;
 }
@@ -2736,9 +3636,9 @@ const startPercent = startTime / video.duration * 100;
 const endPercent = endTime / video.duration * 100;
 indicator.style.left = `${startPercent}%`;
 indicator.style.width = `${Math.max(.2, endPercent - startPercent)}%`;
-indicator.style.background = "linear-gradient(90deg,rgba(25,118,210,0.28) 0%,rgba(66,165,245,0.4) 50%,rgba(25,118,210,0.28) 100%)";
-indicator.style.borderLeft = "2px solid #1976d2";
-indicator.style.borderRight = "2px solid #1976d2";
+indicator.style.background = "linear-gradient(90deg,var(--yt-accent-secondary-ghost) 0%,var(--yt-accent-secondary-light-ghost) 50%,var(--yt-accent-secondary-ghost) 100%)";
+indicator.style.borderLeft = "2px solid var(--yt-accent-secondary)";
+indicator.style.borderRight = "2px solid var(--yt-accent-secondary)";
 indicator.style.display = "block";
 },
 applyLoopStateToCurrentVideo() {
@@ -2768,7 +3668,7 @@ pointB: this.loopControl.pointB
 };
 localStorage.setItem(this.loopControl.storageKey, JSON.stringify(state));
 } catch (e) {
-console.warn("[YouTube+] Failed to save loop state:", e);
+window.console.warn("[YouTube+] Failed to save loop state:", e);
 }
 },
 loadLoopState() {
@@ -2779,10 +3679,10 @@ const state = JSON.parse(saved);
 this.loopControl.enabled = Boolean(state?.enabled);
 this.loopControl.pointA = "number" == typeof state?.pointA && Number.isFinite(state.pointA) ? state.pointA : null;
 this.loopControl.pointB = "number" == typeof state?.pointB && Number.isFinite(state.pointB) ? state.pointB : null;
-setTimeout(() => this.applyLoopStateToCurrentVideo(), 1e3);
+basicSetTimeout_(() => this.applyLoopStateToCurrentVideo(), 1e3);
 }
 } catch (e) {
-console.warn("[YouTube+] Failed to load loop state:", e);
+window.console.warn("[YouTube+] Failed to load loop state:", e);
 }
 },
 formatTime(seconds) {
@@ -2801,7 +3701,7 @@ window.dispatchEvent(new CustomEvent("youtube-plus-settings-updated", {
 detail: this.settings
 }));
 } catch (e) {
-console.warn("[YouTube+] Settings broadcast error:", e);
+window.console.warn("[YouTube+] Settings broadcast error:", e);
 }
 },
 updatePageBasedOnSettings() {
@@ -2842,15 +3742,15 @@ const injectNonCritical = () => {
 if (!document.getElementById("yt-enhancer-nc-styles")) {
 const ncEl = document.createElement("style");
 ncEl.id = "yt-enhancer-nc-styles";
-ncEl.textContent = '\n        .ytp-plus-settings-modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:100000;backdrop-filter:blur(8px) saturate(140%);-webkit-backdrop-filter:blur(8px) saturate(140%);animation:ytEnhanceFadeIn .25s ease-out;contain:layout style paint;}\n        .ytp-plus-settings-shell{max-width:45vw;max-height:65vh;display:flex;flex-direction:row;gap:12px;animation:ytEnhanceScaleIn .28s cubic-bezier(.4,0,.2,1);will-change:transform,opacity;}\n        .ytp-plus-settings-sidebar{display:flex;align-items:center;justify-content:center;padding-top:44px;box-sizing:border-box;}\n        .ytp-plus-settings-column{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px;}\n        .ytp-plus-settings-topbar{display:flex;align-items:center;gap:12px;padding:0 2px;}\n        .ytp-plus-settings-title{font-size:14px;font-weight:500;margin:0;padding:var(--yt-space-sm) var(--yt-space-md);border-radius:18px;border:1px solid var(--yt-glass-border);color:var(--yt-text-primary);cursor:default;transition:all .25s cubic-bezier(.4,0,.2,1);white-space:nowrap;}\n        .ytp-plus-settings-active-label{flex:1;font-size:13px;font-weight:600;color:var(--yt-text-secondary);text-align:center;white-space:nowrap;letter-spacing:.03em;text-transform:uppercase;opacity:.75;}\n        .ytp-plus-settings-panel{background:var(--yt-glass-bg);color:var(--yt-text-primary);border-radius:24px;flex:1;min-width:0;min-height:0;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,0.45);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);border:1.5px solid var(--yt-glass-border);contain:layout style paint;display:flex;}\n        .ytp-plus-settings-side-actions{display:flex;flex-direction:column;gap:10px;padding-top:50px;align-self:flex-start;}\n        .ytp-plus-settings-close{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.2);transition:transform .12s ease,background .12s ease,color .2s;color:var(--yt-text-primary);padding:0;}\n        .ytp-plus-settings-close:hover{transform:translateY(-2px);background:rgba(255,0,0,.12);color:var(--yt-accent);}\n        .ytp-plus-settings-nav{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;width:100%;}\n        .ytp-plus-settings-nav-rail{border:1px solid var(--yt-glass-border);border-radius:24px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));box-shadow:inset 0 1px 0 rgba(255,255,255,.08);padding:10px 8px;}\n        .ytp-plus-settings-nav-item{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;width:44px;height:44px;border-radius:14px;cursor:pointer;transition:all .2s cubic-bezier(.4,0,.2,1);font-size:11px;border:none;color:var(--yt-text-primary);padding:4px 4px;text-align:center;}\n        .ytp-plus-settings-nav-item-label{display:none;}\n        .ytp-plus-settings-nav-item:hover{background:var(--yt-hover-bg);transform:translateY(-1px);}\n        .ytp-plus-settings-nav-item.active{background:rgba(255,255,255,.12);color:var(--yt-accent);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);}\n        .ytp-plus-settings-nav-item svg{width:20px;height:20px;margin-right:0;opacity:.92;transition:opacity .2s,transform .2s;flex-shrink:0;}\n        .ytp-plus-settings-nav-item.active svg{opacity:1;transform:scale(1.1);}\n        .ytp-plus-settings-nav-item:hover svg{transform:scale(1.06);}\n        .ytp-plus-settings-main{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden;}\n        .ytp-plus-settings-content{flex:1;padding:var(--yt-space-md) var(--yt-space-lg);overflow-y:auto;min-height:0;}\n        .ytp-plus-settings-section{margin-bottom:var(--yt-space-lg);}\n        .ytp-plus-settings-section-title{font-size:16px;font-weight:500;margin-bottom:var(--yt-space-md);color:var(--yt-text-primary);}\n        .ytp-plus-settings-section.hidden{display:none !important;}\n        .ytp-plus-settings-item{display:flex;align-items:center;margin-bottom:var(--yt-space-md);padding:14px 18px;background:transparent;transition:all .25s cubic-bezier(.4,0,.2,1);border-radius:var(--yt-radius-md);}\n        .ytp-plus-settings-item:hover{background:var(--yt-hover-bg);transform:translateX(6px);box-shadow:0 2px 8px rgba(0,0,0,.1);}\n        .ytp-plus-settings-item-actions{display:flex;align-items:center;gap:10px;margin-left:auto;}\n        .ytp-plus-submenu-toggle{width:26px;height:26px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;background:transparent;border:1px solid var(--yt-glass-border);color:var(--yt-text-primary);cursor:pointer;opacity:.9;transition:transform .15s ease,background-color .15s ease,opacity .15s ease;}\n        .ytp-plus-submenu-toggle:hover{background:var(--yt-hover-bg);transform:scale(1.06);}\n        .ytp-plus-submenu-toggle:disabled{opacity:.35;cursor:not-allowed;transform:none;}\n        .ytp-plus-submenu-toggle svg{width:16px;height:16px;transition:transform .15s ease;}\n        .ytp-plus-submenu-toggle[aria-expanded="false"] svg{transform:rotate(-90deg);}\n        .ytp-plus-submenu-toggle[aria-expanded="true"] svg{transform:rotate(0deg);}\n        .ytp-plus-settings-item-label{flex:1;font-size:14px;color:var(--yt-text-primary);}\n        .ytp-plus-settings-item-description{font-size:12px;color:var(--yt-text-secondary);margin-top:4px;}\n        .ytp-plus-settings-checkbox{appearance:none;-webkit-appearance:none;-moz-appearance:none;width:20px;height:20px;min-width:20px;min-height:20px;margin-left:auto;border:2px solid var(--yt-glass-border);border-radius:50%;background:transparent;display:inline-flex;align-items:center;justify-content:center;transition:all 250ms cubic-bezier(.4,0,.23,1);cursor:pointer;position:relative;flex-shrink:0;color:#fff;box-sizing:border-box;}\n        html:not([dark]) .ytp-plus-settings-checkbox{border-color:rgba(0,0,0,.25);color:#222;}\n        .ytp-plus-settings-checkbox:focus-visible{outline:2px solid var(--yt-accent);outline-offset:2px;}\n        .ytp-plus-settings-checkbox:hover{background:var(--yt-hover-bg);transform:scale(1.1);}\n        .ytp-plus-settings-checkbox::before{content:"";width:5px;height:2px;background:var(--yt-text-primary);position:absolute;transform:rotate(45deg);top:6px;left:3px;transition:width 100ms ease 50ms,opacity 50ms;transform-origin:0% 0%;opacity:0;}\n        .ytp-plus-settings-checkbox::after{content:"";width:0;height:2px;background:var(--yt-text-primary);position:absolute;transform:rotate(305deg);top:12px;left:7px;transition:width 100ms ease,opacity 50ms;transform-origin:0% 0%;opacity:0;}\n        .ytp-plus-settings-checkbox:checked{transform:rotate(0deg) scale(1.15);}\n        .ytp-plus-settings-checkbox:checked::before{width:9px;opacity:1;background:#fff;transition:width 150ms ease 100ms,opacity 150ms ease 100ms;}\n        .ytp-plus-settings-checkbox:checked::after{width:16px;opacity:1;background:#fff;transition:width 150ms ease 250ms,opacity 150ms ease 250ms;}\n        .ytp-plus-settings-select{margin-left:auto;flex-shrink:0;background:var(--yt-glass-bg,rgba(255,255,255,.08));border:1px solid var(--yt-glass-border,rgba(255,255,255,.15));border-radius:8px;color:var(--yt-text-primary);font-size:13px;padding:4px 8px;cursor:pointer;outline:none;transition:border-color .2s;}\n        .ytp-plus-settings-select:focus{border-color:var(--yt-accent,#f00);}\n        html:not([dark]) .ytp-plus-settings-select{background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.2);}\n        .ytp-plus-button{padding:var(--yt-space-sm) var(--yt-space-md);border-radius:18px;border:none;font-size:14px;font-weight:500;cursor:pointer;transition:all .25s cubic-bezier(.4,0,.2,1);}\n        .ytp-plus-button-primary{background:transparent;border:1px solid var(--yt-glass-border);color:var(--yt-text-primary);}\n        .ytp-plus-button-primary:hover{background:var(--yt-accent);color:#fff;box-shadow:0 6px 16px rgba(255,0,0,.35);transform:translateY(-2px);}\n        .app-icon{fill:var(--yt-text-primary);stroke:var(--yt-text-primary);transition:all .3s;}\n        .about-section-content{display:flex;flex-direction:row;align-items:center;justify-content:center;flex-wrap:nowrap;width:fit-content;max-width:100%;line-height:1;gap:12px;text-align:center;margin:6px auto 12px;}\n        .about-section-content .app-icon{display:block;flex:0 0 auto;margin:0;}\n        @media(max-width:768px){.ytp-plus-settings-shell{max-height:86vh;flex-direction:column;gap:8px;}\n        .ytp-plus-settings-sidebar{width:100%;max-height:70px;overflow-x:auto;padding-top:0;}\n        .ytp-plus-settings-nav{flex-direction:row;}\n        .ytp-plus-settings-nav-rail{max-width:none;border:none;border-radius:0;background:transparent;box-shadow:none;padding:0;flex-direction:row;display:flex;gap:4px;}\n        .ytp-plus-settings-nav-item{width:40px;height:40px;}\n        .ytp-plus-settings-side-actions{flex-direction:row;padding-top:0;align-self:auto;}\n        .ytp-plus-settings-panel{min-height:0;}\n        .ytp-plus-settings-active-label{display:none;}\n        .ytp-plus-settings-item{padding:10px 12px;}}\n        .about-section-content h1{margin:0;white-space:nowrap;font-family:\'Montserrat\',sans-serif;font-size:52px;font-weight:600;line-height:1.05;color:transparent;-webkit-text-stroke-width:1px;-webkit-text-stroke-color:var(--yt-text-stroke);cursor:pointer;transition:color .2s;}\n        .about-section-content h1:hover{color:var(--yt-accent);-webkit-text-stroke-width:1px;-webkit-text-stroke-color:transparent;}\n        .download-options{position:fixed;background:var(--yt-glass-bg);color:var(--yt-text-primary);border-radius:var(--yt-radius-md);width:150px;z-index:2147483647;box-shadow:var(--yt-glass-shadow);border:1px solid var(--yt-glass-border);overflow:hidden;opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease;transform:translateY(8px);box-sizing:border-box;}\n        .download-options.visible{opacity:1;pointer-events:auto;transform:translateY(0);backdrop-filter:var(--yt-glass-blur);-webkit-backdrop-filter:var(--yt-glass-blur);}\n        .download-options-list{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;}\n        .download-option-item{cursor:pointer;padding:12px;text-align:center;transition:background .2s,color .2s;width:100%;}\n        .download-option-item:hover{background:var(--yt-hover-bg);color:var(--yt-accent);}\n        .glass-panel{background:var(--yt-glass-bg);border:1px solid var(--yt-glass-border);border-radius:var(--yt-radius-md);box-shadow:var(--yt-glass-shadow);}\n        .glass-card{background:var(--yt-panel-bg);border:1px solid var(--yt-glass-border);border-radius:var(--yt-radius-md);padding:var(--yt-space-md);box-shadow:var(--yt-shadow);}\n        .glass-modal{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--yt-modal-bg);display:flex;align-items:center;justify-content:center;z-index:99999;}\n        .glass-button{background:var(--yt-button-bg);border:1px solid var(--yt-glass-border);border-radius:var(--yt-radius-md);padding:var(--yt-space-sm) var(--yt-space-md);color:var(--yt-text-primary);cursor:pointer;transition:all .2s ease;}\n        .glass-button:hover{background:var(--yt-hover-bg);transform:translateY(-1px);box-shadow:var(--yt-shadow);}\n        .download-submenu{margin:4px 0 12px 12px;}\n        .download-submenu-container{display:flex;flex-direction:column;gap:8px;}\n        .style-submenu{margin:4px 0 12px 12px;}\n        .style-submenu-container{display:flex;flex-direction:column;gap:8px;}\n        .speed-submenu{margin:4px 0 12px 12px;}\n        .speed-submenu-container{display:flex;flex-direction:column;gap:8px;}\n        .speed-hotkeys-row{flex-direction:column!important;align-items:stretch!important;gap:6px;}\n        .speed-hotkeys-info{display:flex;flex-direction:column;gap:4px;}\n        .speed-hotkeys-fields{display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-top:12px;width:100%;}\n        .speed-hotkey-field{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:12px;color:var(--yt-text-secondary);flex:1;min-width:80px;}\n        .speed-hotkey-field span{text-align:center;width:100%;}\n        .speed-hotkey-input{width:100%;height:36px;border-radius:8px;border:1px solid var(--yt-glass-border);background:var(--yt-glass-bg);color:var(--yt-text-primary);text-align:center;text-transform:uppercase;}\n        .speed-hotkey-input:focus{background:var(--yt-hover-bg);}\n        .loop-submenu-container{display:flex;flex-direction:column;gap:8px;}\n        .loop-hotkeys-row{flex-direction:column!important;align-items:stretch!important;gap:6px;}\n        .loop-hotkeys-info{display:flex;flex-direction:column;gap:4px;}\n        .loop-hotkeys-fields{display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-top:12px;width:100%;}\n        .loop-hotkey-field{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:12px;color:var(--yt-text-secondary);flex:1;min-width:80px;}\n        .loop-hotkey-field span{text-align:center;width:100%;}\n        .loop-hotkey-input{width:100%;height:36px;border-radius:8px;border:1px solid var(--yt-glass-border);background:var(--yt-glass-bg);color:var(--yt-text-primary);text-align:center;text-transform:uppercase;}\n        .loop-hotkey-input:focus{background:var(--yt-hover-bg);}\n        .download-site-option{display:flex;flex-direction:column;align-items:stretch;gap:8px;padding:10px;border-radius:var(--yt-radius-md);transition:background .2s;}\n        .download-site-option:hover{background:var(--yt-hover-bg);}\n        .download-site-header{display:flex;flex-direction:row;align-items:center;justify-content:space-between;width:100%;gap:12px;}\n        .download-site-label{flex:1;cursor:pointer;display:flex;flex-direction:column;}\n        .download-site-controls{width:100%;margin-top:4px;padding-top:10px;border-top:1px solid var(--yt-glass-border);}\n        .download-site-input{width:95%;margin-top:8px;padding:8px;background:var(--yt-glass-bg);border:1px solid var(--yt-glass-border);border-radius:var(--yt-radius-sm);color:var(--yt-text-primary);font-size:13px;transition:all .2s;}\n        .download-site-input:focus{border-color:var(--yt-accent);background:var(--yt-hover-bg);}\n        .download-site-input.small{margin-top:6px;font-size:12px;}\n        .download-site-cta{display:flex;flex-direction:row;gap:8px;margin-top:10px;}\n        .download-site-cta .glass-button{flex:1;justify-content:center;font-size:13px;padding:8px 12px;}\n        .download-site-cta .glass-button.danger{background:rgba(255,59,59,0.15);border-color:rgba(255,59,59,0.3);}\n        .download-site-cta .glass-button.danger:hover{background:rgba(255,59,59,0.25);}\n        .download-site-option .ytp-plus-settings-checkbox{margin:0;}\n        .download-site-name{font-weight:500;font-size:15px;color:var(--yt-text-primary);}\n        .download-site-desc{font-size:12px;color:var(--yt-text-secondary);margin-top:2px;opacity:0.8;}\n        .ytp-plus-settings-panel select,\n        .ytp-plus-settings-panel select option {background: var(--yt-panel-bg) !important; color: var(--yt-text-primary) !important;}\n        .ytp-plus-settings-panel select {-webkit-appearance: menulist !important; appearance: menulist !important; padding: 6px 8px !important; border-radius: 6px !important; border: 1px solid var(--yt-glass-border) !important;}\n        .ytp-plus-theme-item{display:flex;flex-direction:column;align-items:stretch;gap:12px}\n        .ytp-plus-theme-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;width:100%}\n        .ytp-plus-theme-card{display:flex;align-items:center;justify-content:center;min-height:44px;border-radius:12px;border:1px solid var(--yt-glass-border);background:var(--yt-panel-bg);color:var(--yt-text-secondary);font-size:13px;font-weight:500;cursor:pointer;transition:all .18s ease}\n        .ytp-plus-theme-card:hover{background:var(--yt-hover-bg);color:var(--yt-text-primary)}\n        .ytp-plus-theme-card.active{color:#fff;background:linear-gradient(180deg,rgba(255,0,0,.28),rgba(255,0,0,.16));border-color:rgba(255,0,0,.45);box-shadow:0 0 0 1px rgba(255,0,0,.22) inset}\n        @media(max-width:580px){.ytp-plus-theme-grid{grid-template-columns:1fr}}\n        .glass-dropdown{position:relative;display:inline-block;min-width:110px}\n        .glass-dropdown__toggle{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;padding:6px 8px;border-radius:8px;background:linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));color:inherit;border:1px solid rgba(255,255,255,0.06);cursor:pointer}\n        .glass-dropdown__toggle:focus{outline:2px solid rgba(255,255,255,0.06)}\n        .glass-dropdown__label{font-size:12px}\n        .glass-dropdown__chev{opacity:0.9}\n        .glass-dropdown__list{position:absolute;left:0;right:0;top:calc(100% + 8px);z-index:20000;display:none;margin:0;padding:6px;border-radius:10px;list-style:none;background:var(--yt-header-bg);border:1px solid rgba(255,255,255,0.06);box-shadow:0 8px 30px rgba(0,0,0,0.5);backdrop-filter:blur(10px) saturate(130%);-webkit-backdrop-filter:blur(10px) saturate(130%);max-height:220px;overflow:auto}\n        .glass-dropdown__item{padding:8px 10px;border-radius:6px;margin:4px 0;cursor:pointer;color:inherit;font-size:13px}\n        .glass-dropdown__item:hover{background:rgba(255,255,255,0.04)}\n        .glass-dropdown__item[aria-selected="true"]{background:linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));box-shadow:inset 0 0 0 1px rgba(255,255,255,0.02)}\n        .ytp-plus-settings-voting-header{margin-bottom:var(--yt-space-lg);}\n        .ytp-plus-settings-voting-header h3{font-size:18px;font-weight:500;margin:0 0 8px 0;color:var(--yt-text-primary);}\n        .ytp-plus-settings-voting-desc{font-size:13px;color:var(--yt-text-secondary);margin:0;}\n        .ytp-plus-voting{display:flex;flex-direction:column;gap:12px;}\n        .ytp-plus-voting-header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}\n        .ytp-plus-voting-list{display:flex;flex-direction:column;gap:12px;}\n        .ytp-plus-voting-item{display:flex;align-items:flex-start;justify-content:space-between;padding:16px;background:var(--yt-glass-bg);border:1px solid var(--yt-glass-border);border-radius:var(--yt-radius-md);transition:all .2s ease;gap:12px;}\n        .ytp-plus-voting-item:hover{background:var(--yt-hover-bg);transform:translateX(4px);}\n        .ytp-plus-voting-item-content{flex:1;padding-right:16px;}\n        .ytp-plus-voting-item-title{font-size:14px;font-weight:500;color:var(--yt-text-primary);margin-bottom:4px;}\n        .ytp-plus-voting-item-desc{font-size:12px;color:var(--yt-text-secondary);line-height:1.4;}\n        .ytp-plus-voting-item-status{font-size:11px;min-height:28px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.1);color:var(--yt-text-secondary);border:1px solid var(--yt-glass-border);line-height:1;}\n        .ytp-plus-voting-item-status.completed{background:rgba(76,175,80,0.2);color:#4caf50;}\n        .ytp-plus-voting-item-status.in-progress{background:rgba(255,193,7,0.2);color:#ffc107;}\n        .ytp-plus-voting-item-votes{display:flex;flex-direction:column;align-items:stretch;gap:8px;min-width:120px;}\n        .ytp-plus-voting-score{display:flex;align-items:baseline;gap:8px;justify-content:center;}\n        .ytp-plus-vote-total{font-size:12px;color:var(--yt-text-secondary);}\n        .ytp-plus-voting-buttons{position:relative;display:flex;justify-content:center;gap:0;border:1px solid var(--yt-glass-border);border-radius:20px;overflow:hidden;}\n        .ytp-plus-voting-buttons-track{position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;transition:background .4s ease;border-radius:20px;pointer-events:none;}\n        .ytp-plus-vote-btn{position:relative;z-index:1;display:inline-flex;align-items:center;justify-content:center;width:42px;height:32px;border:none;background:transparent;cursor:pointer;transition:color .15s ease,opacity .15s ease;color:var(--yt-text-secondary);opacity:.95}\n        .ytp-plus-vote-btn:first-of-type{border-right:1px solid var(--yt-glass-border)}\n        .ytp-plus-vote-btn:hover{color:var(--yt-text-primary);opacity:1}\n        .ytp-plus-vote-btn.active{color:#fff;opacity:1}\n        .ytp-plus-vote-icon{width:20px;height:20px;fill:currentColor;opacity:.92}\n        .ytp-plus-vote-btn.active .ytp-plus-vote-icon,.ytp-plus-vote-btn:hover .ytp-plus-vote-icon{opacity:1}\n        .ytp-plus-voting-loading,.ytp-plus-voting-empty{text-align:center;padding:24px;color:var(--yt-text-secondary);font-size:13px;}\n        .ytp-plus-voting-add-btn{background:var(--yt-accent);color:#fff;border:none;padding:8px 16px;border-radius:18px;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s ease;}\n        .ytp-plus-voting-add-btn:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(255,0,0,.3);}\n        .ytp-plus-voting-add-form{margin-top:16px;padding:16px;background:var(--yt-glass-bg);border:1px solid var(--yt-glass-border);border-radius:var(--yt-radius-md);}\n        .ytp-plus-voting-add-form input,.ytp-plus-voting-add-form textarea{width:100%;padding:10px 12px;margin-bottom:12px;background:var(--yt-header-bg);border:1px solid var(--yt-glass-border);border-radius:8px;color:var(--yt-text-primary);font-size:13px;box-sizing:border-box;}\n        .ytp-plus-voting-add-form input:focus,.ytp-plus-voting-add-form textarea:focus{border-color:var(--yt-accent);outline:none;}\n        .ytp-plus-voting-add-form textarea{min-height:80px;resize:vertical;}\n        .ytp-plus-voting-form-actions{display:flex;gap:8px;justify-content:flex-end;}\n        .ytp-plus-voting-cancel{background:transparent;border:1px solid var(--yt-glass-border);color:var(--yt-text-primary);padding:8px 16px;border-radius:18px;font-size:13px;cursor:pointer;transition:all .2s ease;}\n        .ytp-plus-voting-cancel:hover{background:var(--yt-hover-bg);}\n        .ytp-plus-voting-submit{background:var(--yt-accent);color:#fff;border:none;padding:8px 16px;border-radius:18px;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s ease;}\n        .ytp-plus-voting-submit:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(255,0,0,.3);}\n        @media (max-width: 680px){.ytp-plus-voting-item{flex-direction:column;align-items:stretch}.ytp-plus-voting-item-content{padding-right:0}.ytp-plus-voting-item-votes{min-width:0;width:100%}}\n        .ytp-plus-voting-preview{margin-bottom:20px;}\n        .ytp-plus-ba-container{position:relative;width:100%;height:260px;overflow:hidden;border-radius:var(--yt-radius-md);border:1px solid var(--yt-glass-border);user-select:none;cursor:ew-resize;background:var(--yt-glass-bg);}\n        .ytp-plus-ba-before,.ytp-plus-ba-after{position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;}\n        .ytp-plus-ba-before img,.ytp-plus-ba-after img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;display:block;pointer-events:none;}\n        .ytp-plus-ba-after{clip-path:inset(0 0 0 50%);}\n        .ytp-plus-ba-divider{position:absolute;top:0;left:50%;transform:translateX(-50%);width:8px;height:100%;background:transparent;pointer-events:auto;z-index:3;cursor:ew-resize;transition:left .6s linear}\n        .ytp-plus-ba-divider::after{content:\'\';position:absolute;left:50%;top:0;transform:translateX(-50%);width:2px;height:100%;background:var(--yt-accent,#f00);}        \n        .ytp-plus-ba-divider.autoplay{animation:ytpPlusSlideDivider 6s linear infinite}\n        @keyframes ytpPlusSlideDivider{0%{left:10%}50%{left:90%}100%{left:10%}}\n        .ytp-plus-ba-label{position:absolute;top:10px;padding:4px 10px;border-radius:4px;font-size:12px;font-weight:600;color:#fff;background:rgba(0,0,0,.55);pointer-events:none;z-index:5;}\n        .ytp-plus-ba-label-before{left:10px;}\n        .ytp-plus-ba-label-after{right:10px;}\n        .ytp-plus-vote-bar-section{margin-top:12px;display:flex;flex-direction:column;align-items:center;gap:6px;}\n        .ytp-plus-vote-bar-buttons{position:relative;display:flex;gap:0;border-radius:20px;overflow:hidden;border:1px solid var(--yt-glass-border);}\n        .ytp-plus-vote-bar-track{position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;transition:background .4s ease;background:linear-gradient(to right, #4caf50 50%, #f44336 50%);border-radius:20px;}\n        .ytp-plus-vote-bar-btn{position:relative;z-index:1;display:inline-flex;align-items:center;justify-content:center;padding:8px 18px;background:transparent;border:none;color:var(--yt-text-secondary);cursor:pointer;transition:color .15s;font-size:14px;}\n        .ytp-plus-vote-bar-btn:first-of-type{border-right:1px solid var(--yt-glass-border);}\n        .ytp-plus-vote-bar-btn:hover{color:var(--yt-text-primary);}\n        .ytp-plus-vote-bar-btn.active{color:#fff;}\n        .ytp-plus-vote-bar-btn svg{fill:currentColor;width:20px;height:20px;display:block;}\n        .ytp-plus-vote-bar-btn svg path{fill:currentColor;}\n        .ytp-plus-vote-bar-count{font-size:12px;color:var(--yt-text-secondary);}';
+ncEl.textContent = '\n        .ytp-plus-settings-modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:100000;backdrop-filter:blur(8px) saturate(140%);-webkit-backdrop-filter:blur(8px) saturate(140%);animation:ytEnhanceFadeIn .25s ease-out;contain:layout style paint;}\n        .ytp-plus-settings-shell{max-width:45vw;max-height:65vh;display:flex;flex-direction:row;gap:12px;animation:ytEnhanceScaleIn .28s cubic-bezier(.4,0,.2,1);will-change:transform,opacity;}\n        .ytp-plus-settings-sidebar{display:flex;align-items:center;justify-content:center;padding-top:44px;box-sizing:border-box;}\n        .ytp-plus-settings-column{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px;}\n        .ytp-plus-settings-topbar{display:flex;align-items:center;gap:12px;padding:0 2px;}\n        .ytp-plus-settings-title{font-size:14px;font-weight:500;margin:0;padding:var(--yt-space-sm) var(--yt-space-md);border-radius:18px;border:1px solid var(--yt-glass-border);color:var(--yt-text-primary);cursor:default;transition:all .25s cubic-bezier(.4,0,.2,1);white-space:nowrap;}\n        .ytp-plus-settings-active-label{flex:1;font-size:13px;font-weight:600;color:var(--yt-text-secondary);text-align:center;white-space:nowrap;letter-spacing:.03em;text-transform:uppercase;opacity:.75;}\n        .ytp-plus-settings-panel{background:var(--yt-glass-bg);color:var(--yt-text-primary);border-radius:24px;flex:1;min-width:0;min-height:0;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,0.45);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);border:1.5px solid var(--yt-glass-border);contain:layout style paint;display:flex;}\n        .ytp-plus-settings-side-actions{display:flex;flex-direction:column;gap:10px;padding-top:50px;align-self:flex-start;}\n        .ytp-plus-settings-close{width:40px;height:40px;border-radius:50%;background:var(--yt-surface-soft);border:1px solid var(--yt-surface-active);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 14px var(--yt-shadow-soft);transition:transform .12s ease,background .12s ease,color .2s;color:var(--yt-text-primary);padding:0;}\n        .ytp-plus-settings-close:hover{transform:translateY(-2px);background:var(--yt-danger-ghost);color:var(--yt-accent);}\n        .ytp-plus-settings-nav{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;width:100%;}\n        .ytp-plus-settings-nav-rail{border:1px solid var(--yt-glass-border);border-radius:24px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));box-shadow:inset 0 1px 0 rgba(255,255,255,.08);padding:10px 8px;}\n        .ytp-plus-settings-nav-item{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;width:44px;height:44px;border-radius:14px;cursor:pointer;transition:all .2s cubic-bezier(.4,0,.2,1);font-size:11px;border:none;color:var(--yt-text-primary);padding:4px 4px;text-align:center;}\n        .ytp-plus-settings-nav-item-label{display:none;}\n        .ytp-plus-settings-nav-item:hover{background:var(--yt-hover-bg);transform:translateY(-1px);}\n        .ytp-plus-settings-nav-item.active{background:var(--yt-surface-active);color:var(--yt-accent);box-shadow:inset 0 0 0 1px var(--yt-surface-active-strong);}\n        .ytp-plus-settings-nav-item svg{width:20px;height:20px;margin-right:0;opacity:.92;transition:opacity .2s,transform .2s;flex-shrink:0;}\n        .ytp-plus-settings-nav-item.active svg{opacity:1;transform:scale(1.1);}\n        .ytp-plus-settings-nav-item:hover svg{transform:scale(1.06);}\n        .ytp-plus-settings-main{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden;}\n        .ytp-plus-settings-content{flex:1;padding:var(--yt-space-md) var(--yt-space-lg);overflow-y:auto;min-height:0;}\n        .ytp-plus-settings-section{margin-bottom:var(--yt-space-lg);}\n        .ytp-plus-settings-section-title{font-size:16px;font-weight:500;margin-bottom:var(--yt-space-md);color:var(--yt-text-primary);}\n        .ytp-plus-settings-section.hidden{display:none !important;}\n        .ytp-plus-settings-item{display:flex;align-items:center;margin-bottom:var(--yt-space-md);padding:14px 18px;background:transparent;transition:all .25s cubic-bezier(.4,0,.2,1);border-radius:var(--yt-radius-md);}\n        .ytp-plus-settings-item:hover{background:var(--yt-hover-bg);transform:translateX(6px);box-shadow:0 2px 8px rgba(0,0,0,.1);}\n        .ytp-plus-settings-item-actions{display:flex;align-items:center;gap:10px;margin-left:auto;}\n        .ytp-plus-submenu-toggle{width:26px;height:26px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;background:transparent;border:1px solid var(--yt-glass-border);color:var(--yt-text-primary);cursor:pointer;opacity:.9;transition:transform .15s ease,background-color .15s ease,opacity .15s ease;}\n        .ytp-plus-submenu-toggle:hover{background:var(--yt-hover-bg);transform:scale(1.06);}\n        .ytp-plus-submenu-toggle:disabled{opacity:.35;cursor:not-allowed;transform:none;}\n        .ytp-plus-submenu-toggle svg{width:16px;height:16px;transition:transform .15s ease;}\n        .ytp-plus-submenu-toggle[aria-expanded="false"] svg{transform:rotate(-90deg);}\n        .ytp-plus-submenu-toggle[aria-expanded="true"] svg{transform:rotate(0deg);}\n        .ytp-plus-settings-item-label{flex:1;font-size:14px;color:var(--yt-text-primary);}\n        .ytp-plus-settings-item-description{font-size:12px;color:var(--yt-text-secondary);margin-top:4px;}\n        .ytp-plus-settings-checkbox{appearance:none;-webkit-appearance:none;-moz-appearance:none;width:20px;height:20px;min-width:20px;min-height:20px;margin-left:auto;border:2px solid var(--yt-glass-border);border-radius:50%;background:transparent;display:inline-flex;align-items:center;justify-content:center;transition:all 250ms cubic-bezier(.4,0,.23,1);cursor:pointer;position:relative;flex-shrink:0;color:#fff;box-sizing:border-box;}\n        html:not([dark]) .ytp-plus-settings-checkbox{border-color:var(--yt-border-light);color:#222;}\n        .ytp-plus-settings-checkbox:focus-visible{outline:2px solid var(--yt-accent);outline-offset:2px;}\n        .ytp-plus-settings-checkbox:hover{background:var(--yt-hover-bg);transform:scale(1.1);}\n        .ytp-plus-settings-checkbox::before{content:"";width:5px;height:2px;background:var(--yt-text-primary);position:absolute;transform:rotate(45deg);top:6px;left:3px;transition:width 100ms ease 50ms,opacity 50ms;transform-origin:0% 0%;opacity:0;}\n        .ytp-plus-settings-checkbox::after{content:"";width:0;height:2px;background:var(--yt-text-primary);position:absolute;transform:rotate(305deg);top:12px;left:7px;transition:width 100ms ease,opacity 50ms;transform-origin:0% 0%;opacity:0;}\n        .ytp-plus-settings-checkbox:checked{transform:rotate(0deg) scale(1.15);}\n        .ytp-plus-settings-checkbox:checked::before{width:9px;opacity:1;background:#fff;transition:width 150ms ease 100ms,opacity 150ms ease 100ms;}\n        .ytp-plus-settings-checkbox:checked::after{width:16px;opacity:1;background:#fff;transition:width 150ms ease 250ms,opacity 150ms ease 250ms;}\n        .ytp-plus-settings-select{margin-left:auto;flex-shrink:0;background:var(--yt-glass-bg);border:1px solid var(--yt-glass-border);border-radius:8px;color:var(--yt-text-primary);font-size:13px;padding:4px 8px;cursor:pointer;outline:none;transition:border-color .2s;}\n        .ytp-plus-settings-select:focus{border-color:var(--yt-accent,#f00);}\n        html:not([dark]) .ytp-plus-settings-select{background:var(--yt-input-bg);border-color:var(--yt-border-color);}\n        .ytp-plus-button{padding:var(--yt-space-sm) var(--yt-space-md);border-radius:18px;border:none;font-size:14px;font-weight:500;cursor:pointer;transition:all .25s cubic-bezier(.4,0,.2,1);}\n        .ytp-plus-button-primary{background:transparent;border:1px solid var(--yt-glass-border);color:var(--yt-text-primary);}\n        .ytp-plus-button-primary:hover{background:var(--yt-accent);color:#fff;box-shadow:0 6px 16px var(--yt-danger-shadow-strong);transform:translateY(-2px);}\n        .app-icon{fill:var(--yt-text-primary);stroke:var(--yt-text-primary);transition:all .3s;}\n        .about-section-content{display:flex;flex-direction:row;align-items:center;justify-content:center;flex-wrap:nowrap;width:fit-content;max-width:100%;line-height:1;gap:12px;text-align:center;margin:6px auto 12px;}\n        .about-section-content .app-icon{display:block;flex:0 0 auto;margin:0;}\n        @media(max-width:768px){.ytp-plus-settings-shell{max-height:86vh;flex-direction:column;gap:8px;}\n        .ytp-plus-settings-sidebar{width:100%;max-height:70px;overflow-x:auto;padding-top:0;}\n        .ytp-plus-settings-nav{flex-direction:row;}\n        .ytp-plus-settings-nav-rail{max-width:none;border:none;border-radius:0;background:transparent;box-shadow:none;padding:0;flex-direction:row;display:flex;gap:4px;}\n        .ytp-plus-settings-nav-item{width:40px;height:40px;}\n        .ytp-plus-settings-side-actions{flex-direction:row;padding-top:0;align-self:auto;}\n        .ytp-plus-settings-panel{min-height:0;}\n        .ytp-plus-settings-active-label{display:none;}\n        .ytp-plus-settings-item{padding:10px 12px;}}\n        .about-section-content h1{margin:0;white-space:nowrap;font-family:\'Montserrat\',sans-serif;font-size:52px;font-weight:600;line-height:1.05;color:transparent;-webkit-text-stroke-width:1px;-webkit-text-stroke-color:var(--yt-text-stroke);cursor:pointer;transition:color .2s;}\n        .about-section-content h1:hover{color:var(--yt-accent);-webkit-text-stroke-width:1px;-webkit-text-stroke-color:transparent;}\n        .download-options{position:fixed;background:var(--yt-glass-bg);color:var(--yt-text-primary);border-radius:var(--yt-radius-md);width:150px;z-index:2147483647;box-shadow:var(--yt-glass-shadow);border:1px solid var(--yt-glass-border);overflow:hidden;opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease;transform:translateY(8px);box-sizing:border-box;}\n        .download-options.visible{opacity:1;pointer-events:auto;transform:translateY(0);backdrop-filter:var(--yt-glass-blur);-webkit-backdrop-filter:var(--yt-glass-blur);}\n        .download-options-list{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;}\n        .download-option-item{cursor:pointer;padding:12px;text-align:center;transition:background .2s,color .2s;width:100%;}\n        .download-option-item:hover{background:var(--yt-hover-bg);color:var(--yt-accent);}\n        .glass-panel{background:var(--yt-glass-bg);border:1px solid var(--yt-glass-border);border-radius:var(--yt-radius-md);box-shadow:var(--yt-glass-shadow);}\n        .glass-card{background:var(--yt-panel-bg);border:1px solid var(--yt-glass-border);border-radius:var(--yt-radius-md);padding:var(--yt-space-md);box-shadow:var(--yt-shadow);}\n        .glass-modal{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--yt-modal-bg);display:flex;align-items:center;justify-content:center;z-index:99999;}\n        .glass-button{background:var(--yt-button-bg);border:1px solid var(--yt-glass-border);border-radius:var(--yt-radius-md);padding:var(--yt-space-sm) var(--yt-space-md);color:var(--yt-text-primary);cursor:pointer;transition:all .2s ease;}\n        .glass-button:hover{background:var(--yt-hover-bg);transform:translateY(-1px);box-shadow:var(--yt-shadow);}\n        .download-submenu{margin:4px 0 12px 12px;}\n        .download-submenu-container{display:flex;flex-direction:column;gap:8px;}\n        .style-submenu{margin:4px 0 12px 12px;}\n        .style-submenu-container{display:flex;flex-direction:column;gap:8px;}\n        .speed-submenu{margin:4px 0 12px 12px;}\n        .speed-submenu-container{display:flex;flex-direction:column;gap:8px;}\n        .speed-hotkeys-row{flex-direction:column!important;align-items:stretch!important;gap:6px;}\n        .speed-hotkeys-info{display:flex;flex-direction:column;gap:4px;}\n        .speed-hotkeys-fields{display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-top:12px;width:100%;}\n        .speed-hotkey-field{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:12px;color:var(--yt-text-secondary);flex:1;min-width:80px;}\n        .speed-hotkey-field span{text-align:center;width:100%;}\n        .speed-hotkey-input{width:100%;height:36px;border-radius:8px;border:1px solid var(--yt-glass-border);background:var(--yt-glass-bg);color:var(--yt-text-primary);text-align:center;text-transform:uppercase;}\n        .speed-hotkey-input:focus{background:var(--yt-hover-bg);}\n        .loop-submenu-container{display:flex;flex-direction:column;gap:8px;}\n        .loop-hotkeys-row{flex-direction:column!important;align-items:stretch!important;gap:6px;}\n        .loop-hotkeys-info{display:flex;flex-direction:column;gap:4px;}\n        .loop-hotkeys-fields{display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-top:12px;width:100%;}\n        .loop-hotkey-field{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:12px;color:var(--yt-text-secondary);flex:1;min-width:80px;}\n        .loop-hotkey-field span{text-align:center;width:100%;}\n        .loop-hotkey-input{width:100%;height:36px;border-radius:8px;border:1px solid var(--yt-glass-border);background:var(--yt-glass-bg);color:var(--yt-text-primary);text-align:center;text-transform:uppercase;}\n        .loop-hotkey-input:focus{background:var(--yt-hover-bg);}\n        .download-site-option{display:flex;flex-direction:column;align-items:stretch;gap:8px;padding:10px;border-radius:var(--yt-radius-md);transition:background .2s;}\n        .download-site-option:hover{background:var(--yt-hover-bg);}\n        .download-site-header{display:flex;flex-direction:row;align-items:center;justify-content:space-between;width:100%;gap:12px;}\n        .download-site-label{flex:1;cursor:pointer;display:flex;flex-direction:column;}\n        .download-site-controls{width:100%;margin-top:4px;padding-top:10px;border-top:1px solid var(--yt-glass-border);}\n        .download-site-input{width:95%;margin-top:8px;padding:8px;background:var(--yt-glass-bg);border:1px solid var(--yt-glass-border);border-radius:var(--yt-radius-sm);color:var(--yt-text-primary);font-size:13px;transition:all .2s;}\n        .download-site-input:focus{border-color:var(--yt-accent);background:var(--yt-hover-bg);}\n        .download-site-input.small{margin-top:6px;font-size:12px;}\n        .download-site-cta{display:flex;flex-direction:row;gap:8px;margin-top:10px;}\n        .download-site-cta .glass-button{flex:1;justify-content:center;font-size:13px;padding:8px 12px;}\n        .download-site-cta .glass-button.danger{background:var(--yt-danger-soft);border-color:var(--yt-danger-border);}\n        .download-site-cta .glass-button.danger:hover{background:var(--yt-danger-soft-hover);}\n        .download-site-option .ytp-plus-settings-checkbox{margin:0;}\n        .download-site-name{font-weight:500;font-size:15px;color:var(--yt-text-primary);}\n        .download-site-desc{font-size:12px;color:var(--yt-text-secondary);margin-top:2px;opacity:0.8;}\n        .ytp-plus-settings-panel select,\n        .ytp-plus-settings-panel select option {background: var(--yt-panel-bg) !important; color: var(--yt-text-primary) !important;}\n        .ytp-plus-settings-panel select {-webkit-appearance: menulist !important; appearance: menulist !important; padding: 6px 8px !important; border-radius: 6px !important; border: 1px solid var(--yt-glass-border) !important;}\n        .ytp-plus-theme-item{display:flex;flex-direction:column;align-items:stretch;gap:12px}\n        .ytp-plus-theme-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;width:100%}\n        .ytp-plus-theme-card{display:flex;align-items:center;justify-content:center;min-height:44px;border-radius:12px;border:1px solid var(--yt-glass-border);background:var(--yt-panel-bg);color:var(--yt-text-secondary);font-size:13px;font-weight:500;cursor:pointer;transition:all .18s ease}\n        .ytp-plus-theme-card:hover{background:var(--yt-hover-bg);color:var(--yt-text-primary)}\n        .ytp-plus-theme-card.active{color:#fff;background:linear-gradient(180deg,var(--yt-danger-card-bg-start),var(--yt-danger-card-bg-end));border-color:var(--yt-danger-card-border);box-shadow:0 0 0 1px var(--yt-danger-card-inset) inset}\n        @media(max-width:580px){.ytp-plus-theme-grid{grid-template-columns:1fr}}\n        .glass-dropdown{position:relative;display:inline-block;min-width:110px}\n        .glass-dropdown__toggle{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;padding:6px 8px;border-radius:8px;background:linear-gradient(180deg, var(--yt-surface-overlay-subtle), var(--yt-surface-overlay-faint));color:inherit;border:1px solid var(--yt-surface-overlay-border);cursor:pointer}\n        .glass-dropdown__toggle:focus{outline:2px solid var(--yt-surface-overlay-border)}\n        .glass-dropdown__label{font-size:12px}\n        .glass-dropdown__chev{opacity:0.9}\n        .glass-dropdown__list{position:absolute;left:0;right:0;top:calc(100% + 8px);z-index:20000;display:none;margin:0;padding:6px;border-radius:10px;list-style:none;background:var(--yt-header-bg);border:1px solid var(--yt-surface-overlay-border);box-shadow:0 8px 30px var(--yt-shadow-flyout);backdrop-filter:blur(10px) saturate(130%);-webkit-backdrop-filter:blur(10px) saturate(130%);max-height:220px;overflow:auto}\n        .glass-dropdown__item{padding:8px 10px;border-radius:6px;margin:4px 0;cursor:pointer;color:inherit;font-size:13px}\n        .glass-dropdown__item:hover{background:var(--yt-surface-overlay-subtle)}\n        .glass-dropdown__item[aria-selected="true"]{background:linear-gradient(90deg, var(--yt-surface-overlay-subtle), var(--yt-surface-overlay-faint));box-shadow:inset 0 0 0 1px var(--yt-surface-overlay-faint)}\n        .ytp-plus-settings-voting-header{margin-bottom:var(--yt-space-lg);}\n        .ytp-plus-settings-voting-header h3{font-size:18px;font-weight:500;margin:0 0 8px 0;color:var(--yt-text-primary);}\n        .ytp-plus-settings-voting-desc{font-size:13px;color:var(--yt-text-secondary);margin:0;}\n        .ytp-plus-voting{display:flex;flex-direction:column;gap:12px;}\n        .ytp-plus-voting-header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}\n        .ytp-plus-voting-list{display:flex;flex-direction:column;gap:12px;}\n        .ytp-plus-voting-item{display:flex;align-items:flex-start;justify-content:space-between;padding:16px;background:var(--yt-glass-bg);border:1px solid var(--yt-glass-border);border-radius:var(--yt-radius-md);transition:all .2s ease;gap:12px;}\n        .ytp-plus-voting-item:hover{background:var(--yt-hover-bg);transform:translateX(4px);}\n        .ytp-plus-voting-item-content{flex:1;padding-right:16px;}\n        .ytp-plus-voting-item-title{font-size:14px;font-weight:500;color:var(--yt-text-primary);margin-bottom:4px;}\n        .ytp-plus-voting-item-desc{font-size:12px;color:var(--yt-text-secondary);line-height:1.4;}\n        .ytp-plus-voting-item-status{font-size:11px;min-height:28px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;background:var(--yt-surface-overlay-soft);color:var(--yt-text-secondary);border:1px solid var(--yt-glass-border);line-height:1;}\n        .ytp-plus-voting-item-status.completed{background:var(--yt-success-soft);color:var(--yt-success);}\n        .ytp-plus-voting-item-status.in-progress{background:var(--yt-warning-soft);color:var(--yt-warning);}\n        .ytp-plus-voting-item-votes{display:flex;flex-direction:column;align-items:stretch;gap:8px;min-width:120px;}\n        .ytp-plus-voting-score{display:flex;align-items:baseline;gap:8px;justify-content:center;}\n        .ytp-plus-vote-total{font-size:12px;color:var(--yt-text-secondary);}\n        .ytp-plus-voting-buttons{position:relative;display:flex;justify-content:center;gap:0;border:1px solid var(--yt-glass-border);border-radius:20px;overflow:hidden;}\n        .ytp-plus-voting-buttons-track{position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;transition:background .4s ease;border-radius:20px;pointer-events:none;}\n        .ytp-plus-vote-btn{position:relative;z-index:1;display:inline-flex;align-items:center;justify-content:center;width:42px;height:32px;border:none;background:transparent;cursor:pointer;transition:color .15s ease,opacity .15s ease;color:var(--yt-text-secondary);opacity:.95}\n        .ytp-plus-vote-btn:first-of-type{border-right:1px solid var(--yt-glass-border)}\n        .ytp-plus-vote-btn:hover{color:var(--yt-text-primary);opacity:1}\n        .ytp-plus-vote-btn.active{color:#fff;opacity:1}\n        .ytp-plus-vote-icon{width:20px;height:20px;fill:currentColor;opacity:.92}\n        .ytp-plus-vote-btn.active .ytp-plus-vote-icon,.ytp-plus-vote-btn:hover .ytp-plus-vote-icon{opacity:1}\n        .ytp-plus-voting-loading,.ytp-plus-voting-empty{text-align:center;padding:24px;color:var(--yt-text-secondary);font-size:13px;}\n        .ytp-plus-voting-add-btn{background:var(--yt-accent);color:#fff;border:none;padding:8px 16px;border-radius:18px;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s ease;}\n        .ytp-plus-voting-add-btn:hover{transform:translateY(-2px);box-shadow:0 4px 12px var(--yt-danger-shadow);}\n        .ytp-plus-voting-add-form{margin-top:16px;padding:16px;background:var(--yt-glass-bg);border:1px solid var(--yt-glass-border);border-radius:var(--yt-radius-md);}\n        .ytp-plus-voting-add-form input,.ytp-plus-voting-add-form textarea{width:100%;padding:10px 12px;margin-bottom:12px;background:var(--yt-header-bg);border:1px solid var(--yt-glass-border);border-radius:8px;color:var(--yt-text-primary);font-size:13px;box-sizing:border-box;}\n        .ytp-plus-voting-add-form input:focus,.ytp-plus-voting-add-form textarea:focus{border-color:var(--yt-accent);outline:none;}\n        .ytp-plus-voting-add-form textarea{min-height:80px;resize:vertical;}\n        .ytp-plus-voting-form-actions{display:flex;gap:8px;justify-content:flex-end;}\n        .ytp-plus-voting-cancel{background:transparent;border:1px solid var(--yt-glass-border);color:var(--yt-text-primary);padding:8px 16px;border-radius:18px;font-size:13px;cursor:pointer;transition:all .2s ease;}\n        .ytp-plus-voting-cancel:hover{background:var(--yt-hover-bg);}\n        .ytp-plus-voting-submit{background:var(--yt-accent);color:#fff;border:none;padding:8px 16px;border-radius:18px;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s ease;}\n        .ytp-plus-voting-submit:hover{transform:translateY(-2px);box-shadow:0 4px 12px var(--yt-danger-shadow);}\n        @media (max-width: 680px){.ytp-plus-voting-item{flex-direction:column;align-items:stretch}.ytp-plus-voting-item-content{padding-right:0}.ytp-plus-voting-item-votes{min-width:0;width:100%}}\n        .ytp-plus-voting-preview{margin-bottom:20px;}\n        .ytp-plus-ba-container{position:relative;width:100%;height:260px;overflow:hidden;border-radius:var(--yt-radius-md);border:1px solid var(--yt-glass-border);user-select:none;cursor:ew-resize;background:var(--yt-glass-bg);}\n        .ytp-plus-ba-before,.ytp-plus-ba-after{position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;}\n        .ytp-plus-ba-before img,.ytp-plus-ba-after img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;display:block;pointer-events:none;}\n        .ytp-plus-ba-after{clip-path:inset(0 0 0 50%);}\n        .ytp-plus-ba-divider{position:absolute;top:0;left:50%;transform:translateX(-50%);width:8px;height:100%;background:transparent;pointer-events:auto;z-index:3;cursor:ew-resize;transition:left .6s linear}\n        .ytp-plus-ba-divider::after{content:\'\';position:absolute;left:50%;top:0;transform:translateX(-50%);width:2px;height:100%;background:var(--yt-accent,#f00);}        \n        .ytp-plus-ba-divider.autoplay{animation:ytpPlusSlideDivider 6s linear infinite}\n        @keyframes ytpPlusSlideDivider{0%{left:10%}50%{left:90%}100%{left:10%}}\n        .ytp-plus-ba-label{position:absolute;top:10px;padding:4px 10px;border-radius:4px;font-size:12px;font-weight:600;color:#fff;background:var(--yt-overlay-strong);pointer-events:none;z-index:5;}\n        .ytp-plus-ba-label-before{left:10px;}\n        .ytp-plus-ba-label-after{right:10px;}\n        .ytp-plus-vote-bar-section{margin-top:12px;display:flex;flex-direction:column;align-items:center;gap:6px;}\n        .ytp-plus-vote-bar-buttons{position:relative;display:flex;gap:0;border-radius:20px;overflow:hidden;border:1px solid var(--yt-glass-border);}\n        .ytp-plus-vote-bar-track{position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;transition:background .4s ease;background:linear-gradient(to right, var(--yt-success) 50%, var(--yt-danger) 50%);border-radius:20px;}\n        .ytp-plus-vote-bar-btn{position:relative;z-index:1;display:inline-flex;align-items:center;justify-content:center;padding:8px 18px;background:transparent;border:none;color:var(--yt-text-secondary);cursor:pointer;transition:color .15s;font-size:14px;}\n        .ytp-plus-vote-bar-btn:first-of-type{border-right:1px solid var(--yt-glass-border);}\n        .ytp-plus-vote-bar-btn:hover{color:var(--yt-text-primary);}\n        .ytp-plus-vote-bar-btn.active{color:#fff;}\n        .ytp-plus-vote-bar-btn svg{fill:currentColor;width:20px;height:20px;display:block;}\n        .ytp-plus-vote-bar-btn svg path{fill:currentColor;}\n        .ytp-plus-vote-bar-count{font-size:12px;color:var(--yt-text-secondary);}';
 (document.head || document.documentElement).appendChild(ncEl);
 }
 };
 this.ensureNonCriticalStyles = injectNonCritical;
-document.getElementById("yt-enhancer-main") || YouTubeUtils.StyleManager.add("yt-enhancer-main", ":root{--yt-accent:#ff0000;--yt-accent-hover:#cc0000;--yt-radius-sm:6px;--yt-radius-md:10px;--yt-radius-lg:16px;--yt-transition:all .2s ease;--yt-space-xs:4px;--yt-space-sm:8px;--yt-space-md:16px;--yt-space-lg:24px;--yt-glass-blur:blur(18px) saturate(180%);--yt-glass-blur-light:blur(12px) saturate(160%);--yt-glass-blur-heavy:blur(24px) saturate(200%);}\n        html[dark],html:not([dark]):not([light]){--yt-bg-primary:rgba(15,15,15,.85);--yt-bg-secondary:rgba(28,28,28,.85);--yt-bg-tertiary:rgba(34,34,34,.85);--yt-text-primary:#fff;--yt-text-secondary:#aaa;--yt-border-color:rgba(255,255,255,.2);--yt-hover-bg:rgba(255,255,255,.1);--yt-shadow:0 4px 12px rgba(0,0,0,.25);--yt-glass-bg:rgba(50, 50, 50, 0.5);--yt-glass-border:rgba(255,255,255,.2);--yt-glass-shadow:0 8px 32px rgba(0,0,0,.2);--yt-modal-bg:rgba(0,0,0,.75);--yt-notification-bg:rgba(28,28,28,.9);--yt-panel-bg:rgba(34,34,34,.3);--yt-header-bg:rgba(20,20,20,.6);--yt-input-bg:rgba(255,255,255,.1);--yt-button-bg:rgba(255,255,255,.2);--yt-text-stroke:white;}\n        html[light]{--yt-bg-primary:rgba(255,255,255,.85);--yt-bg-secondary:rgba(248,248,248,.85);--yt-bg-tertiary:rgba(240,240,240,.85);--yt-text-primary:#030303;--yt-text-secondary:#606060;--yt-border-color:rgba(0,0,0,.2);--yt-hover-bg:rgba(0,0,0,.05);--yt-shadow:0 4px 12px rgba(0,0,0,.15);--yt-glass-bg:rgba(255,255,255,.7);--yt-glass-border:rgba(0,0,0,.1);--yt-glass-shadow:0 8px 32px rgba(0,0,0,.1);--yt-modal-bg:rgba(0,0,0,.5);--yt-notification-bg:rgba(255,255,255,.95);--yt-panel-bg:rgba(255,255,255,.7);--yt-header-bg:rgba(248,248,248,.8);--yt-input-bg:rgba(0,0,0,.05);--yt-button-bg:rgba(0,0,0,.1);--yt-text-stroke:#030303;}\n        .ytp-screenshot-button,.ytp-cobalt-button,.ytp-pip-button{position:relative;width:44px;height:100%;display:inline-flex;align-items:center;justify-content:center;vertical-align:top;transition:opacity .15s,transform .15s;}\n        .ytp-screenshot-button:hover,.ytp-cobalt-button:hover,.ytp-pip-button:hover{transform:scale(1.1);}\n        .speed-control-btn{width:4em!important;position:relative!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;height:100%!important;vertical-align:top!important;text-align:center!important;border-radius:var(--yt-radius-sm);font-size:13px;color:var(--yt-text-primary);cursor:pointer;user-select:none;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;transition:color .2s;}\n        .speed-control-btn:hover{color:var(--yt-accent);font-weight:bold;}\n        .speed-options{position:fixed!important;background:var(--yt-glass-bg)!important;color:var(--yt-text-primary)!important;border-radius:var(--yt-radius-md)!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:0!important;transform:translate(-50%,12px)!important;width:92px!important;z-index:2147483647!important;box-shadow:var(--yt-glass-shadow);border:1px solid var(--yt-glass-border);overflow:hidden;opacity:0;pointer-events:none!important;transition:opacity .18s ease,transform .18s ease;box-sizing:border-box;}\n        .speed-options.visible{opacity:1;pointer-events:auto!important;transform:translate(-50%,0)!important;backdrop-filter:var(--yt-glass-blur);-webkit-backdrop-filter:var(--yt-glass-blur);}\n        .speed-option-item{cursor:pointer!important;height:28px!important;line-height:28px!important;font-size:12px!important;text-align:center!important;transition:background-color .15s,color .15s;}\n        .speed-option-active,.speed-option-item:hover{color:var(--yt-accent)!important;font-weight:bold!important;background:var(--yt-hover-bg)!important;}\n        #speed-indicator{position:absolute!important;margin:auto!important;top:0!important;right:0!important;bottom:0!important;left:0!important;border-radius:24px!important;font-size:30px!important;background:var(--yt-glass-bg)!important;color:var(--yt-text-primary)!important;z-index:99999!important;width:80px!important;height:80px!important;line-height:80px!important;text-align:center!important;display:none;box-shadow:var(--yt-glass-shadow);border:1px solid var(--yt-glass-border);}\n        .youtube-enhancer-notification-container{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:10px;z-index:2147483647;pointer-events:none;max-width:calc(100% - 32px);width:100%;box-sizing:border-box;padding:0 16px;}\n        .youtube-enhancer-notification{position:relative;max-width:700px;width:auto;background:var(--yt-glass-bg);color:var(--yt-text-primary);padding:8px 14px;font-size:13px;border-radius:var(--yt-radius-md);z-index:inherit;transition:opacity .35s,transform .32s;box-shadow:var(--yt-glass-shadow);border:1px solid var(--yt-glass-border);font-weight:500;box-sizing:border-box;display:flex;align-items:center;gap:10px;pointer-events:auto;}\n        .ytp-plus-loop-indicator{position:absolute;height:100%;background:linear-gradient(90deg,rgba(25,118,210,0.28) 0%,rgba(66,165,245,0.4) 50%,rgba(25,118,210,0.28) 100%);border-left:2px solid #1976d2;border-right:2px solid #1976d2;display:none;pointer-events:none;top:0;z-index:1000;box-shadow:inset 0 0 4px rgba(25,118,210,0.25);}\n        .ytp-plus-settings-button{background:transparent;border:none;color:var(--yt-text-secondary);cursor:pointer;padding:var(--yt-space-sm);margin-right:var(--yt-space-sm);border:none;display:flex;align-items:center;justify-content:center;transition:background-color .2s,transform .2s;}\n        .ytp-plus-settings-button svg{width:24px;height:24px;}\n        .ytp-plus-settings-button:hover{transform:rotate(30deg);color:var(--yt-text-secondary);}\n        .ytp-download-button{position:relative!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;height:100%!important;vertical-align:top!important;cursor:pointer!important;}\n        @keyframes ytEnhanceFadeIn{from{opacity:0;}to{opacity:1;}}\n        @keyframes ytEnhanceScaleIn{from{opacity:0;transform:scale(.92) translateY(10px);}to{opacity:1;transform:scale(1) translateY(0);}}\n        .ytSearchboxComponentInputBox { background: transparent !important; }");
+document.getElementById("yt-enhancer-main") || YouTubeUtils.StyleManager.add("yt-enhancer-main", ".ytp-screenshot-button,.ytp-cobalt-button,.ytp-pip-button{position:relative;width:44px;height:100%;display:inline-flex;align-items:center;justify-content:center;vertical-align:top;transition:opacity .15s,transform .15s;}\n        .ytp-screenshot-button:hover,.ytp-cobalt-button:hover,.ytp-pip-button:hover{transform:scale(1.1);}\n        .speed-control-btn{width:4em!important;position:relative!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;height:100%!important;vertical-align:top!important;text-align:center!important;border-radius:var(--yt-radius-sm);font-size:13px;color:var(--yt-text-primary);cursor:pointer;user-select:none;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;transition:color .2s;}\n        .speed-control-btn:hover{color:var(--yt-accent);font-weight:bold;}\n        .speed-options{position:fixed!important;background:var(--yt-glass-bg)!important;color:var(--yt-text-primary)!important;border-radius:var(--yt-radius-md)!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:0!important;transform:translate(-50%,12px)!important;width:92px!important;z-index:2147483647!important;box-shadow:var(--yt-glass-shadow);border:1px solid var(--yt-glass-border);overflow:hidden;opacity:0;pointer-events:none!important;transition:opacity .18s ease,transform .18s ease;box-sizing:border-box;}\n        .speed-options.visible{opacity:1;pointer-events:auto!important;transform:translate(-50%,0)!important;backdrop-filter:var(--yt-glass-blur);-webkit-backdrop-filter:var(--yt-glass-blur);}\n        .speed-option-item{cursor:pointer!important;height:28px!important;line-height:28px!important;font-size:12px!important;text-align:center!important;transition:background-color .15s,color .15s;}\n        .speed-option-active,.speed-option-item:hover{color:var(--yt-accent)!important;font-weight:bold!important;background:var(--yt-hover-bg)!important;}\n        #speed-indicator{position:absolute!important;margin:auto!important;top:0!important;right:0!important;bottom:0!important;left:0!important;border-radius:24px!important;font-size:30px!important;background:var(--yt-glass-bg)!important;color:var(--yt-text-primary)!important;z-index:99999!important;width:80px!important;height:80px!important;line-height:80px!important;text-align:center!important;display:none;box-shadow:var(--yt-glass-shadow);border:1px solid var(--yt-glass-border);}\n        .youtube-enhancer-notification-container{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:10px;z-index:2147483647;pointer-events:none;max-width:calc(100% - 32px);width:100%;box-sizing:border-box;padding:0 16px;}\n        .youtube-enhancer-notification{position:relative;max-width:700px;width:auto;background:var(--yt-glass-bg);color:var(--yt-text-primary);padding:8px 14px;font-size:13px;border-radius:var(--yt-radius-md);z-index:inherit;transition:opacity .35s,transform .32s;box-shadow:var(--yt-glass-shadow);border:1px solid var(--yt-glass-border);font-weight:500;box-sizing:border-box;display:flex;align-items:center;gap:10px;pointer-events:auto;}\n        .ytp-plus-loop-indicator{position:absolute;height:100%;background:linear-gradient(90deg,var(--yt-accent-secondary-ghost) 0%,var(--yt-accent-secondary-light-ghost) 50%,var(--yt-accent-secondary-ghost) 100%);border-left:2px solid var(--yt-accent-secondary);border-right:2px solid var(--yt-accent-secondary);display:none;pointer-events:none;top:0;z-index:1000;box-shadow:inset 0 0 4px var(--yt-accent-secondary-shadow);}\n        .ytp-plus-settings-button{background:transparent;border:none;color:var(--yt-text-secondary);cursor:pointer;padding:var(--yt-space-sm);margin-right:var(--yt-space-sm);border:none;display:flex;align-items:center;justify-content:center;transition:background-color .2s,transform .2s;}\n        .ytp-plus-settings-button svg{width:24px;height:24px;}\n        .ytp-plus-settings-button:hover{transform:rotate(30deg);color:var(--yt-text-secondary);}\n        .ytp-download-button{position:relative!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;height:100%!important;vertical-align:top!important;cursor:pointer!important;}\n        .ytSearchboxComponentInputBox { background: transparent !important; }");
 "function" == typeof requestIdleCallback ? requestIdleCallback(injectNonCritical, {
 timeout: 5e3
-}) : setTimeout(injectNonCritical, 1e3);
+}) : basicSetTimeout_(injectNonCritical, 1e3);
 },
 addSettingsButtonToHeader() {
 this.waitForElement("ytd-masthead #end", 5e3).then(headerEnd => {
@@ -2858,7 +3758,7 @@ if (!this.getElement(".ytp-plus-settings-button")) {
 const settingsButton = document.createElement("div");
 settingsButton.className = "ytp-plus-settings-button";
 settingsButton.setAttribute("title", t("youtubeSettings"));
-settingsButton.innerHTML = _createHTML('\n                <svg width="24" height="24" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">\n                  <path d="M39.23,26a16.52,16.52,0,0,0,.14-2,16.52,16.52,0,0,0-.14-2l4.33-3.39a1,1,0,0,0,.25-1.31l-4.1-7.11a1,1,0,0,0-1.25-.44l-5.11,2.06a15.68,15.68,0,0,0-3.46-2l-.77-5.43a1,1,0,0,0-1-.86H19.9a1,1,0,0,0-1,.86l-.77,5.43a15.36,15.36,0,0,0-3.46,2L9.54,9.75a1,1,0,0,0-1.25.44L4.19,17.3a1,1,0,0,0,.25,1.31L8.76,22a16.66,16.66,0,0,0-.14,2,16.52,16.52,0,0,0,.14,2L4.44,29.39a1,1,0,0,0-.25,1.31l4.1,7.11a1,1,0,0,0,1.25.44l5.11-2.06a15.68,15.68,0,0,0,3.46,2l.77,5.43a1,1,0,0,0,1,.86h8.2a1,1,0,0,0,1-.86l.77-5.43a15.36,15.36,0,0,0,3.46-2l5.11,2.06a1,1,0,0,0,1.25-.44l4.1-7.11a1,1,0,0,0-.25-1.31ZM24,31.18A7.18,7.18,0,1,1,31.17,24,7.17,7.17,0,0,1,24,31.18Z"/>\n                </svg>\n              ');
+_setSafeHTML(settingsButton, '\n                <svg width="24" height="24" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">\n                  <path d="M39.23,26a16.52,16.52,0,0,0,.14-2,16.52,16.52,0,0,0-.14-2l4.33-3.39a1,1,0,0,0,.25-1.31l-4.1-7.11a1,1,0,0,0-1.25-.44l-5.11,2.06a15.68,15.68,0,0,0-3.46-2l-.77-5.43a1,1,0,0,0-1-.86H19.9a1,1,0,0,0-1,.86l-.77,5.43a15.36,15.36,0,0,0-3.46,2L9.54,9.75a1,1,0,0,0-1.25.44L4.19,17.3a1,1,0,0,0,.25,1.31L8.76,22a16.66,16.66,0,0,0-.14,2,16.52,16.52,0,0,0,.14,2L4.44,29.39a1,1,0,0,0-.25,1.31l4.1,7.11a1,1,0,0,0,1.25.44l5.11-2.06a15.68,15.68,0,0,0,3.46,2l.77,5.43a1,1,0,0,0,1,.86h8.2a1,1,0,0,0,1-.86l.77-5.43a15.36,15.36,0,0,0,3.46-2l5.11,2.06a1,1,0,0,0,1.25-.44l4.1-7.11a1,1,0,0,0-.25-1.31ZM24,31.18A7.18,7.18,0,1,1,31.17,24,7.17,7.17,0,0,1,24,31.18Z"/>\n                </svg>\n              ');
 settingsButton.addEventListener("click", this.openSettingsModal.bind(this));
 const avatarButton = headerEnd.querySelector("ytd-topbar-menu-button-renderer");
 avatarButton ? headerEnd.insertBefore(settingsButton, avatarButton) : headerEnd.appendChild(settingsButton);
@@ -2887,7 +3787,7 @@ const modal = document.createElement("div");
 modal.className = "ytp-plus-settings-modal";
 const helpers = window.YouTubePlusSettingsHelpers;
 const handlers = window.YouTubePlusModalHandlers;
-modal.innerHTML = _createHTML(`\n        <div class="ytp-plus-settings-shell">\n          <div class="ytp-plus-settings-sidebar">${helpers.createSettingsSidebar(t)}</div>\n          <div class="ytp-plus-settings-column">\n            <div class="ytp-plus-settings-topbar">\n              <h2 class="ytp-plus-settings-title">${t("settingsTitle")}</h2>\n              <div class="ytp-plus-settings-active-label" id="ytp-plus-active-section-label"></div>\n              <button class="ytp-plus-button ytp-plus-button-primary" id="ytp-plus-save-settings">${t("saveChanges")}</button>\n            </div>\n            <div class="ytp-plus-settings-panel">${helpers.createMainContent(this.settings, t)}</div>\n          </div>\n          <div class="ytp-plus-settings-side-actions">\n            <button class="ytp-plus-settings-close" id="ytp-plus-close-settings" aria-label="${t("closeButton")}">\n              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">\n                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/>\n              </svg>\n            </button>\n          </div>\n        </div>\n      `);
+_setSafeHTML(modal, `\n        <div class="ytp-plus-settings-shell">\n          <div class="ytp-plus-settings-sidebar">${helpers.createSettingsSidebar(t)}</div>\n          <div class="ytp-plus-settings-column">\n            <div class="ytp-plus-settings-topbar">\n              <h2 class="ytp-plus-settings-title">${t("settingsTitle")}</h2>\n              <div class="ytp-plus-settings-active-label" id="ytp-plus-active-section-label"></div>\n              <button class="ytp-plus-button ytp-plus-button-primary" id="ytp-plus-save-settings">${t("saveChanges")}</button>\n            </div>\n            <div class="ytp-plus-settings-panel">${helpers.createMainContent(this.settings, t)}</div>\n          </div>\n          <div class="ytp-plus-settings-side-actions">\n            <button class="ytp-plus-settings-close" id="ytp-plus-close-settings" aria-label="${t("closeButton")}">\n              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14.5 9.50002L9.5 14.5M9.49998 9.5L14.5 14.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg>\n            </button>\n          </div>\n        </div>\n      `);
 const _initialNav = modal.querySelector(".ytp-plus-settings-nav-item.active");
 const _activeLabel = modal.querySelector("#ytp-plus-active-section-label");
 _initialNav && _activeLabel && (_activeLabel.textContent = _initialNav.dataset?.label || "");
@@ -2932,7 +3832,7 @@ submenuStates[submenuKey] = !nextHidden;
 localStorage.setItem("ytp-plus-submenu-states", JSON.stringify(submenuStates));
 } catch (e) {}
 } catch (e) {
-console.warn("[YouTube+] Submenu toggle error:", e);
+window.console.warn("[YouTube+] Submenu toggle error:", e);
 }
 return;
 }
@@ -3170,7 +4070,7 @@ const button = document.createElement("button");
 button.className = "ytp-button ytp-screenshot-button";
 button.setAttribute("title", t("takeScreenshot"));
 button.setAttribute("aria-label", t("takeScreenshot"));
-button.innerHTML = _createHTML('\n          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:auto;vertical-align:middle;">\n            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>\n            <circle cx="12" cy="13" r="4"></circle>\n          </svg>\n        ');
+_setSafeHTML(button, '\n          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path opacity="0.5" d="M7.142 18.9706C5.18539 18.8995 3.99998 18.6568 3.17157 17.8284C2 16.6569 2 14.7712 2 11C2 7.22876 2 5.34315 3.17157 4.17157C4.34315 3 6.22876 3 10 3H14C17.7712 3 19.6569 3 20.8284 4.17157C22 5.34315 22 7.22876 22 11C22 14.7712 22 16.6569 20.8284 17.8284C20.0203 18.6366 18.8723 18.8873 17 18.965" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" style="--darkreader-inline-stroke: var(--darkreader-text-ffffff, #cad3f5);" data-darkreader-inline-stroke=""></path> <path d="M9.94955 16.0503C10.8806 15.1192 11.3461 14.6537 11.9209 14.6234C11.9735 14.6206 12.0261 14.6206 12.0787 14.6234C12.6535 14.6537 13.119 15.1192 14.0501 16.0503C16.0759 18.0761 17.0888 19.089 16.8053 19.963C16.7809 20.0381 16.7506 20.1112 16.7147 20.1815C16.2973 21 14.8648 21 11.9998 21C9.13482 21 7.70233 21 7.28489 20.1815C7.249 20.1112 7.21873 20.0381 7.19436 19.963C6.91078 19.089 7.92371 18.0761 9.94955 16.0503Z" stroke="#ffffff" stroke-width="1.5" style="--darkreader-inline-stroke: var(--darkreader-text-ffffff, #cad3f5);" data-darkreader-inline-stroke=""></path></svg>  \n        ');
 button.addEventListener("click", this.captureFrame.bind(this));
 controls.insertBefore(button, controls.firstChild);
 },
@@ -3184,7 +4084,7 @@ YouTubeUtils
 });
 manager.addDownloadButton(controls);
 } else {
-console.warn("[YouTube+] Download button module not loaded");
+window.console.warn("[YouTube+] Download button module not loaded");
 }
 },
 addSpeedControlButton(controls) {
@@ -3197,7 +4097,7 @@ speedBtn.className = "ytp-button speed-control-btn";
 speedBtn.setAttribute("aria-label", t("speedControl"));
 speedBtn.setAttribute("aria-haspopup", "true");
 speedBtn.setAttribute("aria-expanded", "false");
-speedBtn.innerHTML = _createHTML(`<span>${this.speedControl.currentSpeed}×</span>`);
+_setSafeHTML(speedBtn, `<span>${this.speedControl.currentSpeed}×</span>`);
 const speedOptions = document.createElement("div");
 speedOptions.className = "speed-options";
 speedOptions.setAttribute("role", "menu");
@@ -3269,7 +4169,7 @@ showDropdown();
 });
 speedBtn.addEventListener("mouseleave", () => {
 clearTimeout(speedHideTimer);
-speedHideTimer = setTimeout(hideDropdown, 200);
+speedHideTimer = basicSetTimeout_(hideDropdown, 200);
 });
 speedOptions.addEventListener("mouseenter", () => {
 clearTimeout(speedHideTimer);
@@ -3277,7 +4177,7 @@ showDropdown();
 });
 speedOptions.addEventListener("mouseleave", () => {
 clearTimeout(speedHideTimer);
-speedHideTimer = setTimeout(hideDropdown, 200);
+speedHideTimer = basicSetTimeout_(hideDropdown, 200);
 });
 speedBtn.addEventListener("keydown", event => {
 if ("Enter" === event.key || " " === event.key) {
@@ -3301,7 +4201,7 @@ btn.title = label;
 btn.setAttribute("aria-label", label);
 }
 } catch (e) {
-console.warn("[YouTube+] applyGuideVisibility failed:", e);
+window.console.warn("[YouTube+] applyGuideVisibility failed:", e);
 }
 },
 toggleSideGuide() {
@@ -3311,7 +4211,7 @@ const next = !current;
 YouTubeUtils.storage.set("ytplus.hideGuide", next);
 this.applyGuideVisibility();
 } catch (e) {
-console.warn("[YouTube+] toggleSideGuide failed:", e);
+window.console.warn("[YouTube+] toggleSideGuide failed:", e);
 }
 },
 createGuideToggleButton() {
@@ -3322,7 +4222,7 @@ return;
 const btn = document.createElement("button");
 btn.id = "ytplus-guide-toggle-btn";
 btn.type = "button";
-btn.style.cssText = "position:fixed;right:12px;bottom:12px;z-index:100000;background:var(--yt-spec-call-to-action);color:#fff;border:none;border-radius:8px;padding:8px 10px;box-shadow:0 6px 18px rgba(0,0,0,0.3);cursor:pointer;opacity:0.95;font-size:13px;";
+btn.style.cssText = "position:fixed;right:12px;bottom:12px;z-index:100000;background:var(--yt-spec-call-to-action);color:#fff;border:none;border-radius:8px;padding:8px 10px;box-shadow:0 6px 18px var(--yt-shadow-notification);cursor:pointer;opacity:0.95;font-size:13px;";
 btn.setAttribute("aria-pressed", "false");
 btn.setAttribute("aria-label", "Hide side guide");
 btn.title = "Hide side guide";
@@ -3341,7 +4241,7 @@ this.toggleSideGuide();
 document.body.appendChild(btn);
 this.applyGuideVisibility();
 } catch (e) {
-console.warn("[YouTube+] createGuideToggleButton failed:", e);
+window.console.warn("[YouTube+] createGuideToggleButton failed:", e);
 }
 },
 captureFrame() {
@@ -3454,20 +4354,26 @@ applySpeed();
 };
 const mainPlayer = document.querySelector("#movie_player") || document.querySelector("ytd-player");
 mainPlayer ? mainPlayer.querySelectorAll("video").forEach(attachSpeedListeners) : document.querySelectorAll("video").forEach(attachSpeedListeners);
-const videoObserver = new MutationObserver(mutations => {
+const coordinator = window.YouTubeMutationCoordinator;
+const onVideoMutations = mutations => {
 for (const m of mutations) {
 for (const node of m.addedNodes) {
 "VIDEO" === node.nodeName && attachSpeedListeners(node);
 node instanceof Element && node.querySelectorAll?.("video").forEach(attachSpeedListeners);
 }
 }
-});
+};
 const playerRoot = document.querySelector("#movie_player") || document.querySelector("ytd-player") || document.body;
-playerRoot && videoObserver.observe(playerRoot, {
+if (playerRoot && coordinator?.watchTarget) {
+coordinator.watchTarget("basic::speedVideoElements", playerRoot, onVideoMutations, {
 childList: !0,
+attributes: !1,
 subtree: !0
 });
-YouTubeUtils.cleanupManager.registerObserver(videoObserver);
+YouTubeUtils.cleanupManager.register(() => {
+coordinator.unwatch("basic::speedVideoElements");
+});
+}
 },
 setupNavigationObserver() {
 let lastUrl = location.href;
@@ -3479,7 +4385,7 @@ this.addSettingsButtonToHeader();
 const checkUrlChange = () => {
 if (lastUrl !== location.href) {
 lastUrl = location.href;
-location.href.includes("watch?v=") && setTimeout(() => this.setupCurrentPage(), 500);
+location.href.includes("watch?v=") && basicSetTimeout_(() => this.setupCurrentPage(), 500);
 this.addSettingsButtonToHeader();
 }
 };
@@ -3515,298 +4421,44 @@ this.speedControl.activeAnimationId = YouTubeUtils.cleanupManager.registerAnimat
 }
 };
 const initFunction = YouTubeEnhancer.init.bind(YouTubeEnhancer);
+try {
+window.YouTubePlus = window.YouTubePlus || {};
+window.YouTubePlus.openSettings = opts => {
+try {
+if (opts && "string" == typeof opts.section) {
+try {
+localStorage.setItem("youtube_plus_last_active_section", opts.section);
+} catch (e) {}
+}
+YouTubeEnhancer.openSettingsModal();
+return !0;
+} catch (e) {
+window.console.warn("[YouTube+] openSettings failed:", e);
+return !1;
+}
+};
+window.YouTubePlus.closeSettings = () => {
+try {
+const existing = document.querySelector(".ytp-plus-settings-modal");
+if (existing) {
+try {
+document.dispatchEvent(new CustomEvent("youtube-plus-settings-modal-closed", {
+bubbles: !0
+}));
+} catch (e) {}
+existing.remove();
+return !0;
+}
+return !1;
+} catch (e) {
+window.console.warn("[YouTube+] closeSettings failed:", e);
+return !1;
+}
+};
+} catch (e) {
+window.console.warn("[YouTube+] Failed to expose public settings API:", e);
+}
 "loading" === document.readyState ? document.addEventListener("DOMContentLoaded", initFunction) : initFunction();
-})();
-
-!(function() {
-"use strict";
-const CircuitState_CLOSED = "closed", CircuitState_OPEN = "open", CircuitState_HALF_OPEN = "half_open";
-const ErrorBoundaryConfig = {
-maxErrors: 10,
-errorWindow: 6e4,
-enableLogging: !0,
-enableRecovery: !0,
-storageKey: "youtube_plus_errors",
-circuitBreaker: {
-enabled: !0,
-failureThreshold: 5,
-resetTimeout: 3e4,
-halfOpenAttempts: 3
-}
-};
-const errorState = {
-errors: [],
-errorCount: 0,
-lastErrorTime: 0,
-isRecovering: !1,
-circuitState: CircuitState_CLOSED,
-circuitFailureCount: 0,
-circuitLastFailureTime: 0,
-circuitSuccessCount: 0
-};
-const ErrorSeverity_LOW = "low", ErrorSeverity_MEDIUM = "medium", ErrorSeverity_HIGH = "high", ErrorSeverity_CRITICAL = "critical";
-const categorizeSeverity = error => {
-const message = error.message?.toLowerCase() || "";
-return message.includes("cannot read") || message.includes("undefined") || message.includes("null") ? ErrorSeverity_MEDIUM : message.includes("network") || message.includes("fetch") || message.includes("timeout") ? ErrorSeverity_LOW : message.includes("syntax") || message.includes("reference") || message.includes("type") ? ErrorSeverity_HIGH : message.includes("security") || message.includes("csp") ? ErrorSeverity_CRITICAL : ErrorSeverity_MEDIUM;
-};
-const logError = (error, context = {}) => {
-if (!ErrorBoundaryConfig.enableLogging) {
-return;
-}
-(success => {
-if (!ErrorBoundaryConfig.circuitBreaker.enabled) {
-return !0;
-}
-const now = Date.now();
-const {circuitBreaker} = ErrorBoundaryConfig;
-if (errorState.circuitState === CircuitState_OPEN && now - errorState.circuitLastFailureTime >= circuitBreaker.resetTimeout) {
-window.YouTubeUtils?.logger?.debug?.("[YouTube+] Circuit breaker transitioning to HALF_OPEN");
-errorState.circuitState = CircuitState_HALF_OPEN;
-errorState.circuitSuccessCount = 0;
-}
-if (success) {
-if (errorState.circuitState === CircuitState_HALF_OPEN) {
-errorState.circuitSuccessCount++;
-if (errorState.circuitSuccessCount >= circuitBreaker.halfOpenAttempts) {
-window.YouTubeUtils?.logger?.debug?.("[YouTube+] Circuit breaker CLOSED - system recovered");
-errorState.circuitState = CircuitState_CLOSED;
-errorState.circuitFailureCount = 0;
-errorState.circuitSuccessCount = 0;
-}
-} else {
-errorState.circuitState === CircuitState_CLOSED && (errorState.circuitFailureCount = Math.max(0, errorState.circuitFailureCount - 1));
-}
-return !0;
-}
-errorState.circuitFailureCount++;
-errorState.circuitLastFailureTime = now;
-if (errorState.circuitState === CircuitState_CLOSED) {
-if (errorState.circuitFailureCount >= circuitBreaker.failureThreshold) {
-console.error("[YouTube+] Circuit breaker OPEN - too many failures");
-errorState.circuitState = CircuitState_OPEN;
-return !1;
-}
-} else if (errorState.circuitState === CircuitState_HALF_OPEN) {
-console.error("[YouTube+] Circuit breaker reopened - recovery failed");
-errorState.circuitState = CircuitState_OPEN;
-errorState.circuitSuccessCount = 0;
-return !1;
-}
-})(!1);
-const fallbackMessage = error.message?.trim() || "";
-if (!(fallbackMessage && "(no message)" !== fallbackMessage || error.stack || context.filename)) {
-return;
-}
-const displayMessage = fallbackMessage || (context.filename ? `Error in ${context.filename}:${context.lineno}` : "Unknown error");
-const errorInfo = {
-timestamp: (new Date).toISOString(),
-message: displayMessage,
-stack: error.stack,
-severity: categorizeSeverity(error),
-context: {
-url: window.location.href,
-userAgent: navigator.userAgent,
-...context
-}
-};
-console.error("[YouTube+][Error Boundary]", `${errorInfo.message}`, errorInfo);
-errorState.errors.push(errorInfo);
-errorState.errors.length > 50 && errorState.errors.shift();
-try {
-const stored = JSON.parse(localStorage.getItem(ErrorBoundaryConfig.storageKey) || "[]");
-stored.push(errorInfo);
-stored.length > 20 && stored.shift();
-localStorage.setItem(ErrorBoundaryConfig.storageKey, JSON.stringify(stored));
-} catch (e) {}
-};
-const isErrorRateExceeded = () => {
-const now = Date.now();
-const windowStart = now - ErrorBoundaryConfig.errorWindow;
-const recentErrors = errorState.errors.filter(e => new Date(e.timestamp).getTime() > windowStart);
-return recentErrors.length >= ErrorBoundaryConfig.maxErrors;
-};
-const getErrorRate = () => {
-const now = Date.now();
-const oneMinuteAgo = now - 6e4;
-const recentErrors = errorState.errors.filter(e => new Date(e.timestamp).getTime() > oneMinuteAgo);
-return recentErrors.length;
-};
-const showErrorNotification = error => {
-try {
-const Y = window.YouTubeUtils;
-if (!Y || !Y.NotificationManager || "function" != typeof Y.NotificationManager.show) {
-return;
-}
-const severity = categorizeSeverity(error);
-let message = "An error occurred";
-let duration = 3e3;
-switch (severity) {
-case ErrorSeverity_LOW:
-message = "A minor issue occurred. Functionality should continue normally.";
-duration = 2e3;
-break;
-
-case ErrorSeverity_MEDIUM:
-message = "An error occurred. Some features may not work correctly.";
-duration = 3e3;
-break;
-
-case ErrorSeverity_HIGH:
-message = "A serious error occurred. Please refresh the page if issues persist.";
-duration = 5e3;
-break;
-
-case ErrorSeverity_CRITICAL:
-message = "A critical error occurred. YouTube+ may not function properly. Please report this issue.";
-duration = 7e3;
-}
-Y.NotificationManager.show(message, {
-duration,
-type: "error"
-});
-} catch (notificationError) {
-console.error("[YouTube+] Failed to show error notification:", notificationError);
-}
-};
-const attemptRecovery = (error, context) => {
-if (!ErrorBoundaryConfig.enableRecovery || errorState.isRecovering) {
-return;
-}
-const severity = categorizeSeverity(error);
-if (severity !== ErrorSeverity_CRITICAL) {
-errorState.isRecovering = !0;
-try {
-severity === ErrorSeverity_LOW || (error => {
-const rate = getErrorRate();
-if (rate > 5) {
-return !0;
-}
-const tenSecondsAgo = Date.now() - 1e4;
-const recentSimilar = errorState.errors.filter(e => new Date(e.timestamp).getTime() > tenSecondsAgo && e.message === error.message && e.severity === categorizeSeverity(error));
-return recentSimilar.length > 0;
-})(error) || showErrorNotification(error);
-const RecoveryUtils = window.YouTubePlusErrorRecovery;
-RecoveryUtils && RecoveryUtils.attemptRecovery ? RecoveryUtils.attemptRecovery(error, context) : performLegacyRecovery(error, context);
-setTimeout(() => {
-errorState.isRecovering = !1;
-}, 5e3);
-} catch (recoveryError) {
-console.error("[YouTube+] Recovery attempt failed:", recoveryError);
-errorState.isRecovering = !1;
-}
-} else {
-console.error("[YouTube+] Critical error detected. Script may not function properly.");
-showErrorNotification(error);
-}
-};
-const performLegacyRecovery = (error, context) => {
-if (context.module) {
-window.YouTubeUtils?.logger?.debug?.(`[YouTube+] Attempting recovery for module: ${context.module}`);
-window;
-error.message && (error.message.includes("null") || error.message.includes("undefined")) && context.element && window.YouTubeUtils?.logger?.debug?.("[YouTube+] Attempting to re-query DOM element");
-}
-};
-const handleError = event => {
-const error = event.error || new Error(event.message);
-const message = (error.message || event.message || "").trim();
-if (message.includes("ResizeObserver loop")) {
-return !1;
-}
-const source = event.filename || "";
-const isCrossOriginSource = source && !source.startsWith(window.location.origin) && !/YouTube\+/.test(source);
-if (!message && isCrossOriginSource) {
-return !1;
-}
-if (!message || "(no message)" === message && isCrossOriginSource) {
-return !1;
-}
-errorState.errorCount++;
-errorState.lastErrorTime = Date.now();
-logError(error, {
-type: "uncaught",
-filename: event.filename,
-lineno: event.lineno,
-colno: event.colno
-});
-if (isErrorRateExceeded()) {
-console.error("[YouTube+] Error rate exceeded! Too many errors in short period. Some features may be disabled.");
-return !1;
-}
-attemptRecovery(error, {
-type: "uncaught"
-});
-return !1;
-};
-const handleUnhandledRejection = event => {
-const error = event.reason instanceof Error ? event.reason : new Error(String(event.reason));
-logError(error, {
-type: "unhandledRejection",
-promise: event.promise
-});
-isErrorRateExceeded() ? console.error("[YouTube+] Promise rejection rate exceeded!") : attemptRecovery(error, {
-type: "unhandledRejection"
-});
-};
-const withErrorBoundary = (fn, context = "unknown") => function(...args) {
-try {
-const fnAny = fn;
-return fnAny.call(this, ...args);
-} catch (error) {
-logError(error instanceof Error ? error : new Error(String(error)), {
-module: context,
-args
-});
-attemptRecovery(error instanceof Error ? error : new Error(String(error)), {
-module: context
-});
-return null;
-}
-};
-const withAsyncErrorBoundary = (fn, context = "unknown") => async function(...args) {
-try {
-const fnAny = fn;
-return await fnAny.call(this, ...args);
-} catch (error) {
-logError(error instanceof Error ? error : new Error(String(error)), {
-module: context,
-args
-});
-attemptRecovery(error instanceof Error ? error : new Error(String(error)), {
-module: context
-});
-return null;
-}
-};
-const getErrorStats = () => ({
-totalErrors: errorState.errorCount,
-recentErrors: errorState.errors.length,
-lastErrorTime: errorState.lastErrorTime,
-isRecovering: errorState.isRecovering,
-errorsByType: errorState.errors.reduce((acc, e) => {
-acc[e.severity] = (acc[e.severity] || 0) + 1;
-return acc;
-}, {})
-});
-const clearErrors = () => {
-errorState.errors = [];
-try {
-localStorage.removeItem(ErrorBoundaryConfig.storageKey);
-} catch (e) {}
-};
-if ("undefined" != typeof window) {
-window.addEventListener("error", handleError, !0);
-window.addEventListener("unhandledrejection", handleUnhandledRejection, !0);
-window.YouTubeErrorBoundary = {
-withErrorBoundary,
-withAsyncErrorBoundary,
-getErrorStats,
-clearErrors,
-logError,
-getErrorRate,
-config: ErrorBoundaryConfig
-};
-window.YouTubeUtils?.logger?.debug?.("[YouTube+][Error Boundary]", "Error boundary initialized");
-}
 })();
 
 !(function() {
@@ -3816,7 +4468,7 @@ enabled: !0,
 sampleRate: .01,
 storageKey: "youtube_plus_performance",
 metricsRetention: 100,
-enableConsoleOutput: !1,
+enableconsoleOutput: !1,
 logLevel: "info"
 };
 const isTestEnv = (() => {
@@ -3826,6 +4478,9 @@ return "undefined" != typeof process && !!process?.env?.JEST_WORKER_ID;
 return !1;
 }
 })();
+const qs = window.YouTubeUtils?.$ || ((selector, root) => (root || document).querySelector(selector));
+const qsAll = window.YouTubeUtils?.$$ || ((selector, root) => Array.from((root || document).querySelectorAll(selector)));
+const byId = window.YouTubeUtils?.byId || (id => document.getElementById(id));
 PerformanceConfig.sampleRate = isTestEnv ? 1 : (() => {
 try {
 const cfg = window.YouTubePlusConfig;
@@ -3859,7 +4514,7 @@ try {
 "undefined" != typeof performance && performance.mark && performance.mark(name);
 metrics.marks.set(name, Date.now());
 } catch (e) {
-console.warn("[YouTube+ Perf] Failed to create mark:", e);
+window.console.warn("[YouTube+ Perf] Failed to create mark:", e);
 }
 }
 };
@@ -3883,7 +4538,7 @@ timestamp: Date.now()
 };
 metrics.measures.push(measureData);
 metrics.measures.length > PerformanceConfig.metricsRetention && metrics.measures.shift();
-PerformanceConfig.enableConsoleOutput && window.YouTubeUtils?.logger?.debug?.(`[YouTube+ Perf] ${name}: ${duration.toFixed(2)}ms`);
+PerformanceConfig.enableconsoleOutput && window.YouTubeUtils?.logger?.debug?.(`[YouTube+ Perf] ${name}: ${duration.toFixed(2)}ms`);
 if ("undefined" != typeof performance && performance.measure) {
 try {
 performance.measure(name, startMark, endMark);
@@ -3891,7 +4546,7 @@ performance.measure(name, startMark, endMark);
 }
 return duration;
 } catch (e) {
-console.warn("[YouTube+ Perf] Failed to measure:", e);
+window.console.warn("[YouTube+ Perf] Failed to measure:", e);
 return 0;
 }
 };
@@ -3899,10 +4554,11 @@ const timeFunction = (name, fn) => PerformanceConfig.enabled ? function(...args)
 const startMark = `${name}-start-${Date.now()}`;
 mark(startMark);
 try {
-const fnAny = fn;
-const result = fnAny.apply(this, args);
-if (result && "function" == typeof result.then) {
-return result.finally(() => {
+const fnCallable = fn;
+const result = fnCallable.apply(this, args);
+const promiseLike = result;
+if (result && "function" == typeof promiseLike.then && "function" == typeof promiseLike.finally) {
+return promiseLike.finally(() => {
 measure(name, startMark, void 0);
 });
 }
@@ -3917,8 +4573,8 @@ const timeAsyncFunction = (name, fn) => PerformanceConfig.enabled ? async functi
 const startMark = `${name}-start-${Date.now()}`;
 mark(startMark);
 try {
-const fnAny = fn;
-const result = await fnAny.apply(this, args);
+const fnCallable = fn;
+const result = await fnCallable.apply(this, args);
 measure(name, startMark, void 0);
 return result;
 } catch (error) {
@@ -3937,7 +4593,7 @@ timestamp: Date.now(),
 ...metadata
 };
 metrics.timings.set(name, metric);
-PerformanceConfig.enableConsoleOutput && window.YouTubeUtils?.logger?.debug?.(`[YouTube+ Perf] ${name}: ${value}`, metadata);
+PerformanceConfig.enableconsoleOutput && window.YouTubeUtils?.logger?.debug?.(`[YouTube+ Perf] ${name}: ${value}`, metadata);
 };
 const getStats = metricName => {
 if (metricName) {
@@ -4028,7 +4684,7 @@ const exportToFile = (filename = "youtube-plus-performance.json") => {
 try {
 const data = exportMetrics();
 if ("undefined" == typeof Blob) {
-console.warn("[YouTube+ Perf] Blob API not available");
+window.console.warn("[YouTube+ Perf] Blob API not available");
 return !1;
 }
 const blob = new Blob([ data ], {
@@ -4044,7 +4700,7 @@ document.body.removeChild(a);
 URL.revokeObjectURL(url);
 return !0;
 } catch (e) {
-console.error("[YouTube+ Perf] Failed to export to file:", e);
+window.console.error("[YouTube+ Perf] Failed to export to file:", e);
 return !1;
 }
 };
@@ -4095,19 +4751,26 @@ const monitorMutations = (element, name) => {
 if (!PerformanceConfig.enabled) {
 return null;
 }
+const coordinator = window.YouTubeMutationCoordinator;
+if (!coordinator?.watchTarget) {
+return null;
+}
 let mutationCount = 0;
 const startTime = Date.now();
-const observer = new MutationObserver(mutations => {
+const subId = `performance::monitorMutations::${name}::${Date.now()}::${Math.random().toString(36).slice(2, 8)}`;
+coordinator.watchTarget(subId, element, mutations => {
 mutationCount += mutations.length;
 recordMetric(`${name}-mutations`, mutationCount, {
 elapsed: Date.now() - startTime
 });
-});
-observer.observe(element, {
+}, {
 childList: !0,
 subtree: !0
 });
-return observer;
+return {
+disconnect: () => coordinator.unwatch(subId),
+takeRecords: () => []
+};
 };
 const getPerformanceEntries = type => {
 if ("undefined" == typeof performance || !performance.getEntriesByType) {
@@ -4129,7 +4792,7 @@ recordMetric("dom-content-loaded", navigation.domContentLoadedEventEnd);
 recordMetric("dom-interactive", navigation.domInteractive);
 }
 } catch (e) {
-console.warn("[YouTube+ Perf] Failed to log page metrics:", e);
+window.console.warn("[YouTube+ Perf] Failed to log page metrics:", e);
 }
 }
 };
@@ -4144,17 +4807,17 @@ new PerformanceObserver(entryList => {
 const entries = entryList.getEntries();
 const lastEntry = entries[entries.length - 1];
 metrics.webVitals.LCP = lastEntry.startTime;
-PerformanceConfig.enableConsoleOutput && console.warn(`[YouTube+ Perf] LCP: ${lastEntry.startTime.toFixed(2)}ms`, lastEntry);
+PerformanceConfig.enableconsoleOutput && window.console.warn(`[YouTube+ Perf] LCP: ${lastEntry.startTime.toFixed(2)}ms`, lastEntry);
 }).observe({
 type: "largest-contentful-paint",
 buffered: !0
 });
 new PerformanceObserver(entryList => {
 for (const entry of entryList.getEntries()) {
-const entryAny = entry;
-entryAny.hadRecentInput || (metrics.webVitals.CLS += entryAny.value || 0);
+const layoutShiftEntry = entry;
+layoutShiftEntry.hadRecentInput || (metrics.webVitals.CLS += layoutShiftEntry.value || 0);
 }
-PerformanceConfig.enableConsoleOutput && "debug" === PerformanceConfig.logLevel && console.warn(`[YouTube+ Perf] CLS: ${metrics.webVitals.CLS.toFixed(4)}`);
+PerformanceConfig.enableconsoleOutput && "debug" === PerformanceConfig.logLevel && window.console.warn(`[YouTube+ Perf] CLS: ${metrics.webVitals.CLS.toFixed(4)}`);
 }).observe({
 type: "layout-shift",
 buffered: !0
@@ -4162,7 +4825,7 @@ buffered: !0
 new PerformanceObserver(entryList => {
 const firstInput = entryList.getEntries()[0];
 metrics.webVitals.FID = (firstInput.processingStart || 0) - (firstInput.startTime || 0);
-PerformanceConfig.enableConsoleOutput && console.warn(`[YouTube+ Perf] FID: ${metrics.webVitals.FID.toFixed(2)}ms`);
+PerformanceConfig.enableconsoleOutput && window.console.warn(`[YouTube+ Perf] FID: ${metrics.webVitals.FID.toFixed(2)}ms`);
 }).observe({
 type: "first-input",
 buffered: !0
@@ -4179,7 +4842,7 @@ durationThreshold: 16
 });
 } catch (e) {}
 } catch (e) {
-console.warn("[YouTube+ Perf] Failed to init PerformanceObserver:", e);
+window.console.warn("[YouTube+ Perf] Failed to init PerformanceObserver:", e);
 }
 }
 })();
@@ -4192,7 +4855,7 @@ Array.from(callbacks).forEach(cb => {
 try {
 cb();
 } catch (e) {
-console.error("[RAF] Error:", e);
+window.console.error("[RAF] Error:", e);
 }
 });
 callbacks.clear();
@@ -4381,7 +5044,7 @@ const path = location.pathname;
 let lcpSelector;
 lcpSelector = "/watch" === path || path.startsWith("/shorts/") ? "#movie_player .ytp-cued-thumbnail-overlay-image, #movie_player video, ytd-player #ytd-player .html5-video-container" : "/playlist" === path ? "ytd-playlist-video-renderer:first-child img.yt-core-image" : "ytd-rich-item-renderer:first-child img.yt-core-image, ytd-rich-grid-media img.yt-core-image";
 lcpSelector && requestAnimationFrame(() => {
-const el = document.querySelector(lcpSelector);
+const el = qs(lcpSelector);
 if (el && "IMG" === el.tagName) {
 el.setAttribute("fetchpriority", "high");
 el.setAttribute("loading", "eager");
@@ -4391,7 +5054,7 @@ el.setAttribute("loading", "eager");
 };
 const injectContentVisibilityCSS = () => {
 const cssId = "ytp-perf-content-visibility";
-if (document.getElementById(cssId)) {
+if (byId(cssId)) {
 return;
 }
 const style = document.createElement("style");
@@ -4420,7 +5083,7 @@ const scheduleObserve = () => {
 imgTimer || (imgTimer = setTimeout(() => {
 imgTimer = null;
 (() => {
-const belowFold = document.querySelectorAll("ytd-rich-item-renderer:nth-child(n+5) img[src]:not([data-ytp-img-observed]),ytd-compact-video-renderer:nth-child(n+4) img[src]:not([data-ytp-img-observed])");
+const belowFold = qsAll("ytd-rich-item-renderer:nth-child(n+5) img[src]:not([data-ytp-img-observed]),ytd-compact-video-renderer:nth-child(n+4) img[src]:not([data-ytp-img-observed])");
 belowFold.forEach(img => {
 img.setAttribute("data-ytp-img-observed", "1");
 });
@@ -4438,7 +5101,7 @@ once: !0
 });
 };
 const SharedMutationManager = (() => {
-let observer = null;
+let observerSubId = null;
 const callbacks = new Map;
 let scheduled = !1;
 const pending = [];
@@ -4452,7 +5115,7 @@ if (filtered.length > 0) {
 try {
 callback(filtered);
 } catch (e) {
-console.warn("[YouTube+ Perf] SharedMutation callback error:", e);
+window.console.warn("[YouTube+ Perf] SharedMutation callback error:", e);
 }
 }
 }
@@ -4464,28 +5127,32 @@ callback,
 filter
 });
 1 === callbacks.size && (() => {
-if (observer) {
+if (observerSubId) {
 return;
 }
-observer = new MutationObserver(mutations => {
+const coordinator = window.YouTubeMutationCoordinator;
+if (coordinator?.subscribeRoot) {
+observerSubId = "performance::sharedMutation";
+coordinator.subscribeRoot(observerSubId, mutations => {
 pending.push(...mutations);
 if (!scheduled) {
 scheduled = !0;
 queueMicrotask(flush);
 }
-});
-const target = document.body || document.documentElement;
-target && observer.observe(target, {
+}, {
 childList: !0,
+attributes: !1,
 subtree: !0
 });
+}
 })();
 },
 unregister(key) {
 callbacks.delete(key);
-if (0 === callbacks.size && observer) {
-observer.disconnect();
-observer = null;
+if (0 === callbacks.size && observerSubId) {
+const coordinator = window.YouTubeMutationCoordinator;
+coordinator?.unsubscribe?.(observerSubId);
+observerSubId = null;
 }
 },
 getCallbackCount: () => callbacks.size
@@ -4501,7 +5168,7 @@ if (task) {
 try {
 task.fn();
 } catch (e) {
-console.warn("[YouTube+ Perf] Idle task error:", e);
+window.console.warn("[YouTube+ Perf] Idle task error:", e);
 }
 if (!deadline) {
 break;
@@ -4531,7 +5198,7 @@ pending: () => queue.length
 };
 })();
 const initLongTaskMonitor = () => {
-if ("undefined" != typeof PerformanceObserver) {
+if ("undefined" != typeof PerformanceObserver && (!Array.isArray(PerformanceObserver.supportedEntryTypes) || PerformanceObserver.supportedEntryTypes.includes("longtask"))) {
 try {
 const longTasks = [];
 new PerformanceObserver(list => {
@@ -4584,7 +5251,7 @@ initLongTaskMonitor();
 });
 IdleScheduler.schedule(() => setupDeferredImageLoading(), 2);
 } catch (e) {
-console.warn("[YouTube+ Perf] LCP optimization init error:", e);
+window.console.warn("[YouTube+ Perf] LCP optimization init error:", e);
 }
 };
 initLCPOptimizations();
@@ -4628,7 +5295,8 @@ this.multiCache = new Map;
 this.maxAge = 5e3;
 this.nullMaxAge = 1e3;
 this.maxSize = 500;
-this.cleanupInterval = null;
+this.cleanupSubId = null;
+this.cleanupPending = !1;
 this.enabled = !0;
 this.stats = {
 hits: 0,
@@ -4638,7 +5306,7 @@ evictions: 0
 this.contextUids = new WeakMap;
 this.uidCounter = 0;
 this.observerCallbacks = new Set;
-this.sharedObserver = null;
+this.sharedObserverSubId = null;
 this.sharedObserverPending = !1;
 this.startCleanup();
 }
@@ -4737,7 +5405,7 @@ this.multiCache.clear();
 }
 }
 startCleanup() {
-if (this.cleanupInterval) {
+if (this.cleanupSubId) {
 return;
 }
 const cleanupFn = () => {
@@ -4753,23 +5421,45 @@ break;
 }
 }
 };
-this.cleanupInterval = setInterval(() => {
-"undefined" != typeof requestIdleCallback ? requestIdleCallback(cleanupFn, {
+const coordinator = window.YouTubeMutationCoordinator;
+if (coordinator?.subscribeRoot) {
+this.cleanupSubId = coordinator.subscribeRoot("dom-cache::cleanup", () => {
+if (this.cleanupPending) {
+return;
+}
+this.cleanupPending = !0;
+const run = () => {
+this.cleanupPending = !1;
+cleanupFn();
+};
+"function" == typeof requestIdleCallback ? requestIdleCallback(run, {
 timeout: 1e3
-}) : cleanupFn();
-}, 5e3);
-window.YouTubeUtils?.cleanupManager?.registerInterval && window.YouTubeUtils.cleanupManager.registerInterval(this.cleanupInterval);
+}) : setTimeout(run, 0);
+}, {
+childList: !0,
+attributes: !0,
+subtree: !0
+});
+this.cleanupSubId && window.YouTubeUtils?.cleanupManager?.register && window.YouTubeUtils.cleanupManager.register(() => {
+if (this.cleanupSubId && window.YouTubeMutationCoordinator?.unsubscribe) {
+window.YouTubeMutationCoordinator.unsubscribe(this.cleanupSubId);
+this.cleanupSubId = null;
+}
+this.cleanupPending = !1;
+});
+}
 }
 destroy() {
-if (this.cleanupInterval) {
-clearInterval(this.cleanupInterval);
-this.cleanupInterval = null;
+if (this.cleanupSubId && window.YouTubeMutationCoordinator?.unsubscribe) {
+window.YouTubeMutationCoordinator.unsubscribe(this.cleanupSubId);
+this.cleanupSubId = null;
 }
+this.cleanupPending = !1;
 this.cache.clear();
 this.multiCache.clear();
-if (this.sharedObserver) {
-this.sharedObserver.disconnect();
-this.sharedObserver = null;
+if (this.sharedObserverSubId && window.YouTubeMutationCoordinator?.unsubscribe) {
+window.YouTubeMutationCoordinator.unsubscribe(this.sharedObserverSubId);
+this.sharedObserverSubId = null;
 }
 this.observerCallbacks.clear();
 }
@@ -4781,8 +5471,11 @@ enabled: this.enabled
 };
 }
 initSharedObserver() {
-if (!this.sharedObserver) {
-this.sharedObserver = new MutationObserver(() => {
+if (this.sharedObserverSubId) {
+return;
+}
+const coordinator = window.YouTubeMutationCoordinator;
+coordinator?.subscribeRoot && (this.sharedObserverSubId = coordinator.subscribeRoot("dom-cache::waitForElementShared", () => {
 if (0 === this.observerCallbacks.size) {
 return;
 }
@@ -4801,12 +5494,7 @@ callback();
 }
 };
 "function" == typeof requestAnimationFrame ? requestAnimationFrame(flush) : setTimeout(flush, 0);
-});
-this.sharedObserver.observe(document.body || document.documentElement, {
-childList: !0,
-subtree: !0
-});
-}
+}));
 }
 };
 const scopedCache = new class ScopedDOMCache {
@@ -4869,24 +5557,35 @@ setTimeout(() => {
 globalCache.observerCallbacks.delete(checkCallback);
 resolve(null);
 }, timeout);
-} else {
-const observerCtx = context;
-const observer = new MutationObserver(() => {
-const element = observerCtx.querySelector(selector);
+}
+const retryFactory = window.YouTubeUtils?.createRetryScheduler;
+if ("function" == typeof retryFactory) {
+retryFactory({
+interval: 120,
+maxAttempts: Math.max(1, Math.ceil(timeout / 120)),
+check: () => {
+const element = context.querySelector(selector);
 if (element) {
-observer.disconnect();
 resolve(element);
+return !0;
+}
+return !1;
 }
 });
-observer.observe(observerCtx, {
-childList: !0,
-subtree: !0
-});
-setTimeout(() => {
-observer.disconnect();
+setTimeout(() => resolve(null), timeout);
+return;
+}
+const start = Date.now();
+const timerId = setInterval(() => {
+const element = context.querySelector(selector);
+if (element) {
+clearInterval(timerId);
+resolve(element);
+} else if (Date.now() - start >= timeout) {
+clearInterval(timerId);
 resolve(null);
-}, timeout);
 }
+}, 120);
 });
 }
 if ("undefined" != typeof window) {
@@ -4922,6 +5621,209 @@ globalCache.destroy();
 
 !(function() {
 "use strict";
+if ("undefined" == typeof window || window.YouTubeMutationCoordinator) {
+return;
+}
+const rootSubscriptions = new Map;
+let rootObserver = null;
+let rafScheduled = !1;
+let pendingMutations = [];
+let currentObserveConfig = null;
+const configKey = config => config ? JSON.stringify(config) : "null";
+const shouldNotifySelector = (selector, mutations) => {
+if (!selector) {
+return !0;
+}
+for (const mutation of mutations) {
+const target = mutation.target;
+if (target instanceof Element && (target.matches(selector) || target.closest(selector))) {
+return !0;
+}
+for (const node of mutation.addedNodes) {
+if (node instanceof Element && (node.matches(selector) || node.querySelector(selector))) {
+return !0;
+}
+}
+}
+return !1;
+};
+const filterMutationsForSubscription = (sub, batch) => {
+const out = [];
+for (const mutation of batch) {
+if ("attributes" === mutation.type) {
+if (!sub.attributes) {
+continue;
+}
+if (sub.attributeFilter && sub.attributeFilter.length > 0 && mutation.attributeName && !sub.attributeFilter.includes(mutation.attributeName)) {
+continue;
+}
+}
+("childList" !== mutation.type || sub.childList) && out.push(mutation);
+}
+return out;
+};
+const flush = () => {
+rafScheduled = !1;
+if (0 === pendingMutations.length) {
+return;
+}
+const batch = pendingMutations;
+pendingMutations = [];
+for (const sub of rootSubscriptions.values()) {
+try {
+if (!shouldNotifySelector(sub.selector, batch)) {
+continue;
+}
+const filtered = filterMutationsForSubscription(sub, batch);
+filtered.length > 0 && sub.callback(filtered);
+} catch (e) {
+window.console.error("[MutationCoordinator] subscriber failed:", e);
+}
+}
+};
+const refreshObserver = () => {
+if (0 !== rootSubscriptions.size) {
+(nextConfig => {
+const target = document.body || document.documentElement;
+if (target) {
+rootObserver || (rootObserver = new MutationObserver(mutations => {
+pendingMutations.push(...mutations);
+if (!rafScheduled) {
+rafScheduled = !0;
+"function" == typeof requestAnimationFrame ? requestAnimationFrame(flush) : setTimeout(flush, 0);
+}
+}));
+if (configKey(currentObserveConfig) !== configKey(nextConfig)) {
+rootObserver.disconnect();
+rootObserver.observe(target, nextConfig);
+currentObserveConfig = nextConfig;
+}
+}
+})((() => {
+let childList = !1;
+let attributes = !1;
+let hasUnlimitedAttributeFilter = !1;
+const attrSet = new Set;
+for (const sub of rootSubscriptions.values()) {
+childList = childList || sub.childList;
+attributes = attributes || sub.attributes;
+if (sub.attributes) {
+if (sub.attributeFilter && 0 !== sub.attributeFilter.length) {
+for (const attr of sub.attributeFilter) {
+attrSet.add(attr);
+}
+} else {
+hasUnlimitedAttributeFilter = !0;
+}
+}
+}
+return {
+childList,
+subtree: !0,
+attributes,
+attributeFilter: attributes && !hasUnlimitedAttributeFilter && attrSet.size > 0 ? [ ...attrSet ] : void 0
+};
+})());
+} else {
+if (rootObserver) {
+rootObserver.disconnect();
+rootObserver = null;
+}
+currentObserveConfig = null;
+pendingMutations = [];
+rafScheduled = !1;
+}
+};
+const api = {
+subscribeRoot(id, callback, options = {}) {
+if (!id || "function" != typeof callback) {
+return null;
+}
+rootSubscriptions.set(id, {
+id,
+callback,
+selector: "string" == typeof options.selector ? options.selector : null,
+attributes: !0 === options.attributes,
+childList: !1 !== options.childList,
+subtree: !1 !== options.subtree,
+attributeFilter: Array.isArray(options.attributeFilter) ? options.attributeFilter.filter(a => "string" == typeof a && a.length > 0) : null
+});
+refreshObserver();
+return id;
+},
+unsubscribe(id) {
+if (id) {
+rootSubscriptions.delete(id);
+refreshObserver();
+}
+},
+watchTarget(id, target, callback, options = {}) {
+if (!(id && target instanceof Node && "function" == typeof callback)) {
+return null;
+}
+const normalized = {
+attributes: !1 !== options.attributes,
+childList: !1 !== options.childList,
+subtree: !1 !== options.subtree,
+attributeFilter: Array.isArray(options.attributeFilter) ? options.attributeFilter.filter(a => "string" == typeof a && a.length > 0) : null
+};
+return api.subscribeRoot(id, mutations => {
+const filtered = mutations.filter(m => ((target, mutation, options) => {
+const allowSubtree = !1 !== options.subtree;
+if ("attributes" === mutation.type) {
+return !!options.attributes && !(options.attributeFilter && options.attributeFilter.length > 0 && mutation.attributeName && !options.attributeFilter.includes(mutation.attributeName)) && (mutation.target === target || !!allowSubtree && target instanceof Element && target.contains(mutation.target));
+}
+if ("childList" === mutation.type) {
+if (!options.childList) {
+return !1;
+}
+if (mutation.target === target) {
+return !0;
+}
+if (!allowSubtree) {
+return !1;
+}
+if (target instanceof Element && target.contains(mutation.target)) {
+return !0;
+}
+for (const node of mutation.addedNodes) {
+if (node === target) {
+return !0;
+}
+if (target instanceof Element && node instanceof Element && target.contains(node)) {
+return !0;
+}
+}
+for (const node of mutation.removedNodes) {
+if (node === target) {
+return !0;
+}
+}
+}
+return !1;
+})(target, m, normalized));
+filtered.length > 0 && callback(filtered);
+}, {
+selector: "string" == typeof options.selector ? options.selector : null,
+attributes: normalized.attributes,
+childList: normalized.childList,
+subtree: !0,
+attributeFilter: normalized.attributeFilter
+});
+},
+unwatch(id) {
+api.unsubscribe(id);
+},
+getStats: () => ({
+rootSubscribers: rootSubscriptions.size,
+rootObserverActive: !!rootObserver
+})
+};
+window.YouTubeMutationCoordinator = api;
+})();
+
+!(function() {
+"use strict";
 class EventDelegator {
 constructor() {
 this.delegatedHandlers = new Map;
@@ -4933,7 +5835,7 @@ totalHandlers: 0
 }
 delegate(parent, eventType, selector, handler, options = {}) {
 if (!(parent && eventType && selector && handler)) {
-console.warn("[EventDelegator] Invalid parameters");
+window.console.warn("[EventDelegator] Invalid parameters");
 return;
 }
 const parentKey = this._getElementKey(parent);
@@ -4989,7 +5891,7 @@ for (const handler of handlers) {
 try {
 handler.call(target, event, target);
 } catch (error) {
-console.error("[EventDelegator] Handler error:", error);
+window.console.error("[EventDelegator] Handler error:", error);
 window.YouTubeUtils?.logger?.error?.("[EventDelegator] Handler error", error);
 }
 }
@@ -5079,189 +5981,92 @@ undelegate: (parent, eventType, selector, handler) => eventDelegator.undelegate(
 getStats: () => eventDelegator.getStats(),
 clear: () => eventDelegator.clear()
 });
-"undefined" != typeof module && module.exports && (module.exports = {
-EventDelegator,
-on,
-off
-});
 })();
 
-!(function() {
-"use strict";
-class LazyLoader {
-constructor() {
-this.modules = new Map;
-this.loadedModules = new Set;
-this.stats = {
-totalModules: 0,
-loadedModules: 0
-};
-this.isIdle = !1;
-this.idleCallbackId = null;
-}
-register(name, fn, options = {}) {
-if (this.modules.has(name)) {
-window.YouTubeUtils?.logger?.warn?.(`[LazyLoader] Module "${name}" already registered`);
-return;
-}
-const moduleConfig = {
-fn,
-priority: options.priority || 0,
-delay: options.delay || 0,
-dependencies: options.dependencies || [],
-loaded: !1
-};
-this.modules.set(name, moduleConfig);
-this.stats.totalModules++;
-window.YouTubeUtils?.logger?.debug?.(`[LazyLoader] Registered module "${name}" (priority: ${moduleConfig.priority})`);
-}
-async load(name) {
-const module = this.modules.get(name);
-if (!module) {
-window.YouTubeUtils?.logger?.warn?.(`[LazyLoader] Module "${name}" not found`);
-return !1;
-}
-if (module.loaded) {
-window.YouTubeUtils?.logger?.debug?.(`[LazyLoader] Module "${name}" already loaded`);
-return !0;
-}
-for (const dep of module.dependencies) {
-if (!this.loadedModules.has(dep)) {
-window.YouTubeUtils?.logger?.debug?.(`[LazyLoader] Loading dependency "${dep}" for "${name}"`);
-await this.load(dep);
-}
-}
-module.delay > 0 && await new Promise(resolve => setTimeout(resolve, module.delay));
+const mainLog = (() => {
+let rawLogger = null;
 try {
-window.YouTubeUtils?.logger?.debug?.(`[LazyLoader] Loading module "${name}"`);
-const startTime = performance.now();
-await module.fn();
-const loadTime = performance.now() - startTime;
-window.YouTubeUtils?.logger?.debug?.(`[LazyLoader] Module "${name}" loaded in ${loadTime.toFixed(2)}ms`);
-module.loaded = !0;
-this.loadedModules.add(name);
-this.stats.loadedModules++;
-return !0;
-} catch (error) {
-console.error(`[LazyLoader] Failed to load module "${name}":`, error);
-window.YouTubeUtils?.logger?.error?.(`[LazyLoader] Module "${name}" load failed`, error);
-return !1;
+const utilsLogger = window?.YouTubeUtils?.logger;
+if (utilsLogger && "function" == typeof utilsLogger.warn) {
+rawLogger = utilsLogger;
+} else {
+const createLogger = window?.YouTubePlusLogger?.createLogger;
+if ("function" == typeof createLogger) {
+const logger = createLogger("main");
+logger && "function" == typeof logger.warn && (rawLogger = logger);
 }
-}
-async loadAll() {
-const sortedModules = Array.from(this.modules.entries()).sort((a, b) => b[1].priority - a[1].priority);
-let loadedCount = 0;
-for (const [name, module] of sortedModules) {
-if (!module.loaded) {
-const success = await this.load(name);
-success && loadedCount++;
-}
-}
-return loadedCount;
-}
-loadOnIdle(timeout = 2e3) {
-if (this.isIdle) {
-window.YouTubeUtils?.logger?.debug?.("[LazyLoader] Idle loading already scheduled");
-return;
-}
-this.isIdle = !0;
-const loadModules = async () => {
-window.YouTubeUtils?.logger?.debug?.("[LazyLoader] Starting idle loading");
-const count = await this.loadAll();
-window.YouTubeUtils?.logger?.debug?.(`[LazyLoader] Loaded ${count} modules during idle`);
-};
-this.idleCallbackId = "undefined" != typeof requestIdleCallback ? requestIdleCallback(loadModules, {
-timeout
-}) : setTimeout(loadModules, timeout);
-}
-cancelIdleLoading() {
-if (this.isIdle) {
-void 0 !== window.cancelIdleCallback && this.idleCallbackId ? window.cancelIdleCallback(this.idleCallbackId) : this.idleCallbackId && clearTimeout(this.idleCallbackId);
-this.isIdle = !1;
-this.idleCallbackId = null;
-}
-}
-isLoaded(name) {
-return this.loadedModules.has(name);
-}
-getStats() {
-return {
-...this.stats,
-loadingPercentage: this.stats.totalModules > 0 ? this.stats.loadedModules / this.stats.totalModules * 100 : 0,
-unloadedModules: this.stats.totalModules - this.stats.loadedModules
-};
-}
-clear() {
-this.cancelIdleLoading();
-this.modules.clear();
-this.loadedModules.clear();
-this.stats = {
-totalModules: 0,
-loadedModules: 0
-};
-}
-}
-const lazyLoader = new LazyLoader;
-"undefined" != typeof window && (window.YouTubePlusLazyLoader = {
-LazyLoader,
-register: (name, fn, options) => lazyLoader.register(name, fn, options),
-load: name => lazyLoader.load(name),
-loadAll: () => lazyLoader.loadAll(),
-loadOnIdle: timeout => lazyLoader.loadOnIdle(timeout),
-isLoaded: name => lazyLoader.isLoaded(name),
-getStats: () => lazyLoader.getStats(),
-clear: () => lazyLoader.clear()
-});
-"undefined" != typeof module && module.exports && (module.exports = {
-LazyLoader
-});
-})();
-
-"undefined" != typeof trustedTypes && null == trustedTypes.defaultPolicy && trustedTypes.createPolicy("default", {
-createHTML: s => "string" != typeof s ? String(s) : s.replace(/<script\b[\s\S]*?<\/script\s*>/gi, "").replace(/<iframe\b[\s\S]*?<\/iframe\s*>/gi, "").replace(/<object\b[\s\S]*?<\/object\s*>/gi, "").replace(/<embed\b[^>]*\/?>/gi, "").replace(/\s+on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "").replace(/javascript\s*:/gi, "").replace(/data\s*:\s*text\/html/gi, "blocked:"),
-createScriptURL: s => {
-if ("string" != typeof s) {
-return String(s);
-}
-try {
-const url = new URL(s, location.origin);
-if (url.origin === location.origin) {
-return s;
-}
-if (url.hostname.endsWith(".googleapis.com") || url.hostname.endsWith(".youtube.com")) {
-return s;
 }
 } catch (e) {}
-console.warn("[YouTube+][Security] Blocked untrusted script URL:", s);
-return "about:blank";
+return {
+debug: (...args) => {
+rawLogger?.debug && rawLogger.debug(...args);
 },
-createScript: s => "string" != typeof s ? String(s) : s
-});
-
-const defaultPolicy = "undefined" != typeof trustedTypes && trustedTypes.defaultPolicy || {
-createHTML: s => s
+info: (...args) => {
+rawLogger?.info && rawLogger.info(...args);
+},
+warn: (...args) => {
+rawLogger?.warn && rawLogger.warn(...args);
+},
+error: (...args) => {
+rawLogger?.error && rawLogger.error(...args);
+}
 };
+})();
 
 function createHTML(s) {
-return defaultPolicy.createHTML(s);
+const safeDomCreate = window?.YouTubeSafeDOM?.createTrustedHTML;
+if ("function" == typeof safeDomCreate) {
+return safeDomCreate("string" == typeof s ? s : String(s ?? ""));
+}
+const sharedCreate = window?._ytplusCreateHTML;
+return "function" == typeof sharedCreate ? sharedCreate("string" == typeof s ? s : String(s ?? "")) : "string" == typeof s ? s : String(s ?? "");
 }
 
-"undefined" != typeof window && (window._ytplusCreateHTML = createHTML);
+"undefined" != typeof window && "function" != typeof window._ytplusCreateHTML && (window._ytplusCreateHTML = createHTML);
 
 let trustHTMLErr = null;
 
 try {
-document.createElement("div").innerHTML = createHTML("1");
+createHTML("1");
 } catch (e) {
 trustHTMLErr = e;
 }
 
 if (trustHTMLErr) {
-console.error("trustHTMLErr", trustHTMLErr);
+mainLog.error("trustHTMLErr", trustHTMLErr);
 throw trustHTMLErr;
 }
 
 const executionScript = () => {
+const mainLog = (() => {
+let rawLogger = null;
+try {
+const utilsLogger = window?.YouTubeUtils?.logger;
+if (utilsLogger && "function" == typeof utilsLogger.warn) {
+rawLogger = utilsLogger;
+} else {
+const createLogger = window?.YouTubePlusLogger?.createLogger;
+if ("function" == typeof createLogger) {
+const logger = createLogger("main");
+logger && "function" == typeof logger.warn && (rawLogger = logger);
+}
+}
+} catch (e) {}
+return {
+debug: (...args) => {
+rawLogger?.debug && rawLogger.debug(...args);
+},
+info: (...args) => {
+rawLogger?.info && rawLogger.info(...args);
+},
+warn: (...args) => {
+rawLogger?.warn && rawLogger.warn(...args);
+},
+error: (...args) => {
+rawLogger?.error && rawLogger.error(...args);
+}
+};
+})();
 const YouTubeUtils = window.YouTubeUtils || {};
 const createHTML = window._ytplusCreateHTML || (s => s);
 try {
@@ -5288,13 +6093,13 @@ const defineProperties = (p, o) => {
 if (p) {
 for (const k of Object.keys(o)) {
 if (!o[k]) {
-console.warn(`defineProperties ERROR: Property ${k} is undefined`);
+mainLog.warn(`defineProperties ERROR: Property ${k} is undefined`);
 delete o[k];
 }
 }
 return Object.defineProperties(p, o);
 }
-console.warn("defineProperties ERROR: Prototype is undefined");
+mainLog.warn("defineProperties ERROR: Prototype is undefined");
 };
 const replaceChildrenPolyfill = function replaceChildren(...new_children) {
 for (;this.firstChild; ) {
@@ -5416,7 +6221,7 @@ let t = 4;
 class n extends Set {
 add(fn) {
 if (t <= 0) {
-console.warn("yt.config_ is already applied on the page.");
+mainLog.warn("yt.config_ is already applied on the page.");
 return this;
 }
 "function" == typeof fn && super.add(fn);
@@ -5544,7 +6349,7 @@ if (!(function n(s) {
 return s ? t = !1 : !(!e.postMessage || e.importScripts || !e.addEventListener) && (e.addEventListener("message", n, !1), 
 e.postMessage("$$$", "*"), e.removeEventListener("message", n, !1), t);
 })()) {
-return void console.warn("Your browser environment cannot use nextBrowserTick");
+return void mainLog.warn("Your browser environment cannot use nextBrowserTick");
 }
 const n = Promise;
 let s = null;
@@ -5554,10 +6359,15 @@ do {
 l = `$$nextBrowserTick$$${(i() + 8).toString().slice(2)}$$`;
 } while (l in e);
 const a = l, c = a.length + 9;
+const messageTargetOrigin = "undefined" != typeof location && "string" == typeof location.origin ? location.origin : "*";
 e[a] = 1;
 e.addEventListener("message", evt => {
 if (0 !== o.size) {
 const t = (evt || 0).data;
+const origin = String((evt || 0).origin || "");
+if (origin && "null" !== origin && origin !== location.origin) {
+return;
+}
 if ("string" == typeof t && t.length === c && evt.source === (evt.target || 1)) {
 const fn = o.get(t);
 if (fn) {
@@ -5580,7 +6390,7 @@ token = `p${a}${r(314159265359 * i() + 314159265359).toString(36)}`;
 s = new n(resolve => {
 token && o.set(token, resolve);
 });
-token && e.postMessage(token, "*");
+token && e.postMessage(token, messageTargetOrigin);
 token = null;
 return s;
 }
@@ -5590,7 +6400,7 @@ do {
 n = `f${a}${r(314159265359 * i() + 314159265359).toString(36)}`;
 } while (o.has(n));
 o.set(n, t);
-e.postMessage(n, "*");
+e.postMessage(n, messageTargetOrigin);
 return null;
 }
 };
@@ -5713,7 +6523,7 @@ return !0;
 "undefined" != typeof window && window.addEventListener("youtube-plus-settings-updated", e => {
 const nextEnabled = isTabviewEnabled(e?.detail || null);
 nextEnabled ? (function enableTabviewRuntime() {
-isTabviewEnabled() && Promise.resolve().then(eventMap.onceInsertRightTabs).then(() => Promise.resolve(lockSet.refreshSecondaryInnerLock).then(eventMap.refreshSecondaryInner)).then(() => Promise.resolve(lockSet.fixInitialTabStateLock).then(eventMap.fixInitialTabStateFn)).catch(console.warn);
+isTabviewEnabled() && Promise.resolve().then(eventMap.onceInsertRightTabs).then(() => Promise.resolve(lockSet.refreshSecondaryInnerLock).then(eventMap.refreshSecondaryInner)).then(() => Promise.resolve(lockSet.fixInitialTabStateLock).then(eventMap.fixInitialTabStateFn)).catch(mainLog.warn);
 })() : (function disableTabviewRuntime() {
 const rightTabs = qs("#right-tabs");
 const secondaryInner = qs("#secondary-inner.style-scope.ytd-watch-flexy");
@@ -5758,7 +6568,7 @@ playlist: "Playlist"
 };
 return fallbackWords[tag] || tag;
 } catch (error) {
-console.warn("[YouTube+][Main] Translation error:", error);
+mainLog.warn("[YouTube+][Main] Translation error:", error);
 const englishWords = {
 info: "Info",
 videos: "Videos",
@@ -5935,7 +6745,7 @@ attributeFilter: [ "data-ytlstm-new-layout", "data-ytlstm-overlay-text-shadow", 
 });
 for (const detected of newPlugins) {
 const pluginItem = plugin[detected];
-pluginItem ? pluginItem.activate() : console.warn(`No Plugin Activator for ${detected}`);
+pluginItem ? pluginItem.activate() : mainLog.warn(`No Plugin Activator for ${detected}`);
 }
 };
 const pluginAttributeFilter = [ "data-ytlstm-new-layout", "data-ytlstm-overlay-text-shadow", "data-ytlstm-theater-mode" ];
@@ -5986,12 +6796,12 @@ playlistElm && ytdFlexyElm ? doAttributeChange = playlistElm.closest("[hidden]")
 1 === doAttributeChange && ytdFlexyElm ? "" !== ytdFlexyElm.getAttribute000("tyt-playlist-expanded") && ytdFlexyElm.setAttribute111("tyt-playlist-expanded", "") : 2 === doAttributeChange && ytdFlexyElm && ytdFlexyElm.hasAttribute000("tyt-playlist-expanded") && ytdFlexyElm.removeAttribute000("tyt-playlist-expanded");
 };
 const aoChat = new MutationObserver(() => {
-Promise.resolve(lockSet.aoChatAttrAsyncLock).then(aoChatAttrChangeFn).catch(console.warn);
+Promise.resolve(lockSet.aoChatAttrAsyncLock).then(aoChatAttrChangeFn).catch(mainLog.warn);
 });
 YouTubeUtils?.cleanupManager?.registerObserver && YouTubeUtils.cleanupManager.registerObserver(aoChat);
 YouTubeUtils?.ObserverRegistry?.track && YouTubeUtils.ObserverRegistry.track();
 const aoPlayList = new MutationObserver(() => {
-Promise.resolve(lockSet.aoPlayListAttrAsyncLock).then(aoPlayListAttrChangeFn).catch(console.warn);
+Promise.resolve(lockSet.aoPlayListAttrAsyncLock).then(aoPlayListAttrChangeFn).catch(mainLog.warn);
 });
 YouTubeUtils?.cleanupManager?.registerObserver && YouTubeUtils.cleanupManager.registerObserver(aoPlayList);
 YouTubeUtils?.ObserverRegistry?.track && YouTubeUtils.ObserverRegistry.track();
@@ -6021,13 +6831,13 @@ for (const mutation of mutations) {
 "hidden" === mutation.attributeName && mutation.target === commentsArea ? bfHidden = !0 : "tyt-comments-video-id" === mutation.attributeName && mutation.target === commentsArea ? bfCommentsVideoId = !0 : "tyt-comments-data-status" === mutation.attributeName && mutation.target === commentsArea && (bfCommentDisabled = !0);
 }
 if (bfHidden) {
-commentsArea.hasAttribute000("hidden") || Promise.resolve(commentsArea).then(eventMap.settingCommentsVideoId).catch(console.warn);
-Promise.resolve(lockSet.removeKeepCommentsScrollerLock).then(removeKeepCommentsScroller).catch(console.warn);
+commentsArea.hasAttribute000("hidden") || Promise.resolve(commentsArea).then(eventMap.settingCommentsVideoId).catch(mainLog.warn);
+Promise.resolve(lockSet.removeKeepCommentsScrollerLock).then(removeKeepCommentsScroller).catch(mainLog.warn);
 }
 if ((bfHidden || bfCommentsVideoId || bfCommentDisabled) && ytdFlexyElm) {
 const commentsDataStatus = +commentsArea.getAttribute000("tyt-comments-data-status");
 2 === commentsDataStatus ? ytdFlexyElm.setAttribute111("tyt-comment-disabled", "") : 1 === commentsDataStatus && ytdFlexyElm.removeAttribute000("tyt-comment-disabled");
-Promise.resolve(lockSet.checkCommentsShouldBeHiddenLock).then(eventMap.checkCommentsShouldBeHidden).catch(console.warn);
+Promise.resolve(lockSet.checkCommentsShouldBeHiddenLock).then(eventMap.checkCommentsShouldBeHidden).catch(mainLog.warn);
 const lockId = lockSet.rightTabReadyLock01;
 await rightTabsProvidedPromise.then();
 if (lockGet.rightTabReadyLock01 !== lockId) {
@@ -6448,7 +7258,7 @@ dataSignal.controller573 = mWeakRef(cnt);
 dataSignal.setWithPath573 = dataSignal.setWithPath;
 dataSignal.setWithPath = function() {
 const cnt = kRef(this.controller573 || null) || null;
-cnt && "function" == typeof cnt._dataChanged496k && Promise.resolve(cnt).then(cnt._dataChanged496k).catch(console.warn);
+cnt && "function" == typeof cnt._dataChanged496k && Promise.resolve(cnt).then(cnt._dataChanged496k).catch(mainLog.warn);
 return this.setWithPath573(...arguments);
 };
 cProto._dataChanged496 = function() {
@@ -6553,7 +7363,7 @@ let egmPanelsDebounceTimer = null;
 const aoEgmPanels = new MutationObserver(() => {
 egmPanelsDebounceTimer || (egmPanelsDebounceTimer = setTimeout(() => {
 egmPanelsDebounceTimer = null;
-Promise.resolve(lockSet.updateEgmPanelsLock).then(updateEgmPanels).catch(console.warn);
+Promise.resolve(lockSet.updateEgmPanelsLock).then(updateEgmPanels).catch(mainLog.warn);
 }, 16));
 });
 YouTubeUtils?.cleanupManager?.registerObserver && YouTubeUtils.cleanupManager.registerObserver(aoEgmPanels);
@@ -6574,7 +7384,7 @@ const updateEgmPanels = async lockId => {
 if (lockId !== lockGet.updateEgmPanelsLock) {
 return;
 }
-await navigateFinishedPromise.then().catch(console.warn);
+await navigateFinishedPromise.then().catch(mainLog.warn);
 if (lockId !== lockGet.updateEgmPanelsLock) {
 return;
 }
@@ -6707,7 +7517,7 @@ linkedCommentBadge: p
 });
 done = 1;
 } catch (e) {
-console.warn(e);
+mainLog.warn(e);
 }
 return 1 === done;
 }
@@ -6725,16 +7535,16 @@ const media1 = common.getMediaElement(0);
 const media2 = common.getMediaElements(2);
 if (media1 instanceof HTMLMediaElement && media2.length > 0) {
 if (newMedia !== media1 && !1 === media1.paused) {
-(media => !!media && !media.paused && !media.ended && media.readyState > 2)(media1) && Promise.resolve(newMedia).then(video => !1 === video.paused && video.pause()).catch(console.warn);
+(media => !!media && !media.paused && !media.ended && media.readyState > 2)(media1) && Promise.resolve(newMedia).then(video => !1 === video.paused && video.pause()).catch(mainLog.warn);
 } else if (newMedia === media1) {
 for (const s of media2) {
 if (s instanceof HTMLMediaElement && !1 === s.paused) {
-Promise.resolve(s).then(mediaElement => !1 === mediaElement.paused && mediaElement.pause()).catch(console.warn);
+Promise.resolve(s).then(mediaElement => !1 === mediaElement.paused && mediaElement.pause()).catch(mainLog.warn);
 break;
 }
 }
 } else {
-Promise.resolve(media1).then(video1 => !1 === video1.paused && video1.pause()).catch(console.warn);
+Promise.resolve(media1).then(video1 => !1 === video1.paused && video1.pause()).catch(mainLog.warn);
 }
 }
 };
@@ -6775,7 +7585,7 @@ done = 1;
 } else {
 const v2pCnt = insp(v2.parent);
 const v2Conents = (v2pCnt.data || 0).contents || [];
-v2Conents || console.warn("v2Conents is not found");
+v2Conents || mainLog.warn("v2Conents is not found");
 v2pCnt.data = Object.assign({}, v2pCnt.data, {
 contents: [ v2Conents[v2.index], ...v2Conents.slice(0, v2.index), ...v2Conents.slice(v2.index + 1) ]
 });
@@ -6784,7 +7594,7 @@ lcSwapFuncB(targetLcId, currentLcId, p) && (done = 1);
 }
 }
 } catch (e) {
-console.warn(e);
+mainLog.warn(e);
 }
 return 1 === done;
 })(targetLc.lc, currentLc.lc) ? 1 : 0;
@@ -6875,7 +7685,7 @@ configurable: !0
 let playlistClearout = null;
 let timeoutid = 0;
 Promise.race([ new Promise(resolve => {
-timeoutid = setTimeout(resolve, 4e3);
+timeoutid = setTimeout_(resolve, 4e3);
 }), new Promise(resolve => {
 playlistClearout = () => {
 if (0 !== timeoutid) {
@@ -6895,7 +7705,7 @@ count = N - 1;
 const object = kRef(wObject);
 wObject = null;
 return object ? object.playlistId : null;
-}).catch(console.warn);
+}).catch(mainLog.warn);
 }
 if (!isLoadStartListened) {
 isLoadStartListened = !0;
@@ -7139,7 +7949,7 @@ activate() {
 if (!this.activated) {
 this.moFn = this.moFn.bind(this);
 this.mo = new MutationObserver(() => {
-Promise.resolve(lockSet.autoExpandInfoDescAttrAsyncLock).then(this.moFn).catch(console.warn);
+Promise.resolve(lockSet.autoExpandInfoDescAttrAsyncLock).then(this.moFn).catch(mainLog.warn);
 });
 YouTubeUtils?.cleanupManager?.registerObserver && YouTubeUtils.cleanupManager.registerObserver(this.mo);
 this.activated = !0;
@@ -7230,7 +8040,7 @@ this.mouseEnterFn = this.mouseEnterFn.bind(this);
 this.mouseLeaveFn = this.mouseLeaveFn.bind(this);
 this.moFn = this.moFn.bind(this);
 this.mo = new MutationObserver(() => {
-Promise.resolve(lockSet.fullChannelNameOnHoverAttrAsyncLock).then(this.moFn).catch(console.warn);
+Promise.resolve(lockSet.fullChannelNameOnHoverAttrAsyncLock).then(this.moFn).catch(mainLog.warn);
 });
 YouTubeUtils?.cleanupManager?.registerObserver && YouTubeUtils.cleanupManager.registerObserver(this.mo);
 this.ro = new ResizeObserver(mutations => {
@@ -7267,7 +8077,7 @@ const inPageRearrange_ = inPageRearrange;
 inPageRearrange = !1;
 for (const elm of qsAll(`${tag}`)) {
 const cnt = insp(elm) || 0;
-"function" != typeof cnt.attached498 || elm[__attachedSymbol__] || Promise.resolve(elm).then(eventMap[`${tag}::attached`]).catch(console.warn);
+"function" != typeof cnt.attached498 || elm[__attachedSymbol__] || Promise.resolve(elm).then(eventMap[`${tag}::attached`]).catch(mainLog.warn);
 }
 inPageRearrange = inPageRearrange_;
 };
@@ -7311,16 +8121,16 @@ const eventMap = {
 ceHack: () => {
 mLoaded.flag |= 2;
 document.documentElement.setAttribute111("tabview-loaded", mLoaded.makeString());
-retrieveCE("ytd-watch-flexy").then(eventMap["ytd-watch-flexy::defined"]).catch(console.warn);
-retrieveCE("ytd-expander").then(eventMap["ytd-expander::defined"]).catch(console.warn);
-retrieveCE("ytd-watch-next-secondary-results-renderer").then(eventMap["ytd-watch-next-secondary-results-renderer::defined"]).catch(console.warn);
-retrieveCE("ytd-comments-header-renderer").then(eventMap["ytd-comments-header-renderer::defined"]).catch(console.warn);
-retrieveCE("ytd-live-chat-frame").then(eventMap["ytd-live-chat-frame::defined"]).catch(console.warn);
-retrieveCE("ytd-comments").then(eventMap["ytd-comments::defined"]).catch(console.warn);
-retrieveCE("ytd-engagement-panel-section-list-renderer").then(eventMap["ytd-engagement-panel-section-list-renderer::defined"]).catch(console.warn);
-retrieveCE("ytd-watch-metadata").then(eventMap["ytd-watch-metadata::defined"]).catch(console.warn);
-retrieveCE("ytd-playlist-panel-renderer").then(eventMap["ytd-playlist-panel-renderer::defined"]).catch(console.warn);
-retrieveCE("ytd-expandable-video-description-body-renderer").then(eventMap["ytd-expandable-video-description-body-renderer::defined"]).catch(console.warn);
+retrieveCE("ytd-watch-flexy").then(eventMap["ytd-watch-flexy::defined"]).catch(mainLog.warn);
+retrieveCE("ytd-expander").then(eventMap["ytd-expander::defined"]).catch(mainLog.warn);
+retrieveCE("ytd-watch-next-secondary-results-renderer").then(eventMap["ytd-watch-next-secondary-results-renderer::defined"]).catch(mainLog.warn);
+retrieveCE("ytd-comments-header-renderer").then(eventMap["ytd-comments-header-renderer::defined"]).catch(mainLog.warn);
+retrieveCE("ytd-live-chat-frame").then(eventMap["ytd-live-chat-frame::defined"]).catch(mainLog.warn);
+retrieveCE("ytd-comments").then(eventMap["ytd-comments::defined"]).catch(mainLog.warn);
+retrieveCE("ytd-engagement-panel-section-list-renderer").then(eventMap["ytd-engagement-panel-section-list-renderer::defined"]).catch(mainLog.warn);
+retrieveCE("ytd-watch-metadata").then(eventMap["ytd-watch-metadata::defined"]).catch(mainLog.warn);
+retrieveCE("ytd-playlist-panel-renderer").then(eventMap["ytd-playlist-panel-renderer::defined"]).catch(mainLog.warn);
+retrieveCE("ytd-expandable-video-description-body-renderer").then(eventMap["ytd-expandable-video-description-body-renderer::defined"]).catch(mainLog.warn);
 },
 fixForTabDisplay: isResize => {
 bFixForResizedTabLater = !1;
@@ -7458,7 +8268,7 @@ if (!cProto.attached498 && "function" == typeof cProto.attached) {
 cProto.attached498 = cProto.attached;
 cProto.attached = function() {
 const self = this;
-inPageRearrange || Promise.resolve(self.hostElement).then(eventMap["ytd-watch-next-secondary-results-renderer::attached"]).catch(console.warn);
+inPageRearrange || Promise.resolve(self.hostElement).then(eventMap["ytd-watch-next-secondary-results-renderer::attached"]).catch(mainLog.warn);
 return self.attached498();
 };
 }
@@ -7466,7 +8276,7 @@ if (!cProto.detached498 && "function" == typeof cProto.detached) {
 cProto.detached498 = cProto.detached;
 cProto.detached = function() {
 const self = this;
-inPageRearrange || Promise.resolve(self.hostElement).then(eventMap["ytd-watch-next-secondary-results-renderer::detached"]).catch(console.warn);
+inPageRearrange || Promise.resolve(self.hostElement).then(eventMap["ytd-watch-next-secondary-results-renderer::detached"]).catch(mainLog.warn);
 return self.detached498();
 };
 }
@@ -7518,20 +8328,20 @@ commentsVideoId && commentsVideoId !== ytdFlexyCnt.videoId && commentsArea.setAt
 if (!cProto.attached498 && "function" == typeof cProto.attached) {
 cProto.attached498 = cProto.attached;
 cProto.attached = function() {
-inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-comments::attached"]).catch(console.warn);
+inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-comments::attached"]).catch(mainLog.warn);
 return this.attached498();
 };
 }
 if (!cProto.detached498 && "function" == typeof cProto.detached) {
 cProto.detached498 = cProto.detached;
 cProto.detached = function() {
-inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-comments::detached"]).catch(console.warn);
+inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-comments::detached"]).catch(mainLog.warn);
 return this.detached498();
 };
 }
 cProto._createPropertyObserver("data", "_dataChanged498", void 0);
 cProto._dataChanged498 = function() {
-Promise.resolve(this.hostElement).then(eventMap["ytd-comments::_dataChanged498"]).catch(console.warn);
+Promise.resolve(this.hostElement).then(eventMap["ytd-comments::_dataChanged498"]).catch(mainLog.warn);
 };
 makeInitAttached("ytd-comments");
 },
@@ -7548,7 +8358,7 @@ contents && 1 === contents.length && contents[0].messageRenderer && (commentsDat
 contents && contents.length > 1 && contents[0].commentThreadRenderer && (commentsDataStatus = 1);
 }
 commentsDataStatus ? hostElement.setAttribute111("tyt-comments-data-status", commentsDataStatus) : hostElement.removeAttribute000("tyt-comments-data-status");
-Promise.resolve(hostElement).then(eventMap.settingCommentsVideoId).catch(console.warn);
+Promise.resolve(hostElement).then(eventMap.settingCommentsVideoId).catch(mainLog.warn);
 },
 "ytd-comments::attached": async hostElement => {
 if (invalidFlexyParent(hostElement)) {
@@ -7565,7 +8375,7 @@ if (!hostElement || "comments" !== hostElement.id) {
 return;
 }
 elements.comments = hostElement;
-Promise.resolve(hostElement).then(eventMap.settingCommentsVideoId).catch(console.warn);
+Promise.resolve(hostElement).then(eventMap.settingCommentsVideoId).catch(mainLog.warn);
 aoComment.observe(hostElement, {
 attributes: !0
 });
@@ -7580,7 +8390,7 @@ moveNodeToTabview("comments", hostElement, tabComments);
 const shouldTabVisible = elements.comments && elements.comments.closest("#tab-comments") && !elements.comments.closest("[hidden]");
 const tabCommentsButton = document.querySelector('[tyt-tab-content="#tab-comments"]');
 tabCommentsButton && tabCommentsButton.classList.toggle("tab-btn-hidden", !shouldTabVisible);
-Promise.resolve(lockSet.removeKeepCommentsScrollerLock).then(removeKeepCommentsScroller).catch(console.warn);
+Promise.resolve(lockSet.removeKeepCommentsScrollerLock).then(removeKeepCommentsScroller).catch(mainLog.warn);
 }
 }
 },
@@ -7592,29 +8402,29 @@ aoComment.takeRecords();
 elements.comments = null;
 const tabCommentsButton = document.querySelector('[tyt-tab-content="#tab-comments"]');
 tabCommentsButton && tabCommentsButton.classList.add("tab-btn-hidden");
-Promise.resolve(lockSet.removeKeepCommentsScrollerLock).then(removeKeepCommentsScroller).catch(console.warn);
+Promise.resolve(lockSet.removeKeepCommentsScrollerLock).then(removeKeepCommentsScroller).catch(mainLog.warn);
 }
 },
 "ytd-comments-header-renderer::defined": cProto => {
 if (!cProto.attached498 && "function" == typeof cProto.attached) {
 cProto.attached498 = cProto.attached;
 cProto.attached = function() {
-inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-comments-header-renderer::attached"]).catch(console.warn);
-Promise.resolve(this.hostElement).then(eventMap["ytd-comments-header-renderer::dataChanged"]).catch(console.warn);
+inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-comments-header-renderer::attached"]).catch(mainLog.warn);
+Promise.resolve(this.hostElement).then(eventMap["ytd-comments-header-renderer::dataChanged"]).catch(mainLog.warn);
 return this.attached498();
 };
 }
 if (!cProto.detached498 && "function" == typeof cProto.detached) {
 cProto.detached498 = cProto.detached;
 cProto.detached = function() {
-inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-comments-header-renderer::detached"]).catch(console.warn);
+inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-comments-header-renderer::detached"]).catch(mainLog.warn);
 return this.detached498();
 };
 }
 if (!cProto.dataChanged498 && "function" == typeof cProto.dataChanged) {
 cProto.dataChanged498 = cProto.dataChanged;
 cProto.dataChanged = function() {
-Promise.resolve(this.hostElement).then(eventMap["ytd-comments-header-renderer::dataChanged"]).catch(console.warn);
+Promise.resolve(this.hostElement).then(eventMap["ytd-comments-header-renderer::dataChanged"]).catch(mainLog.warn);
 return this.dataChanged498();
 };
 }
@@ -7713,7 +8523,7 @@ cmCount && (cmCount.textContent = ez.trim());
 } else {
 hostElement.removeAttribute000("field-of-cm-count");
 cmCount && (cmCount.textContent = "");
-console.warn("no text for #tyt-cm-count");
+mainLog.warn("no text for #tyt-cm-count");
 }
 }
 },
@@ -7721,14 +8531,14 @@ console.warn("no text for #tyt-cm-count");
 if (!cProto.attached498 && "function" == typeof cProto.attached) {
 cProto.attached498 = cProto.attached;
 cProto.attached = function() {
-inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-expander::attached"]).catch(console.warn);
+inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-expander::attached"]).catch(mainLog.warn);
 return this.attached498();
 };
 }
 if (!cProto.detached498 && "function" == typeof cProto.detached) {
 cProto.detached498 = cProto.detached;
 cProto.detached = function() {
-inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-expander::detached"]).catch(console.warn);
+inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-expander::detached"]).catch(mainLog.warn);
 return this.detached498();
 };
 }
@@ -7739,7 +8549,7 @@ cProto.calculateCanCollapse = funcCanCollapse;
 if (!cProto.childrenChanged498 && "function" == typeof cProto.childrenChanged) {
 cProto.childrenChanged498 = cProto.childrenChanged;
 cProto.childrenChanged = function() {
-Promise.resolve(this.hostElement).then(eventMap["ytd-expander::childrenChanged"]).catch(console.warn);
+Promise.resolve(this.hostElement).then(eventMap["ytd-expander::childrenChanged"]).catch(mainLog.warn);
 return this.childrenChanged498();
 };
 }
@@ -7752,14 +8562,14 @@ hostElement instanceof Element && hostElement.hasAttribute000("hidden") && hostE
 if (!cProto.attached498 && "function" == typeof cProto.attached) {
 cProto.attached498 = cProto.attached;
 cProto.attached = function() {
-inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-expandable-video-description-body-renderer::attached"]).catch(console.warn);
+inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-expandable-video-description-body-renderer::attached"]).catch(mainLog.warn);
 return this.attached498();
 };
 }
 if (!cProto.detached498 && "function" == typeof cProto.detached) {
 cProto.detached498 = cProto.detached;
 cProto.detached = function() {
-inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-expandable-video-description-body-renderer::detached"]).catch(console.warn);
+inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-expandable-video-description-body-renderer::detached"]).catch(mainLog.warn);
 return this.detached498();
 };
 }
@@ -7811,7 +8621,7 @@ const shouldTabVisible = elements.infoExpander && elements.infoExpander.closest(
 tabInfoButton.classList.toggle("tab-btn-hidden", !shouldTabVisible);
 }
 }
-Promise.resolve(lockSet.infoFixLock).then(infoFix).catch(console.warn);
+Promise.resolve(lockSet.infoFixLock).then(infoFix).catch(mainLog.warn);
 }
 hostElement instanceof Element && Reflect.set(hostElement, __attachedSymbol__, !0);
 if (hostElement instanceof HTMLElement_ && hostElement.classList.length > 0 && !hostElement.closest("noscript") && !0 === hostElement.isConnected) {
@@ -7866,14 +8676,14 @@ hostElement.removeAttribute000("tyt-main-info");
 if (!cProto.attached498 && "function" == typeof cProto.attached) {
 cProto.attached498 = cProto.attached;
 cProto.attached = function() {
-inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-live-chat-frame::attached"]).catch(console.warn);
+inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-live-chat-frame::attached"]).catch(mainLog.warn);
 return this.attached498();
 };
 }
 if (!cProto.detached498 && "function" == typeof cProto.detached) {
 cProto.detached498 = cProto.detached;
 cProto.detached = function() {
-inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-live-chat-frame::detached"]).catch(console.warn);
+inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-live-chat-frame::detached"]).catch(mainLog.warn);
 return this.detached498();
 };
 }
@@ -7886,17 +8696,17 @@ const t = ath = 1 + (1073741823 & ath);
 const chatframe = this.chatframe || (this.$ || 0).chatframe || 0;
 if (chatframe instanceof HTMLIFrameElement) {
 if (null === chatframe.contentDocument) {
-await Promise.resolve("#").catch(console.warn);
+await Promise.resolve("#").catch(mainLog.warn);
 if (t !== ath) {
 return;
 }
 }
-await new Promise(resolve => setTimeout_(resolve, 1)).catch(console.warn);
+await new Promise(resolve => setTimeout_(resolve, 1)).catch(mainLog.warn);
 if (t !== ath) {
 return;
 }
 const isBlankPage = !this.data || this.collapsed;
-const p1 = new Promise(resolve => setTimeout_(resolve, 706)).catch(console.warn);
+const p1 = new Promise(resolve => setTimeout_(resolve, 706)).catch(mainLog.warn);
 const p2 = new Promise(resolve => {
 new IntersectionObserver((entries, observer) => {
 for (const entry of entries) {
@@ -7908,7 +8718,7 @@ break;
 }
 }
 }).observe(chatframe);
-}).catch(console.warn);
+}).catch(mainLog.warn);
 await Promise.race([ p1, p2 ]);
 if (t !== ath) {
 return;
@@ -7967,7 +8777,7 @@ q === cnt.__urlChangedAsyncT688__ && cnt.urlChanged();
 }, 320);
 Promise.resolve(lockSet.layoutFixLock).then(layoutFix);
 } else {
-console.warn("Issue found in ytd-live-chat-frame::attached", chatElem, hostElement);
+mainLog.warn("Issue found in ytd-live-chat-frame::attached", chatElem, hostElement);
 }
 }
 },
@@ -7988,14 +8798,14 @@ ytdFlexyElm.setAttribute111("tyt-chat", "");
 if (!cProto.attached498 && "function" == typeof cProto.attached) {
 cProto.attached498 = cProto.attached;
 cProto.attached = function() {
-inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-engagement-panel-section-list-renderer::attached"]).catch(console.warn);
+inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-engagement-panel-section-list-renderer::attached"]).catch(mainLog.warn);
 return this.attached498();
 };
 }
 if (!cProto.detached498 && "function" == typeof cProto.detached) {
 cProto.detached498 = cProto.detached;
 cProto.detached = function() {
-inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-engagement-panel-section-list-renderer::detached"]).catch(console.warn);
+inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-engagement-panel-section-list-renderer::detached"]).catch(mainLog.warn);
 return this.detached498();
 };
 }
@@ -8005,7 +8815,7 @@ makeInitAttached("ytd-engagement-panel-section-list-renderer");
 if (hostElement.matches("#panels.ytd-watch-flexy > ytd-engagement-panel-section-list-renderer[target-id][visibility]")) {
 hostElement.setAttribute111("tyt-egm-panel", "");
 egmPanelsCache.add(hostElement);
-Promise.resolve(lockSet.updateEgmPanelsLock).then(updateEgmPanels).catch(console.warn);
+Promise.resolve(lockSet.updateEgmPanelsLock).then(updateEgmPanels).catch(mainLog.warn);
 aoEgmPanels.observe(hostElement, {
 attributes: !0,
 attributeFilter: [ "visibility", "hidden" ]
@@ -8017,7 +8827,7 @@ if (!invalidFlexyParent(hostElement)) {
 hostElement instanceof Element && Reflect.set(hostElement, __attachedSymbol__, !0);
 if (hostElement instanceof HTMLElement_ && hostElement.classList.length > 0 && !hostElement.closest("noscript") && !0 === hostElement.isConnected && hostElement.matches("#panels.ytd-watch-flexy > ytd-engagement-panel-section-list-renderer")) {
 if (hostElement.hasAttribute000("target-id") && hostElement.hasAttribute000("visibility")) {
-Promise.resolve(hostElement).then(eventMap["ytd-engagement-panel-section-list-renderer::bindTarget"]).catch(console.warn);
+Promise.resolve(hostElement).then(eventMap["ytd-engagement-panel-section-list-renderer::bindTarget"]).catch(mainLog.warn);
 } else {
 hostElement.setAttribute000("tyt-egm-panel-jclmd", "");
 moEgmPanelReady.observe(hostElement, {
@@ -8032,7 +8842,7 @@ attributeFilter: [ "visibility", "target-id" ]
 if (hostElement instanceof HTMLElement_ && !hostElement.closest("noscript") && !1 === hostElement.isConnected) {
 if (hostElement.hasAttribute000("tyt-egm-panel")) {
 hostElement.removeAttribute000("tyt-egm-panel");
-Promise.resolve(lockSet.updateEgmPanelsLock).then(updateEgmPanels).catch(console.warn);
+Promise.resolve(lockSet.updateEgmPanelsLock).then(updateEgmPanels).catch(mainLog.warn);
 } else if (hostElement.hasAttribute000("tyt-egm-panel-jclmd")) {
 hostElement.removeAttribute000("tyt-egm-panel-jclmd");
 moEgmPanelReadyClearFn();
@@ -8043,14 +8853,14 @@ moEgmPanelReadyClearFn();
 if (!cProto.attached498 && "function" == typeof cProto.attached) {
 cProto.attached498 = cProto.attached;
 cProto.attached = function() {
-inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-watch-metadata::attached"]).catch(console.warn);
+inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-watch-metadata::attached"]).catch(mainLog.warn);
 return this.attached498();
 };
 }
 if (!cProto.detached498 && "function" == typeof cProto.detached) {
 cProto.detached498 = cProto.detached;
 cProto.detached = function() {
-inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-watch-metadata::detached"]).catch(console.warn);
+inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-watch-metadata::detached"]).catch(mainLog.warn);
 return this.detached498();
 };
 }
@@ -8069,14 +8879,14 @@ hostElement instanceof HTMLElement_ && hostElement.closest("noscript");
 if (!cProto.attached498 && "function" == typeof cProto.attached) {
 cProto.attached498 = cProto.attached;
 cProto.attached = function() {
-inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-playlist-panel-renderer::attached"]).catch(console.warn);
+inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-playlist-panel-renderer::attached"]).catch(mainLog.warn);
 return this.attached498();
 };
 }
 if (!cProto.detached498 && "function" == typeof cProto.detached) {
 cProto.detached498 = cProto.detached;
 cProto.detached = function() {
-inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-playlist-panel-renderer::detached"]).catch(console.warn);
+inPageRearrange || Promise.resolve(this.hostElement).then(eventMap["ytd-playlist-panel-renderer::detached"]).catch(mainLog.warn);
 return this.detached498();
 };
 }
@@ -8152,8 +8962,8 @@ const flexyArr = qsAll("ytd-watch-flexy").filter(e => !e.closest("[hidden]") && 
 if (1 === flexyArr.length) {
 elements.flexy = flexyArr[0];
 if (isRightTabsInserted) {
-Promise.resolve(lockSet.refreshSecondaryInnerLock).then(eventMap.refreshSecondaryInner).catch(console.warn);
-Promise.resolve(lockSet.removeKeepCommentsScrollerLock).then(removeKeepCommentsScroller).catch(console.warn);
+Promise.resolve(lockSet.refreshSecondaryInnerLock).then(eventMap.refreshSecondaryInner).catch(mainLog.warn);
+Promise.resolve(lockSet.removeKeepCommentsScrollerLock).then(removeKeepCommentsScroller).catch(mainLog.warn);
 } else {
 navigateFinishedPromise.resolve();
 plugin.minibrowser.toUse && plugin.minibrowser.activate();
@@ -8163,7 +8973,7 @@ plugin.fullChannelNameOnHover.toUse && plugin.fullChannelNameOnHover.activate();
 const chat = elements.chat;
 chat instanceof Element && chat.setAttribute111("tyt-active-chat-frame", "CF");
 const infoExpander = elements.infoExpander;
-infoExpander && infoExpander.closest("#right-tabs") && Promise.resolve(lockSet.infoFixLock).then(infoFix).catch(console.warn);
+infoExpander && infoExpander.closest("#right-tabs") && Promise.resolve(lockSet.infoFixLock).then(infoFix).catch(mainLog.warn);
 Promise.resolve(lockSet.layoutFixLock).then(layoutFix);
 plugin.fullChannelNameOnHover.activated && plugin.fullChannelNameOnHover.onNavigateFinish();
 }
@@ -8177,7 +8987,7 @@ return;
 }
 getLangForPage();
 const docTmp = document.createElement("template");
-docTmp.innerHTML = createHTML((function getTabsHTML() {
+const parsedTabs = (new DOMParser).parseFromString(String(createHTML((function getTabsHTML() {
 const sTabBtnVideos = `${svgElm(16, 16, 90, 90, svgVideos)}<span>${getWord("videos")}</span>`;
 const sTabBtnInfo = `${svgElm(16, 16, 60, 60, svgInfo)}<span>${getWord("info")}</span>`;
 const sTabBtnPlayList = `${svgElm(16, 16, 20, 20, svgPlayList)}<span>${getWord("playlist")}</span>`;
@@ -8186,7 +8996,9 @@ const str_fbtns = '\n    <div class="font-size-right">\n    <div class="font-siz
 const str_tabs = [ `<a id="tab-btn1" role="tab" aria-selected="false" aria-controls="tab-info" tyt-di="q9Kjc" tyt-tab-content="#tab-info" class="tab-btn${1 & ~hiddenTabsByUserCSS ? "" : " tab-btn-hidden"}">${sTabBtnInfo}${str1}${str_fbtns}</a>`, `<a id="tab-btn3" role="tab" aria-selected="false" aria-controls="tab-comments" tyt-di="q9Kjc" tyt-tab-content="#tab-comments" class="tab-btn${2 & ~hiddenTabsByUserCSS ? "" : " tab-btn-hidden"}">${svgElm(16, 16, 120, 120, svgComments)}<span id="tyt-cm-count"></span>${str1}${str_fbtns}</a>`, `<a id="tab-btn4" role="tab" aria-selected="false" aria-controls="tab-videos" tyt-di="q9Kjc" tyt-tab-content="#tab-videos" class="tab-btn${4 & ~hiddenTabsByUserCSS ? "" : " tab-btn-hidden"}">${sTabBtnVideos}${str1}${str_fbtns}</a>`, `<a id="tab-btn5" role="tab" aria-selected="false" aria-controls="tab-list" tyt-di="q9Kjc" tyt-tab-content="#tab-list" class="tab-btn tab-btn-hidden">${sTabBtnPlayList}${str1}${str_fbtns}</a>` ].join("");
 const addHTML = `\n        <div id="right-tabs">\n            <tabview-view-pos-thead></tabview-view-pos-thead>\n            <header>\n                <div id="material-tabs" role="tablist">\n                    ${str_tabs}\n                </div>\n            </header>\n            <div class="tab-content">\n                <div id="tab-info" role="tabpanel" aria-labelledby="tab-btn1" class="tab-content-cld tab-content-hidden" tyt-hidden userscript-scrollbar-render></div>\n                <div id="tab-comments" role="tabpanel" aria-labelledby="tab-btn3" class="tab-content-cld tab-content-hidden" tyt-hidden userscript-scrollbar-render></div>\n                <div id="tab-videos" role="tabpanel" aria-labelledby="tab-btn4" class="tab-content-cld tab-content-hidden" tyt-hidden userscript-scrollbar-render></div>\n                <div id="tab-list" role="tabpanel" aria-labelledby="tab-btn5" class="tab-content-cld tab-content-hidden" tyt-hidden userscript-scrollbar-render></div>\n            </div>\n        </div>\n        `;
 return addHTML;
-})());
+})())), "text/html");
+const parsedNodes = Array.from(parsedTabs.body.childNodes).map(node => document.importNode(node, !0));
+docTmp.content.replaceChildren(...parsedNodes);
 const newElm = docTmp.content.firstElementChild;
 if (null !== newElm) {
 inPageRearrange = !0;
@@ -8269,18 +9081,18 @@ YouTubeUtils?.cleanupManager?.registerObserver && YouTubeUtils.cleanupManager.re
 ytdFlexyElm && aoFlexy.observe(ytdFlexyElm, {
 attributes: !0
 });
-Promise.resolve(lockSet.fixInitialTabStateLock).then(eventMap.fixInitialTabStateFn).catch(console.warn);
+Promise.resolve(lockSet.fixInitialTabStateLock).then(eventMap.fixInitialTabStateFn).catch(mainLog.warn);
 ytdFlexyElm.incAttribute111("attr-7qlsy");
 }
 },
 aoFlexyFn: () => {
-Promise.resolve(lockSet.checkCommentsShouldBeHiddenLock).then(eventMap.checkCommentsShouldBeHidden).catch(console.warn);
-Promise.resolve(lockSet.refreshSecondaryInnerLock).then(eventMap.refreshSecondaryInner).catch(console.warn);
-Promise.resolve(lockSet.tabsStatusCorrectionLock).then(eventMap.tabsStatusCorrection).catch(console.warn);
+Promise.resolve(lockSet.checkCommentsShouldBeHiddenLock).then(eventMap.checkCommentsShouldBeHidden).catch(mainLog.warn);
+Promise.resolve(lockSet.refreshSecondaryInnerLock).then(eventMap.refreshSecondaryInner).catch(mainLog.warn);
+Promise.resolve(lockSet.tabsStatusCorrectionLock).then(eventMap.tabsStatusCorrection).catch(mainLog.warn);
 const videoId = getCurrentVideoId();
 if (videoId !== tmpLastVideoId) {
 tmpLastVideoId = videoId;
-Promise.resolve(lockSet.updateOnVideoIdChangedLock).then(eventMap.updateOnVideoIdChanged).catch(console.warn);
+Promise.resolve(lockSet.updateOnVideoIdChangedLock).then(eventMap.updateOnVideoIdChanged).catch(mainLog.warn);
 }
 },
 twoColumnChanged10: lockId => {
@@ -8364,7 +9176,7 @@ return;
 }
 let bFixForResizedTab = !1;
 2 == (2 ^ q) && bFixForResizedTabLater && (bFixForResizedTab = !0);
-16 & ~p || 16 & q || Promise.resolve(lockSet.twoColumnChanged10Lock).then(eventMap.twoColumnChanged10).catch(console.warn);
+16 & ~p || 16 & q || Promise.resolve(lockSet.twoColumnChanged10Lock).then(eventMap.twoColumnChanged10).catch(mainLog.warn);
 !(2 & ~p) == !(2 & ~q) || 2 & ~q || (bFixForResizedTab = !0);
 if (!(2 & p || 2 & ~q || 128 & ~p || 128 & ~q)) {
 lastPanel = lastTab || "";
@@ -8497,18 +9309,18 @@ actioned = !0;
 switchToTab(lastTab);
 actioned = !0;
 } else if (resetForPanelDisappeared) {
-Promise.resolve(lockSet.fixInitialTabStateLock).then(eventMap.fixInitialTabStateFn).catch(console.warn);
+Promise.resolve(lockSet.fixInitialTabStateLock).then(eventMap.fixInitialTabStateFn).catch(mainLog.warn);
 actioned = !0;
 }
 }
 if (bFixForResizedTab) {
 bFixForResizedTabLater = !1;
-Promise.resolve(0).then(eventMap.fixForTabDisplay).catch(console.warn);
+Promise.resolve(0).then(eventMap.fixForTabDisplay).catch(mainLog.warn);
 }
 if (!(16 & ~p) != !(16 & ~q)) {
-Promise.resolve(lockSet.infoFixLock).then(infoFix).catch(console.warn);
-Promise.resolve(lockSet.removeKeepCommentsScrollerLock).then(removeKeepCommentsScroller).catch(console.warn);
-Promise.resolve(lockSet.layoutFixLock).then(layoutFix).catch(console.warn);
+Promise.resolve(lockSet.infoFixLock).then(infoFix).catch(mainLog.warn);
+Promise.resolve(lockSet.removeKeepCommentsScrollerLock).then(removeKeepCommentsScroller).catch(mainLog.warn);
+Promise.resolve(lockSet.layoutFixLock).then(layoutFix).catch(mainLog.warn);
 }
 }
 },
@@ -8523,7 +9335,7 @@ return;
 const bodyRenderer = elements.infoExpanderRendererBack;
 const bodyRendererNew = elements.infoExpanderRendererFront;
 bodyRendererNew && bodyRenderer && (insp(bodyRendererNew).data = insp(bodyRenderer).data);
-Promise.resolve(lockSet.infoFixLock).then(infoFix).catch(console.warn);
+Promise.resolve(lockSet.infoFixLock).then(infoFix).catch(mainLog.warn);
 },
 fixInitialTabStateFn: async lockId => {
 if (lockGet.fixInitialTabStateLock !== lockId) {
@@ -8563,8 +9375,8 @@ switchToTab(activeLink);
 }
 }
 };
-Promise.all([ videosElementProvidedPromise, navigateFinishedPromise ]).then(eventMap.onceInsertRightTabs).catch(console.warn);
-Promise.all([ navigateFinishedPromise, infoExpanderElementProvidedPromise ]).then(eventMap.onceInfoExpanderElementProvidedPromised).catch(console.warn);
+Promise.all([ videosElementProvidedPromise, navigateFinishedPromise ]).then(eventMap.onceInsertRightTabs).catch(mainLog.warn);
+Promise.all([ navigateFinishedPromise, infoExpanderElementProvidedPromise ]).then(eventMap.onceInfoExpanderElementProvidedPromised).catch(mainLog.warn);
 const isCustomElementsProvided = "undefined" != typeof customElements && "function" == typeof (customElements || 0).whenDefined;
 const promiseForCustomYtElementsReady = isCustomElementsProvided ? Promise.resolve(0) : new Promise(callback => {
 if ("undefined" == typeof customElements) {
@@ -8599,7 +9411,7 @@ const dummy = qs(nodeName) || document.createElement(nodeName);
 const cProto = insp(dummy).constructor.prototype;
 return cProto;
 } catch (e) {
-console.warn(e);
+mainLog.warn(e);
 }
 };
 const moOverallRes = {
@@ -8652,7 +9464,7 @@ const target = mutation.target;
 if (target instanceof Element && (target.hasAttribute000("tyt-egm-panel-jclmd") && target.hasAttribute000("target-id") && target.hasAttribute000("visibility"))) {
 target.removeAttribute000("tyt-egm-panel-jclmd");
 moEgmPanelReadyClearFn();
-Promise.resolve(target).then(eventMap["ytd-engagement-panel-section-list-renderer::bindTarget"]).catch(console.warn);
+Promise.resolve(target).then(eventMap["ytd-engagement-panel-section-list-renderer::bindTarget"]).catch(mainLog.warn);
 }
 }
 });
@@ -8672,9 +9484,9 @@ const f = eventMap[evt.animationName];
 YouTubeUtils?.cleanupManager?.registerListener ? YouTubeUtils.cleanupManager.registerListener(document, "animationstart", _animStartHandler, capturePassive) : document.addEventListener("animationstart", _animStartHandler, capturePassive);
 mLoaded.flag |= 1;
 document.documentElement.setAttribute111("tabview-loaded", mLoaded.makeString());
-promiseForCustomYtElementsReady.then(eventMap.ceHack).catch(console.warn);
+promiseForCustomYtElementsReady.then(eventMap.ceHack).catch(mainLog.warn);
 } catch (e) {
-console.error("error 0xF491", e);
+mainLog.error("error 0xF491", e);
 }
 };
 
@@ -8691,7 +9503,7 @@ if (!(function n(s) {
 return s ? t = !1 : !(!e.postMessage || e.importScripts || !e.addEventListener) && (e.addEventListener("message", n, !1), 
 e.postMessage("$$$", "*"), e.removeEventListener("message", n, !1), t);
 })()) {
-return void console.warn("Your browser environment cannot use nextBrowserTick");
+return void mainLog.warn("Your browser environment cannot use nextBrowserTick");
 }
 const n = globalThis.Promise;
 let s = null;
@@ -8701,10 +9513,15 @@ do {
 l = `$$nextBrowserTick$$${(i() + 8).toString().slice(2)}$$`;
 } while (l in e);
 const a = l, c = a.length + 9;
+const messageTargetOrigin = "undefined" != typeof location && "string" == typeof location.origin ? location.origin : "*";
 e[a] = 1;
 e.addEventListener("message", evt => {
 if (0 !== o.size) {
 const t = (evt || 0).data;
+const origin = String((evt || 0).origin || "");
+if (origin && "null" !== origin && origin !== location.origin) {
+return;
+}
 if ("string" == typeof t && t.length === c && evt.source === (evt.target || 1)) {
 const fn = o.get(t);
 if (fn) {
@@ -8727,7 +9544,7 @@ token = `p${a}${r(314159265359 * i() + 314159265359).toString(36)}`;
 s = new n(resolve => {
 token && o.set(token, resolve);
 });
-token && e.postMessage(token, "*");
+token && e.postMessage(token, messageTargetOrigin);
 token = null;
 return s;
 }
@@ -8737,7 +9554,7 @@ do {
 n = `f${a}${r(314159265359 * i() + 314159265359).toString(36)}`;
 } while (o.has(n));
 o.set(n, t);
-e.postMessage(n, "*");
+e.postMessage(n, messageTargetOrigin);
 return null;
 }
 };
@@ -8748,7 +9565,7 @@ const Promise = globalThis.Promise;
 if (!document.documentElement) {
 await Promise.resolve(0);
 for (;!document.documentElement; ) {
-await new Promise(resolve => nextBrowserTick(resolve)).then().catch(console.warn);
+await new Promise(resolve => nextBrowserTick(resolve)).then().catch(mainLog.warn);
 }
 }
 const textContent = `(${executionScript})("${communicationKey}");\n\n//# sourceURL=debug://tabview-youtube/tabview.execution.js\n`;
@@ -8763,7 +9580,7 @@ script.textContent = textContent;
 script.remove();
 executionInjected = !0;
 } catch (e) {
-console.warn("[YouTube+] Script nonce injection failed, falling back:", e);
+mainLog.warn("[YouTube+] Script nonce injection failed, falling back:", e);
 }
 if (!executionInjected) {
 try {
@@ -8784,7 +9601,7 @@ script.remove();
 (document.head || document.documentElement).appendChild(script);
 executionInjected = !0;
 } catch (e) {
-console.error("[YouTube+] Failed to inject execution script", e);
+mainLog.error("[YouTube+] Failed to inject execution script", e);
 throw e;
 }
 }
@@ -9157,6 +9974,45 @@ gl: "es"
 };
 const translationsCache = new Map;
 const loadingPromises = new Map;
+const setTimeout_ = setTimeout.bind(window);
+async function fetchJSON(url) {
+if ("undefined" != typeof GM_xmlhttpRequest) {
+const responseText = await new Promise((resolve, reject) => {
+const timeoutId = setTimeout_(() => reject(new Error("i18n request timeout")), 12e3);
+GM_xmlhttpRequest({
+method: "GET",
+url,
+timeout: 12e3,
+headers: {
+Accept: "application/json"
+},
+onload: response => {
+clearTimeout(timeoutId);
+response.status >= 200 && response.status < 300 ? resolve(response.responseText || "") : reject(new Error(`HTTP ${response.status}: ${response.statusText || "request failed"}`));
+},
+onerror: err => {
+clearTimeout(timeoutId);
+reject(new Error(`Network error: ${String(err)}`));
+},
+ontimeout: () => {
+clearTimeout(timeoutId);
+reject(new Error("i18n request timeout"));
+}
+});
+});
+return JSON.parse(String(responseText || "{}"));
+}
+const response = await fetch(url, {
+cache: "default",
+headers: {
+Accept: "application/json"
+}
+});
+if (!response.ok) {
+throw new Error(`HTTP ${response.status}`);
+}
+return response.json();
+}
 function loadTranslationsFromLoader(lang) {
 const languageCode = AVAILABLE_LANGUAGES.includes(lang) ? lang : "en";
 if (translationsCache.has(languageCode)) {
@@ -9177,36 +10033,18 @@ return embedded;
 }
 }
 } catch (e) {
-console.warn("[YouTube+][i18n]", "Error reading embedded translations", e);
+window.console.warn("[YouTube+][i18n]", "Error reading embedded translations", e);
 }
 try {
 const rawUrl = `${CDN_URLS.github}/${lang}.json`;
-const response = await fetch(rawUrl, {
-cache: "default",
-headers: {
-Accept: "application/json"
-}
-});
-if (!response.ok) {
-throw new Error(`HTTP ${response.status}`);
-}
-return await response.json();
+return await fetchJSON(rawUrl);
 } catch (firstErr) {
 try {
-const cdnUrl = `${CDN_URLS.jsdelivr}/${lang}.json`;
-console.warn("[YouTube+][i18n]", `Raw GitHub fetch failed, trying jsDelivr: ${cdnUrl}`);
-const response = await fetch(cdnUrl, {
-cache: "default",
-headers: {
-Accept: "application/json"
-}
-});
-if (!response.ok) {
-throw new Error(`HTTP ${response.status}`);
-}
-return await response.json();
+const cdnUrl = `${CDN_URLS.jsdelivr}/${lang}.json?_=${Date.now()}`;
+window.console.warn("[YouTube+][i18n]", `Raw GitHub fetch failed, trying jsDelivr: ${cdnUrl}`);
+return await fetchJSON(cdnUrl);
 } catch (err) {
-console.error("[YouTube+][i18n]", `Failed to fetch translations for ${lang}:`, err, firstErr);
+window.console.error("[YouTube+][i18n]", `Failed to fetch translations for ${lang}:`, err, firstErr);
 throw err;
 }
 }
@@ -9216,7 +10054,7 @@ const missing = [];
 [ "loading", "fetching" ].forEach(k => {
 Object.prototype.hasOwnProperty.call(translations, k) || missing.push(k);
 });
-missing.length > 0 && console.warn("[YouTube+][i18n]", `Translations for ${languageCode} missing keys: ${missing.join(", ")} (source may be stale)`);
+missing.length > 0 && window.console.warn("[YouTube+][i18n]", `Translations for ${languageCode} missing keys: ${missing.join(", ")} (source may be stale)`);
 } catch (e) {}
 translationsCache.set(languageCode, translations);
 loadingPromises.delete(languageCode);
@@ -9307,7 +10145,7 @@ return fallbacks[lower] ? fallbacks[lower] : fallbacks[shortCode] ? fallbacks[sh
 }
 function detectLanguage() {
 try {
-const ytLang = document.documentElement.lang || document.querySelector("html")?.getAttribute("lang");
+const ytLang = document.documentElement.lang || window.YouTubeUtils?.$("html")?.getAttribute("lang");
 if (ytLang) {
 const mapped = mapToSupportedLanguage(ytLang);
 return mapped;
@@ -9334,7 +10172,7 @@ const browserLang = navigator.language || navigator.userLanguage || "en";
 const mapped = mapToSupportedLanguage(browserLang);
 return mapped;
 } catch (error) {
-console.error("[YouTube+][i18n]", "Error detecting language:", error);
+window.console.error("[YouTube+][i18n]", "Error detecting language:", error);
 return "en";
 }
 }
@@ -9359,7 +10197,7 @@ translationCache.clear();
 window.YouTubeUtils?.logger?.debug?.("[YouTube+][i18n]", `? Loaded ${Object.keys(translations).length} translations for ${currentLanguage}`);
 return !0;
 } catch (error) {
-console.error("[YouTube+][i18n]", "Failed to load translations:", error);
+window.console.error("[YouTube+][i18n]", "Failed to load translations:", error);
 if ("en" !== currentLanguage) {
 currentLanguage = "en";
 return loadTranslations();
@@ -9382,16 +10220,14 @@ const enText = fallbackTranslationsEn ? fallbackTranslationsEn[key] : void 0;
 if (enText) {
 text = enText;
 } else {
-Object.keys(translations).length > 0 && Object.keys(fallbackTranslationsEn).length > 0 && console.warn("[YouTube+][i18n]", `Missing translation for key: ${key}`);
+Object.keys(translations).length > 0 && Object.keys(fallbackTranslationsEn).length > 0 && window.console.warn("[YouTube+][i18n]", `Missing translation for key: ${key}`);
 text = key;
 }
 }
-if (Object.keys(params).length > 0) {
-const escapeRegex = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-Object.keys(params).forEach(param => {
-text = text.replace(new RegExp(`\\{${escapeRegex(param)}\\}`, "g"), params[param]);
+Object.keys(params).length > 0 && Object.keys(params).forEach(param => {
+const token = `{${param}}`;
+text = text.split(token).join(String(params[param]));
 });
-}
 translationCache.set(cacheKey, text);
 return text;
 }
@@ -9410,7 +10246,7 @@ emitI18nEvent("youtube-plus-i18n-ready", {
 language: currentLanguage
 });
 } catch (error) {
-console.error("[YouTube+][i18n]", "Initialization error:", error);
+window.console.error("[YouTube+][i18n]", "Initialization error:", error);
 currentLanguage = "en";
 }
 }
@@ -9431,7 +10267,7 @@ languageChangeListeners.forEach(listener => {
 try {
 listener(currentLanguage, oldLang);
 } catch (error) {
-console.error("[YouTube+][i18n]", "Error in language change listener:", error);
+window.console.error("[YouTube+][i18n]", "Error in language change listener:", error);
 }
 });
 emitI18nEvent("youtube-plus-language-changed", {
@@ -9441,7 +10277,7 @@ previousLanguage: oldLang
 }
 return success;
 } catch (error) {
-console.error("[YouTube+][i18n]", "Failed to change language:", error);
+window.console.error("[YouTube+][i18n]", "Failed to change language:", error);
 currentLanguage = oldLang;
 return !1;
 }
@@ -9484,7 +10320,7 @@ tr: "tr-TR"
 const locale = localeMap[lang] || "en-US";
 return new Intl.NumberFormat(locale, options).format(num);
 } catch (error) {
-console.error("[YouTube+][i18n]", "Error formatting number:", error);
+window.console.error("[YouTube+][i18n]", "Error formatting number:", error);
 return String(num);
 }
 },
@@ -9505,7 +10341,7 @@ const locale = localeMap[lang] || "en-US";
 const dateObj = date instanceof Date ? date : new Date(date);
 return new Intl.DateTimeFormat(locale, options).format(dateObj);
 } catch (error) {
-console.error("[YouTube+][i18n]", "Error formatting date:", error);
+window.console.error("[YouTube+][i18n]", "Error formatting date:", error);
 return String(date);
 }
 },
@@ -9576,7 +10412,7 @@ return `\n    <div class="download-site-option">\n      <div class="download-sit
 function createExternalDownloaderControls(customization, t) {
 const name = customization?.name || "SSYouTube";
 const url = customization?.url || "https://ssyoutube.com/watch?v={videoId}";
-return `\n    <input type="text" placeholder="${t("siteName")}" value="${name}" \n        data-site="externalDownloader" data-field="name" class="download-site-input">\n    <input type="text" placeholder="${t("urlTemplate")}" value="${url}" \n      data-site="externalDownloader" data-field="url" class="download-site-input small">\n    <div class="download-site-cta">\n      <button class="glass-button" id="download-externalDownloader-save">${t("saveButton")}</button>\n      <button class="glass-button danger" id="download-externalDownloader-reset">${t("resetButton")}</button>\n    </div>\n  `;
+return `\n    <input type="text" placeholder="${t("siteName")}" value="${name}" \n        data-site="externalDownloader" data-field="name" class="download-site-input"\n        aria-label="${t("siteName")}">\n    <input type="text" placeholder="${t("urlTemplate")}" value="${url}" \n      data-site="externalDownloader" data-field="url" class="download-site-input small"\n      aria-label="${t("urlTemplate")}">\n    <div class="download-site-cta">\n      <button class="glass-button" id="download-externalDownloader-save">${t("saveButton")}</button>\n      <button class="glass-button danger" id="download-externalDownloader-reset">${t("resetButton")}</button>\n    </div>\n  `;
 }
 function tr(t, key, fallback) {
 try {
@@ -9587,12 +10423,11 @@ return v;
 } catch (e) {}
 return fallback;
 }
-function createBasicSettingsSection(settings, t) {
-const downloadEnabled = !!settings.enableDownload;
-const styleEnabled = !1 !== settings.enableZenStyles;
-const speedEnabled = !!settings.enableSpeedControl;
-return `\n    <div class="ytp-plus-settings-section" data-section="basic">\n      <div class="ytp-plus-settings-item ytp-plus-settings-item--with-submenu">\n        <div>\n          <label class="ytp-plus-settings-item-label" for="ytp-plus-setting-enableZenStyles">${tr(t, "zenStylesTitle", "Zen styles")}</label>\n          <div class="ytp-plus-settings-item-description">${tr(t, "zenStylesDesc", "Optional UI tweaks and cosmetic improvements")}</div>\n        </div>\n        <div class="ytp-plus-settings-item-actions">\n          <button\n            type="button"\n            class="ytp-plus-submenu-toggle"\n            data-submenu="style"\n            aria-label="Toggle styles submenu"\n            aria-expanded="${styleEnabled ? "true" : "false"}"\n            ${styleEnabled ? "" : "disabled"}\n            style="display:${styleEnabled ? "inline-flex" : "none"};"\n          >\n            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">\n              <polyline points="6 9 12 15 18 9"></polyline>\n            </svg>\n          </button>\n          <input type="checkbox" id="ytp-plus-setting-enableZenStyles" class="ytp-plus-settings-checkbox" data-setting="enableZenStyles" ${styleEnabled ? "checked" : ""}>\n        </div>\n      </div>\n      ${(function createStyleSubmenu(settings, t) {
+function createStyleSubmenu(settings, t) {
 const display = settings.enableZenStyles ? "block" : "none";
+const rawSideVideosColumns = Number(settings.zenStyles?.sideVideosColumns);
+const sideVideosColumnsValue = Number.isFinite(rawSideVideosColumns) ? Math.max(0, Math.min(2, rawSideVideosColumns)) : 0;
+const sideVideosColumnsEnabled = !0 === settings.zenStyles?.sideVideosColumnsEnabled || sideVideosColumnsValue > 0;
 const rows = [ {
 label: tr(t, "zenStyleThumbnailHoverLabel", "Thumbnail hover preview"),
 desc: tr(t, "zenStyleThumbnailHoverDesc", "Enlarge inline preview player on hover"),
@@ -9634,12 +10469,6 @@ desc: tr(t, "zenStyleCompactFeedDesc", "Reduce feed spacing and show quick actio
 key: "zenStyles.compactFeed",
 value: settings.zenStyles?.compactFeed
 }, {
-label: tr(t, "zenStyleSideVideosColumnsLabel", "Side Videos Columns"),
-desc: tr(t, "zenStyleSideVideosColumnsDesc", "Related videos layout: 0 = YouTube default (off), 1 = single-column cards, 2 = two-column grid"),
-key: "zenStyles.sideVideosColumns",
-value: settings.zenStyles?.sideVideosColumns ?? 1,
-isSelect: !0
-}, {
 label: tr(t, "zenStyleBetterCaptionsLabel", "Better Captions"),
 desc: tr(t, "zenStyleBetterCaptionsDesc", "Enhanced subtitle styling with blur backdrop"),
 key: "zenStyles.betterCaptions",
@@ -9660,7 +10489,10 @@ desc: tr(t, "zenStyleMiscDesc", "Compact feed, hover menus, and other minor impr
 key: "zenStyles.misc",
 value: settings.zenStyles?.misc
 } ];
-return `\n    <div class="style-submenu" data-submenu="style" style="display:${display};">\n      <div class="glass-card style-submenu-container">\n        ${rows.map(r => r.isSelect ? createSettingsSelect(r.label, r.desc, r.key, r.value, [ {
+return `\n    <div class="style-submenu" data-submenu="style" style="display:${display};">\n      <div class="glass-card style-submenu-container">\n        ${rows.map(r => createSettingsItem(r.label, r.desc, r.key, r.value)).join("")}\n        ${(function createSettingsToggleWithSelectSubmenu(label, description, toggleSetting, checked, submenuKey, selectLabel, selectDescription, selectSetting, selectValue, options) {
+const toggleInputId = `ytp-plus-setting-${toggleSetting}`;
+return `\n    <div class="ytp-plus-settings-item ytp-plus-settings-item--with-submenu">\n      <div>\n        <label class="ytp-plus-settings-item-label" for="${toggleInputId}">${label}</label>\n        <div class="ytp-plus-settings-item-description">${description}</div>\n      </div>\n      <div class="ytp-plus-settings-item-actions">\n        <button\n          type="button"\n          class="ytp-plus-submenu-toggle"\n          data-submenu="${submenuKey}"\n          aria-label="Toggle ${submenuKey} submenu"\n          aria-expanded="${checked ? "true" : "false"}"\n          ${checked ? "" : "disabled"}\n          style="display:${checked ? "inline-flex" : "none"};"\n        >\n          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">\n            <polyline points="6 9 12 15 18 9"></polyline>\n          </svg>\n        </button>\n        <input type="checkbox" id="${toggleInputId}" class="ytp-plus-settings-checkbox" data-setting="${toggleSetting}" ${checked ? "checked" : ""} aria-label="${label}">\n      </div>\n    </div>\n    <div class="style-side-videos-submenu" data-submenu="${submenuKey}" style="display:${checked ? "block" : "none"};margin-left:12px;margin-bottom:8px;">\n      <div class="glass-card" style="display:flex;flex-direction:column;gap:8px;">\n        ${createSettingsSelect(selectLabel, selectDescription, selectSetting, selectValue, options)}\n      </div>\n    </div>\n  `;
+})(tr(t, "zenStyleSideVideosColumnsLabel", "Side Videos Columns"), tr(t, "zenStyleSideVideosColumnsDesc", "Choose how many columns to use for side videos in Zen mode"), "zenStyles.sideVideosColumnsEnabled", sideVideosColumnsEnabled, "style-side-videos", tr(t, "zenStyleSideVideosColumnsLabel", "Side Videos Columns"), tr(t, "zenStyleSideVideosColumnsDesc", "Choose how many columns to use for side videos in Zen mode"), "zenStyles.sideVideosColumns", sideVideosColumnsValue, [ {
 value: 0,
 label: "Default (Off)"
 }, {
@@ -9669,8 +10501,13 @@ label: "1 Column"
 }, {
 value: 2,
 label: "2 Columns"
-} ]) : createSettingsItem(r.label, r.desc, r.key, r.value)).join("")}\n      </div>\n    </div>\n  `;
-})(settings, t)}\n      <div class="ytp-plus-settings-item ytp-plus-settings-item--with-submenu">\n        <div>\n          <label class="ytp-plus-settings-item-label" for="ytp-plus-setting-enableSpeedControl">${t("speedControl")}</label>\n          <div class="ytp-plus-settings-item-description">${t("speedControlDesc")}</div>\n        </div>\n        <div class="ytp-plus-settings-item-actions">\n          <button\n            type="button"\n            class="ytp-plus-submenu-toggle"\n            data-submenu="speed"\n            aria-label="Toggle speed submenu"\n            aria-expanded="${speedEnabled ? "true" : "false"}"\n            ${speedEnabled ? "" : "disabled"}\n            style="display:${speedEnabled ? "inline-flex" : "none"};"\n          >\n            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">\n              <polyline points="6 9 12 15 18 9"></polyline>\n            </svg>\n          </button>\n          <input type="checkbox" id="ytp-plus-setting-enableSpeedControl" class="ytp-plus-settings-checkbox" data-setting="enableSpeedControl" ${speedEnabled ? "checked" : ""}>\n        </div>\n      </div>\n      ${(function createSpeedControlSubmenu(settings, t) {
+} ])}\n      </div>\n    </div>\n  `;
+}
+function createBasicSettingsSection(settings, t) {
+const downloadEnabled = !!settings.enableDownload;
+const styleEnabled = !1 !== settings.enableZenStyles;
+const speedEnabled = !!settings.enableSpeedControl;
+return `\n    <div class="ytp-plus-settings-section" data-section="basic">\n      <div class="ytp-plus-settings-item ytp-plus-settings-item--with-submenu">\n        <div>\n          <label class="ytp-plus-settings-item-label" for="ytp-plus-setting-enableZenStyles">${tr(t, "zenStylesTitle", "Zen styles")}</label>\n          <div class="ytp-plus-settings-item-description">${tr(t, "zenStylesDesc", "Optional UI tweaks and cosmetic improvements")}</div>\n        </div>\n        <div class="ytp-plus-settings-item-actions">\n          <button\n            type="button"\n            class="ytp-plus-submenu-toggle"\n            data-submenu="style"\n            aria-label="Toggle styles submenu"\n            aria-expanded="${styleEnabled ? "true" : "false"}"\n            ${styleEnabled ? "" : "disabled"}\n            style="display:${styleEnabled ? "inline-flex" : "none"};"\n          >\n            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">\n              <polyline points="6 9 12 15 18 9"></polyline>\n            </svg>\n          </button>\n          <input type="checkbox" id="ytp-plus-setting-enableZenStyles" class="ytp-plus-settings-checkbox" data-setting="enableZenStyles" ${styleEnabled ? "checked" : ""}>\n        </div>\n      </div>\n      ${createStyleSubmenu(settings, t)}\n      <div class="ytp-plus-settings-item ytp-plus-settings-item--with-submenu">\n        <div>\n          <label class="ytp-plus-settings-item-label" for="ytp-plus-setting-enableSpeedControl">${t("speedControl")}</label>\n          <div class="ytp-plus-settings-item-description">${t("speedControlDesc")}</div>\n        </div>\n        <div class="ytp-plus-settings-item-actions">\n          <button\n            type="button"\n            class="ytp-plus-submenu-toggle"\n            data-submenu="speed"\n            aria-label="Toggle speed submenu"\n            aria-expanded="${speedEnabled ? "true" : "false"}"\n            ${speedEnabled ? "" : "disabled"}\n            style="display:${speedEnabled ? "inline-flex" : "none"};"\n          >\n            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">\n              <polyline points="6 9 12 15 18 9"></polyline>\n            </svg>\n          </button>\n          <input type="checkbox" id="ytp-plus-setting-enableSpeedControl" class="ytp-plus-settings-checkbox" data-setting="enableSpeedControl" ${speedEnabled ? "checked" : ""}>\n        </div>\n      </div>\n      ${(function createSpeedControlSubmenu(settings, t) {
 const display = settings.enableSpeedControl ? "block" : "none";
 const decrease = (settings.speedControlHotkeys?.decrease || "g").slice(0, 1).toLowerCase();
 const increase = (settings.speedControlHotkeys?.increase || "h").slice(0, 1).toLowerCase();
@@ -9723,11 +10560,11 @@ if (parsed && "object" == typeof parsed) {
 const merged = {
 ...defaults
 };
-const mergedAny = merged;
-const parsedAny = parsed;
+const mergedSettings = merged;
+const parsedSettings = parsed;
 "boolean" == typeof parsed.enableMusic && (merged.enableMusic = parsed.enableMusic);
 for (const key of Object.keys(defaults)) {
-"enableMusic" !== key && "boolean" == typeof parsedAny[key] && (mergedAny[key] = parsedAny[key]);
+"enableMusic" !== key && "boolean" == typeof parsedSettings[key] && (mergedSettings[key] = parsedSettings[key]);
 }
 "boolean" == typeof parsed.enableImmersiveSearch && (merged.immersiveSearchStyles = parsed.enableImmersiveSearch);
 "boolean" == typeof parsed.enableSidebarHover && (merged.hoverStyles = parsed.enableSidebarHover);
@@ -9746,11 +10583,11 @@ if (parsed && "object" == typeof parsed) {
 const merged = {
 ...defaults
 };
-const mergedAny2 = merged;
-const parsedAny2 = parsed;
+const mergedSettings2 = merged;
+const parsedSettings2 = parsed;
 "boolean" == typeof parsed.enableMusic && (merged.enableMusic = parsed.enableMusic);
 for (const key of Object.keys(defaults)) {
-"enableMusic" !== key && "boolean" == typeof parsedAny2[key] && (mergedAny2[key] = parsedAny2[key]);
+"enableMusic" !== key && "boolean" == typeof parsedSettings2[key] && (mergedSettings2[key] = parsedSettings2[key]);
 }
 "boolean" == typeof parsed.enableImmersiveSearch && (merged.immersiveSearchStyles = parsed.enableImmersiveSearch);
 "boolean" == typeof parsed.enableSidebarHover && (merged.hoverStyles = parsed.enableSidebarHover);
@@ -9762,7 +10599,7 @@ return merged;
 }
 }
 } catch (e) {
-console.warn("[YouTube+] Failed to load music settings:", e);
+window.console.warn("[YouTube+] Failed to load music settings:", e);
 }
 return defaults;
 }
@@ -9794,14 +10631,16 @@ const themeVariant = "solid" === settings?.zenStyles?.themeVariant ? "solid" : "
 return `\n    <div class="ytp-plus-settings-section hidden" data-section="experimental">\n        <div class="ytp-plus-settings-item ytp-plus-theme-item">\n          <div>\n            <label class="ytp-plus-settings-item-label">${tr(t, "zenStyleThemeVariantLabel", "Theme")}</label>\n            <div class="ytp-plus-settings-item-description">${tr(t, "zenStyleThemeVariantDesc", "Choose the visual style. Solid disables blur and uses opaque surfaces for weaker GPUs.")}</div>\n          </div>\n          <div class="ytp-plus-theme-grid" role="radiogroup" aria-label="${tr(t, "zenStyleThemeVariantLabel", "Theme")}">\n            <button\n              type="button"\n              class="ytp-plus-theme-card ${"glass" === themeVariant ? "active" : ""}"\n              role="radio"\n              aria-checked="${"glass" === themeVariant ? "true" : "false"}"\n              data-setting-card="zenStyles.themeVariant"\n              data-value="glass"\n            >\n              <span class="ytp-plus-theme-card-title">${tr(t, "themeVariantGlass", "Glassmorphism")}</span>\n            </button>\n            <button\n              type="button"\n              class="ytp-plus-theme-card ${"solid" === themeVariant ? "active" : ""}"\n              role="radio"\n              aria-checked="${"solid" === themeVariant ? "true" : "false"}"\n              data-setting-card="zenStyles.themeVariant"\n              data-value="solid"\n            >\n              <span class="ytp-plus-theme-card-title">${tr(t, "themeVariantSolid", "Solid")}</span>\n            </button>\n          </div>\n        </div>\n    </div>\n  `;
 }
 function createVotingSection(_settings, t) {
-return `\n    <div class="ytp-plus-settings-section hidden" data-section="voting">\n      <div class="ytp-plus-settings-voting-header">\n        <h3>${tr(t, "votingTitle", "Feature Requests")}</h3>\n        <p class="ytp-plus-settings-voting-desc">${tr(t, "votingDesc", "Vote for features you want to see in YouTube+")}</p>\n      </div>\n\n      <div class="ytp-plus-voting-preview">\n        <div class="ytp-plus-ba-container">\n          <div class="ytp-plus-ba-before">\n            <img src="https://i.imgur.com/FVW4tdH.jpeg" alt="Before" draggable="false" />\n            <span class="ytp-plus-ba-label ytp-plus-ba-label-before">Before</span>\n          </div>\n          <div class="ytp-plus-ba-after">\n            <img src="https://i.imgur.com/ljq1KeL.jpeg" alt="After" draggable="false" />\n            <span class="ytp-plus-ba-label ytp-plus-ba-label-after">After</span>\n          </div>\n          <div class="ytp-plus-ba-divider" role="separator" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"></div>\n        </div>\n\n        <div class="ytp-plus-vote-bar-section" id="ytp-plus-vote-bar-section">\n          <div class="ytp-plus-vote-bar-buttons">\n            <div class="ytp-plus-vote-bar-track" id="ytp-plus-vote-bar-fill"></div>\n            <button class="ytp-plus-vote-bar-btn" id="ytp-plus-vote-bar-up" type="button" aria-label="${tr(t, "like", "Like")}" data-vote="1">\n              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M20.9751 12.1852L20.2361 12.0574L20.9751 12.1852ZM20.2696 16.265L19.5306 16.1371L20.2696 16.265ZM6.93776 20.4771L6.19055 20.5417H6.19055L6.93776 20.4771ZM6.1256 11.0844L6.87281 11.0198L6.1256 11.0844ZM13.9949 5.22142L14.7351 5.34269V5.34269L13.9949 5.22142ZM13.3323 9.26598L14.0724 9.38725V9.38725L13.3323 9.26598ZM6.69813 9.67749L6.20854 9.10933H6.20854L6.69813 9.67749ZM8.13687 8.43769L8.62646 9.00585H8.62646L8.13687 8.43769ZM10.518 4.78374L9.79207 4.59542L10.518 4.78374ZM10.9938 2.94989L11.7197 3.13821L11.7197 3.13821L10.9938 2.94989ZM12.6676 2.06435L12.4382 2.77841L12.4382 2.77841L12.6676 2.06435ZM12.8126 2.11093L13.0419 1.39687L13.0419 1.39687L12.8126 2.11093ZM9.86194 6.46262L10.5235 6.81599V6.81599L9.86194 6.46262ZM13.9047 3.24752L13.1787 3.43584V3.43584L13.9047 3.24752ZM11.6742 2.13239L11.3486 1.45675L11.3486 1.45675L11.6742 2.13239ZM20.2361 12.0574L19.5306 16.1371L21.0086 16.3928L21.7142 12.313L20.2361 12.0574ZM13.245 21.25H8.59634V22.75H13.245V21.25ZM7.68497 20.4125L6.87281 11.0198L5.37839 11.149L6.19055 20.5417L7.68497 20.4125ZM19.5306 16.1371C19.0238 19.0677 16.3813 21.25 13.245 21.25V22.75C17.0712 22.75 20.3708 20.081 21.0086 16.3928L19.5306 16.1371ZM13.2548 5.10015L12.5921 9.14472L14.0724 9.38725L14.7351 5.34269L13.2548 5.10015ZM7.18772 10.2456L8.62646 9.00585L7.64728 7.86954L6.20854 9.10933L7.18772 10.2456ZM11.244 4.97206L11.7197 3.13821L10.2678 2.76157L9.79207 4.59542L11.244 4.97206ZM12.4382 2.77841L12.5832 2.82498L13.0419 1.39687L12.897 1.3503L12.4382 2.77841ZM10.5235 6.81599C10.8354 6.23198 11.0777 5.61339 11.244 4.97206L9.79207 4.59542C9.65572 5.12107 9.45698 5.62893 9.20041 6.10924L10.5235 6.81599ZM12.5832 2.82498C12.8896 2.92342 13.1072 3.16009 13.1787 3.43584L14.6306 3.05921C14.4252 2.26719 13.819 1.64648 13.0419 1.39687L12.5832 2.82498ZM11.7197 3.13821C11.7547 3.0032 11.8522 2.87913 11.9998 2.80804L11.3486 1.45675C10.8166 1.71309 10.417 2.18627 10.2678 2.76157L11.7197 3.13821ZM11.9998 2.80804C12.1345 2.74311 12.2931 2.73181 12.4382 2.77841L12.897 1.3503C12.3872 1.18655 11.8312 1.2242 11.3486 1.45675L11.9998 2.80804ZM14.1537 10.9842H19.3348V9.4842H14.1537V10.9842ZM14.7351 5.34269C14.8596 4.58256 14.824 3.80477 14.6306 3.0592L13.1787 3.43584C13.3197 3.97923 13.3456 4.54613 13.2548 5.10016L14.7351 5.34269ZM8.59634 21.25C8.12243 21.25 7.726 20.887 7.68497 20.4125L6.19055 20.5417C6.29851 21.7902 7.34269 22.75 8.59634 22.75V21.25ZM8.62646 9.00585C9.30632 8.42 10.0391 7.72267 10.5235 6.81599L9.20041 6.10924C8.85403 6.75767 8.30249 7.30493 7.64728 7.86954L8.62646 9.00585ZM21.7142 12.313C21.9695 10.8365 20.8341 9.4842 19.3348 9.4842V10.9842C19.9014 10.9842 20.3332 11.4959 20.2361 12.0574L21.7142 12.313ZM12.5921 9.14471C12.4344 10.1076 13.1766 10.9842 14.1537 10.9842V9.4842C14.1038 9.4842 14.0639 9.43901 14.0724 9.38725L12.5921 9.14471ZM6.87281 11.0198C6.84739 10.7258 6.96474 10.4378 7.18772 10.2456L6.20854 9.10933C5.62021 9.61631 5.31148 10.3753 5.37839 11.149L6.87281 11.0198Z" fill="currentColor"></path> <path opacity="0.5" d="M3.9716 21.4709L3.22439 21.5355L3.9716 21.4709ZM3 10.2344L3.74721 10.1698C3.71261 9.76962 3.36893 9.46776 2.96767 9.48507C2.5664 9.50239 2.25 9.83274 2.25 10.2344L3 10.2344ZM4.71881 21.4063L3.74721 10.1698L2.25279 10.299L3.22439 21.5355L4.71881 21.4063ZM3.75 21.5129V10.2344H2.25V21.5129H3.75ZM3.22439 21.5355C3.2112 21.383 3.33146 21.2502 3.48671 21.2502V22.7502C4.21268 22.7502 4.78122 22.1281 4.71881 21.4063L3.22439 21.5355ZM3.48671 21.2502C3.63292 21.2502 3.75 21.3686 3.75 21.5129H2.25C2.25 22.1954 2.80289 22.7502 3.48671 22.7502V21.2502Z" fill="currentColor"></path> </svg>\n            </button>\n            <button class="ytp-plus-vote-bar-btn" id="ytp-plus-vote-bar-down" type="button" aria-label="${tr(t, "dislike", "Dislike")}" data-vote="-1">\n              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M20.9751 11.8148L20.2361 11.9426L20.9751 11.8148ZM20.2696 7.73505L19.5306 7.86285L20.2696 7.73505ZM6.93776 3.52293L6.19055 3.45832H6.19055L6.93776 3.52293ZM6.1256 12.9156L6.87281 12.9802L6.1256 12.9156ZM13.9949 18.7786L14.7351 18.6573V18.6573L13.9949 18.7786ZM13.3323 14.734L14.0724 14.6128V14.6128L13.3323 14.734ZM6.69813 14.3225L6.20854 14.8907H6.20854L6.69813 14.3225ZM8.13687 15.5623L8.62646 14.9942H8.62646L8.13687 15.5623ZM10.518 19.2163L9.79207 19.4046L10.518 19.2163ZM10.9938 21.0501L11.7197 20.8618L11.7197 20.8618L10.9938 21.0501ZM12.6676 21.9356L12.4382 21.2216L12.4382 21.2216L12.6676 21.9356ZM12.8126 21.8891L13.0419 22.6031L13.0419 22.6031L12.8126 21.8891ZM9.86194 17.5374L10.5235 17.184V17.184L9.86194 17.5374ZM13.9047 20.7525L13.1787 20.5642V20.5642L13.9047 20.7525ZM11.6742 21.8676L11.3486 22.5433L11.3486 22.5433L11.6742 21.8676ZM20.2361 11.9426L19.5306 7.86285L21.0086 7.60724L21.7142 11.687L20.2361 11.9426ZM13.245 2.75H8.59634V1.25H13.245V2.75ZM7.68497 3.58754L6.87281 12.9802L5.37839 12.851L6.19055 3.45832L7.68497 3.58754ZM19.5306 7.86285C19.0238 4.93226 16.3813 2.75 13.245 2.75V1.25C17.0712 1.25 20.3708 3.91895 21.0086 7.60724L19.5306 7.86285ZM13.2548 18.8998L12.5921 14.8553L14.0724 14.6128L14.7351 18.6573L13.2548 18.8998ZM7.18772 13.7544L8.62646 14.9942L7.64728 16.1305L6.20854 14.8907L7.18772 13.7544ZM11.244 19.0279L11.7197 20.8618L10.2678 21.2384L9.79207 19.4046L11.244 19.0279ZM12.4382 21.2216L12.5832 21.175L13.0419 22.6031L12.897 22.6497L12.4382 21.2216ZM10.5235 17.184C10.8354 17.768 11.0777 18.3866 11.244 19.0279L9.79207 19.4046C9.65572 18.8789 9.45698 18.3711 9.20041 17.8908L10.5235 17.184ZM12.5832 21.175C12.8896 21.0766 13.1072 20.8399 13.1787 20.5642L14.6306 20.9408C14.4252 21.7328 13.819 22.3535 13.0419 22.6031L12.5832 21.175ZM11.7197 20.8618C11.7547 20.9968 11.8522 21.1209 11.9998 21.192L11.3486 22.5433C10.8166 22.2869 10.417 21.8137 10.2678 21.2384L11.7197 20.8618ZM11.9998 21.192C12.1345 21.2569 12.2931 21.2682 12.4382 21.2216L12.897 22.6497C12.3872 22.8135 11.8312 22.7758 11.3486 22.5433L11.9998 21.192ZM14.1537 13.0158H19.3348V14.5158H14.1537V13.0158ZM14.7351 18.6573C14.8596 19.4174 14.824 20.1952 14.6306 20.9408L13.1787 20.5642C13.3197 20.0208 13.3456 19.4539 13.2548 18.8998L14.7351 18.6573ZM8.59634 2.75C8.12243 2.75 7.726 3.11302 7.68497 3.58754L6.19055 3.45832C6.29851 2.20975 7.34269 1.25 8.59634 1.25V2.75ZM8.62646 14.9942C9.30632 15.58 10.0391 16.2773 10.5235 17.184L9.20041 17.8908C8.85403 17.2423 8.30249 16.6951 7.64728 16.1305L8.62646 14.9942ZM21.7142 11.687C21.9695 13.1635 20.8341 14.5158 19.3348 14.5158V13.0158C19.9014 13.0158 20.3332 12.5041 20.2361 11.9426L21.7142 11.687ZM12.5921 14.8553C12.4344 13.8924 13.1766 13.0158 14.1537 13.0158V14.5158C14.1038 14.5158 14.0639 14.561 14.0724 14.6128L12.5921 14.8553ZM6.87281 12.9802C6.84739 13.2742 6.96474 13.5622 7.18772 13.7544L6.20854 14.8907C5.62021 14.3837 5.31148 13.6247 5.37839 12.851L6.87281 12.9802Z" fill="currentColor"></path> <path opacity="0.5" d="M3.9716 2.52911L3.22439 2.4645L3.9716 2.52911ZM3 13.7656L3.74721 13.8302C3.71261 14.2304 3.36893 14.5322 2.96767 14.5149C2.5664 14.4976 2.25 14.1673 2.25 13.7656L3 13.7656ZM4.71881 2.59372L3.74721 13.8302L2.25279 13.701L3.22439 2.4645L4.71881 2.59372ZM3.75 2.48709V13.7656H2.25V2.48709H3.75ZM3.22439 2.4645C3.2112 2.61704 3.33146 2.74983 3.48671 2.74983V1.24983C4.21268 1.24983 4.78122 1.87192 4.71881 2.59372L3.22439 2.4645ZM3.48671 2.74983C3.63292 2.74983 3.75 2.63139 3.75 2.48709H2.25C2.25 1.80457 2.80289 1.24983 3.48671 1.24983V2.74983Z" fill="currentColor"></path> </svg>\n            </button>\n          </div>\n          <div class="ytp-plus-vote-bar-count" id="ytp-plus-vote-bar-count">0</div>\n        </div>\n      </div>\n\n      <div id="ytp-plus-voting-container"></div>\n    </div>\n  `;
+const previewBefore = tr(t, "votingPreviewBefore", "Before");
+const previewAfter = tr(t, "votingPreviewAfter", "After");
+return `\n    <div class="ytp-plus-settings-section hidden" data-section="voting">\n      <div class="ytp-plus-settings-voting-header">\n        <h3>${tr(t, "votingTitle", "Feature Requests")}</h3>\n        <p class="ytp-plus-settings-voting-desc">${tr(t, "votingDesc", "Vote for features you want to see in YouTube+")}</p>\n      </div>\n\n      <div class="ytp-plus-voting-preview">\n        <div class="ytp-plus-ba-container">\n          <div class="ytp-plus-ba-before">\n            <img src="https://i.imgur.com/FVW4tdH.jpeg" alt="${previewBefore}" draggable="false" />\n            <span class="ytp-plus-ba-label ytp-plus-ba-label-before">${previewBefore}</span>\n          </div>\n          <div class="ytp-plus-ba-after">\n            <img src="https://i.imgur.com/ljq1KeL.jpeg" alt="${previewAfter}" draggable="false" />\n            <span class="ytp-plus-ba-label ytp-plus-ba-label-after">${previewAfter}</span>\n          </div>\n          <div class="ytp-plus-ba-divider" role="separator" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"></div>\n        </div>\n\n        <div class="ytp-plus-vote-bar-section" id="ytp-plus-vote-bar-section">\n          <div class="ytp-plus-vote-bar-buttons">\n            <div class="ytp-plus-vote-bar-track" id="ytp-plus-vote-bar-fill"></div>\n            <button class="ytp-plus-vote-bar-btn" id="ytp-plus-vote-bar-up" type="button" aria-label="${tr(t, "like", "Like")}" data-vote="1">\n              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M20.9751 12.1852L20.2361 12.0574L20.9751 12.1852ZM20.2696 16.265L19.5306 16.1371L20.2696 16.265ZM6.93776 20.4771L6.19055 20.5417H6.19055L6.93776 20.4771ZM6.1256 11.0844L6.87281 11.0198L6.1256 11.0844ZM13.9949 5.22142L14.7351 5.34269V5.34269L13.9949 5.22142ZM13.3323 9.26598L14.0724 9.38725V9.38725L13.3323 9.26598ZM6.69813 9.67749L6.20854 9.10933H6.20854L6.69813 9.67749ZM8.13687 8.43769L8.62646 9.00585H8.62646L8.13687 8.43769ZM10.518 4.78374L9.79207 4.59542L10.518 4.78374ZM10.9938 2.94989L11.7197 3.13821L11.7197 3.13821L10.9938 2.94989ZM12.6676 2.06435L12.4382 2.77841L12.4382 2.77841L12.6676 2.06435ZM12.8126 2.11093L13.0419 1.39687L13.0419 1.39687L12.8126 2.11093ZM9.86194 6.46262L10.5235 6.81599V6.81599L9.86194 6.46262ZM13.9047 3.24752L13.1787 3.43584V3.43584L13.9047 3.24752ZM11.6742 2.13239L11.3486 1.45675L11.3486 1.45675L11.6742 2.13239ZM20.2361 12.0574L19.5306 16.1371L21.0086 16.3928L21.7142 12.313L20.2361 12.0574ZM13.245 21.25H8.59634V22.75H13.245V21.25ZM7.68497 20.4125L6.87281 11.0198L5.37839 11.149L6.19055 20.5417L7.68497 20.4125ZM19.5306 16.1371C19.0238 19.0677 16.3813 21.25 13.245 21.25V22.75C17.0712 22.75 20.3708 20.081 21.0086 16.3928L19.5306 16.1371ZM13.2548 5.10015L12.5921 9.14472L14.0724 9.38725L14.7351 5.34269L13.2548 5.10015ZM7.18772 10.2456L8.62646 9.00585L7.64728 7.86954L6.20854 9.10933L7.18772 10.2456ZM11.244 4.97206L11.7197 3.13821L10.2678 2.76157L9.79207 4.59542L11.244 4.97206ZM12.4382 2.77841L12.5832 2.82498L13.0419 1.39687L12.897 1.3503L12.4382 2.77841ZM10.5235 6.81599C10.8354 6.23198 11.0777 5.61339 11.244 4.97206L9.79207 4.59542C9.65572 5.12107 9.45698 5.62893 9.20041 6.10924L10.5235 6.81599ZM12.5832 2.82498C12.8896 2.92342 13.1072 3.16009 13.1787 3.43584L14.6306 3.05921C14.4252 2.26719 13.819 1.64648 13.0419 1.39687L12.5832 2.82498ZM11.7197 3.13821C11.7547 3.0032 11.8522 2.87913 11.9998 2.80804L11.3486 1.45675C10.8166 1.71309 10.417 2.18627 10.2678 2.76157L11.7197 3.13821ZM11.9998 2.80804C12.1345 2.74311 12.2931 2.73181 12.4382 2.77841L12.897 1.3503C12.3872 1.18655 11.8312 1.2242 11.3486 1.45675L11.9998 2.80804ZM14.1537 10.9842H19.3348V9.4842H14.1537V10.9842ZM14.7351 5.34269C14.8596 4.58256 14.824 3.80477 14.6306 3.0592L13.1787 3.43584C13.3197 3.97923 13.3456 4.54613 13.2548 5.10016L14.7351 5.34269ZM8.59634 21.25C8.12243 21.25 7.726 20.887 7.68497 20.4125L6.19055 20.5417C6.29851 21.7902 7.34269 22.75 8.59634 22.75V21.25ZM8.62646 9.00585C9.30632 8.42 10.0391 7.72267 10.5235 6.81599L9.20041 6.10924C8.85403 6.75767 8.30249 7.30493 7.64728 7.86954L8.62646 9.00585ZM21.7142 12.313C21.9695 10.8365 20.8341 9.4842 19.3348 9.4842V10.9842C19.9014 10.9842 20.3332 11.4959 20.2361 12.0574L21.7142 12.313ZM12.5921 9.14471C12.4344 10.1076 13.1766 10.9842 14.1537 10.9842V9.4842C14.1038 9.4842 14.0639 9.43901 14.0724 9.38725L12.5921 9.14471ZM6.87281 11.0198C6.84739 10.7258 6.96474 10.4378 7.18772 10.2456L6.20854 9.10933C5.62021 9.61631 5.31148 10.3753 5.37839 11.149L6.87281 11.0198Z" fill="currentColor"></path> <path opacity="0.5" d="M3.9716 21.4709L3.22439 21.5355L3.9716 21.4709ZM3 10.2344L3.74721 10.1698C3.71261 9.76962 3.36893 9.46776 2.96767 9.48507C2.5664 9.50239 2.25 9.83274 2.25 10.2344L3 10.2344ZM4.71881 21.4063L3.74721 10.1698L2.25279 10.299L3.22439 21.5355L4.71881 21.4063ZM3.75 21.5129V10.2344H2.25V21.5129H3.75ZM3.22439 21.5355C3.2112 21.383 3.33146 21.2502 3.48671 21.2502V22.7502C4.21268 22.7502 4.78122 22.1281 4.71881 21.4063L3.22439 21.5355ZM3.48671 21.2502C3.63292 21.2502 3.75 21.3686 3.75 21.5129H2.25C2.25 22.1954 2.80289 22.7502 3.48671 22.7502V21.2502Z" fill="currentColor"></path> </svg>\n            </button>\n            <button class="ytp-plus-vote-bar-btn" id="ytp-plus-vote-bar-down" type="button" aria-label="${tr(t, "dislike", "Dislike")}" data-vote="-1">\n              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M20.9751 11.8148L20.2361 11.9426L20.9751 11.8148ZM20.2696 7.73505L19.5306 7.86285L20.2696 7.73505ZM6.93776 3.52293L6.19055 3.45832H6.19055L6.93776 3.52293ZM6.1256 12.9156L6.87281 12.9802L6.1256 12.9156ZM13.9949 18.7786L14.7351 18.6573V18.6573L13.9949 18.7786ZM13.3323 14.734L14.0724 14.6128V14.6128L13.3323 14.734ZM6.69813 14.3225L6.20854 14.8907H6.20854L6.69813 14.3225ZM8.13687 15.5623L8.62646 14.9942H8.62646L8.13687 15.5623ZM10.518 19.2163L9.79207 19.4046L10.518 19.2163ZM10.9938 21.0501L11.7197 20.8618L11.7197 20.8618L10.9938 21.0501ZM12.6676 21.9356L12.4382 21.2216L12.4382 21.2216L12.6676 21.9356ZM12.8126 21.8891L13.0419 22.6031L13.0419 22.6031L12.8126 21.8891ZM9.86194 17.5374L10.5235 17.184V17.184L9.86194 17.5374ZM13.9047 20.7525L13.1787 20.5642V20.5642L13.9047 20.7525ZM11.6742 21.8676L11.3486 22.5433L11.3486 22.5433L11.6742 21.8676ZM20.2361 11.9426L19.5306 7.86285L21.0086 7.60724L21.7142 11.687L20.2361 11.9426ZM13.245 2.75H8.59634V1.25H13.245V2.75ZM7.68497 3.58754L6.87281 12.9802L5.37839 12.851L6.19055 3.45832L7.68497 3.58754ZM19.5306 7.86285C19.0238 4.93226 16.3813 2.75 13.245 2.75V1.25C17.0712 1.25 20.3708 3.91895 21.0086 7.60724L19.5306 7.86285ZM13.2548 18.8998L12.5921 14.8553L14.0724 14.6128L14.7351 18.6573L13.2548 18.8998ZM7.18772 13.7544L8.62646 14.9942L7.64728 16.1305L6.20854 14.8907L7.18772 13.7544ZM11.244 19.0279L11.7197 20.8618L10.2678 21.2384L9.79207 19.4046L11.244 19.0279ZM12.4382 21.2216L12.5832 21.175L13.0419 22.6031L12.897 22.6497L12.4382 21.2216ZM10.5235 17.184C10.8354 17.768 11.0777 18.3866 11.244 19.0279L9.79207 19.4046C9.65572 18.8789 9.45698 18.3711 9.20041 17.8908L10.5235 17.184ZM12.5832 21.175C12.8896 21.0766 13.1072 20.8399 13.1787 20.5642L14.6306 20.9408C14.4252 21.7328 13.819 22.3535 13.0419 22.6031L12.5832 21.175ZM11.7197 20.8618C11.7547 20.9968 11.8522 21.1209 11.9998 21.192L11.3486 22.5433C10.8166 22.2869 10.417 21.8137 10.2678 21.2384L11.7197 20.8618ZM11.9998 21.192C12.1345 21.2569 12.2931 21.2682 12.4382 21.2216L12.897 22.6497C12.3872 22.8135 11.8312 22.7758 11.3486 22.5433L11.9998 21.192ZM14.1537 13.0158H19.3348V14.5158H14.1537V13.0158ZM14.7351 18.6573C14.8596 19.4174 14.824 20.1952 14.6306 20.9408L13.1787 20.5642C13.3197 20.0208 13.3456 19.4539 13.2548 18.8998L14.7351 18.6573ZM8.59634 2.75C8.12243 2.75 7.726 3.11302 7.68497 3.58754L6.19055 3.45832C6.29851 2.20975 7.34269 1.25 8.59634 1.25V2.75ZM8.62646 14.9942C9.30632 15.58 10.0391 16.2773 10.5235 17.184L9.20041 17.8908C8.85403 17.2423 8.30249 16.6951 7.64728 16.1305L8.62646 14.9942ZM21.7142 11.687C21.9695 13.1635 20.8341 14.5158 19.3348 14.5158V13.0158C19.9014 13.0158 20.3332 12.5041 20.2361 11.9426L21.7142 11.687ZM12.5921 14.8553C12.4344 13.8924 13.1766 13.0158 14.1537 13.0158V14.5158C14.1038 14.5158 14.0639 14.561 14.0724 14.6128L12.5921 14.8553ZM6.87281 12.9802C6.84739 13.2742 6.96474 13.5622 7.18772 13.7544L6.20854 14.8907C5.62021 14.3837 5.31148 13.6247 5.37839 12.851L6.87281 12.9802Z" fill="currentColor"></path> <path opacity="0.5" d="M3.9716 2.52911L3.22439 2.4645L3.9716 2.52911ZM3 13.7656L3.74721 13.8302C3.71261 14.2304 3.36893 14.5322 2.96767 14.5149C2.5664 14.4976 2.25 14.1673 2.25 13.7656L3 13.7656ZM4.71881 2.59372L3.74721 13.8302L2.25279 13.701L3.22439 2.4645L4.71881 2.59372ZM3.75 2.48709V13.7656H2.25V2.48709H3.75ZM3.22439 2.4645C3.2112 2.61704 3.33146 2.74983 3.48671 2.74983V1.24983C4.21268 1.24983 4.78122 1.87192 4.71881 2.59372L3.22439 2.4645ZM3.48671 2.74983C3.63292 2.74983 3.75 2.63139 3.75 2.48709H2.25C2.25 1.80457 2.80289 1.24983 3.48671 1.24983V2.74983Z" fill="currentColor"></path> </svg>\n            </button>\n          </div>\n          <div class="ytp-plus-vote-bar-count" id="ytp-plus-vote-bar-count">0</div>\n        </div>\n      </div>\n\n      <div id="ytp-plus-voting-container"></div>\n    </div>\n  `;
 }
 "undefined" != typeof window && (window.YouTubePlusSettingsHelpers = {
 createSettingsSidebar: function createSettingsSidebar(t) {
 return `\n    <div class="ytp-plus-settings-nav ytp-plus-settings-nav-rail">\n      ${createNavItem("basic", t("basicTab"), '\n    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> <path opacity="0.5" d="M2 12.2039C2 9.91549 2 8.77128 2.5192 7.82274C3.0384 6.87421 3.98695 6.28551 5.88403 5.10813L7.88403 3.86687C9.88939 2.62229 10.8921 2 12 2C13.1079 2 14.1106 2.62229 16.116 3.86687L18.116 5.10812C20.0131 6.28551 20.9616 6.87421 21.4808 7.82274C22 8.77128 22 9.91549 22 12.2039V13.725C22 17.6258 22 19.5763 20.8284 20.7881C19.6569 22 17.7712 22 14 22H10C6.22876 22 4.34315 22 3.17157 20.7881C2 19.5763 2 17.6258 2 13.725V12.2039Z" stroke="currentColor" stroke-width="1.5"></path> <path d="M15 18H9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path> </svg>\n  ', !0)}\n      ${createNavItem("advanced", t("advancedTab"), '\n    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> <path opacity="0.5" d="M2 12C2 7.28595 2 4.92893 3.46447 3.46447C4.92893 2 7.28595 2 12 2C16.714 2 19.0711 2 20.5355 3.46447C22 4.92893 22 7.28595 22 12" stroke="currentColor" stroke-width="1.5"></path> <path d="M2 14C2 11.1997 2 9.79961 2.54497 8.73005C3.02433 7.78924 3.78924 7.02433 4.73005 6.54497C5.79961 6 7.19974 6 10 6H14C16.8003 6 18.2004 6 19.27 6.54497C20.2108 7.02433 20.9757 7.78924 21.455 8.73005C22 9.79961 22 11.1997 22 14C22 16.8003 22 18.2004 21.455 19.27C20.9757 20.2108 20.2108 20.9757 19.27 21.455C18.2004 22 16.8003 22 14 22H10C7.19974 22 5.79961 22 4.73005 21.455C3.78924 20.9757 3.02433 20.2108 2.54497 19.27C2 18.2004 2 16.8003 2 14Z" stroke="currentColor" stroke-width="1.5"></path> <path d="M9.5 14.4L10.9286 16L14.5 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> </svg>\n  ')}\n      ${createNavItem("experimental", t("experimentalTab"), '\n    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M9.74872 2.49415L18.1594 7.31987M9.74872 2.49415L2.65093 14.7455C1.31093 17.0584 2.10615 20.0159 4.42709 21.3513C6.74803 22.6867 9.7158 21.8942 11.0558 19.5813L12.5511 17.0003L14.1886 14.1738L15.902 11.2163L18.1594 7.31987M9.74872 2.49415L8.91283 2M18.1594 7.31987L19 7.80374" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path> <path opacity="0.5" d="M15.9021 11.2164L13.3441 9.74463M14.1887 14.1739L9.98577 11.7557M12.5512 17.0004L9.93848 15.4972" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path> <path opacity="0.5" d="M22 14.9166C22 16.0672 21.1046 16.9999 20 16.9999C18.8954 16.9999 18 16.0672 18 14.9166C18 14.1967 18.783 13.2358 19.3691 12.6174C19.7161 12.2512 20.2839 12.2512 20.6309 12.6174C21.217 13.2358 22 14.1967 22 14.9166Z" stroke="currentColor" stroke-width="1.5"></path> </svg>\n  ')}\n      ${createNavItem("voting", tr(t, "votingTab", "Voting"), '\n    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> <circle cx="12" cy="6" r="4" stroke="currentColor" stroke-width="1.5"></circle> <path opacity="0.5" d="M15 13.3271C14.0736 13.1162 13.0609 13 12 13C7.58172 13 4 15.0147 4 17.5C4 19.9853 4 22 12 22C17.6874 22 19.3315 20.9817 19.8068 19.5" stroke="currentColor" stroke-width="1.5"></path> <circle cx="18" cy="16" r="4" stroke="currentColor" stroke-width="1.5"></circle> <path d="M18 14.6667V17.3333" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M16.6665 16L19.3332 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> </svg>\n  ')}\n      ${createNavItem("report", t("reportTab"), '\n    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M4 6V19C4 20.6569 5.34315 22 7 22H17C18.6569 22 20 20.6569 20 19V9C20 7.34315 18.6569 6 17 6H4ZM4 6V5" stroke="currentColor" stroke-width="1.5"></path> <path d="M18 6.00002V6.75002H18.75V6.00002H18ZM15.7172 2.32614L15.6111 1.58368L15.7172 2.32614ZM4.91959 3.86865L4.81353 3.12619H4.81353L4.91959 3.86865ZM5.07107 6.75002H18V5.25002H5.07107V6.75002ZM18.75 6.00002V4.30604H17.25V6.00002H18.75ZM15.6111 1.58368L4.81353 3.12619L5.02566 4.61111L15.8232 3.0686L15.6111 1.58368ZM4.81353 3.12619C3.91638 3.25435 3.25 4.0227 3.25 4.92895H4.75C4.75 4.76917 4.86749 4.63371 5.02566 4.61111L4.81353 3.12619ZM18.75 4.30604C18.75 2.63253 17.2678 1.34701 15.6111 1.58368L15.8232 3.0686C16.5763 2.96103 17.25 3.54535 17.25 4.30604H18.75ZM5.07107 5.25002C4.89375 5.25002 4.75 5.10627 4.75 4.92895H3.25C3.25 5.9347 4.06532 6.75002 5.07107 6.75002V5.25002Z" fill="currentColor"></path> <path opacity="0.5" d="M8 12H16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path> <path opacity="0.5" d="M8 15.5H13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path> </svg>\n  ')}\n      ${createNavItem("about", t("aboutTab"), '\n    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M15.5 9L15.6716 9.17157C17.0049 10.5049 17.6716 11.1716 17.6716 12C17.6716 12.8284 17.0049 13.4951 15.6716 14.8284L15.5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path> <path d="M13.2942 7.17041L12.0001 12L10.706 16.8297" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path> <path d="M8.49994 9L8.32837 9.17157C6.99504 10.5049 6.32837 11.1716 6.32837 12C6.32837 12.8284 6.99504 13.4951 8.32837 14.8284L8.49994 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path> <path opacity="0.5" d="M2 12C2 7.28595 2 4.92893 3.46447 3.46447C4.92893 2 7.28595 2 12 2C16.714 2 19.0711 2 20.5355 3.46447C22 4.92893 22 7.28595 22 12C22 16.714 22 19.0711 20.5355 20.5355C19.0711 22 16.714 22 12 22C7.28595 22 4.92893 22 3.46447 20.5355C2 19.0711 2 16.714 2 12Z" stroke="currentColor" stroke-width="1.5"></path> </svg>\n  ')}\n    </div>\n  `;
 },
 createMainContent: function createMainContent(settings, t) {
-return `\n    <div class="ytp-plus-settings-main">\n      <div class="ytp-plus-settings-content">\n        ${createBasicSettingsSection(settings, t)}\n        ${createAdvancedSettingsSection(settings, t)}\n        ${createExperimentalSettingsSection(settings, t)}\n        ${createVotingSection(0, t)}\n        <div class="ytp-plus-settings-section hidden" data-section="report"></div>\n        \n    <div class="ytp-plus-settings-section hidden" data-section="about">\n      <div class="about-section-content">\n        <svg class="app-icon" width="90" height="90" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" version="1.1">\n          <path d="m23.24,4.62c-0.85,0.45 -2.19,2.12 -4.12,5.13c-1.54,2.41 -2.71,4.49 -3.81,6.8c-0.55,1.14 -1.05,2.2 -1.13,2.35c-0.08,0.16 -0.78,0.7 -1.66,1.28c-1.38,0.91 -1.8,1.29 -1.4,1.28c0.08,0 0.67,-0.35 1.31,-0.77c0.64,-0.42 1.19,-0.76 1.2,-0.74c0.02,0.02 -0.1,0.31 -0.25,0.66c-1.03,2.25 -1.84,5.05 -1.84,6.37c0.01,1.89 0.84,2.67 2.86,2.67c1.08,0 1.94,-0.31 3.66,-1.29c1.84,-1.06 3.03,-1.93 4.18,-3.09c1.69,-1.7 2.91,-3.4 3.28,-4.59c0.59,-1.9 -0.1,-3.08 -2.02,-3.44c-0.87,-0.16 -2.85,-0.14 -3.75,0.06c-1.78,0.38 -2.74,0.76 -2.5,1c0.03,0.03 0.5,-0.1 1.05,-0.28c1.49,-0.48 2.34,-0.59 3.88,-0.53c1.64,0.07 2.09,0.19 2.69,0.75l0.46,0.43l0,0.87c0,0.74 -0.05,0.98 -0.35,1.6c-0.69,1.45 -2.69,3.81 -4.37,5.14c-0.93,0.74 -2.88,1.94 -4.07,2.5c-1.64,0.77 -3.56,0.72 -4.21,-0.11c-0.39,-0.5 -0.5,-1.02 -0.44,-2.11c0.05,-0.85 0.16,-1.32 0.67,-2.86c0.34,-1.01 0.86,-2.38 1.15,-3.04c0.52,-1.18 0.55,-1.22 1.6,-2.14c4.19,-3.65 8.42,-9.4 9.02,-12.26c0.2,-0.94 0.13,-1.46 -0.21,-1.7c-0.31,-0.22 -0.38,-0.21 -0.89,0.06m0.19,0.26c-0.92,0.41 -3.15,3.44 -5.59,7.6c-1.05,1.79 -3.12,5.85 -3.02,5.95c0.07,0.07 1.63,-1.33 2.58,-2.34c1.57,-1.65 3.73,-4.39 4.88,-6.17c1.31,-2.03 2.06,-4.11 1.77,-4.89c-0.13,-0.34 -0.16,-0.35 -0.62,-0.15m11.69,13.32c-0.3,0.6 -1.19,2.54 -1.98,4.32c-1.6,3.62 -1.67,3.71 -2.99,4.34c-1.13,0.54 -2.31,0.85 -3.54,0.92c-0.99,0.06 -1.08,0.04 -1.38,-0.19c-0.28,-0.22 -0.31,-0.31 -0.26,-0.7c0.03,-0.25 0.64,-1.63 1.35,-3.08c1.16,-2.36 2.52,-5.61 2.52,-6.01c0,-0.49 -0.36,0.19 -1.17,2.22c-0.51,1.26 -1.37,3.16 -1.93,4.24c-0.55,1.08 -1.04,2.17 -1.09,2.43c-0.1,0.59 0.07,1.03 0.49,1.28c0.78,0.46 3.3,0.06 5.13,-0.81l0.93,-0.45l-0.66,1.25c-0.7,1.33 -3.36,6.07 -4.31,7.67c-2.02,3.41 -3.96,5.32 -6.33,6.21c-2.57,0.96 -4.92,0.74 -6.14,-0.58c-0.81,-0.88 -0.82,-1.71 -0.04,-3.22c1.22,-2.36 6.52,-6.15 10.48,-7.49c0.52,-0.18 0.95,-0.39 0.95,-0.46c0,-0.21 -0.19,-0.18 -1.24,0.2c-1.19,0.43 -3.12,1.37 -4.34,2.11c-2.61,1.59 -5.44,4.09 -6.13,5.43c-1.15,2.2 -0.73,3.61 1.4,4.6c0.59,0.28 0.75,0.3 2.04,0.3c1.67,0 2.42,-0.18 3.88,-0.89c1.87,-0.92 3.17,-2.13 4.72,-4.41c0.98,-1.44 4.66,-7.88 5.91,-10.33c0.25,-0.49 0.68,-1.19 0.96,-1.56c0.28,-0.37 0.76,-1.15 1.06,-1.73c0.82,-1.59 2.58,-6.10 2.58,-6.6c0,-0.06 -0.07,-0.1 -0.17,-0.1c-0.10,0 -0.39,0.44 -0.71,1.09m-1.34,3.7c-0.93,2.08 -1.09,2.48 -0.87,2.2c0.19,-0.24 1.66,-3.65 1.6,-3.71c-0.02,-0.02 -0.35,0.66 -0.73,1.51" fill="none" fill-rule="evenodd" stroke="currentColor" />\n        </svg>\n        <h1>YouTube +</h1>\n      </div>\n      <div class="ytp-plus-about-actions" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:16px 0;">\n        <button class="glass-button" id="open-ytp-github" type="button">GitHub</button>\n        <button class="glass-button" id="open-ytp-discussions" type="button">Discussions</button>\n        <button class="glass-button" id="open-ytp-greasyfork" type="button">GreasyFork</button>\n      </div>\n      <div class="ytp-plus-about-footer" style="text-align:center;color:var(--yt-text-secondary);font-size:13px;line-height:1.6;margin-bottom:12px;">        \n        <div>Made with ❤️ by <a href="https://github.com/diorhc" target="_blank" rel="noopener noreferrer" style="color:var(--yt-text-primary);">diorhc</a></div>\n        <div>License: MIT</div>\n      </div>\n    </div>\n  \n      </div>\n    </div>\n  `;
+return `\n    <div class="ytp-plus-settings-main">\n      <div class="ytp-plus-settings-content">\n        ${createBasicSettingsSection(settings, t)}\n        ${createAdvancedSettingsSection(settings, t)}\n        ${createExperimentalSettingsSection(settings, t)}\n        ${createVotingSection(0, t)}\n        <div class="ytp-plus-settings-section hidden" data-section="report"></div>\n        \n    <div class="ytp-plus-settings-section hidden" data-section="about">\n      <div class="about-section-content">\n        <svg class="app-icon" width="90" height="90" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" version="1.1">\n          <path d="m23.24,4.62c-0.85,0.45 -2.19,2.12 -4.12,5.13c-1.54,2.41 -2.71,4.49 -3.81,6.8c-0.55,1.14 -1.05,2.2 -1.13,2.35c-0.08,0.16 -0.78,0.7 -1.66,1.28c-1.38,0.91 -1.8,1.29 -1.4,1.28c0.08,0 0.67,-0.35 1.31,-0.77c0.64,-0.42 1.19,-0.76 1.2,-0.74c0.02,0.02 -0.1,0.31 -0.25,0.66c-1.03,2.25 -1.84,5.05 -1.84,6.37c0.01,1.89 0.84,2.67 2.86,2.67c1.08,0 1.94,-0.31 3.66,-1.29c1.84,-1.06 3.03,-1.93 4.18,-3.09c1.69,-1.7 2.91,-3.4 3.28,-4.59c0.59,-1.9 -0.1,-3.08 -2.02,-3.44c-0.87,-0.16 -2.85,-0.14 -3.75,0.06c-1.78,0.38 -2.74,0.76 -2.5,1c0.03,0.03 0.5,-0.1 1.05,-0.28c1.49,-0.48 2.34,-0.59 3.88,-0.53c1.64,0.07 2.09,0.19 2.69,0.75l0.46,0.43l0,0.87c0,0.74 -0.05,0.98 -0.35,1.6c-0.69,1.45 -2.69,3.81 -4.37,5.14c-0.93,0.74 -2.88,1.94 -4.07,2.5c-1.64,0.77 -3.56,0.72 -4.21,-0.11c-0.39,-0.5 -0.5,-1.02 -0.44,-2.11c0.05,-0.85 0.16,-1.32 0.67,-2.86c0.34,-1.01 0.86,-2.38 1.15,-3.04c0.52,-1.18 0.55,-1.22 1.6,-2.14c4.19,-3.65 8.42,-9.4 9.02,-12.26c0.2,-0.94 0.13,-1.46 -0.21,-1.7c-0.31,-0.22 -0.38,-0.21 -0.89,0.06m0.19,0.26c-0.92,0.41 -3.15,3.44 -5.59,7.6c-1.05,1.79 -3.12,5.85 -3.02,5.95c0.07,0.07 1.63,-1.33 2.58,-2.34c1.57,-1.65 3.73,-4.39 4.88,-6.17c1.31,-2.03 2.06,-4.11 1.77,-4.89c-0.13,-0.34 -0.16,-0.35 -0.62,-0.15m11.69,13.32c-0.3,0.6 -1.19,2.54 -1.98,4.32c-1.6,3.62 -1.67,3.71 -2.99,4.34c-1.13,0.54 -2.31,0.85 -3.54,0.92c-0.99,0.06 -1.08,0.04 -1.38,-0.19c-0.28,-0.22 -0.31,-0.31 -0.26,-0.7c0.03,-0.25 0.64,-1.63 1.35,-3.08c1.16,-2.36 2.52,-5.61 2.52,-6.01c0,-0.49 -0.36,0.19 -1.17,2.22c-0.51,1.26 -1.37,3.16 -1.93,4.24c-0.55,1.08 -1.04,2.17 -1.09,2.43c-0.1,0.59 0.07,1.03 0.49,1.28c0.78,0.46 3.3,0.06 5.13,-0.81l0.93,-0.45l-0.66,1.25c-0.7,1.33 -3.36,6.07 -4.31,7.67c-2.02,3.41 -3.96,5.32 -6.33,6.21c-2.57,0.96 -4.92,0.74 -6.14,-0.58c-0.81,-0.88 -0.82,-1.71 -0.04,-3.22c1.22,-2.36 6.52,-6.15 10.48,-7.49c0.52,-0.18 0.95,-0.39 0.95,-0.46c0,-0.21 -0.19,-0.18 -1.24,0.2c-1.19,0.43 -3.12,1.37 -4.34,2.11c-2.61,1.59 -5.44,4.09 -6.13,5.43c-1.15,2.2 -0.73,3.61 1.4,4.6c0.59,0.28 0.75,0.3 2.04,0.3c1.67,0 2.42,-0.18 3.88,-0.89c1.87,-0.92 3.17,-2.13 4.72,-4.41c0.98,-1.44 4.66,-7.88 5.91,-10.33c0.25,-0.49 0.68,-1.19 0.96,-1.56c0.28,-0.37 0.76,-1.15 1.06,-1.73c0.82,-1.59 2.58,-6.10 2.58,-6.6c0,-0.06 -0.07,-0.1 -0.17,-0.1c-0.10,0 -0.39,0.44 -0.71,1.09m-1.34,3.7c-0.93,2.08 -1.09,2.48 -0.87,2.2c0.19,-0.24 1.66,-3.65 1.6,-3.71c-0.02,-0.02 -0.35,0.66 -0.73,1.51" fill="none" fill-rule="evenodd" stroke="currentColor" />\n        </svg>\n        <h1>YouTube +</h1>\n      </div>\n      <div class="ytp-plus-about-actions" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:16px 0;">\n        <button class="glass-button" id="open-ytp-github" type="button">GitHub</button>\n        <button class="glass-button" id="open-ytp-discussions" type="button">Discussions</button>\n        <button class="glass-button" id="open-ytp-greasyfork" type="button">GreasyFork</button>\n      </div>\n      <div class="ytp-plus-about-footer" style="text-align:center;color:var(--yt-text-secondary);font-size:13px;line-height:1.6;margin-bottom:12px;">        \n        <div>Made with ❤️ by <a href="https://github.com/diorhc" target="_blank" rel="noopener noreferrer" style="color:var(--yt-text-primary);font-style:italic;text-decoration:none;">diorhc</a></div>\n        <div>License: MIT</div>\n      </div>\n    </div>\n  \n      </div>\n    </div>\n  `;
 },
 createSettingsItem,
 createSettingsSelect,
@@ -9814,7 +10653,7 @@ getMusicSettings
 });
 })();
 
-const qs = sel => window.YouTubeUtils?.$(sel) || document.querySelector(sel);
+const qs = window.YouTubeUtils?.$ || document.querySelector.bind(document);
 
 const setSettingByPath = (settings, path, value) => {
 if (!settings || "object" != typeof settings) {
@@ -9863,7 +10702,7 @@ const controls = container.querySelector(".download-site-controls");
 controls && (controls.style.display = checkbox.checked ? "block" : "none");
 }
 } catch (err) {
-console.warn("[YouTube+] toggle download-site-controls failed:", err);
+window.console.warn("[YouTube+] toggle download-site-controls failed:", err);
 }
 };
 
@@ -9871,7 +10710,7 @@ const safelySaveSettings = saveSettings => {
 try {
 saveSettings();
 } catch (err) {
-console.warn("[YouTube+] autosave downloadSite toggle failed:", err);
+window.console.warn("[YouTube+] autosave downloadSite toggle failed:", err);
 }
 };
 
@@ -9924,7 +10763,7 @@ context.updatePageBasedOnSettings && context.updatePageBasedOnSettings();
 "enableDownload" === setting ? handleDownloadButtonToggle(context) : "enableSpeedControl" === setting && handleSpeedControlToggle(context);
 refreshDownloadButton && refreshDownloadButton();
 } catch (innerErr) {
-console.warn("[YouTube+] live apply specific toggle failed:", innerErr);
+window.console.warn("[YouTube+] live apply specific toggle failed:", innerErr);
 }
 updateGlobalSettings(settings);
 };
@@ -9932,18 +10771,26 @@ updateGlobalSettings(settings);
 const handleSimpleSettingToggle = (target, setting, settings, context, markDirty, saveSettings, modal) => {
 const checked = target.checked;
 setSettingByPath(settings, setting, checked);
+if ("zenStyles.sideVideosColumnsEnabled" === setting && checked) {
+const currentValue = Number(settings.zenStyles?.sideVideosColumns);
+if (!Number.isFinite(currentValue) || currentValue <= 0) {
+setSettingByPath(settings, "zenStyles.sideVideosColumns", 1);
+const select = modal.querySelector('.style-side-videos-submenu select[data-setting="zenStyles.sideVideosColumns"]');
+select instanceof HTMLSelectElement && (select.value = "1");
+}
+}
 try {
 markDirty();
 } catch (e) {}
 try {
 applySettingLive(setting, context);
 } catch (err) {
-console.warn("[YouTube+] apply settings live failed:", err);
+window.console.warn("[YouTube+] apply settings live failed:", err);
 }
 try {
 saveSettings();
 } catch (err) {
-console.warn("[YouTube+] autosave simple setting failed:", err);
+window.console.warn("[YouTube+] autosave simple setting failed:", err);
 }
 if ("enableDownload" === setting) {
 const submenu = modal.querySelector(".download-submenu");
@@ -9965,6 +10812,22 @@ if ("enableZenStyles" === setting) {
 const submenu = modal.querySelector(".style-submenu");
 submenu && (submenu.style.display = checked ? "block" : "none");
 const toggleBtn = modal.querySelector('.ytp-plus-submenu-toggle[data-submenu="style"]');
+if (toggleBtn instanceof HTMLElement) {
+if (checked) {
+toggleBtn.removeAttribute("disabled");
+toggleBtn.setAttribute("aria-expanded", "true");
+toggleBtn.style.display = "inline-flex";
+} else {
+toggleBtn.setAttribute("disabled", "");
+toggleBtn.setAttribute("aria-expanded", "false");
+toggleBtn.style.display = "none";
+}
+}
+}
+if ("zenStyles.sideVideosColumnsEnabled" === setting) {
+const submenu = modal.querySelector('.style-side-videos-submenu[data-submenu="style-side-videos"]');
+submenu instanceof HTMLElement && (submenu.style.display = checked ? "block" : "none");
+const toggleBtn = modal.querySelector('.ytp-plus-submenu-toggle[data-submenu="style-side-videos"]');
 if (toggleBtn instanceof HTMLElement) {
 if (checked) {
 toggleBtn.removeAttribute("disabled");
@@ -10065,7 +10928,7 @@ window.youtubePlus.settings = window.youtubePlus.settings || settings;
 window.youtubePlus.rebuildDownloadDropdown();
 }
 } catch (err) {
-console.warn("[YouTube+] rebuildDownloadDropdown call failed:", err);
+window.console.warn("[YouTube+] rebuildDownloadDropdown call failed:", err);
 }
 };
 
@@ -10104,7 +10967,7 @@ const triggerRebuildDropdown = () => {
 try {
 "undefined" != typeof window && window.youtubePlus && "function" == typeof window.youtubePlus.rebuildDownloadDropdown && window.youtubePlus.rebuildDownloadDropdown();
 } catch (err) {
-console.warn("[YouTube+] rebuildDownloadDropdown call failed:", err);
+window.console.warn("[YouTube+] rebuildDownloadDropdown call failed:", err);
 }
 };
 
@@ -10245,7 +11108,7 @@ window.YouTubeMusic.applySettingsChanges && window.YouTubeMusic.applySettingsCha
 }
 showNotification && t && showNotification(t("musicSettingsSaved"));
 } catch (e) {
-console.warn("[YouTube+] handleMusicSettingToggle failed");
+window.console.warn("[YouTube+] handleMusicSettingToggle failed");
 }
 };
 
@@ -10300,10 +11163,102 @@ createFocusTrap
  * @version 3.0
  */ !(function() {
 "use strict";
-const _createHTML = window._ytplusCreateHTML || (s => s);
+const _setSafeHTML = window.YouTubeUtils.setSafeHTML;
+const createVisibilityAwareInterval = window.YouTubeUtils?.createVisibilityAwareInterval || ((callback, delay) => {
+const id = setInterval(() => {
+document.hidden || callback();
+}, delay);
+return {
+stop() {
+clearInterval(id);
+},
+pause() {
+clearInterval(id);
+},
+resume() {},
+get active() {
+return !0;
+}
+};
+});
+const setTimeout_ = setTimeout.bind(window);
+const _potParamsByVideoId = new Map;
+const _potCarriedParamNames = [ "pot", "potc", "c", "cver", "cplayer", "cos", "cosver", "cplatform", "cbr", "cbrver", "xorb", "xobt", "xovt" ];
+let _potHooksInstalled = !1;
+let _potElicitInflight = !1;
+function _pageGlobal() {
+return "undefined" != typeof unsafeWindow ? unsafeWindow : window;
+}
+function _rememberPotFromTimedtextUrl(rawUrl) {
+try {
+if (!rawUrl || -1 === rawUrl.indexOf("/api/timedtext")) {
+return;
+}
+const u = new URL(rawUrl, "https://www.youtube.com");
+const videoId = u.searchParams.get("v");
+const pot = u.searchParams.get("pot");
+if (!videoId || !pot) {
+return;
+}
+const collected = {};
+for (const name of _potCarriedParamNames) {
+const value = u.searchParams.get(name);
+null != value && "" !== value && (collected[name] = value);
+}
+_potParamsByVideoId.set(videoId, collected);
+} catch (e) {}
+}
+!(function _installPotHooksOnce() {
+if (_potHooksInstalled) {
+return;
+}
+const pg = _pageGlobal();
+if (pg && "object" == typeof pg) {
+try {
+const origFetch = pg.fetch;
+"function" == typeof origFetch && (pg.fetch = function patchedFetch(input, _init) {
+try {
+const inputWithUrl = input && "object" == typeof input ? input : {};
+const url = "string" == typeof input ? input : input instanceof URL ? input.toString() : "string" == typeof inputWithUrl.url ? inputWithUrl.url : "";
+url && _rememberPotFromTimedtextUrl(url);
+} catch (e) {}
+return origFetch.call(this, input, _init);
+});
+const xhrProto = pg.XMLHttpRequest && pg.XMLHttpRequest.prototype;
+if (xhrProto && "function" == typeof xhrProto.open) {
+const origOpen = xhrProto.open;
+const patchedOpen = function(...args) {
+try {
+const url = args[1];
+"string" == typeof url && _rememberPotFromTimedtextUrl(url);
+} catch (e) {}
+return origOpen.apply(this, args);
+};
+xhrProto.open = patchedOpen;
+}
+_potHooksInstalled = !0;
+} catch (e) {}
+}
+})();
+function _getVideoIdFromCandidate(url) {
+try {
+const u = new URL(url, "https://www.youtube.com");
+return u.searchParams.get("v") || "";
+} catch (e) {
+return "";
+}
+}
+const isRelevantRoute = () => {
+try {
+const path = location.pathname || "";
+return "/watch" === path || path.startsWith("/shorts");
+} catch (e) {
+return !1;
+}
+};
 const $ = sel => window.YouTubeUtils?.$(sel) || document.querySelector(sel);
 if (void 0 === YouTubeUtils) {
-console.error("[YouTube+ Download] YouTubeUtils not found!");
+window.console.error("[YouTube+ Download] YouTubeUtils not found!");
 return;
 }
 const {NotificationManager} = YouTubeUtils;
@@ -10325,8 +11280,8 @@ const _YouTubePlusLogger = window.YouTubePlusLogger;
 const logger = void 0 !== _YouTubePlusLogger && _YouTubePlusLogger ? _YouTubePlusLogger.createLogger("Download") : {
 debug: () => {},
 info: () => {},
-warn: console.warn.bind(console),
-error: console.error.bind(console)
+warn: window.console.warn.bind(console),
+error: window.console.error.bind(console)
 };
 const DownloadConfig = {
 API: {
@@ -10429,7 +11384,7 @@ return !0;
 const now = Date.now();
 const backoff = backoffUntil.get(host) || 0;
 if (now < backoff) {
-console.warn(`[YouTube+ Download] Rate limit backoff: ${host} blocked for ${Math.ceil((backoff - now) / 1e3)}s more`);
+window.console.warn(`[YouTube+ Download] Rate limit backoff: ${host} blocked for ${Math.ceil((backoff - now) / 1e3)}s more`);
 return !1;
 }
 const recent = (requests.get(host) || []).filter(t => now - t < 6e4);
@@ -10437,7 +11392,7 @@ if (recent.length >= 15) {
 const consecutiveHits = Math.min(5, Math.floor(recent.length / 15));
 const backoffMs = Math.min(6e4, 2e3 * Math.pow(2, consecutiveHits));
 backoffUntil.set(host, now + backoffMs);
-console.warn(`[YouTube+ Download] Rate limit: ${recent.length}/15 requests to ${host}, backing off ${backoffMs}ms`);
+window.console.warn(`[YouTube+ Download] Rate limit: ${recent.length}/15 requests to ${host}, backing off ${backoffMs}ms`);
 return !1;
 }
 recent.push(now);
@@ -10529,6 +11484,76 @@ ts: Date.now()
 }
 };
 })();
+async function fetchPlayerData(videoId) {
+const cached = _playerDataCache.get(videoId);
+if (cached) {
+return cached;
+}
+const response = await gmXmlHttpRequest({
+method: "POST",
+url: "https://www.youtube.com/youtubei/v1/player",
+headers: {
+"Content-Type": "application/json",
+"User-Agent": DownloadConfig.HEADERS["User-Agent"]
+},
+data: JSON.stringify({
+context: {
+client: {
+clientName: "WEB",
+clientVersion: "2.20240304.00.00"
+}
+},
+videoId
+})
+});
+if (200 !== response.status) {
+throw new Error(`Failed to get player data: ${response.status}`);
+}
+const parsed = JSON.parse(response.responseText);
+_playerDataCache.set(videoId, parsed);
+return parsed;
+}
+function extractAvailableVideoQualities(playerData) {
+const streamingData = playerData?.streamingData || {};
+const combined = [ ...Array.isArray(streamingData.formats) ? streamingData.formats : [], ...Array.isArray(streamingData.adaptiveFormats) ? streamingData.adaptiveFormats : [] ];
+const qualitySet = new Set;
+combined.forEach(format => {
+const mimeType = String(format?.mimeType || "");
+if (!mimeType.includes("video/")) {
+return;
+}
+const qualityLabel = String(format?.qualityLabel || "").trim();
+const match = qualityLabel.match(/(\d{3,4})p/i);
+match && qualitySet.add(match[1]);
+});
+return Array.from(qualitySet).sort((left, right) => Number(left) - Number(right));
+}
+function extractBalancedJsonObject(src, startIdx) {
+if (startIdx < 0 || startIdx >= src.length || "{" !== src[startIdx]) {
+return null;
+}
+let depth = 0;
+let inStr = !1;
+let escape = !1;
+for (let i = startIdx; i < src.length; i++) {
+const ch = src[i];
+if (escape) {
+escape = !1;
+} else if (inStr) {
+"\\" === ch ? escape = !0 : '"' === ch && (inStr = !1);
+} else if ('"' === ch) {
+inStr = !0;
+} else if ("{" === ch) {
+depth++;
+} else if ("}" === ch) {
+depth--;
+if (0 === depth) {
+return src.slice(startIdx, i + 1);
+}
+}
+}
+return null;
+}
 async function fetchPlayerResponseFromWatchHtml(videoId) {
 try {
 const watchUrl = `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`;
@@ -10540,8 +11565,18 @@ if (200 !== response.status || !response.responseText) {
 return null;
 }
 const html = String(response.responseText);
-const match = html.match(/ytInitialPlayerResponse\s*=\s*(\{[\s\S]*?\})\s*;\s*<\/script>/);
-return match && match[1] ? JSON.parse(match[1]) : null;
+const assignRe = /ytInitialPlayerResponse\s*=\s*\{/g;
+let match;
+for (;null !== (match = assignRe.exec(html)); ) {
+const braceIdx = match.index + match[0].length - 1;
+const jsonText = extractBalancedJsonObject(html, braceIdx);
+if (jsonText) {
+try {
+return JSON.parse(jsonText);
+} catch (e) {}
+}
+}
+return null;
 } catch (error) {
 logger.warn("Watch HTML subtitle fallback failed:", error);
 return null;
@@ -10606,13 +11641,14 @@ return (await rawResponse.text()).trim();
 } catch (e) {}
 }
 if (rawResponse && "object" == typeof rawResponse) {
-const maybeText = rawResponse.text || rawResponse.data || rawResponse.content;
+const rawObject = rawResponse;
+const maybeText = rawObject.text || rawObject.data || rawObject.content;
 if ("string" == typeof maybeText && maybeText.trim()) {
 return maybeText.trim();
 }
-if ("function" == typeof rawResponse.text) {
+if ("function" == typeof rawObject.text) {
 try {
-const extracted = await rawResponse.text();
+const extracted = await rawObject.text();
 if ("string" == typeof extracted && extracted.trim()) {
 return extracted.trim();
 }
@@ -10627,17 +11663,52 @@ name: track.name?.simpleText || track.languageCode,
 languageCode: track.languageCode,
 url: buildSubtitleUrl(track.baseUrl),
 baseUrl: normalizeSubtitleBaseUrl(track.baseUrl),
-isAutoGenerated: "asr" === track.kind
+isAutoGenerated: "asr" === track.kind,
+trackId: String(track?.vssId || ""),
+kind: String(track?.kind || "")
 }));
 }
-function parseTranslationLanguages(translationLanguages, baseUrl, sourceLanguageCode) {
+function findBestCaptionTrack(captionTracks, criteria = {}) {
+const tracks = Array.isArray(captionTracks) ? captionTracks.filter(Boolean) : [];
+if (0 === tracks.length) {
+return null;
+}
+const wantedLang = String(criteria.languageCode || "").trim();
+const wantedBaseUrl = normalizeSubtitleBaseUrl(criteria.baseUrl || "");
+const wantedTrackId = String(criteria.trackId || "").trim();
+const wantsAuto = "boolean" == typeof criteria.isAutoGenerated ? criteria.isAutoGenerated : null;
+const scoreTrack = track => {
+let score = 0;
+const trackBaseUrl = normalizeSubtitleBaseUrl(track?.baseUrl || "");
+const trackLang = String(track?.languageCode || "");
+const trackId = String(track?.vssId || "");
+const trackIsAuto = "asr" === track?.kind;
+const langPrefix = wantedLang ? wantedLang.split("-")[0] : "";
+wantedTrackId && trackId && trackId === wantedTrackId && (score += 120);
+wantedBaseUrl && trackBaseUrl && trackBaseUrl === wantedBaseUrl && (score += 100);
+wantedLang && trackLang === wantedLang ? score += 40 : langPrefix && trackLang.startsWith(langPrefix) && (score += 20);
+null !== wantsAuto && (score += trackIsAuto === wantsAuto ? 15 : -5);
+!1 !== track?.isTranslatable && (score += 5);
+trackBaseUrl && (score += 2);
+return score;
+};
+return tracks.map(track => ({
+track,
+score: scoreTrack(track)
+})).sort((left, right) => right.score - left.score)[0]?.track || null;
+}
+function parseTranslationLanguages(translationLanguages, sourceTrack) {
+const sourceBaseUrl = normalizeSubtitleBaseUrl(sourceTrack?.baseUrl || "");
+const sourceLanguageCode = String(sourceTrack?.languageCode || "");
+const sourceTrackId = String(sourceTrack?.vssId || "");
 return translationLanguages.map(lang => ({
 name: lang.languageName?.simpleText || lang.languageCode,
 languageCode: lang.languageCode,
 sourceLanguageCode: sourceLanguageCode || "",
-baseUrl: normalizeSubtitleBaseUrl(baseUrl),
-url: buildSubtitleUrl(baseUrl),
-isAutoGenerated: !0,
+baseUrl: sourceBaseUrl,
+url: buildSubtitleUrl(sourceBaseUrl),
+isAutoGenerated: "asr" === sourceTrack?.kind,
+trackId: sourceTrackId,
 translateTo: lang.languageCode
 }));
 }
@@ -10645,42 +11716,14 @@ async function getSubtitles(videoId) {
 try {
 let data = null;
 try {
-data = await (async function fetchPlayerData(videoId) {
-const cached = _playerDataCache.get(videoId);
-if (cached) {
-return cached;
-}
-const response = await gmXmlHttpRequest({
-method: "POST",
-url: "https://www.youtube.com/youtubei/v1/player",
-headers: {
-"Content-Type": "application/json",
-"User-Agent": DownloadConfig.HEADERS["User-Agent"]
-},
-data: JSON.stringify({
-context: {
-client: {
-clientName: "WEB",
-clientVersion: "2.20240304.00.00"
-}
-},
-videoId
-})
-});
-if (200 !== response.status) {
-throw new Error(`Failed to get player data: ${response.status}`);
-}
-const parsed = JSON.parse(response.responseText);
-_playerDataCache.set(videoId, parsed);
-return parsed;
-})(videoId);
+data = await fetchPlayerData(videoId);
 } catch (error) {
 logger.warn("Primary subtitle API request failed, trying page fallback:", error);
 }
 let fallback = (function getCaptionsFromPageFallback() {
 try {
 const title = getVideoTitle();
-const globalContext = "undefined" != typeof unsafeWindow ? unsafeWindow : window;
+const globalContext = _pageGlobal();
 const initial = globalContext.ytInitialPlayerResponse;
 const initialCaps = initial?.captions?.playerCaptionsTracklistRenderer;
 if (initialCaps) {
@@ -10689,8 +11732,8 @@ captions: initialCaps,
 videoTitle: initial?.videoDetails?.title || title
 };
 }
-const playerEl = document.getElementById("movie_player");
-const player = playerEl;
+const playerEl = window.YouTubeUtils?.byId?.("movie_player") || document.getElementById("movie_player");
+const player = playerEl instanceof HTMLElement ? playerEl : null;
 const response = "function" == typeof player?.getPlayerResponse && player.getPlayerResponse() || null;
 const respCaps = response?.captions?.playerCaptionsTracklistRenderer;
 if (respCaps) {
@@ -10738,13 +11781,16 @@ autoTransSubtitles: []
 }
 const captionTracks = captions.captionTracks || [];
 const translationLanguages = captions.translationLanguages || [];
-const baseUrl = captionTracks[0]?.baseUrl || "";
-const sourceLanguageCode = captionTracks[0]?.languageCode || "";
+const translationSourceTrack = (function getTranslationSourceTrack(captionTracks) {
+return findBestCaptionTrack(captionTracks, {
+isAutoGenerated: !0
+}) || findBestCaptionTrack(captionTracks) || null;
+})(captionTracks);
 return {
 videoId,
 videoTitle,
 subtitles: parseCaptionTracks(captionTracks),
-autoTransSubtitles: parseTranslationLanguages(translationLanguages, baseUrl, sourceLanguageCode)
+autoTransSubtitles: parseTranslationLanguages(translationLanguages, translationSourceTrack)
 };
 } catch (error) {
 logger.error("Error getting subtitles:", error);
@@ -10796,7 +11842,7 @@ duration,
 text
 });
 }
-const pTagRegex = /<p\b([^>]*)>([\s\S]*?)<\/p>/gi;
+const pTagRegex = /<p\b([^>]*)>([\s\S]{0,20000}?)<\/p>/gi;
 for (;null !== (match = pTagRegex.exec(normalizedXml)); ) {
 const attrs = match[1] || "";
 const inner = match[2] || "";
@@ -10873,17 +11919,49 @@ return [];
 function parseSubtitleVTT(vttText) {
 const cues = [];
 const blocks = String(vttText || "").replace(/\r/g, "").split(/\n\n+/);
-const parseVttTime = value => {
-const raw = value.trim();
-const m = raw.match(/^(?:(\d+):)?(\d{1,2}):(\d{1,2})(?:\.(\d{1,3}))?$/);
-if (!m) {
+const parseClockTime = value => {
+const raw = String(value || "").trim();
+if (!raw) {
 return 0;
 }
-const h = Number(m[1] || 0);
-const min = Number(m[2] || 0);
-const sec = Number(m[3] || 0);
-const ms = Number((m[4] || "0").padEnd(3, "0"));
-return 3600 * h + 60 * min + sec + ms / 1e3;
+const parts = raw.split(":");
+if (2 !== parts.length && 3 !== parts.length) {
+return 0;
+}
+if (!parts.every(part => {
+if (!part) {
+return !1;
+}
+let dotSeen = !1;
+for (let i = 0; i < part.length; i += 1) {
+const ch = part[i];
+if (!(ch >= "0" && ch <= "9")) {
+if ("." !== ch || dotSeen) {
+return !1;
+}
+dotSeen = !0;
+}
+}
+return !0;
+})) {
+return 0;
+}
+let h = 0;
+let m = 0;
+let secPart = "";
+if (2 === parts.length) {
+m = Number(parts[0]);
+secPart = parts[1];
+} else {
+h = Number(parts[0]);
+m = Number(parts[1]);
+secPart = parts[2];
+}
+const dot = secPart.indexOf(".");
+const sec = Number(dot >= 0 ? secPart.slice(0, dot) : secPart);
+const frac = dot >= 0 ? secPart.slice(dot + 1) : "";
+const ms = frac ? Number(frac.padEnd(3, "0").slice(0, 3)) : 0;
+return Number.isFinite(h) && Number.isFinite(m) && Number.isFinite(sec) && Number.isFinite(ms) ? 3600 * h + 60 * m + sec + ms / 1e3 : 0;
 };
 blocks.forEach(block => {
 const lines = block.split("\n").map(line => line.trim()).filter(Boolean);
@@ -10901,8 +11979,8 @@ const range = lines[timeIndex].split("--\x3e");
 if (range.length < 2) {
 return;
 }
-const start = parseVttTime(range[0]);
-const end = parseVttTime(range[1].split(" ")[0]);
+const start = parseClockTime(range[0]);
+const end = parseClockTime(range[1].split(" ")[0]);
 const duration = Math.max(0, end - start);
 const text = lines.slice(timeIndex + 1).join(" ").replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
 text && cues.push({
@@ -10916,24 +11994,55 @@ return cues;
 function parseSubtitleTTML(ttmlText) {
 const cues = [];
 const normalizedTtml = String(ttmlText || "").replace(/\uFEFF/g, "");
-const pTagRegex = /<p\b([^>]*)>([\s\S]*?)<\/p>/gi;
+const pTagRegex = /<p\b([^>]*)>([\s\S]{0,20000}?)<\/p>/gi;
 const parseTtmlTime = value => {
 const v = String(value || "").trim();
 if (!v) {
 return 0;
 }
-if (/^\d+(?:\.\d+)?s$/.test(v)) {
-return parseFloat(v);
+const last = v[v.length - 1];
+if ("s" === last || "S" === last) {
+const n = Number(v.slice(0, -1));
+return Number.isFinite(n) ? n : 0;
 }
-const match = v.match(/^(?:(\d+):)?(\d{1,2}):(\d{1,2})(?:\.(\d{1,3}))?$/);
-if (!match) {
+const parts = v.split(":");
+if (2 !== parts.length && 3 !== parts.length) {
 return 0;
 }
-const h = Number(match[1] || 0);
-const m = Number(match[2] || 0);
-const s = Number(match[3] || 0);
-const ms = Number((match[4] || "0").padEnd(3, "0"));
-return 3600 * h + 60 * m + s + ms / 1e3;
+if (!parts.every(part => {
+if (!part) {
+return !1;
+}
+let dotSeen = !1;
+for (let i = 0; i < part.length; i += 1) {
+const ch = part[i];
+if (!(ch >= "0" && ch <= "9")) {
+if ("." !== ch || dotSeen) {
+return !1;
+}
+dotSeen = !0;
+}
+}
+return !0;
+})) {
+return 0;
+}
+let h = 0;
+let m = 0;
+let secPart = "";
+if (2 === parts.length) {
+m = Number(parts[0]);
+secPart = parts[1];
+} else {
+h = Number(parts[0]);
+m = Number(parts[1]);
+secPart = parts[2];
+}
+const dot = secPart.indexOf(".");
+const s = Number(dot >= 0 ? secPart.slice(0, dot) : secPart);
+const frac = dot >= 0 ? secPart.slice(dot + 1) : "";
+const ms = frac ? Number(frac.padEnd(3, "0").slice(0, 3)) : 0;
+return Number.isFinite(h) && Number.isFinite(m) && Number.isFinite(s) && Number.isFinite(ms) ? 3600 * h + 60 * m + s + ms / 1e3 : 0;
 };
 const domParser = "function" == typeof window.DOMParser ? new window.DOMParser : null;
 if (domParser) {
@@ -10998,8 +12107,28 @@ url.searchParams.set(key, value);
 return url.toString();
 } catch (e) {
 const encoded = `${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
-const re = new RegExp(`([?&])${key}=[^&]*`);
-return re.test(inputUrl) ? inputUrl.replace(re, `$1${encoded}`) : `${inputUrl}${inputUrl.includes("?") ? "&" : "?"}${encoded}`;
+const str = String(inputUrl || "");
+const qPos = str.indexOf("?");
+const hashPos = str.indexOf("#");
+const baseEnd = qPos >= 0 ? qPos : hashPos >= 0 ? hashPos : str.length;
+const base = str.slice(0, baseEnd);
+const hash = hashPos >= 0 ? str.slice(hashPos) : "";
+const queryStart = qPos >= 0 ? qPos + 1 : baseEnd;
+const queryEnd = hashPos >= 0 ? hashPos : str.length;
+const rawQuery = str.slice(queryStart, queryEnd);
+const pairs = rawQuery ? rawQuery.split("&").filter(Boolean) : [];
+let replaced = !1;
+for (let i = 0; i < pairs.length; i += 1) {
+const pair = pairs[i];
+const eq = pair.indexOf("=");
+const name = eq >= 0 ? pair.slice(0, eq) : pair;
+if (decodeURIComponent(name) === key) {
+pairs[i] = encoded;
+replaced = !0;
+}
+}
+replaced || pairs.push(encoded);
+return `${base}?${pairs.join("&")}${hash}`;
 }
 }
 function removeQueryParam(inputUrl, key) {
@@ -11008,9 +12137,22 @@ const url = new URL(inputUrl);
 url.searchParams.delete(key);
 return url.toString();
 } catch (e) {
-const re = new RegExp(`([?&])${key}=[^&]*`, "g");
-const cleaned = String(inputUrl || "").replace(re, "$1").replace(/\?&/, "?");
-return cleaned.replace(/[?&]$/, "");
+const str = String(inputUrl || "");
+const qPos = str.indexOf("?");
+if (qPos < 0) {
+return str;
+}
+const hashPos = str.indexOf("#");
+const base = str.slice(0, qPos);
+const hash = hashPos >= 0 ? str.slice(hashPos) : "";
+const query = str.slice(qPos + 1, hashPos >= 0 ? hashPos : str.length);
+const nextPairs = query.split("&").filter(Boolean).filter(pair => {
+const eq = pair.indexOf("=");
+const name = eq >= 0 ? pair.slice(0, eq) : pair;
+return decodeURIComponent(name) !== key;
+});
+const nextQuery = nextPairs.join("&");
+return `${base}${nextQuery ? `?${nextQuery}` : ""}${hash}`;
 }
 }
 function normalizeSubtitleCandidates(urls) {
@@ -11118,6 +12260,36 @@ text,
 kind: "raw"
 } : null;
 }
+async function fetchSubtitlePayloadViaPageFetch(candidates) {
+try {
+const pageGlobal = _pageGlobal();
+const pageFetch = pageGlobal?.fetch;
+if ("function" != typeof pageFetch) {
+return null;
+}
+for (const candidateUrl of normalizeSubtitleCandidates(candidates)) {
+try {
+const response = await pageFetch(candidateUrl, {
+method: "GET",
+credentials: "include",
+cache: "no-store",
+headers: {
+Accept: "*/*"
+}
+});
+if (!response || !response.ok) {
+continue;
+}
+const raw = await response.text();
+const detected = classifySubtitlePayload(raw);
+if (detected) {
+return detected;
+}
+} catch (e) {}
+}
+} catch (e) {}
+return null;
+}
 async function fetchSubtitlePayload(candidates, options = {}) {
 let firstNonEmpty = null;
 let hadRateLimit = !1;
@@ -11128,15 +12300,130 @@ withCredentials: !0,
 anonymous: !1,
 responseType: "text",
 headers: {
-Referer: "https://www.youtube.com/"
+Referer: "https://www.youtube.com/",
+"Accept-Encoding": "identity",
+"Cache-Control": "no-cache",
+Pragma: "no-cache"
 }
 }, {
 method: "GET",
 withCredentials: !0,
-anonymous: !1
+anonymous: !1,
+headers: {
+Referer: "https://www.youtube.com/",
+"Accept-Encoding": "identity"
+}
 } ];
 const profiles = minimalMode ? allProfiles.slice(0, 1) : allProfiles;
-const normalizedCandidates = minimalMode ? buildMinimalRateLimitCandidates(candidates) : normalizeSubtitleCandidates(candidates);
+if (!minimalMode) {
+try {
+const candidateVideoId = (candidates || []).map(_getVideoIdFromCandidate).find(Boolean) || "";
+candidateVideoId && !_potParamsByVideoId.has(candidateVideoId) && await (async function _tryElicitPotForCurrentVideo() {
+if (_potElicitInflight) {
+return !1;
+}
+_potElicitInflight = !0;
+try {
+const pg = _pageGlobal();
+const videoId = (() => {
+try {
+const params = new URLSearchParams(pg.location?.search || "");
+return params.get("v") || "";
+} catch (e) {
+return "";
+}
+})();
+if (!videoId) {
+return !1;
+}
+if (_potParamsByVideoId.has(videoId)) {
+return !0;
+}
+const playerEl = pg.document?.querySelector?.(".html5-video-player");
+if (!playerEl) {
+return !1;
+}
+let priorTrack = null;
+try {
+priorTrack = "function" == typeof playerEl.getOption ? playerEl.getOption("captions", "track") : null;
+} catch (e) {
+priorTrack = null;
+}
+let trackToLoad = null;
+try {
+const list = "function" == typeof playerEl.getOption && playerEl.getOption("captions", "tracklist", {
+includeAsr: !0
+}) || [];
+Array.isArray(list) && list.length && (trackToLoad = list.find(t => t && "ru" === t.languageCode && "asr" === t.kind) || list[0]);
+} catch (e) {
+trackToLoad = null;
+}
+if (trackToLoad && "function" == typeof playerEl.setOption) {
+try {
+playerEl.setOption("captions", "track", trackToLoad);
+} catch (e) {}
+} else {
+try {
+const ccBtn = pg.document?.querySelector?.(".ytp-subtitles-button");
+ccBtn && "true" !== ccBtn.getAttribute("aria-pressed") && ccBtn.click();
+} catch (e) {}
+}
+const deadline = Date.now() + 2200;
+for (;Date.now() < deadline && !_potParamsByVideoId.has(videoId); ) {
+await waitMs(120);
+}
+try {
+if (priorTrack && "function" == typeof playerEl.setOption) {
+playerEl.setOption("captions", "track", priorTrack);
+} else if ("function" == typeof playerEl.toggleSubtitles) {
+const ccBtn = pg.document?.querySelector?.(".ytp-subtitles-button");
+ccBtn && "true" === ccBtn.getAttribute("aria-pressed") && ccBtn.click();
+}
+} catch (e) {}
+return _potParamsByVideoId.has(videoId);
+} catch (e) {
+return !1;
+} finally {
+_potElicitInflight = !1;
+}
+})();
+} catch (e) {}
+}
+const baseNormalized = minimalMode ? buildMinimalRateLimitCandidates(candidates) : normalizeSubtitleCandidates(candidates);
+const normalizedCandidates = minimalMode ? baseNormalized : (function augmentSubtitleCandidatesWithPot(candidates) {
+if (!Array.isArray(candidates) || 0 === candidates.length) {
+return candidates || [];
+}
+const augmented = [];
+for (const candidate of candidates) {
+try {
+const videoId = _getVideoIdFromCandidate(candidate);
+const params = videoId ? _potParamsByVideoId.get(videoId) : null;
+if (!params) {
+continue;
+}
+const u = new URL(candidate, "https://www.youtube.com");
+for (const [k, v] of Object.entries(params)) {
+u.searchParams.set(k, v);
+}
+augmented.push(u.toString());
+} catch (e) {}
+}
+const merged = augmented.concat(candidates);
+return Array.from(new Set(merged.filter(u => "string" == typeof u && u.length > 0)));
+})(baseNormalized);
+if (!minimalMode) {
+try {
+const earlyPageFetched = await fetchSubtitlePayloadViaPageFetch(normalizedCandidates);
+if (earlyPageFetched && "raw" !== earlyPageFetched.kind) {
+return {
+payload: earlyPageFetched,
+hadRateLimit
+};
+}
+earlyPageFetched && !firstNonEmpty && (firstNonEmpty = earlyPageFetched);
+} catch (e) {}
+}
 for (const candidateUrl of normalizedCandidates) {
 for (const profile of profiles) {
 try {
@@ -11167,36 +12454,7 @@ hadRateLimit
 hadRateLimit && await waitMs(220);
 }
 if (!firstNonEmpty) {
-const pageFetched = await (async function fetchSubtitlePayloadViaPageFetch(candidates) {
-try {
-const pageGlobal = "undefined" != typeof unsafeWindow ? unsafeWindow : window;
-const pageFetch = pageGlobal?.fetch;
-if ("function" != typeof pageFetch) {
-return null;
-}
-for (const candidateUrl of normalizeSubtitleCandidates(candidates)) {
-try {
-const response = await pageFetch(candidateUrl, {
-method: "GET",
-credentials: "include",
-cache: "no-store",
-headers: {
-Accept: "*/*"
-}
-});
-if (!response || !response.ok) {
-continue;
-}
-const raw = await response.text();
-const detected = classifySubtitlePayload(raw);
-if (detected) {
-return detected;
-}
-} catch (e) {}
-}
-} catch (e) {}
-return null;
-})(normalizedCandidates);
+const pageFetched = await fetchSubtitlePayloadViaPageFetch(normalizedCandidates);
 if (pageFetched) {
 return {
 payload: pageFetched,
@@ -11215,8 +12473,19 @@ payload: firstNonEmpty,
 hadRateLimit
 };
 }
+function triggerBlobDownload(blob, filename, revokeDelayMs = 1500) {
+const blobUrl = URL.createObjectURL(blob);
+const a = document.createElement("a");
+a.href = blobUrl;
+a.download = filename;
+a.style.display = "none";
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+setTimeout_(() => URL.revokeObjectURL(blobUrl), Math.max(500, Number(revokeDelayMs) || 1500));
+}
 async function downloadSubtitle(options = {}) {
-const {videoId, url: baseUrl, languageCode, languageName, isAutoGenerated = !1, format = "srt", translateTo = null} = options;
+const {videoId, url: baseUrl, languageCode, languageName, isAutoGenerated = !1, format = "srt", translateTo = null, trackId = ""} = options;
 if (!videoId || !baseUrl && !languageCode) {
 throw new Error("Video ID and subtitle source are required");
 }
@@ -11225,7 +12494,8 @@ const isFirefox = /firefox/i.test(navigator.userAgent || "");
 const translatedCandidates = [ ...buildSubtitleCandidates(baseUrl, translateTo), ...buildDirectSubtitleCandidates(videoId, languageCode, isAutoGenerated, translateTo) ];
 const sourceCandidates = [ ...buildSubtitleCandidates(baseUrl, null), ...buildDirectSubtitleCandidates(videoId, languageCode, isAutoGenerated, null) ];
 const sourceNoAsrCandidates = [ ...buildSubtitleCandidates(removeQueryParam(String(baseUrl || ""), "tlang"), null), ...buildDirectSubtitleCandidates(videoId, languageCode, !1, null) ];
-const candidates = isFirefox ? buildMinimalRateLimitCandidates([ ...sourceNoAsrCandidates, ...sourceCandidates, ...translatedCandidates ]) : translatedCandidates;
+const primaryCandidates = translateTo ? translatedCandidates : sourceCandidates;
+const candidates = isFirefox ? buildMinimalRateLimitCandidates(translateTo ? [ ...primaryCandidates ] : [ ...sourceNoAsrCandidates, ...sourceCandidates ]) : primaryCandidates;
 NotificationManager.show(t("subtitleDownloading"), {
 duration: 2e3,
 type: "info"
@@ -11237,20 +12507,14 @@ minimalMode: isFirefox
 });
 sawRateLimit = sawRateLimit || hadRateLimit;
 !payload && hadRateLimit && await waitMs(900);
-if (!payload && translateTo) {
-const sourceAttempt = await fetchSubtitlePayload(sourceCandidates);
-payload = sourceAttempt.payload;
-hadRateLimit = hadRateLimit || sourceAttempt.hadRateLimit;
-sawRateLimit = sawRateLimit || sourceAttempt.hadRateLimit;
-}
-if (!payload && isAutoGenerated) {
+if (!payload && isAutoGenerated && !translateTo) {
 const langOnlyAttempt = await fetchSubtitlePayload(sourceNoAsrCandidates);
 payload = langOnlyAttempt.payload;
 hadRateLimit = hadRateLimit || langOnlyAttempt.hadRateLimit;
 sawRateLimit = sawRateLimit || langOnlyAttempt.hadRateLimit;
 }
 if (!payload && hadRateLimit) {
-const rateLimitCandidates = buildMinimalRateLimitCandidates([ ...sourceNoAsrCandidates, ...sourceCandidates, ...translatedCandidates ]);
+const rateLimitCandidates = buildMinimalRateLimitCandidates(translateTo ? [ ...translatedCandidates ] : [ ...sourceNoAsrCandidates, ...sourceCandidates ]);
 const finalAttempt = await fetchSubtitlePayload(rateLimitCandidates, {
 minimalMode: !0
 });
@@ -11261,10 +12525,15 @@ if (!payload) {
 try {
 const freshPlayerResponse = await fetchPlayerResponseFromWatchHtml(videoId);
 const freshTracks = freshPlayerResponse?.captions?.playerCaptionsTracklistRenderer?.captionTracks || [];
-const freshTrack = freshTracks.find(t => String(t?.languageCode || "") === languageCode) || freshTracks.find(t => String(t?.languageCode || "").startsWith(languageCode.split("-")[0]));
+const freshTrack = findBestCaptionTrack(freshTracks, {
+languageCode,
+isAutoGenerated,
+baseUrl,
+trackId
+});
 if (freshTrack?.baseUrl) {
 const freshBase = normalizeSubtitleBaseUrl(freshTrack.baseUrl);
-const freshCandidates = [ ...buildSubtitleCandidates(freshBase, translateTo), ...buildSubtitleCandidates(freshBase, null), ...buildDirectSubtitleCandidates(videoId, languageCode, isAutoGenerated, translateTo), ...buildDirectSubtitleCandidates(videoId, languageCode, !1, null) ];
+const freshCandidates = translateTo ? [ ...buildSubtitleCandidates(freshBase, translateTo), ...buildDirectSubtitleCandidates(videoId, languageCode, isAutoGenerated, translateTo) ] : [ ...buildSubtitleCandidates(freshBase, null), ...buildDirectSubtitleCandidates(videoId, languageCode, isAutoGenerated, null), ...buildDirectSubtitleCandidates(videoId, languageCode, !1, null) ];
 const freshAttempt = await fetchSubtitlePayload(freshCandidates);
 payload = freshAttempt.payload;
 sawRateLimit = sawRateLimit || freshAttempt.hadRateLimit;
@@ -11272,6 +12541,9 @@ sawRateLimit = sawRateLimit || freshAttempt.hadRateLimit;
 } catch (e) {}
 }
 if (!payload) {
+if (translateTo) {
+throw new Error("Translated subtitle track is unavailable for this video/language");
+}
 throw new Error("Empty subtitle response");
 }
 const subtitleText = payload.text;
@@ -11329,14 +12601,7 @@ const filename = sanitizeFilename(`${title} - ${languageName} (${langSuffix}).${
 const blob = new Blob([ content ], {
 type: "text/plain;charset=utf-8"
 });
-const blobUrl = URL.createObjectURL(blob);
-const a = document.createElement("a");
-a.href = blobUrl;
-a.download = filename;
-document.body.appendChild(a);
-a.click();
-document.body.removeChild(a);
-URL.revokeObjectURL(blobUrl);
+triggerBlobDownload(blob, filename);
 NotificationManager.show(t("subtitleDownloaded"), {
 duration: 3e3,
 type: "success"
@@ -11399,7 +12664,11 @@ audioBitrate,
 filenameStyle: "pretty"
 };
 }
-logger.debug("Requesting conversion...", payload);
+logger.debug("Requesting conversion...", {
+format: payload?.format,
+videoQuality: payload?.videoQuality,
+audioBitrate: payload?.audioBitrate
+});
 const customHeaders = {
 ...DownloadConfig.HEADERS,
 key
@@ -11414,11 +12683,25 @@ if (200 !== downloadResponse.status) {
 throw new Error(`Conversion failed: ${downloadResponse.status}`);
 }
 const apiDownloadInfo = JSON.parse(downloadResponse.responseText);
-logger.debug("Conversion response:", apiDownloadInfo);
+logger.debug("Conversion response received");
 if (!apiDownloadInfo.url) {
 throw new Error("No download URL received from API");
 }
-logger.debug("Downloading file from:", apiDownloadInfo.url);
+logger.debug("Downloading file from:", (function sanitizeUrlForLog(rawUrl) {
+try {
+if (!rawUrl || "string" != typeof rawUrl) {
+return "";
+}
+const u = new URL(rawUrl, window.location.origin || "https://www.youtube.com");
+const sensitiveParams = [ "v", "videoId", "pot", "potc", "key", "token", "sig", "signature", "oauth", "authorization", "cookie" ];
+for (const name of sensitiveParams) {
+u.searchParams.has(name) && u.searchParams.set(name, "<redacted>");
+}
+return `${u.origin}${u.pathname}`;
+} catch (e) {
+return "<redacted-url>";
+}
+})(String(apiDownloadInfo.url || "")));
 return new Promise((resolve, reject) => {
 if ("undefined" != typeof GM_xmlhttpRequest) {
 GM_xmlhttpRequest({
@@ -11513,15 +12796,8 @@ logger.debug("Album art embedded successfully");
 logger.error("Failed to embed album art:", error);
 }
 }
-const blobUrl = URL.createObjectURL(blob);
-const a = document.createElement("a");
-a.href = blobUrl;
 const filename = apiDownloadInfo.filename || `${title}.${"video" === format ? "mp4" : "mp3"}`;
-a.download = sanitizeFilename(filename);
-document.body.appendChild(a);
-a.click();
-document.body.removeChild(a);
-setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+triggerBlobDownload(blob, sanitizeFilename(filename), 2e3);
 NotificationManager.show(t("downloadCompleted"), {
 duration: 3e3,
 type: "success"
@@ -11574,7 +12850,7 @@ embedLabel.style.fontSize = "13px";
 embedLabel.style.display = "flex";
 embedLabel.style.alignItems = "center";
 embedLabel.style.gap = "6px";
-embedLabel.style.color = "#fff";
+embedLabel.style.color = "var(--yt-text-primary)";
 embedLabel.style.display = "none";
 embedLabel.appendChild(embedCheckbox);
 embedLabel.appendChild(document.createTextNode(t("embedThumbnail")));
@@ -11591,21 +12867,21 @@ position: "relative",
 width: "100%",
 marginBottom: "8px",
 fontSize: "14px",
-color: "#fff",
+color: "var(--yt-text-primary)",
 cursor: "pointer"
 });
 const _ssDisplay = document.createElement("div");
 Object.assign(_ssDisplay.style || {}, {
 padding: "10px 12px",
 borderRadius: "10px",
-background: "linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))",
-border: "1px solid rgba(255,255,255,0.06)",
+background: "linear-gradient(135deg, var(--yt-glass-bg), var(--yt-surface-overlay-faint))",
+border: "1px solid var(--yt-glass-border)",
 display: "flex",
 alignItems: "center",
 justifyContent: "space-between",
 gap: "8px",
 backdropFilter: "blur(6px)",
-boxShadow: "0 4px 18px rgba(0,0,0,0.35) inset"
+boxShadow: "0 4px 18px var(--yt-shadow-inset-strong) inset"
 });
 const _ssLabel = document.createElement("div");
 if (_ssLabel.style) {
@@ -11629,9 +12905,9 @@ right: "0",
 maxHeight: "220px",
 overflowY: "auto",
 borderRadius: "10px",
-background: "linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02))",
-border: "1px solid rgba(255,255,255,0.06)",
-boxShadow: "0 8px 30px rgba(0,0,0,0.6)",
+background: "linear-gradient(180deg, var(--yt-glass-bg), var(--yt-surface-overlay-faint))",
+border: "1px solid var(--yt-glass-border)",
+boxShadow: "0 8px 30px var(--yt-shadow-flyout)",
 backdropFilter: "blur(8px)",
 zIndex: "9999",
 display: "none"
@@ -11655,7 +12931,7 @@ if (!(target instanceof HTMLElement)) {
 return;
 }
 const item = target.closest("[data-value]");
-item && _ssList.contains(item) && item.style && (item.style.background = "rgba(255,255,255,0.02)");
+item && _ssList.contains(item) && item.style && (item.style.background = "var(--yt-surface-overlay-faint)");
 });
 _ssList.addEventListener("mouseout", e => {
 const target = e.target;
@@ -11688,8 +12964,8 @@ item.dataset.value = String(opt.value);
 Object.assign(item.style || {}, {
 padding: "10px 12px",
 cursor: "pointer",
-borderBottom: "1px solid rgba(255,255,255,0.02)",
-color: "#fff"
+borderBottom: "1px solid var(--yt-surface-overlay-faint)",
+color: "var(--yt-text-primary)"
 });
 _ssList.appendChild(item);
 });
@@ -11788,9 +13064,9 @@ btn.textContent = fmt.toUpperCase();
 Object.assign(btn.style || {}, {
 padding: "6px 12px",
 borderRadius: "999px",
-border: "1px solid rgba(255,255,255,0.08)",
-background: "rgba(255,255,255,0.02)",
-color: "#fff",
+border: "1px solid var(--yt-surface-soft)",
+background: "var(--yt-surface-overlay-faint)",
+color: "var(--yt-text-primary)",
 cursor: "pointer",
 fontSize: "13px",
 fontWeight: "600"
@@ -11798,13 +13074,13 @@ fontWeight: "600"
 btn.addEventListener("click", () => {
 Array.from(formatSelect.children).forEach(c => {
 c.style.background = "transparent";
-c.style.color = "#fff";
-c.style.border = "1px solid rgba(255,255,255,0.08)";
+c.style.color = "var(--yt-text-primary)";
+c.style.border = "1px solid var(--yt-surface-soft)";
 c.setAttribute && c.setAttribute("aria-checked", "false");
 });
-btn.style.background = "#111";
-btn.style.color = "#10c56a";
-btn.style.border = "1px solid rgba(16,197,106,0.15)";
+btn.style.background = "var(--yt-surface-contrast)";
+btn.style.color = "var(--yt-success-accent)";
+btn.style.border = "1px solid var(--yt-success-accent-soft)";
 btn.setAttribute("aria-checked", "true");
 formatSelect.value = fmt;
 });
@@ -11820,11 +13096,11 @@ cancelBtn.textContent = t("cancel");
 Object.assign(cancelBtn.style || {}, {
 padding: "8px 16px",
 borderRadius: "8px",
-border: "1px solid rgba(255,255,255,0.12)",
+border: "1px solid var(--yt-surface-active)",
 background: "transparent",
 cursor: "pointer",
 fontSize: "14px",
-color: "#fff"
+color: "var(--yt-text-primary)"
 });
 const downloadBtn = document.createElement("button");
 downloadBtn.type = "button";
@@ -11832,9 +13108,9 @@ downloadBtn.textContent = t("download");
 Object.assign(downloadBtn.style || {}, {
 padding: "8px 20px",
 borderRadius: "8px",
-border: "1px solid rgba(255,255,255,0.12)",
+border: "1px solid var(--yt-surface-active)",
 background: "transparent",
-color: "#fff",
+color: "var(--yt-text-primary)",
 cursor: "pointer",
 fontSize: "14px",
 fontWeight: "600"
@@ -11846,7 +13122,7 @@ const progressBar = document.createElement("div");
 Object.assign(progressBar.style || {}, {
 width: "100%",
 height: "3px",
-background: "#e0e0e0",
+background: "var(--yt-progress-track)",
 borderRadius: "5px",
 overflow: "hidden",
 marginBottom: "6px"
@@ -11855,13 +13131,13 @@ const progressFill = document.createElement("div");
 Object.assign(progressFill.style || {}, {
 width: "0%",
 height: "100%",
-background: "#1a73e8",
+background: "var(--yt-progress-fill)",
 transition: "width 200ms linear"
 });
 progressBar.appendChild(progressFill);
 const progressText = document.createElement("div");
 progressText.style.fontSize = "12px";
-progressText.style.color = "#666";
+progressText.style.color = "var(--yt-muted-text)";
 progressWrapper.appendChild(progressBar);
 progressWrapper.appendChild(progressText);
 return {
@@ -11888,7 +13164,7 @@ formParts.downloadBtn.style.cursor = "pointer";
 formParts.downloadBtn.style.pointerEvents = "auto";
 }
 } catch (e) {
-console.error("Error enabling form controls:", e);
+window.console.error("Error enabling form controls:", e);
 }
 }
 function wireModalEvents(formParts, activeFormatGetter, getSubtitlesData) {
@@ -11907,7 +13183,7 @@ formParts.downloadBtn.style.cursor = "not-allowed";
 }
 formParts.cancelBtn && (formParts.cancelBtn.disabled = !0);
 } catch (e) {
-console.error("Error disabling form controls:", e);
+window.console.error("Error disabling form controls:", e);
 }
 })(formParts);
 !(function initializeProgress(formParts) {
@@ -11930,12 +13206,13 @@ const effectiveLanguageCode = subtitle.sourceLanguageCode || subtitle.languageCo
 const effectiveTranslateTo = subtitle.translateTo || null;
 await downloadSubtitle({
 videoId,
-url: subtitle.url,
+url: subtitle.baseUrl || subtitle.url,
 languageCode: effectiveLanguageCode,
 languageName: subtitle.name,
 isAutoGenerated: !!subtitle.isAutoGenerated,
 format: subtitleFormat,
-translateTo: effectiveTranslateTo
+translateTo: effectiveTranslateTo,
+trackId: subtitle.trackId || ""
 });
 })(formParts, getSubtitlesData) : await (async function handleMediaDownload(formParts, format) {
 const opts = {
@@ -11966,25 +13243,25 @@ formParts.progressText.textContent = t("completed");
 setTimeout(() => closeModal(), 800);
 })(formParts);
 } catch (err) {
-console.error("[Download Error]:", err);
+window.console.error("[Download Error]:", err);
 !(function handleDownloadError(formParts, err) {
 const errorMsg = err?.message || "Unknown error";
 formParts.progressText.textContent = `${t("downloadFailed")} ${errorMsg}`;
-formParts.progressText.style.color = "#ff5555";
+formParts.progressText.style.color = "var(--yt-danger-text)";
 enableFormControls(formParts);
-setTimeout(() => {
+setTimeout_(() => {
 try {
 enableFormControls(formParts);
 } catch (e) {
-console.error("Failed to re-enable controls:", e);
+window.console.error("Failed to re-enable controls:", e);
 }
 }, 500);
-setTimeout(() => {
+setTimeout_(() => {
 formParts.progressText.style.color = "#fff";
 }, 3e3);
 })(formParts, err);
 } finally {
-setTimeout(() => {
+setTimeout_(() => {
 formParts.downloadBtn && !formParts.downloadBtn.disabled || enableFormControls(formParts);
 }, 1e3);
 }
@@ -12009,7 +13286,7 @@ return;
 subtitlesData.original = data.subtitles;
 subtitlesData.translated = data.autoTransSubtitles.map(autot => ({
 ...autot,
-url: autot.url || data.subtitles[0]?.url || "",
+url: autot.url || (autot.baseUrl ? buildSubtitleUrl(autot.baseUrl) : ""),
 translateTo: autot.languageCode
 }));
 subtitlesData.all = [ ...subtitlesData.original, ...subtitlesData.translated ];
@@ -12035,9 +13312,18 @@ if ("video" === activeFormat) {
 formParts.qualitySelect.style.display = "flex";
 formParts.embedLabel.style.display = "none";
 formParts.subtitleWrapper.style.display = "none";
+const videoId = getVideoId() || "";
+const renderToken = String(Date.now()) + Math.random().toString(36).slice(2);
+formParts.qualitySelect.dataset.renderToken = renderToken;
 formParts.qualitySelect.replaceChildren();
-const lowQuals = DownloadConfig.VIDEO_QUALITIES.filter(q => parseInt(q, 10) <= 1080);
-const highQuals = DownloadConfig.VIDEO_QUALITIES.filter(q => parseInt(q, 10) > 1080);
+const loadingLabel = document.createElement("div");
+loadingLabel.textContent = t("loading");
+Object.assign(loadingLabel.style || {}, {
+fontSize: "13px",
+color: "var(--yt-text-secondary)",
+padding: "8px 0"
+});
+formParts.qualitySelect.appendChild(loadingLabel);
 function makeQualityButton(q) {
 const btn = document.createElement("button");
 btn.type = "button";
@@ -12051,9 +13337,9 @@ alignItems: "center",
 gap: "8px",
 padding: "8px 12px",
 borderRadius: "999px",
-border: "1px solid rgba(255,255,255,0.08)",
-background: "rgba(255,255,255,0.02)",
-color: "#fff",
+border: "1px solid var(--yt-surface-soft)",
+background: "var(--yt-surface-overlay-faint)",
+color: "var(--yt-text-primary)",
 cursor: "pointer",
 fontSize: "13px",
 fontWeight: "600"
@@ -12062,19 +13348,54 @@ btn.addEventListener("click", () => {
 Array.from(formParts.qualitySelect.children).forEach(c => {
 if (c.dataset && c.dataset.value) {
 c.style.background = "transparent";
-c.style.color = "#fff";
-c.style.border = "1px solid rgba(255,255,255,0.08)";
+c.style.color = "var(--yt-text-primary)";
+c.style.border = "1px solid var(--yt-surface-soft)";
 c.setAttribute && c.setAttribute("aria-checked", "false");
 }
 });
-btn.style.background = "#111";
-btn.style.color = "#10c56a";
-btn.style.border = "1px solid rgba(16,197,106,0.15)";
+btn.style.background = "var(--yt-surface-contrast)";
+btn.style.color = "var(--yt-success-accent)";
+btn.style.border = "1px solid var(--yt-success-accent-soft)";
 btn.setAttribute("aria-checked", "true");
 formParts.qualitySelect.value = q;
 });
 return btn;
 }
+(async function getAvailableVideoQualities(videoId) {
+if (!videoId) {
+return DownloadConfig.VIDEO_QUALITIES.slice();
+}
+try {
+const playerData = await fetchPlayerData(videoId);
+const actualQualities = extractAvailableVideoQualities(playerData);
+if (actualQualities.length > 0) {
+return actualQualities;
+}
+} catch (error) {
+logger.warn("Primary player quality fetch failed:", error);
+}
+try {
+const fallbackPlayerData = await fetchPlayerResponseFromWatchHtml(videoId);
+const fallbackQualities = extractAvailableVideoQualities(fallbackPlayerData);
+if (fallbackQualities.length > 0) {
+return fallbackQualities;
+}
+} catch (error) {
+logger.warn("Watch HTML quality fallback failed:", error);
+}
+return DownloadConfig.VIDEO_QUALITIES.slice();
+})(videoId).then(qualities => {
+if ("video" !== activeFormat) {
+return;
+}
+if (formParts.qualitySelect.dataset.renderToken !== renderToken) {
+return;
+}
+const availableQualities = Array.isArray(qualities) && qualities.length > 0 ? qualities : DownloadConfig.VIDEO_QUALITIES.slice();
+const lowQuals = availableQualities.filter(q => parseInt(q, 10) <= 1080);
+const highQuals = availableQualities.filter(q => parseInt(q, 10) > 1080);
+const previousQuality = String(formParts.qualitySelect.value || "");
+formParts.qualitySelect.replaceChildren();
 lowQuals.forEach(q => formParts.qualitySelect.appendChild(makeQualityButton(q)));
 if (highQuals.length > 0) {
 const labelWrap = document.createElement("div");
@@ -12087,26 +13408,39 @@ margin: "8px 0"
 });
 const lineLeft = document.createElement("div");
 lineLeft.style.flex = "1";
-lineLeft.style.borderTop = "1px solid rgba(255,255,255,0.06)";
+lineLeft.style.borderTop = "1px solid var(--yt-surface-overlay-border)";
 const label = document.createElement("div");
 label.textContent = t("vp9Label");
 Object.assign(label.style || {}, {
 fontSize: "12px",
-color: "rgba(255,255,255,0.7)",
+color: "var(--yt-text-secondary)",
 padding: "0 8px"
 });
 const lineRight = document.createElement("div");
 lineRight.style.flex = "1";
-lineRight.style.borderTop = "1px solid rgba(255,255,255,0.06)";
+lineRight.style.borderTop = "1px solid var(--yt-surface-overlay-border)";
 labelWrap.appendChild(lineLeft);
 labelWrap.appendChild(label);
 labelWrap.appendChild(lineRight);
 formParts.qualitySelect.appendChild(labelWrap);
 highQuals.forEach(q => formParts.qualitySelect.appendChild(makeQualityButton(q)));
 }
-formParts.qualitySelect.value = DownloadConfig.DEFAULTS.videoQuality;
+formParts.qualitySelect.value = (function pickDefaultVideoQuality(qualities, preferredQuality) {
+if (!Array.isArray(qualities) || 0 === qualities.length) {
+return preferredQuality || DownloadConfig.DEFAULTS.videoQuality;
+}
+if (qualities.includes(preferredQuality)) {
+return preferredQuality;
+}
+if (qualities.includes(DownloadConfig.DEFAULTS.videoQuality)) {
+return DownloadConfig.DEFAULTS.videoQuality;
+}
+const sorted = qualities.slice().sort((left, right) => Number(left) - Number(right));
+return sorted[sorted.length - 1] || preferredQuality || DownloadConfig.DEFAULTS.videoQuality;
+})(availableQualities, previousQuality);
 const defaultBtn = Array.from(formParts.qualitySelect.children).find(c => c.dataset && c.dataset.value === formParts.qualitySelect.value);
 defaultBtn && defaultBtn.click();
+});
 return;
 }
 formParts.qualitySelect.style.display = "flex";
@@ -12126,9 +13460,9 @@ alignItems: "center",
 gap: "8px",
 padding: "8px 12px",
 borderRadius: "999px",
-border: "1px solid rgba(255,255,255,0.08)",
-background: "rgba(255,255,255,0.02)",
-color: "#fff",
+border: "1px solid var(--yt-surface-soft)",
+background: "var(--yt-surface-overlay-faint)",
+color: "var(--yt-text-primary)",
 cursor: "pointer",
 fontSize: "13px",
 fontWeight: "600"
@@ -12136,13 +13470,13 @@ fontWeight: "600"
 btn.addEventListener("click", () => {
 Array.from(formParts.qualitySelect.children).forEach(c => {
 c.style.background = "transparent";
-c.style.color = "#fff";
-c.style.border = "1px solid rgba(255,255,255,0.08)";
+c.style.color = "var(--yt-text-primary)";
+c.style.border = "1px solid var(--yt-surface-soft)";
 c.setAttribute && c.setAttribute("aria-checked", "false");
 });
-btn.style.background = "#111";
-btn.style.color = "#10c56a";
-btn.style.border = "1px solid rgba(16,197,106,0.15)";
+btn.style.background = "var(--yt-surface-contrast)";
+btn.style.color = "var(--yt-success-accent)";
+btn.style.border = "1px solid var(--yt-success-accent-soft)";
 btn.setAttribute("aria-checked", "true");
 formParts.qualitySelect.value = b;
 });
@@ -12177,12 +13511,12 @@ const box = document.createElement("div");
 Object.assign(box.style || {}, {
 width: "420px",
 maxWidth: "94%",
-background: "rgba(20,20,20,0.64)",
-color: "#fff",
+background: "var(--yt-modal-surface)",
+color: "var(--yt-text-primary)",
 borderRadius: "12px",
-boxShadow: "0 8px 40px rgba(0,0,0,0.6)",
+boxShadow: "0 8px 40px var(--yt-shadow-flyout)",
 fontFamily: "Arial, sans-serif",
-border: "1px solid rgba(255,255,255,0.06)",
+border: "1px solid var(--yt-surface-overlay-border)",
 backdropFilter: "blur(8px)"
 });
 const formParts = buildModalForm();
@@ -12210,13 +13544,13 @@ subTab.dataset.format = "subtitle";
 Object.assign(btn.style, {
 flex: "initial",
 padding: "8px 18px",
-border: "1px solid rgba(255,255,255,0.06)",
+border: "1px solid var(--yt-surface-overlay-border)",
 background: "transparent",
 cursor: "pointer",
 fontSize: "13px",
 fontWeight: "600",
 transition: "all 0.18s ease",
-color: "#666",
+color: "var(--yt-muted-text)",
 borderRadius: "999px"
 });
 btn.type = "button";
@@ -12228,16 +13562,16 @@ btn.style.userSelect = "none";
 function setActive(btn) {
 [ videoTab, audioTab, subTab ].forEach(b => {
 b.style.background = "transparent";
-b.style.color = "#666";
-b.style.border = "1px solid rgba(255,255,255,0.06)";
+b.style.color = "var(--yt-muted-text)";
+b.style.border = "1px solid var(--yt-surface-overlay-border)";
 b.style.boxShadow = "none";
 b.setAttribute("aria-selected", "false");
 });
 Object.assign(btn.style, {
-background: "#10c56a",
-color: "#fff",
-border: "1px solid rgba(0,0,0,0.06)",
-boxShadow: "0 1px 0 rgba(0,0,0,0.04) inset"
+background: "var(--yt-success-accent)",
+color: "var(--yt-text-primary)",
+border: "1px solid var(--yt-shadow-inset-soft)",
+boxShadow: "0 1px 0 var(--yt-shadow-inset-soft) inset"
 });
 btn.setAttribute("aria-selected", "true");
 try {
@@ -12352,19 +13686,19 @@ let waited = 0;
 if (void 0 !== window.YouTubePlusDownload) {
 return resolve(window.YouTubePlusDownload);
 }
-const id = setInterval(() => {
+const id = createVisibilityAwareInterval(() => {
 waited += 200;
 if (void 0 !== window.YouTubePlusDownload) {
-clearInterval(id);
+id.stop();
 return resolve(window.YouTubePlusDownload);
 }
 if (waited >= timeout) {
-clearInterval(id);
+id.stop();
 return resolve(void 0);
 }
 }, 200);
 try {
-window.YouTubeUtils?.cleanupManager?.registerInterval && window.YouTubeUtils.cleanupManager.registerInterval(id);
+window.YouTubeUtils?.cleanupManager?.register && window.YouTubeUtils.cleanupManager.register(() => id.stop());
 } catch (e) {}
 }))(2e3);
 if (api) {
@@ -12381,14 +13715,14 @@ quality: "1080"
 return;
 }
 } catch (err) {
-console.error("[YouTube+] Direct download invocation failed:", err);
+window.console.error("[YouTube+] Direct download invocation failed:", err);
 }
 ytUtils.NotificationManager.show(tFn("directDownloadModuleNotAvailable"), {
 duration: 3e3,
 type: "error"
 });
 } else {
-console.error("[YouTube+] Direct download module not loaded");
+window.console.error("[YouTube+] Direct download module not loaded");
 ytUtils.NotificationManager.show(tFn("directDownloadModuleNotAvailable"), {
 duration: 3e3,
 type: "error"
@@ -12609,7 +13943,7 @@ button.setAttribute("tabindex", "0");
 button.setAttribute("role", "button");
 button.setAttribute("aria-haspopup", "true");
 button.setAttribute("aria-expanded", "false");
-button.innerHTML = _createHTML('\n      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:auto;vertical-align:middle;">\n        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>\n        <polyline points="7 10 12 15 17 10"></polyline>\n        <line x1="12" y1="15" x2="12" y2="3"></line>\n      </svg>\n    ');
+_setSafeHTML(button, '\n      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path opacity="0.5" d="M3 15C3 17.8284 3 19.2426 3.87868 20.1213C4.75736 21 6.17157 21 9 21H15C17.8284 21 19.2426 21 20.1213 20.1213C21 19.2426 21 17.8284 21 15" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="--darkreader-inline-stroke: var(--darkreader-text-ffffff, #cad3f5);" data-darkreader-inline-stroke=""></path> <path d="M12 3V16M12 16L16 11.625M12 16L8 11.625" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="--darkreader-inline-stroke: var(--darkreader-text-ffffff, #cad3f5);" data-darkreader-inline-stroke=""></path></svg>\n    ');
 return button;
 })(tFn);
 if (1 === downloadSites.length) {
@@ -12692,12 +14026,12 @@ return;
 window.youtubePlus.downloadButtonManager.addDownloadButton(controlsEl);
 window.youtubePlus.settings = window.youtubePlus.settings || settings;
 } catch (e) {
-console.warn("[YouTube+] rebuildDownloadDropdown failed:", e);
+window.console.warn("[YouTube+] rebuildDownloadDropdown failed:", e);
 }
 };
 }
 } catch (e) {
-console.warn("[YouTube+] expose rebuildDownloadDropdown failed:", e);
+window.console.warn("[YouTube+] expose rebuildDownloadDropdown failed:", e);
 }
 controls.insertBefore(button, controls.firstChild);
 };
@@ -12764,19 +14098,13 @@ getVideoTitle,
 version: "3.0"
 });
 const ensureInit = () => {
-(() => {
-try {
-const path = location.pathname || "";
-return "/watch" === path || path.startsWith("/shorts");
-} catch (e) {
-return !1;
-}
-})() && ("function" == typeof requestIdleCallback ? requestIdleCallback(init, {
+isRelevantRoute() && ("function" == typeof requestIdleCallback ? requestIdleCallback(init, {
 timeout: 1500
 }) : setTimeout(init, 0));
 };
 window.YouTubePlusLazyLoader ? window.YouTubePlusLazyLoader.register("download", ensureInit, {
-priority: 2
+priority: 2,
+shouldLoad: isRelevantRoute
 }) : (cb => {
 "loading" === document.readyState ? document.addEventListener("DOMContentLoaded", cb, {
 once: !0
@@ -12789,45 +14117,26 @@ passive: !0
 });
 })();
 
+const enhancedSetTimeout_ = setTimeout;
+
 const {$, $$, byId} = window.YouTubeUtils || {};
 
-const onDomReady = (() => {
-let ready = "loading" !== document.readyState;
-const queue = [];
-const run = () => {
-ready = !0;
-for (;queue.length; ) {
-const cb = queue.shift();
-try {
-cb && cb();
-} catch (e) {
-console.warn("[YouTube+] DOMReady callback error:", e);
-}
-}
-};
-ready || document.addEventListener("DOMContentLoaded", run, {
+const onDomReady = window.YouTubeUtils?.onDomReady || (cb => {
+"loading" !== document.readyState ? cb() : document.addEventListener("DOMContentLoaded", cb, {
 once: !0
 });
-return cb => {
-ready ? cb() : queue.push(cb);
-};
-})();
+});
 
 !(function() {
 "use strict";
-const _createHTML = window._ytplusCreateHTML || (s => s);
-const t = window.YouTubeUtils?.t || (key => key || "");
+const _setSafeHTML = window.YouTubeUtils.setSafeHTML;
+const _getLanguage = window.YouTubeUtils.getLanguage;
+const t = window.YouTubeUtils.t;
 const config = {
 enabled: window.YouTubeUtils?.loadFeatureEnabled?.("enableScrollToTopButton") ?? !0,
 storageKey: "youtube_top_button_settings"
 };
-const _debounce = window.YouTubeUtils?.debounce ?? window._ytpDefaults?.debounce ?? ((fn, delay) => {
-let timeoutId = null;
-return (...args) => {
-timeoutId && clearTimeout(timeoutId);
-timeoutId = setTimeout(() => fn(...args), delay);
-};
-});
+const _debounce = window.YouTubeUtils.debounce;
 let universalScrollHandler = null;
 let universalScrollContainer = null;
 const universalExtraScrollTargets = new Set;
@@ -12839,7 +14148,7 @@ const now = Date.now();
 if (_musicContainersCache && now - _musicContainersCacheTime < 5e3) {
 return _musicContainersCache;
 }
-_musicContainersCache = [ document.querySelector("ytmusic-app-layout #layout"), document.querySelector("ytmusic-app-layout"), document.querySelector("ytmusic-browse-response #contents"), document.querySelector("ytmusic-section-list-renderer") ].filter(Boolean);
+_musicContainersCache = [ $("ytmusic-app-layout #layout"), $("ytmusic-app-layout"), $("ytmusic-browse-response #contents"), $("ytmusic-section-list-renderer") ].filter(Boolean);
 _musicContainersCacheTime = now;
 return _musicContainersCache;
 };
@@ -12850,7 +14159,7 @@ const candidates = [];
 if ("music.youtube.com" === host) {
 const musicContainers = resolveMusicContainers();
 candidates.push(...musicContainers);
-candidates.push(document.querySelector("ytmusic-tabbed-page #content"), document.querySelector("ytmusic-app-layout #content"), document.querySelector("#content"), document.querySelector("ytmusic-app"));
+candidates.push($("ytmusic-tabbed-page #content"), $("ytmusic-app-layout #content"), $("#content"), $("ytmusic-app"));
 } else {
 "studio.youtube.com" === host && candidates.push($("ytcp-entity-page #scrollable-content"), $("ytcp-app #content"), $("#main-content"), $("#content"), $("#main"), $("ytcp-app"));
 }
@@ -12864,7 +14173,7 @@ if ("music.youtube.com" === host || "studio.youtube.com" === host) {
 return document.scrollingElement || document.documentElement;
 }
 } catch (e) {
-console.warn("[YouTube+] Error detecting scroll container:", e);
+window.console.warn("[YouTube+] Error detecting scroll container:", e);
 }
 return document.scrollingElement || document.documentElement;
 };
@@ -12878,13 +14187,13 @@ return null;
 const directSelectors = [ "ytmusic-player-queue #contents", "ytmusic-player-queue", "#side-panel #contents", "#side-panel", 'ytmusic-tab-renderer[page-type="MUSIC_PAGE_TYPE_QUEUE"] #contents', "ytmusic-queue #automix-contents", "ytmusic-queue #contents" ];
 for (const sel of directSelectors) {
 try {
-const el = document.querySelector(sel);
+const el = $(sel);
 if (el && el.scrollHeight > el.clientHeight + 30) {
 return el;
 }
 } catch (e) {}
 }
-const roots = [ document.querySelector("ytmusic-player-page"), document.querySelector("ytmusic-app-layout"), document.querySelector("ytmusic-app") ];
+const roots = [ $("ytmusic-player-page"), $("ytmusic-app-layout"), $("ytmusic-app") ];
 const selectors = [ "#side-panel", "#right-content", "ytmusic-player-queue", "ytmusic-queue", "ytmusic-tab-renderer[selected] #contents", ".side-panel" ];
 for (const root of roots) {
 if (root) {
@@ -12958,10 +14267,10 @@ tab._topButtonScrollHandler = null;
 }
 });
 } catch (e) {
-console.warn("[YouTube+] Error cleaning up tab scroll handlers:", e);
+window.console.warn("[YouTube+] Error cleaning up tab scroll handlers:", e);
 }
 try {
-const rightTabsEl = document.getElementById("right-tabs");
+const rightTabsEl = byId("right-tabs");
 if (rightTabsEl) {
 if (rightTabsEl._topButtonScrollHandler) {
 rightTabsEl.removeEventListener("scroll", rightTabsEl._topButtonScrollHandler);
@@ -12988,8 +14297,7 @@ let tabDelegationHandler = null;
 let tabDelegationRegistered = !1;
 let tabCheckTimeoutId = null;
 let playlistPanelCheckTimeoutId = null;
-const isWatchPage = () => "/watch" === window.location.pathname;
-const isShortsPage = () => window.location.pathname.startsWith("/shorts");
+let musicSidePanelSubId = null;
 const isTopButton = el => el && ("right-tabs-top-button" === el.id || "universal-top-button" === el.id || "playlist-panel-top-button" === el.id || "music-side-top-button" === el.id);
 const handleTopButtonActivate = button => {
 try {
@@ -12997,8 +14305,8 @@ if (!button) {
 return;
 }
 if ("right-tabs-top-button" === button.id) {
-const activeTab = document.querySelector("#right-tabs .tab-content-cld:not(.tab-content-hidden)");
-const rightTabsEl = document.getElementById("right-tabs");
+const activeTab = $("#right-tabs .tab-content-cld:not(.tab-content-hidden)");
+const rightTabsEl = byId("right-tabs");
 const scrollTarget = rightTabsEl && rightTabsEl.scrollTop > 0 ? rightTabsEl : activeTab && activeTab.scrollTop > 0 ? activeTab : activeTab || rightTabsEl;
 if (scrollTarget) {
 "scrollBehavior" in (document.documentElement.style || {}) ? scrollTarget.scrollTo({
@@ -13006,7 +14314,7 @@ top: 0,
 behavior: "smooth"
 }) : scrollTarget.scrollTop = 0;
 button.setAttribute("aria-label", "Scrolled to top");
-setTimeout(() => {
+enhancedSetTimeout_(() => {
 button.setAttribute("aria-label", t("scrollToTop"));
 }, 1e3);
 }
@@ -13055,7 +14363,7 @@ behavior: "smooth"
 }) : target.scrollTop = 0);
 }
 } catch (error) {
-console.error("[YouTube+][Enhanced] Error scrolling to top:", error);
+window.console.error("[YouTube+][Enhanced] Error scrolling to top:", error);
 }
 };
 const setupTopButtonDelegation = (() => {
@@ -13109,7 +14417,7 @@ return;
 }
 const style = document.createElement("style");
 style.id = "custom-styles";
-style.textContent = '\n      :root{--scrollbar-width:8px;--scrollbar-track:transparent;--scrollbar-thumb:rgba(144,144,144,.5);--scrollbar-thumb-hover:rgba(170,170,170,.7);--scrollbar-thumb-active:rgba(190,190,190,.9);}\n      ::-webkit-scrollbar{width:var(--scrollbar-width)!important;height:var(--scrollbar-width)!important;}\n      ::-webkit-scrollbar-track{background:var(--scrollbar-track)!important;border-radius:4px!important;}\n      ::-webkit-scrollbar-thumb{background:var(--scrollbar-thumb)!important;border-radius:4px!important;transition:background .2s!important;}\n      ::-webkit-scrollbar-thumb:hover{background:var(--scrollbar-thumb-hover)!important;}\n      ::-webkit-scrollbar-thumb:active{background:var(--scrollbar-thumb-active)!important;}\n      ::-webkit-scrollbar-corner{background:transparent!important;}\n      html,body,#content,#guide-content,#secondary,#comments,#chat,ytd-comments,ytd-watch-flexy,ytd-browse,ytd-search,ytd-playlist-panel-renderer,#right-tabs,.tab-content-cld,ytmusic-app-layout{scrollbar-width:thin;scrollbar-color:var(--scrollbar-thumb) var(--scrollbar-track);}\n      html[dark]{--scrollbar-thumb:rgba(144,144,144,.4);--scrollbar-thumb-hover:rgba(170,170,170,.6);--scrollbar-thumb-active:rgba(190,190,190,.8);}\n      .top-button{position:fixed;bottom:16px;right:16px;width:40px;height:40px;background:var(--yt-top-btn-bg,rgba(0,0,0,.7));color:var(--yt-top-btn-color,#fff);border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2100;opacity:0;visibility:hidden;transition:all .3s cubic-bezier(0.4, 0, 0.2, 1);backdrop-filter:blur(12px) saturate(180%);-webkit-backdrop-filter:blur(12px) saturate(180%);border:1px solid var(--yt-top-btn-border,rgba(255,255,255,.1));background:rgba(255,255,255,.12);box-shadow:0 8px 32px 0 rgba(31,38,135,.18);}\n      .top-button:hover{background:var(--yt-top-btn-hover,rgba(0,0,0,.15));transform:translateY(-2px) scale(1.07);box-shadow:0 8px 32px rgba(0,0,0,.25);}\n      .top-button:active{transform:translateY(-1px) scale(1.03);}\n      .top-button:focus{outline:2px solid rgba(255,255,255,0.5);outline-offset:2px;}\n      .top-button.visible{opacity:1;visibility:visible;}\n      .top-button svg{transition:transform .2s ease;}\n      .top-button:hover svg{transform:translateY(-1px) scale(1.1);}\n      html[dark]{--yt-top-btn-bg:rgba(255,255,255,.10);--yt-top-btn-color:#fff;--yt-top-btn-border:rgba(255,255,255,.18);--yt-top-btn-hover:rgba(255,255,255,.18);}\n      html:not([dark]){--yt-top-btn-bg:rgba(255,255,255,.12);--yt-top-btn-color:#222;--yt-top-btn-border:rgba(0,0,0,.08);--yt-top-btn-hover:rgba(255,255,255,.18);}\n      #right-tabs .top-button{position:absolute;z-index:1000;}\n      ytd-watch-flexy:not([tyt-tab^="#"]) #right-tabs .top-button{display:none;}\n      ytd-playlist-panel-renderer .top-button{position:absolute;z-index:1000;}\n      ytd-watch-flexy[flexy] #movie_player, ytd-watch-flexy[flexy] #movie_player .html5-video-container, ytd-watch-flexy[flexy] .html5-main-video{width:100%!important; max-width:100%!important;}\n      ytd-watch-flexy[flexy] .html5-main-video{height:auto!important; max-height:100%!important; object-fit:contain!important; transform:none!important;}\n      ytd-watch-flexy[flexy] #player-container-outer, ytd-watch-flexy[flexy] #movie_player{display:flex!important; align-items:center!important; justify-content:center!important;}\n      /* Return YouTube Dislike button styling */\n      dislike-button-view-model button{min-width:fit-content!important;width:auto!important;}\n      dislike-button-view-model .yt-spec-button-shape-next__button-text-content{display:inline-flex!important;align-items:center!important;justify-content:center!important;}\n      #ytp-plus-dislike-text{display:inline-block!important;visibility:visible!important;opacity:1!important;margin-left:6px!important;font-size:1.4rem!important;line-height:2rem!important;font-weight:500!important;}\n      ytd-segmented-like-dislike-button-renderer dislike-button-view-model button{min-width:fit-content!important;}\n      ytd-segmented-like-dislike-button-renderer .yt-spec-button-shape-next__button-text-content{min-width:2.4rem!important;}\n      /* Shorts-specific dislike button styling */\n      ytd-reel-video-renderer dislike-button-view-model #ytp-plus-dislike-text{font-size:1.2rem!important;line-height:1.8rem!important;margin-left:4px!important;}\n      ytd-reel-video-renderer dislike-button-view-model button{padding:8px 12px!important;min-width:auto!important;}\n      ytd-shorts dislike-button-view-model .yt-spec-button-shape-next__button-text-content{display:inline-flex!important;min-width:auto!important;}\n        ';
+style.textContent = '\n      :root{--yt-scrollbar-width:8px;--yt-scrollbar-track:transparent;--yt-scrollbar-thumb:rgba(144,144,144,.5);--yt-scrollbar-thumb-hover:rgba(170,170,170,.7);--yt-scrollbar-thumb-active:rgba(190,190,190,.9);}\n      ::-webkit-scrollbar{width:var(--yt-scrollbar-width)!important;height:var(--yt-scrollbar-width)!important;}\n      ::-webkit-scrollbar-track{background:var(--yt-scrollbar-track)!important;border-radius:4px!important;}\n      ::-webkit-scrollbar-thumb{background:var(--yt-scrollbar-thumb)!important;border-radius:4px!important;transition:background .2s!important;}\n      ::-webkit-scrollbar-thumb:hover{background:var(--yt-scrollbar-thumb-hover)!important;}\n      ::-webkit-scrollbar-thumb:active{background:var(--yt-scrollbar-thumb-active)!important;}\n      ::-webkit-scrollbar-corner{background:transparent!important;}\n      html,body,#content,#guide-content,#secondary,#comments,#chat,ytd-comments,ytd-watch-flexy,ytd-browse,ytd-search,ytd-playlist-panel-renderer,#right-tabs,.tab-content-cld,ytmusic-app-layout{scrollbar-width:thin;scrollbar-color:var(--yt-scrollbar-thumb) var(--yt-scrollbar-track);}\n      html[dark]{--yt-scrollbar-thumb:rgba(144,144,144,.4);--yt-scrollbar-thumb-hover:rgba(170,170,170,.6);--yt-scrollbar-thumb-active:rgba(190,190,190,.8);}\n      .top-button{position:fixed;bottom:16px;right:16px;width:40px;height:40px;background:var(--yt-button-bg);color:var(--yt-text-primary);border:1px solid var(--yt-glass-border);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2100;opacity:0;visibility:hidden;transition:all .3s cubic-bezier(0.4, 0, 0.2, 1);backdrop-filter:var(--yt-glass-blur);-webkit-backdrop-filter:var(--yt-glass-blur);box-shadow:var(--yt-shadow);}\n      .top-button:hover{background:var(--yt-hover-bg);transform:translateY(-2px) scale(1.07);box-shadow:var(--yt-shadow);}\n      .top-button:active{transform:translateY(-1px) scale(1.03);}\n      .top-button:focus{outline:2px solid var(--yt-accent);outline-offset:2px;}\n      .top-button.visible{opacity:1;visibility:visible;}\n      .top-button svg{transition:transform .2s ease;}\n      .top-button:hover svg{transform:translateY(-1px) scale(1.1);}\n      html[dark]{--yt-top-btn-bg:var(--yt-button-bg);--yt-top-btn-color:var(--yt-text-primary);--yt-top-btn-border:var(--yt-glass-border);--yt-top-btn-hover:var(--yt-hover-bg);}\n      html:not([dark]){--yt-top-btn-bg:var(--yt-button-bg);--yt-top-btn-color:var(--yt-text-primary);--yt-top-btn-border:var(--yt-glass-border);--yt-top-btn-hover:var(--yt-hover-bg);}\n      #right-tabs .top-button{position:absolute;z-index:1000;}\n      ytd-watch-flexy:not([tyt-tab^="#"]) #right-tabs .top-button{display:none;}\n      ytd-playlist-panel-renderer .top-button{position:absolute;z-index:1000;}\n      ytd-watch-flexy[flexy] #movie_player, ytd-watch-flexy[flexy] #movie_player .html5-video-container, ytd-watch-flexy[flexy] .html5-main-video{width:100%!important; max-width:100%!important;}\n      ytd-watch-flexy[flexy] .html5-main-video{height:auto!important; max-height:100%!important; object-fit:contain!important; transform:none!important;}\n      ytd-watch-flexy[flexy] #player-container-outer, ytd-watch-flexy[flexy] #movie_player{display:flex!important; align-items:center!important; justify-content:center!important;}\n      /* Return YouTube Dislike button styling */\n      dislike-button-view-model button{min-width:fit-content!important;width:auto!important;}\n      dislike-button-view-model .yt-spec-button-shape-next__button-text-content{display:inline-flex!important;align-items:center!important;justify-content:center!important;}\n      #ytp-plus-dislike-text{display:inline-block!important;visibility:visible!important;opacity:1!important;margin-left:6px!important;font-size:1.4rem!important;line-height:2rem!important;font-weight:500!important;}\n      ytd-segmented-like-dislike-button-renderer dislike-button-view-model button{min-width:fit-content!important;}\n      ytd-segmented-like-dislike-button-renderer .yt-spec-button-shape-next__button-text-content{min-width:2.4rem!important;}\n      /* Shorts-specific dislike button styling */\n      ytd-reel-video-renderer dislike-button-view-model #ytp-plus-dislike-text{font-size:1.2rem!important;line-height:1.8rem!important;margin-left:4px!important;}\n      ytd-reel-video-renderer dislike-button-view-model button{padding:8px 12px!important;min-width:auto!important;}\n      ytd-shorts dislike-button-view-model .yt-spec-button-shape-next__button-text-content{display:inline-flex!important;min-width:auto!important;}\n        ';
 (document.head || document.documentElement).appendChild(style);
 };
 const handleScroll = (scrollContainer, button) => {
@@ -13119,14 +14427,14 @@ return;
 }
 button.classList.toggle("visible", scrollContainer.scrollTop > 100);
 } catch (error) {
-console.error("[YouTube+][Enhanced] Error in handleScroll:", error);
+window.console.error("[YouTube+][Enhanced] Error in handleScroll:", error);
 }
 };
 const setupScrollListener = (() => {
 let timeout = null;
 return () => {
 timeout && clearTimeout(timeout);
-timeout = setTimeout(() => {
+timeout = enhancedSetTimeout_(() => {
 try {
 $$(".tab-content-cld").forEach(tab => {
 if (tab._topButtonScrollHandler) {
@@ -13140,7 +14448,7 @@ delete tab._scrollObserver;
 window.YouTubePlusScrollManager?.removeAllListeners?.(tab);
 });
 try {
-const prevRtEl = document.getElementById("right-tabs");
+const prevRtEl = byId("right-tabs");
 if (prevRtEl) {
 if (prevRtEl._topButtonScrollHandler) {
 prevRtEl.removeEventListener("scroll", prevRtEl._topButtonScrollHandler);
@@ -13152,12 +14460,12 @@ delete prevRtEl._scrollCleanup;
 }
 }
 } catch (e) {
-console.warn("[YouTube+] Error cleaning up right-tabs scroll handler:", e);
+window.console.warn("[YouTube+] Error cleaning up right-tabs scroll handler:", e);
 }
-const activeTab = document.querySelector("#right-tabs .tab-content-cld:not(.tab-content-hidden)");
+const activeTab = $("#right-tabs .tab-content-cld:not(.tab-content-hidden)");
 const button = byId("right-tabs-top-button");
 if (activeTab && button) {
-const rightTabsEl = document.getElementById("right-tabs");
+const rightTabsEl = byId("right-tabs");
 const rtIsScrollHost = rightTabsEl && rightTabsEl !== activeTab && rightTabsEl.scrollHeight > rightTabsEl.clientHeight + 10;
 const scrollTarget = rtIsScrollHost ? rightTabsEl : activeTab;
 if (window.YouTubePlusScrollManager) {
@@ -13177,7 +14485,7 @@ handleScroll(scrollTarget, button);
 }
 }
 } catch (error) {
-console.error("[YouTube+][Enhanced] Error in setupScrollListener:", error);
+window.console.error("[YouTube+][Enhanced] Error in setupScrollListener:", error);
 }
 }, 100);
 };
@@ -13199,7 +14507,7 @@ button.id = "universal-top-button";
 button.className = "top-button";
 button.title = t("scrollToTop");
 button.setAttribute("aria-label", t("scrollToTop"));
-button.innerHTML = _createHTML('<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>');
+_setSafeHTML(button, '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>');
 const host = window.location.hostname;
 "music.youtube.com" !== host && "studio.youtube.com" !== host || (button.style.zIndex = "10000");
 document.body.appendChild(button);
@@ -13235,7 +14543,7 @@ passive: !0
 });
 universalWindowScrollHandler = musicScrollCheck;
 const attachMusicScrollListeners = () => {
-const targets = [ document.querySelector("ytmusic-app-layout #layout"), document.querySelector("ytmusic-app-layout") ];
+const targets = [ $("ytmusic-app-layout #layout"), $("ytmusic-app-layout") ];
 for (const target of targets) {
 if (target && !target._ytpScrollAttached) {
 target._ytpScrollAttached = !0;
@@ -13247,11 +14555,11 @@ universalExtraScrollTargets.add(target);
 }
 };
 attachMusicScrollListeners();
-universalAttachTimeoutIds.push(setTimeout(attachMusicScrollListeners, 1e3));
-universalAttachTimeoutIds.push(setTimeout(attachMusicScrollListeners, 3e3));
+universalAttachTimeoutIds.push(enhancedSetTimeout_(attachMusicScrollListeners, 1e3));
+universalAttachTimeoutIds.push(enhancedSetTimeout_(attachMusicScrollListeners, 3e3));
 }
 } catch (error) {
-console.error("[YouTube+][Enhanced] Error creating universal button:", error);
+window.console.error("[YouTube+][Enhanced] Error creating universal button:", error);
 }
 };
 const createMusicSidePanelButton = () => {
@@ -13281,7 +14589,7 @@ button.id = "music-side-top-button";
 button.className = "top-button";
 button.title = t("scrollToTop");
 button.setAttribute("aria-label", t("scrollToTop"));
-button.innerHTML = _createHTML('<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>');
+_setSafeHTML(button, '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>');
 panel.style.position = panel.style.position || "relative";
 button.style.position = "absolute";
 button.style.bottom = "16px";
@@ -13298,31 +14606,12 @@ passive: !0
 });
 button.classList.toggle("visible", panel.scrollTop > 100);
 } catch (error) {
-console.error("[YouTube+][Enhanced] Error creating music side button:", error);
+window.console.error("[YouTube+][Enhanced] Error creating music side button:", error);
 }
 };
 const dislikeCache = new Map;
 let dislikeObserver = null;
 let dislikePollTimer = null;
-const formatCompactNumber = number => {
-try {
-return new Intl.NumberFormat((() => {
-if (window.YouTubePlusI18n?.getLanguage) {
-return window.YouTubePlusI18n.getLanguage();
-}
-if (window.YouTubeUtils?.getLanguage) {
-return window.YouTubeUtils.getLanguage();
-}
-const htmlLang = document.documentElement.lang || "en";
-return htmlLang.startsWith("ru") ? "ru" : "en";
-})() || "en", {
-notation: "compact",
-compactDisplay: "short"
-}).format(Number(number) || 0);
-} catch (e) {
-return String(number || 0);
-}
-};
 const getVideoIdForDislike = () => {
 try {
 const urlObj = new URL(window.location.href);
@@ -13417,14 +14706,23 @@ buttonShape.style.minWidth = "auto";
 buttonShape.style.width = "auto";
 viewModelHost !== dislikeButton && (viewModelHost.style.minWidth = "auto");
 } catch (e) {
-console.warn("YTP: Failed to create dislike text:", e);
+window.console.warn("YTP: Failed to create dislike text:", e);
 }
 return created;
 })(dislikeButton);
 if (!container) {
 return;
 }
-const formatted = formatCompactNumber(count);
+const formatted = (number => {
+try {
+return new Intl.NumberFormat(_getLanguage() || "en", {
+notation: "compact",
+compactDisplay: "short"
+}).format(Number(number) || 0);
+} catch (e) {
+return String(number || 0);
+}
+})(count);
 if (container.innerText !== String(formatted)) {
 container.innerText = String(formatted);
 container.style.display = "inline-block";
@@ -13437,7 +14735,7 @@ buttonShape.style.width = "auto";
 }
 }
 } catch (e) {
-console.warn("YTP: Failed to set dislike display:", e);
+window.console.warn("YTP: Failed to set dislike display:", e);
 }
 };
 const initReturnDislike = async () => {
@@ -13449,7 +14747,7 @@ const checkButton = async () => {
 const btn = getDislikeButton();
 if (btn) {
 if (dislikePollTimer) {
-dislikePollTimer.disconnect();
+window.YouTubeMutationCoordinator?.unsubscribe?.(dislikePollTimer);
 dislikePollTimer = null;
 }
 const vid = getVideoIdForDislike();
@@ -13480,7 +14778,7 @@ dislikeCache.delete(next.value);
 try {
 if ("undefined" != typeof GM_xmlhttpRequest) {
 const text = await new Promise((resolve, reject) => {
-const timeoutId = setTimeout(() => reject(new Error("timeout")), 8e3);
+const timeoutId = enhancedSetTimeout_(() => reject(new Error("timeout")), 8e3);
 GM_xmlhttpRequest({
 method: "GET",
 url: `https://returnyoutubedislikeapi.com/votes?videoId=${encodeURIComponent(videoId)}`,
@@ -13512,7 +14810,7 @@ expiresAt: Date.now() + 6e5
 return val;
 }
 const controller = new AbortController;
-const id = setTimeout(() => controller.abort(), 8e3);
+const id = enhancedSetTimeout_(() => controller.abort(), 8e3);
 try {
 const resp = await fetch(`https://returnyoutubedislikeapi.com/votes?videoId=${encodeURIComponent(videoId)}`, {
 method: "GET",
@@ -13547,27 +14845,28 @@ if (!dislikeButton) {
 return;
 }
 if (dislikeObserver) {
-dislikeObserver.disconnect();
+window.YouTubeMutationCoordinator?.unwatch?.(dislikeObserver);
 dislikeObserver = null;
 }
 const existingText = dislikeButton.querySelector("#ytp-plus-dislike-text");
-if (!existingText?.textContent || "0" === existingText.textContent) {
-dislikeObserver = new MutationObserver(() => {
+if (existingText?.textContent && "0" !== existingText.textContent) {
+return;
+}
+const coordinator = window.YouTubeMutationCoordinator;
+if (coordinator?.watchTarget) {
+dislikeObserver = "enhanced::dislikeObserver";
+coordinator.watchTarget(dislikeObserver, dislikeButton, () => {
 const vid = getVideoIdForDislike();
 const cached = dislikeCache.get(vid);
 if (cached) {
 const btn = getDislikeButton();
 btn && setDislikeDisplay(btn, cached.value);
 }
-});
-try {
-dislikeObserver.observe(dislikeButton, {
+}, {
 childList: !0,
 subtree: !0,
 attributes: !0
 });
-(window.YouTubeUtils?.cleanupManager)?.registerObserver?.(dislikeObserver, dislikeButton);
-} catch (e) {}
 }
 })(btn);
 return !0;
@@ -13580,51 +14879,26 @@ return;
 const isShorts = window.location.pathname.startsWith("/shorts");
 const maxTime = 1e4;
 const startTime = Date.now();
-dislikePollTimer = new MutationObserver(async () => {
+const coordinator = window.YouTubeMutationCoordinator;
+if (coordinator?.subscribeRoot) {
+const pollSelector = isShorts ? "#shorts-container" : "ytd-watch-flexy #below, #page-manager";
+dislikePollTimer = "enhanced::dislikePoll";
+coordinator.subscribeRoot(dislikePollTimer, async () => {
 if (Date.now() - startTime > maxTime) {
-dislikePollTimer && dislikePollTimer.disconnect();
+dislikePollTimer && coordinator.unsubscribe(dislikePollTimer);
 dislikePollTimer = null;
 } else {
 await checkButton();
 }
-});
-const targetEl = $(isShorts ? "#shorts-container" : "ytd-watch-flexy #below");
-if (targetEl) {
-dislikePollTimer && dislikePollTimer.observe(targetEl, {
+}, {
+selector: pollSelector,
 childList: !0,
+attributes: !1,
 subtree: !0
 });
-(window.YouTubeUtils?.cleanupManager)?.registerObserver?.(dislikePollTimer, targetEl);
-} else {
-const fallbackObs = new MutationObserver(async () => {
-if (Date.now() - startTime > maxTime) {
-fallbackObs.disconnect();
-return;
-}
-const el = $(isShorts ? "#shorts-container" : "ytd-watch-flexy #below");
-if (el) {
-fallbackObs.disconnect();
-if (await checkButton()) {
-return;
-}
-dislikePollTimer && dislikePollTimer.observe(el, {
-childList: !0,
-subtree: !0
-});
-(window.YouTubeUtils?.cleanupManager)?.registerObserver?.(dislikePollTimer, el);
-}
-});
-if (document.body) {
-const narrowTarget = document.querySelector("#page-manager") || document.body;
-fallbackObs.observe(narrowTarget, {
-childList: !0,
-subtree: !0
-});
-window.YouTubeUtils?.cleanupManager?.registerObserver?.(fallbackObs);
-}
 }
 } catch (e) {
-console.warn("[YouTube+] Failed to initialize Return YouTube Dislike:", e);
+window.console.warn("[YouTube+] Failed to initialize Return YouTube Dislike:", e);
 }
 };
 const needsUniversalButton = () => {
@@ -13632,7 +14906,7 @@ const host = window.location.hostname;
 if ("music.youtube.com" === host || "studio.youtube.com" === host) {
 return !0;
 }
-if (isWatchPage() || isShortsPage()) {
+if (window.YouTubeUtils?.isWatchPage?.() || window.YouTubeUtils?.isShortsPage?.()) {
 return !(window.YouTubeUtils?.loadFeatureEnabled?.("enableTabview") ?? 1);
 }
 const path = window.location.pathname;
@@ -13644,9 +14918,9 @@ const handleTabButtonClick = e => {
 try {
 const {target} = e;
 const tabButton = target?.closest?.(".tab-btn[tyt-tab-content]");
-tabButton && setTimeout(setupScrollListener, 100);
+tabButton && enhancedSetTimeout_(setupScrollListener, 100);
 } catch (error) {
-console.error("[YouTube+][Enhanced] Error in click handler:", error);
+window.console.error("[YouTube+][Enhanced] Error in click handler:", error);
 }
 };
 const stopWatchEnhancements = () => {
@@ -13660,7 +14934,7 @@ playlistPanelCheckTimeoutId && "object" == typeof playlistPanelCheckTimeoutId &&
 } catch (e) {}
 playlistPanelCheckTimeoutId = null;
 try {
-tabChangesObserver?.disconnect?.();
+tabChangesObserver && window.YouTubeMutationCoordinator?.unsubscribe?.(tabChangesObserver);
 if (tabChangesObserver) {
 try {
 window.YouTubeUtils?.ObserverRegistry?.untrack?.();
@@ -13679,18 +14953,18 @@ tabDelegationHandler = null;
 tabDelegationRegistered = !1;
 isTabClickListenerAttached = !1;
 } catch (error) {
-console.error("[YouTube+][Enhanced] Error cleaning up events:", error);
+window.console.error("[YouTube+][Enhanced] Error cleaning up events:", error);
 }
 })();
 try {
 (() => {
 try {
 if (dislikePollTimer) {
-"function" == typeof dislikePollTimer.disconnect ? dislikePollTimer.disconnect() : "number" == typeof dislikePollTimer && clearInterval(dislikePollTimer);
+window.YouTubeMutationCoordinator?.unsubscribe?.(dislikePollTimer);
 dislikePollTimer = null;
 }
 if (dislikeObserver) {
-dislikeObserver.disconnect();
+window.YouTubeMutationCoordinator?.unwatch?.(dislikeObserver);
 dislikeObserver = null;
 }
 $$("#ytp-plus-dislike-text").forEach(el => {
@@ -13700,7 +14974,7 @@ el.parentNode && el.parentNode.removeChild(el);
 });
 dislikeCache.clear();
 } catch (e) {
-console.warn("YTP: Dislike cleanup error:", e);
+window.console.warn("YTP: Dislike cleanup error:", e);
 }
 })();
 } catch (e) {}
@@ -13709,7 +14983,7 @@ const startWatchEnhancements = () => {
 if (!config.enabled) {
 return;
 }
-if (!isWatchPage()) {
+if (!window.YouTubeUtils?.isWatchPage?.()) {
 return;
 }
 const token = ++watchInitToken;
@@ -13721,7 +14995,7 @@ return;
 const delegator = window.YouTubePlusEventDelegation;
 if (delegator?.on) {
 tabDelegationHandler = (ev, target) => {
-target && setTimeout(setupScrollListener, 100);
+target && enhancedSetTimeout_(setupScrollListener, 100);
 };
 delegator.on(document, "click", ".tab-btn[tyt-tab-content]", tabDelegationHandler, {
 capture: !0
@@ -13732,12 +15006,12 @@ document.addEventListener("click", handleTabButtonClick, !0);
 }
 isTabClickListenerAttached = !0;
 } catch (error) {
-console.error("[YouTube+][Enhanced] Error in setupEvents:", error);
+window.console.error("[YouTube+][Enhanced] Error in setupEvents:", error);
 }
 })();
 const tabScheduler = window.YouTubeUtils?.createRetryScheduler?.({
 check: () => {
-if (token !== watchInitToken || !isWatchPage()) {
+if (token !== watchInitToken || !window.YouTubeUtils?.isWatchPage?.()) {
 return !0;
 }
 if ($("#right-tabs")) {
@@ -13756,47 +15030,51 @@ button.id = "right-tabs-top-button";
 button.className = "top-button";
 button.title = t("scrollToTop");
 button.setAttribute("aria-label", t("scrollToTop"));
-button.innerHTML = _createHTML('<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>');
+_setSafeHTML(button, '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>');
 rightTabs.style.position = "relative";
 rightTabs.appendChild(button);
 setupScrollListener();
 } catch (error) {
-console.error("[YouTube+][Enhanced] Error creating button:", error);
+window.console.error("[YouTube+][Enhanced] Error creating button:", error);
 }
 })();
 try {
-tabChangesObserver?.disconnect?.();
+tabChangesObserver && window.YouTubeMutationCoordinator?.unsubscribe?.(tabChangesObserver);
 } catch (e) {}
 tabChangesObserver = (() => {
 try {
-const observer = new MutationObserver(mutations => {
-try {
-mutations.some(m => "attributes" === m.type && "class" === m.attributeName && m.target instanceof Element && m.target.classList.contains("tab-content-cld")) && setTimeout(setupScrollListener, 100);
-} catch (error) {
-console.error("[YouTube+][Enhanced] Error in mutation observer:", error);
+const coordinator = window.YouTubeMutationCoordinator;
+if (!coordinator?.subscribeRoot) {
+return null;
 }
+const observerId = "enhanced::tabChanges";
+coordinator.subscribeRoot(observerId, mutations => {
+try {
+mutations.some(m => "attributes" === m.type && "class" === m.attributeName && m.target instanceof Element && m.target.classList.contains("tab-content-cld")) && enhancedSetTimeout_(setupScrollListener, 100);
+} catch (error) {
+window.console.error("[YouTube+][Enhanced] Error in mutation observer:", error);
+}
+}, {
+selector: "#right-tabs .tab-content-cld",
+attributes: !0,
+childList: !1,
+subtree: !0,
+attributeFilter: [ "class" ]
 });
 try {
 window.YouTubeUtils?.ObserverRegistry?.track?.();
 } catch (e) {}
 const rightTabs = $("#right-tabs");
 if (rightTabs) {
-observer.observe(rightTabs, {
-attributes: !0,
-subtree: !0,
-attributeFilter: [ "class" ]
-});
-try {
-(window.YouTubeUtils?.cleanupManager)?.registerObserver?.(observer, rightTabs);
-} catch (e) {}
-return observer;
+return observerId;
 }
 try {
 window.YouTubeUtils?.ObserverRegistry?.untrack?.();
 } catch (e) {}
+coordinator.unsubscribe(observerId);
 return null;
 } catch (error) {
-console.error("[YouTube+][Enhanced] Error in observeTabChanges:", error);
+window.console.error("[YouTube+][Enhanced] Error in observeTabChanges:", error);
 return null;
 }
 })();
@@ -13809,7 +15087,7 @@ interval: 250
 });
 const playlistScheduler = window.YouTubeUtils?.createRetryScheduler?.({
 check: () => {
-if (token !== watchInitToken || !isWatchPage()) {
+if (token !== watchInitToken || !window.YouTubeUtils?.isWatchPage?.()) {
 return !0;
 }
 try {
@@ -13830,7 +15108,7 @@ button.id = "playlist-panel-top-button";
 button.className = "top-button";
 button.title = t("scrollToTop");
 button.setAttribute("aria-label", t("scrollToTop"));
-button.innerHTML = _createHTML('<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>');
+_setSafeHTML(button, '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>');
 const scrollContainer = $("#items", playlistPanel);
 if (!scrollContainer) {
 return;
@@ -13883,32 +15161,29 @@ scrollContainer && ro.observe(scrollContainer);
 } catch (e) {
 ro = null;
 }
-const mo = new MutationObserver(updateVisibility);
-try {
-mo.observe(playlistPanel, {
+const coordinator = window.YouTubeMutationCoordinator;
+coordinator?.watchTarget && coordinator.watchTarget("enhanced::playlistPanelVisibility", playlistPanel, updateVisibility, {
 attributes: !0,
+childList: !1,
+subtree: !1,
 attributeFilter: [ "class", "style", "hidden" ]
 });
-} catch (e) {}
 updateVisibility();
 try {
-if (window.YouTubeUtils && YouTubeUtils.cleanupManager) {
-YouTubeUtils.cleanupManager.registerObserver(mo, playlistPanel);
-ro && YouTubeUtils.cleanupManager.register(() => {
+window.YouTubeUtils && YouTubeUtils.cleanupManager && ro && YouTubeUtils.cleanupManager.register(() => {
 try {
 ro.disconnect();
 } catch (e) {}
 });
-}
 } catch (e) {}
 } catch (error) {
-console.error("[YouTube+][Enhanced] Error creating playlist panel button:", error);
+window.console.error("[YouTube+][Enhanced] Error creating playlist panel button:", error);
 }
 })();
 return !0;
 }
 } catch (error) {
-console.error("[YouTube+][Enhanced] Error checking for playlist panel:", error);
+window.console.error("[YouTube+][Enhanced] Error checking for playlist panel:", error);
 }
 return !1;
 },
@@ -13926,7 +15201,7 @@ try {
 needsUniversalButton() && !byId("universal-top-button") && createUniversalButton();
 "music.youtube.com" !== window.location.hostname || byId("music-side-top-button") || createMusicSidePanelButton();
 } catch (error) {
-console.error("[YouTube+][Enhanced] Error checking page type:", error);
+window.console.error("[YouTube+][Enhanced] Error checking page type:", error);
 }
 };
 const onNavigate = () => {
@@ -13936,51 +15211,50 @@ _musicContainersCache = null;
 _musicContainersCacheTime = 0;
 })();
 checkPageType();
-if (isWatchPage() || isShortsPage()) {
+if (window.YouTubeUtils?.isWatchPage?.() || window.YouTubeUtils?.isShortsPage?.()) {
 const _doInitDislike = () => {
 try {
 initReturnDislike();
 } catch (e) {
-console.warn("[YouTube+] initReturnDislike error:", e);
+window.console.warn("[YouTube+] initReturnDislike error:", e);
 }
 };
 "function" == typeof requestIdleCallback ? requestIdleCallback(_doInitDislike, {
 timeout: 3e3
-}) : setTimeout(_doInitDislike, 0);
+}) : enhancedSetTimeout_(_doInitDislike, 0);
 }
 startWatchEnhancements();
 };
 onNavigate();
-"function" == typeof window.YouTubeUtils?.cleanupManager?.registerListener ? YouTubeUtils.cleanupManager.registerListener(document, "yt-navigate-finish", () => setTimeout(onNavigate, 200), {
+"function" == typeof window.YouTubeUtils?.cleanupManager?.registerListener ? YouTubeUtils.cleanupManager.registerListener(document, "yt-navigate-finish", () => enhancedSetTimeout_(onNavigate, 200), {
 passive: !0
 }) : window.addEventListener("yt-navigate-finish", () => {
-setTimeout(onNavigate, 200);
+enhancedSetTimeout_(onNavigate, 200);
 });
 if ("music.youtube.com" === window.location.hostname) {
-window.addEventListener("popstate", () => setTimeout(onNavigate, 200));
-const sidePanelObserver = new MutationObserver(() => {
+window.addEventListener("popstate", () => enhancedSetTimeout_(onNavigate, 200));
+const coordinator = window.YouTubeMutationCoordinator;
+if (coordinator?.subscribeRoot) {
+musicSidePanelSubId = "enhanced::musicSidePanel";
+coordinator.subscribeRoot(musicSidePanelSubId, () => {
 !byId("music-side-top-button") && config.enabled && createMusicSidePanelButton();
-});
-const observeTarget = $("ytmusic-player-page") || $("ytmusic-app-layout") || $("ytmusic-app") || $("#layout");
-if (observeTarget) {
-sidePanelObserver.observe(observeTarget, {
+}, {
+selector: "ytmusic-player-page, ytmusic-app-layout, ytmusic-app, #layout",
 childList: !0,
+attributes: !1,
 subtree: !0
 });
-try {
-(window.YouTubeUtils?.cleanupManager)?.registerObserver?.(sidePanelObserver, observeTarget);
-} catch (e) {}
 }
 }
 } catch (error) {
-console.error("[YouTube+][Enhanced] Error in initialization:", error);
+window.console.error("[YouTube+][Enhanced] Error in initialization:", error);
 }
 };
 window.addEventListener("youtube-plus-settings-updated", e => {
 try {
 const nextEnabled = !1 !== e?.detail?.enableScrollToTopButton;
 const tabviewEnabled = !1 !== e?.detail?.enableTabview;
-const shouldUseUniversalOnWatch = (isWatchPage() || isShortsPage()) && !tabviewEnabled;
+const shouldUseUniversalOnWatch = ((window.YouTubeUtils?.isWatchPage?.() ?? !1) || (window.YouTubeUtils?.isShortsPage?.() ?? !1)) && !tabviewEnabled;
 config.enabled = nextEnabled;
 if (!config.enabled) {
 cleanupTopButtons();
@@ -13998,13 +15272,12 @@ startWatchEnhancements();
 onDomReady(() => {
 "function" == typeof requestIdleCallback ? requestIdleCallback(init, {
 timeout: 4e3
-}) : setTimeout(init, 0);
+}) : enhancedSetTimeout_(init, 0);
 });
 })();
 
 !(function() {
 "use strict";
-const SETTINGS_KEY = window.YouTubeUtils?.SETTINGS_KEY || "youtube_plus_settings";
 let pendingApplyTimeouts = [];
 let lastAppliedVideoId = "";
 const isVideoPage = () => {
@@ -14015,21 +15288,11 @@ return "/watch" === path || path.startsWith("/shorts/");
 return !1;
 }
 };
-const loadFeatureEnabled = () => {
-try {
-const raw = localStorage.getItem(SETTINGS_KEY);
-if (raw) {
-const parsed = JSON.parse(raw);
-return !1 !== parsed.enableRememberManualQuality;
-}
-} catch (e) {}
-return !0;
-};
 const normalizeQuality = value => {
 const normalized = String(value || "").trim().toLowerCase();
 return normalized && "unknown" !== normalized ? normalized : "";
 };
-const getPlayer = () => document.getElementById("movie_player");
+const getPlayer = () => byId("movie_player");
 const clearPendingApplyTimeouts = () => {
 pendingApplyTimeouts.forEach(timeoutId => clearTimeout(timeoutId));
 pendingApplyTimeouts = [];
@@ -14045,7 +15308,10 @@ localStorage.setItem("youtube_plus_manual_playback_quality", normalized);
 } catch (e) {}
 };
 const applyStoredQualityOnce = () => {
-if (!loadFeatureEnabled() || !isVideoPage()) {
+if (!(window.YouTubeUtils?.loadFeatureEnabled?.("enableRememberManualQuality") ?? 1)) {
+return !0;
+}
+if (!isVideoPage()) {
 return !0;
 }
 const preferredQuality = (() => {
@@ -14093,9 +15359,9 @@ return !1;
 };
 const scheduleApplyStoredQuality = () => {
 clearPendingApplyTimeouts();
-if (loadFeatureEnabled() && isVideoPage()) {
+if ((window.YouTubeUtils?.loadFeatureEnabled?.("enableRememberManualQuality") ?? 1) && isVideoPage()) {
 for (let attempt = 0; attempt < 16; attempt += 1) {
-const timeoutId = setTimeout(() => {
+const timeoutId = enhancedSetTimeout_(() => {
 applyStoredQualityOnce() && clearPendingApplyTimeouts();
 }, 350 * attempt);
 pendingApplyTimeouts.push(timeoutId);
@@ -14109,8 +15375,8 @@ if (!menuItem) {
 return;
 }
 const label = String(menuItem.textContent || "").trim().toLowerCase();
-label && /(\bauto\b|\d{3,4}p|\bhd\b|\b4k\b|\b8k\b)/.test(label) && setTimeout(() => {
-if (!loadFeatureEnabled()) {
+label && /(\bauto\b|\d{3,4}p|\bhd\b|\b4k\b|\b8k\b)/.test(label) && enhancedSetTimeout_(() => {
+if (!(window.YouTubeUtils?.loadFeatureEnabled?.("enableRememberManualQuality") ?? 1)) {
 return;
 }
 if (label.includes("auto")) {
@@ -14164,6 +15430,7 @@ transparentHeader: !0,
 hideSideGuide: !0,
 cleanSideGuide: !1,
 fixFeedLayout: !0,
+sideVideosColumnsEnabled: !1,
 sideVideosColumns: 0,
 compactFeed: !0,
 betterCaptions: !0,
@@ -14178,7 +15445,7 @@ try {
 const raw = localStorage.getItem(SETTINGS_KEY);
 raw && (parsed = JSON.parse(raw));
 } catch (e) {
-console.warn("[YouTube+] Zen settings parse error:", e);
+window.console.warn("[YouTube+] Zen settings parse error:", e);
 }
 const merged = {
 ...DEFAULTS,
@@ -14190,23 +15457,25 @@ merged.zenStyles = {
 };
 !0 === merged.hideSideGuide && !0 !== merged.zenStyles.hideSideGuide && (merged.zenStyles.hideSideGuide = !0);
 !0 !== merged.zenStyles.sideVideosTwoColumns || null != merged.zenStyles.sideVideosColumns && "" !== merged.zenStyles.sideVideosColumns || (merged.zenStyles.sideVideosColumns = 2);
+!0 === merged.zenStyles.sideVideosTwoColumns && (merged.zenStyles.sideVideosColumnsEnabled = !0);
 const parsedSideCols = Number(merged.zenStyles.sideVideosColumns);
-merged.zenStyles.sideVideosColumns = !Number.isFinite(parsedSideCols) || parsedSideCols < 0 ? 1 : parsedSideCols;
+merged.zenStyles.sideVideosColumns = !Number.isFinite(parsedSideCols) || parsedSideCols < 0 ? 0 : parsedSideCols;
 merged.zenStyles.sideVideosColumns = Math.min(2, merged.zenStyles.sideVideosColumns);
+"boolean" != typeof merged.zenStyles.sideVideosColumnsEnabled && (merged.zenStyles.sideVideosColumnsEnabled = merged.zenStyles.sideVideosColumns > 0);
 return merged;
 };
 const CSS_BLOCKS = {
-thumbnailHover: "\n        /* yt-thumbnail hover */\n        #inline-preview-player {transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) 1s !important; transform: scale(1) !important;}\n        #video-preview-container:has(#inline-preview-player) {transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important; border-radius: 1.2em !important; overflow: hidden !important; transform: scale(1) !important;}\n        #video-preview-container:has(#inline-preview-player):hover {transform: scale(1.25) !important; box-shadow: #0008 0px 0px 60px !important; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) 2s !important;}\n        ytd-app #content {opacity: 1 !important; transition: opacity 0.3s ease-in-out !important;}\n        ytd-app:has(#video-preview-container:hover) #content {opacity: 0.5 !important; transition: opacity 4s ease-in-out 1s !important;}\n      ",
-immersiveSearch: '\n        /* yt-Immersive search */\n        #page-manager, yt-searchbox {transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.35) !important;}\n        #masthead yt-searchbox button[aria-label="Search"] {display: none !important;}\n        .ytSearchboxComponentInputBox {border-radius: 2em !important;}\n        yt-searchbox:has(.ytSearchboxComponentInputBoxHasFocus) {position: relative !important; left: 0vw !important; top: -30vh !important; height: 40px !important; max-width: 600px !important; transform: scale(1) !important;}\n        @media only screen and (min-width: 1400px) {yt-searchbox:has(.ytSearchboxComponentInputBoxHasFocus) { height: 60px !important; max-width: 700px !important; transform: scale(1.1) !important;}}\n        yt-searchbox:has(.ytSearchboxComponentInputBoxHasFocus) .ytSearchboxComponentInputBox,\n        yt-searchbox:has(.ytSearchboxComponentInputBoxHasFocus) #i0 {background-color: #fffb !important; box-shadow: black 0 0 30px !important;}\n        @media (prefers-color-scheme: dark) {\n          yt-searchbox:has(.ytSearchboxComponentInputBoxHasFocus) .ytSearchboxComponentInputBox,\n          yt-searchbox:has(.ytSearchboxComponentInputBoxHasFocus) #i0 {background-color: #000b !important;}\n        }\n        yt-searchbox:has(.ytSearchboxComponentInputBoxHasFocus) #i0 {margin-top: 10px !important;}\n        @media only screen and (min-width: 1400px) {yt-searchbox:has(.ytSearchboxComponentInputBoxHasFocus) #i0 {margin-top: 30px !important;}}\n        .ytd-masthead #center:has(.ytSearchboxComponentInputBoxHasFocus) {height: 100vh !important; width: 100vw !important; left: 0 !important; top: 0 !important; position: fixed !important; justify-content: center !important; align-items: center !important;}\n        #content:has(.ytSearchboxComponentInputBoxHasFocus) #page-manager {filter: blur(20px) !important; transform: scale(1.05) !important;}\n      ',
+thumbnailHover: "\n        /* yt-thumbnail hover */\n        #inline-preview-player {transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) 1s !important; transform: scale(1) !important;}\n        #video-preview-container:has(#inline-preview-player) {transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important; border-radius: 1.2em !important; overflow: hidden !important; transform: scale(1) !important;}\n        #video-preview-container:has(#inline-preview-player):hover {transform: scale(1.25) !important; box-shadow: rgba(0,0,0,0.5) 0px 0px 60px !important; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) 2s !important;}\n        ytd-app #content {opacity: 1 !important; transition: opacity 0.3s ease-in-out !important;}\n        ytd-app:has(#video-preview-container:hover) #content {opacity: 0.5 !important; transition: opacity 4s ease-in-out 1s !important;}\n      ",
+immersiveSearch: '\n        /* yt-Immersive search */\n        #page-manager, yt-searchbox {transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.35) !important;}\n        #masthead yt-searchbox button[aria-label="Search"] {display: none !important;}\n        .ytSearchboxComponentInputBox {border-radius: 2em !important;}\n        yt-searchbox:has(.ytSearchboxComponentInputBoxHasFocus) {position: relative !important; left: 0vw !important; top: -30vh !important; height: 40px !important; max-width: 600px !important; transform: scale(1) !important;}\n        @media only screen and (min-width: 1400px) {yt-searchbox:has(.ytSearchboxComponentInputBoxHasFocus) { height: 60px !important; max-width: 700px !important; transform: scale(1.1) !important;}}\n        yt-searchbox:has(.ytSearchboxComponentInputBoxHasFocus) .ytSearchboxComponentInputBox,\n        yt-searchbox:has(.ytSearchboxComponentInputBoxHasFocus) #i0 {background-color: var(--yt-bg-primary) !important; box-shadow: black 0 0 30px !important;}\n        @media (prefers-color-scheme: dark) {\n          yt-searchbox:has(.ytSearchboxComponentInputBoxHasFocus) .ytSearchboxComponentInputBox,\n          yt-searchbox:has(.ytSearchboxComponentInputBoxHasFocus) #i0 {background-color: var(--yt-modal-bg) !important;}\n        }\n        yt-searchbox:has(.ytSearchboxComponentInputBoxHasFocus) #i0 {margin-top: 10px !important;}\n        @media only screen and (min-width: 1400px) {yt-searchbox:has(.ytSearchboxComponentInputBoxHasFocus) #i0 {margin-top: 30px !important;}}\n        .ytd-masthead #center:has(.ytSearchboxComponentInputBoxHasFocus) {height: 100vh !important; width: 100vw !important; left: 0 !important; top: 0 !important; position: fixed !important; justify-content: center !important; align-items: center !important;}\n        #content:has(.ytSearchboxComponentInputBoxHasFocus) #page-manager {filter: blur(20px) !important; transform: scale(1.05) !important;}\n      ',
 hideVoiceSearch: "\n        /* No voice search button */\n        #voice-search-button {display: none !important;}\n      ",
-transparentHeader: "\n        /* Transparent header */\n        #masthead-container, #background.ytd-masthead { background-color: transparent !important; }\n      ",
+transparentHeader: "\n        /* Transparent header */\n        :root{\n          --yt-spec-base-background: transparent;\n          --ytd-masthead-background: transparent;\n          --yt-spec-brand-background-primary: transparent;\n          --yt-spec-brand-background-solid: transparent;\n          --yt-spec-general-background-a: transparent;\n          --yt-spec-raised-background: transparent;\n          --yt-spec-additive-background: transparent;\n        }\n        #masthead-container,\n        #masthead,\n        ytd-masthead,\n        #background.ytd-masthead,\n        ytd-masthead #background,\n        ytd-masthead #container,\n        ytd-masthead #contentContainer,\n        ytd-masthead #end,\n        ytd-masthead #start,\n        ytd-masthead #center,\n        ytd-masthead #frosted-glass,\n        ytd-masthead #background-content,\n        #frosted-glass,\n        ytd-masthead tp-yt-app-header-layout,\n        ytd-mini-guide-renderer,\n        ytd-topbar-logo-renderer,\n        ytd-app #masthead,\n        ytd-app #masthead-container,\n        tp-yt-app-header-layout #masthead-container {\n          background-color: transparent !important;\n          background: transparent !important;\n          box-shadow: none !important;\n        }\n      ",
 hideSideGuide: '\n        /* Hide side guide */\n        ytd-mini-guide-renderer, [theater=""] #contentContainer::after {display: none !important;}\n        tp-yt-app-drawer > #contentContainer:not([opened=""]),\n        #contentContainer:not([opened=""]) #guide-content,\n        ytd-mini-guide-renderer,\n        ytd-mini-guide-entry-renderer {background-color: var(--yt-spec-text-primary-inverse) !important; background: var(--yt-spec-text-primary-inverse) !important;}\n        #content:not(:has(#contentContainer[opened=""])) #page-manager {margin-left: 0 !important;}\n        ytd-app:not([guide-persistent-and-visible=""]) tp-yt-app-drawer > #contentContainer {background-color: var(--yt-spec-text-primary-inverse) !important;}\n        ytd-alert-with-button-renderer {align-items: center !important; justify-content: center !important;}\n      ',
 cleanSideGuide: '\n        /* Clean side guide */\n        ytd-guide-section-renderer:has([title="YouTube Premium"]),\n        ytd-guide-renderer #footer {display: none !important;}\n        ytd-guide-section-renderer, ytd-guide-collapsible-section-entry-renderer {border: none !important;}\n      ',
-fixFeedLayout: '\n        /* Fix new feed layout */\n        ytd-rich-item-renderer[rendered-from-rich-grid] {  @media only screen and (min-width: 1400px) { --ytd-rich-grid-items-per-row: 4 !important; @media only screen and (min-width: 1700px) { --ytd-rich-grid-items-per-row: 5 !important; @media only screen and (min-width: 2180px) {--ytd-rich-grid-items-per-row: 6 !important;}}}} ytd-rich-item-renderer[is-in-first-column=""] { margin-left: calc(var(--ytd-rich-grid-item-margin) / 2) !important;}#contents { padding-left: calc(var(--ytd-rich-grid-item-margin) / 2 + var(--ytd-rich-grid-gutter-margin)) !important;}\n      ',
-betterCaptions: "\n        /* Better captions */\n        .caption-window { backdrop-filter: blur(10px) brightness(70%) !important; border-radius: 1em !important; padding: 1em !important; box-shadow: #0008 0 0 20px !important; width: fit-content !important; }\n        .ytp-caption-segment { background: none !important; }\n      ",
-playerBlur: "\n        /* Player controls blur */\n        .ytp-left-controls .ytp-play-button,\n        .ytp-left-controls .ytp-volume-area,\n        .ytp-left-controls .ytp-time-display.notranslate > span,\n        .ytp-left-controls .ytp-chapter-container > button,\n        .ytp-left-controls .ytp-prev-button,\n        .ytp-left-controls .ytp-next-button,\n        .ytp-right-controls,\n        .ytp-time-wrapper,\n        .ytPlayerQuickActionButtonsHost,\n        .ytPlayerQuickActionButtonsHostCompactControls,\n        .ytPlayerQuickActionButtonsHostDisableBackdropFilter { backdrop-filter: blur(5px) !important; background-color: #0004 !important; }\n        .ytp-popup { backdrop-filter: blur(10px) !important; background-color: #0007 !important; }\n      ",
+fixFeedLayout: "\n        /* Fix new feed layout */\n        @media only screen and (min-width: 1400px) {\n          ytd-rich-item-renderer[rendered-from-rich-grid] { --ytd-rich-grid-items-per-row: 4 !important; }\n        }\n        @media only screen and (min-width: 1700px) {\n          ytd-rich-item-renderer[rendered-from-rich-grid] { --ytd-rich-grid-items-per-row: 5 !important; }\n        }\n        @media only screen and (min-width: 2180px) {\n          ytd-rich-item-renderer[rendered-from-rich-grid] { --ytd-rich-grid-items-per-row: 6 !important; }\n        }\n        ytd-rich-item-renderer[is-in-first-column] { margin-left: calc(var(--ytd-rich-grid-item-margin) / 2) !important; }\n        #contents { padding-left: calc(var(--ytd-rich-grid-item-margin) / 2 + var(--ytd-rich-grid-gutter-margin)) !important; }\n      ",
+betterCaptions: "\n        /* Better captions */\n        .caption-window { backdrop-filter: blur(10px) brightness(70%) !important; border-radius: 1em !important; padding: 1em !important; box-shadow: rgba(0,0,0,0.5) 0 0 20px !important; width: fit-content !important; }\n        .ytp-caption-segment { background: none !important; }\n      ",
+playerBlur: "\n        /* Player controls blur */\n        .ytp-left-controls .ytp-play-button,\n        .ytp-left-controls .ytp-volume-area,\n        .ytp-left-controls .ytp-time-display.notranslate > span,\n        .ytp-left-controls .ytp-chapter-container > button,\n        .ytp-left-controls .ytp-prev-button,\n        .ytp-left-controls .ytp-next-button,\n        .ytp-right-controls,\n        .ytp-time-wrapper,\n        .ytPlayerQuickActionButtonsHost,\n        .ytPlayerQuickActionButtonsHostCompactControls,\n        .ytPlayerQuickActionButtonsHostDisableBackdropFilter { backdrop-filter: blur(5px) !important; background-color: rgba(0,0,0,0.4) !important; }\n        .ytp-popup { backdrop-filter: blur(10px) !important; background-color: rgba(0,0,0,0.45) !important; }\n      ",
 theaterEnhancements: "\n        /* Zen view comments (from zeninternet) */\n        /* Hide secondary column visually but break containment so fixed children can escape */\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) #columns #secondary { display: block !important;width: 0 !important;min-width: 0 !important;max-width: 0 !important;padding: 0 !important;margin: 0 !important;border: 0 !important;overflow: visible !important;pointer-events: none !important;flex: 0 0 0px !important;contain: none !important;\n        }\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) #secondary-inner { overflow: visible !important;contain: none !important;position: static !important;}\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) #secondary-inner secondary-wrapper,\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) #secondary-inner .tabview-secondary-wrapper { contain: none !important;overflow: visible !important;position: static !important;max-height: none !important;height: auto !important;padding: 0 !important;}\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) #right-tabs { display: block !important;overflow: visible !important;contain: none !important;position: static !important;width: 0 !important;height: 0 !important;padding: 0 !important;margin: 0 !important;border: 0 !important;}\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) #right-tabs > header { display: none !important;}\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) #right-tabs .tab-content { display: block !important;overflow: visible !important;contain: none !important;position: static !important;width: 0 !important;height: 0 !important;padding: 0 !important;margin: 0 !important;border: 0 !important;}\n        /* Break containment on tab-comments so its fixed-position child can escape */\n        /* Extra .tab-content-hidden selector to beat main.js specificity (line 5169) */\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) #tab-comments,\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) #tab-comments.tab-content-hidden,\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) #tab-comments.tab-content-cld { contain: none !important;overflow: visible !important;position: static !important;display: block !important;visibility: visible !important;width: 0 !important;height: 0 !important;padding: 0 !important;margin: 0 !important;z-index: auto !important;pointer-events: none !important;}\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) #tab-comments.tab-content-hidden ytd-comments#comments > ytd-item-section-renderer#sections,\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) #tab-comments.tab-content-hidden ytd-comments#comments > ytd-item-section-renderer#sections > #contents,\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) #tab-comments.tab-content-hidden ytd-comments#comments #contents { contain: none !important;width: auto !important;height: auto !important;max-height: none !important;overflow: visible !important;visibility: visible !important;}\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) #tab-comments.tab-content-hidden ytd-comments#comments #contents > * { display: block !important;}\n        /* Hide other tabs content */\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) #tab-info,\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) #tab-videos,\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) #tab-list { display: none !important;}\n        /* Comments overlay panel */\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) ytd-comments { visibility: visible !important;display: block !important;background-color: var(--yt-live-chat-shimmer-background-color) !important;backdrop-filter: blur(20px) !important;padding: 0 2em !important;border-radius: 2em 0 0 2em !important;max-height: calc(100vh - 120px) !important;overflow-y: auto !important;position: fixed !important;z-index: 2000 !important;top: 3vh !important;right: -42em !important;width: 40em !important;height: 90vh !important;opacity: 0 !important;pointer-events: auto !important;transition: opacity 0.4s ease, right 0.4s ease !important;}\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) ytd-comments:hover { opacity: 1 !important;right: 0 !important;}\n        /* Transparent overlay chat — fixed panel */\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) [tyt-chat-container],\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) #chat-container { contain: none !important;overflow: visible !important;position: static !important;display: block !important;pointer-events: none !important;}\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) #chat { visibility: visible !important;display: block !important;position: fixed !important;top: 3vh !important;right: 0 !important;width: 400px !important;height: calc(100vh - 120px) !important;max-height: calc(100vh - 120px) !important;z-index: 2001 !important;opacity: 0.85 !important;pointer-events: auto !important;border-radius: 2em 0 0 2em !important;overflow: hidden !important;backdrop-filter: blur(20px) !important;transition: opacity 0.4s ease !important;}\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) #chat[collapsed] { visibility: visible !important;display: block !important;position: fixed !important;top: 3vh !important;right: 0 !important;width: 400px !important;height: calc(100vh - 120px) !important;max-height: calc(100vh - 120px) !important;z-index: 2001 !important;opacity: 0.85 !important;pointer-events: auto !important;overflow: hidden !important;border-radius: 2em 0 0 2em !important;}\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) #chat[collapsed] > #show-hide-button,\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) #chat[collapsed] > .ytd-live-chat-frame#show-hide-button { display: none !important;visibility: hidden !important;opacity: 0 !important;pointer-events: none !important;}\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) #chat[collapsed] iframe { display: block !important;visibility: visible !important;}\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) #chat iframe { height: 100% !important;width: 100% !important;}\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) yt-live-chat-renderer { background: transparent !important;}\n        /* Ambient mode: fix black bars in theater */\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) #cinematics-container,\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) #cinematics { position: absolute !important;top: 0 !important;left: 0 !important;width: 100% !important;height: 100% !important;overflow: hidden !important;pointer-events: none !important;}\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) #cinematics canvas,\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) #cinematics video { position: absolute !important;top: 50% !important;left: 50% !important;transform: translate(-50%, -50%) scale(1.2) !important;min-width: 100% !important;min-height: 100% !important;object-fit: cover !important;}\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) #player-full-bleed-container { overflow: hidden !important;}\n        ytd-watch-flexy[fullscreen] ytd-live-chat-frame { background-color: var(--app-drawer-content-container-background-color) !important;}\n      ",
-misc: "        \n        /* Show video meta on hover */\n        #content #dismissible:hover ytd-video-meta-block { opacity: 1 !important;}\n        #frosted-glass { display: none !important;}\n      ",
+misc: "        \n        /* Show video meta on hover */\n        #content #dismissible:hover ytd-video-meta-block { opacity: 1 !important;}\n      ",
 compactFeed: "\n      /* Compact feed – reduced spacing, hover menus, inline details */\n        ytd-rich-item-renderer { margin-bottom: 15px !important;}\n        ytd-rich-item-renderer[rendered-from-rich-grid] { --ytd-rich-item-row-usable-width: calc(100% - var(--ytd-rich-grid-gutter-margin) * 1) !important;}\n        ytd-rich-item-renderer #metadata.ytd-video-meta-block { flex-direction: row !important;}\n        ytd-rich-item-renderer #metadata.ytd-video-meta-block #metadata-line span:nth-child(3) { height: 1em !important;margin-left: 1em !important;}\n        ytd-rich-grid-media { border-radius: 1.2em;height: 100% !important;}\n        ytd-rich-grid-media ytd-menu-renderer #button { opacity: 0 !important;transition: opacity 0.3s ease-in-out !important;}\n        ytd-rich-grid-media:hover ytd-menu-renderer #button { opacity: 1 !important;}\n      ",
 themeSolid: "\n        html {\n          --yt-glass-blur:none !important;\n          --yt-glass-blur-light:none !important;\n          --yt-glass-blur-heavy:none !important;\n        }\n        html[dark],html:not([dark]):not([light]) {\n          --yt-glass-bg:rgba(24,24,24,.96) !important;\n          --yt-panel-bg:rgba(30,30,30,.98) !important;\n          --yt-header-bg:rgba(22,22,22,.98) !important;\n          --yt-button-bg:rgba(42,42,42,.98) !important;\n          --yt-input-bg:rgba(34,34,34,.98) !important;\n          --yt-glass-shadow:0 10px 28px rgba(0,0,0,.28) !important;\n        }\n        html[light] {\n          --yt-glass-bg:rgba(255,255,255,.98) !important;\n          --yt-panel-bg:rgba(250,250,250,.99) !important;\n          --yt-header-bg:rgba(245,245,245,.99) !important;\n          --yt-button-bg:rgba(236,236,236,.98) !important;\n          --yt-input-bg:rgba(245,245,245,.98) !important;\n          --yt-glass-shadow:0 10px 24px rgba(0,0,0,.12) !important;\n        }\n        .ytp-plus-settings-panel,\n        .ytp-plus-settings-sidebar,\n        .top-button,\n        .download-options.visible,\n        .speed-options.visible,\n        .glass-dropdown__list,\n        .glass-panel,\n        .glass-card,\n        .ytp-plus-comments-sidepanel,\n        .ytp-plus-comments-item,\n        .youtube-enhancer-notification,\n        .stats-modal-content,\n        .settings-menu,\n        #timecode-panel,\n        #shorts-keyboard-feedback,\n        .shortsStats,\n        .ytp-popup,\n        .ytPlayerQuickActionButtonsHost,\n        .ytPlayerQuickActionButtonsHostCompactControls,\n        .ytPlayerQuickActionButtonsHostDisableBackdropFilter,\n        .caption-window,\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) ytd-comments,\n        ytd-watch-flexy:is([theater],[full-bleed-player]):not([fullscreen]) #chat {\n          backdrop-filter:none !important;\n          -webkit-backdrop-filter:none !important;\n        }\n      ",
 clsPrevention: "\n        /* CLS Prevention - Reserve space for dynamic elements */\n        #ytp-plus-dislike-text { min-width: 1.5em;display: inline-block !important;}\n        /* Contain layout only for our own panels (not YouTube layout elements) */\n        .ytp-plus-stats-panel, .ytp-plus-modal-content { contain: layout style;}\n        /* Reduce CLS from late-loading channel avatars */\n        #owner #avatar { min-width: 40px; min-height: 40px; }\n        /* Reserve space for action buttons to prevent shift */\n        ytd-menu-renderer.ytd-watch-metadata { min-height: 36px; }\n        /* Subscribe button stability */\n        ytd-subscribe-button-renderer { min-width: 90px; }\n      "
@@ -14230,10 +15499,12 @@ z.hideVoiceSearch && (css += CSS_BLOCKS.hideVoiceSearch);
 z.transparentHeader && (css += CSS_BLOCKS.transparentHeader);
 z.cleanSideGuide && (css += CSS_BLOCKS.cleanSideGuide);
 const sideColsRaw = Number(z.sideVideosColumns);
-const sideCols = Number.isFinite(sideColsRaw) ? Math.max(0, Math.min(2, sideColsRaw)) : 1;
-sideCols > 0 && (css += `\n        /* Side Videos: ${sideCols}-column card grid */\n        ytd-watch-flexy :is(#right-tabs #tab-videos, #secondary #related) ytd-item-section-renderer #contents,\n        ytd-watch-flexy :is(#right-tabs #tab-videos, #secondary #related) ytd-watch-next-secondary-results-renderer #items {\n          display: grid !important;\n          grid-template-columns: repeat(${sideCols}, minmax(0, 1fr)) !important;\n          gap: 8px !important;\n          padding: 0 !important;\n          align-items: start !important;\n        }\n        ytd-watch-flexy :is(#right-tabs #tab-videos, #secondary #related) ytd-compact-video-renderer,\n        ytd-watch-flexy :is(#right-tabs #tab-videos, #secondary #related) ytd-compact-radio-renderer,\n        ytd-watch-flexy :is(#right-tabs #tab-videos, #secondary #related) ytd-compact-playlist-renderer,\n        ytd-watch-flexy :is(#right-tabs #tab-videos, #secondary #related) yt-lockup-view-model {\n          width: 100% !important;\n          min-width: 0 !important;\n          max-width: 100% !important;\n          margin: 0 !important;\n          box-sizing: border-box !important;\n        }\n        ytd-watch-flexy :is(#right-tabs #tab-videos, #secondary #related) yt-lockup-view-model .ytLockupViewModelHost {\n          display: block !important;\n          width: 100% !important;\n          min-width: 0 !important;\n        }\n        ytd-watch-flexy :is(#right-tabs #tab-videos, #secondary #related) yt-lockup-view-model .ytLockupViewModelHorizontal,\n        ytd-watch-flexy :is(#right-tabs #tab-videos, #secondary #related) yt-lockup-view-model .yt-lockup-view-model-wiz {\n          display: flex !important;\n          flex-direction: column !important;\n          align-items: stretch !important;\n          width: 100% !important;\n          min-width: 0 !important;\n          gap: 6px !important;\n        }\n        ytd-watch-flexy :is(#right-tabs #tab-videos, #secondary #related) yt-lockup-view-model .yt-lockup-view-model-wiz__content-image,\n        ytd-watch-flexy :is(#right-tabs #tab-videos, #secondary #related) yt-lockup-view-model [class*="LockupContentImage"],\n        ytd-watch-flexy :is(#right-tabs #tab-videos, #secondary #related) yt-lockup-view-model yt-image {\n          width: 100% !important;\n          max-width: 100% !important;\n          min-width: 0 !important;\n          height: auto !important;\n          flex: 0 0 auto !important;\n        }\n        ytd-watch-flexy :is(#right-tabs #tab-videos, #secondary #related) yt-lockup-view-model yt-image img {\n          width: 100% !important;\n          height: auto !important;\n          object-fit: cover !important;\n          display: block !important;\n        }\n        ytd-watch-flexy :is(#right-tabs #tab-videos, #secondary #related) yt-lockup-view-model .yt-lockup-view-model-wiz__text-container {\n          padding: 4px 0 0 0 !important;\n          min-width: 0 !important;\n          width: 100% !important;\n          box-sizing: border-box !important;\n        }\n        ytd-watch-flexy :is(#right-tabs #tab-videos, #secondary #related) ytd-compact-video-renderer #dismissible {\n          display: flex !important;\n          flex-direction: column !important;\n          gap: 6px !important;\n          width: 100% !important;\n        }\n        ytd-watch-flexy :is(#right-tabs #tab-videos, #secondary #related) ytd-compact-video-renderer ytd-thumbnail {\n          width: 100% !important;\n          max-width: 100% !important;\n          min-width: 0 !important;\n        }\n        ytd-watch-flexy :is(#right-tabs #tab-videos, #secondary #related) ytd-compact-video-renderer .details,\n        ytd-watch-flexy :is(#right-tabs #tab-videos, #secondary #related) ytd-compact-video-renderer #meta {\n          padding-left: 0 !important;\n          min-width: 0 !important;\n          width: 100% !important;\n          box-sizing: border-box !important;\n        }\n      `);
+const sideCols = Number.isFinite(sideColsRaw) ? Math.max(0, Math.min(2, sideColsRaw)) : 0;
+const sideColsEnabled = !0 === z.sideVideosColumnsEnabled;
+sideColsEnabled && sideCols > 0 && (css += `\n        /* Side Videos: ${sideCols}-column card grid */\n        ytd-watch-flexy #secondary #related ytd-item-section-renderer #contents,\n        ytd-watch-flexy #secondary #related ytd-watch-next-secondary-results-renderer #items {\n          display: grid !important;\n          grid-template-columns: repeat(${sideCols}, minmax(0, 1fr)) !important;\n          gap: 8px !important;\n          padding: 0 !important;\n          align-items: start !important;\n        }\n        ytd-watch-flexy #secondary #related ytd-compact-video-renderer,\n        ytd-watch-flexy #secondary #related ytd-compact-radio-renderer,\n        ytd-watch-flexy #secondary #related ytd-compact-playlist-renderer,\n        ytd-watch-flexy #secondary #related yt-lockup-view-model {\n          width: 100% !important;\n          min-width: 0 !important;\n          max-width: 100% !important;\n          margin: 0 !important;\n          box-sizing: border-box !important;\n        }\n        ytd-watch-flexy #secondary #related yt-lockup-view-model .ytLockupViewModelHost {\n          display: block !important;\n          width: 100% !important;\n          min-width: 0 !important;\n        }\n        ytd-watch-flexy #secondary #related yt-lockup-view-model .ytLockupViewModelHorizontal,\n        ytd-watch-flexy #secondary #related yt-lockup-view-model .yt-lockup-view-model-wiz {\n          display: flex !important;\n          flex-direction: column !important;\n          align-items: stretch !important;\n          width: 100% !important;\n          min-width: 0 !important;\n          gap: 6px !important;\n        }\n        ytd-watch-flexy #secondary #related yt-lockup-view-model .yt-lockup-view-model-wiz__content-image,\n        ytd-watch-flexy #secondary #related yt-lockup-view-model [class*="LockupContentImage"],\n        ytd-watch-flexy #secondary #related yt-lockup-view-model yt-image {\n          width: 100% !important;\n          max-width: 100% !important;\n          min-width: 0 !important;\n          height: auto !important;\n          flex: 0 0 auto !important;\n        }\n        ytd-watch-flexy #secondary #related yt-lockup-view-model yt-image img {\n          width: 100% !important;\n          height: auto !important;\n          object-fit: cover !important;\n          display: block !important;\n        }\n        ytd-watch-flexy #secondary #related yt-lockup-view-model .yt-lockup-view-model-wiz__text-container {\n          padding: 4px 0 0 0 !important;\n          min-width: 0 !important;\n          width: 100% !important;\n          box-sizing: border-box !important;\n        }\n        ytd-watch-flexy #secondary #related ytd-compact-video-renderer #dismissible {\n          display: flex !important;\n          flex-direction: column !important;\n          gap: 6px !important;\n          width: 100% !important;\n        }\n        ytd-watch-flexy #secondary #related ytd-compact-video-renderer ytd-thumbnail {\n          width: 100% !important;\n          max-width: 100% !important;\n          min-width: 0 !important;\n        }\n        ytd-watch-flexy #secondary #related ytd-compact-video-renderer .details,\n        ytd-watch-flexy #secondary #related ytd-compact-video-renderer #meta {\n          padding-left: 0 !important;\n          min-width: 0 !important;\n          width: 100% !important;\n          box-sizing: border-box !important;\n        }\n      `);
 z.betterCaptions && "solid" !== themeVariant && (css += CSS_BLOCKS.betterCaptions);
 z.playerBlur && "solid" !== themeVariant && (css += CSS_BLOCKS.playerBlur);
+z.compactFeed && (css += CSS_BLOCKS.compactFeed);
 z.misc && (css += CSS_BLOCKS.misc);
 return css.trim();
 };
@@ -14251,13 +15522,13 @@ clearTimeout(nonCriticalTimer);
 }
 nonCriticalTimer = null;
 }
-const el = document.getElementById(STYLE_ELEMENT_ID);
+const el = byId(STYLE_ELEMENT_ID);
 if (el) {
 try {
 el.remove();
 } catch (e) {}
 }
-const ncEl = document.getElementById(NON_CRITICAL_STYLE_ID);
+const ncEl = byId(NON_CRITICAL_STYLE_ID);
 if (ncEl) {
 try {
 ncEl.remove();
@@ -14266,11 +15537,11 @@ ncEl.remove();
 };
 const applyNonCriticalStyles = css => {
 if (!css) {
-const ncEl = document.getElementById(NON_CRITICAL_STYLE_ID);
+const ncEl = byId(NON_CRITICAL_STYLE_ID);
 ncEl && ncEl.remove();
 return;
 }
-let ncEl = document.getElementById(NON_CRITICAL_STYLE_ID);
+let ncEl = byId(NON_CRITICAL_STYLE_ID);
 if (!ncEl) {
 ncEl = document.createElement("style");
 ncEl.id = NON_CRITICAL_STYLE_ID;
@@ -14293,7 +15564,7 @@ return;
 try {
 if (window.YouTubeUtils?.StyleManager?.add) {
 window.YouTubeUtils.StyleManager.add(STYLE_MANAGER_KEY, criticalCss || "");
-const el = document.getElementById(STYLE_ELEMENT_ID);
+const el = byId(STYLE_ELEMENT_ID);
 el && el.remove();
 if (nonCriticalTimer) {
 if ("undefined" != typeof window && "function" == typeof window.cancelIdleCallback) {
@@ -14310,12 +15581,12 @@ nonCriticalTimer = null;
 } else {
 nonCriticalTimer = "function" == typeof requestIdleCallback ? requestIdleCallback(() => applyNonCriticalStyles(nonCriticalCss), {
 timeout: 5e3
-}) : setTimeout(() => applyNonCriticalStyles(nonCriticalCss), 200);
+}) : enhancedSetTimeout_(() => applyNonCriticalStyles(nonCriticalCss), 200);
 }
 return;
 }
 } catch (e) {}
-let el = document.getElementById(STYLE_ELEMENT_ID);
+let el = byId(STYLE_ELEMENT_ID);
 if (!el) {
 el = document.createElement("style");
 el.id = STYLE_ELEMENT_ID;
@@ -14337,18 +15608,18 @@ nonCriticalTimer = null;
 } else {
 nonCriticalTimer = "function" == typeof requestIdleCallback ? requestIdleCallback(() => applyNonCriticalStyles(nonCriticalCss), {
 timeout: 5e3
-}) : setTimeout(() => applyNonCriticalStyles(nonCriticalCss), 200);
+}) : enhancedSetTimeout_(() => applyNonCriticalStyles(nonCriticalCss), 200);
 }
 };
-const applyFromStorage = () => applyStyles(loadSettings());
-applyFromStorage();
+const applyFromStorage = (immediateNonCritical = !1) => applyStyles(loadSettings(), immediateNonCritical);
+applyFromStorage(!0);
 try {
 const _applySearchboxWillChange = () => {
-const sb = document.querySelector("yt-searchbox");
+const sb = $("yt-searchbox");
 sb instanceof HTMLElement && (sb.style.willChange = "transform");
 };
 const _clearSearchboxWillChange = () => {
-const sb = document.querySelector("yt-searchbox");
+const sb = $("yt-searchbox");
 sb instanceof HTMLElement && (sb.style.willChange = "");
 };
 document.addEventListener("focusin", e => {
@@ -14368,11 +15639,16 @@ window.addEventListener("youtube-plus-settings-updated", e => {
 try {
 applyStyles(e?.detail || loadSettings(), !0);
 } catch (e) {
-applyFromStorage();
+applyFromStorage(!0);
 }
 });
+window.addEventListener("yt-navigate-finish", () => {
+applyFromStorage(!0);
+}, {
+passive: !0
+});
 } catch (err) {
-console.error("zen-youtube-features injection failed", err);
+window.console.error("zen-youtube-features injection failed", err);
 }
 })();
 
@@ -14418,20 +15694,20 @@ element.click();
 };
 let expandAttempts = 0;
 const runOverlayFixes = () => {
-if ("/watch" !== location.pathname) {
+if (!window.YouTubeUtils?.isWatchPage?.()) {
 return;
 }
 if (!isTheaterEnhancementEnabled()) {
 return;
 }
-const flexy = document.querySelector("ytd-watch-flexy");
+const flexy = $("ytd-watch-flexy");
 if (!flexy || flexy.hasAttribute("fullscreen")) {
 return;
 }
 const isTheaterLike = flexy.hasAttribute("theater") || flexy.hasAttribute("full-bleed-player") || flexy.hasAttribute("theater-requested_");
 if (isTheaterLike) {
 (() => {
-const chat = document.querySelector("ytd-live-chat-frame#chat");
+const chat = $("ytd-live-chat-frame#chat");
 if (!chat) {
 return;
 }
@@ -14466,13 +15742,13 @@ const iframe = chat.querySelector("iframe#chatframe");
 iframe && !iframe.src && chat.url && (iframe.src = chat.url);
 })();
 (flexy => {
-const commentsTab = document.querySelector("#tab-comments");
-const commentsBtn = document.querySelector('#material-tabs a[tyt-tab-content="#tab-comments"]');
+const commentsTab = $("#tab-comments");
+const commentsBtn = $('#material-tabs a[tyt-tab-content="#tab-comments"]');
 if (!commentsTab || !commentsBtn || "1" === commentsTab.getAttribute("data-ytp-zen-comments-preloaded")) {
 return;
 }
 flexy && !flexy.hasAttribute("keep-comments-scroller") && flexy.setAttribute("keep-comments-scroller", "");
-const activeBtn = document.querySelector("#material-tabs a[tyt-tab-content].active");
+const activeBtn = $("#material-tabs a[tyt-tab-content].active");
 clickElement(commentsBtn);
 requestAnimationFrame(() => {
 commentsTab.setAttribute("data-ytp-zen-comments-preloaded", "1");
@@ -14484,30 +15760,34 @@ activeBtn && activeBtn !== commentsBtn && activeBtn.isConnected && clickElement(
 let debounceTimer = null;
 const scheduleRun = () => {
 debounceTimer && clearTimeout(debounceTimer);
-debounceTimer = setTimeout(runOverlayFixes, 150);
+debounceTimer = enhancedSetTimeout_(runOverlayFixes, 150);
 };
 const setupOverlayObservers = () => {
-const flexyObserver = new MutationObserver(scheduleRun);
+const coordinator = window.YouTubeMutationCoordinator;
+if (!coordinator?.watchTarget) {
+return;
+}
 let observedFlexy = null;
 const attachFlexyObserver = () => {
-const flexy = document.querySelector("ytd-watch-flexy");
+const flexy = $("ytd-watch-flexy");
 if (flexy && flexy !== observedFlexy) {
-observedFlexy && flexyObserver.disconnect();
-flexyObserver.observe(flexy, {
+coordinator.watchTarget("enhanced::overlayFlexy", flexy, scheduleRun, {
 attributes: !0,
+childList: !1,
+subtree: !1,
 attributeFilter: [ "theater", "full-bleed-player", "theater-requested_", "fullscreen" ]
 });
 observedFlexy = flexy;
 }
 };
-const chatObserver = new MutationObserver(scheduleRun);
 let observedChat = null;
 const attachChatObserver = () => {
-const chat = document.querySelector("ytd-live-chat-frame#chat");
+const chat = $("ytd-live-chat-frame#chat");
 if (chat && chat !== observedChat) {
-observedChat && chatObserver.disconnect();
-chatObserver.observe(chat, {
+coordinator.watchTarget("enhanced::overlayChat", chat, scheduleRun, {
 attributes: !0,
+childList: !1,
+subtree: !1,
 attributeFilter: [ "collapsed" ]
 });
 observedChat = chat;
@@ -14517,7 +15797,7 @@ attachFlexyObserver();
 attachChatObserver();
 window.addEventListener("yt-navigate-finish", () => {
 expandAttempts = 0;
-setTimeout(() => {
+enhancedSetTimeout_(() => {
 attachFlexyObserver();
 attachChatObserver();
 scheduleRun();
@@ -14526,10 +15806,10 @@ scheduleRun();
 passive: !0
 });
 try {
-if (window.YouTubeUtils?.cleanupManager?.registerObserver) {
-window.YouTubeUtils.cleanupManager.registerObserver(flexyObserver);
-window.YouTubeUtils.cleanupManager.registerObserver(chatObserver);
-}
+window.YouTubeUtils?.cleanupManager?.register && window.YouTubeUtils.cleanupManager.register(() => {
+coordinator.unwatch("enhanced::overlayFlexy");
+coordinator.unwatch("enhanced::overlayChat");
+});
 } catch (e) {}
 };
 if ("loading" === document.readyState) {
@@ -14547,8 +15827,7 @@ setupOverlayObservers();
 
 !(function() {
 "use strict";
-const _createHTML = window._ytplusCreateHTML || (s => s);
-const t = window.YouTubeUtils?.t || (key => key || "");
+const t = window.YouTubeUtils.t;
 const TRANSLATE_BTN_CLASS = "ytp-comment-translate-btn";
 const ORIGINAL_ATTR = "data-ytp-original-text";
 const SETTINGS_KEY = window.YouTubeUtils?.SETTINGS_KEY || "youtube_plus_settings";
@@ -14641,6 +15920,7 @@ style.textContent = css;
 };
 })();
 const translateIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0014.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg>';
+const _setSafeHTML = window.YouTubeUtils.setSafeHTML;
 const isCommentTranslateEnabled = (settings = null) => {
 try {
 const currentSettings = settings || window.youtubePlus?.settings || (() => {
@@ -14653,8 +15933,8 @@ return !0;
 }
 };
 const removeTranslateButtons = () => {
-document.querySelectorAll(`.${TRANSLATE_BTN_CLASS}`).forEach(btn => btn.remove());
-document.querySelectorAll(`[data-ytp-translated][${ORIGINAL_ATTR}]`).forEach(node => {
+$$(`.${TRANSLATE_BTN_CLASS}`).forEach(btn => btn.remove());
+$$(`[data-ytp-translated][${ORIGINAL_ATTR}]`).forEach(node => {
 const original = node.getAttribute(ORIGINAL_ATTR);
 original && (node.textContent = original);
 node.removeAttribute("data-ytp-translated");
@@ -14663,7 +15943,7 @@ node.removeAttribute(ORIGINAL_ATTR);
 };
 const stopTranslateObserver = () => {
 if (translateObserver) {
-translateObserver.disconnect();
+window.YouTubeMutationCoordinator?.unwatch?.(translateObserver);
 translateObserver = null;
 }
 };
@@ -14681,20 +15961,14 @@ return;
 }
 const userLang = (() => {
 try {
-if (window.YouTubePlusI18n?.getLanguage) {
-return toGoogleLang(window.YouTubePlusI18n.getLanguage());
-}
-const htmlLang = document.documentElement.lang;
-if (htmlLang) {
-return toGoogleLang(htmlLang);
-}
+return toGoogleLang(window.YouTubeUtils.getLanguage());
 } catch (e) {}
 return toGoogleLang(navigator.language) || "en";
 })();
 const btn = document.createElement("button");
 btn.className = TRANSLATE_BTN_CLASS;
 btn.type = "button";
-btn.innerHTML = _createHTML(`${translateIcon} ${getTranslateLabel()}`);
+_setSafeHTML(btn, `${translateIcon} ${getTranslateLabel()}`);
 btn.setAttribute("aria-label", getTranslateLabel());
 btn.addEventListener("click", async e => {
 e.preventDefault();
@@ -14704,17 +15978,17 @@ const original = contentEl.getAttribute(ORIGINAL_ATTR);
 if (original) {
 contentEl.textContent = original;
 contentEl.removeAttribute("data-ytp-translated");
-btn.innerHTML = _createHTML(`${translateIcon} ${getTranslateLabel()}`);
+_setSafeHTML(btn, `${translateIcon} ${getTranslateLabel()}`);
 btn.setAttribute("aria-label", getTranslateLabel());
 }
 return;
 }
 btn.disabled = !0;
-btn.innerHTML = _createHTML(`${translateIcon} ...`);
+_setSafeHTML(btn, `${translateIcon} ...`);
 const originalText = contentEl.textContent || "";
 const translated = await (async (text, targetLang) => {
 const controller = new AbortController;
-const timerId = setTimeout(() => controller.abort(), 8e3);
+const timerId = enhancedSetTimeout_(() => controller.abort(), 8e3);
 try {
 const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${encodeURIComponent(targetLang)}&dt=t&q=${encodeURIComponent(text)}`;
 const resp = await fetch(url, {
@@ -14728,7 +16002,7 @@ if (Array.isArray(data) && Array.isArray(data[0])) {
 return data[0].map(s => s && s[0] || "").join("");
 }
 } catch (e) {
-"AbortError" !== e?.name && console.warn("[YouTube+] Translation failed:", e);
+"AbortError" !== e?.name && window.console.warn("[YouTube+] Translation failed:", e);
 } finally {
 clearTimeout(timerId);
 }
@@ -14738,10 +16012,10 @@ if (translated && translated !== originalText) {
 contentEl.setAttribute(ORIGINAL_ATTR, originalText);
 contentEl.setAttribute("data-ytp-translated", "true");
 contentEl.textContent = translated;
-btn.innerHTML = _createHTML(`${translateIcon} ${getShowOriginalLabel()}`);
+_setSafeHTML(btn, `${translateIcon} ${getShowOriginalLabel()}`);
 btn.setAttribute("aria-label", getShowOriginalLabel());
 } else {
-btn.innerHTML = _createHTML(`${translateIcon} ${getTranslateLabel()}`);
+_setSafeHTML(btn, `${translateIcon} ${getTranslateLabel()}`);
 btn.setAttribute("aria-label", getTranslateLabel());
 }
 btn.disabled = !1;
@@ -14752,7 +16026,7 @@ actionBar ? actionBar.parentElement.insertBefore(btn, actionBar) : contentEl.aft
 const processComments = () => {
 const commentSelectors = [ "ytd-comment-view-model", "ytd-comment-renderer", "ytd-comment-thread-renderer" ];
 for (const sel of commentSelectors) {
-document.querySelectorAll(sel).forEach(addTranslateButton);
+$$(sel).forEach(addTranslateButton);
 }
 };
 let processTimeout = null;
@@ -14767,9 +16041,12 @@ processComments();
 if (translateObserver) {
 return;
 }
-const commentsContainer = document.querySelector("#comments, #tab-comments, #content");
+const commentsContainer = $("#comments, #tab-comments, #content");
 const target = commentsContainer || document.body;
-translateObserver = new MutationObserver(mutations => {
+const coordinator = window.YouTubeMutationCoordinator;
+if (coordinator?.watchTarget) {
+translateObserver = "enhanced::translateComments";
+coordinator.watchTarget(translateObserver, target, mutations => {
 let hasNewComments = !1;
 for (const m of mutations) {
 for (const node of m.addedNodes) {
@@ -14784,22 +16061,20 @@ break;
 }
 hasNewComments && (() => {
 processTimeout && clearTimeout(processTimeout);
-processTimeout = setTimeout(processComments, 300);
+processTimeout = enhancedSetTimeout_(processComments, 300);
 })();
-});
-translateObserver.observe(target, {
+}, {
 childList: !0,
+attributes: !1,
 subtree: !0
 });
-try {
-window.YouTubeUtils?.cleanupManager && window.YouTubeUtils.cleanupManager.registerObserver(translateObserver);
-} catch (e) {}
+}
 };
 const scheduleInit = () => {
 const isVideoPage = "/watch" === location.pathname || location.pathname.startsWith("/shorts/");
 isVideoPage && ("function" == typeof requestIdleCallback ? requestIdleCallback(() => startTranslateFeature(), {
 timeout: 3e3
-}) : setTimeout(startTranslateFeature, 1500));
+}) : enhancedSetTimeout_(startTranslateFeature, 1500));
 };
 "loading" === document.readyState ? document.addEventListener("DOMContentLoaded", scheduleInit, {
 once: !0
@@ -14819,7 +16094,8 @@ removeTranslateButtons();
 
 !(function() {
 "use strict";
-const _createHTML = window._ytplusCreateHTML || (s => s);
+const setTimeout_ = setTimeout.bind(window);
+const _createHTML = window._ytpDefaults?.createHTML || (s => s);
 const U = window.YouTubeUtils || {};
 const $ = (sel, ctx = document) => U.$(sel, ctx) || ctx.querySelector(sel);
 const t = U.t || (key => key || "");
@@ -14841,7 +16117,9 @@ isYouTubeShorts: !1,
 isYouTubeMusic: "music.youtube.com" === location.hostname,
 lastSkipAttempt: 0,
 retryCount: 0,
-initialized: !1
+initialized: !1,
+moviePlayerSubId: null,
+adSlotSubId: null
 },
 cache: {
 moviePlayer: null,
@@ -14865,13 +16143,13 @@ return;
 }
 const parsed = JSON.parse(saved);
 if ("object" != typeof parsed || null === parsed) {
-console.warn("[AdBlocker] Invalid settings format");
+window.console.warn("[AdBlocker] Invalid settings format");
 return;
 }
 AdBlocker.config.enabled = "boolean" != typeof parsed.enabled || parsed.enabled;
 AdBlocker.config.enableLogging = "boolean" == typeof parsed.enableLogging && parsed.enableLogging;
 } catch (error) {
-console.error("[AdBlocker] Error loading settings:", error);
+window.console.error("[AdBlocker] Error loading settings:", error);
 AdBlocker.config.enabled = !0;
 AdBlocker.config.enableLogging = !1;
 }
@@ -14884,7 +16162,7 @@ enableLogging: AdBlocker.config.enableLogging
 };
 localStorage.setItem(AdBlocker.config.storageKey, JSON.stringify(settingsToSave));
 } catch (error) {
-console.error("[AdBlocker] Error saving settings:", error);
+window.console.error("[AdBlocker] Error saving settings:", error);
 }
 }
 },
@@ -14933,7 +16211,7 @@ if (video.duration && isFinite(video.duration) && video.duration > 0) {
 try {
 video.currentTime = Math.max(video.duration - .1, 0);
 } catch (e) {
-console.warn("[YouTube+] Ad seek error:", e);
+window.console.warn("[YouTube+] Ad seek error:", e);
 }
 }
 }
@@ -15039,7 +16317,7 @@ return;
 const container = el.closest("ytd-ad-slot-renderer") || el.closest(".ad-container") || el;
 container && container.remove && container.remove();
 } catch (e) {
-AdBlocker.config.enableLogging && console.warn("[AdBlocker] removeElements error", e);
+AdBlocker.config.enableLogging && window.console.warn("[AdBlocker] removeElements error", e);
 }
 });
 };
@@ -15054,7 +16332,17 @@ if (section && !section.querySelector(".ab-settings")) {
 try {
 const item = document.createElement("div");
 item.className = "ytp-plus-settings-item ab-settings";
-item.innerHTML = _createHTML(`\n          <div>\n            <label class="ytp-plus-settings-item-label">${t("adBlocker")}</label>\n            <div class="ytp-plus-settings-item-description">${t("adBlockerDescription")}</div>\n          </div>\n          <input type="checkbox" class="ytp-plus-settings-checkbox" ${AdBlocker.config.enabled ? "checked" : ""}>\n        `);
+((container, html) => {
+if (!(container instanceof Element)) {
+return;
+}
+const template = document.createElement("template");
+const range = document.createRange();
+const root = document.body || document.documentElement;
+root && range.selectNode(root);
+template.content.append(range.createContextualFragment(_createHTML(html)));
+container.replaceChildren(template.content.cloneNode(!0));
+})(item, `\n          <div>\n            <label class="ytp-plus-settings-item-label">${t("adBlocker")}</label>\n            <div class="ytp-plus-settings-item-description">${t("adBlockerDescription")}</div>\n          </div>\n          <input type="checkbox" class="ytp-plus-settings-checkbox" ${AdBlocker.config.enabled ? "checked" : ""}>\n        `);
 section.appendChild(item);
 const checkbox = item.querySelector("input");
 if (!checkbox) {
@@ -15103,26 +16391,38 @@ AdBlocker.dismissAdBlockerWarning();
 };
 try {
 const attachAdObserver = () => {
-const moviePlayer = $("#movie_player");
-if (!moviePlayer) {
-setTimeout(attachAdObserver, 1500);
+const coordinator = window.YouTubeMutationCoordinator;
+if (!coordinator?.watchTarget) {
 return;
 }
-const adObserver = new MutationObserver(() => {
+const moviePlayer = $("#movie_player");
+if (moviePlayer) {
+AdBlocker.state.moviePlayerSubId && coordinator.unwatch(AdBlocker.state.moviePlayerSubId);
+AdBlocker.state.moviePlayerSubId = "adblocker::moviePlayerClass";
+coordinator.watchTarget(AdBlocker.state.moviePlayerSubId, moviePlayer, () => {
 if (AdBlocker.config.enabled && isAdActive()) {
 AdBlocker.skipAd();
 AdBlocker.dismissAdBlockerWarning();
 }
-});
-adObserver.observe(moviePlayer, {
+}, {
 attributes: !0,
+childList: !1,
+subtree: !1,
 attributeFilter: [ "class" ]
 });
-YouTubeUtils.cleanupManager?.registerObserver && YouTubeUtils.cleanupManager.registerObserver(adObserver);
+YouTubeUtils.cleanupManager?.register && YouTubeUtils.cleanupManager.register(() => {
+if (AdBlocker.state.moviePlayerSubId) {
+coordinator.unwatch(AdBlocker.state.moviePlayerSubId);
+AdBlocker.state.moviePlayerSubId = null;
+}
+});
+} else {
+setTimeout_(attachAdObserver, 1500);
+}
 };
 attachAdObserver();
 } catch (e) {
-console.warn("[YouTube+] Ad observer setup error:", e);
+window.console.warn("[YouTube+] Ad observer setup error:", e);
 }
 try {
 const handleVideoPlay = () => {
@@ -15136,7 +16436,7 @@ capture: !0,
 passive: !0
 });
 } catch (e) {
-console.warn("[YouTube+] Ad play listener error:", e);
+window.console.warn("[YouTube+] Ad play listener error:", e);
 }
 const handleNavigation = () => {
 AdBlocker.state.isYouTubeShorts = location.pathname.startsWith("/shorts/");
@@ -15150,55 +16450,27 @@ setTimeout(AdBlocker.addSettingsUI, 50);
 };
 YouTubeUtils.cleanupManager?.registerListener ? YouTubeUtils.cleanupManager.registerListener(document, "youtube-plus-settings-modal-opened", settingsHandler) : document.addEventListener("youtube-plus-settings-modal-opened", settingsHandler);
 try {
-const adSlotObserver = new MutationObserver(mutations => {
-let shouldRemove = !1;
-for (const m of mutations) {
-for (const node of m.addedNodes) {
-if (node instanceof Element) {
-try {
-if (node.matches && node.matches("ytd-ad-slot-renderer, ytd-merch-shelf-renderer")) {
-shouldRemove = !0;
-break;
+const coordinator = window.YouTubeMutationCoordinator;
+if (coordinator?.subscribeRoot) {
+AdBlocker.state.adSlotSubId && coordinator.unsubscribe(AdBlocker.state.adSlotSubId);
+AdBlocker.state.adSlotSubId = "adblocker::adSlots";
+coordinator.subscribeRoot(AdBlocker.state.adSlotSubId, () => {
+AdBlocker.removeElements();
+}, {
+selector: "ytd-ad-slot-renderer, ytd-merch-shelf-renderer, #player-ads, ad-slot-renderer",
+childList: !0,
+attributes: !1,
+subtree: !0
+});
+YouTubeUtils.cleanupManager?.register && YouTubeUtils.cleanupManager.register(() => {
+if (AdBlocker.state.adSlotSubId) {
+coordinator.unsubscribe(AdBlocker.state.adSlotSubId);
+AdBlocker.state.adSlotSubId = null;
 }
-if (node.querySelector && node.querySelector("ytd-ad-slot-renderer")) {
-shouldRemove = !0;
-break;
+});
 }
 } catch (e) {
-AdBlocker.config.enableLogging && console.warn("[AdBlocker] adSlotObserver node check", e);
-}
-}
-}
-if (shouldRemove) {
-break;
-}
-}
-shouldRemove && AdBlocker.removeElements();
-});
-const observeContentContainers = () => {
-const containers = [ document.querySelector("#content"), document.querySelector("#page-manager"), document.querySelector("ytd-browse"), document.querySelector("ytd-search") ].filter(Boolean);
-0 === containers.length ? setTimeout(() => {
-const retryContainers = [ document.querySelector("#content"), document.querySelector("#page-manager") ].filter(Boolean);
-retryContainers.length > 0 ? retryContainers.forEach(c => {
-c instanceof Node && adSlotObserver.observe(c, {
-childList: !0,
-subtree: !0
-});
-}) : adSlotObserver.observe(document.body, {
-childList: !0,
-subtree: !0
-});
-}, 1e3) : containers.forEach(container => {
-container instanceof Node && adSlotObserver.observe(container, {
-childList: !0,
-subtree: !0
-});
-});
-};
-document.body ? observeContentContainers() : document.addEventListener("DOMContentLoaded", observeContentContainers);
-YouTubeUtils.cleanupManager.registerObserver(adSlotObserver);
-} catch (e) {
-AdBlocker.config.enableLogging && console.warn("[AdBlocker] Failed to create adSlotObserver", e);
+AdBlocker.config.enableLogging && window.console.warn("[AdBlocker] Failed to create adSlotObserver", e);
 }
 YouTubeUtils.cleanupManager.registerListener(document, "click", e => {
 const target = e.target;
@@ -15220,9 +16492,23 @@ once: !0
 
 !(function() {
 "use strict";
-const _createHTML = window._ytplusCreateHTML || (s => s);
-const t = window.YouTubeUtils?.t || (key => key || "");
+const setTimeout_ = setTimeout.bind(window);
+const _createHTML = window._ytpDefaults?.createHTML || (s => s);
+const renderTemplateClone = (container, html) => {
+if (!(container instanceof Element)) {
+return;
+}
+const template = document.createElement("template");
+const range = document.createRange();
+const root = document.body || document.documentElement;
+root && range.selectNode(root);
+template.content.append(range.createContextualFragment(_createHTML(html)));
+container.replaceChildren(template.content.cloneNode(!0));
+};
+const t = window.YouTubeUtils.t;
 const logger = window.YouTubeUtils?.logger || console;
+const qs = window.YouTubeUtils?.$ || ((selector, root) => (root || document).querySelector(selector));
+const byId = window.YouTubeUtils?.byId || (id => document.getElementById(id));
 const pipSettings = {
 enabled: !0,
 shortcut: {
@@ -15242,6 +16528,16 @@ return unwrapped && "object" == typeof unwrapped ? unwrapped : unsafeWindow;
 } catch (e) {}
 return window;
 };
+const createTrustedInlineScript = window.YouTubeSafeDOM?.createTrustedScript || (value => {
+const normalized = "string" == typeof value ? value : String(value ?? "");
+try {
+const sharedPolicy = window.YouTubeTrustedTypes && "function" == typeof window.YouTubeTrustedTypes.getPolicy && window.YouTubeTrustedTypes.getPolicy() || window.YouTubeTrustedTypes?.policy || null;
+if (sharedPolicy && "function" == typeof sharedPolicy.createScript) {
+return sharedPolicy.createScript(normalized);
+}
+} catch (e) {}
+return normalized;
+});
 let _cachedVideoRef = null;
 let _cachedVideoTs = 0;
 const getVideoElement = () => {
@@ -15255,7 +16551,7 @@ return cached;
 _cachedVideoRef = null;
 }
 const pageGlobal = getPageGlobal();
-const candidate = pageGlobal?.document?.querySelector?.("video.html5-main-video, #movie_player video, video") || "function" == typeof YouTubeUtils?.querySelector && YouTubeUtils.querySelector("video") || document.querySelector("video");
+const candidate = pageGlobal?.document?.querySelector?.("video.html5-main-video, #movie_player video, video") || "function" == typeof YouTubeUtils?.querySelector && YouTubeUtils.querySelector("video") || qs("video");
 if (candidate && candidate.tagName && "video" === candidate.tagName.toLowerCase()) {
 const video = candidate;
 try {
@@ -15266,7 +16562,7 @@ return video;
 }
 return null;
 } catch (error) {
-console.error("[PiP] Error getting video element:", error);
+window.console.error("[PiP] Error getting video element:", error);
 return null;
 }
 };
@@ -15297,23 +16593,23 @@ const pageGlobal = getPageGlobal();
 if (!pageGlobal || pageGlobal.__ytplusFirefoxPipBridgeInstalled) {
 return !0;
 }
-const bridgeScript = "(() => {\n  if (window['__ytplusFirefoxPipBridgeInstalled']) return;\n  window['__ytplusFirefoxPipBridgeInstalled'] = true;\n\n  const selectVideo = () =>\n    document.querySelector('video.html5-main-video, #movie_player video, video');\n\n  const clickNativePipButton = () => {\n    const selectors = [\n      'button.ytp-pip-button',\n      '.ytp-right-controls .ytp-pip-button',\n      '.ytp-right-controls button[aria-keyshortcuts=\"i\"]'\n    ];\n    for (const selector of selectors) {\n      const button = document.querySelector(selector);\n      if (!(button instanceof HTMLElement)) continue;\n      const disabled =\n        button.getAttribute('aria-disabled') === 'true' ||\n        button.hasAttribute('disabled') ||\n        button.classList.contains('ytp-button-disabled');\n      if (disabled) continue;\n      button.click();\n      return true;\n    }\n    return false;\n  };\n\n  window.addEventListener('message', event => {\n    if (event.source !== window) return;\n    // Allow same-origin page messages and Firefox/userscript sandbox-origin messages.\n    // In some Firefox userscript contexts event.origin may be \"null\".\n    const msgOrigin = String(event.origin || '');\n    if (msgOrigin && msgOrigin !== 'null' && msgOrigin !== location.origin) return;\n    if (event.data?.type !== 'ytp-pip-request' || !event.data?.id) return;\n\n    const respond = success => {\n      window.postMessage({ type: 'ytp-pip-response', id: event.data.id, success }, '*');\n    };\n\n    Promise.resolve()\n      .then(async () => {\n        const video = selectVideo();\n        if (document.pictureInPictureElement && typeof document.exitPictureInPicture === 'function') {\n          await document.exitPictureInPicture();\n          return true;\n        }\n        if (video && typeof video.requestPictureInPicture === 'function') {\n          await video.requestPictureInPicture();\n          return true;\n        }\n        return clickNativePipButton();\n      })\n      .then(success => respond(Boolean(success)))\n      .catch(() => respond(false));\n  }, true);\n})();\n//# sourceURL=debug://youtube-plus/pip-firefox-bridge.js";
+const bridgeScript = "(() => {\n  if (window['__ytplusFirefoxPipBridgeInstalled']) return;\n  window['__ytplusFirefoxPipBridgeInstalled'] = true;\n\n  const selectVideo = () =>\n    document['querySelector']('video.html5-main-video, #movie_player video, video');\n\n  const clickNativePipButton = () => {\n    const selectors = [\n      'button.ytp-pip-button',\n      '.ytp-right-controls .ytp-pip-button',\n      '.ytp-right-controls button[aria-keyshortcuts=\"i\"]'\n    ];\n    for (const selector of selectors) {\n      const button = document['querySelector'](selector);\n      if (!(button instanceof HTMLElement)) continue;\n      const disabled =\n        button.getAttribute('aria-disabled') === 'true' ||\n        button.hasAttribute('disabled') ||\n        button.classList.contains('ytp-button-disabled');\n      if (disabled) continue;\n      button.click();\n      return true;\n    }\n    return false;\n  };\n\n  const safeTargetOrigin =\n    typeof location !== 'undefined' && typeof location.origin === 'string' && location.origin\n      ? location.origin\n      : '*';\n\n  window.addEventListener('message', event => {\n    if (event.source !== window) return;\n    // Allow same-origin page messages and Firefox/userscript sandbox-origin messages.\n    // In some Firefox userscript contexts event.origin may be \"null\".\n    const msgOrigin = String(event.origin || '');\n    if (msgOrigin && msgOrigin !== 'null' && msgOrigin !== location.origin) return;\n    if (event.data?.type !== 'ytp-pip-request' || typeof event.data?.id !== 'string') return;\n    if (event.data.id.length > 80) return;\n\n    const respond = success => {\n      window.postMessage({ type: 'ytp-pip-response', id: event.data.id, success }, safeTargetOrigin);\n    };\n\n    Promise.resolve()\n      .then(async () => {\n        const video = selectVideo();\n        if (document.pictureInPictureElement && typeof document.exitPictureInPicture === 'function') {\n          await document.exitPictureInPicture();\n          return true;\n        }\n        if (video && typeof video.requestPictureInPicture === 'function') {\n          await video.requestPictureInPicture();\n          return true;\n        }\n        return clickNativePipButton();\n      })\n      .then(success => respond(Boolean(success)))\n      .catch(() => respond(false));\n  }, true);\n})();\n//# sourceURL=debug://youtube-plus/pip-firefox-bridge.js";
 try {
 const gmAddElement = globalThis.GM_addElement;
 if ("function" == typeof gmAddElement) {
 gmAddElement("script", {
-textContent: bridgeScript
+textContent: createTrustedInlineScript(bridgeScript)
 });
 return !0;
 }
 } catch (e) {}
 try {
-const nonceSource = document.querySelector("script[nonce]") || document.querySelector("[nonce]") || document.documentElement;
+const nonceSource = qs("script[nonce]") || qs("[nonce]") || document.documentElement;
 const nonce = nonceSource?.nonce || nonceSource?.getAttribute?.("nonce") || document.documentElement?.getAttribute?.("nonce") || "";
 if (nonce) {
 const script = document.createElement("script");
 script.setAttribute("nonce", nonce);
-script.textContent = bridgeScript;
+script.textContent = createTrustedInlineScript(bridgeScript);
 (document.head || document.documentElement).appendChild(script);
 script.remove();
 if (pageGlobal.__ytplusFirefoxPipBridgeInstalled) {
@@ -15321,7 +16617,7 @@ return !0;
 }
 }
 } catch (e) {}
-console.warn("[PiP] Firefox PiP bridge could not be installed (CSP). Using button fallback.");
+window.console.warn("[PiP] Firefox PiP bridge could not be installed (CSP). Using button fallback.");
 return !1;
 };
 const syncPipShortcutToPageGlobal = () => {
@@ -15352,14 +16648,21 @@ resolve(Boolean(success));
 }
 };
 const onResponse = evt => {
-"ytp-pip-response" === evt.data?.type && evt.data?.id === requestId && finish(Boolean(evt.data?.success));
+if (evt.source !== window) {
+return;
+}
+const msgOrigin = String(evt.origin || "");
+msgOrigin && "null" !== msgOrigin && msgOrigin !== location.origin || "ytp-pip-response" === evt.data?.type && evt.data?.id === requestId && finish(Boolean(evt.data?.success));
 };
 window.addEventListener("message", onResponse, !0);
+const targetOrigin = "undefined" != typeof location && "string" == typeof location.origin && location.origin ? location.origin : "*";
 window.postMessage({
 type: "ytp-pip-request",
 id: requestId
-}, "*");
-setTimeout(() => finish(!1), 1200);
+}, targetOrigin);
+setTimeout_(function() {
+finish(!1);
+}, 1200);
 } catch (e) {
 resolve(!1);
 }
@@ -15372,7 +16675,7 @@ contexts.push(document);
 "undefined" != typeof unsafeWindow && unsafeWindow?.document && contexts.push(unsafeWindow.document);
 } catch (e) {}
 (() => {
-const player = document.getElementById("movie_player");
+const player = byId("movie_player");
 if (!(player instanceof HTMLElement)) {
 return;
 }
@@ -15419,7 +16722,7 @@ return;
 }
 const parsed = JSON.parse(saved);
 if ("object" != typeof parsed || null === parsed) {
-console.warn("[PiP] Invalid settings format");
+window.console.warn("[PiP] Invalid settings format");
 return;
 }
 "boolean" == typeof parsed.enabled && (pipSettings.enabled = parsed.enabled);
@@ -15430,7 +16733,7 @@ if (parsed.shortcut && "object" == typeof parsed.shortcut) {
 "boolean" == typeof parsed.shortcut.ctrlKey && (pipSettings.shortcut.ctrlKey = parsed.shortcut.ctrlKey);
 }
 } catch (e) {
-console.error("[PiP] Error loading settings:", e);
+window.console.error("[PiP] Error loading settings:", e);
 }
 };
 const saveSettings = () => {
@@ -15441,7 +16744,7 @@ shortcut: pipSettings.shortcut
 };
 localStorage.setItem(pipSettings.storageKey, JSON.stringify(settingsToSave));
 } catch (e) {
-console.error("[PiP] Error saving settings:", e);
+window.console.error("[PiP] Error saving settings:", e);
 }
 syncPipShortcutToPageGlobal();
 };
@@ -15570,12 +16873,12 @@ video.disablePictureInPicture = !0;
 }
 setSessionActive(!0);
 } catch (error) {
-console.error("[YouTube+][PiP] Failed to toggle Picture-in-Picture:", error);
+window.console.error("[YouTube+][PiP] Failed to toggle Picture-in-Picture:", error);
 }
 }
 };
 const addPipSettingsToModal = () => {
-const advancedSection = document.querySelector('.ytp-plus-settings-section[data-section="advanced"]');
+const advancedSection = qs('.ytp-plus-settings-section[data-section="advanced"]');
 if (!advancedSection || advancedSection.querySelector(".pip-settings-item")) {
 return !1;
 }
@@ -15594,13 +16897,13 @@ return null;
 };
 const storedExpanded = getSubmenuExpanded();
 const initialExpanded = "boolean" != typeof storedExpanded || storedExpanded;
-if (!document.getElementById("pip-styles")) {
+if (!byId("pip-styles")) {
 const styles = "\n          .pip-shortcut-editor { display: flex; align-items: center; gap: 8px; }\n          .pip-shortcut-editor select, #pip-key {background: rgba(34, 34, 34, var(--yt-header-bg-opacity)); color: var(--yt-spec-text-primary); border: 1px solid var(--yt-spec-10-percent-layer); border-radius: var(--yt-radius-sm); padding: 4px;}\n        ";
 YouTubeUtils.StyleManager.add("pip-styles", styles);
 }
 const enableItem = document.createElement("div");
 enableItem.className = "ytp-plus-settings-item pip-settings-item ytp-plus-settings-item--with-submenu";
-enableItem.innerHTML = _createHTML(`\n        <div>\n          <label class="ytp-plus-settings-item-label" for="pip-enable-checkbox">${t("pipTitle")}</label>\n          <div class="ytp-plus-settings-item-description">${t("pipDescription")}</div>\n        </div>\n        <div class="ytp-plus-settings-item-actions">\n          <button\n            type="button"\n            class="ytp-plus-submenu-toggle"\n            data-submenu="pip"\n            aria-label="Toggle PiP submenu"\n            aria-expanded="${initialExpanded ? "true" : "false"}"\n            ${pipSettings.enabled ? "" : "disabled"}\n            style="display:${pipSettings.enabled ? "inline-flex" : "none"};"\n          >\n            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">\n              <polyline points="6 9 12 15 18 9"></polyline>\n            </svg>\n          </button>\n          <input type="checkbox" class="ytp-plus-settings-checkbox" data-setting="enablePiP" id="pip-enable-checkbox" ${pipSettings.enabled ? "checked" : ""}>\n        </div>\n      `);
+renderTemplateClone(enableItem, `\n        <div>\n          <label class="ytp-plus-settings-item-label" for="pip-enable-checkbox">${t("pipTitle")}</label>\n          <div class="ytp-plus-settings-item-description">${t("pipDescription")}</div>\n        </div>\n        <div class="ytp-plus-settings-item-actions">\n          <button\n            type="button"\n            class="ytp-plus-submenu-toggle"\n            data-submenu="pip"\n            aria-label="Toggle PiP submenu"\n            aria-expanded="${initialExpanded ? "true" : "false"}"\n            ${pipSettings.enabled ? "" : "disabled"}\n            style="display:${pipSettings.enabled ? "inline-flex" : "none"};"\n          >\n            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">\n              <polyline points="6 9 12 15 18 9"></polyline>\n            </svg>\n          </button>\n          <input type="checkbox" class="ytp-plus-settings-checkbox" data-setting="enablePiP" id="pip-enable-checkbox" ${pipSettings.enabled ? "checked" : ""}>\n        </div>\n      `);
 advancedSection.appendChild(enableItem);
 const submenuWrap = document.createElement("div");
 submenuWrap.className = "pip-submenu";
@@ -15618,7 +16921,7 @@ shortcutItem.className = "ytp-plus-settings-item pip-shortcut-item";
 shortcutItem.style.display = "flex";
 const {ctrlKey, altKey, shiftKey} = pipSettings.shortcut;
 const modifierValue = ctrlKey && altKey && shiftKey ? "ctrl+alt+shift" : ctrlKey && altKey ? "ctrl+alt" : ctrlKey && shiftKey ? "ctrl+shift" : altKey && shiftKey ? "alt+shift" : ctrlKey ? "ctrl" : altKey ? "alt" : shiftKey ? "shift" : "none";
-shortcutItem.innerHTML = _createHTML(`\n        <div>\n          <label class="ytp-plus-settings-item-label">${t("pipShortcutTitle")}</label>\n          <div class="ytp-plus-settings-item-description">${t("pipShortcutDescription")}</div>\n        </div>\n        <div class="pip-shortcut-editor">\n          \x3c!-- hidden native select kept for compatibility --\x3e\n          <select id="pip-modifier-combo" style="display:none;">\n            ${[ "none", "ctrl", "alt", "shift", "ctrl+alt", "ctrl+shift", "alt+shift", "ctrl+alt+shift" ].map(v => `<option value="${v}" ${v === modifierValue ? "selected" : ""}>${"none" === v ? t("none") : v.replace(/\+/g, "+").split("+").map(k => t(k.toLowerCase())).join("+").split("+").map(k => k.charAt(0).toUpperCase() + k.slice(1)).join("+")}</option>`).join("")}\n          </select>\n\n          <div class="glass-dropdown" id="pip-modifier-dropdown" tabindex="0" role="listbox" aria-expanded="false">\n            <button class="glass-dropdown__toggle" type="button" aria-haspopup="listbox">\n              <span class="glass-dropdown__label">${"none" === modifierValue ? t("none") : modifierValue.replace(/\+/g, "+").split("+").map(k => t(k.toLowerCase())).map(k => k.charAt(0).toUpperCase() + k.slice(1)).join("+")}</span>\n              <svg class="glass-dropdown__chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>\n            </button>\n            <ul class="glass-dropdown__list" role="presentation">\n              ${[ "none", "ctrl", "alt", "shift", "ctrl+alt", "ctrl+shift", "alt+shift", "ctrl+alt+shift" ].map(v => {
+renderTemplateClone(shortcutItem, `\n        <div>\n          <label class="ytp-plus-settings-item-label">${t("pipShortcutTitle")}</label>\n          <div class="ytp-plus-settings-item-description">${t("pipShortcutDescription")}</div>\n        </div>\n        <div class="pip-shortcut-editor">\n          \x3c!-- hidden native select kept for compatibility --\x3e\n          <select id="pip-modifier-combo" style="display:none;">\n            ${[ "none", "ctrl", "alt", "shift", "ctrl+alt", "ctrl+shift", "alt+shift", "ctrl+alt+shift" ].map(v => `<option value="${v}" ${v === modifierValue ? "selected" : ""}>${"none" === v ? t("none") : v.replace(/\+/g, "+").split("+").map(k => t(k.toLowerCase())).join("+").split("+").map(k => k.charAt(0).toUpperCase() + k.slice(1)).join("+")}</option>`).join("")}\n          </select>\n\n          <div class="glass-dropdown" id="pip-modifier-dropdown" tabindex="0" role="listbox" aria-expanded="false">\n            <button class="glass-dropdown__toggle" type="button" aria-haspopup="listbox">\n              <span class="glass-dropdown__label">${"none" === modifierValue ? t("none") : modifierValue.replace(/\+/g, "+").split("+").map(k => t(k.toLowerCase())).map(k => k.charAt(0).toUpperCase() + k.slice(1)).join("+")}</span>\n              <svg class="glass-dropdown__chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>\n            </button>\n            <ul class="glass-dropdown__list" role="presentation">\n              ${[ "none", "ctrl", "alt", "shift", "ctrl+alt", "ctrl+shift", "alt+shift", "ctrl+alt+shift" ].map(v => {
 const label = "none" === v ? t("none") : v.replace(/\+/g, "+").split("+").map(k => t(k.toLowerCase())).map(k => k.charAt(0).toUpperCase() + k.slice(1)).join("+");
 const sel = v === modifierValue ? ' aria-selected="true"' : "";
 return `<li class="glass-dropdown__item" data-value="${v}" role="option"${sel}>${label}</li>`;
@@ -15627,8 +16930,8 @@ submenuCard.appendChild(shortcutItem);
 submenuWrap.appendChild(submenuCard);
 advancedSection.appendChild(submenuWrap);
 setTimeout(() => {
-const hidden = document.getElementById("pip-modifier-combo");
-const dropdown = document.getElementById("pip-modifier-dropdown");
+const hidden = byId("pip-modifier-combo");
+const dropdown = byId("pip-modifier-dropdown");
 if (!(hidden instanceof HTMLSelectElement && dropdown instanceof HTMLElement)) {
 return;
 }
@@ -15715,7 +17018,7 @@ bubbles: !0
 closeList();
 });
 }, 0);
-const enableCheckbox = document.getElementById("pip-enable-checkbox");
+const enableCheckbox = byId("pip-enable-checkbox");
 if (!(enableCheckbox instanceof HTMLInputElement)) {
 return !0;
 }
@@ -15739,7 +17042,7 @@ submenuWrap.style.display = "none";
 }
 saveSettings();
 });
-const modifierCombo = document.getElementById("pip-modifier-combo");
+const modifierCombo = byId("pip-modifier-combo");
 if (!(modifierCombo instanceof HTMLSelectElement)) {
 return !0;
 }
@@ -15751,7 +17054,7 @@ pipSettings.shortcut.altKey = value.includes("alt");
 pipSettings.shortcut.shiftKey = value.includes("shift");
 saveSettings();
 });
-const pipKeyInput = document.getElementById("pip-key");
+const pipKeyInput = byId("pip-key");
 if (!(pipKeyInput instanceof HTMLInputElement)) {
 return !0;
 }
@@ -15765,6 +17068,12 @@ saveSettings();
 pipKeyInput.addEventListener("keydown", e => e.stopPropagation());
 return !0;
 };
+let pipRuntimeStarted = !1;
+const startPipRuntime = () => {
+if (pipRuntimeStarted) {
+return;
+}
+pipRuntimeStarted = !0;
 loadSettings();
 let lastHotkeyTriggerTs = 0;
 const pipKeydownHandler = e => {
@@ -15838,11 +17147,9 @@ lastHotkeyTriggerTs = now;
 const isFirefox = /firefox/i.test(navigator.userAgent || "");
 if (isFirefox) {
 const pageGlobal = getPageGlobal();
+const bridgeInstalled = Boolean(pageGlobal?.__ytplusFirefoxPipKeydownBridge);
 const pageHandledTs = Number(pageGlobal?.__ytplusPipPageHandled || 0);
 if (now - pageHandledTs < 300) {
-e.preventDefault();
-e.stopPropagation();
-"function" == typeof e.stopImmediatePropagation && e.stopImmediatePropagation();
 return;
 }
 const handled = ((e, allowBrowserFallback) => {
@@ -15912,7 +17219,7 @@ e.preventDefault();
 e.stopPropagation();
 "function" == typeof e.stopImmediatePropagation && e.stopImmediatePropagation();
 return !0;
-})(evt, (() => {
+})(evt, !bridgeInstalled && (() => {
 const s = pipSettings.shortcut;
 const normalizedKey = String(s.key || "").trim();
 return !0 === s.ctrlKey && !0 === s.shiftKey && !1 === s.altKey && "]" === normalizedKey;
@@ -15922,9 +17229,9 @@ return;
 }
 } else {
 const video = getVideoElement();
-video ? togglePictureInPicture(video) : clickNativeYouTubePipButton() || console.warn("[PiP] Picture-in-Picture API is unavailable in this browser/context");
+video ? togglePictureInPicture(video) : clickNativeYouTubePipButton() || window.console.warn("[PiP] Picture-in-Picture API is unavailable in this browser/context");
 }
-isFirefox || document.pictureInPictureElement || getVideoElement() || console.warn("[PiP] Picture-in-Picture API is unavailable in this browser/context");
+isFirefox || document.pictureInPictureElement || getVideoElement() || window.console.warn("[PiP] Picture-in-Picture API is unavailable in this browser/context");
 e.stopPropagation();
 "function" == typeof e.stopImmediatePropagation && e.stopImmediatePropagation();
 e.preventDefault();
@@ -15946,12 +17253,12 @@ return !0;
 }
 syncPipShortcutToPageGlobal();
 const bridgeFlag = "__ytplusFirefoxPipKeydownBridge";
-const bridgeScript = `(() => {\n  if (window['${bridgeFlag}']) return;\n  window['${bridgeFlag}'] = true;\n\n  const selectVideo = () =>\n    document.querySelector('video.html5-main-video, #movie_player video, video');\n\n  const clickPipBtn = () => {\n    const sels = ['button.ytp-pip-button', '.ytp-right-controls .ytp-pip-button',\n                  '.ytp-right-controls button[aria-keyshortcuts="i"]'];\n    for (const sel of sels) {\n      const btn = document.querySelector(sel);\n      if (!(btn instanceof HTMLElement)) continue;\n      if (btn.getAttribute('aria-disabled') === 'true' || btn.hasAttribute('disabled') ||\n          btn.classList.contains('ytp-button-disabled')) continue;\n      btn.click();\n      return true;\n    }\n    return false;\n  };\n\n  const getShortcut = () => window['__ytplusPipShortcut'] || { key: 'P', shiftKey: true, altKey: false, ctrlKey: false, enabled: true };\n\n  document.addEventListener('keydown', function ytplusPipKeydown(e) {\n    const s = getShortcut();\n    if (!s || !s.enabled) return;\n    if (e.repeat || e.isComposing || e.metaKey) return;\n    const keyMatches = e.key.toUpperCase() === String(s.key || '').toUpperCase();\n    const modsMatch = !!e.shiftKey === !!s.shiftKey && !!e.altKey === !!s.altKey && !!e.ctrlKey === !!s.ctrlKey;\n    if (!keyMatches || !modsMatch) return;\n\n    // Check active element is not a text input\n    const ae = document.activeElement;\n    if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' ||\n               ae.tagName === 'SELECT' || ae.isContentEditable)) return;\n\n    e.preventDefault();\n    e.stopPropagation();\n    if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();\n\n    // Signal the userscript handler to not double-toggle\n    window['__ytplusPipPageHandled'] = Date.now();\n\n    if (document.pictureInPictureElement) {\n      document.exitPictureInPicture && document.exitPictureInPicture();\n      return;\n    }\n\n    const video = selectVideo();\n    if (video && typeof video.requestPictureInPicture === 'function') {\n      video.requestPictureInPicture().catch(() => clickPipBtn());\n      return;\n    }\n    clickPipBtn();\n  }, true);\n})();`;
+const bridgeScript = `(() => {\n  if (window['${bridgeFlag}']) return;\n  window['${bridgeFlag}'] = true;\n\n  const selectVideo = () =>\n      document['querySelector']('video.html5-main-video, #movie_player video, video');\n\n  const clickPipBtn = () => {\n    const sels = ['button.ytp-pip-button', '.ytp-right-controls .ytp-pip-button',\n                  '.ytp-right-controls button[aria-keyshortcuts="i"]'];\n    for (const sel of sels) {\n      const btn = document['querySelector'](sel);\n      if (!(btn instanceof HTMLElement)) continue;\n      if (btn.getAttribute('aria-disabled') === 'true' || btn.hasAttribute('disabled') ||\n          btn.classList.contains('ytp-button-disabled')) continue;\n      btn.click();\n      return true;\n    }\n    return false;\n  };\n\n  const getShortcut = () => window['__ytplusPipShortcut'] || { key: 'P', shiftKey: true, altKey: false, ctrlKey: false, enabled: true };\n  const keyToCode = key => {\n    const normalized = String(key || '').trim().toUpperCase();\n    if (!normalized) return '';\n    const symbolCodeMap = {\n      '-': 'Minus',\n      _: 'Minus',\n      '=': 'Equal',\n      '+': 'Equal',\n      '[': 'BracketLeft',\n      '{': 'BracketLeft',\n      ']': 'BracketRight',\n      '}': 'BracketRight',\n      ';': 'Semicolon',\n      ':': 'Semicolon',\n      "'": 'Quote',\n      '"': 'Quote',\n      ',': 'Comma',\n      '<': 'Comma',\n      '.': 'Period',\n      '>': 'Period',\n      '/': 'Slash',\n      '?': 'Slash'\n    };\n    if (Object.prototype.hasOwnProperty.call(symbolCodeMap, normalized)) {\n      return symbolCodeMap[normalized];\n    }\n    if (normalized.length === 1 && /[A-Z]/.test(normalized)) return 'Key' + normalized;\n    if (normalized.length === 1 && /[0-9]/.test(normalized)) return 'Digit' + normalized;\n    return normalized;\n  };\n\n  const handlePiPHotkey = function ytplusPipKeydown(e) {\n    const s = getShortcut();\n    if (!s || !s.enabled) return;\n    if (e.repeat || e.isComposing || e.metaKey) return;\n    const expectedCode = keyToCode(String(s.key || ''));\n    const eventCode = String(e.code || '');\n    const eventKey = String(e.key || '').toUpperCase();\n    const keyMatches =\n      eventKey === String(s.key || '').toUpperCase() || (expectedCode && eventCode === expectedCode);\n    const modsMatch = !!e.shiftKey === !!s.shiftKey && !!e.altKey === !!s.altKey && !!e.ctrlKey === !!s.ctrlKey;\n    if (!keyMatches || !modsMatch) return;\n\n    // Check active element is not a text input\n    const ae = document.activeElement;\n    if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' ||\n               ae.tagName === 'SELECT' || ae.isContentEditable)) return;\n\n    e.preventDefault();\n    e.stopPropagation();\n    if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();\n\n    // Signal the userscript handler to not double-toggle\n    window['__ytplusPipPageHandled'] = Date.now();\n\n    if (document.pictureInPictureElement) {\n      document.exitPictureInPicture && document.exitPictureInPicture();\n      return;\n    }\n\n    const video = selectVideo();\n    if (video && typeof video.requestPictureInPicture === 'function') {\n      video.requestPictureInPicture().catch(() => clickPipBtn());\n      return;\n    }\n    clickPipBtn();\n  };\n\n  document.addEventListener('keydown', handlePiPHotkey, true);\n  window.addEventListener('keydown', handlePiPHotkey, true);\n})();`;
 const gmAddEl = globalThis.GM_addElement;
 if ("function" == typeof gmAddEl) {
 try {
 gmAddEl("script", {
-textContent: bridgeScript
+textContent: createTrustedInlineScript(bridgeScript)
 });
 if (pageGlobal.__ytplusFirefoxPipKeydownBridge) {
 return !0;
@@ -15959,8 +17266,11 @@ return !0;
 } catch (e) {}
 }
 try {
+const nonceSource = qs("script[nonce]") || qs("[nonce]") || document.documentElement;
+const nonce = nonceSource?.nonce || nonceSource?.getAttribute?.("nonce") || document.documentElement?.getAttribute?.("nonce") || "";
 const script = document.createElement("script");
-script.textContent = bridgeScript;
+nonce && script.setAttribute("nonce", nonce);
+script.textContent = createTrustedInlineScript(bridgeScript);
 (document.head || document.documentElement).appendChild(script);
 script.remove();
 if (pageGlobal.__ytplusFirefoxPipKeydownBridge) {
@@ -16057,12 +17367,45 @@ return;
 const target = e.target;
 target.classList && target.classList.contains("ytp-plus-settings-nav-item") && "advanced" === target.dataset?.section && setTimeout(ensurePipSettings, 25);
 }, !0);
+};
+window.YouTubePlusLazyLoader?.register ? window.YouTubePlusLazyLoader.register("pip", startPipRuntime, {
+priority: 60,
+delay: 0,
+shouldLoad: () => (() => {
+const path = location.pathname || "";
+return "/watch" === path || path.startsWith("/shorts");
+})() || (() => {
+try {
+return Boolean(document.querySelector(".ytp-plus-settings-modal"));
+} catch (e) {
+return !1;
+}
+})()
+}) : startPipRuntime();
 })();
 
 !(function() {
 "use strict";
-const _createHTML = window._ytplusCreateHTML || (s => s);
-const {$, $$, byId} = window.YouTubeUtils || {};
+const setTimeout_ = setTimeout;
+const renderTemplateClone = (container, html) => {
+if (window.YouTubeSafeDOM?.renderTemplateClone) {
+window.YouTubeSafeDOM.renderTemplateClone(container, html);
+return;
+}
+if (!(container instanceof Element)) {
+return;
+}
+const template = document.createElement("template");
+const range = document.createRange();
+const root = document.body || document.documentElement;
+root && range.selectNode(root);
+const htmlFactory = window._ytplusCreateHTML || (s => s);
+template.content.append(range.createContextualFragment(htmlFactory(String(html ?? ""))));
+container.replaceChildren(template.content.cloneNode(!0));
+};
+const $ = window.YouTubeUtils.$;
+const $$ = window.YouTubeUtils.$$;
+const byId = window.YouTubeUtils.byId;
 if ("www.youtube.com" !== window.location.hostname || window.frameElement) {
 return;
 }
@@ -16070,7 +17413,7 @@ if (window._timecodeModuleInitialized) {
 return;
 }
 window._timecodeModuleInitialized = !0;
-const t = window.YouTubeUtils?.t || (key => key || "");
+const t = window.YouTubeUtils.t;
 const config = {
 enabled: !0,
 autoDetect: !0,
@@ -16094,7 +17437,8 @@ activeIndex: null,
 trackingId: 0,
 dragging: !1,
 editingIndex: null,
-resizeListenerKey: null
+resizeListenerKey: null,
+settingsIntegrationStarted: !1
 };
 let initStarted = !1;
 const isRelevantRoute = () => {
@@ -16102,6 +17446,81 @@ try {
 return "/watch" === location.pathname;
 } catch (e) {
 return !1;
+}
+};
+const parseLeadingTimestampToken = input => {
+const s = String(input || "");
+let i = 0;
+const readNumber = () => {
+const start = i;
+for (;i < s.length && s[i] >= "0" && s[i] <= "9"; ) {
+i += 1;
+}
+return i > start ? s.slice(start, i) : "";
+};
+const a = readNumber();
+if (!a || i >= s.length || ":" !== s[i]) {
+return null;
+}
+i += 1;
+const b = readNumber();
+if (2 !== b.length) {
+return null;
+}
+if (i < s.length && ":" === s[i]) {
+i += 1;
+const c = readNumber();
+return 2 !== c.length ? null : {
+token: `${a}:${b}:${c}`,
+length: i
+};
+}
+return {
+token: `${a}:${b}`,
+length: i
+};
+};
+const stripLeadingTimePrefix = value => {
+const input = String(value || "").trimStart();
+const parsed = parseLeadingTimestampToken(input);
+if (!parsed) {
+return input;
+}
+let rest = input.slice(parsed.length).trimStart();
+(rest.startsWith("-") || rest.startsWith("–") || rest.startsWith("—") || rest.startsWith(":")) && (rest = rest.slice(1).trimStart());
+return rest;
+};
+const loadSettings = () => {
+try {
+const saved = localStorage.getItem(config.storageKey);
+if (!saved) {
+return;
+}
+const parsed = JSON.parse(saved);
+if ("object" != typeof parsed || null === parsed) {
+window.console.warn("[Timecode] Invalid settings format");
+return;
+}
+"boolean" == typeof parsed.enabled && (config.enabled = parsed.enabled);
+"boolean" == typeof parsed.autoDetect && (config.autoDetect = parsed.autoDetect);
+"boolean" == typeof parsed.autoSave && (config.autoSave = parsed.autoSave);
+"boolean" == typeof parsed.autoTrackPlayback && (config.autoTrackPlayback = parsed.autoTrackPlayback);
+"boolean" == typeof parsed.export && (config.export = parsed.export);
+if (parsed.shortcut && "object" == typeof parsed.shortcut) {
+"string" == typeof parsed.shortcut.key && (config.shortcut.key = parsed.shortcut.key);
+"boolean" == typeof parsed.shortcut.shiftKey && (config.shortcut.shiftKey = parsed.shortcut.shiftKey);
+"boolean" == typeof parsed.shortcut.altKey && (config.shortcut.altKey = parsed.shortcut.altKey);
+"boolean" == typeof parsed.shortcut.ctrlKey && (config.shortcut.ctrlKey = parsed.shortcut.ctrlKey);
+}
+if (parsed.panelPosition && "object" == typeof parsed.panelPosition) {
+const {left, top} = parsed.panelPosition;
+"number" == typeof left && "number" == typeof top && !isNaN(left) && !isNaN(top) && left >= 0 && top >= 0 && (config.panelPosition = {
+left,
+top
+});
+}
+} catch (error) {
+window.console.error("[Timecode] Error loading settings:", error);
 }
 };
 const saveSettings = () => {
@@ -16117,20 +17536,20 @@ export: config.export
 };
 localStorage.setItem(config.storageKey, JSON.stringify(settingsToSave));
 } catch (error) {
-console.error("[Timecode] Error saving settings:", error);
+window.console.error("[Timecode] Error saving settings:", error);
 }
 };
 const clampPanelPosition = (panel, left, top) => {
 try {
 if (!(panel && panel instanceof HTMLElement)) {
-console.warn("[Timecode] Invalid panel element");
+window.console.warn("[Timecode] Invalid panel element");
 return {
 left: 0,
 top: 0
 };
 }
 if ("number" != typeof left || "number" != typeof top || isNaN(left) || isNaN(top)) {
-console.warn("[Timecode] Invalid position coordinates");
+window.console.warn("[Timecode] Invalid position coordinates");
 return {
 left: 0,
 top: 0
@@ -16146,7 +17565,7 @@ left: Math.min(Math.max(0, left), maxLeft),
 top: Math.min(Math.max(0, top), maxTop)
 };
 } catch (error) {
-console.error("[Timecode] Error clamping panel position:", error);
+window.console.error("[Timecode] Error clamping panel position:", error);
 return {
 left: 0,
 top: 0
@@ -16156,7 +17575,7 @@ top: 0
 const savePanelPosition = (left, top) => {
 try {
 if ("number" != typeof left || "number" != typeof top || isNaN(left) || isNaN(top)) {
-console.warn("[Timecode] Invalid position coordinates for saving");
+window.console.warn("[Timecode] Invalid position coordinates for saving");
 return;
 }
 config.panelPosition = {
@@ -16165,7 +17584,7 @@ top
 };
 saveSettings();
 } catch (error) {
-console.error("[Timecode] Error saving panel position:", error);
+window.console.error("[Timecode] Error saving panel position:", error);
 }
 };
 const applySavedPanelPosition = panel => {
@@ -16182,16 +17601,7 @@ duration,
 type
 });
 };
-const formatTime = seconds => {
-if (isNaN(seconds)) {
-return "00:00";
-}
-seconds = Math.round(seconds);
-const h = Math.floor(seconds / 3600);
-const m = Math.floor(seconds % 3600 / 60);
-const s = seconds % 60;
-return h > 0 ? `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}` : `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-};
+const formatTime = seconds => window.YouTubeUtils?.formatTime?.(seconds) || "0:00";
 const removeDuplicateText = text => {
 if (!text || text.length < 10) {
 return text;
@@ -16272,7 +17682,7 @@ return isNaN(m) || isNaN(s) || (m >= 60 || s >= 60 || m < 0 || s < 0) ? null : 6
 }
 return null;
 } catch (error) {
-console.error("[Timecode] Error parsing time:", error);
+window.console.error("[Timecode] Error parsing time:", error);
 return null;
 }
 };
@@ -16282,37 +17692,43 @@ if (!text || "string" != typeof text) {
 return [];
 }
 if (text.length > 5e4) {
-console.warn("[Timecode] Text too long, truncating");
+window.console.warn("[Timecode] Text too long, truncating");
 text = text.substring(0, 5e4);
 }
 const timecodes = [];
 const seen = new Set;
-const patterns = [ /(\d{1,2}:\d{2}(?::\d{2})?)\s*[-–—]\s*(.+?)$/gm, /^(\d{1,2}:\d{2}(?::\d{2})?)\s+(.+?)$/gm, /(\d{1,2}:\d{2}(?::\d{2})?)\s*[-–—:]\s*([^\n\r]{1,100}?)(?=\s*\d{1,2}:\d{2}|\s*$)/g, /(\d{1,2}:\d{2}(?::\d{2})?)\s*[–—-]\s*([^\n]+)/gm, /^(\d{1,2}:\d{2}(?::\d{2})?)\s*(.+)$/gm ];
-for (const pattern of patterns) {
-let match;
-let iterations = 0;
+const lines = String(text || "").replace(/\r/g, "").split("\n");
 const maxIterations = 1e3;
-for (;null !== (match = pattern.exec(text)) && iterations++ < maxIterations; ) {
-const time = parseTime(match[1]);
-if (null !== time && !seen.has(time)) {
+for (let i = 0; i < lines.length && i < maxIterations; i += 1) {
+const line = lines[i].trim();
+if (!line) {
+continue;
+}
+const timeMatch = parseLeadingTimestampToken(line);
+if (!timeMatch) {
+continue;
+}
+const time = parseTime(timeMatch.token);
+if (null === time || seen.has(time)) {
+continue;
+}
 seen.add(time);
-let label = (match[2] || "").trim().replace(/^\d+[\.\)]\s*/, "").replace(/\s+/g, " ").substring(0, 100);
+let label = stripLeadingTimePrefix(line.slice(timeMatch.length));
+label = label.trim().replace(/^\d+[\.\)]\s*/, "").replace(/\s+/g, " ").substring(0, 100);
 const originalLabel = label;
 label = label.replace(/[<>\"']/g, "");
 label = removeDuplicateText(label);
-originalLabel !== label && label.length > 0 && console.warn("[Timecode] Description deduplicated:", originalLabel, "->", label);
+originalLabel !== label && label.length > 0 && window.console.warn("[Timecode] Description deduplicated:", originalLabel, "->", label);
 timecodes.push({
 time,
 label: label || "",
-originalText: match[1]
+originalText: timeMatch.token
 });
 }
-}
-iterations >= maxIterations && console.warn("[Timecode] Maximum iterations reached during extraction");
-}
+lines.length > maxIterations && window.console.warn("[Timecode] Maximum iterations reached during extraction");
 return timecodes.sort((a, b) => a.time - b.time);
 } catch (error) {
-console.error("[Timecode] Error extracting timecodes:", error);
+window.console.error("[Timecode] Error extracting timecodes:", error);
 return [];
 }
 };
@@ -16351,7 +17767,7 @@ button.click();
 await sleep(400);
 return !0;
 } catch (error) {
-console.warn("[Timecode] Failed to click expand button:", error);
+window.console.warn("[Timecode] Failed to click expand button:", error);
 }
 }
 }
@@ -16499,10 +17915,10 @@ if (timeText) {
 const time = parseTime(timeText.trim());
 if (null !== time) {
 let cleanTitle = titleText?.trim().replace(/\s+/g, " ") || "";
-cleanTitle && cleanTitle.length > 0 && console.warn("[Timecode Debug] Raw chapter title:", cleanTitle);
-cleanTitle = cleanTitle.replace(/^\d{1,2}:\d{2}(?::\d{2})?\s*[-–—:]?\s*/, "");
+cleanTitle && cleanTitle.length > 0 && window.console.warn("[Timecode Debug] Raw chapter title:", cleanTitle);
+cleanTitle = stripLeadingTimePrefix(cleanTitle);
 const deduplicated = removeDuplicateText(cleanTitle);
-cleanTitle !== deduplicated && console.warn("[Timecode] Removed duplicate:", cleanTitle, "->", deduplicated);
+cleanTitle !== deduplicated && window.console.warn("[Timecode] Removed duplicate:", cleanTitle, "->", deduplicated);
 cleanTitle = deduplicated;
 chapters.set(time.toString(), {
 time,
@@ -16516,10 +17932,10 @@ const result = Array.from(chapters.values()).sort((a, b) => a.time - b.time);
 return result;
 };
 const ensureTimecodePanelSettings = (attempt = 0) => {
-const advancedVisible = $('.ytp-plus-settings-section[data-section="advanced"]:not(.hidden)');
-if (advancedVisible) {
+const advancedSection = $('.ytp-plus-settings-section[data-section="advanced"]');
+if (advancedSection) {
 (() => {
-const advancedSection = document.querySelector('.ytp-plus-settings-section[data-section="advanced"]');
+const advancedSection = $('.ytp-plus-settings-section[data-section="advanced"]');
 if (!advancedSection || advancedSection.querySelector(".timecode-settings-item")) {
 return;
 }
@@ -16542,7 +17958,7 @@ const {ctrlKey, altKey, shiftKey} = config.shortcut;
 const modifierValue = [ ctrlKey && altKey && shiftKey && "ctrl+alt+shift", ctrlKey && altKey && "ctrl+alt", ctrlKey && shiftKey && "ctrl+shift", altKey && shiftKey && "alt+shift", ctrlKey && "ctrl", altKey && "alt", shiftKey && "shift" ].find(Boolean) || "none";
 const enableDiv = document.createElement("div");
 enableDiv.className = "ytp-plus-settings-item timecode-settings-item ytp-plus-settings-item--with-submenu";
-enableDiv.innerHTML = _createHTML(`\n        <div>\n          <label class="ytp-plus-settings-item-label" for="timecode-enable-checkbox">${t("enableTimecode")}</label>\n          <div class="ytp-plus-settings-item-description">${t("enableDescription")}</div>\n        </div>\n        <div class="ytp-plus-settings-item-actions">\n          <button\n            type="button"\n            class="ytp-plus-submenu-toggle"\n            data-submenu="timecode"\n            aria-label="Toggle timecode submenu"\n            aria-expanded="${initialExpanded ? "true" : "false"}"\n            ${config.enabled ? "" : "disabled"}\n            style="display:${config.enabled ? "inline-flex" : "none"};"\n          >\n            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">\n              <polyline points="6 9 12 15 18 9"></polyline>\n            </svg>\n          </button>\n          <input type="checkbox" id="timecode-enable-checkbox" class="ytp-plus-settings-checkbox" data-setting="enabled" ${config.enabled ? "checked" : ""}>\n        </div>\n      `);
+renderTemplateClone(enableDiv, `\n        <div>\n          <label class="ytp-plus-settings-item-label" for="timecode-enable-checkbox">${t("enableTimecode")}</label>\n          <div class="ytp-plus-settings-item-description">${t("enableDescription")}</div>\n        </div>\n        <div class="ytp-plus-settings-item-actions">\n          <button\n            type="button"\n            class="ytp-plus-submenu-toggle"\n            data-submenu="timecode"\n            aria-label="Toggle timecode submenu"\n            aria-expanded="${initialExpanded ? "true" : "false"}"\n            ${config.enabled ? "" : "disabled"}\n            style="display:${config.enabled ? "inline-flex" : "none"};"\n          >\n            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">\n              <polyline points="6 9 12 15 18 9"></polyline>\n            </svg>\n          </button>\n          <input type="checkbox" id="timecode-enable-checkbox" class="ytp-plus-settings-checkbox" data-setting="enabled" ${config.enabled ? "checked" : ""}>\n        </div>\n      `);
 const submenuWrap = document.createElement("div");
 submenuWrap.className = "timecode-submenu";
 submenuWrap.dataset.submenu = "timecode";
@@ -16557,103 +17973,18 @@ submenuCard.style.gap = "8px";
 const shortcutDiv = document.createElement("div");
 shortcutDiv.className = "ytp-plus-settings-item timecode-settings-item timecode-shortcut-item";
 shortcutDiv.style.display = "flex";
-shortcutDiv.innerHTML = _createHTML(`\n        <div>\n          <label class="ytp-plus-settings-item-label">${t("keyboardShortcut")}</label>\n          <div class="ytp-plus-settings-item-description">${t("shortcutDescription")}</div>\n        </div>\n        <div style="display: flex; align-items: center; gap: 8px;">\n          \x3c!-- Hidden native select kept for programmatic compatibility --\x3e\n          <select id="timecode-modifier-combo" style="display:none;">\n            ${[ "none", "ctrl", "alt", "shift", "ctrl+alt", "ctrl+shift", "alt+shift", "ctrl+alt+shift" ].map(v => `<option value="${v}" ${v === modifierValue ? "selected" : ""}>${"none" === v ? "None" : v.split("+").map(k => k.charAt(0).toUpperCase() + k.slice(1)).join("+")}</option>`).join("")}\n          </select>\n\n          <div class="glass-dropdown" id="timecode-modifier-dropdown" tabindex="0" role="listbox" aria-expanded="false">\n            <button class="glass-dropdown__toggle" type="button" aria-haspopup="listbox">\n              <span class="glass-dropdown__label">${"none" === modifierValue ? "None" : modifierValue.split("+").map(k => k.charAt(0).toUpperCase() + k.slice(1)).join("+")}</span>\n              <svg class="glass-dropdown__chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>\n            </button>\n            <ul class="glass-dropdown__list" role="presentation">\n              ${[ "none", "ctrl", "alt", "shift", "ctrl+alt", "ctrl+shift", "alt+shift", "ctrl+alt+shift" ].map(v => {
+renderTemplateClone(shortcutDiv, `\n        <div>\n          <label class="ytp-plus-settings-item-label">${t("keyboardShortcut")}</label>\n          <div class="ytp-plus-settings-item-description">${t("shortcutDescription")}</div>\n        </div>\n        <div style="display: flex; align-items: center; gap: 8px;">\n          \x3c!-- Hidden native select kept for programmatic compatibility --\x3e\n          <select id="timecode-modifier-combo" style="display:none;">\n            ${[ "none", "ctrl", "alt", "shift", "ctrl+alt", "ctrl+shift", "alt+shift", "ctrl+alt+shift" ].map(v => `<option value="${v}" ${v === modifierValue ? "selected" : ""}>${"none" === v ? "None" : v.split("+").map(k => k.charAt(0).toUpperCase() + k.slice(1)).join("+")}</option>`).join("")}\n          </select>\n\n          <div class="glass-dropdown" id="timecode-modifier-dropdown" tabindex="0" role="listbox" aria-expanded="false">\n            <button class="glass-dropdown__toggle" type="button" aria-haspopup="listbox">\n              <span class="glass-dropdown__label">${"none" === modifierValue ? "None" : modifierValue.split("+").map(k => k.charAt(0).toUpperCase() + k.slice(1)).join("+")}</span>\n              <svg class="glass-dropdown__chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>\n            </button>\n            <ul class="glass-dropdown__list" role="presentation">\n              ${[ "none", "ctrl", "alt", "shift", "ctrl+alt", "ctrl+shift", "alt+shift", "ctrl+alt+shift" ].map(v => {
 const label = "none" === v ? "None" : v.split("+").map(k => k.charAt(0).toUpperCase() + k.slice(1)).join("+");
 const sel = v === modifierValue ? ' aria-selected="true"' : "";
 return `<li class="glass-dropdown__item" data-value="${v}" role="option"${sel}>${label}</li>`;
-}).join("")}\n            </ul>\n          </div>\n\n          <span style="color:inherit;opacity:0.8;">+</span>\n          <input type="text" id="timecode-key" value="${config.shortcut.key}" maxlength="1" style="width: 30px; text-align: center; background: rgba(34, 34, 34, var(--yt-header-bg-opacity)); color: white; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 4px;">\n        </div>\n      `);
+}).join("")}\n            </ul>\n          </div>\n\n          <span style="color:inherit;opacity:0.8;">+</span>\n          <input type="text" id="timecode-key" value="${config.shortcut.key}" maxlength="1" style="width: 30px; text-align: center; background: var(--yt-input-bg); color: var(--yt-text-primary); border: 1px solid var(--yt-border-color); border-radius: 4px; padding: 4px;">\n        </div>\n      `);
 submenuCard.appendChild(shortcutDiv);
 submenuWrap.appendChild(submenuCard);
 advancedSection.append(enableDiv, submenuWrap);
-setTimeout(() => {
-const hiddenSelect = byId("timecode-modifier-combo");
-const dropdown = byId("timecode-modifier-dropdown");
-if (!hiddenSelect || !dropdown) {
-return;
-}
-const toggle = $(".glass-dropdown__toggle", dropdown);
-const list = $(".glass-dropdown__list", dropdown);
-const label = $(".glass-dropdown__label", dropdown);
-if (!toggle || !list || !label) {
-return;
-}
-let items = Array.from($$(".glass-dropdown__item", list));
-let idx = items.findIndex(it => "true" === it.getAttribute("aria-selected"));
-idx < 0 && (idx = 0);
-const closeList = () => {
-dropdown.setAttribute("aria-expanded", "false");
-list.style.display = "none";
-};
-const openList = () => {
-dropdown.setAttribute("aria-expanded", "true");
-list.style.display = "block";
-items = Array.from($$(".glass-dropdown__item", list));
-};
-closeList();
-toggle.addEventListener("click", () => {
-const expanded = "true" === dropdown.getAttribute("aria-expanded");
-expanded ? closeList() : openList();
+window.YouTubePlusDesignSystem?.initGlassDropdown?.({
+dropdown: byId("timecode-modifier-dropdown"),
+hiddenSelect: byId("timecode-modifier-combo")
 });
-const outsideClickHandler = e => {
-dropdown.contains(e.target) || closeList();
-};
-window.YouTubeUtils && YouTubeUtils.cleanupManager ? YouTubeUtils.cleanupManager.registerListener(document, "click", outsideClickHandler) : document.addEventListener("click", outsideClickHandler);
-list.addEventListener("click", e => {
-const it = e.target.closest(".glass-dropdown__item");
-if (!it) {
-return;
-}
-const val = it.dataset.value;
-hiddenSelect.value = val;
-list.querySelectorAll(".glass-dropdown__item").forEach(li => li.removeAttribute("aria-selected"));
-it.setAttribute("aria-selected", "true");
-idx = items.indexOf(it);
-label.textContent = it.textContent;
-hiddenSelect.dispatchEvent(new Event("change", {
-bubbles: !0
-}));
-closeList();
-});
-dropdown.addEventListener("keydown", e => {
-const expanded = "true" === dropdown.getAttribute("aria-expanded");
-if ("ArrowDown" === e.key) {
-e.preventDefault();
-expanded || openList();
-idx = Math.min(idx + 1, items.length - 1);
-items.forEach(it => it.removeAttribute("aria-selected"));
-items[idx].setAttribute("aria-selected", "true");
-items[idx].scrollIntoView({
-block: "nearest"
-});
-} else if ("ArrowUp" === e.key) {
-e.preventDefault();
-expanded || openList();
-idx = Math.max(idx - 1, 0);
-items.forEach(it => it.removeAttribute("aria-selected"));
-items[idx].setAttribute("aria-selected", "true");
-items[idx].scrollIntoView({
-block: "nearest"
-});
-} else if ("Enter" === e.key || " " === e.key) {
-e.preventDefault();
-if (!expanded) {
-openList();
-return;
-}
-const it = items[idx];
-if (it) {
-hiddenSelect.value = it.dataset.value;
-hiddenSelect.dispatchEvent(new Event("change", {
-bubbles: !0
-}));
-label.textContent = it.textContent;
-closeList();
-}
-} else {
-"Escape" === e.key && closeList();
-}
-});
-}, 0);
 advancedSection.addEventListener("change", e => {
 const target = e.target;
 if (target.matches && target.matches('.ytp-plus-settings-checkbox[data-setting="enabled"]')) {
@@ -16863,8 +18194,8 @@ return;
 const exportBtn = state.dom.panel?.querySelector("#timecode-export-btn");
 if (exportBtn) {
 exportBtn.textContent = t("copied");
-exportBtn.style.backgroundColor = "rgba(0,220,0,0.8)";
-setTimeout(() => {
+exportBtn.style.backgroundColor = "var(--yt-timecode-export-success-bg)";
+setTimeout_(function() {
 exportBtn.textContent = t("export");
 exportBtn.style.backgroundColor = "";
 }, 2e3);
@@ -16887,13 +18218,13 @@ return;
 const isEmpty = !timecodes.length;
 empty.style.display = isEmpty ? "flex" : "none";
 list.style.display = isEmpty ? "none" : "block";
-isEmpty ? list.replaceChildren() : list.innerHTML = _createHTML(timecodes.map((tc, i) => {
+isEmpty ? list.replaceChildren() : renderTemplateClone(list, timecodes.map((tc, i) => {
 const timeStr = formatTime(tc.time);
 let rawLabel = tc.label?.trim() || "";
-rawLabel = rawLabel.replace(/^\d{1,2}:\d{2}(?::\d{2})?\s*[-–—:]?\s*/, "");
+rawLabel = stripLeadingTimePrefix(rawLabel);
 const beforeDedup = rawLabel;
 rawLabel = removeDuplicateText(rawLabel);
-beforeDedup !== rawLabel && rawLabel.length > 0 && console.warn("[Timecode] Display deduplicated:", beforeDedup, "->", rawLabel);
+beforeDedup !== rawLabel && rawLabel.length > 0 && window.console.warn("[Timecode] Display deduplicated:", beforeDedup, "->", rawLabel);
 const normalizedTime = timeStr.replace(/^0+:/, "");
 const normalizedLabel = rawLabel.replace(/^0+:/, "");
 const hasCustomLabel = rawLabel && rawLabel !== timeStr && normalizedLabel !== normalizedTime && rawLabel !== tc.originalText && rawLabel.length > 0;
@@ -16982,7 +18313,7 @@ progressEl.style.width = `${clampedProgress}%`;
 }
 config.autoTrackPlayback && (state.trackingId = requestAnimationFrame(track));
 } catch (error) {
-console.warn("Timecode tracking error:", error);
+window.console.warn("Timecode tracking error:", error);
 if (state.trackingId) {
 cancelAnimationFrame(state.trackingId);
 state.trackingId = 0;
@@ -17100,7 +18431,7 @@ const panel = document.createElement("div");
 panel.id = "timecode-panel";
 panel.className = config.enabled ? "" : "hidden";
 config.autoTrackPlayback && panel.classList.add("auto-tracking");
-panel.innerHTML = _createHTML(`\n        <div id="timecode-header">\n          <h3 id="timecode-title">\n            <div id="timecode-tracking-indicator"></div>\n            ${t("timecodes")}\n            <span id="timecode-current-time"></span>\n          </h3>\n          <div id="timecode-header-controls">\n            <button id="timecode-reload" title="${t("reload")}" aria-label="${t("reload")}">⟳</button>\n            <button id="timecode-close" title="${t("close")}" aria-label="${t("close")}">\n              <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">\n                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/>\n              </svg>\n            </button>\n          </div>\n        </div>\n        <div id="timecode-list"></div>\n        <div id="timecode-empty">\n          <div>${t("noTimecodesFound")}</div>\n          <div style="margin-top:5px;font-size:12px">${t("clickToAdd")}</div>\n        </div>\n        <div id="timecode-form">\n          <input type="text" id="timecode-form-time" placeholder="${t("timePlaceholder")}">\n          <input type="text" id="timecode-form-label" placeholder="${t("labelPlaceholder")}">\n          <div id="timecode-form-buttons">\n            <button type="button" id="timecode-form-cancel">${t("cancel")}</button>\n            <button type="button" id="timecode-form-save" class="save">${t("save")}</button>\n          </div>\n        </div>\n        <div id="timecode-actions">\n          <button id="timecode-add-btn">${t("add")}</button>\n          <button id="timecode-export-btn" ${config.export ? "" : 'style="display:none"'}>${t("export")}</button>\n          <button id="timecode-track-toggle" class="${config.autoTrackPlayback ? "active" : ""}">${t(config.autoTrackPlayback ? "tracking" : "track")}</button>\n        </div>\n      `);
+renderTemplateClone(panel, `\n        <div id="timecode-header">\n          <h3 id="timecode-title">\n            <div id="timecode-tracking-indicator"></div>\n            ${t("timecodes")}\n            <span id="timecode-current-time"></span>\n          </h3>\n          <div id="timecode-header-controls">\n            <button id="timecode-reload" title="${t("reload")}" aria-label="${t("reload")}">\n              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">\n                <path d="M21.5 2v6h-6M2.5 22v-6h6"/>\n                <path d="M19.13 11.48A10 10 0 0 0 12 2C6.48 2 2 6.48 2 12c0 .34.02.67.05 1M4.87 12.52A10 10 0 0 0 12 22c5.52 0 10-4.48 10-10 0-.34-.02-.67-.05-1"/>\n              </svg>\n            </button>\n            <button id="timecode-close" title="${t("close")}" aria-label="${t("close")}">\n              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">\n                <path d="M6 6L18 18M18 6L6 18"/>\n              </svg>\n            </button>\n          </div>\n        </div>\n        <div id="timecode-list"></div>\n        <div id="timecode-empty">\n          <div>${t("noTimecodesFound")}</div>\n          <div style="margin-top:5px;font-size:12px">${t("clickToAdd")}</div>\n        </div>\n        <div id="timecode-form">\n          <input type="text" id="timecode-form-time" placeholder="${t("timePlaceholder")}">\n          <input type="text" id="timecode-form-label" placeholder="${t("labelPlaceholder")}">\n          <div id="timecode-form-buttons">\n            <button type="button" id="timecode-form-cancel">${t("cancel")}</button>\n            <button type="button" id="timecode-form-save" class="save">${t("save")}</button>\n          </div>\n        </div>\n        <div id="timecode-actions">\n          <button id="timecode-add-btn">${t("add")}</button>\n          <button id="timecode-export-btn" ${config.export ? "" : 'style="display:none"'}>${t("export")}</button>\n          <button id="timecode-track-toggle" class="${config.autoTrackPlayback ? "active" : ""}">${t(config.autoTrackPlayback ? "tracking" : "track")}</button>\n        </div>\n      `);
 state.dom = {
 panel,
 list: panel.querySelector("#timecode-list"),
@@ -17123,7 +18454,7 @@ panel.classList.toggle("hidden", !show);
 if (show) {
 applySavedPanelPosition(panel);
 const saved = loadTimecodesFromStorage();
-saved?.length ? updateTimecodePanel(saved) : config.autoDetect && detectTimecodes().catch(err => console.error("[Timecode] Detection failed:", err));
+saved?.length ? updateTimecodePanel(saved) : config.autoDetect && detectTimecodes().catch(err => window.console.error("[Timecode] Detection failed:", err));
 config.autoTrackPlayback && startTracking();
 } else if (state.trackingId) {
 cancelAnimationFrame(state.trackingId);
@@ -17152,50 +18483,35 @@ return;
 const appRoot = "function" == typeof YouTubeUtils?.querySelector && YouTubeUtils.querySelector("ytd-app") || $("ytd-app");
 if (!appRoot) {
 (() => {
-const timeoutId = setTimeout(init, 250);
-YouTubeUtils.cleanupManager?.registerTimeout?.(timeoutId);
+const retryScheduler = YouTubeUtils.createRetryScheduler;
+if ("function" == typeof retryScheduler) {
+retryScheduler({
+label: "timecode-init",
+interval: 120,
+maxAttempts: 30,
+check: () => {
+const root = "function" == typeof YouTubeUtils.querySelector && YouTubeUtils.querySelector("ytd-app") || $("ytd-app");
+if (!root) {
+return !1;
+}
+init();
+return !0;
+}
+});
+return;
+}
+const rafId = requestAnimationFrame(init);
+YouTubeUtils.cleanupManager?.registerAnimationFrame?.(rafId);
 })();
 return;
 }
 initStarted = !0;
-(() => {
-try {
-const saved = localStorage.getItem(config.storageKey);
-if (!saved) {
-return;
-}
-const parsed = JSON.parse(saved);
-if ("object" != typeof parsed || null === parsed) {
-console.warn("[Timecode] Invalid settings format");
-return;
-}
-"boolean" == typeof parsed.enabled && (config.enabled = parsed.enabled);
-"boolean" == typeof parsed.autoDetect && (config.autoDetect = parsed.autoDetect);
-"boolean" == typeof parsed.autoSave && (config.autoSave = parsed.autoSave);
-"boolean" == typeof parsed.autoTrackPlayback && (config.autoTrackPlayback = parsed.autoTrackPlayback);
-"boolean" == typeof parsed.export && (config.export = parsed.export);
-if (parsed.shortcut && "object" == typeof parsed.shortcut) {
-"string" == typeof parsed.shortcut.key && (config.shortcut.key = parsed.shortcut.key);
-"boolean" == typeof parsed.shortcut.shiftKey && (config.shortcut.shiftKey = parsed.shortcut.shiftKey);
-"boolean" == typeof parsed.shortcut.altKey && (config.shortcut.altKey = parsed.shortcut.altKey);
-"boolean" == typeof parsed.shortcut.ctrlKey && (config.shortcut.ctrlKey = parsed.shortcut.ctrlKey);
-}
-if (parsed.panelPosition && "object" == typeof parsed.panelPosition) {
-const {left, top} = parsed.panelPosition;
-"number" == typeof left && "number" == typeof top && !isNaN(left) && !isNaN(top) && left >= 0 && top >= 0 && (config.panelPosition = {
-left,
-top
-});
-}
-} catch (error) {
-console.error("[Timecode] Error loading settings:", error);
-}
-})();
+loadSettings();
 (() => {
 if (byId("timecode-panel-styles")) {
 return;
 }
-YouTubeUtils.StyleManager.add("timecode-panel-styles", "\n        :root{--tc-panel-bg:rgba(255,255,255,0.06);--tc-panel-border:rgba(255,255,255,0.12);--tc-panel-color:#fff}\n        html[dark],body[dark]{--tc-panel-bg:rgba(34,34,34,0.75);--tc-panel-border:rgba(255,255,255,0.12);--tc-panel-color:#fff}\n        html:not([dark]){--tc-panel-bg:rgba(255,255,255,0.95);--tc-panel-border:rgba(0,0,0,0.08);--tc-panel-color:#222}\n        #timecode-panel{position:fixed;right:20px;top:80px;background:var(--tc-panel-bg);border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,0.45);width:320px;max-height:70vh;z-index:10000;color:var(--tc-panel-color);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);border:1.5px solid var(--tc-panel-border);transition:transform .28s cubic-bezier(.4,0,.2,1),opacity .28s;overflow:hidden;display:flex;flex-direction:column}\n        #timecode-panel.hidden{transform:translateX(300px);opacity:0;pointer-events:none}\n        #timecode-panel.auto-tracking{box-shadow:0 12px 48px rgba(255,0,0,0.12);border-color:rgba(255,0,0,0.25)}\n        #timecode-header{display:flex;justify-content:space-between;align-items:center;padding:14px;border-bottom:1px solid rgba(255,255,255,0.04);background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);cursor:move}\n        #timecode-title{font-weight:600;margin:0;font-size:15px;user-select:none;display:flex;align-items:center;gap:8px}\n        #timecode-tracking-indicator{width:8px;height:8px;background:red;border-radius:50%;opacity:0;transition:opacity .3s}\n        #timecode-panel.auto-tracking #timecode-tracking-indicator{opacity:1}\n        #timecode-current-time{font-family:monospace;font-size:12px;padding:2px 6px;background:rgba(255,0,0,.3);border-radius:3px;margin-left:auto}\n        #timecode-header-controls{display:flex;align-items:center;gap:6px}\n        #timecode-reload,#timecode-close{background:transparent;border:none;color:inherit;cursor:pointer;width:28px;height:28px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:background .18s,color .18s}\n        #timecode-reload:hover,#timecode-close:hover{background:rgba(255,255,255,0.04)}\n        #timecode-reload.loading{animation:spin .8s linear infinite}\n        #timecode-list{overflow-y:auto;padding:8px 0;max-height:calc(70vh - 80px);scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.3) transparent}\n        #timecode-list::-webkit-scrollbar{width:6px}\n        #timecode-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.3);border-radius:3px}\n        .timecode-item{padding:10px 14px;display:flex;align-items:center;cursor:pointer;transition:background-color .16s,transform .12s;border-left:3px solid transparent;position:relative;border-radius:8px;margin:6px 10px}\n        .timecode-item:hover{background:rgba(255,255,255,0.04);transform:translateY(-2px)}\n        .timecode-item:hover .timecode-actions{opacity:1}\n        .timecode-item.active{background:linear-gradient(90deg, rgba(255,68,68,0.12), rgba(255,68,68,0.04));border-left-color:#ff6666;box-shadow:inset 0 0 0 1px rgba(255,68,68,0.03)}\n        .timecode-item.active.pulse{animation:pulse .8s ease-out}\n        .timecode-item.editing{background:linear-gradient(90deg, rgba(255,170,0,0.08), rgba(255,170,0,0.03));border-left-color:#ffaa00}\n        .timecode-item.editing .timecode-actions{opacity:1}\n        @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.02)}100%{transform:scale(1)}}\n        /* spin keyframe defined in shared-keyframes (basic.js) */\n        .timecode-time{font-family:monospace;margin-right:10px;color:rgba(255,255,255,.8);font-size:13px;min-width:45px;flex-shrink:0}\n        .timecode-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px;flex:1;margin-left:4px}\n        .timecode-item:not(:has(.timecode-label)) .timecode-time{flex:1;text-align:left}\n        .timecode-item.has-chapter .timecode-time{color:#ff4444}\n        .timecode-progress{width:0;height:2px;background:#ff4444;position:absolute;bottom:0;left:0;transition:width .3s;opacity:.8}\n        .timecode-actions{position:absolute;right:8px;top:50%;transform:translateY(-50%);display:flex;gap:4px;opacity:0;transition:opacity .2s;background:rgba(0,0,0,.8);border-radius:4px;padding:2px}\n        .timecode-action{background:none;border:none;color:rgba(255,255,255,.8);cursor:pointer;padding:4px;font-size:12px;border-radius:2px;transition:color .2s,background-color .2s}\n        .timecode-action:hover{color:#fff;background:rgba(255,255,255,.2)}\n        .timecode-action.edit:hover{color:#ffaa00}\n        .timecode-action.delete:hover{color:#ff4444}\n        #timecode-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;color:rgba(255,255,255,.7);font-size:13px}\n        #timecode-form{padding:12px;border-top:1px solid rgba(255,255,255,.04);display:none}\n        #timecode-form.visible{display:block}\n        #timecode-form input{width:100%;margin-bottom:8px;padding:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:4px;color:#fff;font-size:13px}\n        #timecode-form input::placeholder{color:rgba(255,255,255,.6)}\n        #timecode-form-buttons{display:flex;gap:8px;justify-content:flex-end}\n        #timecode-form-buttons button{padding:6px 12px;border:none;border-radius:4px;cursor:pointer;font-size:12px;transition:background-color .2s}\n        #timecode-form-cancel{background:rgba(255,255,255,.2);color:#fff}\n        #timecode-form-cancel:hover{background:rgba(255,255,255,.3)}\n        #timecode-form-save{background:#ff4444;color:#fff}\n        #timecode-form-save:hover{background:#ff6666}\n        #timecode-actions{padding:10px;border-top:1px solid rgba(255,255,255,.04);display:flex;gap:8px;background:linear-gradient(180deg,transparent,rgba(0,0,0,0.03))}\n        #timecode-actions button{padding:8px 12px;border:none;border-radius:8px;cursor:pointer;font-size:13px;transition:background .18s;color:inherit;background:rgba(255,255,255,0.02)}\n        #timecode-actions button:hover{background:rgba(255,255,255,0.04)}\n        #timecode-track-toggle.active{background:linear-gradient(90deg,#ff6b6b,#ff4444);color:#fff}\n      ");
+YouTubeUtils.StyleManager.add("timecode-panel-styles", "\n      html[dark],body[dark]{--yt-timecode-panel-bg:var(--yt-timecode-panel-bg-dark);--yt-timecode-panel-border:var(--yt-timecode-panel-border-dark);--yt-timecode-panel-color:var(--yt-timecode-panel-color-dark)}\n      html:not([dark]){--yt-timecode-panel-bg:var(--yt-timecode-panel-bg-light);--yt-timecode-panel-border:var(--yt-timecode-panel-border-light);--yt-timecode-panel-color:var(--yt-timecode-panel-color-light)}\n      #timecode-panel{position:fixed;right:20px;top:80px;background:var(--yt-timecode-panel-bg);border-radius:16px;box-shadow:0 12px 40px var(--yt-timecode-panel-shadow);width:320px;max-height:70vh;z-index:10000;color:var(--yt-timecode-panel-color);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);border:1.5px solid var(--yt-timecode-panel-border);transition:transform .28s cubic-bezier(.4,0,.2,1),opacity .28s;overflow:hidden;display:flex;flex-direction:column}\n        #timecode-panel.hidden{transform:translateX(300px);opacity:0;pointer-events:none}\n      #timecode-panel.auto-tracking{box-shadow:0 12px 48px var(--yt-danger-ghost);border-color:var(--yt-danger-border)}\n      #timecode-header{display:flex;justify-content:space-between;align-items:center;padding:14px;border-bottom:1px solid var(--yt-surface-overlay-subtle);background:linear-gradient(180deg, var(--yt-surface-overlay-faint), transparent);cursor:move}\n        #timecode-title{font-weight:600;margin:0;font-size:15px;user-select:none;display:flex;align-items:center;gap:8px}\n      #timecode-tracking-indicator{width:8px;height:8px;background:var(--yt-accent);border-radius:50%;opacity:0;transition:opacity .3s}\n        #timecode-panel.auto-tracking #timecode-tracking-indicator{opacity:1}\n      #timecode-current-time{font-family:monospace;font-size:12px;padding:2px 6px;background:var(--yt-danger-border);border-radius:3px;margin-left:auto}\n        #timecode-header-controls{display:flex;align-items:center;gap:6px}\n        #timecode-reload,#timecode-close{background:transparent;border:none;color:inherit;cursor:pointer;width:28px;height:28px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:background .18s,color .18s}\n      #timecode-header-controls svg{width:16px;height:16px;display:block;flex-shrink:0}\n      #timecode-header-controls svg path{vector-effect:non-scaling-stroke}\n      #timecode-reload:hover,#timecode-close:hover{background:var(--yt-surface-overlay-subtle)}\n        #timecode-reload.loading{animation:spin .8s linear infinite}\n      #timecode-list{overflow-y:auto;padding:8px 0;max-height:calc(70vh - 80px);scrollbar-width:thin;scrollbar-color:var(--yt-scrollbar-outline) transparent}\n        #timecode-list::-webkit-scrollbar{width:6px}\n      #timecode-list::-webkit-scrollbar-thumb{background:var(--yt-scrollbar-outline);border-radius:3px}\n        .timecode-item{padding:10px 14px;display:flex;align-items:center;cursor:pointer;transition:background-color .16s,transform .12s;border-left:3px solid transparent;position:relative;border-radius:8px;margin:6px 10px}\n      .timecode-item:hover{background:var(--yt-surface-overlay-subtle);transform:translateY(-2px)}\n        .timecode-item:hover .timecode-actions{opacity:1}\n      .timecode-item.active{background:linear-gradient(90deg, var(--yt-timecode-active-bg-start), var(--yt-timecode-active-bg-end));border-left-color:var(--yt-timecode-active-border);box-shadow:inset 0 0 0 1px var(--yt-timecode-active-inset)}\n        .timecode-item.active.pulse{animation:timecodePulse .8s ease-out}\n      .timecode-item.editing{background:linear-gradient(90deg, var(--yt-warning-soft), var(--yt-panel-overlay-weak));border-left-color:var(--yt-warning)}\n        .timecode-item.editing .timecode-actions{opacity:1}\n        @keyframes timecodePulse{0%{transform:scale(1)}50%{transform:scale(1.02)}100%{transform:scale(1)}}\n        /* spin keyframe defined in shared-keyframes (basic.js) */\n      .timecode-time{font-family:monospace;margin-right:10px;color:var(--yt-text-secondary);font-size:13px;min-width:45px;flex-shrink:0}\n        .timecode-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px;flex:1;margin-left:4px}\n        .timecode-item:not(:has(.timecode-label)) .timecode-time{flex:1;text-align:left}\n      .timecode-item.has-chapter .timecode-time{color:var(--yt-timecode-chapter)}\n      .timecode-progress{width:0;height:2px;background:var(--yt-timecode-chapter);position:absolute;bottom:0;left:0;transition:width .3s;opacity:.8}\n      .timecode-actions{position:absolute;right:8px;top:50%;transform:translateY(-50%);display:flex;gap:4px;opacity:0;transition:opacity .2s;background:var(--yt-overlay-strong);border-radius:4px;padding:2px}\n      .timecode-action{background:none;border:none;color:var(--yt-text-secondary);cursor:pointer;padding:4px;font-size:12px;border-radius:2px;transition:color .2s,background-color .2s}\n      .timecode-action:hover{color:var(--yt-text-primary);background:var(--yt-button-bg)}\n      .timecode-action.edit:hover{color:var(--yt-warning)}\n      .timecode-action.delete:hover{color:var(--yt-timecode-chapter)}\n      #timecode-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;color:var(--yt-text-secondary);font-size:13px}\n      #timecode-form{padding:12px;border-top:1px solid var(--yt-surface-overlay-subtle);display:none}\n        #timecode-form.visible{display:block}\n      #timecode-form input{width:100%;margin-bottom:8px;padding:8px;background:var(--yt-input-bg);border:1px solid var(--yt-glass-border);border-radius:4px;color:var(--yt-text-primary);font-size:13px}\n      #timecode-form input::placeholder{color:var(--yt-text-secondary)}\n        #timecode-form-buttons{display:flex;gap:8px;justify-content:flex-end}\n        #timecode-form-buttons button{padding:6px 12px;border:none;border-radius:4px;cursor:pointer;font-size:12px;transition:background-color .2s}\n      #timecode-form-cancel{background:var(--yt-button-bg);color:var(--yt-text-primary)}\n      #timecode-form-cancel:hover{background:var(--yt-hover-bg)}\n      #timecode-form-save{background:var(--yt-timecode-chapter);color:var(--yt-text-primary)}\n      #timecode-form-save:hover{background:var(--yt-timecode-active-border)}\n      #timecode-actions{padding:10px;border-top:1px solid var(--yt-surface-overlay-subtle);display:flex;gap:8px;background:linear-gradient(180deg,transparent,var(--yt-panel-overlay-subtle))}\n      #timecode-actions button{padding:8px 12px;border:none;border-radius:8px;cursor:pointer;font-size:13px;transition:background .18s;color:inherit;background:var(--yt-surface-overlay-faint)}\n      #timecode-actions button:hover{background:var(--yt-surface-overlay-subtle)}\n      #timecode-track-toggle.active{background:linear-gradient(90deg,var(--yt-timecode-toggle-active-start),var(--yt-timecode-chapter));color:var(--yt-text-primary)}\n      ");
 })();
 (() => {
 const keydownHandler = e => {
@@ -17225,38 +18541,47 @@ state.editingIndex = null;
 state.timecodes.clear();
 if (config.enabled && state.dom.panel && !state.dom.panel.classList.contains("hidden")) {
 const saved = loadTimecodesFromStorage();
-saved?.length ? updateTimecodePanel(saved) : config.autoDetect && setTimeout(() => detectTimecodes().catch(err => console.error("[Timecode] Detection failed:", err)), 500);
+saved?.length ? updateTimecodePanel(saved) : config.autoDetect && setTimeout(() => detectTimecodes().catch(err => window.console.error("[Timecode] Detection failed:", err)), 500);
 config.autoTrackPlayback && startTracking();
 }
 }
 };
 window.YouTubeUtils && YouTubeUtils.cleanupManager ? YouTubeUtils.cleanupManager.registerListener(document, "yt-navigate-finish", handleNavigationChange) : document.addEventListener("yt-navigate-finish", handleNavigationChange);
 })();
-let modalObserver = null;
+let modalObserverSubId = null;
 let modalObserverTimeout = null;
 const settingsModalHandler = () => {
-const modal = document.querySelector(".ytp-plus-settings-modal");
+const modal = $(".ytp-plus-settings-modal");
 if (modal) {
 (modalEl => {
-if (modalEl && modalEl instanceof Element) {
-if (modalObserver) {
-try {
-modalObserver.disconnect();
-} catch (e) {}
-modalObserver = null;
+if (!(modalEl && modalEl instanceof Element)) {
+return;
 }
-modalObserver = new MutationObserver(() => {
+const coordinator = window.YouTubeMutationCoordinator;
+if (modalObserverSubId && coordinator?.unsubscribe) {
+try {
+coordinator.unsubscribe(modalObserverSubId);
+} catch (e) {}
+modalObserverSubId = null;
+}
+if (coordinator?.watchTarget) {
+modalObserverSubId = `timecode::settingsModal::${Date.now()}::${Math.random().toString(36).slice(2, 8)}`;
+coordinator.watchTarget(modalObserverSubId, modalEl, () => {
 modalObserverTimeout || (modalObserverTimeout = setTimeout(() => {
 modalObserverTimeout = null;
 $('.ytp-plus-settings-section[data-section="advanced"]:not(.hidden)') && !$(".timecode-settings-item") && setTimeout(() => ensureTimecodePanelSettings(), 50);
 }, 30));
-});
-YouTubeUtils.cleanupManager.registerObserver(modalObserver);
-modalObserver.observe(modalEl, {
+}, {
 childList: !0,
 subtree: !0,
 attributes: !0,
 attributeFilter: [ "class" ]
+});
+YouTubeUtils.cleanupManager?.register && YouTubeUtils.cleanupManager.register(() => {
+if (modalObserverSubId && coordinator?.unsubscribe) {
+coordinator.unsubscribe(modalObserverSubId);
+modalObserverSubId = null;
+}
 });
 }
 })(modal);
@@ -17285,10 +18610,34 @@ state.resizeListenerKey = YouTubeUtils.cleanupManager.registerListener(window, "
 }
 };
 const handleNavigate = () => {
+(() => {
+if (state.settingsIntegrationStarted) {
+return;
+}
+state.settingsIntegrationStarted = !0;
+loadSettings();
+const settingsModalHandler = () => {
+setTimeout(() => ensureTimecodePanelSettings(), 100);
+};
+YouTubeUtils.cleanupManager?.registerListener ? YouTubeUtils.cleanupManager.registerListener(document, "youtube-plus-settings-modal-opened", settingsModalHandler) : document.addEventListener("youtube-plus-settings-modal-opened", settingsModalHandler);
+const clickHandler = e => {
+const target = e.target;
+const navItem = target?.closest?.(".ytp-plus-settings-nav-item");
+"advanced" === navItem?.dataset?.section && setTimeout(() => ensureTimecodePanelSettings(), 50);
+};
+YouTubeUtils.cleanupManager?.registerListener ? YouTubeUtils.cleanupManager.registerListener(document, "click", clickHandler, !0) : document.addEventListener("click", clickHandler, !0);
+})();
 isRelevantRoute() ? init() : initStarted && cleanup();
 };
 window.YouTubePlusLazyLoader ? window.YouTubePlusLazyLoader.register("timecode", handleNavigate, {
-priority: 1
+priority: 1,
+shouldLoad: () => isRelevantRoute() || (() => {
+try {
+return Boolean(document.querySelector(".ytp-plus-settings-modal"));
+} catch (e) {
+return !1;
+}
+})()
 }) : "loading" === document.readyState ? document.addEventListener("DOMContentLoaded", handleNavigate, {
 once: !0
 }) : handleNavigate();
@@ -17302,9 +18651,8 @@ window.addEventListener("beforeunload", cleanup);
 
 !(function() {
 "use strict";
-const _createHTML = window._ytplusCreateHTML || (s => s);
+const _createHTML = window._ytpDefaults?.createHTML || (s => s);
 let featureEnabled = !0;
-const loadFeatureEnabled = () => window.YouTubeUtils?.loadFeatureEnabled?.("enablePlaylistSearch") ?? !0;
 const setFeatureEnabled = nextEnabled => {
 featureEnabled = !1 !== nextEnabled;
 if (featureEnabled) {
@@ -17314,14 +18662,17 @@ handleNavigation();
 cleanup();
 }
 };
-featureEnabled = loadFeatureEnabled();
+featureEnabled = window.YouTubeUtils?.loadFeatureEnabled?.("enablePlaylistSearch") ?? !0;
 if (window._playlistSearchInitialized) {
 return;
 }
 window._playlistSearchInitialized = !0;
-const qs = sel => window.YouTubeUtils?.$(sel) || document.querySelector(sel);
-const t = window.YouTubeUtils?.t || (key => key || "");
+const qs = window.YouTubeUtils.$;
+const qsAll = window.YouTubeUtils.$$;
+const byId = window.YouTubeUtils.byId;
+const t = window.YouTubeUtils.t;
 const shouldRunOnThisPage = () => window.location.hostname.endsWith("youtube.com") && "music.youtube.com" !== window.location.hostname && ("/watch" === window.location.pathname || "/playlist" === window.location.pathname);
+const isPlaylistPage = () => "/playlist" === window.location.pathname;
 const isRelevantRoute = () => {
 if (!shouldRunOnThisPage()) {
 return !1;
@@ -17333,25 +18684,8 @@ return params.has("list");
 return !1;
 }
 };
-const debounce = window.YouTubeUtils?.debounce || ((fn, ms) => {
-let timer = null;
-return (...a) => {
-timer && clearTimeout(timer);
-timer = setTimeout(() => fn(...a), ms);
-};
-});
-const throttle = window.YouTubeUtils?.throttle || ((fn, ms) => {
-let active = !1;
-return (...a) => {
-if (!active) {
-fn(...a);
-active = !0;
-setTimeout(() => {
-active = !1;
-}, ms);
-}
-};
-});
+const debounce = window.YouTubeUtils.debounce;
+const throttle = window.YouTubeUtils.throttle || window._ytpDefaults?.throttle;
 const config = {
 enabled: !0,
 storageKey: "youtube_playlist_search_settings",
@@ -17366,7 +18700,7 @@ searchInput: null,
 searchResults: null,
 originalItems: [],
 currentPlaylistId: null,
-mutationObserver: null,
+observerFallbackTimerId: null,
 rafId: null,
 itemsCache: new Map,
 itemsContainer: null,
@@ -17376,7 +18710,8 @@ playlistPanel: null,
 isPlaylistPage: !1,
 isDeleting: !1,
 deleteMode: !1,
-selectedItems: new Set
+selectedItems: new Set,
+rootSubId: null
 };
 const inputDebouncers = new WeakMap;
 const setupInputDelegation = (() => {
@@ -17444,12 +18779,12 @@ const urlParams = new URLSearchParams(window.location.search);
 const listId = urlParams.get("list");
 return listId && /^[a-zA-Z0-9_-]+$/.test(listId) ? listId : null;
 } catch (error) {
-console.warn("[Playlist Search] Failed to get playlist ID:", error);
+window.console.warn("[Playlist Search] Failed to get playlist ID:", error);
 return null;
 }
 };
 const getPlaylistContext = () => {
-if ("/playlist" === window.location.pathname) {
+if (isPlaylistPage()) {
 const panel = qs("ytd-playlist-video-list-renderer");
 if (!panel) {
 return null;
@@ -17463,7 +18798,7 @@ itemTagName: "YTD-PLAYLIST-VIDEO-RENDERER",
 isPlaylistPage: !0
 };
 }
-if ("/watch" === window.location.pathname) {
+if (!0 === window.YouTubeUtils?.isWatchPage?.()) {
 const panel = qs("ytd-playlist-panel-renderer");
 if (!panel) {
 return null;
@@ -17579,7 +18914,7 @@ const title = meta.content.trim();
 return title.length > 100 ? title.substring(0, 100) + "..." : title;
 }
 } catch (error) {
-console.warn("[Playlist Search] Failed to get display name:", error);
+window.console.warn("[Playlist Search] Failed to get display name:", error);
 }
 return listId && "string" == typeof listId ? listId.substring(0, 50) : "playlist";
 })(playlistPanel, playlistId);
@@ -17603,7 +18938,14 @@ addDeleteUI(searchContainer);
 setupPlaylistObserver();
 };
 const setupPlaylistObserver = () => {
-state.mutationObserver && state.mutationObserver.disconnect();
+if (state.rootSubId && window.YouTubeMutationCoordinator?.unsubscribe) {
+window.YouTubeMutationCoordinator.unsubscribe(state.rootSubId);
+state.rootSubId = null;
+}
+if (state.observerFallbackTimerId) {
+clearInterval(state.observerFallbackTimerId);
+state.observerFallbackTimerId = null;
+}
 const playlistPanel = state.playlistPanel || getPlaylistContext()?.panel;
 if (!playlistPanel || !state.itemTagName || !state.itemSelector) {
 return;
@@ -17658,13 +19000,22 @@ updateScheduled = !1;
 });
 }
 }, config.observerThrottleMs);
-state.mutationObserver = new MutationObserver(handleMutations);
-const targetElement = itemsRoot || playlistPanel;
-state.mutationObserver.observe(targetElement, {
-childList: !0,
-subtree: !itemsRoot
-});
-window.YouTubeUtils?.cleanupManager?.registerObserver && window.YouTubeUtils.cleanupManager.registerObserver(state.mutationObserver);
+const coordinator = window.YouTubeMutationCoordinator;
+coordinator?.subscribeRoot ? state.rootSubId = coordinator.subscribeRoot("playlist-search-items", handleMutations, {
+selector: itemSelector
+}) : state.observerFallbackTimerId = setInterval(() => {
+try {
+const currentItemsRoot = state.itemsContainer || state.playlistPanel || playlistPanel;
+if (!currentItemsRoot || !state.itemSelector) {
+return;
+}
+const currentItems = currentItemsRoot.querySelectorAll(state.itemSelector);
+if (currentItems.length !== state.originalItems.length) {
+collectOriginalItems();
+state.searchInput && state.searchInput.value && filterPlaylistItems(state.searchInput.value);
+}
+} catch (e) {}
+}, config.observerThrottleMs);
 };
 const collectOriginalItems = () => {
 const itemsRoot = state.itemsContainer || state.playlistPanel;
@@ -17672,7 +19023,7 @@ if (!itemsRoot || !state.itemSelector) {
 return;
 }
 const items = itemsRoot.querySelectorAll(state.itemSelector);
-items.length > config.maxPlaylistItems && console.warn(`[Playlist Search] Playlist has ${items.length} items, limiting to ${config.maxPlaylistItems}`);
+items.length > config.maxPlaylistItems && window.console.warn(`[Playlist Search] Playlist has ${items.length} items, limiting to ${config.maxPlaylistItems}`);
 const currentVideoIds = new Set;
 const itemsArray = Array.from(items).slice(0, config.maxPlaylistItems);
 state.originalItems = itemsArray.map((item, index) => {
@@ -17706,7 +19057,7 @@ currentVideoIds.has(videoId) || state.itemsCache.delete(videoId);
 const filterPlaylistItems = query => {
 state.rafId && cancelAnimationFrame(state.rafId);
 if (query && "string" != typeof query) {
-console.warn("[Playlist Search] Invalid query type");
+window.console.warn("[Playlist Search] Invalid query type");
 return;
 }
 query && query.length > config.maxQueryLength && (query = query.substring(0, config.maxQueryLength));
@@ -17752,7 +19103,7 @@ const logError = (context, error) => {
 const errorObj = error instanceof Error ? error : new Error(String(error));
 window.YouTubeErrorBoundary ? window.YouTubeErrorBoundary.logError(errorObj, {
 context
-}) : console.error(`[YouTube+][PlaylistSearch] ${context}:`, error);
+}) : window.console.error(`[YouTube+][PlaylistSearch] ${context}:`, error);
 };
 const withErrorBoundary = (fn, context) => window.YouTubeErrorBoundary?.withErrorBoundary ? window.YouTubeErrorBoundary.withErrorBoundary(fn, "PlaylistSearch") : (...args) => {
 try {
@@ -17874,14 +19225,14 @@ const removeItemViaMenu = item => new Promise(resolve => {
 try {
 const menuBtn = item.querySelector("button#button[aria-label]") || item.querySelector("yt-icon-button#button") || item.querySelector("ytd-menu-renderer button") || item.querySelector('[aria-haspopup="menu"]') || item.querySelector("button.yt-icon-button");
 if (!menuBtn) {
-console.warn("[Playlist Search] Could not find menu button for item");
+window.console.warn("[Playlist Search] Could not find menu button for item");
 resolve(!1);
 return;
 }
 menuBtn.click();
 setTimeout(() => {
 try {
-const menuItems = document.querySelectorAll("tp-yt-paper-listbox ytd-menu-service-item-renderer, ytd-menu-popup-renderer ytd-menu-service-item-renderer, tp-yt-iron-dropdown ytd-menu-service-item-renderer");
+const menuItems = qsAll("tp-yt-paper-listbox ytd-menu-service-item-renderer, ytd-menu-popup-renderer ytd-menu-service-item-renderer, tp-yt-iron-dropdown ytd-menu-service-item-renderer");
 let removeOption = null;
 for (const mi of menuItems) {
 const text = (mi.textContent || "").toLowerCase();
@@ -17898,7 +19249,7 @@ resolve(!0);
 }, 100);
 } else {
 document.body.click();
-console.warn('[Playlist Search] Could not find "Remove" option in menu');
+window.console.warn('[Playlist Search] Could not find "Remove" option in menu');
 resolve(!1);
 }
 } catch (err) {
@@ -17967,7 +19318,17 @@ toggleBtn.className = "ytplus-playlist-delete-toggle";
 toggleBtn.setAttribute("aria-pressed", "false");
 toggleBtn.setAttribute("aria-label", t("playlistDeleteMode"));
 toggleBtn.title = t("playlistDeleteMode");
-toggleBtn.innerHTML = _createHTML('\n      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"\n           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">\n        <polyline points="3 6 5 6 21 6"/>\n        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>\n        <line x1="10" y1="11" x2="10" y2="17"/>\n        <line x1="14" y1="11" x2="14" y2="17"/>\n      </svg>\n    ');
+((container, html) => {
+if (!(container instanceof Element)) {
+return;
+}
+const template = document.createElement("template");
+const range = document.createRange();
+const root = document.body || document.documentElement;
+root && range.selectNode(root);
+template.content.append(range.createContextualFragment(_createHTML(html)));
+container.replaceChildren(template.content.cloneNode(!0));
+})(toggleBtn, '\n      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"\n           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">\n        <polyline points="3 6 5 6 21 6"/>\n        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>\n        <line x1="10" y1="11" x2="10" y2="17"/>\n        <line x1="14" y1="11" x2="14" y2="17"/>\n      </svg>\n    ');
 toggleBtn.style.cssText = "\n      background: transparent;\n      border: 1px solid var(--yt-spec-10-percent-layer);\n      border-radius: 50%;\n      width: 36px;\n      height: 36px;\n      display: inline-flex;\n      align-items: center;\n      justify-content: center;\n      cursor: pointer;\n      color: var(--yt-spec-text-secondary);\n      transition: all 0.2s;\n      vertical-align: middle;\n      margin-left: 6px;\n      flex-shrink: 0;\n    ";
 toggleBtn.addEventListener("click", toggleDeleteMode);
 const inputWrapper = document.createElement("div");
@@ -18004,17 +19365,17 @@ const clearAllBtn = createBtn(t("clearAll"), "ytplus-playlist-clear-all", clearA
 const deleteBtn = createBtn(t("deleteSelected"), "ytplus-playlist-delete-selected", deleteSelectedItems);
 deleteBtn.disabled = !0;
 deleteBtn.style.opacity = "0.5";
-deleteBtn.style.background = "rgba(255,99,71,.12)";
-deleteBtn.style.borderColor = "rgba(255,99,71,.25)";
-deleteBtn.style.color = "#ff5c5c";
+deleteBtn.style.background = "var(--yt-search-highlight-bg)";
+deleteBtn.style.borderColor = "var(--yt-search-highlight-border)";
+deleteBtn.style.color = "var(--yt-search-highlight-accent)";
 deleteBar.append(countSpan, selectAllBtn, clearAllBtn, deleteBtn);
 searchContainer.appendChild(deleteBar);
 };
 const addDeleteStyles = () => {
-if (document.getElementById("ytplus-playlist-delete-styles")) {
+if (byId("ytplus-playlist-delete-styles")) {
 return;
 }
-const css = "\n      .ytplus-playlist-delete-toggle.active {\n        color: #ff5c5c !important;\n        border-color: rgba(255,99,71,.4) !important;\n        background: rgba(255,99,71,.1) !important;\n      }\n      .ytplus-playlist-delete-toggle:hover {\n        color: var(--yt-spec-text-primary);\n        border-color: var(--yt-spec-text-secondary);\n      }\n      .ytplus-playlist-delete-bar {\n        display: flex;\n      }\n      .ytplus-playlist-delete-selected:not(:disabled):hover {\n        background: rgba(255,99,71,.22) !important;\n      }\n      .ytplus-playlist-select-all:hover,\n      .ytplus-playlist-clear-all:hover {\n        background: var(--yt-spec-10-percent-layer) !important;\n      }\n      .ytplus-playlist-item-checkbox {\n        opacity: 0.85;\n        transition: opacity 0.15s;\n      }\n      .ytplus-playlist-item-checkbox:hover {\n        opacity: 1;\n      }\n      /* Checkbox base styles inherited from basic.js .ytp-plus-settings-checkbox — no need to duplicate */\n    ";
+const css = "\n      .ytplus-playlist-delete-toggle.active {\n        color: var(--yt-search-highlight-accent) !important;\n        border-color: var(--yt-search-highlight-border-strong) !important;\n        background: var(--yt-search-highlight-faint) !important;\n      }\n      .ytplus-playlist-delete-toggle:hover {\n        color: var(--yt-spec-text-primary);\n        border-color: var(--yt-spec-text-secondary);\n      }\n      .ytplus-playlist-delete-bar {\n        display: flex;\n      }\n      .ytplus-playlist-delete-selected:not(:disabled):hover {\n        background: var(--yt-search-highlight-hover) !important;\n      }\n      .ytplus-playlist-select-all:hover,\n      .ytplus-playlist-clear-all:hover {\n        background: var(--yt-spec-10-percent-layer) !important;\n      }\n      .ytplus-playlist-item-checkbox {\n        opacity: 0.85;\n        transition: opacity 0.15s;\n      }\n      .ytplus-playlist-item-checkbox:hover {\n        opacity: 1;\n      }\n      /* Checkbox base styles inherited from basic.js .ytp-plus-settings-checkbox — no need to duplicate */\n    ";
 try {
 if (window.YouTubeUtils?.StyleManager) {
 window.YouTubeUtils.StyleManager.add("ytplus-playlist-delete-styles", css);
@@ -18035,9 +19396,13 @@ state.isDeleting = !1;
 state.selectedItems.clear();
 const searchUI = qs(".ytplus-playlist-search");
 searchUI && searchUI.remove();
-if (state.mutationObserver) {
-state.mutationObserver.disconnect();
-state.mutationObserver = null;
+if (state.rootSubId && window.YouTubeMutationCoordinator?.unsubscribe) {
+window.YouTubeMutationCoordinator.unsubscribe(state.rootSubId);
+state.rootSubId = null;
+}
+if (state.observerFallbackTimerId) {
+clearInterval(state.observerFallbackTimerId);
+state.observerFallbackTimerId = null;
 }
 if (state.rafId) {
 cancelAnimationFrame(state.rafId);
@@ -18065,7 +19430,10 @@ return;
 const newPlaylistId = getCurrentPlaylistId();
 if (newPlaylistId !== state.currentPlaylistId || !qs(".ytplus-playlist-search")) {
 cleanup();
-newPlaylistId && setTimeout(addSearchUI, 300);
+if (newPlaylistId) {
+const waitFor = window.YouTubeUtils.waitFor || window.YouTubeUtils.waitForElement;
+"function" == typeof waitFor ? waitFor(isPlaylistPage() ? "ytd-playlist-video-list-renderer #contents" : "ytd-playlist-panel-renderer #items", 1500).finally(addSearchUI) : requestAnimationFrame(addSearchUI);
+}
 }
 }, 250);
 let initialized = !1;
@@ -18088,7 +19456,7 @@ const parsed = JSON.parse(saved);
 window.YouTubeUtils && window.YouTubeUtils.safeMerge ? window.YouTubeUtils.safeMerge(config, parsed) : "boolean" == typeof parsed.enabled && (config.enabled = parsed.enabled);
 }
 } catch (error) {
-console.warn("[Playlist Search] Failed to load settings:", error);
+window.console.warn("[Playlist Search] Failed to load settings:", error);
 }
 })();
 featureEnabled && !1 !== config.enabled && addSearchUI();
@@ -18105,7 +19473,10 @@ handleNavigation();
 cleanup();
 }
 };
-(cb => {
+window.YouTubePlusLazyLoader ? window.YouTubePlusLazyLoader.register("playlist-search", ensureInit, {
+priority: 1,
+shouldLoad: isRelevantRoute
+}) : (cb => {
 "loading" === document.readyState ? document.addEventListener("DOMContentLoaded", cb, {
 once: !0
 }) : cb();
@@ -18130,25 +19501,56 @@ return;
 }
 setFeatureEnabled(nextEnabled);
 } catch (e) {
-setFeatureEnabled(loadFeatureEnabled());
+setFeatureEnabled(window.YouTubeUtils?.loadFeatureEnabled?.("enablePlaylistSearch") ?? !0);
 }
 });
 })();
 
 !(function() {
 "use strict";
+const setTimeout_ = setTimeout.bind(window);
 const _createHTML = window._ytplusCreateHTML || (s => s);
-const qs = sel => window.YouTubeUtils?.$(sel) || document.querySelector(sel);
-const qsAll = sel => window.YouTubeUtils?.$$(sel) || Array.from(document.querySelectorAll(sel));
-const t = window.YouTubeUtils?.t || (key => key || "");
+const renderTemplateClone = (container, html) => {
+if (!(container instanceof Element)) {
+return;
+}
+const template = document.createElement("template");
+const range = document.createRange();
+const root = document.body || document.documentElement;
+root && range.selectNode(root);
+template.content.append(range.createContextualFragment(_createHTML(html)));
+container.replaceChildren(template.content.cloneNode(!0));
+};
+const qs = window.YouTubeUtils?.$ || document.querySelector.bind(document);
+const qsAll = window.YouTubeUtils?.$$ || (sel => Array.from(document.querySelectorAll(String(sel || ""))));
+const byId = window.YouTubeUtils?.byId || (id => document.getElementById(id));
+const t = window.YouTubeUtils.t;
+const isAllowedHost = (host, domain) => {
+const normalizedHost = String(host || "").toLowerCase();
+const normalizedDomain = String(domain || "").toLowerCase();
+return normalizedHost === normalizedDomain || normalizedHost.endsWith(`.${normalizedDomain}`);
+};
 function loadEnableThumbnail() {
 return window.YouTubeUtils?.loadFeatureEnabled?.("enableThumbnail") ?? !0;
 }
 let thumbnailFeatureEnabled = loadEnableThumbnail();
 const isEnabled = () => thumbnailFeatureEnabled;
+const isRelevantRoute = () => {
+try {
+const host = window.location.hostname || "";
+if (!isAllowedHost(host, "youtube.com") || "music.youtube.com" === host) {
+return !1;
+}
+const path = window.location.pathname || "";
+return "/watch" === path || path.startsWith("/shorts") || path.startsWith("/channel/") || path.startsWith("/@");
+} catch (e) {
+return !1;
+}
+};
 let started = !1;
 let startScheduled = !1;
-let mutationObserver = null;
+let mutationObserverSubId = null;
+let modalCleanupSubId = null;
 let urlChangeCleanup = null;
 let thumbnailStylesInjected = !1;
 function parseAndValidateUrl(url) {
@@ -18156,20 +19558,20 @@ try {
 const parsedUrl = new URL(url);
 return (function hasValidProtocol(parsedUrl) {
 if ("https:" !== parsedUrl.protocol) {
-console.warn("[YouTube+][Thumbnail]", "Only HTTPS URLs are allowed");
+window.console.warn("[YouTube+][Thumbnail]", "Only HTTPS URLs are allowed");
 return !1;
 }
 return !0;
 })(parsedUrl) && (function hasValidDomain(parsedUrl) {
 const {hostname} = parsedUrl;
-if (!hostname.endsWith("ytimg.com") && !hostname.endsWith("youtube.com")) {
-console.warn("[YouTube+][Thumbnail]", "Only YouTube image domains are allowed");
+if (!isAllowedHost(hostname, "ytimg.com") && !isAllowedHost(hostname, "youtube.com")) {
+window.console.warn("[YouTube+][Thumbnail]", "Only YouTube image domains are allowed");
 return !1;
 }
 return !0;
 })(parsedUrl) ? parsedUrl : null;
 } catch (error) {
-console.error("[YouTube+][Thumbnail]", "Invalid URL:", error);
+window.console.error("[YouTube+][Thumbnail]", "Invalid URL:", error);
 return null;
 }
 }
@@ -18185,7 +19587,7 @@ async function checkImageExists(url) {
 try {
 if (!(function isValidUrlString(url) {
 if (!url || "string" != typeof url) {
-console.warn("[YouTube+][Thumbnail]", "Invalid URL provided");
+window.console.warn("[YouTube+][Thumbnail]", "Invalid URL provided");
 return !1;
 }
 return !0;
@@ -18198,7 +19600,7 @@ return !1;
 }
 const headResult = await (async function checkViaHeadRequest(url) {
 const controller = new AbortController;
-const timeoutId = setTimeout(() => controller.abort(), 5e3);
+const timeoutId = setTimeout_(() => controller.abort(), 5e3);
 try {
 const response = await fetch(url, {
 method: "HEAD",
@@ -18215,7 +19617,7 @@ return null !== headResult ? headResult : await (function checkViaImageLoad(url)
 return new Promise(resolve => {
 const img = document.createElement("img");
 img.style.display = "none";
-const timeout = setTimeout(() => {
+const timeout = setTimeout_(() => {
 cleanupImageElement(img);
 resolve(!1);
 }, 3e3);
@@ -18235,7 +19637,7 @@ img.src = url;
 });
 })(url);
 } catch (error) {
-console.error("[YouTube+][Thumbnail]", "Error checking image:", error);
+window.console.error("[YouTube+][Thumbnail]", "Error checking image:", error);
 return !1;
 }
 }
@@ -18265,18 +19667,18 @@ try {
 if (!(function isValidVideoId(videoId) {
 return !(!videoId || "string" != typeof videoId || !/^[a-zA-Z0-9_-]{11}$/.test(videoId));
 })(videoId)) {
-console.error("[YouTube+][Thumbnail]", "Invalid video ID:", videoId);
+window.console.error("[YouTube+][Thumbnail]", "Invalid video ID:", videoId);
 return;
 }
 if (!(function isValidOverlayElement(overlayElement) {
 return !!(overlayElement && overlayElement instanceof HTMLElement);
 })(overlayElement)) {
-console.error("[YouTube+][Thumbnail]", "Invalid overlay element");
+window.console.error("[YouTube+][Thumbnail]", "Invalid overlay element");
 return;
 }
 const originalSvg = overlayElement.querySelector("svg");
 if (!originalSvg) {
-console.warn("[YouTube+][Thumbnail]", "No SVG found in overlay element");
+window.console.warn("[YouTube+][Thumbnail]", "No SVG found in overlay element");
 return;
 }
 const spinner = replaceWithSpinner(overlayElement, originalSvg);
@@ -18301,19 +19703,19 @@ showImageModal(isPrimaryAvailable ? urls.primary : urls.fallback);
 try {
 spinner && spinner.parentNode && overlayElement.replaceChild(originalSvg, spinner);
 } catch (restoreError) {
-console.error("[YouTube+][Thumbnail]", "Error restoring original SVG:", restoreError);
+window.console.error("[YouTube+][Thumbnail]", "Error restoring original SVG:", restoreError);
 spinner && spinner.parentNode && spinner.parentNode.removeChild(spinner);
 }
 })(overlayElement, spinner, originalSvg);
 }
 } catch (error) {
-console.error("[YouTube+][Thumbnail]", "Error opening thumbnail:", error);
+window.console.error("[YouTube+][Thumbnail]", "Error opening thumbnail:", error);
 }
 }
 function createDownloadButton(img) {
 const downloadBtn = document.createElement("button");
-downloadBtn.className = "thumbnail-modal-download thumbnail-modal-action-btn";
-downloadBtn.innerHTML = _createHTML('\n            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">\n                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>\n                <polyline points="7 10 12 15 17 10"/>\n                <line x1="12" y1="15" x2="12" y2="3"/>\n            </svg>\n        ');
+downloadBtn.className = "thumbnail-modal-download thumbnail-modal-action-btn ytp-plus-settings-close";
+renderTemplateClone(downloadBtn, '\n            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path opacity="0.5" d="M3 15C3 17.8284 3 19.2426 3.87868 20.1213C4.75736 21 6.17157 21 9 21H15C17.8284 21 19.2426 21 20.1213 20.1213C21 19.2426 21 17.8284 21 15" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="--darkreader-inline-stroke: var(--darkreader-text-ffffff, #cad3f5);" data-darkreader-inline-stroke=""></path> <path d="M12 3V16M12 16L16 11.625M12 16L8 11.625" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="--darkreader-inline-stroke: var(--darkreader-text-ffffff, #cad3f5);" data-darkreader-inline-stroke=""></path></svg>\n        ');
 downloadBtn.title = t("download");
 downloadBtn.setAttribute("aria-label", t("download"));
 downloadBtn.addEventListener("click", async e => {
@@ -18322,7 +19724,7 @@ e.stopPropagation();
 try {
 await (async function downloadImageAsBlob(imgSrc) {
 const controller = new AbortController;
-const timerId = setTimeout(() => controller.abort(), 15e3);
+const timerId = setTimeout_(() => controller.abort(), 15e3);
 let response;
 try {
 response = await fetch(imgSrc, {
@@ -18348,7 +19750,7 @@ a.download = "thumbnail.jpg";
 document.body.appendChild(a);
 a.click();
 a.remove();
-setTimeout(() => URL.revokeObjectURL(blobUrl), 1500);
+setTimeout_(() => URL.revokeObjectURL(blobUrl), 1500);
 })(img.src);
 } catch (e) {
 window.open(img.src, "_blank");
@@ -18363,23 +19765,23 @@ return;
 }
 if (!(function validateModalUrl(url) {
 if (!url || "string" != typeof url) {
-console.error("[YouTube+][Thumbnail]", "Invalid URL provided to modal");
+window.console.error("[YouTube+][Thumbnail]", "Invalid URL provided to modal");
 return !1;
 }
 try {
 const parsedUrl = new URL(url);
 if ("https:" !== parsedUrl.protocol) {
-console.error("[YouTube+][Thumbnail]", "Only HTTPS URLs are allowed");
+window.console.error("[YouTube+][Thumbnail]", "Only HTTPS URLs are allowed");
 return !1;
 }
 const allowedDomains = [ "ytimg.com", "youtube.com", "ggpht.com", "googleusercontent.com" ];
-if (!allowedDomains.some(d => parsedUrl.hostname.endsWith(d))) {
-console.error("[YouTube+][Thumbnail]", "Image domain not allowed:", parsedUrl.hostname);
+if (!allowedDomains.some(d => isAllowedHost(parsedUrl.hostname, d))) {
+window.console.error("[YouTube+][Thumbnail]", "Image domain not allowed:", parsedUrl.hostname);
 return !1;
 }
 return !0;
 } catch (urlError) {
-console.error("[YouTube+][Thumbnail]", "Invalid URL format:", urlError);
+window.console.error("[YouTube+][Thumbnail]", "Invalid URL format:", urlError);
 return !1;
 }
 })(url)) {
@@ -18387,12 +19789,12 @@ return;
 }
 qsAll(".thumbnail-modal-overlay").forEach(m => m.remove());
 const overlay = document.createElement("div");
-overlay.className = "thumbnail-modal-overlay";
+overlay.className = "thumbnail-modal-overlay ytp-plus-modal-overlay";
 overlay.setAttribute("role", "dialog");
 overlay.setAttribute("aria-modal", "true");
 overlay.setAttribute("aria-label", "Thumbnail preview");
 const content = document.createElement("div");
-content.className = "thumbnail-modal-content";
+content.className = "thumbnail-modal-content ytp-plus-modal-content";
 const img = (function createModalImage(url) {
 const img = document.createElement("img");
 img.className = "thumbnail-modal-img";
@@ -18407,10 +19809,11 @@ const optionsDiv = document.createElement("div");
 optionsDiv.className = "thumbnail-modal-options";
 const closeBtn = (function createCloseButton(overlay) {
 const closeBtn = document.createElement("button");
-closeBtn.className = "thumbnail-modal-close thumbnail-modal-action-btn";
-closeBtn.innerHTML = _createHTML('\n            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">\n                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/>\n            </svg>\n            ');
-closeBtn.title = t("close");
-closeBtn.setAttribute("aria-label", t("close"));
+closeBtn.className = "thumbnail-modal-close thumbnail-modal-action-btn ytp-plus-settings-close";
+closeBtn.setAttribute("data-shared-close-button", "ytp-plus-close-settings");
+renderTemplateClone(closeBtn, '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14.5 9.50002L9.5 14.5M9.49998 9.5L14.5 14.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg>');
+closeBtn.title = t("closeButton") || t("close");
+closeBtn.setAttribute("aria-label", t("closeButton") || t("close"));
 closeBtn.addEventListener("click", e => {
 e.preventDefault();
 e.stopPropagation();
@@ -18420,8 +19823,8 @@ return closeBtn;
 })(overlay);
 const newTabBtn = (function createNewTabButton(img) {
 const newTabBtn = document.createElement("button");
-newTabBtn.className = "thumbnail-modal-open thumbnail-modal-action-btn";
-newTabBtn.innerHTML = _createHTML('\n            <svg fill="currentColor" viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg" stroke="currentColor">\n        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>\n        <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>\n        <g id="SVGRepo_iconCarrier"><path d="M14.293,9.707a1,1,0,0,1,0-1.414L18.586,4H16a1,1,0,0,1,0-2h5a1,1,0,0,1,1,1V8a1,1,0,0,1-2,0V5.414L15.707,9.707a1,1,0,0,1-1.414,0ZM3,22H8a1,1,0,0,0,0-2H5.414l4.293-4.293a1,1,0,0,0-1.414-1.414L4,18.586V16a1,1,0,0,0-2,0v5A1,1,0,0,0,3,22Z"></path></g>\n      </svg>\n        ');
+newTabBtn.className = "thumbnail-modal-open thumbnail-modal-action-btn ytp-plus-settings-close";
+renderTemplateClone(newTabBtn, '\n            <svg fill="currentColor" viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg" stroke="currentColor">\n        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>\n        <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>\n        <g id="SVGRepo_iconCarrier"><path d="M14.293,9.707a1,1,0,0,1,0-1.414L18.586,4H16a1,1,0,0,1,0-2h5a1,1,0,0,1,1,1V8a1,1,0,0,1-2,0V5.414L15.707,9.707a1,1,0,0,1-1.414,0ZM3,22H8a1,1,0,0,0,0-2H5.414l4.293-4.293a1,1,0,0,0-1.414-1.414L4,18.586V16a1,1,0,0,0-2,0v5A1,1,0,0,0,3,22Z"></path></g>\n      </svg>\n        ');
 newTabBtn.title = t("clickToOpen");
 newTabBtn.setAttribute("aria-label", t("clickToOpen"));
 newTabBtn.addEventListener("click", e => {
@@ -18470,18 +19873,24 @@ focusTarget && focusTarget.focus();
 });
 if (window.YouTubePlusModalHandlers && window.YouTubePlusModalHandlers.createFocusTrap) {
 const removeTrap = window.YouTubePlusModalHandlers.createFocusTrap(overlay);
-const obs = new MutationObserver(() => {
+const coordinator = window.YouTubeMutationCoordinator;
+if (coordinator?.subscribeRoot) {
+modalCleanupSubId = "thumbnail::modalCleanup";
+coordinator.subscribeRoot(modalCleanupSubId, () => {
 if (!overlay.isConnected) {
 removeTrap();
-obs.disconnect();
+coordinator.unsubscribe(modalCleanupSubId);
+modalCleanupSubId = null;
 }
+}, {
+childList: !0,
+attributes: !1,
+subtree: !0
 });
-obs.observe(document.body, {
-childList: !0
-});
+}
 }
 } catch (error) {
-console.error("[YouTube+][Thumbnail]", "Error showing modal:", error);
+window.console.error("[YouTube+][Thumbnail]", "Error showing modal:", error);
 }
 }
 let thumbnailPreviewCurrentVideoId = "";
@@ -18493,7 +19902,7 @@ return qs("#movie_player") || qs("ytd-player");
 })();
 if (!player) {
 thumbnailInsertionAttempts++;
-thumbnailInsertionAttempts < 10 ? setTimeout(attemptInsertion, 500) : thumbnailInsertionAttempts = 0;
+thumbnailInsertionAttempts < 10 ? setTimeout_(attemptInsertion, 500) : thumbnailInsertionAttempts = 0;
 return;
 }
 let overlay = player.querySelector("#thumbnailPreview-player-overlay");
@@ -18535,9 +19944,9 @@ ke.preventDefault();
 overlay.click();
 }
 });
-const playerAny = player;
-"static" === getComputedStyle(playerAny).position && (playerAny.style.position = "relative");
-playerAny.appendChild(overlay);
+const playerElement = player;
+"static" === getComputedStyle(playerElement).position && (playerElement.style.position = "relative");
+playerElement.appendChild(overlay);
 return;
 }
 if (overlay.dataset.videoId !== thumbnailPreviewCurrentVideoId) {
@@ -18550,10 +19959,7 @@ function addOrUpdateThumbnailImage() {
 if (!isEnabled()) {
 return;
 }
-if (!(function isWatchPage() {
-const url = new URL(window.location.href);
-return "/watch" === url.pathname && url.searchParams.has("v");
-})()) {
+if (!window.YouTubeUtils?.isWatchPage?.(window.location.href)) {
 return;
 }
 const newVideoId = (function getCurrentVideoId() {
@@ -18602,12 +20008,12 @@ const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
 path.setAttribute("d", "m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21");
 svg.appendChild(path);
 overlay.appendChild(svg);
-overlay.style.cssText = "\n        position: absolute;\n        bottom: 8px;\n        left: 8px;\n        background: rgba(0, 0, 0, 0.3);\n        width: 28px;\n        height: 28px;\n        display: flex;\n        align-items: center;\n        justify-content: center;\n        border-radius: 4px;\n        cursor: pointer;\n        z-index: 1000;\n        opacity: 0;\n        transition: all 0.2s ease;\n      ";
+overlay.style.cssText = "\n        position: absolute;\n        bottom: 8px;\n        left: 8px;\n        background: var(--yt-thumbnail-overlay-idle);\n        width: 28px;\n        height: 28px;\n        display: flex;\n        align-items: center;\n        justify-content: center;\n        border-radius: 4px;\n        cursor: pointer;\n        z-index: 1000;\n        opacity: 0;\n        transition: all 0.2s ease;\n      ";
 overlay.onmouseenter = () => {
-overlay.style.background = "rgba(0, 0, 0, 0.7)";
+overlay.style.background = "var(--yt-thumbnail-overlay-hover)";
 };
 overlay.onmouseleave = () => {
-overlay.style.background = "rgba(0, 0, 0, 0.3)";
+overlay.style.background = "var(--yt-thumbnail-overlay-idle)";
 };
 overlay.onclick = async e => {
 e.preventDefault();
@@ -18633,12 +20039,12 @@ return null;
 const match = thumbnailSrc.match(/\/vi\/([^\/]+)\//);
 const videoId = match ? match[1] : null;
 if (videoId && !/^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
-console.warn("[YouTube+][Thumbnail]", "Invalid video ID format:", videoId);
+window.console.warn("[YouTube+][Thumbnail]", "Invalid video ID format:", videoId);
 return null;
 }
 return videoId;
 } catch (error) {
-console.error("[YouTube+][Thumbnail]", "Error extracting video ID:", error);
+window.console.error("[YouTube+][Thumbnail]", "Error extracting video ID:", error);
 return null;
 }
 })(img.src);
@@ -18666,12 +20072,12 @@ return null;
 const match = href.match(/\/shorts\/([^\/\?]+)/);
 const shortsId = match ? match[1] : null;
 if (shortsId && !/^[a-zA-Z0-9_-]{11}$/.test(shortsId)) {
-console.warn("[YouTube+][Thumbnail]", "Invalid shorts ID format:", shortsId);
+window.console.warn("[YouTube+][Thumbnail]", "Invalid shorts ID format:", shortsId);
 return null;
 }
 return shortsId;
 } catch (error) {
-console.error("[YouTube+][Thumbnail]", "Error extracting shorts ID:", error);
+window.console.error("[YouTube+][Thumbnail]", "Error extracting shorts ID:", error);
 return null;
 }
 })(link.href);
@@ -18750,12 +20156,12 @@ const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
 path.setAttribute("d", "M20 21a8 8 0 0 0-16 0");
 svg.appendChild(path);
 overlay.appendChild(svg);
-overlay.style.cssText = "\n        position: absolute;\n        top: 50%;\n        left: 50%;\n        transform: translate(-50%, -50%);\n        background: rgba(0, 0, 0, 0.7);\n        width: 28px;\n        height: 28px;\n        display: flex;\n        align-items: center;\n        justify-content: center;\n        border-radius: 50%;\n        cursor: pointer;\n        z-index: 1000;\n        opacity: 0;\n        transition: all 0.2s ease;\n      ";
+overlay.style.cssText = "\n        position: absolute;\n        top: 50%;\n        left: 50%;\n        transform: translate(-50%, -50%);\n        background: var(--yt-thumbnail-overlay-hover);\n        width: 28px;\n        height: 28px;\n        display: flex;\n        align-items: center;\n        justify-content: center;\n        border-radius: 50%;\n        cursor: pointer;\n        z-index: 1000;\n        opacity: 0;\n        transition: all 0.2s ease;\n      ";
 overlay.onmouseenter = () => {
-overlay.style.background = "rgba(0, 0, 0, 0.9)";
+overlay.style.background = "var(--yt-thumbnail-overlay-active)";
 };
 overlay.onmouseleave = () => {
-overlay.style.background = "rgba(0, 0, 0, 0.7)";
+overlay.style.background = "var(--yt-thumbnail-overlay-hover)";
 };
 return overlay;
 })();
@@ -18812,12 +20218,12 @@ const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polylin
 polyline.setAttribute("points", "21,15 16,10 5,21");
 svg.appendChild(polyline);
 overlay.appendChild(svg);
-overlay.style.cssText = "\n        position: absolute;\n        bottom: 8px;\n        left: 8px;\n        background: rgba(0, 0, 0, 0.7);\n        width: 28px;\n        height: 28px;\n        display: flex;\n        align-items: center;\n        justify-content: center;\n        border-radius: 4px;\n        cursor: pointer;\n        z-index: 1000;\n        opacity: 0;\n        transition: all 0.2s ease;\n      ";
+overlay.style.cssText = "\n        position: absolute;\n        bottom: 8px;\n        left: 8px;\n        background: var(--yt-thumbnail-overlay-hover);\n        width: 28px;\n        height: 28px;\n        display: flex;\n        align-items: center;\n        justify-content: center;\n        border-radius: 4px;\n        cursor: pointer;\n        z-index: 1000;\n        opacity: 0;\n        transition: all 0.2s ease;\n      ";
 overlay.onmouseenter = () => {
-overlay.style.background = "rgba(0, 0, 0, 0.9)";
+overlay.style.background = "var(--yt-thumbnail-overlay-active)";
 };
 overlay.onmouseleave = () => {
-overlay.style.background = "rgba(0, 0, 0, 0.7)";
+overlay.style.background = "var(--yt-thumbnail-overlay-hover)";
 };
 return overlay;
 })();
@@ -18902,7 +20308,7 @@ return;
 }
 const now = Date.now();
 const dueIn = Math.max(minDelay, Math.max(0, 350 - (now - lastProcessAllTime)));
-processAllTimerId = setTimeout(() => {
+processAllTimerId = setTimeout_(() => {
 processAllTimerId = null;
 lastProcessAllTime = Date.now();
 try {
@@ -18911,7 +20317,7 @@ return;
 }
 processAll();
 } catch (e) {
-console.error("[YouTube+][Thumbnail]", "processAll failed:", e);
+window.console.error("[YouTube+][Thumbnail]", "processAll failed:", e);
 }
 }, dueIn);
 }
@@ -18925,12 +20331,12 @@ processAllTimerId = null;
 }
 } catch (e) {}
 !(function teardownMutationObserver() {
-if (mutationObserver) {
-try {
-mutationObserver.disconnect();
-} catch (e) {}
-mutationObserver = null;
+if (!mutationObserverSubId) {
+return;
 }
+const coordinator = window.YouTubeMutationCoordinator;
+coordinator?.unsubscribe && coordinator.unsubscribe(mutationObserverSubId);
+mutationObserverSubId = null;
 })();
 if (urlChangeCleanup) {
 try {
@@ -18954,7 +20360,7 @@ playerOverlay && playerOverlay.remove();
 try {
 window.YouTubeUtils?.StyleManager?.remove && window.YouTubeUtils.StyleManager.remove("thumbnail-viewer-styles");
 } catch (e) {}
-const el = document.getElementById("ytplus-thumbnail-styles");
+const el = byId("ytplus-thumbnail-styles");
 if (el) {
 try {
 el.remove();
@@ -18970,7 +20376,7 @@ started = !0;
 !(function ensureThumbnailStyles() {
 if (!thumbnailStylesInjected) {
 try {
-const css = "\n        :root { --thumbnail-btn-bg-light: rgba(255, 255, 255, 0.85); --thumbnail-btn-bg-dark: rgba(0, 0, 0, 0.7); --thumbnail-btn-hover-bg-light: rgba(255, 255, 255, 1); --thumbnail-btn-hover-bg-dark: rgba(0, 0, 0, 0.9); --thumbnail-btn-color-light: #222; --thumbnail-btn-color-dark: #fff; --thumbnail-modal-bg-light: rgba(255, 255, 255, 0.95); --thumbnail-modal-bg-dark: rgba(34, 34, 34, 0.85); --thumbnail-modal-title-light: #222; --thumbnail-modal-title-dark: #fff; --thumbnail-modal-btn-bg-light: rgba(0, 0, 0, 0.08); --thumbnail-modal-btn-bg-dark: rgba(255, 255, 255, 0.08); --thumbnail-modal-btn-hover-bg-light: rgba(0, 0, 0, 0.18); --thumbnail-modal-btn-hover-bg-dark: rgba(255, 255, 255, 0.18); --thumbnail-modal-btn-color-light: #222; --thumbnail-modal-btn-color-dark: #fff; --thumbnail-modal-btn-hover-color-light: #ff4444; --thumbnail-modal-btn-hover-color-dark: #ff4444; --thumbnail-glass-blur: blur(18px) saturate(180%); --thumbnail-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); --thumbnail-glass-border: rgba(255, 255, 255, 0.2); }\n        html[dark], body[dark] { --thumbnail-btn-bg: var(--thumbnail-btn-bg-dark); --thumbnail-btn-hover-bg: var(--thumbnail-btn-hover-bg-dark); --thumbnail-btn-color: var(--thumbnail-btn-color-dark); --thumbnail-modal-bg: var(--thumbnail-modal-bg-dark); --thumbnail-modal-title: var(--thumbnail-modal-title-dark); --thumbnail-modal-btn-bg: var(--thumbnail-modal-btn-bg-dark); --thumbnail-modal-btn-hover-bg: var(--thumbnail-modal-btn-hover-bg-dark); --thumbnail-modal-btn-color: var(--thumbnail-modal-btn-color-dark); --thumbnail-modal-btn-hover-color: var(--thumbnail-modal-btn-hover-color-dark); }\n        html:not([dark]) { --thumbnail-btn-bg: var(--thumbnail-btn-bg-light); --thumbnail-btn-bg: var(--thumbnail-btn-bg-light); --thumbnail-btn-hover-bg: var(--thumbnail-btn-hover-bg-light); --thumbnail-btn-color: var(--thumbnail-btn-color-light); --thumbnail-modal-bg: var(--thumbnail-modal-bg-light); --thumbnail-modal-title: var(--thumbnail-modal-title-light); --thumbnail-modal-btn-bg: var(--thumbnail-modal-btn-bg-light); --thumbnail-modal-btn-hover-bg: var(--thumbnail-modal-btn-hover-bg-light); --thumbnail-modal-btn-color: var(--thumbnail-modal-btn-color-light); --thumbnail-modal-btn-hover-color: var(--thumbnail-modal-btn-hover-color-light); }\n        .thumbnail-overlay-container { position: absolute; bottom: 8px; left: 8px; z-index: 9999; opacity: 0; transition: opacity 0.2s ease; }\n        .thumbnail-overlay-button { width: 28px; height: 28px; background: var(--thumbnail-btn-bg); border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--thumbnail-btn-color); position: relative; box-shadow: var(--thumbnail-glass-shadow); backdrop-filter: var(--thumbnail-glass-blur); -webkit-backdrop-filter: var(--thumbnail-glass-blur); border: 1px solid var(--thumbnail-glass-border); }\n        .thumbnail-overlay-button:hover { background: var(--thumbnail-btn-hover-bg); }\n        .thumbnail-dropdown { position: absolute; bottom: 100%; left: 0; background: var(--thumbnail-btn-hover-bg); border-radius: 8px; padding: 4px; margin-bottom: 4px; display: none; flex-direction: column; min-width: 140px; box-shadow: var(--thumbnail-glass-shadow); z-index: 10000; backdrop-filter: var(--thumbnail-glass-blur); -webkit-backdrop-filter: var(--thumbnail-glass-blur); border: 1px solid var(--thumbnail-glass-border); }\n        .thumbnail-dropdown.show { display: flex !important; }\n        .thumbnail-dropdown-item { background: none; border: none; color: var(--thumbnail-btn-color); padding: 8px 12px; cursor: pointer; border-radius: 4px; font-size: 12px; text-align: left; white-space: nowrap; transition: background-color 0.2s ease; }\n        .thumbnail-dropdown-item:hover { background: rgba(255,255,255,0.06); }\n        .thumbnailPreview-button { position: absolute; bottom: 10px; left: 5px; background-color: var(--thumbnail-btn-bg); color: var(--thumbnail-btn-color); border: none; border-radius: 6px; padding: 3px; font-size: 18px; cursor: pointer; z-index: 2000; opacity: 0; transition: opacity 0.3s; display: flex; align-items: center; justify-content: center; box-shadow: var(--thumbnail-glass-shadow); backdrop-filter: var(--thumbnail-glass-blur); -webkit-backdrop-filter: var(--thumbnail-glass-blur); border: 1px solid var(--thumbnail-glass-border); }\n        .thumbnailPreview-container { position: relative; }\n        .thumbnailPreview-container:hover .thumbnailPreview-button { opacity: 1; }\n        .thumbnail-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.55); z-index: 100000; display: flex; align-items: center; justify-content: center; animation: fadeInModal 0.22s cubic-bezier(.4,0,.2,1); backdrop-filter: blur(8px) saturate(140%); -webkit-backdrop-filter: blur(8px) saturate(140%); }\n        .thumbnail-modal-content { background: var(--thumbnail-modal-bg); border-radius: 20px; box-shadow: 0 12px 40px rgba(0,0,0,0.45); max-width: 78vw; max-height: 90vh; overflow: auto; position: relative; display: flex; flex-direction: column; align-items: center; animation: scaleInModal 0.22s cubic-bezier(.4,0,.2,1); border: 1.5px solid var(--thumbnail-glass-border); backdrop-filter: blur(14px) saturate(150%); -webkit-backdrop-filter: blur(14px) saturate(150%);}\n        /* Wrapper to place content and action buttons side-by-side */\n        .thumbnail-modal-wrapper { display: flex; align-items: flex-start; gap: 12px; }\n        .thumbnail-modal-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }\n        .thumbnail-modal-action-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--thumbnail-modal-btn-bg); border: 1px solid rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.2); transition: transform 0.12s ease, background 0.12s ease; color: var(--thumbnail-modal-btn-color); }\n        .thumbnail-modal-action-btn:hover { transform: translateY(-2px); }\n        .thumbnail-modal-close { }\n        .thumbnail-modal-open { }\n        .thumbnail-modal-img { max-width: 72vw; max-height: 70vh; box-shadow: var(--thumbnail-glass-shadow); background: #222; border: 1px solid var(--thumbnail-glass-border); }\n        .thumbnail-modal-options { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }\n        .thumbnail-modal-option-btn { background: var(--thumbnail-modal-btn-bg); color: var(--thumbnail-modal-btn-color); border: none; border-radius: 8px; padding: 8px 18px; font-size: 14px; cursor: pointer; transition: background 0.2s; margin-bottom: 6px; box-shadow: var(--thumbnail-glass-shadow); backdrop-filter: var(--thumbnail-glass-blur); -webkit-backdrop-filter: var(--thumbnail-glass-blur); border: 1px solid var(--thumbnail-glass-border); }\n        .thumbnail-modal-option-btn:hover { background: var(--thumbnail-modal-btn-hover-bg); color: var(--thumbnail-modal-btn-hover-color); }\n        .thumbnail-modal-title { font-size: 18px; font-weight: 600; color: var(--thumbnail-modal-title); margin-bottom: 10px; text-align: center; text-shadow: 0 2px 8px rgba(0,0,0,0.15); }\n        /* fadeInModal, scaleInModal defined in shared-keyframes (basic.js) */\n      ";
+const css = "\n        .thumbnail-overlay-container { position: absolute; bottom: 8px; left: 8px; z-index: var(--yt-z-overlay); opacity: 0; transition: opacity 0.2s ease; }\n        .thumbnail-overlay-button { width: 28px; height: 28px; background: var(--yt-glass-bg); border: none; border-radius: var(--yt-radius-xs); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--yt-text-primary); position: relative; box-shadow: var(--yt-glass-shadow); backdrop-filter: var(--yt-glass-blur); -webkit-backdrop-filter: var(--yt-glass-blur); border: 1px solid var(--yt-glass-border); }\n        .thumbnail-overlay-button svg{width:16px;height:16px;display:block;flex:none;}\n        .thumbnail-overlay-button:hover { background: var(--yt-hover-bg); }\n        .thumbnail-dropdown { position: absolute; bottom: 100%; left: 0; background: var(--yt-glass-bg); border-radius: var(--yt-radius-xs); padding: 4px; margin-bottom: 4px; display: none; flex-direction: column; min-width: 140px; box-shadow: var(--yt-glass-shadow); z-index: var(--yt-z-flyout); backdrop-filter: var(--yt-glass-blur); -webkit-backdrop-filter: var(--yt-glass-blur); border: 1px solid var(--yt-glass-border); }\n        .thumbnail-dropdown.show { display: flex !important; }\n        .thumbnail-dropdown-item { background: none; border: none; color: var(--yt-text-primary); padding: 8px 12px; cursor: pointer; border-radius: 4px; font-size: 12px; text-align: left; white-space: nowrap; transition: background-color 0.2s ease; }\n        .thumbnail-dropdown-item:hover { background: var(--yt-hover-bg); }\n        .thumbnailPreview-button { position: absolute; bottom: 10px; left: 5px; background-color: var(--yt-glass-bg); color: var(--yt-text-primary); border: none; border-radius: var(--yt-radius-xs); padding: 3px; font-size: 18px; cursor: pointer; z-index: var(--yt-z-overlay); opacity: 0; transition: opacity 0.3s; display: flex; align-items: center; justify-content: center; box-shadow: var(--yt-glass-shadow); backdrop-filter: var(--yt-glass-blur); -webkit-backdrop-filter: var(--yt-glass-blur); border: 1px solid var(--yt-glass-border); }\n        .thumbnailPreview-button svg{width:16px;height:16px;display:block;flex:none;}\n        .thumbnailPreview-container { position: relative; }\n        .thumbnailPreview-container:hover .thumbnailPreview-button { opacity: 1; }\n        .thumbnail-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--yt-modal-bg); z-index: var(--yt-z-modal); display: flex; align-items: center; justify-content: center; animation: fadeInModal 0.22s cubic-bezier(.4,0,.2,1); backdrop-filter: blur(8px) saturate(140%); -webkit-backdrop-filter: blur(8px) saturate(140%); }\n        .thumbnail-modal-content { background: var(--yt-glass-bg); border-radius: var(--yt-radius-lg); box-shadow: 0 12px 40px var(--yt-timecode-panel-shadow); max-width: 78vw; max-height: 90vh; overflow: auto; position: relative; display: flex; flex-direction: column; align-items: center; animation: scaleInModal 0.22s cubic-bezier(.4,0,.2,1); border: 1.5px solid var(--yt-glass-border); backdrop-filter: blur(14px) saturate(150%); -webkit-backdrop-filter: blur(14px) saturate(150%);}\n        /* Wrapper to place content and action buttons side-by-side */\n        .thumbnail-modal-wrapper { display: flex; align-items: flex-start; gap: 12px; }\n        .thumbnail-modal-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }\n        .thumbnail-modal-action-btn { padding: 0; line-height: 0; }\n        .thumbnail-modal-action-btn svg{width:18px;height:18px;display:block;flex:none;}\n        .thumbnail-modal-close svg{width:36px;height:36px;}\n        .thumbnail-modal-close { }\n        .thumbnail-modal-open { }\n        .thumbnail-modal-img { max-width: 72vw; max-height: 70vh; box-shadow: var(--yt-glass-shadow); background: #222; border: 1px solid var(--yt-glass-border); }\n        .thumbnail-modal-options { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }\n        .thumbnail-modal-option-btn { background: var(--yt-button-bg); color: var(--yt-text-primary); border: none; border-radius: var(--yt-radius-xs); padding: 8px 18px; font-size: 14px; cursor: pointer; transition: background 0.2s,color .2s; margin-bottom: 6px; box-shadow: var(--yt-glass-shadow); backdrop-filter: var(--yt-glass-blur); -webkit-backdrop-filter: var(--yt-glass-blur); border: 1px solid var(--yt-glass-border); }\n        .thumbnail-modal-option-btn:hover { background: var(--yt-hover-bg); color: var(--yt-accent); }\n        .thumbnail-modal-title { font-size: 18px; font-weight: 600; color: var(--yt-text-primary); margin-bottom: 10px; text-align: center; text-shadow: 0 2px 8px var(--yt-shadow-deep-1); }\n        /* fadeInModal, scaleInModal are provided by design-system */\n      ";
 if (window.YouTubeUtils && YouTubeUtils.StyleManager && "function" == typeof YouTubeUtils.StyleManager.add) {
 YouTubeUtils.StyleManager.add("thumbnail-viewer-styles", css);
 } else {
@@ -18981,7 +20387,7 @@ s.textContent = css;
 }
 thumbnailStylesInjected = !0;
 } catch (e) {
-if (!document.getElementById("ytplus-thumbnail-styles")) {
+if (!byId("ytplus-thumbnail-styles")) {
 const s = document.createElement("style");
 s.id = "ytplus-thumbnail-styles";
 s.textContent = ".thumbnail-modal-img{max-width:72vw;max-height:70vh;}";
@@ -18994,7 +20400,7 @@ thumbnailStylesInjected = !0;
 urlChangeCleanup || (urlChangeCleanup = (function setupUrlChangeDetection() {
 let currentUrl = location.href;
 const onNavChange = () => {
-setTimeout(() => {
+setTimeout_(() => {
 if (isEnabled() && location.href !== currentUrl) {
 currentUrl = location.href;
 scheduleProcessAll(250);
@@ -19019,30 +20425,39 @@ window.removeEventListener("yt-navigate-finish", ytNavigateHandler);
 };
 })());
 !(function setupMutationObserver() {
-if (mutationObserver) {
+if (mutationObserverSubId) {
 return;
 }
-mutationObserver = new MutationObserver(() => {
-scheduleProcessAll(120);
-});
 const startObserving = () => {
-if (!mutationObserver) {
+const coordinator = window.YouTubeMutationCoordinator;
+if (!coordinator?.subscribeRoot) {
 return;
 }
-const target = document.querySelector("#content") || document.querySelector("#page-manager") || document.body;
-mutationObserver.observe(target, {
+const target = qs("#content") || qs("#page-manager") || document.body;
+mutationObserverSubId = "thumbnail::routeObserver";
+coordinator.subscribeRoot(mutationObserverSubId, () => {
+scheduleProcessAll(120);
+}, {
+selector: target instanceof Element ? void 0 : "#content, #page-manager",
 childList: !0,
+attributes: !1,
 subtree: target !== document.body
 });
-window.YouTubeUtils?.cleanupManager?.registerObserver && window.YouTubeUtils.cleanupManager.registerObserver(mutationObserver);
 };
 document.body ? startObserving() : document.addEventListener("DOMContentLoaded", startObserving);
 })();
 "function" == typeof requestIdleCallback ? requestIdleCallback(() => scheduleProcessAll(0), {
 timeout: 2e3
 }) : scheduleProcessAll(400);
-setTimeout(() => scheduleProcessAll(0), 900);
-setTimeout(() => scheduleProcessAll(0), 1800);
+setTimeout_(() => scheduleProcessAll(0), 900);
+setTimeout_(() => scheduleProcessAll(0), 1800);
+try {
+window.addEventListener("ytp:nav-refresh", () => {
+try {
+thumbnailFeatureEnabled && scheduleProcessAll(0);
+} catch (e) {}
+});
+} catch (e) {}
 }
 }
 function startMaybe() {
@@ -19052,20 +20467,26 @@ return;
 if (!isEnabled()) {
 return;
 }
+if (!isRelevantRoute()) {
+return;
+}
 startScheduled = !0;
 const run = () => {
 startScheduled = !1;
 start();
 };
-"loading" === document.readyState ? document.addEventListener("DOMContentLoaded", () => setTimeout(run, 100), {
+"loading" === document.readyState ? document.addEventListener("DOMContentLoaded", () => setTimeout_(run, 100), {
 once: !0
-}) : setTimeout(run, 100);
+}) : setTimeout_(run, 100);
 }
 function setEnabled(nextEnabled) {
 thumbnailFeatureEnabled = !1 !== nextEnabled;
 thumbnailFeatureEnabled ? startMaybe() : stop();
 }
-startMaybe();
+window.YouTubePlusLazyLoader ? window.YouTubePlusLazyLoader.register("thumbnail", startMaybe, {
+priority: 1,
+shouldLoad: isRelevantRoute
+}) : startMaybe();
 window.addEventListener("youtube-plus-settings-updated", e => {
 try {
 const enabledFromEvent = e.detail?.enableThumbnail;
@@ -19078,8 +20499,22 @@ setEnabled(loadEnableThumbnail());
 
 !(function() {
 "use strict";
-const _createHTML = window._ytplusCreateHTML || (s => s);
-const t = window.YouTubeUtils?.t || (key => key || "");
+const setTimeout_ = setTimeout.bind(window);
+const _createHTML = window._ytpDefaults?.createHTML || (s => s);
+const renderTemplateClone = (container, html) => {
+if (!(container instanceof Element)) {
+return;
+}
+const template = document.createElement("template");
+const range = document.createRange();
+const root = document.body || document.documentElement;
+root && range.selectNode(root);
+template.content.append(range.createContextualFragment(_createHTML(html)));
+container.replaceChildren(template.content.cloneNode(!0));
+};
+const t = window.YouTubeUtils.t;
+const qs = window.YouTubeUtils?.$ || ((selector, root) => (root || document).querySelector(selector));
+const byId = window.YouTubeUtils?.byId || (id => document.getElementById(id));
 const config = {
 enabled: !0,
 get shortcuts() {
@@ -19137,9 +20572,11 @@ lastAction: null,
 actionTimeout: null,
 editingShortcut: null,
 cachedVideo: null,
+downloadButton: null,
+downloadObserver: null,
+downloadEnsureQueued: !1,
 lastVideoCheck: 0,
-initialized: !1,
-routeObserver: null
+initialized: !1
 };
 const getCurrentVideo = (() => {
 const selectors = [ "ytd-reel-video-renderer[is-active] video", "#shorts-player video", "video" ];
@@ -19174,7 +20611,7 @@ return;
 }
 const parsed = JSON.parse(saved);
 if ("object" != typeof parsed || null === parsed) {
-console.warn("[YouTube+][Shorts]", "Invalid settings format");
+window.console.warn("[YouTube+][Shorts]", "Invalid settings format");
 return;
 }
 "boolean" == typeof parsed.enabled && (config.enabled = parsed.enabled);
@@ -19197,7 +20634,7 @@ editable: !1 !== sEditable
 }
 }
 } catch (error) {
-console.error("[YouTube+][Shorts]", "Error loading settings:", error);
+window.console.error("[YouTube+][Shorts]", "Error loading settings:", error);
 }
 },
 saveSettings: () => {
@@ -19208,7 +20645,7 @@ shortcuts: config.shortcuts
 };
 localStorage.setItem(config.storageKey, JSON.stringify(settingsToSave));
 } catch (error) {
-console.error("[YouTube+][Shorts]", "Error saving settings:", error);
+window.console.error("[YouTube+][Shorts]", "Error saving settings:", error);
 }
 },
 getDefaultShortcuts: () => ({
@@ -19269,16 +20706,39 @@ return element;
 }
 element = document.createElement("div");
 element.id = "shorts-keyboard-feedback";
-element.setAttribute("style", "\n          position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);\n          background:var(--shorts-feedback-bg,rgba(255,255,255,.1));\n          backdrop-filter:blur(16px) saturate(150%);\n          border:1px solid var(--shorts-feedback-border,rgba(255,255,255,.15));\n          border-radius:20px;\n          color:var(--shorts-feedback-color,#fff);\n          padding:18px 32px;font-size:20px;font-weight:700;\n          z-index:10000;opacity:0;visibility:hidden;pointer-events:none;\n          transition:all .3s cubic-bezier(.4,0,.2,1);text-align:center;\n          box-shadow:0 8px 32px rgba(0,0,0,.4);\n          background: rgba(155, 155, 155, 0.15);\n          border: 1px solid rgba(255,255,255,0.2);\n          box-shadow: 0 8px 32px 0 rgba(31,38,135,0.37);\n          backdrop-filter: blur(12px) saturate(180%);\n          -webkit-backdrop-filter: blur(12px) saturate(180%);\n        ");
 document.body.appendChild(element);
+element.style.position = "fixed";
+element.style.top = "50%";
+element.style.left = "50%";
+element.style.transform = "translate(-50%,-50%)";
+element.style.background = "var(--yt-shorts-feedback-bg-dark)";
+element.style.backdropFilter = "blur(12px) saturate(180%)";
+element.style.border = "1px solid var(--yt-shorts-border-light)";
+element.style.borderRadius = "20px";
+element.style.color = "var(--yt-text-primary,#fff)";
+element.style.padding = "18px 32px";
+element.style.fontSize = "20px";
+element.style.fontWeight = "700";
+element.style.zIndex = "10000";
+element.style.opacity = "0";
+element.style.visibility = "hidden";
+element.style.pointerEvents = "none";
+element.style.transition = "all .3s cubic-bezier(.4,0,.2,1)";
+element.style.textAlign = "center";
+element.style.boxShadow = "0 8px 32px 0 var(--yt-shorts-shadow-blue)";
+element.style.setProperty("-webkit-backdrop-filter", "blur(12px) saturate(180%)");
 return element;
 })();
 el.textContent = text;
 requestAnimationFrame(() => {
-el.setAttribute("style", (el.getAttribute("style") || "") + ";opacity:1;visibility:visible;transform:translate(-50%,-50%) scale(1.05)");
+el.style.opacity = "1";
+el.style.visibility = "visible";
+el.style.transform = "translate(-50%,-50%) scale(1.05)";
 });
-state.actionTimeout = setTimeout(() => {
-el.setAttribute("style", (el.getAttribute("style") || "").replace(/;opacity:[^;]*/g, "").replace(/;visibility:[^;]*/g, "").replace(/;transform:[^;]*/g, "") + ";opacity:0;visibility:hidden;transform:translate(-50%,-50%) scale(0.95)");
+state.actionTimeout = setTimeout_(() => {
+el.style.opacity = "0";
+el.style.visibility = "hidden";
+el.style.transform = "translate(-50%,-50%) scale(0.95)";
 }, 1500);
 }
 };
@@ -19300,7 +20760,7 @@ feedback.show("+5s");
 },
 toggleCaptions: () => {
 try {
-const container = document.querySelector("ytd-shorts-player-controls, ytd-reel-video-renderer, #shorts-player") || document;
+const container = qs("ytd-shorts-player-controls, ytd-reel-video-renderer, #shorts-player") || document;
 const buttons = container.querySelectorAll("button[aria-label]");
 for (const b of buttons) {
 const aria = (b.getAttribute("aria-label") || "").toLowerCase();
@@ -19341,7 +20801,7 @@ feedback.show(`${Math.round(100 * video.volume)}%`);
 mute: () => {
 const video = getCurrentVideo();
 try {
-const container = document.querySelector("ytd-shorts-player-controls, ytd-reel-video-renderer, #shorts-player") || document;
+const container = qs("ytd-shorts-player-controls, ytd-reel-video-renderer, #shorts-player") || document;
 const buttons = container.querySelectorAll("button[aria-label]");
 for (const b of buttons) {
 const aria = (b.getAttribute("aria-label") || "").toLowerCase();
@@ -19364,15 +20824,14 @@ showHelp: () => helpPanel.toggle()
 };
 const helpPanel = (() => {
 let panel = null;
-return {
-show: () => {
-const p = (() => {
+let dragListeners = null;
+const create = () => {
 if (panel) {
 return panel;
 }
 panel = document.createElement("div");
 panel.id = "shorts-keyboard-help";
-panel.className = "glass-panel shorts-help-panel";
+panel.className = "shorts-help-panel ytp-plus-shorts-overlay";
 panel.setAttribute("role", "dialog");
 panel.setAttribute("aria-modal", "true");
 panel.tabIndex = -1;
@@ -19381,10 +20840,10 @@ if (!panel) {
 return;
 }
 const p = panel;
-p.innerHTML = _createHTML(`\n            <div class="help-header">\n              <h3>${t("keyboardShortcuts")}</h3>\n              <button class="ytp-plus-settings-close help-close" type="button" aria-label="${t("closeButton")}">\n                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">\n                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/>\n                </svg>\n              </button>\n            </div>\n            <div class="help-content">\n              ${Object.entries(config.shortcuts).map(([action, shortcut]) => {
+renderTemplateClone(p, `\n            <div class="help-topbar">\n              <div class="help-header ytp-plus-settings-title">${t("keyboardShortcuts")}</div>\n              <button class="ytp-plus-settings-close help-close" data-shared-close-button="ytp-plus-close-settings" type="button" aria-label="${t("closeButton")}">\n                  <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">\n                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/>\n                  </svg>\n              </button>\n            </div>\n            <div class="help-body">\n              <div class="help-content">\n                ${Object.entries(config.shortcuts).map(([action, shortcut]) => {
 const sc = shortcut;
-return `<div class="help-item">\n                  <kbd data-action="${action}" ${!1 === sc.editable ? 'class="non-editable"' : ""}>${" " === shortcut.key ? "Space" : shortcut.key}</kbd>\n                  <span>${shortcut.description}</span>\n                </div>`;
-}).join("")}\n            </div>\n            <div class="help-footer">\n              <button class="ytp-plus-button ytp-plus-button-primary reset-all-shortcuts">${t("resetAll")}</button>\n            </div>\n          `);
+return `<div class="help-item">\n                    <kbd data-action="${action}" ${!1 === sc.editable ? 'class="non-editable"' : ""}>${" " === shortcut.key ? "Space" : shortcut.key}</kbd>\n                    <span>${shortcut.description}</span>\n                  </div>`;
+}).join("")}\n              </div>\n              <div class="help-actions">\n                <button class="ytp-plus-button ytp-plus-button-primary reset-all-shortcuts">${t("resetAll")}</button>\n              </div>\n            </div>\n          `);
 const helpClose = p.querySelector(".help-close");
 helpClose && (helpClose.onclick = () => helpPanel.hide());
 const resetBtn = p.querySelector(".reset-all-shortcuts");
@@ -19407,11 +20866,65 @@ const sc = config.shortcuts;
 editShortcut(act, sc[act]?.key || "");
 };
 });
+(panelEl => {
+dragListeners?.abort();
+dragListeners = new AbortController;
+const {signal} = dragListeners;
+const dragHandle = panelEl.querySelector(".help-content");
+if (!(dragHandle instanceof HTMLElement)) {
+return;
+}
+let dragging = !1;
+let offsetX = 0;
+let offsetY = 0;
+const stopDragging = () => {
+if (dragging) {
+dragging = !1;
+panelEl.classList.remove("is-dragging");
+}
+};
+const eventOptions = !!signal && {
+signal
+};
+dragHandle.addEventListener("pointerdown", ev => {
+if (0 !== ev.button) {
+return;
+}
+const target = ev.target instanceof Element ? ev.target : null;
+if (target?.closest("button,kbd,a,input,textarea,select,label")) {
+return;
+}
+const rect = panelEl.getBoundingClientRect();
+panelEl.style.left = `${rect.left}px`;
+panelEl.style.top = `${rect.top}px`;
+panelEl.style.transform = "none";
+offsetX = ev.clientX - rect.left;
+offsetY = ev.clientY - rect.top;
+dragging = !0;
+panelEl.classList.add("is-dragging");
+}, eventOptions);
+window.addEventListener("pointermove", ev => {
+if (!dragging) {
+return;
+}
+const maxLeft = Math.max(0, window.innerWidth - panelEl.offsetWidth);
+const maxTop = Math.max(0, window.innerHeight - panelEl.offsetHeight);
+const nextLeft = Math.min(Math.max(0, ev.clientX - offsetX), maxLeft);
+const nextTop = Math.min(Math.max(0, ev.clientY - offsetY), maxTop);
+panelEl.style.left = `${nextLeft}px`;
+panelEl.style.top = `${nextTop}px`;
+}, eventOptions);
+window.addEventListener("pointerup", stopDragging, eventOptions);
+window.addEventListener("blur", stopDragging, eventOptions);
+})(p);
 };
 render();
 document.body.appendChild(panel);
 return panel;
-})();
+};
+return {
+show: () => {
+const p = create();
 p.classList.add("visible");
 state.helpVisible = !0;
 p.focus();
@@ -19424,6 +20937,7 @@ state.helpVisible = !1;
 },
 toggle: () => state.helpVisible ? helpPanel.hide() : helpPanel.show(),
 refresh: () => {
+dragListeners?.abort();
 if (panel) {
 panel.remove();
 panel = null;
@@ -19433,11 +20947,11 @@ panel = null;
 })();
 const editShortcut = (actionKey, currentKey) => {
 const dialog = document.createElement("div");
-dialog.className = "glass-modal shortcut-edit-dialog";
+dialog.className = "glass-modal shortcut-edit-dialog ytp-plus-shortcut-modal";
 dialog.setAttribute("role", "dialog");
 dialog.setAttribute("aria-modal", "true");
 const sc = config.shortcuts;
-dialog.innerHTML = _createHTML(`\n        <div class="glass-panel shortcut-edit-content">\n          <h4>${t("editShortcut")}: ${sc[actionKey]?.description || actionKey}</h4>\n          <p>${t("pressAnyKey")}</p>\n          <div class="current-shortcut">${t("current")}: <kbd>${" " === currentKey ? "Space" : currentKey}</kbd></div>\n          <button class="ytp-plus-button ytp-plus-button-primary shortcut-cancel" type="button">${t("cancel")}</button>\n        </div>\n      `);
+renderTemplateClone(dialog, `\n        <div class="glass-panel shortcut-edit-content">\n          <h4>${t("editShortcut")}: ${sc[actionKey]?.description || actionKey}</h4>\n          <p>${t("pressAnyKey")}</p>\n          <div class="current-shortcut">${t("current")}: <kbd>${" " === currentKey ? "Space" : currentKey}</kbd></div>\n          <button class="ytp-plus-button ytp-plus-button-primary shortcut-cancel" type="button">${t("cancel")}</button>\n        </div>\n      `);
 document.body.appendChild(dialog);
 state.editingShortcut = actionKey;
 const handleKey = e => {
@@ -19471,6 +20985,118 @@ ev && ev.target === dialog && cleanup();
 };
 YouTubeUtils.cleanupManager.registerListener(document, "keydown", handleKey, !0);
 };
+const removeShortsDownloadButton = () => {
+state.downloadButton && state.downloadButton.isConnected && state.downloadButton.remove();
+state.downloadButton = null;
+};
+const ensureShortsDownloadButton = () => {
+if (!isOnShortsPage()) {
+removeShortsDownloadButton();
+return;
+}
+const globalSettings = window.youtubePlus?.settings;
+if (!1 === globalSettings?.enableDownload) {
+removeShortsDownloadButton();
+return;
+}
+const getActiveReel = () => qs("ytd-reel-video-renderer[is-active]") || qs('ytd-reel-video-renderer[is-active="true"]') || qs("#shorts-player ytd-reel-video-renderer");
+const actionBar = (() => {
+const activeReel = getActiveReel();
+const selectors = [ "ytwReelActionBarViewModelHostDesktop", "ytwReelActionBarViewModelHost", '[class*="ytwReelActionBarViewModelHostDesktop"]', '[class*="ytwReelActionBarViewModelHost"]', ".ytwReelActionBarViewModelHostDesktop", ".ytwReelActionBarViewModelHost", "reel-action-bar-view-model", "ytd-reel-player-overlay-renderer #actions", "#actions" ];
+const pickFrom = root => {
+for (const selector of selectors) {
+const nodes = root.querySelectorAll(selector);
+for (const node of nodes) {
+if (node instanceof HTMLElement && null !== node.offsetParent) {
+return node;
+}
+}
+}
+return null;
+};
+if (activeReel instanceof Element) {
+const fromActive = pickFrom(activeReel);
+if (fromActive) {
+return fromActive;
+}
+}
+const fromDocument = pickFrom(document);
+if (fromDocument) {
+return fromDocument;
+}
+if (activeReel instanceof Element) {
+for (const selector of selectors) {
+const candidate = activeReel.querySelector(selector);
+if (candidate instanceof HTMLElement) {
+return candidate;
+}
+}
+}
+return null;
+})();
+const likeButton = actionBar ? (actionBar => {
+if (!(actionBar instanceof Element)) {
+return null;
+}
+const likeSelectors = [ "like-button-view-model", "#like-button", 'button[aria-label*="Like" i]', 'button[aria-label*="Нравится" i]' ];
+for (const selector of likeSelectors) {
+const node = actionBar.querySelector(selector);
+if (node instanceof HTMLElement) {
+return node;
+}
+}
+return null;
+})(actionBar) : (() => {
+const likeSelectors = [ "like-button-view-model", "#like-button", 'button[aria-label*="Like" i]', 'button[aria-label*="Нравится" i]' ];
+const activeReel = getActiveReel();
+if (activeReel instanceof Element) {
+for (const selector of likeSelectors) {
+const node = activeReel.querySelector(selector);
+if (node instanceof HTMLElement && null !== node.offsetParent) {
+return node;
+}
+}
+}
+for (const selector of likeSelectors) {
+const node = document.querySelector(selector);
+if (node instanceof HTMLElement && null !== node.offsetParent) {
+return node;
+}
+}
+return null;
+})();
+const likeAnchor = likeButton && likeButton.closest('like-button-view-model, #like-button, reel-action-view-model, ytw-reel-action-view-model, [class*="ReelActionViewModel"]') || likeButton;
+if (!actionBar && !likeAnchor) {
+return;
+}
+if (state.downloadButton?.isConnected && likeAnchor instanceof Element && state.downloadButton.nextElementSibling === likeAnchor) {
+return;
+}
+if (state.downloadButton?.isConnected) {
+state.downloadButton.remove();
+state.downloadButton = null;
+}
+const btn = document.createElement("button");
+btn.className = "ytp-plus-shorts-download";
+btn.type = "button";
+btn.setAttribute("aria-label", t("download"));
+btn.setAttribute("title", t("downloadOptions") || t("download"));
+renderTemplateClone(btn, '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path opacity="0.5" d="M3 15C3 17.8284 3 19.2426 3.87868 20.1213C4.75736 21 6.17157 21 9 21H15C17.8284 21 19.2426 21 20.1213 20.1213C21 19.2426 21 17.8284 21 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M12 3V16M12 16L16 11.625M12 16L8 11.625" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>');
+btn.addEventListener("click", ev => {
+ev.preventDefault();
+ev.stopPropagation();
+"function" != typeof window.YouTubePlusDownload?.openModal ? feedback.show(t("directDownloadModuleNotAvailable") || t("downloadNotAvailable")) : window.YouTubePlusDownload.openModal();
+});
+if (likeAnchor instanceof Element && likeAnchor.parentElement) {
+likeAnchor.insertAdjacentElement("beforebegin", btn);
+} else {
+if (!actionBar) {
+return;
+}
+actionBar.prepend(btn);
+}
+state.downloadButton = btn;
+};
 const handleKeydown = e => {
 if (!config.enabled || !utils.isInShortsPage() || utils.isInputFocused() || state.editingShortcut) {
 return;
@@ -19495,11 +21121,28 @@ return;
 state.initialized = !0;
 utils.loadSettings();
 (() => {
-if (document.getElementById("shorts-keyboard-styles")) {
+if (byId("shorts-keyboard-styles")) {
 return;
 }
-YouTubeUtils.StyleManager.add("shorts-keyboard-styles", '\n                :root{--shorts-feedback-bg:rgba(255,255,255,.15);--shorts-feedback-border:rgba(255,255,255,.2);--shorts-feedback-color:#fff;--shorts-help-bg:rgba(255,255,255,.15);--shorts-help-border:rgba(255,255,255,.2);--shorts-help-color:#fff;}\n                html[dark],body[dark]{--shorts-feedback-bg:rgba(34,34,34,.7);--shorts-feedback-border:rgba(255,255,255,.15);--shorts-feedback-color:#fff;--shorts-help-bg:rgba(34,34,34,.7);--shorts-help-border:rgba(255,255,255,.1);--shorts-help-color:#fff;}\n                html:not([dark]){--shorts-feedback-bg:rgba(255,255,255,.95);--shorts-feedback-border:rgba(0,0,0,.08);--shorts-feedback-color:#222;--shorts-help-bg:rgba(255,255,255,.98);--shorts-help-border:rgba(0,0,0,.08);--shorts-help-color:#222;}\n                .shorts-help-panel{position:fixed;top:50%;left:25%;transform:translate(-50%,-50%) scale(.9);z-index:10001;opacity:0;visibility:hidden;transition:all .3s ease;width:340px;max-width:95vw;max-height:80vh;overflow:hidden;outline:none;color:var(--shorts-help-color,#fff);}\n                .shorts-help-panel.visible{opacity:1;visibility:visible;transform:translate(-50%,-50%) scale(1);}\n                .help-header{display:flex;justify-content:space-between;align-items:center;padding:24px 24px 12px;border-bottom:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);}\n                html:not([dark]) .help-header{background:rgba(0,0,0,.04);border-bottom:1px solid rgba(0,0,0,.08);}\n                .help-header h3{margin:0;font-size:20px;font-weight:700;}\n                .help-close{display:flex;align-items:center;justify-content:center;padding:4px;}\n                .help-content{padding:18px 24px;max-height:400px;overflow-y:auto;}\n                .help-item{display:flex;align-items:center;margin-bottom:14px;gap:18px;}\n                .help-item kbd{background:rgba(255,255,255,.15);color:inherit;padding:7px 14px;border-radius:8px;font-family:monospace;font-size:15px;font-weight:700;min-width:60px;text-align:center;border:1.5px solid rgba(255,255,255,.2);cursor:pointer;transition:all .2s;position:relative;}\n                html:not([dark]) .help-item kbd{background:rgba(0,0,0,.06);color:#222;border:1.5px solid rgba(0,0,0,.08);}\n                .help-item kbd:hover{background:rgba(255,255,255,.22);transform:scale(1.07);}\n                .help-item kbd:after{content:"✎";position:absolute;top:-7px;right:-7px;font-size:11px;opacity:0;transition:opacity .2s;}\n                .help-item kbd:hover:after{opacity:.7;}\n                .help-item kbd.non-editable{cursor:default;opacity:.7;}\n                .help-item kbd.non-editable:hover{background:rgba(255,255,255,.15);transform:none;}\n                .help-item kbd.non-editable:after{display:none;}\n                .help-item span{font-size:15px;color:rgba(255,255,255,.92);}\n                html:not([dark]) .help-item span{color:#222;}\n                .help-footer{padding:16px 24px 20px;border-top:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);text-align:center;}\n                html:not([dark]) .help-footer{background:rgba(0,0,0,.04);border-top:1px solid rgba(0,0,0,.08);}\n                .reset-all-shortcuts{display:inline-flex;align-items:center;justify-content:center;gap:var(--yt-space-sm);}\n                .shortcut-edit-dialog{z-index:10002;}\n                .shortcut-edit-content{padding:28px 32px;min-width:320px;text-align:center;display:flex;flex-direction:column;gap:var(--yt-space-md);color:inherit;}\n                html:not([dark]) .shortcut-edit-content{color:#222;}\n                .shortcut-edit-content h4{margin:0 0 14px;font-size:17px;font-weight:700;}\n                .shortcut-edit-content p{margin:0 0 18px;font-size:15px;color:rgba(255,255,255,.85);}\n                html:not([dark]) .shortcut-edit-content p{color:#222;}\n                .current-shortcut{margin:18px 0;font-size:15px;}\n                .current-shortcut kbd{background:rgba(255,255,255,.15);padding:5px 12px;border-radius:6px;font-family:monospace;border:1.5px solid rgba(255,255,255,.2);}\n                html:not([dark]) .current-shortcut kbd{background:rgba(0,0,0,.06);color:#222;border:1.5px solid rgba(0,0,0,.08);}\n                .shortcut-cancel{display:inline-flex;align-items:center;justify-content:center;gap:var(--yt-space-sm);}\n                @media(max-width:480px){.shorts-help-panel{width:98vw;max-height:85vh}.help-header{padding:16px 10px 8px 10px}.help-content{padding:12px 10px}.help-item{gap:10px}.help-item kbd{min-width:44px;font-size:13px;padding:5px 7px}.shortcut-edit-content{margin:20px;min-width:auto}}\n                #shorts-keyboard-feedback{background:var(--shorts-feedback-bg,rgba(255,255,255,.15));color:var(--shorts-feedback-color,#fff);border:1.5px solid var(--shorts-feedback-border,rgba(255,255,255,.2));border-radius:20px;box-shadow:0 8px 32px 0 rgba(31,38,135,.37);backdrop-filter:blur(12px) saturate(180%);-webkit-backdrop-filter:blur(12px) saturate(180%);}\n                html:not([dark]) #shorts-keyboard-feedback{background:var(--shorts-feedback-bg,rgba(255,255,255,.95));color:var(--shorts-feedback-color,#222);border:1.5px solid var(--shorts-feedback-border,rgba(0,0,0,.08));}\n            ');
+YouTubeUtils.StyleManager.add("shorts-keyboard-styles", '\n                  .shorts-help-panel{position:fixed;top:50%;left:25%;transform:translate(-50%,-50%) scale(.9);z-index:10001;opacity:0;visibility:hidden;transition:opacity .3s ease,visibility .3s ease,transform .3s ease;width:340px;max-width:95vw;max-height:80vh;overflow:hidden;outline:none;color:var(--yt-text-primary,#fff);padding:14px;display:flex;flex-direction:column;gap:12px;}\n                .shorts-help-panel.visible{opacity:1;visibility:visible;transform:translate(-50%,-50%) scale(1);}\n                  .help-topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;}\n                  .help-header{margin:0;line-height:1.2;}\n                  .help-close{position:static;display:flex;align-items:center;justify-content:center;padding:4px;flex-shrink:0;}\n                  .help-body{display:flex;flex-direction:column;gap:12px;min-height:0;}\n                  .help-content{padding:8px 10px;max-height:400px;overflow-y:auto;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none;border-radius:12px;background:var(--yt-glass-bg);border:1px solid var(--yt-glass-border);}\n                .shorts-help-panel.is-dragging .help-content,.help-content:active{cursor:grabbing;}\n                .help-item{display:flex;align-items:center;margin-bottom:14px;gap:18px;}\n                .help-item kbd{background:var(--yt-shorts-kbd-bg);color:inherit;padding:7px 14px;border-radius:8px;font-family:monospace;font-size:15px;font-weight:700;min-width:60px;text-align:center;border:1.5px solid var(--yt-shorts-kbd-border);cursor:pointer;transition:all .2s;position:relative;}\n                html:not([dark]) .help-item kbd{background:var(--yt-shorts-kbd-bg-light);color:#222;border:1.5px solid var(--yt-shorts-border-dark);}\n                .help-item kbd:hover{background:var(--yt-shorts-kbd-hover);transform:scale(1.07);}\n                .help-item kbd:after{content:"✎";position:absolute;top:-7px;right:-7px;font-size:11px;opacity:0;transition:opacity .2s;}\n                .help-item kbd:hover:after{opacity:.7;}\n                .help-item kbd.non-editable{cursor:default;opacity:.7;}\n                .help-item kbd.non-editable:hover{background:var(--yt-shorts-kbd-bg);transform:none;}\n                .help-item kbd.non-editable:after{display:none;}\n                .help-item span{font-size:15px;color:var(--yt-shorts-text-secondary);}\n                html:not([dark]) .help-item span{color:#222;}\n                html:not([dark]) .shorts-help-panel{color:var(--yt-text-dark-primary,#222);}\n                .help-actions{display:flex;justify-content:flex-end;align-items:center;}\n                .reset-all-shortcuts{display:inline-flex;align-items:center;justify-content:center;gap:var(--yt-space-sm);}\n                .ytp-plus-shorts-download{width:48px;height:48px;border-radius:999px;display:flex;align-items:center;justify-content:center;z-index:1;cursor:pointer;box-shadow:var(--yt-glass-shadow);background:var(--yt-glass-bg);border:1px solid var(--yt-glass-border);backdrop-filter:var(--yt-glass-blur);-webkit-backdrop-filter:var(--yt-glass-blur);margin:0 auto 10px;align-self:center;color:var(--yt-text-primary);transition:all .3s;}\n                .ytp-plus-shorts-download svg{width:22px;height:22px;display:block;pointer-events:none;}\n                .ytp-plus-shorts-download:hover{background:var(--yt-glass-border);}\n                .shortcut-edit-dialog{z-index:10002;}\n                .shortcut-edit-content{padding:28px 32px;min-width:320px;text-align:center;display:flex;flex-direction:column;gap:var(--yt-space-md);color:inherit;}\n                html:not([dark]) .shortcut-edit-content{color:#222;}\n                .shortcut-edit-content h4{margin:0 0 14px;font-size:17px;font-weight:700;}\n                .shortcut-edit-content p{margin:0 0 18px;font-size:15px;color:rgba(255,255,255,.85);}\n                html:not([dark]) .shortcut-edit-content p{color:#222;}\n                .current-shortcut{margin:18px 0;font-size:15px;}\n                .current-shortcut kbd{background:var(--yt-shorts-kbd-bg);padding:5px 12px;border-radius:6px;font-family:monospace;border:1.5px solid var(--yt-shorts-kbd-border);}\n                html:not([dark]) .current-shortcut kbd{background:var(--yt-shorts-kbd-bg-light);color:#222;border:1.5px solid var(--yt-shorts-border-dark);}\n                .shortcut-cancel{display:inline-flex;align-items:center;justify-content:center;gap:var(--yt-space-sm);}\n                @media(max-width:480px){.shorts-help-panel{width:98vw;max-height:85vh;padding:10px}.help-content{padding:10px 8px}.help-item{gap:10px}.help-item kbd{min-width:44px;font-size:13px;padding:5px 7px}.ytp-plus-shorts-download{width:44px;height:44px;margin-bottom:8px}.shortcut-edit-content{margin:20px;min-width:auto}}\n                #shorts-keyboard-feedback{background:var(--yt-shorts-feedback-bg-dark);color:var(--yt-text-primary,#fff);border:1.5px solid var(--yt-shorts-feedback-bg);border-radius:20px;box-shadow:0 8px 32px 0 var(--yt-shorts-shadow-blue);backdrop-filter:blur(12px) saturate(180%);-webkit-backdrop-filter:blur(12px) saturate(180%);}\n                html:not([dark]) #shorts-keyboard-feedback{background:var(--yt-shorts-feedback-bg-light);color:var(--yt-text-dark-primary,#222);border:1.5px solid var(--yt-shorts-border-dark);}\n            ');
 })();
+ensureShortsDownloadButton();
+if (!state.downloadObserver) {
+state.downloadObserver = new MutationObserver(() => {
+if (isOnShortsPage() && !state.downloadEnsureQueued) {
+state.downloadEnsureQueued = !0;
+requestAnimationFrame(() => {
+state.downloadEnsureQueued = !1;
+ensureShortsDownloadButton();
+});
+}
+});
+state.downloadObserver.observe(document.body, {
+childList: !0,
+subtree: !0
+});
+YouTubeUtils.cleanupManager?.registerObserver && YouTubeUtils.cleanupManager.registerObserver(state.downloadObserver);
+}
 YouTubeUtils.cleanupManager.registerListener(document, "keydown", handleKeydown, !0);
 YouTubeUtils.cleanupManager.registerListener(document, "click", ev => {
 const tgt = ev.target instanceof Element ? ev.target : null;
@@ -19515,7 +21158,7 @@ helpPanel.hide();
 const observeRoute = () => {
 let lastPath = location.pathname;
 let isCurrentlyOnShorts = isOnShortsPage();
-state.routeObserver = new MutationObserver(() => {
+const syncRouteState = () => {
 const currentPath = location.pathname;
 if (currentPath === lastPath) {
 return;
@@ -19532,35 +21175,55 @@ clearTimeout(state.actionTimeout);
 state.actionTimeout = null;
 }
 state.cachedVideo = null;
+if (state.downloadObserver) {
+state.downloadObserver.disconnect();
+state.downloadObserver = null;
+}
+state.downloadEnsureQueued = !1;
+removeShortsDownloadButton();
 state.initialized = !1;
 }
 })() : nowOnShorts && !state.initialized && init();
-}
-});
-if (document.body) {
-state.routeObserver.observe(document.body, {
-childList: !0,
-subtree: !1
-});
-YouTubeUtils.cleanupManager?.registerObserver && YouTubeUtils.cleanupManager.registerObserver(state.routeObserver);
-YouTubeUtils.ObserverRegistry?.track && YouTubeUtils.ObserverRegistry.track();
+} else {
+nowOnShorts && ensureShortsDownloadButton();
 }
 };
+if (YouTubeUtils.cleanupManager?.registerListener) {
+YouTubeUtils.cleanupManager.registerListener(window, "yt-navigate-finish", syncRouteState);
+YouTubeUtils.cleanupManager.registerListener(window, "popstate", syncRouteState);
+} else {
+window.addEventListener("yt-navigate-finish", syncRouteState);
+window.addEventListener("popstate", syncRouteState);
+}
+};
+let shortsRuntimeStarted = !1;
+const startShortsRuntime = () => {
+if (!shortsRuntimeStarted) {
+shortsRuntimeStarted = !0;
 if ("loading" === document.readyState) {
 document.addEventListener("DOMContentLoaded", () => {
 init();
 observeRoute();
+}, {
+once: !0
 });
 } else {
 init();
 observeRoute();
 }
-isOnShortsPage() && !localStorage.getItem("shorts_keyboard_help_shown") && setTimeout(() => {
+isOnShortsPage() && !localStorage.getItem("shorts_keyboard_help_shown") && setTimeout_(() => {
 if (isOnShortsPage()) {
 feedback.show("Press ? for shortcuts");
 localStorage.setItem("shorts_keyboard_help_shown", "true");
 }
 }, 2e3);
+}
+};
+window.YouTubePlusLazyLoader?.register ? window.YouTubePlusLazyLoader.register("shorts", startShortsRuntime, {
+priority: 50,
+delay: 0,
+shouldLoad: isOnShortsPage
+}) : startShortsRuntime();
 })();
 
 !(function() {
@@ -19573,13 +21236,22 @@ if (window.__ytpVideoStatsModuleInit) {
 return;
 }
 window.__ytpVideoStatsModuleInit = !0;
-const _createHTML = window._ytplusCreateHTML || (s => s);
-const {$, byId} = window.YouTubeUtils || {};
+const _setSafeHTML = window.YouTubeUtils.setSafeHTML;
+const setTimeout_ = setTimeout.bind(window);
+const utils = window.YouTubeUtils;
+const $ = utils.$;
+const $$ = utils.$$;
+const byId = utils.byId;
 if (window.YouTubeUtils?.isStudioPage?.()) {
 return;
 }
 let statsInitialized = !1;
-const t = window.YouTubeUtils?.t || (key => key || "");
+const t = window.YouTubeUtils.t;
+const escapeHtml = window.YouTubeSafeDOM?.escapeHTML || window.YouTubeSecurityUtils?.escapeHtml || (s => {
+const d = document.createElement("div");
+d.textContent = s;
+return d.innerHTML;
+});
 const STATS_ICON_ID = "ytp-stats-universal-icon";
 const STATS_ICON_SELECTOR = `#${STATS_ICON_ID}, .videoStats[data-ytp-stats-icon="true"], .videoStats`;
 const _safeLS_getItem = (k, def = null) => {
@@ -19600,10 +21272,7 @@ let statsButtonEnabled = "false" !== _safeLS_getItem("youtube_stats_button_enabl
 let previousUrl = location.href;
 let isChecking = !1;
 let experimentalNavListenerKey = null;
-let channelFeatures = {
-hasStreams: !1,
-hasShorts: !1
-};
+const channelFeatures_hasStreams = !1, channelFeatures_hasShorts = !1;
 const rateLimiter = {
 requests: new Map,
 maxRequests: 10,
@@ -19614,14 +21283,14 @@ const now = Date.now();
 const requests = rateLimiter.requests.get(key) || [];
 const recentRequests = requests.filter(time => now - time < rateLimiter.timeWindow);
 if (recentRequests.length >= rateLimiter.maxRequests) {
-console.warn(`[YouTube+][Stats] Rate limit exceeded for ${key}. Max ${rateLimiter.maxRequests} requests per minute.`);
+window.console.warn(`[YouTube+][Stats] Rate limit exceeded for ${key}. Max ${rateLimiter.maxRequests} requests per minute.`);
 return !1;
 }
 recentRequests.push(now);
 rateLimiter.requests.set(key, recentRequests);
 if (rateLimiter.requests.size > rateLimiter.maxKeys) {
 const firstKey = rateLimiter.requests.keys().next().value;
-rateLimiter.requests.delete(firstKey);
+"string" == typeof firstKey && rateLimiter.requests.delete(firstKey);
 }
 return !0;
 },
@@ -19686,7 +21355,7 @@ return !1;
 try {
 const parsedUrl = new URL(url);
 if ("www.youtube.com" !== parsedUrl.hostname && "youtube.com" !== parsedUrl.hostname) {
-console.warn("[YouTube+][Stats] Invalid domain for channel check");
+window.console.warn("[YouTube+][Stats] Invalid domain for channel check");
 return !1;
 }
 return !0;
@@ -19702,14 +21371,14 @@ try {
 const parsed = new URL(url);
 const hostname = parsed.hostname.toLowerCase();
 if ("www.youtube.com" !== hostname && "youtube.com" !== hostname && "m.youtube.com" !== hostname) {
-console.warn("[YouTube+][Stats] Blocked fetch to non-YouTube URL:", hostname);
+window.console.warn("[YouTube+][Stats] Blocked fetch to non-YouTube URL:", hostname);
 return null;
 }
 } catch (e) {
 return null;
 }
 const controller = new AbortController;
-const timeoutId = setTimeout(() => controller.abort(), 1e4);
+const timeoutId = setTimeout_(() => controller.abort(), 1e4);
 try {
 const response = await fetch(url, {
 credentials: "same-origin",
@@ -19720,22 +21389,21 @@ Accept: "text/html"
 });
 clearTimeout(timeoutId);
 if (!response.ok) {
-console.warn(`[YouTube+][Stats] HTTP ${response.status} when checking channel tabs`);
+window.console.warn(`[YouTube+][Stats] HTTP ${response.status} when checking channel tabs`);
 return null;
 }
 const html = await response.text();
 if (html.length > 5e6) {
-console.warn("[YouTube+][Stats] Response too large, skipping parse");
+window.console.warn("[YouTube+][Stats] Response too large, skipping parse");
 return null;
 }
 return html;
 } catch (error) {
-"AbortError" === error.name && console.warn("[YouTube+][Stats] Channel check timed out");
+"AbortError" === error.name && window.console.warn("[YouTube+][Stats] Channel check timed out");
 throw error;
 }
 })(url);
 if (!html) {
-isChecking = !1;
 return;
 }
 const data = (function extractYouTubeData(html) {
@@ -19751,10 +21419,9 @@ return null;
 }
 })(html);
 if (!data) {
-isChecking = !1;
 return;
 }
-channelFeatures = (function analyzeChannelTabs(data) {
+const flags = (function analyzeChannelTabs(data) {
 const tabs = data?.contents?.twoColumnBrowseResultsRenderer?.tabs || [];
 const flags = {
 hasStreams: !1,
@@ -19771,6 +21438,10 @@ break;
 }
 return flags;
 })(data);
+(flags.hasStreams || flags.hasShorts) && window.console.info("[YouTube+][Stats] Channel tabs:", {
+hasStreams: flags.hasStreams,
+hasShorts: flags.hasShorts
+});
 !(function refreshStatsMenu() {
 const existingMenu = $(".stats-menu-container");
 if (existingMenu) {
@@ -19779,17 +21450,10 @@ createStatsMenu();
 }
 })();
 } catch (error) {
-YouTubeUtils?.logError?.("Stats", "Failed to check channel tabs", error);
+YouTubeUtils?.logError?.("Stats", "Channel tab check failed", error);
 } finally {
 isChecking = !1;
 }
-}
-}
-function isChannelPage(url) {
-try {
-return !(!url || "string" != typeof url || !url.includes("youtube.com/") || !url.includes("/channel/") && !url.includes("/@") || url.includes("/video/") || url.includes("/watch"));
-} catch (e) {
-return !1;
 }
 }
 const checkUrlChange = YouTubeUtils?.debounce?.(() => {
@@ -19797,7 +21461,7 @@ try {
 const currentUrl = location.href;
 if (currentUrl !== previousUrl) {
 previousUrl = currentUrl;
-isChannelPage(currentUrl) && setTimeout(() => checkChannelTabs(currentUrl), 500);
+window.YouTubeUtils?.isChannelPage?.(currentUrl) && setTimeout(() => checkChannelTabs(currentUrl), 500);
 }
 } catch (error) {
 YouTubeUtils?.logError?.("Stats", "URL change check failed", error);
@@ -19807,10 +21471,10 @@ try {
 const currentUrl = location.href;
 if (currentUrl !== previousUrl) {
 previousUrl = currentUrl;
-isChannelPage(currentUrl) && setTimeout(() => checkChannelTabs(currentUrl), 500);
+window.YouTubeUtils?.isChannelPage?.(currentUrl) && setTimeout(() => checkChannelTabs(currentUrl), 500);
 }
 } catch (error) {
-console.error("[YouTube+][Stats] URL change check failed:", error);
+window.console.error("[YouTube+][Stats] URL change check failed:", error);
 }
 };
 function insertUniversalIcon() {
@@ -19824,8 +21488,8 @@ return;
 }
 let endElem = $("#end.style-scope.ytd-masthead", masthead);
 endElem || (endElem = $("#end", masthead));
-const existingIcons = Array.from(document.querySelectorAll(STATS_ICON_SELECTOR));
-let statsIcon = document.getElementById(STATS_ICON_ID);
+const existingIcons = $$(STATS_ICON_SELECTOR);
+let statsIcon = byId(STATS_ICON_ID);
 !statsIcon && existingIcons.length > 0 && (statsIcon = existingIcons[0]);
 existingIcons.length > 1 && existingIcons.forEach(icon => {
 if (icon !== statsIcon) {
@@ -19844,13 +21508,7 @@ const icon = document.createElement("div");
 icon.className = "videoStats";
 icon.id = STATS_ICON_ID;
 icon.setAttribute("data-ytp-stats-icon", "true");
-const SVG_NS = window.YouTubePlusConstants?.SVG_NS || "http://www.w3.org/2000/svg";
-const svg = document.createElementNS(SVG_NS, "svg");
-svg.setAttribute("viewBox", "0 0 512 512");
-const path = document.createElementNS(SVG_NS, "path");
-path.setAttribute("d", "M500 89c13.8-11 16-31.2 5-45s-31.2-16-45-5L319.4 151.5 211.2 70.4c-11.7-8.8-27.8-8.5-39.2 .6L12 199c-13.8 11-16 31.2-5 45s31.2 16 45 5L192.6 136.5l108.2 81.1c11.7 8.8 27.8 8.5 39.2-.6L500 89zM160 256l0 192c0 17.7 14.3 32 32 32s32-14.3 32-32l0-192c0-17.7-14.3-32-32-32s-32 14.3-32 32zM32 352l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32s-32 14.3-32 32zm288-64c-17.7 0-32 14.3-32 32l0 128c0 17.7 14.3 32 32 32s32-14.3 32-32l0-128c0-17.7-14.3-32-32-32zm96-32l0 192c0 17.7 14.3 32 32 32s32-14.3 32-32l0-192c0-17.7-14.3-32-32-32s-32 14.3-32 32z");
-svg.appendChild(path);
-icon.appendChild(svg);
+_setSafeHTML(icon, '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22 22H2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path> <path opacity="0.5" d="M21 22V14.5C21 13.6716 20.3284 13 19.5 13H16.5C15.6716 13 15 13.6716 15 14.5V22" stroke="currentColor" stroke-width="1.5" " data-darkreader-inline-stroke=""></path> <path d="M15 22V5C15 3.58579 15 2.87868 14.5607 2.43934C14.1213 2 13.4142 2 12 2C10.5858 2 9.87868 2 9.43934 2.43934C9 2.87868 9 3.58579 9 5V22" stroke="currentColor" stroke-width="1.5"></path> <path opacity="0.5" d="M9 22V9.5C9 8.67157 8.32843 8 7.5 8H4.5C3.67157 8 3 8.67157 3 9.5V22" stroke="currentColor" stroke-width="1.5"></path></svg>');
 icon.addEventListener("click", e => {
 e.preventDefault();
 e.stopPropagation();
@@ -19919,7 +21577,28 @@ button.appendChild(touchFeedback);
 buttonViewModel.appendChild(button);
 return buttonViewModel;
 }
-const INNERTUBE_API_KEY = "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8";
+const INNERTUBE_API_KEY_FALLBACK_B64 = "QUl6YVN5QU9fRkoyU2xxVThRNFNURUhMR0NpbHdfWTlfMTFxY1c4";
+function getInnerTubeApiKey() {
+try {
+if (void 0 !== window.ytcfg && "function" == typeof window.ytcfg.get) {
+const k = window.ytcfg.get("INNERTUBE_API_KEY");
+if (k && "string" == typeof k) {
+return k;
+}
+}
+if (window.ytcfg?.data_?.INNERTUBE_API_KEY) {
+return window.ytcfg.data_.INNERTUBE_API_KEY;
+}
+if (window.yt?.config_?.INNERTUBE_API_KEY) {
+return window.yt.config_.INNERTUBE_API_KEY;
+}
+} catch (e) {}
+try {
+return window.atob(INNERTUBE_API_KEY_FALLBACK_B64);
+} catch (e) {
+return "";
+}
+}
 const INNERTUBE_CLIENT_VERSION_FALLBACK = "2.20250312.01.00";
 function getInnerTubeClientVersion() {
 try {
@@ -19960,7 +21639,7 @@ if (!videoId) {
 return null;
 }
 try {
-const url = `https://www.youtube.com/youtubei/v1/player?key=${INNERTUBE_API_KEY}&prettyPrint=false`;
+const url = `https://www.youtube.com/youtubei/v1/player?key=${getInnerTubeApiKey()}&prettyPrint=false`;
 const response = await fetch(url, (function createInnerTubeFetchOptions(videoId) {
 return {
 method: "POST",
@@ -19973,7 +21652,7 @@ body: JSON.stringify(createInnerTubeRequestBody(videoId))
 };
 })(videoId));
 if (!response.ok) {
-console.warn("[YouTube+][Stats] InnerTube API failed:", response.status);
+window.console.warn("[YouTube+][Stats] InnerTube API failed:", response.status);
 return null;
 }
 const data = await response.json();
@@ -19997,13 +21676,12 @@ monetized: void 0 !== microformat.isFamilySafe,
 channelId: details.channelId
 };
 })(data);
-if (stats.channelId) {
-stats.country = await (async function fetchChannelCountryFromInnerTube(channelId) {
+stats.channelId && (stats.country = await (async function fetchChannelCountryFromInnerTube(channelId) {
 if (!channelId) {
 return null;
 }
 try {
-const url = `https://www.youtube.com/youtubei/v1/browse?key=${INNERTUBE_API_KEY}&prettyPrint=false`;
+const url = `https://www.youtube.com/youtubei/v1/browse?key=${getInnerTubeApiKey()}&prettyPrint=false`;
 const body = {
 browseId: channelId,
 context: {
@@ -20042,32 +21720,10 @@ return country || null;
 } catch (e) {
 return null;
 }
-})(stats.channelId);
-stats.country || (stats.country = await (async function fetchChannelCountryFromTubeInsights(channelId) {
-if (!channelId) {
-return null;
-}
-await new Promise(resolve => {
-"function" == typeof requestIdleCallback ? requestIdleCallback(resolve, {
-timeout: 3e3
-}) : setTimeout(resolve, 0);
-});
-try {
-const response = await fetch(`https://tubeinsights.exyezed.cc/api/channels/${channelId}`);
-if (!response.ok) {
-return null;
-}
-const data = await response.json();
-const country = data?.items?.[0]?.snippet?.country;
-return "string" == typeof country && country.trim() ? country.trim().toUpperCase() : null;
-} catch (e) {
-return null;
-}
 })(stats.channelId));
-}
 return stats;
 } catch (error) {
-console.error("[YouTube+][Stats] InnerTube fetch error:", error);
+window.console.error("[YouTube+][Stats] InnerTube fetch error:", error);
 return null;
 }
 }
@@ -20110,7 +21766,7 @@ dislikes: data.dislikes || null,
 rating: data.rating || null
 };
 } catch (error) {
-console.error("[YouTube+][Stats] Failed to fetch dislikes:", error);
+window.console.error("[YouTube+][Stats] Failed to fetch dislikes:", error);
 return null;
 }
 })(id);
@@ -20133,7 +21789,7 @@ Accept: "application/json"
 }
 });
 if (!response.ok) {
-console.warn(`[YouTube+][Stats] Failed to fetch ${type} stats:`, response.status);
+window.console.warn(`[YouTube+][Stats] Failed to fetch ${type} stats:`, response.status);
 return {
 ok: !1,
 status: response.status,
@@ -20374,13 +22030,13 @@ container.setAttribute("role", "dialog");
 container.setAttribute("aria-modal", "true");
 container.setAttribute("aria-label", t("videoStats") || "Video Statistics");
 const content = document.createElement("div");
-content.className = "stats-modal-content";
+content.className = "stats-modal-content ytp-plus-modal-content";
 const body = document.createElement("div");
 body.className = "stats-modal-body";
 body.appendChild((function createLoadingSpinner() {
 const loader = document.createElement("div");
 loader.className = "stats-loader";
-loader.innerHTML = _createHTML(`\n      <svg class="stats-spinner" viewBox="0 0 50 50">\n        <circle cx="25" cy="25" r="20" fill="none" stroke="currentColor" stroke-width="4"></circle>\n      </svg>\n      <p>${t("loadingStats")}</p>\n    `);
+_setSafeHTML(loader, `\n      <svg class="stats-spinner" viewBox="0 0 50 50">\n        <circle cx="25" cy="25" r="20" fill="none" stroke="currentColor" stroke-width="4"></circle>\n      </svg>\n      <p>${t("loadingStats")}</p>\n    `);
 return loader;
 })());
 content.appendChild(body);
@@ -20390,10 +22046,11 @@ const actionsDiv = document.createElement("div");
 actionsDiv.className = "thumbnail-modal-actions";
 actionsDiv.appendChild((function createStatsModalCloseButton(overlay) {
 const closeBtn = document.createElement("button");
-closeBtn.className = "thumbnail-modal-close thumbnail-modal-action-btn";
-closeBtn.innerHTML = _createHTML('\n            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">\n                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/>\n            </svg>\n            ');
-closeBtn.title = t("close");
-closeBtn.setAttribute("aria-label", t("close"));
+closeBtn.className = "stats-modal-close thumbnail-modal-action-btn ytp-plus-settings-close";
+closeBtn.setAttribute("data-shared-close-button", "ytp-plus-close-settings");
+_setSafeHTML(closeBtn, '\n            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14.5 9.50002L9.5 14.5M9.49998 9.5L14.5 14.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg>\n        ');
+closeBtn.title = t("closeButton") || t("close");
+closeBtn.setAttribute("aria-label", t("closeButton") || t("close"));
 closeBtn.addEventListener("click", e => {
 e.preventDefault();
 e.stopPropagation();
@@ -20415,20 +22072,15 @@ pageStats ? (function renderPageFallback(container, pageStats, id) {
 const cards = buildStatCards(pageStats);
 const gridHtml = `<div class="stats-grid">${cards.join("")}</div>`;
 const title = pageStats && pageStats.title || document.title || "";
-const escapeHtml = window.YouTubeSecurityUtils?.escapeHtml || (s => {
-const d = document.createElement("div");
-d.textContent = s;
-return d.innerHTML;
-});
 const safeTitle = escapeHtml(title);
 const titleHtml = safeTitle ? `<div class="stats-thumb-title-centered">${safeTitle}</div>` : "";
 const thumbUrl = getThumbnailUrl(pageStats, id);
 const extras = getVideoExtras(null, pageStats);
-container.innerHTML = _createHTML(thumbUrl ? buildThumbnailLayout(titleHtml, thumbUrl, gridHtml, extras) : `${titleHtml}${gridHtml}`);
+_setSafeHTML(container, thumbUrl ? buildThumbnailLayout(titleHtml, thumbUrl, gridHtml, extras) : `${titleHtml}${gridHtml}`);
 })(body, pageStats, id) : (function renderErrorMessage(body, result) {
 const statusText = result?.status ? ` (${result.status})` : "";
 const endpointHint = result?.url ? `<div style="margin-top:8px;font-size:12px;opacity:0.8;word-break:break-all">${result.url}</div>` : "";
-body.innerHTML = _createHTML(`\n        <div class="stats-error">\n          <svg class="stats-error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">\n            <circle cx="12" cy="12" r="10"></circle>\n            <line x1="12" y1="8" x2="12" y2="12"></line>\n            <line x1="12" y1="16" x2="12.01" y2="16"></line>\n          </svg>\n          <p>${t("failedToLoadStats")}${statusText}</p>\n          ${endpointHint}\n        </div>\n      `);
+_setSafeHTML(body, `\n        <div class="stats-error">\n          <svg class="stats-error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">\n            <circle cx="12" cy="12" r="10"></circle>\n            <line x1="12" y1="8" x2="12" y2="12"></line>\n            <line x1="12" y1="16" x2="12.01" y2="16"></line>\n          </svg>\n          <p>${t("failedToLoadStats")}${statusText}</p>\n          ${endpointHint}\n        </div>\n      `);
 })(body, result);
 }
 function displayStatsBasedOnType(body, type, stats, id) {
@@ -20475,13 +22127,13 @@ displayVideoStats(body, stats, id);
 } else {
 !(function displayChannelStats(container, stats) {
 const {liveSubscriber, liveViews, liveVideos} = stats;
-container.innerHTML = _createHTML(`\n      <div class="stats-grid">\n        <div class="stats-card">\n          <div class="stats-icon stats-icon-subscribers">\n            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">\n              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>\n              <circle cx="9" cy="7" r="4"></circle>\n              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>\n              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>\n            </svg>\n          </div>\n          <div class="stats-info">\n            <div class="stats-label">${t("subscribers")}</div>\n            <div class="stats-value">${formatNumber(liveSubscriber)}</div>\n            <div class="stats-exact">${(liveSubscriber || 0).toLocaleString()}</div>\n          </div>\n        </div>\n\n        <div class="stats-card">\n          <div class="stats-icon stats-icon-views">\n            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">\n              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>\n              <circle cx="12" cy="12" r="3"></circle>\n            </svg>\n          </div>\n          <div class="stats-info">\n            <div class="stats-label">${t("totalViews")}</div>\n            <div class="stats-value">${formatNumber(liveViews)}</div>\n            <div class="stats-exact">${(liveViews || 0).toLocaleString()}</div>\n          </div>\n        </div>\n\n        <div class="stats-card">\n          <div class="stats-icon stats-icon-videos">\n            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">\n              <polygon points="23 7 16 12 23 17 23 7"></polygon>\n              <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>\n            </svg>\n          </div>\n          <div class="stats-info">\n            <div class="stats-label">${t("totalVideos")}</div>\n            <div class="stats-value">${formatNumber(liveVideos)}</div>\n            <div class="stats-exact">${(liveVideos || 0).toLocaleString()}</div>\n          </div>\n        </div>\n      </div>\n    `);
+_setSafeHTML(container, `\n      <div class="stats-grid">\n        <div class="stats-card">\n          <div class="stats-icon stats-icon-subscribers">\n            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">\n              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>\n              <circle cx="9" cy="7" r="4"></circle>\n              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>\n              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>\n            </svg>\n          </div>\n          <div class="stats-info">\n            <div class="stats-label">${t("subscribers")}</div>\n            <div class="stats-value">${formatNumber(liveSubscriber)}</div>\n            <div class="stats-exact">${(liveSubscriber || 0).toLocaleString()}</div>\n          </div>\n        </div>\n\n        <div class="stats-card">\n          <div class="stats-icon stats-icon-views">\n            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">\n              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>\n              <circle cx="12" cy="12" r="3"></circle>\n            </svg>\n          </div>\n          <div class="stats-info">\n            <div class="stats-label">${t("totalViews")}</div>\n            <div class="stats-value">${formatNumber(liveViews)}</div>\n            <div class="stats-exact">${(liveViews || 0).toLocaleString()}</div>\n          </div>\n        </div>\n\n        <div class="stats-card">\n          <div class="stats-icon stats-icon-videos">\n            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">\n              <polygon points="23 7 16 12 23 17 23 7"></polygon>\n              <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>\n            </svg>\n          </div>\n          <div class="stats-info">\n            <div class="stats-label">${t("totalVideos")}</div>\n            <div class="stats-value">${formatNumber(liveVideos)}</div>\n            <div class="stats-exact">${(liveVideos || 0).toLocaleString()}</div>\n          </div>\n        </div>\n      </div>\n      `);
 })(body, stats);
 }
 }
 async function openStatsModal(type, id) {
 if (!type || !id) {
-console.error("[YouTube+][Stats] Invalid parameters for modal");
+window.console.error("[YouTube+][Stats] Invalid parameters for modal");
 return;
 }
 const existingOverlays = $$(".stats-modal-overlay");
@@ -20491,7 +22143,7 @@ existingOverlays[i].remove();
 } catch (e) {}
 }
 const overlay = document.createElement("div");
-overlay.className = "stats-modal-overlay";
+overlay.className = "stats-modal-overlay ytp-plus-modal-overlay";
 const {body, container} = createStatsModalStructure(overlay);
 overlay.appendChild(container);
 !(function setupModalEventHandlers(overlay) {
@@ -20520,15 +22172,21 @@ focusTarget && focusTarget.focus();
 });
 if (window.YouTubePlusModalHandlers && window.YouTubePlusModalHandlers.createFocusTrap) {
 const removeTrap = window.YouTubePlusModalHandlers.createFocusTrap(overlay);
-const obs = new MutationObserver(() => {
+const coordinator = window.YouTubeMutationCoordinator;
+if (coordinator?.subscribeRoot) {
+const trapSubId = `stats::overlayTrap::${Date.now()}::${Math.random().toString(36).slice(2, 8)}`;
+coordinator.subscribeRoot(trapSubId, () => {
 if (!overlay.isConnected) {
 removeTrap();
-obs.disconnect();
+coordinator.unsubscribe(trapSubId);
 }
+}, {
+selector: null,
+childList: !0,
+attributes: !1,
+subtree: !0
 });
-obs.observe(overlay.parentNode || document.body, {
-childList: !0
-});
+}
 }
 })(overlay);
 document.body.appendChild(overlay);
@@ -20542,11 +22200,6 @@ const monIcon = isMonetized ? '<svg viewBox="0 0 24 24" fill="none" stroke="#22c
 return `<div class="stats-card" style="padding:10px;"><div class="stats-icon stats-icon-subscribers">${monIcon}</div><div class="stats-info"><div class="stats-label" style="font-size:12px;">${t("monetization")}</div><div class="stats-value" style="font-size:16px;">${monetizationValue}</div></div></div>`;
 }
 function createCountryCard(extras) {
-const escapeHtml = window.YouTubeSecurityUtils?.escapeHtml || (s => {
-const d = document.createElement("div");
-d.textContent = s;
-return d.innerHTML;
-});
 const countryValue = escapeHtml(extras.country || t("unknown"));
 const rawCode = extras.country && extras.country !== t("unknown") ? extras.country.toUpperCase() : "";
 const countryCode = /^[A-Z]{2}$/.test(rawCode) ? rawCode : "";
@@ -20580,16 +22233,48 @@ const s = value.trim();
 if (/^\d+$/.test(s)) {
 return secToHms(Number(s));
 }
-const iso = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/i.exec(s);
-if (iso) {
-const h = parseInt(iso[1] || "0", 10);
-const m = parseInt(iso[2] || "0", 10);
-const sec = parseInt(iso[3] || "0", 10);
-const total = 3600 * h + 60 * m + sec;
-return secToHms(total);
+if (s.length > 2 && "P" === s[0].toUpperCase() && "T" === s[1].toUpperCase()) {
+let h = 0;
+let m = 0;
+let sec = 0;
+let current = "";
+let valid = !0;
+for (let i = 2; i < s.length; i += 1) {
+const ch = s[i];
+if (ch >= "0" && ch <= "9") {
+current += ch;
+continue;
 }
-if (/^\d+:\d{1,2}(:\d{1,2})?$/.test(s)) {
-const parts = s.split(":").map(p => p.replace(/^0+(\d)/, "$1"));
+if (!current) {
+valid = !1;
+break;
+}
+const n = parseInt(current, 10);
+current = "";
+if ("H" === ch || "h" === ch) {
+h = n;
+} else if ("M" === ch || "m" === ch) {
+m = n;
+} else {
+if ("S" !== ch && "s" !== ch) {
+valid = !1;
+break;
+}
+sec = n;
+}
+}
+if (valid && "" === current) {
+return secToHms(3600 * h + 60 * m + sec);
+}
+}
+const colonParts = s.split(":");
+if (2 === colonParts.length || 3 === colonParts.length) {
+const allDigits = colonParts.every(part => part.length > 0 && /^\d+$/.test(part));
+if (allDigits && colonParts.slice(1).every(part => part.length <= 2)) {
+const parts = colonParts.map(p => {
+const trimmed = p.replace(/^0+/, "");
+return "" === trimmed ? "0" : trimmed;
+});
 if (2 === parts.length) {
 const [mm, ss] = parts;
 return `${Number(mm)}:${pad(Number(ss))}`;
@@ -20597,6 +22282,7 @@ return `${Number(mm)}:${pad(Number(ss))}`;
 if (3 === parts.length) {
 const [hh, mm, ss] = parts;
 return `${Number(hh)}:${pad(Number(mm))}:${pad(Number(ss))}`;
+}
 }
 }
 return s || null;
@@ -20624,11 +22310,6 @@ authorHandle: getFirstAvailableField(stats, "authorHandle")
 };
 })(stats, id);
 const {liveViewer, title, thumbUrl} = fields;
-const escapeHtml = window.YouTubeSecurityUtils?.escapeHtml || (s => {
-const d = document.createElement("div");
-d.textContent = s;
-return d.innerHTML;
-});
 const safeTitle = escapeHtml(title);
 const titleHtml = safeTitle ? `<div class="stats-thumb-title-centered">${safeTitle}</div>` : "";
 const defs = (function getVideoStatDefinitions(fields) {
@@ -20687,9 +22368,9 @@ return cards.filter(Boolean).join("");
 })(stats, extras);
 const metaExtrasHtml = metaCardsHtml ? `<div class="stats-thumb-extras" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">${metaCardsHtml}</div>` : "";
 const leftHtml = `<div class="stats-thumb-left"><img class="stats-thumb-img" src="${thumbUrl}" alt="thumbnail">${metaExtrasHtml}</div>`;
-container.innerHTML = _createHTML(`${titleHtml}<div class="stats-thumb-row">${leftHtml}${sideColumnHtml}</div>`);
+_setSafeHTML(container, `${titleHtml}<div class="stats-thumb-row">${leftHtml}${sideColumnHtml}</div>`);
 } else {
-container.innerHTML = _createHTML(`${titleHtml}${sideColumnHtml}`);
+_setSafeHTML(container, `${titleHtml}${sideColumnHtml}`);
 }
 !(function setupFlagImageErrorHandlers(container) {
 const flagImages = $$(".country-flag", container);
@@ -20699,7 +22380,7 @@ img.addEventListener("error", function() {
 const iconContainer = this.parentElement;
 if (iconContainer && "globe" === iconContainer.dataset.fallbackIcon) {
 this.style.display = "none";
-iconContainer.innerHTML = _createHTML(globeIcon);
+_setSafeHTML(iconContainer, globeIcon);
 }
 }, {
 once: !0
@@ -20728,16 +22409,9 @@ mainButton.style.alignItems = "center";
 mainButton.style.justifyContent = "center";
 mainButton.style.gap = "8px";
 }
-const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-svg.setAttribute("viewBox", "0 0 512 512");
-if (svg.style) {
-svg.style.width = "20px";
-svg.style.height = "20px";
-svg.style.fill = "currentColor";
-}
-const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-path.setAttribute("d", "M500 89c13.8-11 16-31.2 5-45s-31.2-16-45-5L319.4 151.5 211.2 70.4c-11.7-8.8-27.8-8.5-39.2 .6L12 199c-13.8 11-16 31.2-5 45s31.2 16 45 5L192.6 136.5l108.2 81.1c11.7 8.8 27.8 8.5 39.2-.6L500 89zM160 256l0 192c0 17.7 14.3 32 32 32s32-14.3 32-32l0-192c0-17.7-14.3-32-32-32s-32 14.3-32 32zM32 352l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32s-32 14.3-32 32zm288-64c-17.7 0-32 14.3-32 32l0 128c0 17.7 14.3 32 32 32s32-14.3 32-32l0-128c0-17.7-14.3-32-32-32zm96-32l0 192c0 17.7 14.3 32 32 32s32-14.3 32-32l0-192c0-17.7-14.3-32-32-32s-32 14.3-32 32z");
-svg.appendChild(path);
+const iconWrap = document.createElement("span");
+_setSafeHTML(iconWrap, '<svg viewBox="0 0 512 512" style="width:20px;height:20px;fill:currentColor"><path d="M500 89c13.8-11 16-31.2 5-45s-31.2-16-45-5L319.4 151.5 211.2 70.4c-11.7-8.8-27.8-8.5-39.2 .6L12 199c-13.8 11-16 31.2-5 45s31.2 16 45 5L192.6 136.5l108.2 81.1c11.7 8.8 27.8 8.5 39.2-.6L500 89zM160 256l0 192c0 17.7 14.3 32 32 32s32-14.3 32-32l0-192c0-17.7-14.3-32-32-32s-32 14.3-32 32zM32 352l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32s-32 14.3-32 32zm288-64c-17.7 0-32 14.3-32 32l0 128c0 17.7 14.3 32 32 32s32-14.3 32-32l0-128c0-17.7-14.3-32-32-32zm96-32l0 192c0 17.7 14.3 32 32 32s32-14.3 32-32l0-192c0-17.7-14.3-32-32-32s-32 14.3-32 32z"/></svg>');
+const svg = iconWrap.firstElementChild;
 const buttonText = document.createElement("div");
 buttonText.className = "yt-spec-button-shape-next__button-text-content main-stats-text";
 buttonText.textContent = t("stats");
@@ -20757,7 +22431,7 @@ fillDiv.className = "yt-spec-touch-feedback-shape__fill";
 touchFeedbackDiv.appendChild(strokeDiv);
 touchFeedbackDiv.appendChild(fillDiv);
 touchFeedback.appendChild(touchFeedbackDiv);
-mainButton.appendChild(svg);
+svg && mainButton.appendChild(svg);
 mainButton.appendChild(buttonText);
 mainButton.appendChild(touchFeedback);
 mainButtonViewModel.appendChild(mainButton);
@@ -20772,7 +22446,7 @@ channelId && openStatsModal("channel", channelId);
 });
 channelButtonContainer.appendChild(channelButton);
 horizontalMenu.appendChild(channelButtonContainer);
-if (channelFeatures.hasStreams) {
+if (channelFeatures_hasStreams) {
 const liveButtonContainer = document.createElement("div");
 liveButtonContainer.className = "stats-menu-button live-stats-container";
 const liveButton = createButton(t("live"), "M99.8 69.4c10.2 8.4 11.6 23.6 3.2 33.8C68.6 144.7 48 197.9 48 256s20.6 111.3 55 152.8c8.4 10.2 7 25.3-3.2 33.8s-25.3 7-33.8-3.2C24.8 389.6 0 325.7 0 256S24.8 122.4 66 72.6c8.4-10.2 23.6-11.6 33.8-3.2zm376.5 0c10.2-8.4 25.3-7 33.8 3.2c41.2 49.8 66 113.8 66 183.4s-24.8 133.6-66 183.4c-8.4 10.2-23.6 11.6-33.8 3.2s-11.6-23.6-3.2-33.8c34.3-41.5 55-94.7 55-152.8s-20.6-111.3-55-152.8c-8.4-10.2-7-25.3 3.2-33.8zM248 256a40 40 0 1 1 80 0 40 40 0 1 1 -80 0zm-61.1-78.5C170 199.2 160 226.4 160 256s10 56.8 26.9 78.5c8.1 10.5 6.3 25.5-4.2 33.7s-25.5 6.3-33.7-4.2c-23.2-29.8-37-67.3-37-108s13.8-78.2 37-108c8.1-10.5 23.2-12.3 33.7-4.2s12.3 23.2 4.2 33.7zM427 148c23.2 29.8 37 67.3 37 108s-13.8 78.2-37 108c-8.1 10.5-23.2 12.3-33.7 4.2s-12.3-23.2-4.2-33.7C406 312.8 416 285.6 416 256s-10-56.8-26.9-78.5c-8.1-10.5-6.3-25.5 4.2-33.7s25.5-6.3 33.7 4.2z", "0 0 576 512", "live-stats", () => {
@@ -20782,7 +22456,7 @@ channelId && openStatsModal("channel", channelId);
 liveButtonContainer.appendChild(liveButton);
 horizontalMenu.appendChild(liveButtonContainer);
 }
-if (channelFeatures.hasShorts) {
+if (channelFeatures_hasShorts) {
 const shortsButtonContainer = document.createElement("div");
 shortsButtonContainer.className = "stats-menu-button shorts-stats-container";
 const shortsButton = createButton(t("shorts"), "M80 48c-8.8 0-16 7.2-16 16l0 384c0 8.8 7.2 16 16 16l224 0c8.8 0 16-7.2 16-16l0-384c0-8.8-7.2-16-16-16L80 48zM16 64C16 28.7 44.7 0 80 0L304 0c35.3 0 64 28.7 64 64l0 384c0 35.3-28.7 64-64 64L80 512c-35.3 0-64-28.7-64-64L16 64zM160 400l64 0c8.8 0 16 7.2 16 16s-7.2 16-16 16l-64 0c-8.8 0-16-7.2-16-16s7.2-16 16-16z", "0 0 384 512", "shorts-stats", () => {
@@ -20793,22 +22467,24 @@ shortsButtonContainer.appendChild(shortsButton);
 horizontalMenu.appendChild(shortsButtonContainer);
 }
 containerDiv.appendChild(horizontalMenu);
-const joinButton = $(".yt-flexible-actions-view-model-wiz__action:not(.stats-menu-container)");
-if (joinButton && joinButton.parentNode) {
-joinButton.parentNode.appendChild(containerDiv);
-} else {
-const buttonContainer = $("#subscribe-button + #buttons");
-buttonContainer && buttonContainer.appendChild(containerDiv);
+const actionContainer = (() => {
+const modernContainer = $("#owner #top-row #buttons, #top-row #owner #buttons, #buttons.ytd-video-owner-renderer");
+if (modernContainer) {
+return modernContainer;
 }
+const joinButton = $(".yt-flexible-actions-view-model-wiz__action:not(.stats-menu-container)");
+return joinButton?.parentElement ? joinButton.parentElement : $("#subscribe-button + #buttons");
+})();
+actionContainer && actionContainer.appendChild(containerDiv);
 return containerDiv;
 }
 function checkAndAddMenu() {
 if (!statsButtonEnabled) {
 return;
 }
-const joinButton = $(".yt-flexible-actions-view-model-wiz__action:not(.stats-menu-container)");
+const actionContainer = $("#owner #top-row #buttons, #top-row #owner #buttons, #buttons.ytd-video-owner-renderer, #subscribe-button + #buttons, .yt-flexible-actions-view-model-wiz__action:not(.stats-menu-container)");
 const statsMenu = $(".stats-menu-container");
-joinButton && !statsMenu && createStatsMenu();
+actionContainer && !statsMenu && createStatsMenu();
 }
 function checkAndInsertIcon() {
 statsButtonEnabled && insertUniversalIcon();
@@ -20853,11 +22529,13 @@ timerId = null;
 };
 })({
 check: () => (function addSettingsUI() {
-const section = $('.ytp-plus-settings-section[data-section="experimental"]');
+const section = $$('.ytp-plus-settings-section[data-section="experimental"]').find(candidate => candidate.isConnected);
 if (!section) {
 return !1;
 }
-const existingItem = $(".stats-button-settings-item", section);
+const duplicateItems = Array.from(section.querySelectorAll(".stats-button-settings-item"));
+duplicateItems.length > 1 && duplicateItems.slice(1).forEach(node => node.remove());
+const existingItem = duplicateItems[0] || $(".stats-button-settings-item", section);
 if (existingItem) {
 const label = existingItem.querySelector(".ytp-plus-settings-item-label");
 const description = existingItem.querySelector(".ytp-plus-settings-item-description");
@@ -20867,14 +22545,14 @@ return !0;
 }
 const item = document.createElement("div");
 item.className = "ytp-plus-settings-item stats-button-settings-item";
-item.innerHTML = _createHTML(`\n        <div>\n          <label class="ytp-plus-settings-item-label">${t("statisticsButton")}</label>\n          <div class="ytp-plus-settings-item-description">${t("statisticsButtonDescription")}</div>\n        </div>\n        <input type="checkbox" class="ytp-plus-settings-checkbox" ${statsButtonEnabled ? "checked" : ""}>\n      `);
+_setSafeHTML(item, `\n        <div>\n          <label class="ytp-plus-settings-item-label">${t("statisticsButton")}</label>\n          <div class="ytp-plus-settings-item-description">${t("statisticsButtonDescription")}</div>\n        </div>\n        <input type="checkbox" class="ytp-plus-settings-checkbox" ${statsButtonEnabled ? "checked" : ""}>\n      `);
 section.appendChild(item);
 item.querySelector("input")?.addEventListener("change", e => {
 const {target} = e;
 const input = target;
 statsButtonEnabled = input.checked;
 _safeLS_setItem("youtube_stats_button_enabled", statsButtonEnabled ? "true" : "false");
-Array.from(document.querySelectorAll(`${STATS_ICON_SELECTOR}, .stats-menu-container`)).forEach(el => el.remove());
+$$(`${STATS_ICON_SELECTOR}, .stats-menu-container`).forEach(el => el.remove());
 if (statsButtonEnabled) {
 checkAndInsertIcon();
 checkAndAddMenu();
@@ -20882,7 +22560,7 @@ checkAndAddMenu();
 });
 return !0;
 })(),
-maxAttempts: 20,
+maxAttempts: 50,
 interval: 100
 });
 }
@@ -20912,7 +22590,7 @@ experimentalNavListenerKey = "native-click-listener";
 }
 function init() {
 !(function addStyles() {
-byId("youtube-enhancer-styles") || YouTubeUtils.StyleManager.add("youtube-enhancer-styles", "\n        .videoStats{width:36px;height:36px;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;margin-left:8px;margin-right:8px;background:transparent;backdrop-filter:blur(10px) saturate(160%);-webkit-backdrop-filter:blur(10px) saturate(160%);border:none;transition:transform .18s ease,background .18s}\n        html[dark] .videoStats{background:transparent;border:none}html:not([dark]) .videoStats{background:transparent;border:none}.videoStats:hover{transform:translateY(-2px)}.videoStats svg{width:18px;height:18px;fill:var(--yt-spec-text-primary,#030303)}html[dark] .videoStats svg{fill:#fff}html:not([dark]) .videoStats svg{fill:#222}\n        .shortsStats{display:flex;align-items:center;justify-content:center;margin-top:16px;margin-bottom:16px;width:48px;height:48px;border-radius:50%;cursor:pointer;background:rgba(255,255,255,0.12);box-shadow:0 12px 30px rgba(0,0,0,0.32);backdrop-filter:blur(10px) saturate(160%);-webkit-backdrop-filter:blur(10px) saturate(160%);border:1.25px solid rgba(255,255,255,0.12);transition:transform .22s ease}html[dark] .shortsStats{background:rgba(24,24,24,0.68);border:1.25px solid rgba(255,255,255,0.08)}html:not([dark]) .shortsStats{background:rgba(255,255,255,0.12);border:1.25px solid rgba(0,0,0,0.06)}\n        .shortsStats:hover{transform:translateY(-3px)}.shortsStats svg{width:24px;height:24px;fill:#222}html[dark] .shortsStats svg{fill:#fff}html:not([dark]) .shortsStats svg{fill:#222}\n        .stats-menu-container{position:relative;display:inline-block}.stats-horizontal-menu{position:absolute;display:flex;left:100%;top:0;height:100%;visibility:hidden;opacity:0;transition:visibility 0s,opacity 0.2s linear;z-index:100}.stats-menu-container:hover .stats-horizontal-menu{visibility:visible;opacity:1}.stats-menu-button{margin-left:8px;white-space:nowrap}\n        /* Modal overlay and container with glassmorphism */\n        .stats-modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(rgba(0,0,0,0.45),rgba(0,0,0,0.55));z-index:99999;display:flex;align-items:center;justify-content:center;animation:fadeInModal .18s;backdrop-filter:blur(20px) saturate(170%);-webkit-backdrop-filter:blur(20px) saturate(170%)}\n        .stats-modal-container{max-width:1100px;max-height:calc(100vh - 32px);display:flex;flex-direction:column}\n        .stats-modal-content{position:relative;background:rgba(24,24,24,0.92);border-radius:20px;box-shadow:0 18px 40px rgba(0,0,0,0.45);overflow:visible;display:flex;flex-direction:column;animation:scaleInModal .18s;border:1.5px solid rgba(255,255,255,0.08);backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%)}\n        /* Fix custom element display for Chrome */\n        button-view-model{display:inline-flex;align-items:center;justify-content:center;}\n        button-view-model.yt-spec-button-view-model{vertical-align:top;}\n        html[dark] .stats-modal-content{background:rgba(24, 24, 24, 0.25)}\n        html:not([dark]) .stats-modal-content{background:rgba(255,255,255,0.95);color:#222;border:1.25px solid rgba(0,0,0,0.06)}\n        .stats-modal-close{background:transparent;border:none;color:#fff;font-size:36px;line-height:1;width:36px;height:36px;cursor:pointer;transition:transform .15s ease,color .15s;display:flex;align-items:center;justify-content:center;border-radius:8px;padding:0}\n        .stats-modal-close:hover{color:#ff6b6b;transform:scale(1.1)}\n        html:not([dark]) .stats-modal-close{color:#666}\n        html:not([dark]) .stats-modal-close:hover{color:#ff6b6b}            \n        /* Modal body */\n        .stats-modal-body{position:relative;padding:24px 16px 16px;overflow:visible;flex:1;display:flex;flex-direction:column}\n        /* Thumbnail preview */\n        .stats-thumb-title-centered{position:absolute;top:-44px;left:50%;transform:translateX(-50%);z-index:3;display:block;width:fit-content;max-width:min(90%,760px);margin:0;padding:8px 16px;border-radius:18px;border:1px solid var(--yt-glass-border);background:var(--yt-glass-bg);font-size:14px;font-weight:500;color:var(--yt-text-primary);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:default;transition:all .25s cubic-bezier(.4,0,.2,1)}\n        .stats-thumb-row{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}\n        .stats-thumb-img{width:36vw;max-width:420px;height:auto;object-fit:cover;border-radius:8px;flex-shrink:0;border:1px solid rgba(255,255,255,0.06);max-height:44vh}\n        html:not([dark]) .stats-thumb-img{border:1px solid rgba(0,0,0,0.06)}\n        /* ensure the grid takes remaining horizontal space */\n        .stats-thumb-row .stats-grid{flex:1;min-width:0}\n        .stats-side-column{flex:1;min-width:280px;display:flex;flex-direction:column}\n        .stats-thumb-left{display:flex;flex-direction:column;align-items:center;gap:8px}\n        .stats-thumb-left .stats-thumb-sub{font-size:13px;color:rgba(255,255,255,0.65)}\n        html:not([dark]) .stats-thumb-left .stats-thumb-sub{color:rgba(0,0,0,0.6)}\n        /* extras row under thumbnail: inline, single line */\n        .stats-thumb-extras{display:flex;flex-direction:row;gap:10px;align-items:center;margin-top:8px}\n        .stats-thumb-extras .stats-card{padding:8px 10px}\n        .stats-thumb-meta{display:flex;flex-direction:column;justify-content:center}\n        .stats-thumb-sub{font-size:13px;color:rgba(255,255,255,0.65)}\n        html:not([dark]) .stats-thumb-sub{color:rgba(0,0,0,0.6)}            \n        /* Loading state */\n        .stats-loader{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;color:#fff}\n        html:not([dark]) .stats-loader{color:#666}\n        .stats-spinner{width:60px;height:60px;animation:spin 1s linear infinite;margin-bottom:16px}\n        .stats-spinner circle{stroke-dasharray:80;stroke-dashoffset:60;animation:dash 1.5s ease-in-out infinite}            \n        /* Error state */\n        .stats-error{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;color:#ff6b6b;text-align:center}\n        .stats-error-icon{width:60px;height:60px;margin-bottom:16px;stroke:#ff6b6b}            \n        /* Stats grid */\n        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}            \n        /* Stats card */\n        .stats-card{background:rgba(255,255,255,0.05);border-radius:12px;padding:12px;display:flex;align-items:center;gap:12px;border:1px solid rgba(255,255,255,0.08);transition:transform .18s ease,box-shadow .18s ease}\n        html:not([dark]) .stats-card{background:rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.1)}\n        .stats-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,0.3)}            \n        /* Stats icon */\n        .stats-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}\n        .stats-icon svg{width:24px;height:24px}\n        .stats-icon-views{background:rgba(59,130,246,0.15);color:#3b82f6}\n        .stats-icon-likes{background:rgba(34,197,94,0.15);color:#22c55e}\n        .stats-icon-dislikes{background:rgba(239,68,68,0.15);color:#ef4444}\n        .stats-icon-comments{background:rgba(168,85,247,0.15);color:#a855f7}\n        .stats-icon-viewers{background:rgba(234,179,8,0.15);color:#eab308}\n        .stats-icon-subscribers{background:rgba(236,72,153,0.15);color:#ec4899}\n        .stats-icon-videos{background:rgba(14,165,233,0.15);color:#0ea5e9}\n        /* Pair likes/dislikes into a single grid cell */\n        .stats-card-pair{display:flex;gap:8px;align-items:stretch}\n        .stats-card-pair .stats-card{flex:1;margin:0}\n        @media(max-width:480px){.stats-card-pair{flex-direction:column}}            \n        /* Stats info */\n        .stats-info{flex:1;min-width:0}\n        .stats-label{font-size:13px;color:rgba(255,255,255,0.72);margin-bottom:4px;font-weight:500}\n        html:not([dark]) .stats-label{color:rgba(0,0,0,0.6)}\n        .stats-value{font-size:20px;font-weight:700;color:#fff;line-height:1.2;margin-bottom:2px}\n        html:not([dark]) .stats-value{color:#111}\n        .stats-exact{font-size:13px;color:rgba(255,255,255,0.5);font-weight:400}\n        html:not([dark]) .stats-exact{color:rgba(0,0,0,0.5)}            \n        /* Animations — shared keyframes (fadeInModal, scaleInModal, spin, dash) defined in basic.js */\n        /* Responsive */\n        @media(max-width:768px){.stats-modal-container{width:95vw}.stats-grid{grid-template-columns:1fr}.stats-card{padding:16px}.stats-side-column{min-width:0;width:100%}}\n        /* Centered large author handle (preferred) */\n        .stats-author-big{display:block;text-align:center;margin-top:13px;padding-inline:8px}\n        .stats-author-name-big{display:block;color:rgba(255,255,255,0.9);font-weight:600;font-size:16px}\n        .stats-author-handle-big{display:inline-block;color:var(--yt-glass-border);font-weight:700;font-size:20px;text-decoration:none;padding:6px 10px;border-radius:6px}\n        .stats-author-handle-big:hover{color:#e6f0ff;text-decoration:underline}\n        html:not([dark]) .stats-author-name-big{color:rgba(0,0,0,0.8)}\n        html:not([dark]) .stats-author-handle-big{color:#0b61d6}\n        html:not([dark]) .stats-author-handle-big:hover{color:#0647a6}\n        ");
+byId("youtube-enhancer-styles") || YouTubeUtils.StyleManager.add("youtube-enhancer-styles", "\n      .videoStats{width:36px;height:36px;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;margin-left:8px;margin-right:8px;background:none;;border:none;transition:transform .18s ease,background .18s}\n      html[dark] .videoStats{background:none;border:none}html:not([dark]) .videoStats{background:none;border:none}.videoStats:hover{transform:translateY(-2px)}.videoStats svg{width:18px;height:18px;fill:var(--yt-spec-text-primary,#030303)}html[dark] .videoStats svg{fill:var(--yt-text-primary)}html:not([dark]) .videoStats svg{fill:var(--yt-text-primary)}\n      .shortsStats{display:flex;align-items:center;justify-content:center;margin-top:16px;margin-bottom:16px;width:48px;height:48px;border-radius:50%;cursor:pointer;background:var(--yt-stats-button-bg-light);box-shadow:0 12px 30px var(--yt-stats-shadow-deep);backdrop-filter:blur(10px) saturate(160%);-webkit-backdrop-filter:blur(10px) saturate(160%);border:1.25px solid var(--yt-stats-button-bg-light);transition:transform .22s ease}html[dark] .shortsStats{background:var(--yt-stats-button-bg-dark);border:1.25px solid var(--yt-stats-button-border-dark)}html:not([dark]) .shortsStats{background:var(--yt-stats-button-bg-light);border:1.25px solid var(--yt-stats-button-border-light)}\n      .shortsStats:hover{transform:translateY(-3px)}.shortsStats svg{width:24px;height:24px;fill:var(--yt-text-primary)}html[dark] .shortsStats svg{fill:var(--yt-text-primary)}html:not([dark]) .shortsStats svg{fill:var(--yt-text-primary)}\n        .stats-menu-container{position:relative;display:inline-block}.stats-horizontal-menu{position:absolute;display:flex;left:100%;top:0;height:100%;visibility:hidden;opacity:0;transition:visibility 0s,opacity 0.2s linear;z-index:100}.stats-menu-container:hover .stats-horizontal-menu{visibility:visible;opacity:1}.stats-menu-button{margin-left:8px;white-space:nowrap}\n        /* Modal overlay and container with glassmorphism */\n        .stats-modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--yt-modal-bg);z-index:var(--yt-z-modal);display:flex;align-items:center;justify-content:center;animation:fadeInModal .18s;backdrop-filter:var(--yt-glass-blur);-webkit-backdrop-filter:var(--yt-glass-blur)}\n        .stats-modal-container{max-width:1100px;max-height:calc(100vh - 32px);display:flex;flex-direction:column}\n        .stats-modal-content{position:relative;background:var(--yt-glass-bg);border-radius:var(--yt-radius-lg);box-shadow:0 18px 40px var(--yt-stats-modal-shadow);overflow:visible;display:flex;flex-direction:column;animation:scaleInModal .18s;border:1.5px solid var(--yt-glass-border);backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%)}\n        /* Fix custom element display for Chrome */\n        button-view-model{display:inline-flex;align-items:center;justify-content:center;}\n        button-view-model.yt-spec-button-view-model{vertical-align:top;}\n        /* Modal body */\n        .stats-modal-body{position:relative;padding:24px 16px 16px;overflow:visible;flex:1;display:flex;flex-direction:column}\n        /* Thumbnail preview */\n        .stats-thumb-title-centered{position:absolute;top:-44px;left:50%;transform:translateX(-50%);z-index:3;display:block;width:fit-content;max-width:min(90%,760px);margin:0;padding:8px 16px;border-radius:18px;border:1px solid var(--yt-glass-border);background:var(--yt-glass-bg);font-size:14px;font-weight:500;color:var(--yt-text-primary);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:default;transition:all .25s cubic-bezier(.4,0,.2,1)}\n        .stats-thumb-row{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}\n        .stats-thumb-img{width:36vw;max-width:420px;height:auto;object-fit:cover;border-radius:8px;flex-shrink:0;border:1px solid var(--yt-stats-img-border-dark);max-height:44vh}\n        html:not([dark]) .stats-thumb-img{border:1px solid var(--yt-stats-img-border-light)}\n        /* ensure the grid takes remaining horizontal space */\n        .stats-thumb-row .stats-grid{flex:1;min-width:0}\n        .stats-side-column{flex:1;min-width:280px;display:flex;flex-direction:column}\n        .stats-thumb-left{display:flex;flex-direction:column;align-items:center;gap:8px}\n        .stats-thumb-left .stats-thumb-sub{font-size:13px;color:var(--yt-stats-text-secondary-dark)}\n        html:not([dark]) .stats-thumb-left .stats-thumb-sub{color:var(--yt-stats-text-secondary-light)}\n        /* extras row under thumbnail: inline, single line */\n        .stats-thumb-extras{display:flex;flex-direction:row;gap:10px;align-items:center;margin-top:8px}\n        .stats-thumb-extras .stats-card{padding:8px 10px}\n        .stats-thumb-meta{display:flex;flex-direction:column;justify-content:center}\n        .stats-thumb-sub{font-size:13px;color:var(--yt-stats-text-secondary-dark)}\n        html:not([dark]) .stats-thumb-sub{color:var(--yt-stats-text-secondary-light)}\n        /* Loading state */\n        .stats-loader{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;color:var(--yt-stats-loader-text-dark)}\n        html:not([dark]) .stats-loader{color:var(--yt-stats-loader-text-light)}\n        .stats-spinner{width:60px;height:60px;animation:spin 1s linear infinite;margin-bottom:16px}\n        .stats-spinner circle{stroke-dasharray:80;stroke-dashoffset:60;animation:dash 1.5s ease-in-out infinite}            \n        /* Error state */\n        .stats-error{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;color:var(--yt-stats-error);text-align:center}\n        .stats-error-icon{width:60px;height:60px;margin-bottom:16px;stroke:var(--yt-stats-error)}\n        /* Stats grid */\n        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}            \n        /* Stats card */\n        .stats-card{background:var(--yt-stats-card-bg-dark);border-radius:12px;padding:12px;display:flex;align-items:center;gap:12px;border:1px solid var(--yt-stats-card-border-dark);transition:transform .18s ease,box-shadow .18s ease}\n        html:not([dark]) .stats-card{background:var(--yt-stats-card-bg-light);border:1px solid var(--yt-stats-card-border-light)}\n        .stats-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px var(--yt-stats-shadow-hover)}\n        /* Stats icon */\n        .stats-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}\n        .stats-icon svg{width:24px;height:24px}\n        .stats-icon-views{background:var(--yt-stats-icon-views-bg);color:var(--yt-stats-icon-views)}\n        .stats-icon-likes{background:var(--yt-stats-icon-likes-bg);color:var(--yt-stats-icon-likes)}\n        .stats-icon-dislikes{background:var(--yt-stats-icon-dislikes-bg);color:var(--yt-stats-icon-dislikes)}\n        .stats-icon-comments{background:var(--yt-stats-icon-comments-bg);color:var(--yt-stats-icon-comments)}\n        .stats-icon-viewers{background:var(--yt-stats-icon-viewers-bg);color:var(--yt-stats-icon-viewers)}\n        .stats-icon-subscribers{background:var(--yt-stats-icon-subscribers-bg);color:var(--yt-stats-icon-subscribers)}\n        .stats-icon-videos{background:var(--yt-stats-icon-videos-bg);color:var(--yt-stats-icon-videos)}\n        /* Pair likes/dislikes into a single grid cell */\n        .stats-card-pair{display:flex;gap:8px;align-items:stretch}\n        .stats-card-pair .stats-card{flex:1;margin:0}\n        @media(max-width:480px){.stats-card-pair{flex-direction:column}}            \n        /* Stats info */\n        .stats-info{flex:1;min-width:0}\n        .stats-label{font-size:13px;color:var(--yt-stats-text-label);margin-bottom:4px;font-weight:500}\n        html:not([dark]) .stats-label{color:var(--yt-stats-text-secondary-light)}\n        .stats-value{font-size:20px;font-weight:700;color:var(--yt-stats-text-value-dark);line-height:1.2;margin-bottom:2px}\n        html:not([dark]) .stats-value{color:var(--yt-stats-text-value-light)}\n        .stats-exact{font-size:13px;color:var(--yt-stats-text-exact-dark);font-weight:400}\n        html:not([dark]) .stats-exact{color:var(--yt-stats-text-exact-light)}\n        /* Animations — shared keyframes (fadeInModal, scaleInModal, spin, dash) defined in basic.js */\n        /* Responsive */\n        @media(max-width:768px){.stats-modal-container{width:95vw}.stats-grid{grid-template-columns:1fr}.stats-card{padding:16px}.stats-side-column{min-width:0;width:100%}}\n        /* Centered large author handle (preferred) */\n        .stats-author-big{display:block;text-align:center;margin-top:13px;padding-inline:8px}\n        .stats-author-name-big{display:block;color:var(--yt-stats-author-name-bright);font-weight:600;font-size:16px}\n        .stats-author-handle-big{display:inline-block;color:var(--yt-glass-border);font-weight:700;font-size:20px;text-decoration:none;padding:6px 10px;border-radius:6px}\n        .stats-author-handle-big:hover{color:var(--yt-stats-link-hover);text-decoration:underline}\n        html:not([dark]) .stats-author-name-big{color:var(--yt-stats-author-name-light)}\n        html:not([dark]) .stats-author-handle-big{color:var(--yt-stats-link-color)}\n        html:not([dark]) .stats-author-handle-big:hover{color:var(--yt-stats-link-hover-dark)}\n        ");
 })();
 if (statsButtonEnabled) {
 checkAndInsertIcon();
@@ -20925,13 +22603,13 @@ YouTubeUtils.cleanupManager.registerListener(window, "popstate", checkUrlChange)
 window.addEventListener("ytp-history-navigate", checkUrlChange);
 window.addEventListener("popstate", checkUrlChange);
 }
-isChannelPage(location.href) && checkChannelTabs(location.href);
+window.YouTubeUtils?.isChannelPage?.(location.href) && checkChannelTabs(location.href);
 }
 const scheduleInit = () => {
 if (statsInitialized || !(() => {
 try {
 const path = location.pathname || "";
-return !("/watch" !== path && !path.startsWith("/shorts")) || isChannelPage(location.href);
+return !("/watch" !== path && !path.startsWith("/shorts")) || (window.YouTubeUtils?.isChannelPage?.(location.href) ?? !1);
 } catch (e) {
 return !1;
 }
@@ -20961,13 +22639,24 @@ scheduleInit();
 if (statsInitialized && statsButtonEnabled) {
 checkAndInsertIcon();
 checkAndAddMenu();
-isChannelPage(location.href) && checkChannelTabs(location.href);
+window.YouTubeUtils?.isChannelPage?.(location.href) && checkChannelTabs(location.href);
 }
 };
 const _cleanupManager = window.YouTubeUtils?.cleanupManager;
 _cleanupManager ? _cleanupManager.registerListener(document, "yt-navigate-finish", handleNavigate, {
 passive: !0
 }) : window.addEventListener("yt-navigate-finish", handleNavigate);
+const _navRefreshHandler = () => {
+try {
+if (statsInitialized && statsButtonEnabled) {
+checkAndInsertIcon();
+checkAndAddMenu();
+}
+} catch (e) {}
+};
+_cleanupManager ? _cleanupManager.registerListener(window, "ytp:nav-refresh", _navRefreshHandler, {
+passive: !0
+}) : window.addEventListener("ytp:nav-refresh", _navRefreshHandler);
 const handleAction = event => {
 scheduleInit();
 if (!statsInitialized || !statsButtonEnabled) {
@@ -20984,7 +22673,21 @@ passive: !0
 }) : document.addEventListener("yt-action", handleAction);
 };
 window.YouTubePlusLazyLoader ? window.YouTubePlusLazyLoader.register("video-stats", initVideoStats, {
-priority: 2
+priority: 2,
+shouldLoad: () => (() => {
+try {
+const path = location.pathname || "";
+return "/watch" === path || path.startsWith("/shorts") || path.startsWith("/@") || path.startsWith("/channel/") || path.startsWith("/c/");
+} catch (e) {
+return !1;
+}
+})() || (() => {
+try {
+return Boolean(document.querySelector(".ytp-plus-settings-modal"));
+} catch (e) {
+return !1;
+}
+})()
 }) : initVideoStats();
 })();
 
@@ -20998,12 +22701,32 @@ if (window.__ytpChannelStatsModuleInit) {
 return;
 }
 window.__ytpChannelStatsModuleInit = !0;
-const _createHTML = window._ytplusCreateHTML || (s => s);
-const {$, byId} = window.YouTubeUtils || {};
+const _setSafeHTML = window.YouTubeUtils.setSafeHTML;
+const createVisibilityAwareInterval = window.YouTubeUtils?.createVisibilityAwareInterval || ((callback, delay) => {
+const id = setInterval(() => {
+document.hidden || callback();
+}, delay);
+return {
+stop() {
+clearInterval(id);
+},
+pause() {
+clearInterval(id);
+},
+resume() {},
+get active() {
+return !0;
+}
+};
+});
+const setTimeout_ = setTimeout.bind(window);
+const $ = window.YouTubeUtils.$;
+const $$ = window.YouTubeUtils.$$;
+const byId = window.YouTubeUtils.byId;
 if (window.YouTubeUtils?.isStudioPage?.()) {
 return;
 }
-const t = window.YouTubeUtils?.t || (key => key || "");
+const t = window.YouTubeUtils.t;
 const _safeLS_getItem = (k, def = null) => {
 try {
 return localStorage.getItem(k) ?? def;
@@ -21044,7 +22767,10 @@ channelIdCache: new Map,
 lastChannelIdWarnAt: 0,
 previousUrl: location.href,
 isChecking: !1,
-documentListenerKeys: new Set
+documentListenerKeys: new Set,
+overlayEnsureScheduler: null,
+pageObserversAttached: !1,
+navigationListenerAttached: !1
 };
 const boundedCacheSet = (map, key, value) => {
 if (map.size >= 50) {
@@ -21059,21 +22785,12 @@ const yt = window.YouTubeUtils;
 yt && yt.logger && yt.logger.debug && yt.logger.debug("[YouTube+][Stats]", message, ...args);
 },
 warn: (message, ...args) => {
-console.warn("[YouTube+][Stats]", message, ...args);
+window.console.warn("[YouTube+][Stats]", message, ...args);
 },
 error: (message, ...args) => {
-console.error("[YouTube+][Stats]", message, ...args);
+window.console.error("[YouTube+][Stats]", message, ...args);
 },
-debounce: window.YouTubeUtils?.debounce || ((func, wait) => {
-let timeout = null;
-return function executedFunction(...args) {
-timeout && clearTimeout(timeout);
-timeout = setTimeout(() => {
-timeout && clearTimeout(timeout);
-func(...args);
-}, wait);
-};
-})
+debounce: window.YouTubeUtils.debounce
 };
 const {OPTIONS} = CONFIG;
 const {FONT_LINK} = CONFIG;
@@ -21115,14 +22832,11 @@ channelId
 return null;
 }
 }
-function isChannelPageUrl(url) {
-return url.includes("youtube.com/") && (url.includes("/channel/") || url.includes("/@")) && !url.includes("/video/") && !url.includes("/watch");
-}
 function checkUrlChange() {
 const currentUrl = location.href;
 if (currentUrl !== state.previousUrl) {
 state.previousUrl = currentUrl;
-isChannelPageUrl(currentUrl) && setTimeout(() => getChannelInfo(currentUrl), 500);
+window.YouTubeUtils?.isChannelPage?.(currentUrl) && setTimeout(() => getChannelInfo(currentUrl), 500);
 }
 }
 const _cm2 = window.YouTubeUtils?.cleanupManager;
@@ -21156,15 +22870,23 @@ null === _safeLS_getItem(`show-${option}`) && _safeLS_setItem(`show-${option}`, 
 });
 })();
 !(function addStyles() {
-const styles = '\n      .channel-banner-overlay{position:absolute;top:0;left:0;width:100%;height:100%;border-radius:12px;z-index:9;display:flex;justify-content:space-around;align-items:center;color:#fff;font-family:var(--stats-font-family,\'Rubik\',sans-serif);font-size:var(--stats-font-size,24px);box-sizing:border-box;transition:background-color .3s ease;backdrop-filter:blur(2px)}        \n      .settings-button{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;cursor:pointer;z-index:11;transition:all .2s ease;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.4);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,0.1);opacity:0.7}\n      .channel-banner-overlay:hover .settings-button{opacity:1}\n      .settings-button:hover{transform:rotate(30deg) scale(1.1);opacity:1;background:rgba(0,0,0,0.6);border-color:rgba(255,255,255,0.3)}\n      .settings-button svg{width:18px;height:18px;fill:white;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.5))}        \n      .settings-menu{position:absolute;top:52px;right:12px;background:rgba(28,28,28,0.75);padding:16px;border-radius:16px;z-index:12;display:flex;flex-direction:column;gap:12px;backdrop-filter:blur(16px) saturate(180%);border:1px solid rgba(255,255,255,0.08);box-shadow:0 8px 32px rgba(0,0,0,0.6);min-width:320px;opacity:0;visibility:hidden;transform:translateY(-10px) scale(0.98);transition:all 0.2s cubic-bezier(0.2,0,0.2,1);pointer-events:none}\n      .settings-menu.show{opacity:1;visibility:visible;transform:translateY(0) scale(1);pointer-events:auto}        \n      .settings-menu .ytp-plus-settings-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:8px;background:rgba(255,255,255,0.02);}\n      .settings-menu .ytp-plus-settings-item + .ytp-plus-settings-item{margin-top:6px}\n      .settings-menu .ytp-plus-settings-item .ytp-plus-settings-item-label{color:#eee;font-size:14px;font-weight:500}\n      .settings-menu label{color:#eee!important;font-size:14px!important;font-weight:500!important;margin-bottom:6px!important}        \n      .settings-menu input[type="range"]{-webkit-appearance:none;width:100%!important;height:4px;background:rgba(255,255,255,0.2)!important;border-radius:2px;margin:12px 0 4px 0!important;cursor:pointer}\n      .settings-menu input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;height:16px;width:16px;border-radius:50%;background:#3ea6ff;margin-top:-6px;box-shadow:0 2px 4px rgba(0,0,0,0.3);border:2px solid #fff;transition:transform .1s;cursor:pointer}\n      .settings-menu input[type="range"]::-webkit-slider-thumb:hover{transform:scale(1.2)}        \n      .settings-menu select{width:100%!important;background:rgba(255,255,255,0.1)!important;border:1px solid rgba(255,255,255,0.1)!important;color:#fff!important;padding:8px 12px!important;border-radius:6px!important;font-size:13px!important;margin-bottom:12px!important;cursor:pointer;outline:none}\n      .settings-menu select:hover{background:rgba(255,255,255,0.15)!important}\n      .settings-menu select option{background:#333;color:#fff}        \n      /* Don\'t override the shared settings checkbox styling; only target non-shared inputs */\n      .settings-menu input[type="checkbox"]:not(.ytp-plus-settings-checkbox){appearance:none;width:18px!important;height:18px!important;border:2px solid rgba(255,255,255,0.4)!important;border-radius:4px!important;background:transparent!important;cursor:pointer;position:relative;margin-right:12px!important;vertical-align:middle;transition:all .2s}\n      .settings-menu input[type="checkbox"]:not(.ytp-plus-settings-checkbox):checked{background:#3ea6ff!important;border-color:#3ea6ff!important}\n      .settings-menu input[type="checkbox"]:not(.ytp-plus-settings-checkbox):checked::after{content:\'\';position:absolute;left:5px;top:1px;width:4px;height:10px;border:solid white;border-width:0 2px 2px 0;transform:rotate(45deg)}        \n      .stat-container{display:flex;flex-direction:column;align-items:center;justify-content:center;visibility:hidden;width:33%;height:100%;padding:0 1rem;text-shadow:0 2px 4px rgba(0,0,0,0.3)}\n      .number-container{display:flex;align-items:center;justify-content:center;font-weight:700;min-height:3rem}\n      .label-container{display:flex;align-items:center;margin-top:.5rem;font-size:1.2rem;opacity:.9}\n      .label-container svg{width:1.5rem;height:1.5rem;margin-right:.5rem;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.3))}\n      .difference{font-size:1.8rem;height:2rem;margin-bottom:.5rem;transition:opacity .3s}\n      .spinner-container{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;justify-content:center;align-items:center}\n      .spinner-container .stats-spinner{width:60px;height:60px;animation:spin 1s linear infinite}\n      .spinner-container .stats-spinner circle{stroke-dasharray:80;stroke-dashoffset:60;animation:dash 1.5s ease-in-out infinite}\n      /* @keyframes spin already defined in video stats CSS above */\n      @media(max-width:768px){.channel-banner-overlay{flex-direction:column;padding:8px;min-height:160px}.settings-menu{width:280px!important;right:4px!important;top:48px!important}}\n      .setting-group{margin-bottom:12px}\n      .setting-group:last-child{margin-bottom:0}\n      .setting-value{color:#bbb;font-size:12px;margin-top:4px}\n      ';
+const styles = '\n      .channel-banner-overlay{position:absolute;top:0;left:0;width:100%;height:100%;border-radius:12px;z-index:9;display:flex;justify-content:space-around;align-items:center;color:var(--yt-text-primary);font-family:var(--yt-stats-font-family,\'Rubik\',sans-serif);font-size:var(--yt-stats-font-size,24px);box-sizing:border-box;transition:background-color .3s ease;backdrop-filter:blur(2px)}        \n      .settings-button{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;cursor:pointer;z-index:11;transition:all .2s ease;display:flex;align-items:center;justify-content:center;background:var(--yt-stats-channel-button-bg);backdrop-filter:blur(4px);border:1px solid var(--yt-stats-channel-button-border);opacity:0.7}\n      .channel-banner-overlay:hover .settings-button{opacity:1}\n      .settings-button:hover{transform:rotate(30deg) scale(1.1);opacity:1;background:var(--yt-stats-channel-button-hover);border-color:var(--yt-stats-channel-button-hover-border)}\n      .settings-button svg{width:18px;height:18px;fill:var(--yt-text-primary);filter:drop-shadow(0 1px 2px var(--yt-stats-channel-filter-shadow))}        \n      .settings-menu{position:absolute;top:52px;right:12px;background:var(--yt-stats-channel-menu-bg);padding:16px;border-radius:16px;z-index:12;display:flex;flex-direction:column;gap:12px;backdrop-filter:blur(16px) saturate(180%);border:1px solid var(--yt-stats-channel-menu-border);box-shadow:0 8px 32px rgba(0,0,0,0.6);min-width:320px;opacity:0;visibility:hidden;transform:translateY(-10px) scale(0.98);transition:all 0.2s cubic-bezier(0.2,0,0.2,1);pointer-events:none}\n      .settings-menu.show{opacity:1;visibility:visible;transform:translateY(0) scale(1);pointer-events:auto}        \n      .settings-menu .ytp-plus-settings-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:8px;background:var(--yt-stats-channel-menu-item-bg);}\n      .settings-menu .ytp-plus-settings-item + .ytp-plus-settings-item{margin-top:6px}\n      .settings-menu .ytp-plus-settings-item .ytp-plus-settings-item-label{color:var(--yt-stats-channel-label-text);font-size:14px;font-weight:500}\n      .settings-menu label{color:var(--yt-stats-channel-label-text)!important;font-size:14px!important;font-weight:500!important;margin-bottom:6px!important}        \n      .settings-menu input[type="range"]{-webkit-appearance:none;width:100%!important;height:4px;background:var(--yt-stats-channel-range-bg)!important;border-radius:2px;margin:12px 0 4px 0!important;cursor:pointer}\n      .settings-menu input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;height:16px;width:16px;border-radius:50%;background:var(--yt-stats-channel-range-thumb);margin-top:-6px;box-shadow:0 2px 4px var(--yt-stats-channel-text-shadow);border:2px solid var(--yt-text-primary);transition:transform .1s;cursor:pointer}\n      .settings-menu input[type="range"]::-webkit-slider-thumb:hover{transform:scale(1.2)}        \n      .settings-menu select{width:100%!important;background:var(--yt-stats-channel-input-bg)!important;border:1px solid var(--yt-stats-channel-input-bg)!important;color:var(--yt-text-primary)!important;padding:8px 12px!important;border-radius:6px!important;font-size:13px!important;margin-bottom:12px!important;cursor:pointer;outline:none}\n      .settings-menu select:hover{background:var(--yt-stats-channel-input-hover)!important}\n      .settings-menu select option{background:var(--yt-stats-channel-select-option-bg);color:var(--yt-text-primary)}        \n      /* Don\'t override the shared settings checkbox styling; only target non-shared inputs */\n      .settings-menu input[type="checkbox"]:not(.ytp-plus-settings-checkbox){appearance:none;width:18px!important;height:18px!important;border:2px solid var(--yt-stats-channel-checkbox-border)!important;border-radius:4px!important;background:transparent!important;cursor:pointer;position:relative;margin-right:12px!important;vertical-align:middle;transition:all .2s}\n      .settings-menu input[type="checkbox"]:not(.ytp-plus-settings-checkbox):checked{background:var(--yt-stats-channel-range-thumb)!important;border-color:var(--yt-stats-channel-range-thumb)!important}\n      .settings-menu input[type="checkbox"]:not(.ytp-plus-settings-checkbox):checked::after{content:\'\';position:absolute;left:5px;top:1px;width:4px;height:10px;border:solid var(--yt-text-primary);border-width:0 2px 2px 0;transform:rotate(45deg)}\n      .stat-container{display:flex;flex-direction:column;align-items:center;justify-content:center;visibility:hidden;width:33%;height:100%;padding:0 1rem;text-shadow:0 2px 4px var(--yt-stats-channel-text-shadow)}\n      .number-container{display:flex;align-items:center;justify-content:center;font-weight:700;min-height:3rem}\n      .label-container{display:flex;align-items:center;margin-top:.5rem;font-size:1.2rem;opacity:.9}\n      .label-container svg{width:1.5rem;height:1.5rem;margin-right:.5rem;filter:drop-shadow(0 1px 2px var(--yt-stats-channel-text-shadow))}\n      .difference{font-size:1.8rem;height:2rem;margin-bottom:.5rem;transition:opacity .3s}\n      .spinner-container{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;justify-content:center;align-items:center}\n      .spinner-container .stats-spinner{width:60px;height:60px;animation:spin 1s linear infinite}\n      .spinner-container .stats-spinner circle{stroke-dasharray:80;stroke-dashoffset:60;animation:dash 1.5s ease-in-out infinite}\n      /* @keyframes spin already defined in video stats CSS above */\n      @media(max-width:768px){.channel-banner-overlay{flex-direction:column;padding:8px;min-height:160px}.settings-menu{width:280px!important;right:4px!important;top:48px!important}}\n      .setting-group{margin-bottom:12px}\n      .setting-group:last-child{margin-bottom:0}\n      .setting-value{color:var(--yt-stats-channel-text-value);font-size:12px;margin-top:4px}\n      ';
 YouTubeUtils.StyleManager.add("channel-stats-overlay", styles);
 })();
 if (state.enabled) {
 observePageChanges();
 addNavigationListener();
-isChannelPageUrl(location.href) && getChannelInfo(location.href);
+if (window.YouTubeUtils?.isChannelPage?.(location.href)) {
+getChannelInfo(location.href);
+try {
+ensureOverlayForCurrentPage();
+} catch (e) {
+utils.warn("Initial overlay attempt failed:", e);
+}
+}
 }
 utils.log("YouTube Enhancer initialized successfully");
+ensureSettingsUI();
 } catch (error) {
 utils.error("Failed to initialize YouTube Enhancer:", error);
 }
@@ -21240,11 +22962,10 @@ intervalValue && (intervalValue.textContent = `${input.value}s`);
 state.updateInterval = newInterval;
 _safeLS_setItem("youtubeEnhancerInterval", String(newInterval));
 if (state.intervalId) {
-clearInterval(state.intervalId);
-state.intervalId = setInterval(() => {
+state.intervalId.stop();
+state.intervalId = createVisibilityAwareInterval(() => {
 updateOverlayContent(state.overlay, state.currentChannelName);
 }, newInterval);
-YouTubeUtils.cleanupManager.registerInterval(state.intervalId);
 }
 }
 if (target instanceof HTMLElement && target.classList.contains("opacity-slider")) {
@@ -21295,7 +23016,7 @@ fontDropdown.tabIndex = 0;
 fontDropdown.setAttribute("role", "listbox");
 fontDropdown.setAttribute("aria-expanded", "false");
 fontDropdown.style.marginBottom = "12px";
-fontDropdown.innerHTML = _createHTML(`\n      <button class="glass-dropdown__toggle" type="button" aria-haspopup="listbox">\n        <span class="glass-dropdown__label">${savedFontName}</span>\n        <svg class="glass-dropdown__chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>\n      </button>\n      <ul class="glass-dropdown__list" role="presentation">\n        ${fonts.map(f => {
+_setSafeHTML(fontDropdown, `\n      <button class="glass-dropdown__toggle" type="button" aria-haspopup="listbox">\n        <span class="glass-dropdown__label">${savedFontName}</span>\n        <svg class="glass-dropdown__chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>\n      </button>\n      <ul class="glass-dropdown__list" role="presentation">\n        ${fonts.map(f => {
 const sel = f.value === savedFont ? ' aria-selected="true"' : "";
 return `<li class="glass-dropdown__item" data-value="${f.value}" role="option"${sel}>${f.name}</li>`;
 }).join("")}\n      </ul>\n    `);
@@ -21506,14 +23227,7 @@ function setupSettingsButton() {
 const button = (function createSettingsButton() {
 const button = document.createElement("div");
 button.className = "settings-button";
-const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-svg.setAttribute("viewBox", "0 0 512 512");
-const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-path.setAttribute("fill", "white");
-path.setAttribute("d", "M495.9 166.6c3.2 8.7 .5 18.4-6.4 24.6l-43.3 39.4c1.1 8.3 1.7 16.8 1.7 25.4s-.6 17.1-1.7 25.4l43.3 39.4c6.9 6.2 9.6 15.9 6.4 24.6c-4.4 11.9-9.7 23.3-15.8 34.3l-4.7 8.1c-6.6 11-14 21.4-22.1 31.2c-5.9 7.2-15.7 9.6-24.5 6.8l-55.7-17.7c-13.4 10.3-28.2 18.9-44 25.4l-12.5 57.1c-2 9.1-9 16.3-18.2 17.8c-13.8 2.3-28 3.5-42.5 3.5s-28.7-1.2-42.5-3.5c-9.2-1.5-16.2-8.7-18.2-17.8l-12.5-57.1c-15.8-6.5-30.6-15.1-44-25.4L83.1 425.9c-8.8 2.8-18.6 .3-24.5-6.8c-8.1-9.8-15.5-20.2-22.1-31.2l-4.7-8.1c-6.1-11-11.4-22.4-15.8-34.3c-3.2-8.7-.5-18.4 6.4-24.6l43.3-39.4C64.6 273.1 64 264.6 64 256s.6-17.1 1.7-25.4L22.4 191.2c-6.9-6.2-9.6-15.9-6.4-24.6c4.4-11.9 9.7-23.3 15.8-34.3l4.7-8.1c6.6-11 14-21.4 22.1-31.2c5.9-7.2 15.7-9.6 24.5-6.8l55.7 17.7c13.4-10.3 28.2-18.9 44-25.4l12.5-57.1c2-9.1 9-16.3 18.2-17.8C227.3 1.2 241.5 0 256 0s28.7 1.2 42.5 3.5c9.2 1.5 16.2 8.7 18.2 17.8l12.5 57.1c15.8 6.5 30.6 15.1 44 25.4l55.7-17.7c8.8-2.8 18.6-.3 24.5 6.8c8.1 9.8 15.5 20.2 22.1 31.2l4.7 8.1c6.1 11 11.4 22.4 15.8 34.3zM256 336a80 80 0 1 0 0-160 80 80 0 1 0 0 160z");
-svg.appendChild(path);
-button.appendChild(svg);
+_setSafeHTML(button, '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="white" d="M495.9 166.6c3.2 8.7 .5 18.4-6.4 24.6l-43.3 39.4c1.1 8.3 1.7 16.8 1.7 25.4s-.6 17.1-1.7 25.4l43.3 39.4c6.9 6.2 9.6 15.9 6.4 24.6c-4.4 11.9-9.7 23.3-15.8 34.3l-4.7 8.1c-6.6 11-14 21.4-22.1 31.2c-5.9 7.2-15.7 9.6-24.5 6.8l-55.7-17.7c-13.4 10.3-28.2 18.9-44 25.4l-12.5 57.1c-2 9.1-9 16.3-18.2 17.8c-13.8 2.3-28 3.5-42.5 3.5s-28.7-1.2-42.5-3.5c-9.2-1.5-16.2-8.7-18.2-17.8l-12.5-57.1c-15.8-6.5-30.6-15.1-44-25.4L83.1 425.9c-8.8 2.8-18.6 .3-24.5-6.8c-8.1-9.8-15.5-20.2-22.1-31.2l-4.7-8.1c-6.1-11-11.4-22.4-15.8-34.3c-3.2-8.7-.5-18.4 6.4-24.6l43.3-39.4C64.6 273.1 64 264.6 64 256s.6-17.1 1.7-25.4L22.4 191.2c-6.9-6.2-9.6-15.9-6.4-24.6c4.4-11.9 9.7-23.3 15.8-34.3l4.7-8.1c6.6-11 14-21.4 22.1-31.2c5.9-7.2 15.7-9.6 24.5-6.8l55.7 17.7c13.4-10.3 28.2-18.9 44-25.4l12.5-57.1c2-9.1 9-16.3 18.2-17.8C227.3 1.2 241.5 0 256 0s28.7 1.2 42.5 3.5c9.2 1.5 16.2 8.7 18.2 17.8l12.5 57.1c15.8 6.5 30.6 15.1 44 25.4l55.7-17.7c8.8-2.8 18.6-.3 24.5 6.8c8.1 9.8 15.5 20.2 22.1 31.2l4.7 8.1c6.1 11 11.4 22.4 15.8 34.3zM256 336a80 80 0 1 0 0-160 80 80 0 1 0 0 160z"/></svg>');
 return button;
 })();
 button.setAttribute("tabindex", "0");
@@ -21611,18 +23325,7 @@ spinnerContainer.style.display = "flex";
 spinnerContainer.style.justifyContent = "center";
 spinnerContainer.style.alignItems = "center";
 spinnerContainer.classList.add("spinner-container");
-const spinner = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-spinner.setAttribute("viewBox", "0 0 50 50");
-spinner.classList.add("stats-spinner");
-const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-circle.setAttribute("cx", "25");
-circle.setAttribute("cy", "25");
-circle.setAttribute("r", "20");
-circle.setAttribute("fill", "none");
-circle.setAttribute("stroke", "currentColor");
-circle.setAttribute("stroke-width", "4");
-spinner.appendChild(circle);
-spinnerContainer.appendChild(spinner);
+_setSafeHTML(spinnerContainer, '<svg viewBox="0 0 50 50" class="stats-spinner"><circle cx="25" cy="25" r="20" fill="none" stroke="currentColor" stroke-width="4"></circle></svg>');
 return spinnerContainer;
 })();
 overlay.appendChild(spinner);
@@ -21722,15 +23425,14 @@ if (existingOverlay) {
 try {
 existingOverlay.remove();
 } catch (e) {
-console.warn("[YouTube+] Failed to remove overlay");
+window.console.warn("[YouTube+] Failed to remove overlay");
 }
 }
 if (state.intervalId) {
 try {
-clearInterval(state.intervalId);
-YouTubeUtils.cleanupManager.unregisterInterval(state.intervalId);
+state.intervalId.stop();
 } catch (e) {
-console.warn("[YouTube+] Failed to clear interval");
+window.console.warn("[YouTube+] Failed to clear interval");
 }
 state.intervalId = null;
 }
@@ -21739,7 +23441,7 @@ state.documentListenerKeys.forEach(key => {
 try {
 YouTubeUtils.cleanupManager.unregisterListener(key);
 } catch (e) {
-console.warn("[YouTube+] Failed to unregister listener");
+window.console.warn("[YouTube+] Failed to unregister listener");
 }
 });
 state.documentListenerKeys.clear();
@@ -21911,7 +23613,7 @@ return;
 const sign = difference > 0 ? "+" : "";
 element.textContent = `${sign}${difference.toLocaleString()}`;
 element.style && (element.style.color = difference > 0 ? "#1ed760" : "#f3727f");
-setTimeout(() => {
+setTimeout_(() => {
 element.textContent = "";
 }, 1e3);
 })(differenceElement, value, previousValue);
@@ -22017,10 +23719,7 @@ state.isUpdating = !1;
 }
 }
 }
-let ensureSettingsScheduler = null;
-function ensureSettingsUI() {
-ensureSettingsScheduler && ensureSettingsScheduler.stop();
-ensureSettingsScheduler = (function createSafeRetryScheduler(opts) {
+function createSafeRetryScheduler(opts) {
 const factory = window.YouTubeUtils?.createRetryScheduler;
 if ("function" == typeof factory) {
 try {
@@ -22055,9 +23754,13 @@ timerId && clearTimeout(timerId);
 timerId = null;
 }
 };
-})({
+}
+let ensureSettingsScheduler = null;
+function ensureSettingsUI() {
+ensureSettingsScheduler && ensureSettingsScheduler.stop();
+ensureSettingsScheduler = createSafeRetryScheduler({
 check: () => (function addSettingsUI() {
-const section = $('.ytp-plus-settings-section[data-section="experimental"]');
+const section = $$('.ytp-plus-settings-section[data-section="experimental"]').find(candidate => candidate.isConnected);
 if (!section) {
 return !1;
 }
@@ -22071,7 +23774,7 @@ return !0;
 }
 const item = document.createElement("div");
 item.className = "ytp-plus-settings-item count-settings-item";
-item.innerHTML = _createHTML(`\n        <div>\n          <label class="ytp-plus-settings-item-label">${t("channelStatsTitle")}</label>\n          <div class="ytp-plus-settings-item-description">${t("channelStatsDescription")}</div>\n        </div>\n        <input type="checkbox" class="ytp-plus-settings-checkbox" ${state.enabled ? "checked" : ""}>\n      `);
+_setSafeHTML(item, `\n        <div>\n          <label class="ytp-plus-settings-item-label">${t("channelStatsTitle")}</label>\n          <div class="ytp-plus-settings-item-description">${t("channelStatsDescription")}</div>\n        </div>\n        <input type="checkbox" class="ytp-plus-settings-checkbox" ${state.enabled ? "checked" : ""}>\n      `);
 section.appendChild(item);
 item.querySelector("input")?.addEventListener("change", e => {
 const {target} = e;
@@ -22081,9 +23784,9 @@ _safeLS_setItem(CONFIG.STORAGE_KEY, state.enabled ? "true" : "false");
 if (state.enabled) {
 observePageChanges();
 addNavigationListener();
-setTimeout(() => {
+setTimeout_(() => {
 const bannerElement = byId("page-header-banner-sizer");
-bannerElement && isChannelPage() && addOverlay(bannerElement);
+bannerElement instanceof HTMLElement && window.YouTubeUtils?.isChannelPage?.() && addOverlay(bannerElement);
 }, 100);
 } else {
 clearExistingOverlay();
@@ -22091,7 +23794,7 @@ clearExistingOverlay();
 });
 return !0;
 })(),
-maxAttempts: 20,
+maxAttempts: 50,
 interval: 100
 });
 }
@@ -22137,7 +23840,7 @@ window.YouTubeUtils?.cleanupManager?.register?.(() => document.removeEventListen
 } catch (e) {}
 }
 function setupUpdateInterval(overlay, channelName) {
-state.intervalId && clearInterval(state.intervalId);
+state.intervalId && state.intervalId.stop();
 const debouncedUpdate = (function createDebouncedUpdate(overlay, channelName) {
 let lastUpdateTime = 0;
 return () => {
@@ -22154,18 +23857,16 @@ lastUpdateTime = now;
 }
 };
 })(overlay, channelName);
-state.intervalId = setInterval(() => {
-"hidden" !== document.visibilityState && debouncedUpdate();
-}, state.updateInterval);
-YouTubeUtils.cleanupManager.registerInterval(state.intervalId);
+state.intervalId = createVisibilityAwareInterval(debouncedUpdate, state.updateInterval);
 }
 function addOverlay(bannerElement) {
 const channelName = (function extractChannelName(pathname) {
 return pathname.startsWith("/@") ? pathname.split("/")[1].replace("@", "") : pathname.startsWith("/channel/") || pathname.startsWith("/c/") || pathname.startsWith("/user/") ? pathname.split("/")[2] : null;
 })(window.location.pathname);
-if (!(function shouldSkipOverlay(channelName) {
-return !channelName || channelName === state.currentChannelName && state.overlay;
-})(channelName) && channelName) {
+if (!(function shouldSkipOverlay(channelName, bannerElement) {
+return !(channelName && !(channelName === state.currentChannelName && state.overlay?.isConnected && bannerElement && bannerElement.contains(state.overlay)));
+})(channelName, bannerElement) && channelName) {
+!state.overlay || state.overlay.isConnected && bannerElement.contains(state.overlay) || clearExistingOverlay();
 !(function ensureBannerPosition(bannerElement) {
 bannerElement && bannerElement.style && !bannerElement.style.position && (bannerElement.style.position = "relative");
 })(bannerElement);
@@ -22174,7 +23875,7 @@ state.overlay = createOverlay(bannerElement);
 if (state.overlay) {
 !(function clearUpdateInterval() {
 if (state.intervalId) {
-clearInterval(state.intervalId);
+state.intervalId.stop();
 state.intervalId = null;
 }
 })();
@@ -22184,37 +23885,61 @@ utils.log("Added overlay for channel:", channelName);
 }
 }
 }
-function isChannelPage() {
-return window.location.pathname.startsWith("/@") || window.location.pathname.startsWith("/channel/") || window.location.pathname.startsWith("/c/");
+function stopOverlayEnsureScheduler() {
+state.overlayEnsureScheduler?.stop && state.overlayEnsureScheduler.stop();
+state.overlayEnsureScheduler = null;
 }
-function handleBannerUpdate() {
+function ensureOverlayForCurrentPage(reset = !0) {
+reset && stopOverlayEnsureScheduler();
+state.overlayEnsureScheduler = createSafeRetryScheduler({
+check: () => {
+if (!state.enabled) {
+return !0;
+}
+if (!window.YouTubeUtils?.isChannelPage?.()) {
+clearExistingOverlay();
+state.currentChannelName = null;
+return !0;
+}
 const bannerElement = (function findBannerElement() {
 let bannerElement = byId("page-header-banner-sizer");
-if (!bannerElement) {
-const alternatives = [ '[id*="banner"]', ".ytd-c4-tabbed-header-renderer", "#channel-header", ".channel-header" ];
-for (const selector of alternatives) {
-bannerElement = $(selector);
-if (bannerElement) {
-break;
+if (!(bannerElement instanceof HTMLElement)) {
+const explicit = $("#page-header-banner");
+explicit instanceof HTMLElement && (bannerElement = explicit);
 }
+if (!(bannerElement instanceof HTMLElement)) {
+return null;
 }
-}
-return bannerElement;
+const rect = bannerElement.getBoundingClientRect?.();
+return rect && (rect.width < 8 || rect.height < 8) ? null : bannerElement;
 })();
-if (bannerElement && isChannelPage()) {
+if (!bannerElement) {
+return !1;
+}
 !(function ensureBannerPositioning(bannerElement) {
 bannerElement.style && "relative" !== bannerElement.style.position && (bannerElement.style.position = "relative");
 })(bannerElement);
 addOverlay(bannerElement);
-} else if (!isChannelPage()) {
+return !(!state.overlay || !state.overlay.isConnected);
+},
+maxAttempts: 40,
+interval: 150
+});
+}
+function handleBannerUpdate() {
+if (window.YouTubeUtils?.isChannelPage?.()) {
+ensureOverlayForCurrentPage();
+} else {
 clearExistingOverlay();
 state.currentChannelName = null;
+stopOverlayEnsureScheduler();
 }
 }
 function observePageChanges() {
-if (!state.enabled) {
+if (!state.enabled || state.pageObserversAttached) {
 return;
 }
+state.pageObserversAttached = !0;
 const debouncedBannerUpdate = YouTubeUtils.debounce ? YouTubeUtils.debounce(handleBannerUpdate, 150) : handleBannerUpdate;
 if (_cm2?.registerListener) {
 _cm2.registerListener(document, "yt-navigate-finish", debouncedBannerUpdate);
@@ -22225,36 +23950,33 @@ document.addEventListener("yt-page-data-updated", debouncedBannerUpdate);
 }
 }
 function addNavigationListener() {
-if (!state.enabled) {
+if (!state.enabled || state.navigationListenerAttached) {
 return;
 }
+state.navigationListenerAttached = !0;
 const _navHandler = () => {
-if (isChannelPage()) {
-const bannerElement = byId("page-header-banner-sizer");
-if (bannerElement) {
-addOverlay(bannerElement);
+if (window.YouTubeUtils?.isChannelPage?.()) {
+ensureOverlayForCurrentPage();
 utils.log("Navigated to channel page");
-}
 } else {
 clearExistingOverlay();
 state.currentChannelName = null;
+stopOverlayEnsureScheduler();
 utils.log("Navigated away from channel page");
 }
 };
 _cm2?.registerListener ? _cm2.registerListener(window, "yt-navigate-finish", _navHandler) : window.addEventListener("yt-navigate-finish", _navHandler);
+try {
+window.addEventListener("ytp:nav-refresh", () => {
+try {
+_navHandler();
+} catch (e) {}
+});
+} catch (e) {}
 }
 function cleanup() {
-if (state.observers && Array.isArray(state.observers)) {
-state.observers.forEach(observer => {
-try {
-observer.disconnect();
-} catch (e) {
-console.warn("[YouTube+] Failed to disconnect observer:", e);
-}
-});
-state.observers = [];
-}
 clearExistingOverlay();
+stopOverlayEnsureScheduler();
 utils.log("Cleanup completed");
 }
 _cm2?.registerListener ? _cm2.registerListener(window, "beforeunload", cleanup) : window.addEventListener("beforeunload", cleanup);
@@ -22263,17 +23985,48 @@ init,
 cleanup,
 version: "2.4.5"
 });
+$(".ytp-plus-settings-modal") && ensureSettingsUI();
 init();
 };
+document.addEventListener("youtube-plus-settings-modal-opened", initChannelStats, {
+once: !1
+});
 window.YouTubePlusLazyLoader ? window.YouTubePlusLazyLoader.register("channel-stats", initChannelStats, {
-priority: 1
-}) : initChannelStats();
+priority: 1,
+shouldLoad: () => (() => {
+try {
+const path = location.pathname || "";
+return path.startsWith("/@") || path.startsWith("/channel/") || path.startsWith("/c/");
+} catch (e) {
+return !1;
+}
+})() || (() => {
+try {
+return Boolean(document.querySelector(".ytp-plus-settings-modal"));
+} catch (e) {
+return !1;
+}
+})()
+}) : "function" == typeof requestIdleCallback ? requestIdleCallback(initChannelStats, {
+timeout: 2e3
+}) : setTimeout(initChannelStats, 0);
 })();
 
 !(function() {
 "use strict";
-const _createHTML = window._ytplusCreateHTML || (s => s);
-const t = window.YouTubeUtils?.t || (key => key || "");
+const _createHTML = window._ytpDefaults?.createHTML || (s => s);
+const renderTemplateClone = (container, html) => {
+if (!(container instanceof Element)) {
+return;
+}
+const template = document.createElement("template");
+const range = document.createRange();
+const root = document.body || document.documentElement;
+root && range.selectNode(root);
+template.content.append(range.createContextualFragment(_createHTML(html)));
+container.replaceChildren(template.content.cloneNode(!0));
+};
+const t = window.YouTubeUtils.t;
 const CONFIG = {
 selectors: {
 deleteButtons: 'div[class^="VfPpkd-Bz112c-"], button[aria-label*="Delete"], button[aria-label*="Удалить"], button[aria-label*="Remove"]',
@@ -22306,18 +24059,24 @@ isProcessing: !1,
 settingsNavListenerKey: null,
 panelCollapsed: !1,
 initialized: !1,
-settingsIntegrationInitialized: !1
+settingsIntegrationInitialized: !1,
+rootSubId: null,
+navSubId: null
 };
 const COMMENT_HISTORY_URL = (() => {
 let lang = "en";
 try {
-window.YouTubePlusI18n?.getLanguage ? lang = window.YouTubePlusI18n.getLanguage() : document.documentElement.lang && (lang = document.documentElement.lang.split("-")[0]);
+lang = window.YouTubeUtils.getLanguage();
 } catch (e) {}
 return `https://myactivity.google.com/page?hl=${encodeURIComponent(lang)}&utm_medium=web&utm_source=youtube&page=youtube_comments`;
 })();
+const isTrustedMyActivityHost = () => {
+const host = String(location.hostname || "").toLowerCase();
+return "myactivity.google.com" === host || host.endsWith(".myactivity.google.com");
+};
 const canRunCommentManagerRuntime = (() => {
 try {
-return (location.hostname || "").includes("myactivity.google.com");
+return isTrustedMyActivityHost();
 } catch (e) {
 return !1;
 }
@@ -22328,13 +24087,7 @@ const saved = localStorage.getItem(CONFIG.storageKey);
 saved && (CONFIG.enabled = JSON.parse(saved).enabled ?? !0);
 } catch (e) {}
 };
-const debounce = window.YouTubeUtils?.debounce || ((fn, ms) => {
-let t;
-return (...a) => {
-clearTimeout(t);
-t = setTimeout(() => fn(...a), ms);
-};
-});
+const debounce = window.YouTubeUtils.debounce;
 const $ = sel => window.YouTubeUtils?.$(sel) || document.querySelector(sel);
 const $$ = sel => window.YouTubeUtils?.$$(sel) || Array.from(document.querySelectorAll(sel));
 const withErrorBoundary = (fn, context) => {
@@ -22349,7 +24102,7 @@ return fn(...args);
 const errorObj = error instanceof Error ? error : new Error(String(error));
 window.YouTubeErrorBoundary ? window.YouTubeErrorBoundary.logError(errorObj, {
 context
-}) : console.error(`[YouTube+][CommentManager] ${context}:`, error);
+}) : window.console.error(`[YouTube+][CommentManager] ${context}:`, error);
 })(context, e);
 return null;
 }
@@ -22410,7 +24163,7 @@ collapseButton.className = `${CONFIG.classes.close} ytp-plus-settings-close`;
 collapseButton.setAttribute("type", "button");
 collapseButton.setAttribute("aria-expanded", String(!state.panelCollapsed));
 collapseButton.setAttribute("aria-label", t("togglePanel"));
-collapseButton.innerHTML = _createHTML('\n        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">\n          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/>\n        </svg>\n      ');
+renderTemplateClone(collapseButton, '\n        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">\n          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/>\n        </svg>\n      ');
 const togglePanelState = collapsed => {
 state.panelCollapsed = collapsed;
 header.classList.toggle("is-collapsed", collapsed);
@@ -22459,7 +24212,7 @@ return;
 }
 const hasChecked = Array.from($$(`.${CONFIG.classes.checkbox}`)).some(cb => cb.checked);
 deleteAllButton.disabled = !hasChecked;
-deleteAllButton.setAttribute("style", "opacity:" + (hasChecked ? "1" : "0.6"));
+deleteAllButton.style.opacity = hasChecked ? "1" : "0.6";
 }, "updateDeleteButtonState");
 const deleteSelectedComments = withErrorBoundary(() => {
 const checkedBoxes = Array.from($$(`.${CONFIG.classes.checkbox}`)).filter(cb => cb.checked);
@@ -22491,7 +24244,7 @@ const addStyles = withErrorBoundary(() => {
 if ($("#comment-delete-styles")) {
 return;
 }
-const styles = `\n  .${CONFIG.classes.checkboxAnchor}{position:relative;display:inline-flex;align-items:center;gap:8px;width:auto;}\n        .${CONFIG.classes.checkboxFloating}{position:absolute;top:-4px;right:-32px;margin:0;}\n        /* Panel styled to match shorts feedback: glassmorphism, rounded corners, soft shadow */\n        .${CONFIG.classes.panel}{position:fixed;top:50%;right:24px;transform:translateY(-50%);display:flex;flex-direction:column;gap:14px;z-index:10000;padding:16px 18px;background:var(--yt-glass-bg);border:1.5px solid var(--yt-glass-border);border-radius:20px;box-shadow:0 12px 40px rgba(0,0,0,0.45);backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%);min-width:220px;max-width:300px;color:var(--yt-text-primary);transition:transform .22s cubic-bezier(.4,0,.2,1),opacity .22s,box-shadow .2s}\n        html:not([dark]) .${CONFIG.classes.panel}{background:var(--yt-glass-bg);}\n        .${CONFIG.classes.header}{display:flex;align-items:center;justify-content:space-between;gap:12px;}\n        .${CONFIG.classes.panel}.is-collapsed{padding:14px 18px;}\n        .${CONFIG.classes.panel}.is-collapsed .${CONFIG.classes.title}{font-weight:500;opacity:.85;}\n        .${CONFIG.classes.panel}.is-collapsed .${CONFIG.classes.close}{transform:rotate(45deg);}\n        .${CONFIG.classes.panel}.is-collapsed .${CONFIG.classes.actions}{display:none!important;}\n        .${CONFIG.classes.title}{font-size:15px;font-weight:600;letter-spacing:.3px;}\n        .${CONFIG.classes.close}{background:transparent;border:none;cursor:pointer;padding:6px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--yt-text-primary);transition:all .2s ease;}\n        .${CONFIG.classes.close}:hover{transform:rotate(90deg) scale(1.05);color:var(--yt-accent);}\n        .${CONFIG.classes.actions}{display:flex;flex-direction:column;gap:10px;}\n        .${CONFIG.classes.actions}.is-hidden{display:none!important;}\n        .${CONFIG.classes.button}{padding:12px 16px;border-radius:var(--yt-radius-md);border:1px solid var(--yt-glass-border);cursor:pointer;font-size:13px;font-weight:500;background:var(--yt-button-bg);color:var(--yt-text-primary);transition:all .2s ease;text-align:center;}\n        .${CONFIG.classes.button}:disabled{opacity:.5;cursor:not-allowed;}\n        .${CONFIG.classes.button}:not(:disabled):hover{transform:translateY(-1px);box-shadow:var(--yt-shadow);}\n        .${CONFIG.classes.buttonDanger}{background:rgba(255,99,71,.12);border-color:rgba(255,99,71,.25);color:#ff5c5c;}\n        .${CONFIG.classes.buttonPrimary}{background:rgba(33,150,243,.12);border-color:rgba(33,150,243,.25);color:#2196f3;}\n        .${CONFIG.classes.buttonSuccess}{background:rgba(76,175,80,.12);border-color:rgba(76,175,80,.25);color:#4caf50;}\n        .${CONFIG.classes.buttonDanger}:not(:disabled):hover{background:rgba(255,99,71,.22);}\n        .${CONFIG.classes.buttonPrimary}:not(:disabled):hover{background:rgba(33,150,243,.22);}\n        .${CONFIG.classes.buttonSuccess}:not(:disabled):hover{background:rgba(76,175,80,.22);}\n        @media(max-width:1280px){\n          .${CONFIG.classes.panel}{top:auto;bottom:24px;transform:none;right:16px;}\n        }\n        @media(max-width:768px){\n          .${CONFIG.classes.panel}{position:fixed;left:16px;right:16px;bottom:16px;top:auto;transform:none;max-width:none;}\n          .${CONFIG.classes.actions}{flex-direction:row;flex-wrap:wrap;}\n          .${CONFIG.classes.button}{flex:1;min-width:140px;}\n        }\n      `;
+const styles = `\n  .${CONFIG.classes.checkboxAnchor}{position:relative;display:inline-flex;align-items:center;gap:8px;width:auto;}\n        .${CONFIG.classes.checkboxFloating}{position:absolute;top:-4px;right:-32px;margin:0;}\n        /* Panel styled to match shorts feedback: glassmorphism, rounded corners, soft shadow */\n        .${CONFIG.classes.panel}{position:fixed;top:50%;right:24px;transform:translateY(-50%);display:flex;flex-direction:column;gap:14px;z-index:10000;padding:16px 18px;background:var(--yt-glass-bg);border:1.5px solid var(--yt-glass-border);border-radius:20px;box-shadow:var(--yt-glass-shadow);backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%);min-width:220px;max-width:300px;color:var(--yt-text-primary);transition:transform .22s cubic-bezier(.4,0,.2,1),opacity .22s,box-shadow .2s}\n        html:not([dark]) .${CONFIG.classes.panel}{background:var(--yt-glass-bg);}\n        .${CONFIG.classes.header}{display:flex;align-items:center;justify-content:space-between;gap:12px;}\n        .${CONFIG.classes.panel}.is-collapsed{padding:14px 18px;}\n        .${CONFIG.classes.panel}.is-collapsed .${CONFIG.classes.title}{font-weight:500;opacity:.85;}\n        .${CONFIG.classes.panel}.is-collapsed .${CONFIG.classes.close}{transform:rotate(45deg);}\n        .${CONFIG.classes.panel}.is-collapsed .${CONFIG.classes.actions}{display:none!important;}\n        .${CONFIG.classes.title}{font-size:15px;font-weight:600;letter-spacing:.3px;}\n        .${CONFIG.classes.close}{background:transparent;border:none;cursor:pointer;padding:6px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--yt-text-primary);transition:all .2s ease;}\n        .${CONFIG.classes.close}:hover{transform:rotate(90deg) scale(1.05);color:var(--yt-accent);}\n        .${CONFIG.classes.actions}{display:flex;flex-direction:column;gap:10px;}\n        .${CONFIG.classes.actions}.is-hidden{display:none!important;}\n        .${CONFIG.classes.button}{padding:12px 16px;border-radius:var(--yt-radius-md);border:1px solid var(--yt-glass-border);cursor:pointer;font-size:13px;font-weight:500;background:var(--yt-button-bg);color:var(--yt-text-primary);transition:all .2s ease;text-align:center;}\n        .${CONFIG.classes.button}:disabled{opacity:.5;cursor:not-allowed;}\n        .${CONFIG.classes.button}:not(:disabled):hover{transform:translateY(-1px);box-shadow:var(--yt-shadow);}\n        .${CONFIG.classes.buttonDanger}{background:var(--yt-danger-soft);border-color:var(--yt-danger-border);color:var(--yt-danger-text);}\n        .${CONFIG.classes.buttonPrimary}{background:var(--yt-primary-soft);border-color:var(--yt-primary-border);color:var(--yt-primary-text);}\n        .${CONFIG.classes.buttonSuccess}{background:var(--yt-success-soft);border-color:var(--yt-success);color:var(--yt-success);}\n        .${CONFIG.classes.buttonDanger}:not(:disabled):hover{background:var(--yt-danger-soft-hover);}\n        .${CONFIG.classes.buttonPrimary}:not(:disabled):hover{background:var(--yt-primary-soft-hover);}\n        .${CONFIG.classes.buttonSuccess}:not(:disabled):hover{background:var(--yt-success-soft-hover);}\n        @media(max-width:1280px){\n          .${CONFIG.classes.panel}{top:auto;bottom:24px;transform:none;right:16px;}\n        }\n        @media(max-width:768px){\n          .${CONFIG.classes.panel}{position:fixed;left:16px;right:16px;bottom:16px;top:auto;transform:none;max-width:none;}\n          .${CONFIG.classes.actions}{flex-direction:row;flex-wrap:wrap;}\n          .${CONFIG.classes.button}{flex:1;min-width:140px;}\n        }\n      `;
 (cssText => {
 try {
 if (window.YouTubeUtils && YouTubeUtils.StyleManager) {
@@ -22524,15 +24277,15 @@ return;
 }
 const settingsItem = document.createElement("div");
 settingsItem.className = "ytp-plus-settings-item comment-manager-settings-item";
-settingsItem.innerHTML = _createHTML(`\n        <div>\n          <label class="ytp-plus-settings-item-label">${t("commentManagement")}</label>\n          <div class="ytp-plus-settings-item-description">${t("bulkDeleteDescription")}</div>\n        </div>\n        <button class="ytp-plus-button" id="open-comment-history-page" style="margin:0 0 0 30px;padding:12px 16px;font-size:13px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2)">\n          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="gray" stroke-width="2">\n              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>\n              <polyline points="15,3 21,3 21,9"/>\n              <line x1="10" y1="14" x2="21" y2="3"/>\n            </svg>\n        </button>\n      `);
+renderTemplateClone(settingsItem, `\n        <div>\n          <label class="ytp-plus-settings-item-label">${t("commentManagement")}</label>\n          <div class="ytp-plus-settings-item-description">${t("bulkDeleteDescription")}</div>\n        </div>\n        <button class="ytp-plus-button" id="open-comment-history-page" style="margin:0 0 0 30px;padding:12px 16px;font-size:13px;background:var(--yt-button-bg);border:1px solid var(--yt-glass-border)">\n          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="gray" stroke-width="2">\n              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>\n              <polyline points="15,3 21,3 21,9"/>\n              <line x1="10" y1="14" x2="21" y2="3"/>\n            </svg>\n        </button>\n      `);
 experimentalSection.appendChild(settingsItem);
 $("#open-comment-history-page")?.addEventListener("click", () => {
 window.open(COMMENT_HISTORY_URL, "_blank");
 });
 }, "addCommentManagerSettings");
 const ensureCommentManagerSettings = (attempt = 0) => {
-const experimentalVisible = $('.ytp-plus-settings-section[data-section="experimental"]:not(.hidden)');
-if (experimentalVisible) {
+const experimentalSection = $('.ytp-plus-settings-section[data-section="experimental"]');
+if (experimentalSection) {
 addCommentManagerSettings();
 !$(".comment-manager-settings-item") && attempt < 20 && setTimeout(() => ensureCommentManagerSettings(attempt + 1), 80);
 } else {
@@ -22568,39 +24321,21 @@ capture: !0
 }));
 };
 const init = withErrorBoundary(() => {
-if (state.initialized && state.observer) {
+if (state.initialized) {
 return;
 }
 settings_load();
 addStyles();
-state.observer?.disconnect();
-state.observer = new MutationObserver(debounce(initializeScript, CONFIG.debounceDelay));
-(observer => {
-try {
-window.YouTubeUtils && YouTubeUtils.cleanupManager && YouTubeUtils.cleanupManager.registerObserver(observer);
-} catch (e) {}
-})(state.observer);
-const observeTarget = () => {
-const target = document.querySelector("#comments") || document.querySelector("#content") || document.body;
-state.observer?.observe(target, {
-childList: !0,
-subtree: !0
-});
-};
-document.body ? observeTarget() : document.addEventListener("DOMContentLoaded", observeTarget);
-window.addEventListener("yt-navigate-finish", () => {
-state.observer?.disconnect();
-setTimeout(observeTarget, 200);
-}, {
-passive: !0
-});
+const coordinator = window.YouTubeMutationCoordinator;
+coordinator?.subscribeRoot ? state.rootSubId || (state.rootSubId = coordinator.subscribeRoot("comment-manager-runtime", debounce(initializeScript, CONFIG.debounceDelay), {
+selector: "#comments, #content"
+})) : window.console.warn("[YouTube+][CommentManager] MutationCoordinator unavailable");
 "loading" === document.readyState ? document.addEventListener("DOMContentLoaded", initializeScript) : initializeScript();
 initSettingsIntegration();
 }, "init");
 const isRelevantRoute = () => (() => {
 try {
-const host = location.hostname || "";
-if (!host.includes("myactivity.google.com")) {
+if (!isTrustedMyActivityHost()) {
 return !1;
 }
 const params = new URLSearchParams(location.search || "");
@@ -22621,57 +24356,49 @@ timeout: 2e3
 };
 initSettingsIntegration();
 if (canRunCommentManagerRuntime) {
-const navigationObserver = new MutationObserver(debounce(() => {
+const coordinator = window.YouTubeMutationCoordinator;
+coordinator?.subscribeRoot ? state.navSubId || (state.navSubId = coordinator.subscribeRoot("comment-manager-navigation", debounce(() => {
 !state.initialized && isRelevantRoute() && scheduleInit();
-if (state.initialized) {
-navigationObserver.disconnect();
-window.YouTubeUtils?.ObserverRegistry?.untrack && window.YouTubeUtils.ObserverRegistry.untrack();
+if (state.initialized && state.navSubId) {
+coordinator.unsubscribe(state.navSubId);
+state.navSubId = null;
 }
-}, 300));
-if (document.body) {
-navigationObserver.observe(document.body, {
-childList: !0,
-subtree: !1,
-attributes: !1
-});
-window.YouTubeUtils?.cleanupManager?.registerObserver && window.YouTubeUtils.cleanupManager.registerObserver(navigationObserver);
-window.YouTubeUtils?.ObserverRegistry?.track && window.YouTubeUtils.ObserverRegistry.track();
-}
-scheduleInit();
+}, 300), {
+selector: "body"
+})) : window.console.warn("[YouTube+][CommentManager] MutationCoordinator unavailable");
+window.YouTubePlusLazyLoader ? window.YouTubePlusLazyLoader.register("comment", scheduleInit, {
+priority: 1,
+shouldLoad: isRelevantRoute
+}) : scheduleInit();
 }
 })();
 
 !(function() {
 "use strict";
-const _createHTML = window._ytplusCreateHTML || (s => s);
+const setTimeout_ = setTimeout;
 const Y = window.YouTubeUtils || {};
 const t = Y.t || (key => key || "");
 function mk(tag, props = {}, children = []) {
 const el = document.createElement(tag);
 Object.entries(props).forEach(([k, v]) => {
-"class" === k ? el.className = v : "html" === k ? el.innerHTML = "function" == typeof window._ytplusCreateHTML ? window._ytplusCreateHTML(v) : _createHTML(sanitizeHTML(v)) : k.startsWith("on") && "function" == typeof v ? el.addEventListener(k.substring(2).toLowerCase(), v) : el.setAttribute(k, String(v));
+"class" === k ? el.className = v : "html" === k ? window.YouTubeUtils.setSafeHTML(el, v, !0) : k.startsWith("on") && "function" == typeof v ? el.addEventListener(k.substring(2).toLowerCase(), v) : el.setAttribute(k, String(v));
 });
 children.forEach(c => el.appendChild("string" == typeof c ? document.createTextNode(c) : c));
 return el;
 }
 function sanitizeHTML(html) {
+if (window.YouTubeSafeDOM?.sanitizeHTML) {
+return window.YouTubeSafeDOM.sanitizeHTML(html);
+}
 if (Y?.sanitizeHTML && "function" == typeof Y.sanitizeHTML) {
 return Y.sanitizeHTML(html);
 }
 if ("string" != typeof html) {
 return "";
 }
-const map = {
-"<": "&lt;",
-">": "&gt;",
-"&": "&amp;",
-'"': "&quot;",
-"'": "&#39;",
-"/": "&#x2F;",
-"`": "&#x60;",
-"=": "&#x3D;"
-};
-return html.replace(/[<>&"'\/`=]/g, char => map[char] || char);
+const div = document.createElement("div");
+div.textContent = html;
+return div.innerHTML;
 }
 function isValidEmail(email) {
 if (!email || "string" != typeof email) {
@@ -22840,7 +24567,7 @@ const includeDebug = mk("label", {
 style: "font-size:13px;display:flex;gap:var(--yt-space-sm);align-items:center;color:var(--yt-text-primary);cursor:pointer;align-self:center;"
 }, [ debugCheckboxInput, " " + t("includeDebug") ]);
 const actions = mk("div", {
-style: "display:flex;gap:var(--yt-space-sm);margin-top:var(--yt-space-sm);flex-wrap:wrap;"
+style: "display:flex;gap:var(--yt-space-sm);margin-top:var(--yt-space-sm);flex-wrap:wrap;justify-content:center;"
 });
 const submitBtn = mk("button", {
 class: "glass-button"
@@ -22872,96 +24599,14 @@ style: "margin-top:var(--yt-space-sm);font-size:12px;color:var(--yt-text-seconda
 }, [ t("privacy") ]);
 section.appendChild(form);
 section.appendChild(privacy);
-!(function initReportTypeDropdown() {
 try {
-const hidden = typeSelect;
-const dropdown = typeDropdown;
-const toggle = dropdown.querySelector(".glass-dropdown__toggle");
-const list = dropdown.querySelector(".glass-dropdown__list");
-const label = dropdown.querySelector(".glass-dropdown__label");
-let items = Array.from(list ? list.querySelectorAll(".glass-dropdown__item") : []);
-let idx = items.findIndex(it => "true" === it.getAttribute("aria-selected"));
-idx < 0 && (idx = 0);
-const openList = () => {
-dropdown.setAttribute("aria-expanded", "true");
-list && list.setAttribute("style", "display:block");
-items = Array.from(list ? list.querySelectorAll(".glass-dropdown__item") : []);
-};
-const closeList = () => {
-dropdown.setAttribute("aria-expanded", "false");
-list && list.setAttribute("style", "display:none");
-};
-const selectedItem = items[idx];
-if (selectedItem) {
-hidden.value = selectedItem.getAttribute("data-value") || "";
-label && (label.textContent = selectedItem.textContent || "");
-}
-toggle && toggle.addEventListener("click", () => {
-const expanded = "true" === dropdown.getAttribute("aria-expanded");
-expanded ? closeList() : openList();
-});
-const _rDocClick = e => {
-dropdown.contains(e.target) || closeList();
-};
-window.YouTubeUtils?.cleanupManager?.registerListener ? window.YouTubeUtils.cleanupManager.registerListener(document, "click", _rDocClick) : document.addEventListener("click", _rDocClick);
-list && list.addEventListener("click", e => {
-const it = e.target instanceof Element ? e.target.closest(".glass-dropdown__item") : null;
-if (!it) {
-return;
-}
-const val = it.getAttribute("data-value");
-hidden.value = val ?? "";
-list.querySelectorAll(".glass-dropdown__item").forEach(li => li.removeAttribute("aria-selected"));
-it.setAttribute("aria-selected", "true");
-label && (label.textContent = it.textContent);
-hidden.dispatchEvent(new Event("change", {
-bubbles: !0
-}));
-closeList();
-});
-dropdown.addEventListener("keydown", e => {
-const expanded = "true" === dropdown.getAttribute("aria-expanded");
-if ("ArrowDown" === e.key) {
-e.preventDefault();
-expanded || openList();
-idx = Math.min(idx + 1, items.length - 1);
-items.forEach(it => it.removeAttribute("aria-selected"));
-items[idx].setAttribute("aria-selected", "true");
-items[idx].scrollIntoView({
-block: "nearest"
-});
-} else if ("ArrowUp" === e.key) {
-e.preventDefault();
-expanded || openList();
-idx = Math.max(idx - 1, 0);
-items.forEach(it => it.removeAttribute("aria-selected"));
-items[idx].setAttribute("aria-selected", "true");
-items[idx].scrollIntoView({
-block: "nearest"
-});
-} else if ("Enter" === e.key || " " === e.key) {
-e.preventDefault();
-if (!expanded) {
-openList();
-return;
-}
-const it = items[idx];
-if (it) {
-hidden.value = it.getAttribute("data-value") ?? "";
-hidden.dispatchEvent(new Event("change", {
-bubbles: !0
-}));
-label && (label.textContent = it.textContent);
-closeList();
-}
-} else {
-"Escape" === e.key && closeList();
-}
+window.YouTubePlusDesignSystem?.initGlassDropdown?.({
+dropdown: typeDropdown,
+hiddenSelect: typeSelect
 });
 } catch (err) {
 Y && "function" == typeof Y.logError && Y.logError("Report", "initReportTypeDropdown", err);
 }
-})();
 debugCheckboxInput.addEventListener("change", function updateDebugPreview() {
 try {
 if (debugCheckboxInput.checked) {
@@ -23002,10 +24647,10 @@ fullDetails.appendChild(mk("pre", {
 style: "white-space:pre-wrap;margin:6px 0 0 0;font-size:11px;"
 }, [ JSON.stringify(d, null, 2) ]));
 debugPreview.appendChild(fullDetails);
-debugPreview.setAttribute("style", "display:block");
+debugPreview.style.display = "block";
 } else {
 debugPreview.replaceChildren();
-debugPreview.setAttribute("style", "display:none");
+debugPreview.style.display = "none";
 }
 } catch (err) {
 Y && "function" == typeof Y.logError && Y.logError("Report", "updateDebugPreview failed", err);
@@ -23040,13 +24685,13 @@ const errorMsg = t("fixErrorsPrefix") + data.errors.join("\n• ");
 Y.NotificationManager && "function" == typeof Y.NotificationManager.show ? Y.NotificationManager.show(errorMsg, {
 duration: 4e3,
 type: "error"
-}) : console.warn("[Report] Validation errors:", data.errors);
+}) : window.console.warn("[Report] Validation errors:", data.errors);
 return;
 }
 const originalText = submitBtn.textContent;
 submitBtn.disabled = !0;
 submitBtn.textContent = t("opening");
-submitBtn.setAttribute("style", "opacity:0.6");
+submitBtn.style.opacity = "0.6";
 const payload = buildIssuePayload(data);
 !(function openGitHubIssue(payload, type) {
 try {
@@ -23062,10 +24707,10 @@ throw err;
 Y.NotificationManager && "function" == typeof Y.NotificationManager.show && Y.NotificationManager.show(t("openingGithubNotification"), {
 duration: 2500
 });
-setTimeout(() => {
+setTimeout_(() => {
 submitBtn.disabled = !1;
 submitBtn.textContent = originalText;
-submitBtn.setAttribute("style", "opacity:1");
+submitBtn.style.opacity = "1";
 }, 2e3);
 } catch (err) {
 Y.logError && Y.logError("Report", "Failed to open GitHub issue", err);
@@ -23075,7 +24720,7 @@ type: "error"
 });
 submitBtn.disabled = !1;
 submitBtn.textContent = t("openGitHub");
-submitBtn.setAttribute("style", "opacity:1");
+submitBtn.style.opacity = "1";
 }
 }
 });
@@ -23089,20 +24734,22 @@ const errorMsg = t("fixErrorsPrefix") + data.errors.join("\n• ");
 Y.NotificationManager && "function" == typeof Y.NotificationManager.show ? Y.NotificationManager.show(errorMsg, {
 duration: 4e3,
 type: "error"
-}) : console.warn("[Report] Validation errors:", data.errors);
+}) : window.console.warn("[Report] Validation errors:", data.errors);
 return;
 }
 const originalText = copyBtn.textContent;
 copyBtn.disabled = !0;
 copyBtn.textContent = t("copying");
-copyBtn.setAttribute("style", "opacity:0.6");
+copyBtn.style.opacity = "0.6";
 const payload = buildIssuePayload(data);
 const full = `Title: ${payload.title}\n\n${payload.body}`;
 (function copyToClipboard(text) {
 return navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(text) : new Promise((resolve, reject) => {
 const ta = document.createElement("textarea");
 ta.value = text;
-ta.setAttribute("style", "position:fixed;left:-9999px;opacity:0");
+ta.style.position = "fixed";
+ta.style.left = "-9999px";
+ta.style.opacity = "0";
 document.body.appendChild(ta);
 try {
 ta.select();
@@ -23120,8 +24767,8 @@ Y.NotificationManager && "function" == typeof Y.NotificationManager.show && Y.No
 duration: 2e3
 });
 copyBtn.textContent = t("copied");
-copyBtn.setAttribute("style", "opacity:1");
-setTimeout(() => {
+copyBtn.style.opacity = "1";
+setTimeout_(() => {
 copyBtn.disabled = !1;
 copyBtn.textContent = originalText;
 }, 2e3);
@@ -23130,16 +24777,16 @@ Y && "function" == typeof Y.logError && Y.logError("Report", "copy failed", err)
 Y && Y.NotificationManager && "function" == typeof Y.NotificationManager.show ? Y.NotificationManager.show(t("copyFailed"), {
 duration: 3e3,
 type: "error"
-}) : console.warn("Copy failed; please copy manually", err);
+}) : window.console.warn("Copy failed; please copy manually", err);
 copyBtn.disabled = !1;
 copyBtn.textContent = originalText;
-copyBtn.setAttribute("style", "opacity:1");
+copyBtn.style.opacity = "1";
 });
 } catch (err) {
 Y.logError && Y.logError("Report", "Failed to copy report", err);
 copyBtn.disabled = !1;
 copyBtn.textContent = t("copyReport");
-copyBtn.setAttribute("style", "opacity:1");
+copyBtn.style.opacity = "1";
 }
 }
 });
@@ -23153,27 +24800,27 @@ const errorMsg = t("fixErrorsPrefix") + data.errors.join("\n• ");
 Y.NotificationManager && "function" == typeof Y.NotificationManager.show ? Y.NotificationManager.show(errorMsg, {
 duration: 4e3,
 type: "error"
-}) : console.warn("[Report] Validation errors:", data.errors);
+}) : window.console.warn("[Report] Validation errors:", data.errors);
 return;
 }
 const originalText = emailBtn.textContent;
 emailBtn.disabled = !0;
 emailBtn.textContent = t("opening");
-emailBtn.setAttribute("style", "opacity:0.6");
+emailBtn.style.opacity = "0.6";
 const payload = buildIssuePayload(data);
 const subject = payload.title;
 const mailto = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(payload.body)}`;
 window.location.href = mailto;
-setTimeout(() => {
+setTimeout_(() => {
 emailBtn.disabled = !1;
 emailBtn.textContent = originalText;
-emailBtn.setAttribute("style", "opacity:1");
+emailBtn.style.opacity = "1";
 }, 2e3);
 } catch (err) {
 Y.logError && Y.logError("Report", "Failed to prepare email", err);
 emailBtn.disabled = !1;
 emailBtn.textContent = t("prepareEmail");
-emailBtn.setAttribute("style", "opacity:1");
+emailBtn.style.opacity = "1";
 }
 }
 });
@@ -23185,18 +24832,46 @@ Y.logError && Y.logError("Report", "Failed to attach report module to window", e
 
 !(function() {
 "use strict";
+const setTimeout_ = setTimeout.bind(window);
 const _createHTML = window._ytplusCreateHTML || (s => s);
-const t = window.YouTubeUtils?.t || (key => key || "");
-const getLanguage = () => {
-if (window.YouTubePlusI18n?.getLanguage) {
-return window.YouTubePlusI18n.getLanguage();
+const renderTemplateClone = (container, html) => {
+if (!(container instanceof Element)) {
+return;
 }
-if (window.YouTubeUtils?.getLanguage) {
-return window.YouTubeUtils.getLanguage();
-}
-const lang = document.documentElement.lang || navigator.language || "en";
-return lang.startsWith("ru") ? "ru" : "en";
+const template = document.createElement("template");
+const range = document.createRange();
+const root = document.body || document.documentElement;
+root && range.selectNode(root);
+template.content.append(range.createContextualFragment(_createHTML(html)));
+container.replaceChildren(template.content.cloneNode(!0));
 };
+const REFRESH_ICON_PATHS = [ "M21.5 2v6h-6M2.5 22v-6h6", "M19.13 11.48A10 10 0 0 0 12 2C6.48 2 2 6.48 2 12c0 .34.02.67.05 1M4.87 12.52A10 10 0 0 0 12 22c5.52 0 10-4.48 10-10 0-.34-.02-.67-.05-1" ];
+const setManualCheckButtonContent = (button, label, spinning) => {
+button instanceof HTMLElement && button.replaceChildren((spinning => {
+const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+svg.setAttribute("width", "16");
+svg.setAttribute("height", "16");
+svg.setAttribute("viewBox", "0 0 24 24");
+svg.setAttribute("fill", "none");
+svg.setAttribute("stroke", "currentColor");
+svg.setAttribute("stroke-width", "2");
+svg.setAttribute("stroke-linecap", "round");
+svg.setAttribute("stroke-linejoin", "round");
+svg.style.display = "inline-block";
+svg.style.flexShrink = "0";
+svg.style.verticalAlign = "middle";
+spinning && (svg.style.animation = "spin .8s linear infinite");
+for (const d of REFRESH_ICON_PATHS) {
+const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+path.setAttribute("d", d);
+svg.appendChild(path);
+}
+return svg;
+})(spinning), document.createTextNode(label));
+};
+const t = window.YouTubeUtils.t;
+const byId = window.YouTubeUtils?.byId || (id => document.getElementById(id));
+const getLanguage = () => window.YouTubeUtils.getLanguage();
 const UPDATE_CONFIG = {
 enabled: !0,
 checkInterval: 864e5,
@@ -23229,6 +24904,25 @@ lastVersion: UPDATE_CONFIG.currentVersion,
 updateAvailable: !1,
 checkInProgress: !1,
 updateDetails: null
+};
+const isVersionString = value => {
+const text = String(value || "").trim();
+if (!text) {
+return !1;
+}
+const parts = text.split(".");
+return !(parts.length < 1 || parts.length > 3) && parts.every(part => part.length > 0 && Array.from(part).every(ch => ch >= "0" && ch <= "9"));
+};
+const extractMetadataField = (text, field) => {
+const prefix = `@${field} `;
+const lines = String(text || "").replace(/\r/g, "").split("\n");
+for (const line of lines) {
+const trimmed = line.trimStart();
+if (trimmed.startsWith(prefix)) {
+return trimmed.slice(prefix.length).trim();
+}
+}
+return "";
 };
 function pluralizeTime(n, unit) {
 const lang = getLanguage();
@@ -23265,18 +24959,18 @@ return;
 }
 const parsed = JSON.parse(saved);
 if ("object" != typeof parsed || null === parsed) {
-console.error("[YouTube+][Update]", "Invalid settings structure");
+window.console.error("[YouTube+][Update]", "Invalid settings structure");
 return;
 }
 "number" == typeof parsed.lastCheck && parsed.lastCheck >= 0 && (updateState.lastCheck = parsed.lastCheck);
 if ("string" == typeof parsed.lastVersion) {
-const ver = parsed.lastVersion.replace(/^v/i, "");
-/^\d+(?:\.\d+){0,2}$/.test(ver) && (updateState.lastVersion = ver);
+const ver = parsed.lastVersion.replace(/^v/i, "").trim();
+isVersionString(ver) && (updateState.lastVersion = ver);
 }
 "boolean" == typeof parsed.updateAvailable && (updateState.updateAvailable = parsed.updateAvailable);
-parsed.updateDetails && "object" == typeof parsed.updateDetails && "string" == typeof parsed.updateDetails.version && /^\d+\.\d+\.\d+/.test(parsed.updateDetails.version) && (updateState.updateDetails = parsed.updateDetails);
+parsed.updateDetails && "object" == typeof parsed.updateDetails && "string" == typeof parsed.updateDetails.version && isVersionString(parsed.updateDetails.version) && (updateState.updateDetails = parsed.updateDetails);
 } catch (e) {
-console.error("[YouTube+][Update]", "Failed to load update settings:", e);
+window.console.error("[YouTube+][Update]", "Failed to load update settings:", e);
 }
 }, utils_saveSettings = () => {
 try {
@@ -23288,11 +24982,11 @@ updateDetails: updateState.updateDetails
 };
 localStorage.setItem(UPDATE_CONFIG.storageKey, JSON.stringify(dataToSave));
 } catch (e) {
-console.error("[YouTube+][Update]", "Failed to save update settings:", e);
+window.console.error("[YouTube+][Update]", "Failed to save update settings:", e);
 }
 }, utils_compareVersions = (v1, v2) => {
 if ("string" != typeof v1 || "string" != typeof v2) {
-console.error("[YouTube+][Update]", "Invalid version format - must be strings");
+window.console.error("[YouTube+][Update]", "Invalid version format - must be strings");
 return 0;
 }
 const normalize = v => v.replace(/[^\d.]/g, "").split(".").map(n => parseInt(n, 10) || 0);
@@ -23306,22 +25000,28 @@ return diff;
 }
 return 0;
 }, utils_parseMetadata = text => {
-if ("string" != typeof text || text.length > 1e5) {
-console.error("[YouTube+][Update]", "Invalid metadata text");
+if (null == text || "" === text) {
 return {
 version: null,
 description: "",
 downloadUrl: UPDATE_CONFIG.autoInstallUrl
 };
 }
-const extractField = field => text.match(new RegExp(`@${(s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))(field)}\\s+([^\\r\\n]+)`))?.[1]?.trim();
-let version = extractField("version");
-const description = extractField("description") || "";
-const downloadUrl = extractField("downloadURL") || UPDATE_CONFIG.autoInstallUrl;
+if ("string" != typeof text || text.length > 1e5) {
+window.console.warn("[YouTube+][Update]", "Invalid metadata text");
+return {
+version: null,
+description: "",
+downloadUrl: UPDATE_CONFIG.autoInstallUrl
+};
+}
+let version = extractMetadataField(text, "version");
+const description = extractMetadataField(text, "description");
+const downloadUrl = extractMetadataField(text, "downloadURL") || UPDATE_CONFIG.autoInstallUrl;
 if (version) {
 version = version.replace(/^v/i, "").trim();
-if (!/^\d+(?:\.\d+){0,2}$/.test(version)) {
-console.error("[YouTube+][Update]", "Invalid version format in metadata:", version);
+if (!isVersionString(version)) {
+window.console.error("[YouTube+][Update]", "Invalid version format in metadata:", version);
 return {
 version: null,
 description: "",
@@ -23358,7 +25058,7 @@ if (details?.version && "string" == typeof details.version) {
 try {
 sessionStorage.setItem("update_dismissed", details.version);
 } catch (err) {
-console.error("[YouTube+][Update]", "Failed to persist dismissal state:", err);
+window.console.error("[YouTube+][Update]", "Failed to persist dismissal state:", err);
 }
 }
 };
@@ -23392,7 +25092,7 @@ error: `Invalid URL format: ${error.message}`
 }
 })(downloadUrl);
 if (!validation.valid) {
-console.error("[YouTube+][Update]", validation.error);
+window.console.error("[YouTube+][Update]", validation.error);
 return !1;
 }
 const success = (url => {
@@ -23405,7 +25105,7 @@ setParent: !0
 });
 return !0;
 } catch (gmError) {
-console.error("[YouTube+] GM_openInTab update install failed:", gmError);
+window.console.error("[YouTube+] GM_openInTab update install failed:", gmError);
 }
 }
 try {
@@ -23414,13 +25114,13 @@ if (popup) {
 return !0;
 }
 } catch (popupError) {
-console.error("[YouTube+] window.open update install failed:", popupError);
+window.console.error("[YouTube+] window.open update install failed:", popupError);
 }
 try {
 window.location.assign(url);
 return !0;
 } catch (navigationError) {
-console.error("[YouTube+] Navigation to update URL failed:", navigationError);
+window.console.error("[YouTube+] Navigation to update URL failed:", navigationError);
 }
 return !1;
 })(downloadUrl);
@@ -23430,7 +25130,7 @@ return success;
 const fetchUpdateMetadata = async (url = UPDATE_CONFIG.updateUrl) => (async requestUrl => {
 if ("undefined" != typeof GM_xmlhttpRequest) {
 return new Promise((resolve, reject) => {
-const timeoutId = setTimeout(() => reject(new Error("Update check timeout")), 1e4);
+const timeoutId = setTimeout_(() => reject(new Error("Update check timeout")), 1e4);
 GM_xmlhttpRequest({
 method: "GET",
 url: requestUrl,
@@ -23455,7 +25155,7 @@ reject(new Error("Update check timeout"));
 });
 }
 const controller = new AbortController;
-const timeoutId = setTimeout(() => controller.abort(), 1e4);
+const timeoutId = setTimeout_(() => controller.abort(), 1e4);
 try {
 const res = await fetch(requestUrl, {
 method: "GET",
@@ -23478,22 +25178,22 @@ const handleUpdateResult = (updateDetails, force) => {
 const shouldShowNotification = updateState.updateAvailable && (force || sessionStorage.getItem("update_dismissed") !== updateDetails.version);
 if (shouldShowNotification) {
 (updateDetails => {
-const iconHtml = UPDATE_CONFIG.showNotificationIcon ? '<div style="background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));\n                        border-radius: 10px; padding: 10px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.08);\n                        backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);">\n            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">\n              <path d="M21 12c0 1-1 2-1 2s-1-1-1-2 1-2 1-2 1 1 1 2z"/>\n              <path d="m21 12-5-5v3H8v4h8v3l5-5z"/>\n            </svg>\n          </div>' : "";
+const iconHtml = UPDATE_CONFIG.showNotificationIcon ? '<div style="background: var(--yt-glass-bg);\n                        border-radius: var(--yt-radius-xs); padding: 10px; flex-shrink: 0; border: 1px solid var(--yt-glass-border);\n                        backdrop-filter: var(--yt-glass-blur); -webkit-backdrop-filter: var(--yt-glass-blur);">\n            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">\n              <path d="M21 12c0 1-1 2-1 2s-1-1-1-2 1-2 1-2 1 1 1 2z"/>\n              <path d="m21 12-5-5v3H8v4h8v3l5-5z"/>\n            </svg>\n          </div>' : "";
 const notification = document.createElement("div");
 notification.className = "youtube-enhancer-notification update-notification";
 notification.setAttribute("role", "alertdialog");
 notification.setAttribute("aria-label", t("updateAvailableTitle") || "Update available");
-notification.style.cssText = "\n      z-index: 10001; max-width: 360px;\n      background: rgba(255,255,255,0.04); padding: 16px 18px; border-radius: 14px;\n      color: rgba(255,255,255,0.95);\n      box-shadow: 0 8px 30px rgba(11, 15, 25, 0.45), inset 0 1px 0 rgba(255,255,255,0.02);\n      border: 1px solid rgba(255,255,255,0.08);\n      -webkit-backdrop-filter: blur(10px) saturate(120%);\n      backdrop-filter: blur(10px) saturate(120%);\n      animation: slideInFromBottom 0.4s ease-out;\n    ";
-notification.innerHTML = _createHTML(`\n        <div style="position: relative; display: flex; align-items: flex-start; gap: 12px;">\n            ${iconHtml}\n          <div style="flex: 1; min-width: 0;">\n            <div style="font-weight: 600; font-size: 15px; margin-bottom: 4px;">${t("updateAvailableTitle")}</div>\n            <div style="font-size: 13px; opacity: 0.9; margin-bottom: 8px;">\n              ${t("version")} ${updateDetails.version}\n            </div>\n            ${updateDetails.changelog || updateDetails.description ? (function() {
+notification.style.cssText = "\n      z-index: 10001; max-width: 360px;\n      background: var(--yt-notification-bg); padding: 16px 18px; border-radius: var(--yt-radius-lg);\n      color: var(--yt-text-primary);\n      box-shadow: var(--yt-shadow);\n      border: 1px solid var(--yt-glass-border);\n      -webkit-backdrop-filter: var(--yt-glass-blur);\n      backdrop-filter: var(--yt-glass-blur);\n      animation: slideInFromBottom 0.4s ease-out;\n    ";
+renderTemplateClone(notification, `\n        <div style="position: relative; display: flex; align-items: flex-start; gap: 12px;">\n            ${iconHtml}\n          <div style="flex: 1; min-width: 0;">\n            <div style="font-weight: 600; font-size: 15px; margin-bottom: 4px;">${t("updateAvailableTitle")}</div>\n            <div style="font-size: 13px; opacity: 0.9; margin-bottom: 8px;">\n              ${t("version")} ${updateDetails.version}\n            </div>\n            ${updateDetails.changelog || updateDetails.description ? (function() {
 const header = t("changelogHeader");
 const raw = updateDetails.changelog && updateDetails.changelog.length > 0 ? updateDetails.changelog : updateDetails.description || "";
 const text = (s => String(s).replace(/<br\s*\/?>/gi, "\n").replace(/<\/p>/gi, "\n").replace(/<[^>]*>?/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#039;/g, "'").trim())(raw);
 const lines = text.split(/\n+/).map(l => l.trim()).filter(Boolean);
 const listHtml = lines.map(l => `<div style="font-size:12px; opacity:0.85; margin-bottom:6px;">${l}</div>`).join("");
-return `<div style="font-size:12px; font-weight:600; opacity:0.95; margin-bottom:6px;">${header}</div><div style="font-size:12px; line-height:1.4; max-height:120px; overflow-y:auto; padding:8px; background: rgba(0,0,0,0.2); border-radius:6px; border:1px solid rgba(255,255,255,0.05); white-space:normal;">${listHtml}</div>`;
-})() : `<div style="font-size: 12px); opacity: 0.85; margin-bottom: 12px;">${t("newFeatures")}</div>`}\n            <div style="display: flex; gap: 8px;">\n              <button id="update-install-btn" type="button" style="\n                background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));\n                color: #ff5a1a; border: 1px solid rgba(255,90,30,0.12);\n                padding: 8px 16px; border-radius: 8px; cursor: pointer;\n                font-size: 13px; font-weight: 700; transition: transform 0.15s ease;\n                box-shadow: 0 6px 18px rgba(90,30,0,0.12);\n                backdrop-filter: blur(6px);\n              ">${t("installUpdate")}</button>\n              <button id="update-dismiss-btn" type="button" style="\n                background: transparent; color: rgba(255,255,255,0.9);\n                border: 1px solid rgba(255,255,255,0.06); padding: 8px 12px;\n                border-radius: 8px; cursor: pointer; font-size: 13px; transition: all 0.12s ease;\n              ">${t("later")}</button>\n            </div>\n          </div>\n          <button id="update-close-btn" aria-label="${t("dismiss")}" style="\n            position: absolute; top: -8px; right: -8px; width: 28px; height: 28px;\n            border-radius: 50%; border: none; cursor: pointer; display: flex;\n            align-items: center; justify-content: center; font-size: 16px; line-height: 1;\n            background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.85); transition: background 0.18s ease;\n            border: 1px solid rgba(255,255,255,0.06);\n          ">&times;</button>\n        </div>\n        <style>\n          @keyframes slideInFromBottom {\n            from { transform: translateY(100%); opacity: 0; }\n            to { transform: translateY(0); opacity: 1; }\n          }\n          @keyframes slideOutToBottom {\n            from { transform: translateY(0); opacity: 1; }\n            to { transform: translateY(100%); opacity: 0; }\n          }\n          #update-close-btn:hover {\n            background: rgba(255, 255, 255, 0.25);\n          }\n        </style>\n      `);
+return `<div style="font-size:12px; font-weight:600; opacity:0.95; margin-bottom:6px;">${header}</div><div style="font-size:12px; line-height:1.4; max-height:120px; overflow-y:auto; padding:8px; background: var(--yt-overlay-deep); border-radius:6px; border:1px solid var(--yt-surface-overlay-border); white-space:normal;">${listHtml}</div>`;
+})() : `<div style="font-size: 12px); opacity: 0.85; margin-bottom: 12px;">${t("newFeatures")}</div>`}\n            <div style="display: flex; gap: 8px;">\n              <button id="update-install-btn" type="button" style="\n                background: var(--yt-accent); color: white; border: none;\n                padding: 8px 16px; border-radius: var(--yt-radius-xs); cursor: pointer;\n                font-size: 13px; font-weight: 700; transition: transform 0.15s ease;\n                box-shadow: 0 6px 18px var(--yt-danger-ghost);\n                backdrop-filter: var(--yt-glass-blur);\n              ">${t("installUpdate")}</button>\n              <button id="update-dismiss-btn" type="button" style="\n                background: var(--yt-button-bg); color: var(--yt-text-primary);\n                border: 1px solid var(--yt-glass-border); padding: 8px 12px;\n                border-radius: var(--yt-radius-xs); cursor: pointer; font-size: 13px; transition: all 0.12s ease;\n              ">${t("later")}</button>\n            </div>\n          </div>\n          <button id="update-close-btn" aria-label="${t("dismiss")}" style="\n            position: absolute; top: -8px; right: -8px; width: 28px; height: 28px;\n            border-radius: 50%; border: none; cursor: pointer; display: flex;\n            align-items: center; justify-content: center; font-size: 16px; line-height: 1;\n            background: var(--yt-button-bg); color: var(--yt-text-primary); transition: background 0.18s ease;\n            border: 1px solid var(--yt-glass-border);\n          ">&times;</button>\n        </div>\n        <style>${window.YouTubePlusStyleResources?.update || ""}</style>\n      `);
 const _containerId = "youtube-enhancer-notification-container";
-let _container = document.getElementById(_containerId);
+let _container = byId(_containerId);
 if (!_container) {
 _container = document.createElement("div");
 _container.id = _containerId;
@@ -23511,14 +25211,14 @@ document.body.appendChild(notification);
 }
 const removeNotification = () => {
 notification.style.animation = "slideOutToBottom 0.35s ease-in forwards";
-setTimeout(() => notification.remove(), 360);
+setTimeout_(() => notification.remove(), 360);
 };
 const installBtn = notification.querySelector("#update-install-btn");
 installBtn && installBtn.addEventListener("click", () => {
 const success = installUpdate(updateDetails);
 if (success) {
 removeNotification();
-setTimeout(() => utils_showNotification(t("installing")), 500);
+setTimeout_(() => utils_showNotification(t("installing")), 500);
 } else {
 utils_showNotification(t("manualInstallHint"), "error", 5e3);
 window.open("https://greasyfork.org/en/scripts/537017-youtube", "_blank");
@@ -23534,7 +25234,7 @@ closeBtn && closeBtn.addEventListener("click", () => {
 updateDetails?.version && sessionStorage.setItem("update_dismissed", updateDetails.version);
 removeNotification();
 });
-setTimeout(() => {
+setTimeout_(() => {
 notification.isConnected && removeNotification();
 }, UPDATE_CONFIG.notificationDuration);
 })(updateDetails);
@@ -23556,7 +25256,7 @@ details = fallbackDetails;
 metaText = fallbackText;
 }
 } catch (fallbackErr) {
-"undefined" != typeof console && console.warn && console.warn("[YouTube+][Update] Fallback metadata fetch failed:", fallbackErr.message);
+"undefined" != typeof console && window.console.warn && window.console.warn("[YouTube+][Update] Fallback metadata fetch failed:", fallbackErr.message);
 }
 }
 if (details.version) {
@@ -23568,7 +25268,7 @@ const url = `https://greasyfork.org/${lang}/scripts/537017-youtube/versions`;
 const fetchPage = async requestUrl => {
 if ("undefined" != typeof GM_xmlhttpRequest) {
 return new Promise((resolve, reject) => {
-const timeoutId = setTimeout(() => reject(new Error("Changelog fetch timeout")), 1e4);
+const timeoutId = setTimeout_(() => reject(new Error("Changelog fetch timeout")), 1e4);
 GM_xmlhttpRequest({
 method: "GET",
 url: requestUrl,
@@ -23592,7 +25292,7 @@ reject(new Error("Timeout"));
 });
 }
 const controller = new AbortController;
-const timeoutId = setTimeout(() => controller.abort(), 1e4);
+const timeoutId = setTimeout_(() => controller.abort(), 1e4);
 try {
 const res = await fetch(requestUrl, {
 method: "GET",
@@ -23611,24 +25311,33 @@ clearTimeout(timeoutId);
 }
 };
 const html = await fetchPage(url);
-const escapedVersion = version.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-const versionRegex = new RegExp(`>[^<]*?${escapedVersion}</a>[\\s\\S]*?class="version-changelog"[^>]*>([\\s\\S]*?)</span>`, "i");
-const match = html.match(versionRegex);
-if (match && match[1]) {
-let changelog = match[1].trim();
-changelog = changelog.replace(/<br\s*\/?>/gi, "\n").replace(/<\/p>/gi, "\n").replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#039;/g, "'");
-changelog = changelog.split("\n").map(line => line.trim()).filter(line => line.length > 0).join("\n");
-return changelog || "";
+const domParser = "function" == typeof window.DOMParser ? new window.DOMParser : null;
+if (domParser) {
+try {
+const doc = domParser.parseFromString(html, "text/html");
+const versionText = String(version || "").trim();
+const anchors = Array.from(doc.querySelectorAll("a"));
+const matchingLink = anchors.find(anchor => {
+const linkText = String(anchor.textContent || "").trim();
+return linkText === versionText || linkText === `v${versionText}` || linkText.includes(versionText);
+});
+const container = matchingLink?.closest("li, article, section, div") || matchingLink?.parentElement || null;
+const changelogNode = container?.querySelector(".version-changelog") || (matchingLink?.nextElementSibling?.matches?.(".version-changelog") ? matchingLink.nextElementSibling : null);
+const changelogText = String(changelogNode?.textContent || "").trim();
+if (changelogText) {
+return changelogText.split("\n").map(line => line.trim()).filter(line => line.length > 0).join("\n");
+}
+} catch (e) {}
 }
 return "";
 } catch (error) {
-console.warn("[YouTube+][Update] Failed to fetch changelog:", error.message);
+window.console.warn("[YouTube+][Update] Failed to fetch changelog:", error.message);
 return "";
 }
 })(details.version);
 details.changelog = "string" == typeof changelog && changelog.length > 0 ? changelog : "";
 } catch (changelogErr) {
-console.warn("[YouTube+][Update] Failed to fetch changelog:", changelogErr.message);
+window.console.warn("[YouTube+][Update] Failed to fetch changelog:", changelogErr.message);
 details.changelog = "";
 }
 } else {
@@ -23649,7 +25358,7 @@ throw new Error("Update URL must be from greasyfork.org");
 })(UPDATE_CONFIG.updateUrl);
 return !0;
 } catch (urlError) {
-console.error("[YouTube+][Update]", "Invalid update URL configuration:", urlError);
+window.console.error("[YouTube+][Update]", "Invalid update URL configuration:", urlError);
 throw urlError;
 }
 };
@@ -23679,11 +25388,11 @@ try {
 utils_showNotification(t("installing"));
 } catch (e) {}
 } else {
-console.warn("[YouTube+][Update] Auto-install could not be initiated for", updateDetails.downloadUrl);
+window.console.warn("[YouTube+][Update] Auto-install could not be initiated for", updateDetails.downloadUrl);
 }
 }
 } catch (e) {
-console.error("[YouTube+][Update] Auto-installation failed:", e);
+window.console.error("[YouTube+][Update] Auto-installation failed:", e);
 }
 }
 })(updateDetails, force, now) : (force => {
@@ -23693,11 +25402,11 @@ force && utils_showNotification(t("updateCheckFailed").replace("{msg}", t("noUpd
 } catch (error) {
 await (async (error, force, retryCount) => {
 if ((error => !!("AbortError" === error.name || "NetworkError" === error.name || error.message && error.message.includes("fetch") || error.message && error.message.includes("network")))(error) && retryCount < 2) {
-console.warn(`[YouTube+][Update] Retry ${retryCount + 1}/2 after error:`, error.message);
-await new Promise(resolve => setTimeout(resolve, 2e3 * Math.pow(2, retryCount)));
+window.console.warn(`[YouTube+][Update] Retry ${retryCount + 1}/2 after error:`, error.message);
+await new Promise(resolve => setTimeout_(resolve, 2e3 * Math.pow(2, retryCount)));
 return checkForUpdates(force, retryCount + 1);
 }
-console.error("[YouTube+][Update] Check failed after retries:", error);
+window.console.error("[YouTube+][Update] Check failed after retries:", error);
 force && utils_showNotification(t("updateCheckFailed").replace("{msg}", error.message), "error", 4e3);
 })(error, force, retryCount);
 } finally {
@@ -23712,9 +25421,9 @@ return;
 }
 const updateContainer = document.createElement("div");
 updateContainer.className = "update-settings-container";
-updateContainer.style.cssText = "\n        padding: 16px; margin-top: 20px; border-radius: 12px;\n        background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);\n        -webkit-backdrop-filter: blur(10px) saturate(120%);\n        backdrop-filter: blur(10px) saturate(120%);\n        box-shadow: 0 6px 20px rgba(6, 10, 20, 0.45);\n      ";
+updateContainer.style.cssText = "\n        padding: 16px; margin-top: 20px; border-radius: 12px;\n        background: var(--yt-surface-overlay-subtle); border: 1px solid var(--yt-surface-overlay-border);\n        -webkit-backdrop-filter: blur(10px) saturate(120%);\n        backdrop-filter: blur(10px) saturate(120%);\n        box-shadow: 0 6px 20px var(--yt-update-card-shadow);\n      ";
 const lastCheckTime = utils_formatTimeAgo(updateState.lastCheck);
-updateContainer.innerHTML = _createHTML(`\n        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">\n          <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: var(--yt-spec-text-primary);">\n            ${t("enhancedExperience")}\n          </h3>\n        </div>\n        \n        <div style="display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center; \n                    padding: 16px; background: rgba(255, 255, 255, 0.03); border-radius: 10px; margin-bottom: 16px;">\n          <div>\n            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">\n              <span style="font-size: 14px; font-weight: 600; color: var(--yt-spec-text-primary);">${t("currentVersion")}</span>\n              <span style="font-size: 13px; font-weight: 600; color: var(--yt-spec-text-primary); \n                           padding: 3px 10px; background: rgba(255, 255, 255, 0.1); border-radius: 12px; \n                           border: 1px solid rgba(255, 255, 255, 0.2);">${UPDATE_CONFIG.currentVersion}</span>\n            </div>\n            <div style="font-size: 12px; color: var(--yt-spec-text-secondary);">\n              ${t("lastChecked")}: <span style="font-weight: 500;">${lastCheckTime}</span>\n              ${updateState.lastVersion && updateState.lastVersion !== UPDATE_CONFIG.currentVersion ? `<br>${t("latestAvailable")}: <span style="color: #ff6666; font-weight: 600;">${updateState.lastVersion}</span>` : ""}\n            </div>\n          </div>\n          \n          ${updateState.updateAvailable ? `\n            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">\n              <div style="display: flex; align-items: center; gap: 8px; padding: 6px 12px; \n                          background: linear-gradient(135deg, rgba(255, 68, 68, 0.2), rgba(255, 68, 68, 0.3)); \n                          border: 1px solid rgba(255, 68, 68, 0.4); border-radius: 20px;">\n                <div style="width: 6px; height: 6px; background: #ff4444; border-radius: 50%; animation: pulse 2s infinite;"></div>\n                <span style="font-size: 11px; color: #ff6666; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">\n                  ${t("updateAvailable")}\n                </span>\n              </div>\n              <button id="install-update-btn" style="background: linear-gradient(135deg, #ff4500, #ff6b35); \n                      color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; \n                      font-size: 12px; font-weight: 600; transition: all 0.3s ease; \n                      box-shadow: 0 4px 12px rgba(255, 69, 0, 0.3);">${t("installUpdate")}</button>\n            </div>\n          ` : `\n            <div style="display: flex; align-items: center; gap: 8px; padding: 6px 12px; \n                        background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.3)); \n                        border: 1px solid rgba(34, 197, 94, 0.4); border-radius: 20px;">\n              <div style="width: 6px; height: 6px; background: #22c55e; border-radius: 50%;"></div>\n              <span style="font-size: 11px; color: #22c55e; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">\n                ${t("upToDate")}\n              </span>\n            </div>\n          `}\n        </div>\n        \n        <div style="display: flex; gap: 12px;">\n          <button class="ytp-plus-button ytp-plus-button-primary" id="manual-update-check" \n                  style="flex: 1; padding: 12px; font-size: 13px; font-weight: 600;">\n            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;">\n              <path d="M21.5 2v6h-6M2.5 22v-6h6M19.13 11.48A10 10 0 0 0 12 2C6.48 2 2 6.48 2 12c0 .34.02.67.05 1M4.87 12.52A10 10 0 0 0 12 22c5.52 0 10-4.48 10-10 0-.34-.02-.67-.05-1"/>\n            </svg>\n            ${t("checkForUpdates")}\n          </button>\n          <button class="ytp-plus-button" id="open-update-page" style="padding: 12px 16px; font-size: 13px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);">\n            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="gray" stroke-width="2">\n              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>\n              <polyline points="15,3 21,3 21,9"/>\n              <line x1="10" y1="14" x2="21" y2="3"/>\n            </svg>\n          </button>\n        </div>\n\n        <style>\n          @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.1); } }\n          @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }\n        </style>\n      `);
+renderTemplateClone(updateContainer, `\n        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">\n          <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: var(--yt-spec-text-primary);">\n            ${t("enhancedExperience")}\n          </h3>\n        </div>\n        \n        <div style="display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center; \n                    padding: 16px; background: var(--yt-surface-overlay-subtle); border-radius: 10px; margin-bottom: 16px;">\n          <div>\n            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">\n              <span style="font-size: 14px; font-weight: 600; color: var(--yt-spec-text-primary);">${t("currentVersion")}</span>\n              <span style="font-size: 13px; font-weight: 600; color: var(--yt-spec-text-primary); \n                           padding: 3px 10px; background: var(--yt-surface-overlay-soft); border-radius: 12px; \n                           border: 1px solid var(--yt-glass-border);">${UPDATE_CONFIG.currentVersion}</span>\n            </div>\n            <div style="font-size: 12px; color: var(--yt-spec-text-secondary);">\n              ${t("lastChecked")}: <span style="font-weight: 500;">${lastCheckTime}</span>\n              ${updateState.lastVersion && updateState.lastVersion !== UPDATE_CONFIG.currentVersion ? `<br>${t("latestAvailable")}: <span style="color: var(--yt-update-available-text); font-weight: 600;">${updateState.lastVersion}</span>` : ""}\n            </div>\n          </div>\n          \n          ${updateState.updateAvailable ? `\n            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">\n              <div style="display: flex; align-items: center; gap: 8px; padding: 6px 12px; \n                          background: linear-gradient(135deg, var(--yt-danger-soft), var(--yt-danger-border)); \n                          border: 1px solid var(--yt-danger-card-border); border-radius: 20px;">\n                <div style="width: 6px; height: 6px; background: var(--yt-update-available-dot); border-radius: 50%; animation: pulse 2s infinite;"></div>\n                <span style="font-size: 11px; color: var(--yt-update-available-text); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">\n                  ${t("updateAvailable")}\n                </span>\n              </div>\n              <button id="install-update-btn" style="background: linear-gradient(135deg, var(--yt-update-install-bg-start), var(--yt-update-install-bg-end)); \n                      color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; \n                      font-size: 12px; font-weight: 600; transition: all 0.3s ease; \n                      box-shadow: 0 4px 12px var(--yt-update-install-shadow);">${t("installUpdate")}</button>\n            </div>\n          ` : `\n            <div style="display: flex; align-items: center; gap: 8px; padding: 6px 12px; \n                        background: linear-gradient(135deg, var(--yt-success-soft), var(--yt-success-soft-hover)); \n                        border: 1px solid var(--yt-success-accent-soft); border-radius: 20px;">\n              <div style="width: 6px; height: 6px; background: var(--yt-success-accent); border-radius: 50%;"></div>\n              <span style="font-size: 11px; color: var(--yt-success-accent); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">\n                ${t("upToDate")}\n              </span>\n            </div>\n          `}\n        </div>\n        \n        <div style="display: flex; gap: 12px;">\n          <button class="ytp-plus-button ytp-plus-button-primary" id="manual-update-check" \n                  style="flex: 1; padding: 12px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">\n            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; flex-shrink: 0;">\n              <path d="M21.5 2v6h-6M2.5 22v-6h6M19.13 11.48A10 10 0 0 0 12 2C6.48 2 2 6.48 2 12c0 .34.02.67.05 1M4.87 12.52A10 10 0 0 0 12 22c5.52 0 10-4.48 10-10 0-.34-.02-.67-.05-1"/>\n            </svg>\n            ${t("checkForUpdates")}\n          </button>\n          <button class="ytp-plus-button" id="open-update-page" style="padding: 12px 16px; font-size: 13px; background: var(--yt-button-bg); border: 1px solid var(--yt-glass-border);">\n            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="gray" stroke-width="2">\n              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>\n              <polyline points="15,3 21,3 21,9"/>\n              <line x1="10" y1="14" x2="21" y2="3"/>\n            </svg>\n          </button>\n        </div>\n\n        <style>${window.YouTubePlusStyleResources?.update || ""}</style>\n      `);
 aboutSection.appendChild(updateContainer);
 try {
 const aboutActions = aboutSection.querySelector(".ytp-plus-about-actions");
@@ -23723,19 +25432,20 @@ aboutActions && aboutSection.appendChild(aboutActions);
 aboutFooter && aboutSection.appendChild(aboutFooter);
 } catch (e) {}
 const attachClickHandler = (id, handler) => {
-const element = document.getElementById(id);
+const element = byId(id);
 element && YouTubeUtils.cleanupManager.registerListener(element, "click", handler);
 };
 attachClickHandler("manual-update-check", async evt => {
-const button = evt.target;
-const originalHTML = button.innerHTML;
-button.innerHTML = _createHTML(`\n          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" \n               style="margin-right: 6px; animation: spin 1s linear infinite;">\n            <path d="M21.5 2v6h-6M2.5 22v-6h6M19.13 11.48A10 10 0 0 0 12 2C6.48 2 2 6.48 2 12c0 .34.02.67.05 1M4.87 12.52A10 10 0 0 0 12 22c5.52 0 10-4.48 10-10 0-.34-.02-.67-.05-1"/>\n          </svg>\n          ${t("checkingForUpdates")}\n        `);
+const button = evt.currentTarget instanceof HTMLElement ? evt.currentTarget : evt.target instanceof Element ? evt.target.closest("#manual-update-check") : null;
+if (button) {
+setManualCheckButtonContent(button, t("checkingForUpdates"), !0);
 button.disabled = !0;
 await checkForUpdates(!0);
-setTimeout(() => {
-button.innerHTML = _createHTML(originalHTML);
+setTimeout_(() => {
+setManualCheckButtonContent(button, t("checkForUpdates"), !1);
 button.disabled = !1;
 }, 1e3);
+}
 });
 attachClickHandler("install-update-btn", () => {
 const success = installUpdate();
@@ -23757,20 +25467,27 @@ if (!_initDone) {
 _initDone = !0;
 utils_loadSettings();
 (() => {
-setTimeout(() => checkForUpdates(), 3e3);
+setTimeout_(() => checkForUpdates(), 3e3);
+const globalObject = "undefined" != typeof window ? window : globalThis;
+const previousIntervalId = globalObject.__ytpUpdateCheckIntervalId;
+if (previousIntervalId) {
+clearInterval(previousIntervalId);
+YouTubeUtils.cleanupManager?.unregisterInterval && YouTubeUtils.cleanupManager.unregisterInterval(previousIntervalId);
+}
 const intervalId = setInterval(() => checkForUpdates(), UPDATE_CONFIG.checkInterval);
+globalObject.__ytpUpdateCheckIntervalId = intervalId;
 YouTubeUtils.cleanupManager.registerInterval(intervalId);
 YouTubeUtils.cleanupManager?.registerListener ? YouTubeUtils.cleanupManager.registerListener(window, "beforeunload", () => clearInterval(intervalId)) : window.addEventListener("beforeunload", () => clearInterval(intervalId));
 })();
 (() => {
 const handler = () => {
-setTimeout(addUpdateSettings, 100);
+setTimeout_(addUpdateSettings, 100);
 };
 YouTubeUtils.cleanupManager?.registerListener ? YouTubeUtils.cleanupManager.registerListener(document, "youtube-plus-settings-modal-opened", handler) : document.addEventListener("youtube-plus-settings-modal-opened", handler);
 })();
 YouTubeUtils.cleanupManager.registerListener(document, "click", evt => {
 const el = evt.target;
-el.classList?.contains("ytp-plus-settings-nav-item") && "about" === el.dataset?.section && setTimeout(addUpdateSettings, 50);
+el.classList?.contains("ytp-plus-settings-nav-item") && "about" === el.dataset?.section && setTimeout_(addUpdateSettings, 50);
 }, {
 passive: !0,
 capture: !0
@@ -23787,7 +25504,25 @@ updateAvailable: updateState.updateAvailable
 })();
 }
 };
-"loading" === document.readyState ? document.addEventListener("DOMContentLoaded", init) : init();
+const startUpdateRuntime = () => {
+"loading" === document.readyState ? document.addEventListener("DOMContentLoaded", init, {
+once: !0
+}) : init();
+};
+window.YouTubePlusLazyLoader?.register ? window.YouTubePlusLazyLoader.register("update", startUpdateRuntime, {
+priority: 20,
+delay: 0,
+shouldLoad: () => (() => {
+const path = location.pathname || "";
+return "music.youtube.com" === location.hostname || "/watch" === path || path.startsWith("/shorts");
+})() || (() => {
+try {
+return Boolean(document.querySelector(".ytp-plus-settings-modal"));
+} catch (e) {
+return !1;
+}
+})()
+}) : startUpdateRuntime();
 })();
 
 /**
@@ -23804,11 +25539,30 @@ updateAvailable: updateState.updateAvailable
  * - SPA navigation support with debounced updates
  */ !(function() {
 "use strict";
-const _createHTML = window._ytplusCreateHTML || (s => s);
+const setTimeout_ = setTimeout.bind(window);
+const _createHTML = window._ytpDefaults?.createHTML || (s => s);
+const createVisibilityAwareInterval = window.YouTubeUtils?.createVisibilityAwareInterval || ((callback, delay) => {
+const id = setInterval(() => {
+document.hidden || callback();
+}, delay);
+return {
+stop() {
+clearInterval(id);
+},
+pause() {
+clearInterval(id);
+},
+resume() {},
+get active() {
+return !0;
+}
+};
+});
 if ("undefined" != typeof location && "music.youtube.com" !== location.hostname) {
 return;
 }
-const qs = sel => window.YouTubeUtils?.$(sel) || document.querySelector(sel);
+const qs = window.YouTubeUtils?.$ || document.querySelector.bind(document);
+const byId = window.YouTubeUtils?.byId || (id => document.getElementById(id));
 const MUSIC_SETTINGS_DEFAULTS = {
 enableMusic: !0,
 immersiveSearchStyles: !0,
@@ -23867,7 +25621,8 @@ return !(!settings || !settings.enableMusic);
 }
 let musicSettingsSnapshot = readMusicSettings();
 let musicStyleEl = null;
-let observer = null;
+let observerSubId = null;
+let observerFallbackTimerId = null;
 let healthCheckIntervalId = null;
 let detachNavigationListeners = null;
 function applyStyles() {
@@ -23879,11 +25634,11 @@ if (!s.enableMusic) {
 return;
 }
 const styleParts = [ "\n        /* Remove borders and shadows from nav/guide when bauhaus sidenav is enabled */\n        ytmusic-app-layout[is-bauhaus-sidenav-enabled] #nav-bar-background.ytmusic-app-layout { border-bottom: none !important; box-shadow: none !important; }\n        ytmusic-app-layout[is-bauhaus-sidenav-enabled] #nav-bar-divider.ytmusic-app-layout { border-top: none !important; }\n        ytmusic-app-layout[is-bauhaus-sidenav-enabled] #mini-guide-background.ytmusic-app-layout { border-right: 0 !important; }\n        ytmusic-nav-bar, ytmusic-app-layout[is-bauhaus-sidenav-enabled] .ytmusic-nav-bar { border: none !important; box-shadow: none !important; }\n        /* Center the settings button in the top nav bar (fixes it being rendered at the bottom) */\n        ytmusic-settings-button.style-scope.ytmusic-nav-bar, ytmusic-nav-bar ytmusic-settings-button.style-scope.ytmusic-nav-bar {position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; bottom: auto !important; margin: 0 !important; z-index: 1000 !important;}\n        /* Center the search box in the top nav bar */\n        ytmusic-search-box, ytmusic-nav-bar ytmusic-search-box, ytmusic-searchbox, ytmusic-nav-bar ytmusic-searchbox {position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; margin: 0 !important; max-width: 75% !important; width: auto !important; z-index: 900 !important;}\n  " ];
-s.immersiveSearchStyles && styleParts.push("\n      /* yt-Immersive search behaviour for YouTube Music: expand/center the search when focused */\n      ytmusic-search-box:has(input:focus), ytmusic-searchbox:has(input:focus), ytmusic-search-box:focus-within, ytmusic-searchbox:focus-within {position: fixed !important; left: 50% !important; top: 12vh !important; transform: translateX(-50%) !important; height: auto !important; max-width: 900px !important; width: min(90vw, 900px) !important; z-index: 1200 !important; display: block !important;}\n      @media only screen and (min-width: 1400px) {ytmusic-search-box:has(input:focus), ytmusic-searchbox:has(input:focus) {top: 10vh !important; max-width: 1000px !important; transform: translateX(-50%) scale(1.05) !important;}}\n      /* Highlight the input and add a soft glow */\n      ytmusic-search-box:has(input:focus) input, ytmusic-searchbox:has(input:focus) input, ytmusic-search-box:focus-within input, ytmusic-searchbox:focus-within input {background-color: #fffb !important; box-shadow: black 0 0 30px !important;}\n      @media (prefers-color-scheme: dark) {ytmusic-search-box:has(input:focus) input, ytmusic-searchbox:has(input:focus) input {background-color: #000b !important;}}\n      /* Blur/scale the main content when immersive search is active */\n      ytmusic-app-layout:has(ytmusic-search-box:has(input:focus)) #main-panel, ytmusic-app-layout:has(ytmusic-searchbox:has(input:focus)) #main-panel {filter: blur(18px) !important; transform: scale(1.03) !important;}\n    ");
+s.immersiveSearchStyles && styleParts.push("\n      /* yt-Immersive search behaviour for YouTube Music: expand/center the search when focused */\n      ytmusic-search-box:has(input:focus), ytmusic-searchbox:has(input:focus), ytmusic-search-box:focus-within, ytmusic-searchbox:focus-within {position: fixed !important; left: 50% !important; top: 12vh !important; transform: translateX(-50%) !important; height: auto !important; max-width: 900px !important; width: min(90vw, 900px) !important; z-index: 1200 !important; display: block !important;}\n      @media only screen and (min-width: 1400px) {ytmusic-search-box:has(input:focus), ytmusic-searchbox:has(input:focus) {top: 10vh !important; max-width: 1000px !important; transform: translateX(-50%) scale(1.05) !important;}}\n      /* Highlight the input and add a soft glow */\n      ytmusic-search-box:has(input:focus) input, ytmusic-searchbox:has(input:focus) input, ytmusic-search-box:focus-within input, ytmusic-searchbox:focus-within input {background-color: var(--yt-bg-primary) !important; box-shadow: black 0 0 30px !important;}\n      @media (prefers-color-scheme: dark) {ytmusic-search-box:has(input:focus) input, ytmusic-searchbox:has(input:focus) input {background-color: var(--yt-modal-bg) !important;}}\n      /* Blur/scale the main content when immersive search is active */\n      ytmusic-app-layout:has(ytmusic-search-box:has(input:focus)) #main-panel, ytmusic-app-layout:has(ytmusic-searchbox:has(input:focus)) #main-panel {filter: blur(18px) !important; transform: scale(1.03) !important;}\n    ");
 s.hoverStyles && styleParts.push("\n        .ytmusic-guide-renderer {opacity: 0.01 !important; transition: opacity 0.5s ease-in-out !important;}        \n        .ytmusic-guide-renderer:hover { opacity: 1 !important;}        \n        ytmusic-app[is-bauhaus-sidenav-enabled] #guide-wrapper.ytmusic-app {background-color: transparent !important; border: none !important;}    \n    ");
-s.playerSidebarStyles && styleParts.push('\n        #side-panel {width: 40em !important; height: 80vh !important; padding: 0 2em !important; right: -30em !important; top: 10vh !important; opacity: 0 !important; position: absolute !important; transition: all 0.3s ease-in-out !important; backdrop-filter: blur(5px) !important; background-color: #0005 !important; border-radius: 1em !important; box-shadow: rgba(0, 0, 0, 0.15) 0px -36px 30px inset, rgba(0, 0, 0, 0.1) 0px -79px 40px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px, rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px !important;}        \n        #side-panel tp-yt-paper-tabs {transition: height 0.3s ease-in-out !important; height: 0 !important;}        \n        #side-panel:hover {right: 0 !important; opacity: 1 !important;}        \n        #side-panel:hover tp-yt-paper-tabs {height: 4em !important;}        \n        #side-panel:has(ytmusic-tab-renderer[page-type="MUSIC_PAGE_TYPE_TRACK_LYRICS"]):not(:has(ytmusic-message-renderer:not([style="display: none;"]))) {right: 0 !important; opacity: 1 !important;}        \n        #side-panel {min-width: auto !important;}\n      /* Allow JS to control visibility; ensure pointer-events and positioning only. */\n        #side-panel .ytmusic-top-button { opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; }\n      /* When button is placed inside the panel, prefer absolute positioning inside it\n         so it won\'t be forced to fixed by the global rule. Use high specificity + !important */\n        #side-panel .ytmusic-top-button {position: absolute !important; bottom: 20px !important; right: 20px !important; z-index: 1200 !important;}\n    ');
+s.playerSidebarStyles && styleParts.push('\n        #side-panel {width: 40em !important; height: 80vh !important; padding: 0 2em !important; right: -30em !important; top: 10vh !important; opacity: 0 !important; position: absolute !important; transition: all 0.3s ease-in-out !important; backdrop-filter: blur(5px) !important; background-color: var(--yt-panel-overlay-subtle) !important; border-radius: 1em !important; box-shadow: var(--yt-shadow-deep-1) 0px -36px 30px inset, var(--yt-shadow-deep-2) 0px -79px 40px inset, var(--yt-shadow-deep-3) 0px 2px 1px, var(--yt-shadow-deep-4) 0px 4px 2px, var(--yt-shadow-deep-4) 0px 8px 4px, var(--yt-shadow-deep-4) 0px 16px 8px, var(--yt-shadow-deep-4) 0px 32px 16px !important;}        \n        #side-panel tp-yt-paper-tabs {transition: height 0.3s ease-in-out !important; height: 0 !important;}        \n        #side-panel:hover {right: 0 !important; opacity: 1 !important;}        \n        #side-panel:hover tp-yt-paper-tabs {height: 4em !important;}        \n        #side-panel:has(ytmusic-tab-renderer[page-type="MUSIC_PAGE_TYPE_TRACK_LYRICS"]):not(:has(ytmusic-message-renderer:not([style="display: none;"]))) {right: 0 !important; opacity: 1 !important;}        \n        #side-panel {min-width: auto !important;}\n      /* Allow JS to control visibility; ensure pointer-events and positioning only. */\n        #side-panel .ytmusic-top-button { opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; }\n      /* When button is placed inside the panel, prefer absolute positioning inside it\n         so it won\'t be forced to fixed by the global rule. Use high specificity + !important */\n        #side-panel .ytmusic-top-button {position: absolute !important; bottom: 20px !important; right: 20px !important; z-index: 1200 !important;}\n    ');
 s.centeredPlayerStyles && styleParts.push('\n        ytmusic-app-layout:not([player-ui-state="FULLSCREEN"]) #main-panel {position: absolute !important; height: 70vh !important; max-width: 70vw !important; aspect-ratio: 1 !important; top: 50vh !important; left: 50vw !important; transform: translate(-50%, -50%) !important;}        \n        #player-page {padding: 0 !important; margin: 0 !important; left: 0 !important; top: 0 !important; height: 100% !important; width: 100% !important;}\n    ');
-s.playerBarStyles && styleParts.push('\n        ytmusic-player-bar, #player-bar-background {margin: 1vw !important; width: 98vw !important; border-radius: 1em !important; overflow: hidden !important; transition: all 0.5s ease-in-out !important; background-color: #0002 !important; box-shadow: rgba(0, 0, 0, 0.15) 0px -36px 30px inset, rgba(0, 0, 0, 0.1) 0px -79px 40px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px, rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px !important;}        \n        #layout:not([player-ui-state="PLAYER_PAGE_OPEN"]) #player-bar-background {background-color: #0005 !important;}\n    ');
+s.playerBarStyles && styleParts.push('\n        ytmusic-player-bar, #player-bar-background {margin: 1vw !important; width: 98vw !important; border-radius: 1em !important; overflow: hidden !important; transition: all 0.5s ease-in-out !important; background-color: var(--yt-panel-overlay-weak) !important; box-shadow: var(--yt-shadow-deep-1) 0px -36px 30px inset, var(--yt-shadow-deep-2) 0px -79px 40px inset, var(--yt-shadow-deep-3) 0px 2px 1px, var(--yt-shadow-deep-4) 0px 4px 2px, var(--yt-shadow-deep-4) 0px 8px 4px, var(--yt-shadow-deep-4) 0px 16px 8px, var(--yt-shadow-deep-4) 0px 32px 16px !important;}\n        #layout:not([player-ui-state="PLAYER_PAGE_OPEN"]) #player-bar-background {background-color: var(--yt-panel-overlay-subtle) !important;}\n    ');
 s.centeredPlayerBarStyles && styleParts.push("\n        #left-controls {position: absolute !important; left: 49vw !important; bottom: 15px !important; transform: translateX(-50%) !important; width: fit-content !important; order: 1 !important;}        \n        .time-info {position: absolute !important; bottom: -10px !important; left: 0 !important; width: 100% !important; text-align: center !important; padding: 0 !important; margin: 0 !important;}\n        .middle-controls {position: absolute !important; left: 1vw !important; bottom: 15px !important; max-width: 30vw !important; order: 0 !important;}\n    ");
 s.miniPlayerStyles && styleParts.push('\n        #main-panel:has(ytmusic-player[player-ui-state="MINIPLAYER"]) {position: fixed !important; width: 100vw !important; height: 100vh !important; top: -100vh !important; left: 0 !important; margin: 0 !important; padding: 0 !important; transform: none !important; max-width: 100vw !important;}        \n        ytmusic-player[player-ui-state="MINIPLAYER"] {position: fixed !important; bottom: calc(100vh + 120px) !important; right: 30px !important; width: 350px !important; height: fit-content !important;}        \n        #av-id:has(ytmusic-av-toggle) {position: absolute !important; left: 50% !important; transform: translateX(-50%) !important; top: -4em !important; opacity: 0 !important; transition: all 0.3s ease-in-out !important;}        \n        #av-id:has(ytmusic-av-toggle):hover {opacity: 1 !important;}        \n        #player[player-ui-state="MINIPLAYER"] {display: none !important;}\n      /* Chrome-specific robustness: ensure the AV toggle container is above overlays\n         and can receive hover even if :has() behaves differently. Also provide a\n         non-:has fallback so the element is hoverable regardless of child matching. */\n      /* Use absolute positioning (keeps internal menu alignment) but promote\n         stacking and rendering to ensure it sits above overlays and receives clicks. */\n        #av-id {position: absolute !important; left: 50% !important; transform: translateX(-50%) translateZ(0) !important; top: -4em !important; z-index: 10000 !important; pointer-events: auto !important; display: block !important; visibility: visible !important; width: auto !important; height: auto !important; will-change: transform, opacity !important;}\n        #av-id ytmusic-av-toggle {pointer-events: auto !important;}\n        #av-id:hover {opacity: 1 !important;}\n      /* Prevent overlapping overlays from stealing clicks when hovering the toggle.\n         This is a conservative rule; if a specific overlay still steals clicks we\n         can target it explicitly later. */\n        #av-id:hover, #av-id:active { filter: none !important; }\n    ');
 const allStyles = `\n${styleParts.join("\n")}\n`;
@@ -23912,14 +25667,32 @@ musicStyleEl = style;
 window.YouTubeUtils?.logger?.debug?.("[YouTube+][Music]", "Styles applied");
 }
 }
-const getDebounce = () => window.YouTubeUtils?.debounce ? window.YouTubeUtils.debounce : (fn, delay) => {
-let timeoutId = null;
-return (...args) => {
-timeoutId && clearTimeout(timeoutId);
-timeoutId = setTimeout(() => fn(...args), delay);
-};
-};
-const t = window.YouTubeUtils?.t || (key => key || "");
+const getDebounce = () => window.YouTubeUtils.debounce;
+const t = window.YouTubeUtils.t;
+function createButton() {
+const button = document.createElement("button");
+button.id = "ytmusic-side-panel-top-button";
+button.className = "ytmusic-top-button top-button";
+button.title = t("scrollToTop");
+button.setAttribute("aria-label", t("scrollToTop"));
+((container, html) => {
+if (!(container instanceof Element)) {
+return;
+}
+const template = document.createElement("template");
+const range = document.createRange();
+const root = document.body || document.documentElement;
+root && range.selectNode(root);
+template.content.append(range.createContextualFragment(_createHTML(html)));
+container.replaceChildren(template.content.cloneNode(!0));
+})(button, '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>');
+button.setAttribute("data-ytmusic-scroll-button", "true");
+window.YouTubeUtils?.logger?.debug?.("[YouTube+][Music]", "Button element created", {
+id: button.id,
+className: button.className
+});
+return button;
+}
 const scrollContainerCache = new WeakMap;
 function attachButtonToContainer(button, sidePanel, sc, MusicUtils) {
 try {
@@ -24054,7 +25827,7 @@ button._scrollCleanup = cleanup;
 window.YouTubeUtils?.logger?.debug?.("[YouTube+][Music]", "Using ScrollManager for scroll handling");
 return;
 } catch (e) {
-console.error("[YouTube+][Music] ScrollManager failed, using fallback");
+window.console.error("[YouTube+][Music] ScrollManager failed, using fallback");
 }
 }
 if (MusicUtils.setupScrollVisibility) {
@@ -24113,7 +25886,7 @@ computedOpacity: window.getComputedStyle(button).opacity,
 computedVisibility: window.getComputedStyle(button).visibility
 });
 } catch (err) {
-console.error("[YouTube+][Music] attachButton error:", err);
+window.console.error("[YouTube+][Music] attachButton error:", err);
 }
 }
 const buttonCreationState = {
@@ -24127,7 +25900,7 @@ try {
 if ("music.youtube.com" !== window.location.hostname) {
 return;
 }
-const existingButton = document.getElementById("ytmusic-side-panel-top-button");
+const existingButton = byId("ytmusic-side-panel-top-button");
 if (existingButton) {
 if (document.body.contains(existingButton) && existingButton._scrollCleanup) {
 window.YouTubeUtils?.logger?.debug?.("[YouTube+][Music]", "Button already exists and is properly attached");
@@ -24150,20 +25923,7 @@ return;
 window.YouTubeUtils?.logger?.debug?.("[YouTube+][Music]", `Creating button (attempt ${buttonCreationState.attempts}/${buttonCreationState.maxAttempts})`);
 const sidePanel = qs("#side-panel");
 const MusicUtils = window.YouTubePlusMusicUtils || {};
-const button = (function createButton() {
-const button = document.createElement("button");
-button.id = "ytmusic-side-panel-top-button";
-button.className = "ytmusic-top-button top-button";
-button.title = t("scrollToTop");
-button.setAttribute("aria-label", t("scrollToTop"));
-button.innerHTML = _createHTML('<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>');
-button.setAttribute("data-ytmusic-scroll-button", "true");
-window.YouTubeUtils?.logger?.debug?.("[YouTube+][Music]", "Button element created", {
-id: button.id,
-className: button.className
-});
-return button;
-})();
+const button = createButton();
 if (!sidePanel) {
 window.YouTubeUtils?.logger?.debug?.("[YouTube+][Music]", "No side-panel found, checking for main content or queue");
 const queueRenderer = qs("ytmusic-queue-renderer");
@@ -24184,7 +25944,9 @@ buttonCreationState.attempts = 0;
 return;
 }
 }
-setTimeout(() => createScrollToTopButton(), 1e3);
+setTimeout_(function() {
+createScrollToTopButton();
+}, 1e3);
 return;
 }
 const scrollContainer = (function findScrollContainer(sidePanel, MusicUtils) {
@@ -24251,20 +26013,24 @@ return null;
 if (!scrollContainer) {
 window.YouTubeUtils?.logger?.debug?.("[YouTube+][Music]", "No scroll container found, will retry with backoff");
 const backoffDelay = Math.min(500 * buttonCreationState.attempts, 3e3);
-setTimeout(() => createScrollToTopButton(), backoffDelay);
+setTimeout_(function() {
+createScrollToTopButton();
+}, backoffDelay);
 return;
 }
 attachButtonToContainer(button, sidePanel, scrollContainer, MusicUtils);
 buttonCreationState.attempts = 0;
 window.YouTubeUtils?.logger?.debug?.("[YouTube+][Music]", "✓ Button created successfully");
 } catch (error) {
-console.error("[YouTube+][Music] Error creating scroll to top button:", error);
-buttonCreationState.attempts < buttonCreationState.maxAttempts && setTimeout(() => createScrollToTopButton(), 1e3);
+window.console.error("[YouTube+][Music] Error creating scroll to top button:", error);
+buttonCreationState.attempts < buttonCreationState.maxAttempts && setTimeout_(function() {
+createScrollToTopButton();
+}, 1e3);
 }
 }
 function checkAndCreateButton() {
 try {
-const existingButton = document.getElementById("ytmusic-side-panel-top-button");
+const existingButton = byId("ytmusic-side-panel-top-button");
 if (existingButton) {
 if (existingButton._scrollCleanup && document.body.contains(existingButton)) {
 window.YouTubeUtils?.logger?.debug?.("[YouTube+][Music]", "Button is healthy, no action needed");
@@ -24289,39 +26055,32 @@ const queueRenderer = qs("ytmusic-queue-renderer");
 const tabRenderer = qs("ytmusic-tab-renderer[tab-identifier]");
 if (sidePanel || mainContent || queueRenderer || tabRenderer) {
 window.YouTubeUtils?.logger?.debug?.("[YouTube+][Music]", "Found container, scheduling button creation");
-setTimeout(() => createScrollToTopButton(), 300);
+setTimeout(function() {
+createScrollToTopButton();
+}, 300);
 } else {
 window.YouTubeUtils?.logger?.debug?.("[YouTube+][Music]", "No suitable container found yet");
 }
 } catch (error) {
-console.error("[YouTube+][Music] Error in checkAndCreateButton:", error);
+window.console.error("[YouTube+][Music] Error in checkAndCreateButton:", error);
 }
 }
-const createObserver = () => {
-const debounce = getDebounce();
-const debouncedCheck = debounce(checkAndCreateButton, 200);
-let lastCheckTime = 0;
-return new MutationObserver(mutations => {
-const now = Date.now();
-if (now - lastCheckTime < 300) {
+const observeDocumentBodySafely = () => {
+if (observerSubId || observerFallbackTimerId) {
 return;
 }
-const existingButton = document.getElementById("ytmusic-side-panel-top-button");
+const debounce = getDebounce();
+const debouncedCheck = debounce(checkAndCreateButton, 200);
+const coordinator = window.YouTubeMutationCoordinator;
+if (coordinator?.subscribeRoot) {
+observerSubId = "music::sidePanelObserver";
+coordinator.subscribeRoot(observerSubId, mutations => {
+const now = Date.now();
+const existingButton = byId("ytmusic-side-panel-top-button");
 if (existingButton && document.body.contains(existingButton) && existingButton._scrollCleanup) {
 return;
 }
-const hasRelevantChange = mutations.some(mutation => {
-if (0 === mutation.addedNodes.length) {
-return !1;
-}
-let hasElements = !1;
-for (let i = 0; i < mutation.addedNodes.length; i++) {
-if (1 === mutation.addedNodes[i].nodeType) {
-hasElements = !0;
-break;
-}
-}
-return !!hasElements && Array.from(mutation.addedNodes).some(node => {
+const hasRelevantChange = mutations.some(mutation => 0 !== mutation.addedNodes.length && Array.from(mutation.addedNodes).some(node => {
 if (1 !== node.nodeType) {
 return !1;
 }
@@ -24331,59 +26090,41 @@ return !0;
 }
 const tagName = element.tagName;
 return "YTMUSIC-BROWSE" === tagName || "YTMUSIC-PLAYER-PAGE" === tagName || "YTMUSIC-QUEUE-RENDERER" === tagName || "YTMUSIC-TAB-RENDERER" === tagName || null != element.querySelector?.("#side-panel, #contents, ytmusic-browse, ytmusic-queue-renderer, ytmusic-tab-renderer");
-});
-});
+}));
 const hasTabChange = mutations.some(mutation => "attributes" === mutation.type && "selected" === mutation.attributeName && mutation.target instanceof Element && mutation.target.matches?.("ytmusic-tab-renderer, tp-yt-paper-tab"));
 if (hasRelevantChange || hasTabChange) {
-lastCheckTime = now;
 window.YouTubeUtils?.logger?.debug?.("[YouTube+][Music]", "Detected relevant DOM change, checking button");
 debouncedCheck();
+} else {
+now % 2 == 0 && debouncedCheck();
 }
-});
-};
-const observeDocumentBodySafely = () => {
-if (observer) {
-return;
-}
-const startObserving = () => {
-if (document.body) {
-try {
-observer = createObserver();
-observer.observe(document.body, {
+}, {
+selector: "#side-panel, #contents, ytmusic-browse, ytmusic-player-page, ytmusic-queue-renderer, ytmusic-tab-renderer",
 childList: !0,
 subtree: !0,
 attributes: !0,
 attributeFilter: [ "selected", "tab-identifier", "page-type" ]
 });
-window.YouTubeUtils?.logger?.debug?.("[YouTube+][Music]", "✓ Observer started with enhanced config");
-} catch (observeError) {
-console.error("[YouTube+][Music] Failed to observe document.body:", observeError);
-try {
-observer = createObserver();
-observer.observe(document.body, {
-childList: !0,
-subtree: !0
-});
-window.YouTubeUtils?.logger?.debug?.("[YouTube+][Music]", "✓ Observer started with basic config");
-} catch (retryError) {
-console.error("[YouTube+][Music] Failed to start observer (retry):", retryError);
+window.YouTubeUtils?.logger?.debug?.("[YouTube+][Music]", "✓ Coordinator watcher started");
+} else {
+observerFallbackTimerId = createVisibilityAwareInterval(() => {
+checkAndCreateButton();
+}, 500);
 }
-}
-}
-};
-document.body ? startObserving() : document.addEventListener("DOMContentLoaded", startObserving, {
-once: !0
-});
 };
 function stopScrollToTopRuntime() {
 try {
 if (null != healthCheckIntervalId) {
-clearInterval(healthCheckIntervalId);
+healthCheckIntervalId.stop();
 healthCheckIntervalId = null;
 }
-if (observer) {
-observer.disconnect();
-observer = null;
+if (observerSubId && window.YouTubeMutationCoordinator?.unsubscribe) {
+window.YouTubeMutationCoordinator.unsubscribe(observerSubId);
+observerSubId = null;
+}
+if (observerFallbackTimerId) {
+observerFallbackTimerId.stop();
+observerFallbackTimerId = null;
 }
 if (detachNavigationListeners) {
 try {
@@ -24391,7 +26132,7 @@ detachNavigationListeners();
 } catch (e) {}
 detachNavigationListeners = null;
 }
-const button = document.getElementById("ytmusic-side-panel-top-button");
+const button = byId("ytmusic-side-panel-top-button");
 if (button?._scrollCleanup) {
 try {
 button._scrollCleanup();
@@ -24404,7 +26145,7 @@ button._positionCleanup();
 }
 button && button.remove();
 } catch (e) {
-console.error("[YouTube+][Music] stopScrollToTopRuntime error:", e);
+window.console.error("[YouTube+][Music] stopScrollToTopRuntime error:", e);
 }
 }
 function applySettingsChanges() {
@@ -24436,6 +26177,11 @@ musicSettingsSnapshot = s && "object" == typeof s ? {
 applySettingsChanges,
 version: "2.4.5"
 });
+const isMusicRoute = () => "music.youtube.com" === window.location.hostname;
+let musicRuntimeStarted = !1;
+const startMusicRuntime = () => {
+if (!musicRuntimeStarted) {
+musicRuntimeStarted = !0;
 window.addEventListener("beforeunload", () => {
 try {
 stopScrollToTopRuntime();
@@ -24443,18 +26189,15 @@ musicStyleEl && musicStyleEl.isConnected && musicStyleEl.remove();
 musicStyleEl = null;
 window.YouTubeUtils?.logger?.debug?.("[YouTube+][Music]", "Cleanup completed");
 } catch (error) {
-console.error("[YouTube+][Music] Cleanup error:", error);
+window.console.error("[YouTube+][Music] Cleanup error:", error);
 }
 });
 !(function startIfEnabled() {
 if ("music.youtube.com" === window.location.hostname) {
 musicSettingsSnapshot = readMusicSettings();
-if (isMusicModuleEnabled(musicSettingsSnapshot)) {
-"loading" === document.readyState ? document.addEventListener("DOMContentLoaded", applyStyles, {
+isMusicModuleEnabled(musicSettingsSnapshot) && ("loading" === document.readyState ? document.addEventListener("DOMContentLoaded", applyStyles, {
 once: !0
-}) : applyStyles();
-0;
-}
+}) : applyStyles());
 }
 })();
 try {
@@ -24472,37 +26215,30 @@ musicSettingsSnapshot = readMusicSettings();
 applySettingsChanges();
 });
 } catch (e) {
-console.warn("[YouTube+][Music] Settings listener registration error:", e);
+window.console.warn("[YouTube+][Music] Settings listener registration error:", e);
 }
 window.YouTubeUtils?.logger?.debug?.("[YouTube+][Music]", "Module loaded (lazy)", {
 version: "2.4.5",
 hostname: window.location.hostname,
-enabled: "music.youtube.com" === window.location.hostname && isMusicModuleEnabled(musicSettingsSnapshot)
+enabled: isMusicRoute() && isMusicModuleEnabled(musicSettingsSnapshot)
 });
+}
+};
+window.YouTubePlusLazyLoader?.register ? window.YouTubePlusLazyLoader.register("music", startMusicRuntime, {
+priority: 45,
+delay: 0,
+shouldLoad: isMusicRoute
+}) : startMusicRuntime();
 })();
 
 !(function() {
 "use strict";
-const _createHTML = window._ytplusCreateHTML || (s => s);
 const {$, $$} = window.YouTubeUtils || {};
-const onDomReady = (() => {
-let ready = "loading" !== document.readyState;
-const queue = [];
-ready || document.addEventListener("DOMContentLoaded", () => {
-ready = !0;
-for (;queue.length; ) {
-const cb = queue.shift();
-try {
-cb?.();
-} catch (e) {}
-}
-}, {
+const onDomReady = window.YouTubeUtils?.onDomReady || (cb => {
+"loading" !== document.readyState ? cb() : document.addEventListener("DOMContentLoaded", cb, {
 once: !0
 });
-return cb => {
-ready ? cb() : queue.push(cb);
-};
-})();
+});
 const CONFIG = {
 enabled: !0,
 storageKey: "youtube_endscreen_settings",
@@ -24511,7 +26247,7 @@ debounceMs: 32,
 batchSize: 20
 };
 const state = {
-observer: null,
+observerSubId: null,
 styleEl: null,
 isActive: !1,
 removeCount: 0,
@@ -24519,13 +26255,7 @@ lastCheck: 0,
 ytNavigateListenerKey: null,
 settingsNavListenerKey: null
 };
-const debounce = window.YouTubeUtils?.debounce || ((fn, ms) => {
-let t;
-return (...a) => {
-clearTimeout(t);
-t = setTimeout(() => fn(...a), ms);
-};
-});
+const debounce = window.YouTubeUtils.debounce;
 const settings = {
 load: () => {
 try {
@@ -24560,7 +26290,8 @@ const len = Math.min(elements.length, CONFIG.batchSize);
 for (let i = 0; i < len; i++) {
 const el = elements[i];
 if (el?.isConnected) {
-el.setAttribute("style", "display:none!important;visibility:hidden!important");
+el.style.display = "none";
+el.style.visibility = "hidden";
 try {
 el.remove();
 state.removeCount++;
@@ -24576,7 +26307,15 @@ return !1;
 const classNameValue = (node => "string" == typeof node.className ? node.className : node.className && "object" == typeof node.className && "baseVal" in node.className ? node.className.baseVal : "")(node);
 return classNameValue.includes("ytp-") || node.querySelector?.(".ytp-ce-element");
 };
-const createEndScreenObserver = throttledRemove => new MutationObserver(mutations => {
+const setupWatcher = () => {
+if (state.observerSubId || !CONFIG.enabled) {
+return;
+}
+const throttledRemove = debounce(removeEndScreens, CONFIG.debounceMs);
+const coordinator = window.YouTubeMutationCoordinator;
+if (coordinator?.subscribeRoot) {
+state.observerSubId = "endscreen::observer";
+coordinator.subscribeRoot(state.observerSubId, mutations => {
 (mutations => {
 for (const {addedNodes} of mutations) {
 for (const node of addedNodes) {
@@ -24587,10 +26326,25 @@ return !0;
 }
 return !1;
 })(mutations) && throttledRemove();
+}, {
+selector: "#movie_player, .ytp-ce-element, .ytp-endscreen-element, .ytp-cards-teaser, .ytp-cards-button, .iv-drawer, .iv-branding, .video-annotations",
+childList: !0,
+attributes: !0,
+subtree: !0,
+attributeFilter: [ "class", "style" ]
 });
+YouTubeUtils.cleanupManager.register(() => {
+if (state.observerSubId) {
+coordinator.unsubscribe(state.observerSubId);
+state.observerSubId = null;
+}
+});
+throttledRemove();
+}
+};
 const cleanup = () => {
-state.observer?.disconnect();
-state.observer = null;
+state.observerSubId && window.YouTubeMutationCoordinator?.unsubscribe && window.YouTubeMutationCoordinator.unsubscribe(state.observerSubId);
+state.observerSubId = null;
 if (state.styleEl) {
 try {
 YouTubeUtils.StyleManager.remove(state.styleEl);
@@ -24611,27 +26365,7 @@ YouTubeUtils.StyleManager.add("end-screen-remover", styles);
 state.styleEl = "end-screen-remover";
 })();
 removeEndScreens();
-(() => {
-if (state.observer || !CONFIG.enabled) {
-return;
-}
-const throttledRemove = debounce(removeEndScreens, CONFIG.debounceMs);
-state.observer = createEndScreenObserver(throttledRemove);
-YouTubeUtils.cleanupManager.registerObserver(state.observer);
-const observeTarget = (attempt = 0) => {
-const target = $("#movie_player");
-target ? state.observer?.observe(target, {
-childList: !0,
-subtree: !0,
-attributeFilter: [ "class", "style" ]
-}) : attempt < 3 ? setTimeout(() => observeTarget(attempt + 1), 500) : state.observer?.observe(document.body, {
-childList: !0,
-subtree: !0,
-attributeFilter: [ "class", "style" ]
-});
-};
-observeTarget();
-})();
+setupWatcher();
 }
 };
 const setupEndscreenSettingsDelegation = (() => {
@@ -24676,7 +26410,9 @@ return;
 }
 const container = document.createElement("div");
 container.className = "ytp-plus-settings-item endscreen-settings";
-container.innerHTML = _createHTML(`\n        <div>\n          <label class="ytp-plus-settings-item-label">${YouTubeUtils.t("endscreenHideLabel")}</label>\n          <div class="ytp-plus-settings-item-description">${YouTubeUtils.t("endscreenHideDesc")}${state.removeCount ? ` (${state.removeCount} ${YouTubeUtils.t("removedSuffix").replace("{n}", "")?.trim() || "removed"})` : ""}</div>\n        </div>\n        <input type="checkbox" class="ytp-plus-settings-checkbox" ${CONFIG.enabled ? "checked" : ""}>\n      `);
+((container, html) => {
+window.YouTubeSafeDOM?.renderTemplateClone ? window.YouTubeSafeDOM.renderTemplateClone(container, html) : container instanceof Element && container.replaceChildren(document.createTextNode(String(html ?? "")));
+})(container, `\n        <div>\n          <label class="ytp-plus-settings-item-label">${YouTubeUtils.t("endscreenHideLabel")}</label>\n          <div class="ytp-plus-settings-item-description">${YouTubeUtils.t("endscreenHideDesc")}${state.removeCount ? ` (${state.removeCount} ${YouTubeUtils.t("removedSuffix").replace("{n}", "")?.trim() || "removed"})` : ""}</div>\n        </div>\n        <input type="checkbox" class="ytp-plus-settings-checkbox" ${CONFIG.enabled ? "checked" : ""}>\n      `);
 enhancedSlot ? enhancedSlot.replaceWith(container) : host.appendChild(container);
 setupEndscreenSettingsDelegation();
 };
@@ -24686,6 +26422,12 @@ cleanup();
 requestIdleCallback ? requestIdleCallback(init) : setTimeout(init, 1);
 }
 }, 50);
+let endscreenRuntimeStarted = !1;
+const startEndscreenRuntime = () => {
+if (endscreenRuntimeStarted) {
+return;
+}
+endscreenRuntimeStarted = !0;
 settings.load();
 onDomReady(init);
 const handleSettingsNavClick = e => {
@@ -24700,17 +26442,31 @@ state.settingsNavListenerKey || (state.settingsNavListenerKey = YouTubeUtils.cle
 passive: !0,
 capture: !0
 }));
+};
+window.YouTubePlusLazyLoader?.register ? window.YouTubePlusLazyLoader.register("end", startEndscreenRuntime, {
+priority: 35,
+delay: 0,
+shouldLoad: () => (() => {
+const path = location.pathname || "";
+return "/watch" === path || path.startsWith("/shorts");
+})() || (() => {
+try {
+return Boolean(document.querySelector(".ytp-plus-settings-modal"));
+} catch (e) {
+return !1;
+}
+})()
+}) : startEndscreenRuntime();
 })();
 
 (async function() {
 "use strict";
-const _createHTML = window._ytplusCreateHTML || (s => s);
+const setTimeout_ = setTimeout.bind(window);
+const _createHTML = window._ytpDefaults?.createHTML || (s => s);
 let featureEnabled = !0;
 let stopRandomPlayTimers = null;
 let scheduleApplyRandomPlay = null;
 let addButtonRetryTimer = null;
-let addButtonRetryAttempts = 0;
-const loadFeatureEnabled = () => window.YouTubeUtils?.loadFeatureEnabled?.("enablePlayAll") ?? !0;
 const setFeatureEnabled = nextEnabled => {
 featureEnabled = !1 !== nextEnabled;
 if (featureEnabled) {
@@ -24725,17 +26481,20 @@ try {
 removeButton();
 } catch (e) {}
 try {
-addButtonRetryTimer && clearTimeout(addButtonRetryTimer);
+if (addButtonRetryTimer) {
+clearTimeout(addButtonRetryTimer);
+"function" == typeof addButtonRetryTimer.cancel && addButtonRetryTimer.cancel();
+}
 addButtonRetryTimer = null;
-addButtonRetryAttempts = 0;
 } catch (e) {}
 try {
 "function" == typeof stopRandomPlayTimers && stopRandomPlayTimers();
 } catch (e) {}
 }
 };
-featureEnabled = loadFeatureEnabled();
-const {$, $$} = window.YouTubeUtils || {};
+featureEnabled = window.YouTubeUtils?.loadFeatureEnabled?.("enablePlayAll") ?? !0;
+const $ = window.YouTubeUtils.$;
+const $$ = window.YouTubeUtils.$$;
 const _cm = window.YouTubeUtils?.cleanupManager;
 const onDomReady = (() => {
 let ready = "loading" !== document.readyState;
@@ -24747,7 +26506,7 @@ const cb = queue.shift();
 try {
 cb && cb();
 } catch (e) {
-console.warn("[Play All] DOMReady callback error:", e);
+window.console.warn("[Play All] DOMReady callback error:", e);
 }
 }
 }, {
@@ -24757,7 +26516,7 @@ return cb => {
 ready ? cb() : queue.push(cb);
 };
 })();
-const t = window.YouTubeUtils?.t || (key => key || "");
+const t = window.YouTubeUtils.t;
 const getPlayAllLabel = () => {
 if ((key => {
 try {
@@ -24778,19 +26537,20 @@ const getPlayAllAriaLabel = () => {
 const localized = t("enablePlayAllLabel");
 return localized && "enablePlayAllLabel" !== localized ? localized : getPlayAllLabel();
 };
-const globalContext = "undefined" != typeof unsafeWindow ? unsafeWindow : window;
-const gmInfo = globalContext?.GM_info ?? null;
+const gmInfo = (globalThis?.GM_info ?? null) || (window?.GM_info ?? null);
 const scriptVersion = gmInfo?.script?.version ?? null;
 if (scriptVersion && /-(alpha|beta|dev|test)$/.test(scriptVersion)) {
 try {
-window.YouTubeUtils && window.YouTubeUtils?.logger?.info?.("%cytp - YouTube Play All\n", "color: #bf4bcc; font-size: 32px; font-weight: bold", "You are currently running a test version:", scriptVersion);
+window.YouTubeUtils && window.YouTubeUtils?.logger?.info?.("%cytp - YouTube Play All\n", "color: var(--yt-playall-accent-purple); font-size: 32px; font-weight: bold", "You are currently running a test version:", scriptVersion);
 } catch (e) {}
 }
 (fn => {
 "function" == typeof requestIdleCallback ? requestIdleCallback(fn, {
 timeout: 2e3
 }) : setTimeout(fn, 200);
-})(() => (html => {
+})(() => {
+const css = window.YouTubePlusStyleResources?.playall || ".ytp-play-all-btn{display:inline-flex;align-items:center;padding:0 12px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--yt-playall-accent-purple),var(--yt-playall-accent-blue));color:#fff;font-size:1.4rem;font-weight:500;text-decoration:none;white-space:nowrap;cursor:pointer;flex-shrink:0;user-select:none;font-family:Roboto,Arial,sans-serif;letter-spacing:.007em;line-height:1;vertical-align:middle;border:none;outline:none}.ytp-play-all-btn:hover{opacity:.85}";
+(html => {
 try {
 const target = document.head || document.documentElement;
 if (target && "function" == typeof target.insertAdjacentHTML) {
@@ -24805,9 +26565,10 @@ t && "function" == typeof t.insertAdjacentHTML && t.insertAdjacentHTML("beforeen
 };
 onDomReady(onReady);
 } catch (e) {
-console.warn("[Play All] Style insertion error:", e);
+window.console.warn("[Play All] Style insertion error:", e);
 }
-})("<style>\n        .ytp-btn {border-radius: 8px; font-family: 'Roboto', 'Arial', sans-serif; font-size: 1.4rem; line-height: 3.2rem; font-weight: 500; padding: 0 12px; margin-left: 0; user-select: none; white-space: nowrap;}        \n        .ytp-btn, .ytp-btn > * {text-decoration: none; cursor: pointer;}        \n        .ytp-badge {border-radius: 8px; padding: 0.2em; font-size: 0.8em; vertical-align: top;} \n        .ytp-random-badge, .ytp-random-notice {background-color: #2b66da; color: white;} \n        /* Style Play All as a YouTube chip button */\n        .ytp-play-all-btn {display:inline-flex;align-items:center;justify-content:center;height:32px;padding:0 12px;white-space:nowrap;flex-shrink:0;max-width:fit-content;border-radius:8px;font-size:1.4rem;line-height:2rem;font-weight:500;background-color:var(--yt-spec-badge-chip-background,rgba(255,255,255,0.1));color:var(--yt-spec-text-primary,#fff);border:none;transition:background-color .2s;cursor:pointer;text-decoration:none;}\n        .ytp-play-all-btn:hover {background-color:var(--yt-spec-badge-chip-background-hover,rgba(255,255,255,0.2));}        \n        html:not([dark]) .ytp-play-all-btn {background-color:var(--yt-spec-badge-chip-background,rgba(0,0,0,0.05));color:var(--yt-spec-text-primary,#0f0f0f);}\n        html:not([dark]) .ytp-play-all-btn:hover {background-color:var(--yt-spec-badge-chip-background-hover,rgba(0,0,0,0.1));}\n        .ytp-button-row-wrapper {width: 100%; display: block; margin: 0 0 0.6rem 0;} \n        .ytp-button-container {display: inline-flex; align-items: center; gap: 0.6em; width: auto; margin: 0; flex-wrap: nowrap; overflow-x: auto; max-width: 100%;} \n        /* Ensure Play All sits inside chip bar container flow */\n        ytd-feed-filter-chip-bar-renderer .ytp-play-all-btn,\n        yt-chip-cloud-renderer .ytp-play-all-btn,\n        chip-bar-view-model.ytChipBarViewModelHost .ytp-play-all-btn,\n        .ytp-button-container .ytp-play-all-btn {height:32px;line-height:32px;vertical-align:middle;}\n        ytd-rich-grid-renderer .ytp-button-row-wrapper {margin-left: 0;}        \n        /* fetch() API introduces a race condition. This hides the occasional duplicate buttons */\n        .ytp-play-all-btn ~ .ytp-play-all-btn {display: none;}        \n        /* Fix for mobile view */\n        ytm-feed-filter-chip-bar-renderer .ytp-btn {margin-right: 12px; padding: 0.4em;}        \n        body:has(#secondary ytd-playlist-panel-renderer[ytp-random]) .ytp-prev-button.ytp-button, body:has(#secondary ytd-playlist-panel-renderer[ytp-random]) .ytp-next-button.ytp-button:not([ytp-random=\"applied\"]) {display: none !important;}        \n        #secondary ytd-playlist-panel-renderer[ytp-random] ytd-menu-renderer.ytd-playlist-panel-renderer {height: 1em; visibility: hidden;}        \n        #secondary ytd-playlist-panel-renderer[ytp-random]:not(:hover) ytd-playlist-panel-video-renderer {filter: blur(2em);} \n        #secondary ytd-playlist-panel-renderer[ytp-random] #header {display: flex; align-items: center; gap: 8px; flex-wrap: nowrap;}       \n        .ytp-random-notice {padding: 0.3em 0.7em; z-index: 1000; white-space: nowrap;}        \n    </style>"));
+})(`<style>${css}</style>`);
+});
 const getVideoId = url => {
 try {
 return new URLSearchParams(new URL(url).search).get("v");
@@ -24820,11 +26581,23 @@ const el = $(selector);
 return el instanceof HTMLElement ? el : null;
 };
 const getPlayer = () => $("#movie_player");
-const isSupportedTabPath = () => /\/(videos|shorts|streams)\/?$/.test(window.location.pathname);
+const isSupportedTabPath = () => {
+const path = window.location.pathname || "";
+return /^\/(?:@[^/]+|channel\/[^/]+|c\/[^/]+|user\/[^/]+)(?:\/(videos|shorts|streams))?\/?$/.test(path) || /\/(videos|shorts|streams)\/?$/.test(path);
+};
 let id = "";
+let observerSubId = null;
+let observerFallbackTimerId = null;
+const scheduleApplyRetry = (retryCount, selector, timeoutMs) => {
+if (retryCount >= 12) {
+return;
+}
+const waitFor = window.YouTubeUtils?.waitFor || window.YouTubeUtils?.waitForElement;
+"function" != typeof waitFor ? requestAnimationFrame(() => apply(retryCount + 1)) : waitFor(selector, timeoutMs).then(() => apply(retryCount + 1)).catch(() => apply(retryCount + 1));
+};
 const apply = (retryCount = 0) => {
 if ("" === id) {
-console.warn("[Play All] Channel ID not yet determined");
+window.console.warn("[Play All] Channel ID not yet determined");
 return;
 }
 let parent = null;
@@ -24833,7 +26606,7 @@ parent = queryHTMLElement("ytm-feed-filter-chip-bar-renderer .chip-bar-contents,
 } else {
 const desktopParentSelectors = [ "chip-bar-view-model.ytChipBarViewModelHost", "ytd-feed-filter-chip-bar-renderer iron-selector#chips", "ytd-feed-filter-chip-bar-renderer #chips-wrapper", "yt-chip-cloud-renderer #chips", "yt-chip-cloud-renderer .yt-chip-cloud-renderer" ];
 for (const selector of desktopParentSelectors) {
-const candidate = document.querySelector(selector);
+const candidate = $(selector);
 if (candidate instanceof HTMLElement) {
 parent = candidate;
 break;
@@ -24843,7 +26616,7 @@ break;
 if (null === parent) {
 const grid = queryHTMLElement("ytd-rich-grid-renderer, ytm-rich-grid-renderer, div.ytChipBarViewModelChipWrapper");
 if (!grid) {
-retryCount < 12 && setTimeout(() => apply(retryCount + 1), 300);
+scheduleApplyRetry(retryCount, "ytd-rich-grid-renderer, ytm-rich-grid-renderer, div.ytChipBarViewModelChipWrapper", 1500);
 return;
 }
 const chipBarInGrid = grid.querySelector("chip-bar-view-model.ytChipBarViewModelHost, ytd-feed-filter-chip-bar-renderer iron-selector#chips, ytd-feed-filter-chip-bar-renderer #chips-wrapper, yt-chip-cloud-renderer #chips");
@@ -24851,7 +26624,7 @@ if (chipBarInGrid instanceof HTMLElement) {
 parent = chipBarInGrid;
 } else {
 if (retryCount < 8) {
-setTimeout(() => apply(retryCount + 1), 300);
+scheduleApplyRetry(retryCount, "chip-bar-view-model.ytChipBarViewModelHost, ytd-feed-filter-chip-bar-renderer iron-selector#chips, ytd-feed-filter-chip-bar-renderer #chips-wrapper, yt-chip-cloud-renderer #chips", 1200);
 return;
 }
 {
@@ -24865,7 +26638,7 @@ parent = existingContainer instanceof HTMLElement ? existingContainer : null;
 }
 }
 if (!parent) {
-console.warn("[Play All] Could not find parent container");
+window.console.warn("[Play All] Could not find parent container");
 return;
 }
 if (parent.querySelector(".ytp-play-all-btn")) {
@@ -24874,33 +26647,20 @@ window.YouTubeUtils?.logger?.debug?.("[Play All] Buttons already exist, skipping
 } catch (e) {}
 return;
 }
-const [allPlaylist] = window.location.pathname.endsWith("/videos") ? [ "UULF" ] : window.location.pathname.endsWith("/shorts") ? [ "UUSH" ] : [ "UULV" ];
+const path = window.location.pathname || "";
+const [allPlaylist] = path.endsWith("/shorts") ? [ "UUSH" ] : path.endsWith("/streams") ? [ "UULV" ] : [ "UULF" ];
 const playlistSuffix = id.startsWith("UC") ? id.substring(2) : id;
 parent.insertAdjacentHTML("beforeend", _createHTML(`<a class="ytp-btn ytp-play-all-btn" href="/playlist?list=${allPlaylist}${playlistSuffix}&playnext=1&ytp-random=random&ytp-random-initial=1" title="${getPlayAllAriaLabel()}" aria-label="${getPlayAllAriaLabel()}">${getPlayAllLabel()}</a>`));
-const navigate = href => {
-window.location.assign(href);
-};
-if ("m.youtube.com" === location.host) {
-if (!parent.hasAttribute("data-ytp-delegated")) {
+if ("m.youtube.com" === location.host && !parent.hasAttribute("data-ytp-delegated")) {
 parent.setAttribute("data-ytp-delegated", "true");
 parent.addEventListener("click", event => {
 const tgt = event.target instanceof Element ? event.target : null;
 const btn = tgt?.closest?.(".ytp-btn") ?? null;
 if (btn && btn.href) {
 event.preventDefault();
-navigate(btn.href);
-}
-});
-}
-} else if (!parent.hasAttribute("data-ytp-delegated")) {
-parent.setAttribute("data-ytp-delegated", "true");
-parent.addEventListener("click", event => {
-const tgt = event.target instanceof Element ? event.target : null;
-const btn = tgt?.closest?.(".ytp-play-all-btn") ?? null;
-if (btn && btn.href) {
-event.preventDefault();
-event.stopPropagation();
-navigate(btn.href);
+(href => {
+window.location.assign(href);
+})(btn.href);
 }
 });
 }
@@ -24913,45 +26673,69 @@ removeButton();
 apply();
 }
 };
-const observer = new MutationObserver(() => {
+const scheduleObserverWork = () => {
 featureEnabled && (observerFrame || (observerFrame = "function" != typeof requestAnimationFrame ? setTimeout(runObserverWork, 16) : requestAnimationFrame(runObserverWork)));
-});
+};
+const detachObserver = () => {
+if (observerSubId && window.YouTubeMutationCoordinator?.unsubscribe) {
+window.YouTubeMutationCoordinator.unsubscribe(observerSubId);
+observerSubId = null;
+}
+if (observerFallbackTimerId) {
+clearInterval(observerFallbackTimerId);
+observerFallbackTimerId = null;
+}
+};
 const addButton = async () => {
-observer.disconnect();
+detachObserver();
 if (!featureEnabled) {
 return;
 }
 if (!isSupportedTabPath()) {
 return;
 }
-const observeTarget = document.querySelector("ytd-rich-grid-renderer") || document.querySelector("chip-bar-view-model.ytChipBarViewModelHost") || $("ytm-feed-filter-chip-bar-renderer .iron-selected, ytm-feed-filter-chip-bar-renderer .chip-bar-contents .selected");
-observeTarget && observer.observe(observeTarget, {
+const observeTarget = $("ytd-rich-grid-renderer") || $("chip-bar-view-model.ytChipBarViewModelHost") || $("ytm-feed-filter-chip-bar-renderer .iron-selected, ytm-feed-filter-chip-bar-renderer .chip-bar-contents .selected");
+(observeTarget => {
+detachObserver();
+if (!featureEnabled || !observeTarget) {
+return;
+}
+const coordinator = window.YouTubeMutationCoordinator;
+if (coordinator?.watchTarget) {
+observerSubId = "playall::observer";
+coordinator.watchTarget(observerSubId, observeTarget, () => scheduleObserverWork(), {
 attributes: !0,
-childList: !1,
-subtree: !1
+childList: !0,
+subtree: !0
 });
+} else {
+observerFallbackTimerId = setInterval(() => {
+scheduleObserverWork();
+}, 500);
+}
+})(observeTarget);
 if ($(".ytp-play-all-btn")) {
 return;
 }
 const resolvedFromDom = (() => {
 try {
-const metaChannel = document.querySelector('meta[itemprop="channelId"]');
+const metaChannel = $('meta[itemprop="channelId"]');
 const metaValue = metaChannel?.getAttribute("content");
 if (metaValue && /^UC[a-zA-Z0-9_-]{22}$/.test(metaValue)) {
 return metaValue;
 }
-const canonical = document.querySelector('link[rel="canonical"]');
+const canonical = $('link[rel="canonical"]');
 const canonicalHref = canonical?.getAttribute("href") || "";
 const canonicalMatch = canonicalHref.match(/\/channel\/(UC[a-zA-Z0-9_-]{22})/);
 if (canonicalMatch?.[1]) {
 return canonicalMatch[1];
 }
-const browseNode = document.querySelector('ytd-browse[page-subtype="channels"]');
+const browseNode = $('ytd-browse[page-subtype="channels"]');
 const attrId = browseNode?.getAttribute?.("channel-id") || browseNode?.getAttribute?.("external-id");
 if (attrId && /^UC[a-zA-Z0-9_-]{22}$/.test(attrId)) {
 return attrId;
 }
-const channelHrefNode = document.querySelector('ytd-channel-name a[href*="/channel/UC"], #channel-name a[href*="/channel/UC"], a[href^="/channel/UC"]');
+const channelHrefNode = $('ytd-channel-name a[href*="/channel/UC"], #channel-name a[href*="/channel/UC"], a[href^="/channel/UC"]');
 const channelHref = channelHrefNode?.getAttribute?.("href") || "";
 const channelHrefMatch = channelHref.match(/\/channel\/(UC[a-zA-Z0-9_-]{22})/);
 if (channelHrefMatch?.[1]) {
@@ -24974,7 +26758,7 @@ return cfgId;
 }
 }
 } catch (e) {
-console.warn("[Play All] Failed to resolve channel ID from DOM:", e);
+window.console.warn("[Play All] Failed to resolve channel ID from DOM:", e);
 }
 return null;
 })();
@@ -25005,17 +26789,19 @@ return;
 }
 }
 } catch (e) {
-console.warn("[Play All] Error extracting channel ID from canonical:", e);
+window.console.warn("[Play All] Error extracting channel ID from canonical:", e);
 }
 try {
 const currentUrl = location.href;
 const parsedUrl = new URL(currentUrl);
 if ("www.youtube.com" !== parsedUrl.hostname && "youtube.com" !== parsedUrl.hostname && "m.youtube.com" !== parsedUrl.hostname) {
-console.warn("[Play All] Skipping fetch for non-YouTube URL");
+window.console.warn("[Play All] Skipping fetch for non-YouTube URL");
 return;
 }
 const _fetchCtrl = new AbortController;
-const _fetchTimer = setTimeout(() => _fetchCtrl.abort(), 1e4);
+const _fetchTimer = setTimeout_(function() {
+_fetchCtrl.abort();
+}, 1e4);
 let _fetchResp;
 try {
 _fetchResp = await fetch(currentUrl, {
@@ -25032,16 +26818,18 @@ id = canonicalMatch[1];
 const channelIdMatch = html.match(/"channelId":"(UC[a-zA-Z0-9_-]{22})"/);
 channelIdMatch && channelIdMatch[1] && (id = channelIdMatch[1]);
 }
-id ? apply() : console.warn("[Play All] Could not extract channel ID");
+id ? apply() : window.console.warn("[Play All] Could not extract channel ID");
 } catch (e) {
-console.error("[Play All] Error fetching channel data:", e);
+window.console.error("[Play All] Error fetching channel data:", e);
 }
 }
 };
 const stopAddButtonRetries = () => {
-addButtonRetryTimer && clearTimeout(addButtonRetryTimer);
+if (addButtonRetryTimer) {
+clearTimeout(addButtonRetryTimer);
+"function" == typeof addButtonRetryTimer.cancel && addButtonRetryTimer.cancel();
+}
 addButtonRetryTimer = null;
-addButtonRetryAttempts = 0;
 };
 const queueDesktopAddButton = (reset = !0) => {
 if ("m.youtube.com" === location.host) {
@@ -25049,30 +26837,29 @@ addButton();
 return;
 }
 reset && stopAddButtonRetries();
-const run = () => {
-if (featureEnabled) {
-if (isSupportedTabPath()) {
+const scheduler = window.YouTubeUtils?.createRetryScheduler?.({
+label: "playall-add-button",
+interval: 120,
+maxAttempts: 80,
+check: () => {
+if (!featureEnabled || !isSupportedTabPath()) {
+return !0;
+}
 addButton();
-if (document.querySelector(".ytp-play-all-btn")) {
-stopAddButtonRetries();
-} else if (addButtonRetryAttempts >= 30) {
-stopAddButtonRetries();
-} else {
-addButtonRetryAttempts += 1;
-addButtonRetryTimer = setTimeout(run, 300);
+return !!$(".ytp-play-all-btn");
 }
-} else {
-stopAddButtonRetries();
-}
-} else {
-stopAddButtonRetries();
-}
-};
-run();
+});
+scheduler ? addButtonRetryTimer = scheduler : requestAnimationFrame(addButton);
 };
 const removeButton = () => {
 $$(".ytp-play-all-btn, .ytp-random-badge, .ytp-random-notice").forEach(element => element.remove());
 };
+let playAllRuntimeStarted = !1;
+const startPlayAllRuntime = () => {
+if (playAllRuntimeStarted) {
+return;
+}
+playAllRuntimeStarted = !0;
 if ("m.youtube.com" === location.host) {
 let lastUrl = location.href;
 const checkUrlChange = () => {
@@ -25106,11 +26893,22 @@ id = "";
 };
 const _navFinishHandler = () => {
 queueDesktopAddButton();
-setTimeout(() => queueDesktopAddButton(!1), 120);
-setTimeout(() => queueDesktopAddButton(!1), 600);
-setTimeout(() => queueDesktopAddButton(!1), 1400);
+setTimeout(function() {
+queueDesktopAddButton(!1);
+}, 120);
+setTimeout(function() {
+queueDesktopAddButton(!1);
+}, 600);
+setTimeout_(function() {
+queueDesktopAddButton(!1);
+}, 1400);
+setTimeout_(function() {
+queueDesktopAddButton(!1);
+}, 2800);
 };
-const _pageshowHandler = () => setTimeout(() => queueDesktopAddButton(), 120);
+const _pageshowHandler = () => setTimeout(function() {
+queueDesktopAddButton();
+}, 120);
 const _visChangeHandler = () => {
 "visible" === document.visibilityState && queueDesktopAddButton();
 };
@@ -25118,20 +26916,35 @@ if (_cm?.registerListener) {
 _cm.registerListener(window, "yt-navigate-start", _navStartHandler);
 _cm.registerListener(window, "yt-navigate-finish", _navFinishHandler);
 _cm.registerListener(document, "yt-page-data-updated", _navFinishHandler);
+_cm.registerListener(document, "yt-page-data-fetched", _navFinishHandler);
 _cm.registerListener(window, "pageshow", _pageshowHandler);
 _cm.registerListener(document, "visibilitychange", _visChangeHandler);
 } else {
 window.addEventListener("yt-navigate-start", _navStartHandler);
 window.addEventListener("yt-navigate-finish", _navFinishHandler);
 document.addEventListener("yt-page-data-updated", _navFinishHandler);
+document.addEventListener("yt-page-data-fetched", _navFinishHandler);
 window.addEventListener("pageshow", _pageshowHandler);
 document.addEventListener("visibilitychange", _visChangeHandler);
 }
 try {
 onDomReady(() => queueDesktopAddButton(!1));
-setTimeout(() => queueDesktopAddButton(!1), 50);
-setTimeout(() => queueDesktopAddButton(!1), 400);
-setTimeout(() => queueDesktopAddButton(!1), 1200);
+setTimeout(function() {
+queueDesktopAddButton(!1);
+}, 50);
+setTimeout(function() {
+queueDesktopAddButton(!1);
+}, 400);
+setTimeout_(function() {
+queueDesktopAddButton(!1);
+}, 1200);
+} catch (e) {}
+try {
+window.addEventListener("ytp:nav-refresh", function() {
+try {
+queueDesktopAddButton(!1);
+} catch (e) {}
+});
 } catch (e) {}
 }
 const _settingsUpdHandler = e => {
@@ -25143,7 +26956,7 @@ return;
 }
 setFeatureEnabled(nextEnabled);
 } catch (e) {
-setFeatureEnabled(loadFeatureEnabled());
+setFeatureEnabled(window.YouTubeUtils?.loadFeatureEnabled?.("enablePlayAll") ?? !0);
 }
 };
 _cm?.registerListener ? _cm.registerListener(window, "youtube-plus-settings-updated", _settingsUpdHandler) : window.addEventListener("youtube-plus-settings-updated", _settingsUpdHandler);
@@ -25238,7 +27051,7 @@ window.location.href = url;
 }
 })(videos[videoIndex][0], listId, cfg.mode);
 } catch (error) {
-console.error("[Play All] Error using redirect(), falling back to manual redirect:", error);
+window.console.error("[Play All] Error using redirect(), falling back to manual redirect:", error);
 const redirector = document.createElement("a");
 redirector.className = "yt-simple-endpoint style-scope ytd-playlist-panel-video-renderer";
 redirector.setAttribute("hidden", "");
@@ -25397,7 +27210,17 @@ const nextButton = $('#ytd-player .ytp-next-button.ytp-button:not([ytp-random="a
 if (nextButton instanceof HTMLElement) {
 const newButton = document.createElement("span");
 newButton.className = nextButton.className;
-newButton.innerHTML = _createHTML(nextButton.innerHTML);
+((container, html) => {
+if (!(container instanceof Element)) {
+return;
+}
+const template = document.createElement("template");
+const range = document.createRange();
+const root = document.body || document.documentElement;
+root && range.selectNode(root);
+template.content.append(range.createContextualFragment(_createHTML(html)));
+container.replaceChildren(template.content.cloneNode(!0));
+})(newButton, nextButton.innerHTML);
 nextButton.replaceWith(newButton);
 newButton.setAttribute("ytp-random", "applied");
 newButton.addEventListener("click", () => {
@@ -25431,7 +27254,7 @@ current && Array.isArray(JSON.parse(current)) && localStorage.removeItem(cfg.sto
 localStorage.removeItem(cfg.storageKey);
 }
 applyRandomPlay(cfg);
-return !!document.querySelector("#secondary ytd-playlist-panel-renderer[ytp-random]");
+return !!$("#secondary ytd-playlist-panel-renderer[ytp-random]");
 },
 maxAttempts: 30,
 interval: 250
@@ -25450,13 +27273,18 @@ onNavigate();
 const _navFinishRandom = () => setTimeout(onNavigate, 200);
 _cm?.registerListener ? _cm.registerListener(window, "yt-navigate-finish", _navFinishRandom) : window.addEventListener("yt-navigate-finish", _navFinishRandom);
 })();
-})().catch(error => console.error("%cytp - YouTube Play All\n", "color: #bf4bcc; font-size: 32px; font-weight: bold", error));
+};
+window.YouTubePlusLazyLoader?.register ? window.YouTubePlusLazyLoader.register("playall", startPlayAllRuntime, {
+priority: 55,
+delay: 0,
+shouldLoad: () => !0
+}) : startPlayAllRuntime();
+})().catch(error => window.console.error("%cytp - YouTube Play All\n", "color: var(--yt-playall-accent-purple); font-size: 32px; font-weight: bold", error));
 
 !(function() {
 "use strict";
 let featureEnabled = !0;
 let activeCleanup = null;
-const loadFeatureEnabled = () => window.YouTubeUtils?.loadFeatureEnabled?.("enableResumeTime") ?? !0;
 const setFeatureEnabled = nextEnabled => {
 featureEnabled = !1 !== nextEnabled;
 if (featureEnabled) {
@@ -25478,28 +27306,13 @@ activeCleanup = null;
 }
 }
 };
-featureEnabled = loadFeatureEnabled();
+featureEnabled = window.YouTubeUtils?.loadFeatureEnabled?.("enableResumeTime") ?? !0;
 const {$, byId} = window.YouTubeUtils || {};
-const onDomReady = (() => {
-let ready = "loading" !== document.readyState;
-const queue = [];
-ready || document.addEventListener("DOMContentLoaded", () => {
-ready = !0;
-for (;queue.length; ) {
-const cb = queue.shift();
-try {
-cb?.();
-} catch (e) {
-console.error("[YouTube+] DOMReady callback error:", e);
-}
-}
-}, {
+const onDomReady = window.YouTubeUtils?.onDomReady || (cb => {
+"loading" !== document.readyState ? cb() : document.addEventListener("DOMContentLoaded", cb, {
 once: !0
 });
-return cb => {
-ready ? cb() : queue.push(cb);
-};
-})();
+});
 const setupResumeDelegation = (() => {
 let attached = !1;
 return () => {
@@ -25565,7 +27378,6 @@ en: "Start over",
 ru: "Начать сначала"
 }
 };
-const escapeRegex = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const t = (key, params = {}) => {
 const U = window.YouTubeUtils;
 if (U?.t) {
@@ -25579,7 +27391,8 @@ return val;
 }
 let result = val;
 for (const [k, v] of Object.entries(params)) {
-result = result.replace(new RegExp(`\\{${escapeRegex(k)}\\}`, "g"), String(v));
+const token = `{${k}}`;
+result = result.split(token).join(String(v));
 }
 return result;
 };
@@ -25628,7 +27441,7 @@ wrap.setAttribute("role", "alertdialog");
 wrap.setAttribute("aria-label", t("resumePlayback") || "Resume playback");
 const player = $("#movie_player");
 const inPlayer = !!player;
-const resumeOverlayStyles = "\n      .ytp-resume-overlay{min-width:180px;max-width:36vw;background:var(--yt-glass-bg);color:var(--yt-text-primary,#fff);padding:12px 14px;border-radius:12px;backdrop-filter:blur(8px) saturate(150%);-webkit-backdrop-filter:blur(8px) saturate(150%);box-shadow:0 14px 40px rgba(0,0,0,0.48);border:1.25px solid rgba(255,255,255,0.06);font-family:Arial,Helvetica,sans-serif;display:flex;flex-direction:column;align-items:center;text-align:center;animation:ytp-resume-fadein 0.3s ease-out}\n      @keyframes ytp-resume-fadein{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}\n      .ytp-resume-overlay .ytp-resume-title{font-weight:600;margin-bottom:8px;font-size:13px}\n      .ytp-resume-overlay .ytp-resume-actions{display:flex;gap:8px;justify-content:center;margin-top:6px}\n      .ytp-resume-overlay .ytp-resume-btn{padding:6px 12px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:500;transition:all 0.2s ease;outline:none}\n      .ytp-resume-overlay .ytp-resume-btn:focus{box-shadow:0 0 0 2px rgba(255,255,255,0.3);outline:2px solid transparent}\n      .ytp-resume-overlay .ytp-resume-btn:hover{transform:translateY(-1px)}\n      .ytp-resume-overlay .ytp-resume-btn:active{transform:translateY(0)}\n      .ytp-resume-overlay .ytp-resume-btn.primary{background:#1e88e5;color:#fff}\n      .ytp-resume-overlay .ytp-resume-btn.primary:hover{background:#1976d2}\n      .ytp-resume-overlay .ytp-resume-btn.ghost{background:rgba(255,255,255,0.06);color:#fff}\n      .ytp-resume-overlay .ytp-resume-btn.ghost:hover{background:rgba(255,255,255,0.12)}\n    ";
+const resumeOverlayStyles = "\n      .ytp-resume-overlay{min-width:180px;max-width:36vw;background:var(--yt-glass-bg);color:var(--yt-text-primary,#fff);padding:12px 14px;border-radius:12px;backdrop-filter:blur(8px) saturate(150%);-webkit-backdrop-filter:blur(8px) saturate(150%);box-shadow:0 14px 40px var(--yt-shadow-flyout);border:1.25px solid var(--yt-surface-overlay-border);font-family:Arial,Helvetica,sans-serif;display:flex;flex-direction:column;align-items:center;text-align:center;animation:ytp-resume-fadein 0.3s ease-out}\n      @keyframes ytp-resume-fadein{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}\n      .ytp-resume-overlay .ytp-resume-title{font-weight:600;margin-bottom:8px;font-size:13px}\n      .ytp-resume-overlay .ytp-resume-actions{display:flex;gap:8px;justify-content:center;margin-top:6px}\n      .ytp-resume-overlay .ytp-resume-btn{padding:6px 12px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:500;transition:all 0.2s ease;outline:none}\n      .ytp-resume-overlay .ytp-resume-btn:focus{box-shadow:0 0 0 2px var(--yt-glass-border);outline:2px solid transparent}\n      .ytp-resume-overlay .ytp-resume-btn:hover{transform:translateY(-1px)}\n      .ytp-resume-overlay .ytp-resume-btn:active{transform:translateY(0)}\n      .ytp-resume-overlay .ytp-resume-btn.primary{background:var(--yt-accent-secondary);color:#fff}\n      .ytp-resume-overlay .ytp-resume-btn.primary:hover{background:var(--yt-accent-secondary-light)}\n      .ytp-resume-overlay .ytp-resume-btn.ghost{background:var(--yt-button-bg);color:var(--yt-text-primary)}\n      .ytp-resume-overlay .ytp-resume-btn.ghost:hover{background:var(--yt-hover-bg)}\n    ";
 try {
 if (window.YouTubeUtils && YouTubeUtils.StyleManager) {
 YouTubeUtils.StyleManager.add("ytp-resume-overlay-styles", resumeOverlayStyles);
@@ -25639,19 +27452,29 @@ s.textContent = resumeOverlayStyles;
 (document.head || document.documentElement).appendChild(s);
 }
 } catch (e) {
-console.warn("[YouTube+] Failed to inject resume overlay styles:", e);
+window.console.warn("[YouTube+] Failed to inject resume overlay styles:", e);
 }
 if (inPlayer) {
 try {
 const playerStyle = window.getComputedStyle(player);
-"static" === playerStyle.position && player.setAttribute("style", "position:relative;");
+"static" === playerStyle.position && (player.style.position = "relative");
 } catch (e) {}
-wrap.className = "ytp-resume-overlay";
-wrap.setAttribute("style", "position:absolute;left:50%;bottom:5%;transform:translate(-50%,-50%);z-index:9999;pointer-events:auto;");
+wrap.className = "ytp-resume-overlay ytp-plus-resume-overlay";
+wrap.style.position = "absolute";
+wrap.style.left = "50%";
+wrap.style.bottom = "5%";
+wrap.style.transform = "translate(-50%,-50%)";
+wrap.style.zIndex = "9999";
+wrap.style.pointerEvents = "auto";
 player.appendChild(wrap);
 } else {
-wrap.className = "ytp-resume-overlay";
-wrap.setAttribute("style", "position:fixed;left:50%;bottom:5%;transform:translate(-50%,-50%);z-index:1200;pointer-events:auto;");
+wrap.className = "ytp-resume-overlay ytp-plus-resume-overlay";
+wrap.style.position = "fixed";
+wrap.style.left = "50%";
+wrap.style.bottom = "5%";
+wrap.style.transform = "translate(-50%,-50%)";
+wrap.style.zIndex = "1200";
+wrap.style.pointerEvents = "auto";
 document.body.appendChild(wrap);
 }
 const title = document.createElement("div");
@@ -25674,7 +27497,7 @@ wrap.addEventListener("ytp:resume", () => (() => {
 try {
 onResume();
 } catch (err) {
-console.error("[YouTube+] Resume error:", err);
+window.console.error("[YouTube+] Resume error:", err);
 }
 try {
 wrap.remove();
@@ -25686,7 +27509,7 @@ wrap.addEventListener("ytp:restart", () => (() => {
 try {
 onRestart();
 } catch (err) {
-console.error("[YouTube+] Restart error:", err);
+window.console.error("[YouTube+] Restart error:", err);
 }
 try {
 wrap.remove();
@@ -25732,7 +27555,7 @@ if (!featureEnabled) {
 return null;
 }
 if (!videoEl || "VIDEO" !== videoEl.tagName) {
-console.warn("[YouTube+] Invalid video element for resume handlers");
+window.console.warn("[YouTube+] Invalid video element for resume handlers");
 return;
 }
 if (videoEl._ytpResumeAttached) {
@@ -25765,13 +27588,13 @@ s[currentVid] = t;
 try {
 localStorage.setItem("youtube_resume_times_v1", JSON.stringify(obj));
 } catch (e) {
-console.warn("[YouTube+] Failed to save resume time:", e);
+window.console.warn("[YouTube+] Failed to save resume time:", e);
 }
 })(s);
 lastSavedAt = now;
 }
 } catch (e) {
-console.warn("[YouTube+] Error saving playback time:", e);
+window.console.warn("[YouTube+] Error saving playback time:", e);
 }
 };
 videoEl.addEventListener("timeupdate", timeUpdateHandler, {
@@ -25790,14 +27613,14 @@ try {
 videoEl.currentTime = saved;
 videoEl.play();
 } catch (e) {
-console.error("[YouTube+] Failed to resume playback:", e);
+window.console.error("[YouTube+] Failed to resume playback:", e);
 }
 }, () => {
 try {
 videoEl.currentTime = 0;
 videoEl.play();
 } catch (e) {
-console.error("[YouTube+] Failed to start over:", e);
+window.console.error("[YouTube+] Failed to start over:", e);
 }
 });
 try {
@@ -25829,7 +27652,7 @@ videoEl.removeEventListener("pause", onPause);
 timeUpdateHandler && videoEl.removeEventListener("timeupdate", timeUpdateHandler);
 delete videoEl._ytpResumeAttached;
 } catch (err) {
-console.error("[YouTube+] Resume cleanup error:", err);
+window.console.error("[YouTube+] Resume cleanup error:", err);
 }
 };
 window.YouTubeUtils && YouTubeUtils.cleanupManager && YouTubeUtils.cleanupManager.register(cleanupHandlers);
@@ -25872,7 +27695,12 @@ return video;
 }
 return null;
 })();
-videoEl ? attachResumeHandlers(videoEl) : setTimeout(initResume, 500);
+if (videoEl) {
+attachResumeHandlers(videoEl);
+} else {
+const waitFor = window.YouTubeUtils?.waitForElement || window.YouTubeUtils?.waitFor;
+"function" == typeof waitFor ? waitFor("video", 1200).then(() => initResume()) : requestAnimationFrame(initResume);
+}
 };
 const onNavigate = () => setTimeout(initResume, 150);
 onDomReady(initResume);
@@ -25889,7 +27717,7 @@ return;
 }
 setFeatureEnabled(nextEnabled);
 } catch (e) {
-setFeatureEnabled(loadFeatureEnabled());
+setFeatureEnabled(window.YouTubeUtils?.loadFeatureEnabled?.("enableResumeTime") ?? !0);
 }
 };
 window.YouTubeUtils && YouTubeUtils.cleanupManager ? YouTubeUtils.cleanupManager.registerListener(window, "youtube-plus-settings-updated", settingsUpdatedHandler) : window.addEventListener("youtube-plus-settings-updated", settingsUpdatedHandler);
@@ -25897,18 +27725,19 @@ window.YouTubeUtils && YouTubeUtils.cleanupManager ? YouTubeUtils.cleanupManager
 
 !(function() {
 "use strict";
-const initZoomModule = () => {
-const _createHTML = window._ytplusCreateHTML || (s => s);
-let featureEnabled = !0;
-const loadFeatureEnabled = () => window.YouTubeUtils?.loadFeatureEnabled?.("enableZoom") ?? !0;
-const setFeatureEnabled = nextEnabled => {
-featureEnabled = !1 !== nextEnabled;
-if (featureEnabled) {
+const setTimeout_ = setTimeout.bind(window);
+const isRelevantRoute = () => {
 try {
-initZoom();
-} catch (e) {}
-} else {
-(() => {
+const path = window.location.pathname || "";
+return "/watch" === path || path.startsWith("/shorts");
+} catch (e) {
+return !1;
+}
+};
+const initZoomModule = () => {
+const _createHTML = window._ytpDefaults?.createHTML || (s => s);
+let featureEnabled = !0;
+const clearZoomUI = () => {
 try {
 const ui = byId("ytp-zoom-control");
 ui && ui.remove();
@@ -25926,10 +27755,41 @@ video.style.transition = "";
 video.style.cursor = "";
 }
 } catch (e) {}
-})();
+};
+const setFeatureEnabled = nextEnabled => {
+featureEnabled = !1 !== nextEnabled;
+if (featureEnabled) {
+try {
+initZoom();
+} catch (e) {}
+} else {
+clearZoomUI();
 }
 };
-featureEnabled = loadFeatureEnabled();
+const canRenderZoomUI = () => {
+try {
+return featureEnabled && isRelevantRoute() && !(() => {
+try {
+const mini = document.querySelector("ytd-miniplayer[active], ytd-miniplayer[enabled]");
+if (mini && mini instanceof HTMLElement) {
+if (null !== mini.offsetParent) {
+return !0;
+}
+if (mini.getClientRects().length > 0) {
+return !0;
+}
+}
+const miniWatch = document.querySelector("ytd-watch-flexy[is-miniplayer], ytd-watch-flexy[miniplayer-is-active]");
+return Boolean(miniWatch);
+} catch (e) {
+return !1;
+}
+})();
+} catch (e) {
+return !1;
+}
+};
+featureEnabled = window.YouTubeUtils?.loadFeatureEnabled?.("enableZoom") ?? !0;
 const {$, byId} = window.YouTubeUtils || {};
 const ZOOM_PAN_STORAGE_KEY = "ytp_zoom_pan";
 const RESTORE_LOG_KEY = "ytp_zoom_restore_log";
@@ -25976,7 +27836,7 @@ panY: Number(panY) || 0
 };
 localStorage.setItem(ZOOM_PAN_STORAGE_KEY, JSON.stringify(obj));
 } catch (e) {
-console.warn("[YouTube+] Failed to save zoom/pan settings:", e);
+window.console.warn("[YouTube+] Failed to save zoom/pan settings:", e);
 }
 }
 function logRestoreEvent(evt) {
@@ -25991,7 +27851,7 @@ arr.push(entry);
 arr.length > 200 && arr.splice(0, arr.length - 200);
 sessionStorage.setItem(RESTORE_LOG_KEY, JSON.stringify(arr));
 } catch (e) {}
-("undefined" != typeof window && window.YTP_DEBUG || window.YouTubePlusConfig?.debug) && console.warn("[YouTube+] Zoom restore:", entry);
+("undefined" != typeof window && window.YTP_DEBUG || window.YouTubePlusConfig?.debug) && window.console.warn("[YouTube+] Zoom restore:", entry);
 } catch (e) {}
 }
 const findVideoElement = () => {
@@ -26021,11 +27881,11 @@ videoEl.style.transform = transformStr;
 skipTransformTracking || (_lastTransformApplied = transformStr);
 videoEl.style.willChange = 1 !== zoom ? "transform" : "auto";
 videoEl.style.transition = skipTransition ? "none" : "transform .08s ease-out";
-skipTransformTracking || setTimeout(() => {
+skipTransformTracking || setTimeout_(() => {
 _isApplyingTransform = !1;
 }, 100);
 } catch (e) {
-console.error("[YouTube+] applyZoomToVideo error:", e);
+window.console.error("[YouTube+] applyZoomToVideo error:", e);
 _isApplyingTransform = !1;
 }
 };
@@ -26040,7 +27900,7 @@ return byId("ytp-zoom-control");
 if (!byId("ytp-zoom-styles")) {
 const s = document.createElement("style");
 s.id = "ytp-zoom-styles";
-s.textContent = "\n      /* Compact control bar matching YouTube control style */\n      #ytp-zoom-control{position: absolute; left: 12px; bottom: 70px; z-index: 2200; display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 24px; background: rgba(0,0,0,0.35); color: #fff; font-size: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.5); backdrop-filter: blur(6px);}\n      #ytp-zoom-control input[type=range]{width: 120px; -webkit-appearance: none; background: transparent; height: 24px;}\n      /* WebKit track */\n      #ytp-zoom-control input[type=range]::-webkit-slider-runnable-track{height: 4px; background: rgba(255,255,255,0.12); border-radius: 3px;}\n      #ytp-zoom-control input[type=range]::-webkit-slider-thumb{-webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 6px rgba(255,255,255,0.06); margin-top: -4px;}\n      /* Firefox */\n      #ytp-zoom-control input[type=range]::-moz-range-track{height: 4px; background: rgba(255,255,255,0.12); border-radius: 3px;}\n      #ytp-zoom-control input[type=range]::-moz-range-thumb{width: 12px; height: 12px; border-radius: 50%; background: #fff; border: none;}\n      #ytp-zoom-control .zoom-label{min-width:36px;text-align:center;font-size:11px;padding:0 6px;user-select:none}\n      #ytp-zoom-control::after{content:'Shift + Wheel to zoom';position:absolute;bottom:100%;right:0;padding:4px 8px;background:rgba(0,0,0,0.8);color:#fff;font-size:10px;border-radius:4px;white-space:nowrap;opacity:0;pointer-events:none;transform:translateY(4px);transition:opacity .2s,transform .2s}\n      #ytp-zoom-control:hover::after{opacity:1;transform:translateY(-4px)}\n      #ytp-zoom-control .zoom-reset{background: rgba(255,255,255,0.06); border: none; color: inherit; padding: 4px; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; width: 28px; height: 28px;}\n      #ytp-zoom-control .zoom-reset:hover{background: rgba(255,255,255,0.12)}\n      #ytp-zoom-control .zoom-reset svg{display:block;width:14px;height:14px}\n      /* Hidden state to mirror YouTube controls autohide */\n      #ytp-zoom-control.ytp-hidden{opacity:0;transform:translateY(6px);pointer-events:none}\n      #ytp-zoom-control{transition:opacity .18s ease, transform .18s ease}\n    ";
+s.textContent = "\n      /* Compact control bar matching YouTube control style */\n      #ytp-zoom-control{position: absolute; left: 12px; bottom: 70px; z-index: 2200; display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 24px; background: var(--yt-shadow-inset-strong); color: #fff; font-size: 12px; box-shadow: 0 2px 8px var(--yt-shadow-flyout); backdrop-filter: blur(6px);}\n      #ytp-zoom-control input[type=range]{width: 120px; -webkit-appearance: none; background: transparent; height: 24px;}\n      /* WebKit track */\n      #ytp-zoom-control input[type=range]::-webkit-slider-runnable-track{height: 4px; background: var(--yt-button-bg); border-radius: 3px;}\n      #ytp-zoom-control input[type=range]::-webkit-slider-thumb{-webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--yt-text-primary); box-shadow: 0 0 0 6px var(--yt-button-bg); margin-top: -4px;}\n      /* Firefox */\n      #ytp-zoom-control input[type=range]::-moz-range-track{height: 4px; background: var(--yt-button-bg); border-radius: 3px;}\n      #ytp-zoom-control input[type=range]::-moz-range-thumb{width: 12px; height: 12px; border-radius: 50%; background: #fff; border: none;}\n      #ytp-zoom-control .zoom-label{min-width:36px;text-align:center;font-size:11px;padding:0 6px;user-select:none}\n      #ytp-zoom-control::after{content:'Shift + Wheel to zoom';position:absolute;bottom:100%;right:0;padding:4px 8px;background:var(--yt-notification-bg);color:#fff;font-size:10px;border-radius:4px;white-space:nowrap;opacity:0;pointer-events:none;transform:translateY(4px);transition:opacity .2s,transform .2s}\n      #ytp-zoom-control:hover::after{opacity:1;transform:translateY(-4px)}\n      #ytp-zoom-control .zoom-reset{background: var(--yt-button-bg); border: none; color: inherit; padding: 4px; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; width: 28px; height: 28px;}\n      #ytp-zoom-control .zoom-reset:hover{background: var(--yt-hover-bg)}\n      #ytp-zoom-control .zoom-reset svg{display:block;width:14px;height:14px}\n      /* Hidden state to mirror YouTube controls autohide */\n      #ytp-zoom-control.ytp-hidden{opacity:0;transform:translateY(6px);pointer-events:none}\n      #ytp-zoom-control{transition:opacity .18s ease, transform .18s ease}\n    ";
 (document.head || document.documentElement).appendChild(s);
 }
 const wrap = document.createElement("div");
@@ -26060,7 +27920,17 @@ reset.className = "zoom-reset";
 reset.type = "button";
 reset.setAttribute("aria-label", "Reset zoom");
 reset.title = "Reset zoom";
-reset.innerHTML = _createHTML('\n    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">\n      <path d="M12 4V1l-5 5 5 5V7a7 7 0 1 1-7 7" stroke="currentColor" stroke-width="2" fill="none"/>\n    </svg>\n  ');
+((container, html) => {
+if (!(container instanceof Element)) {
+return;
+}
+const template = document.createElement("template");
+const range = document.createRange();
+const root = document.body || document.documentElement;
+root && range.selectNode(root);
+template.content.append(range.createContextualFragment(_createHTML(html)));
+container.replaceChildren(template.content.cloneNode(!0));
+})(reset, '\n    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">\n      <path d="M12 4V1l-5 5 5 5V7a7 7 0 1 1-7 7" stroke="currentColor" stroke-width="2" fill="none"/>\n    </svg>\n  ');
 wrap.appendChild(input);
 wrap.appendChild(label);
 wrap.appendChild(reset);
@@ -26082,14 +27952,14 @@ try {
 video.style.cursor = clamped > 1 ? "grab" : "";
 } catch (e) {}
 } catch (err) {
-console.error("[YouTube+] Apply zoom error:", err);
+window.console.error("[YouTube+] Apply zoom error:", err);
 }
 });
 }
 try {
 saveZoomPan(clamped, panX, panY);
 } catch (err) {
-console.error("[YouTube+] Save zoom error:", err);
+window.console.error("[YouTube+] Save zoom error:", err);
 }
 };
 input.addEventListener("input", e => {
@@ -26104,14 +27974,14 @@ setZoom(DEFAULT_ZOOM);
 try {
 saveZoomPan(DEFAULT_ZOOM, 0, 0);
 } catch (e) {
-console.warn("[YouTube+] Failed to persist zoom reset:", e);
+window.console.warn("[YouTube+] Failed to persist zoom reset:", e);
 }
 reset.style.transform = "scale(0.9)";
-setTimeout(() => {
+setTimeout_(() => {
 reset.style.transform = "";
 }, 150);
 } catch (err) {
-console.error("[YouTube+] Reset zoom error:", err);
+window.console.error("[YouTube+] Reset zoom error:", err);
 }
 });
 let wheelThrottleTimer = null;
@@ -26119,17 +27989,17 @@ let panSaveTimer = null;
 const scheduleSavePan = () => {
 try {
 panSaveTimer && clearTimeout(panSaveTimer);
-panSaveTimer = setTimeout(() => {
+panSaveTimer = setTimeout_(() => {
 try {
 const currentZoom = parseFloat(input.value) || readZoomPan().zoom || DEFAULT_ZOOM;
 saveZoomPan(currentZoom, panX, panY);
 } catch (err) {
-console.error("[YouTube+] Save pan error:", err);
+window.console.error("[YouTube+] Save pan error:", err);
 }
 panSaveTimer = null;
 }, 220);
 } catch (err) {
-console.error("[YouTube+] Schedule save pan error:", err);
+window.console.error("[YouTube+] Schedule save pan error:", err);
 }
 };
 const wheelHandler = ev => {
@@ -26144,7 +28014,7 @@ ev.preventDefault();
 if (wheelThrottleTimer) {
 return;
 }
-wheelThrottleTimer = setTimeout(() => {
+wheelThrottleTimer = setTimeout_(() => {
 wheelThrottleTimer = null;
 }, 50);
 const delta = ev.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
@@ -26152,7 +28022,7 @@ const current = readZoomPan().zoom || DEFAULT_ZOOM;
 const newZoom = current + delta;
 newZoom >= MIN_ZOOM && newZoom <= MAX_ZOOM && setZoom(newZoom);
 } catch (err) {
-console.error("[YouTube+] Wheel zoom error:", err);
+window.console.error("[YouTube+] Wheel zoom error:", err);
 }
 };
 player.addEventListener("wheel", wheelHandler, {
@@ -26164,7 +28034,7 @@ video.addEventListener("wheel", wheelHandler, {
 passive: !1
 });
 } catch (err) {
-console.error("[YouTube+] Failed to attach wheel handler to video:", err);
+window.console.error("[YouTube+] Failed to attach wheel handler to video:", err);
 }
 }
 const keydownHandler = ev => {
@@ -26186,12 +28056,13 @@ const current = readZoomPan().zoom || DEFAULT_ZOOM;
 setZoom(Math.max(MIN_ZOOM, current - ZOOM_STEP));
 }
 } catch (e) {
-console.error("[YouTube+] Keyboard zoom error:", e);
+window.console.error("[YouTube+] Keyboard zoom error:", e);
 }
 };
 window.addEventListener("keydown", keydownHandler);
 let panX = 0;
 let panY = 0;
+const mutationCoordinator = window.YouTubeMutationCoordinator;
 let videoStyleObserver = null;
 let dragging = !1;
 let dragStartX = 0;
@@ -26223,7 +28094,7 @@ const maxY = Math.max(0, (scaledH - containerRect.height) / 2);
 Number.isFinite(maxX) && Number.isFinite(panX) && (panX = Math.max(-maxX, Math.min(maxX, panX)));
 Number.isFinite(maxY) && Number.isFinite(panY) && (panY = Math.max(-maxY, Math.min(maxY, panY)));
 } catch (err) {
-console.error("[YouTube+] Clamp pan error:", err);
+window.console.error("[YouTube+] Clamp pan error:", err);
 }
 };
 const pointers = new Map;
@@ -26379,7 +28250,7 @@ player.style.touchAction = "none";
 ev.preventDefault();
 }
 } catch (e) {
-console.error("[YouTube+] touchStart error:", e);
+window.console.error("[YouTube+] touchStart error:", e);
 }
 };
 const touchMove = ev => {
@@ -26412,7 +28283,7 @@ setZoom(newZoom);
 ev.preventDefault();
 }
 } catch (e) {
-console.error("[YouTube+] touchMove error:", e);
+window.console.error("[YouTube+] touchMove error:", e);
 }
 };
 const touchEnd = ev => {
@@ -26432,7 +28303,7 @@ prevTouchAction = null;
 }
 }
 } catch (e) {
-console.error("[YouTube+] touchEnd error:", e);
+window.console.error("[YouTube+] touchEnd error:", e);
 }
 };
 try {
@@ -26449,7 +28320,7 @@ player.addEventListener("touchcancel", touchEnd, {
 passive: !0
 });
 } catch (e) {
-console.error("[YouTube+] Failed to attach touch handlers:", e);
+window.console.error("[YouTube+] Failed to attach touch handlers:", e);
 }
 const mouseDownHandler = ev => {
 try {
@@ -26497,7 +28368,7 @@ activeVideo._panRAF = null;
 }
 ev.preventDefault();
 } catch (err) {
-console.error("[YouTube+] Mouse move error:", err);
+window.console.error("[YouTube+] Mouse move error:", err);
 }
 };
 const mouseUpHandler = () => {
@@ -26524,18 +28395,10 @@ try {
 window.addEventListener("mouseup", mouseUpHandler);
 } catch (e) {}
 try {
-const attachStyleObserver = () => {
-try {
-if (videoStyleObserver) {
-try {
-videoStyleObserver.disconnect();
+attachStyleObserver();
 } catch (e) {}
-videoStyleObserver = null;
 }
-if (!video) {
-return;
-}
-videoStyleObserver = new MutationObserver(muts => {
+function handleVideoStyleMutations(muts) {
 try {
 if (_isApplyingTransform) {
 return;
@@ -26563,20 +28426,23 @@ panY
 }
 }
 } catch (e) {}
-});
-videoStyleObserver.observe(video, {
+}
+function attachStyleObserver() {
+if (videoStyleObserver) {
+mutationCoordinator?.unwatch?.(videoStyleObserver);
+videoStyleObserver = null;
+}
+if (video && mutationCoordinator?.watchTarget) {
+videoStyleObserver = "zoom::videoStyle";
+mutationCoordinator.watchTarget(videoStyleObserver, video, handleVideoStyleMutations, {
 attributes: !0,
+childList: !1,
+subtree: !1,
 attributeFilter: [ "style" ]
 });
-try {
-window.YouTubeUtils?.cleanupManager?.registerObserver?.(videoStyleObserver);
-} catch (e) {}
-} catch (e) {}
-};
-attachStyleObserver();
-} catch (e) {}
 }
-const playerObserver = new MutationObserver(() => {
+}
+const handlePlayerMutations = () => {
 try {
 const newVideo = findVideoElement();
 if (newVideo && newVideo !== video) {
@@ -26590,95 +28456,56 @@ video._panRAF = null;
 }
 }
 } catch (err) {
-console.error("[YouTube+] Error detaching from old video:", err);
+window.console.error("[YouTube+] Error detaching from old video:", err);
 }
 video = newVideo;
 try {
-if (videoStyleObserver) {
-try {
-videoStyleObserver.disconnect();
-} catch (e) {}
-videoStyleObserver = null;
-}
-if (video) {
-videoStyleObserver = new MutationObserver(muts => {
-try {
-if (_isApplyingTransform) {
-return;
-}
-for (const m of muts) {
-if ("attributes" === m.type && "style" === m.attributeName) {
-const current = video && video.style && video.style.transform || "";
-const expectedZoom = readZoomPan().zoom || parseFloat(input.value) || DEFAULT_ZOOM;
-const expected = `translate(${panX.toFixed(2)}px, ${panY.toFixed(2)}px) scale(${expectedZoom.toFixed(3)})`;
-expectedZoom !== DEFAULT_ZOOM && current !== expected && current !== _lastTransformApplied && requestAnimationFrame(() => {
-try {
-applyZoomToVideo(video, expectedZoom, panX, panY);
-try {
-logRestoreEvent({
-action: "restore_transform",
-currentTransform: current,
-expectedTransform: expected,
-zoom: expectedZoom,
-panX,
-panY
-});
-} catch (e) {}
-} catch (e) {}
-});
-}
-}
-} catch (e) {}
-});
-videoStyleObserver.observe(video, {
-attributes: !0,
-attributeFilter: [ "style" ]
-});
-try {
-window.YouTubeUtils?.cleanupManager?.registerObserver?.(videoStyleObserver);
-} catch (e) {}
-}
+attachStyleObserver();
 } catch (err) {
-console.error("[YouTube+] Error attaching style observer to new video:", err);
+window.console.error("[YouTube+] Error attaching style observer to new video:", err);
 }
 try {
 const current = readZoomPan().zoom || DEFAULT_ZOOM;
 clampPan(current);
 applyZoomToVideo(video, current, panX, panY);
 } catch (err) {
-console.error("[YouTube+] Error applying zoom to new video:", err);
+window.console.error("[YouTube+] Error applying zoom to new video:", err);
 }
 try {
 video.addEventListener("mousedown", mouseDownHandler);
 } catch (err) {
-console.error("[YouTube+] Error attaching mousedown to new video:", err);
+window.console.error("[YouTube+] Error attaching mousedown to new video:", err);
 }
 try {
 video.addEventListener("wheel", wheelHandler, {
 passive: !1
 });
 } catch (err) {
-console.error("[YouTube+] Error attaching wheel to new video:", err);
+window.console.error("[YouTube+] Error attaching wheel to new video:", err);
 }
 }
 } catch (err) {
-console.error("[YouTube+] Player observer error:", err);
+window.console.error("[YouTube+] Player observer error:", err);
 }
-});
+};
+let playerObserverActive = !1;
 try {
-playerObserver.observe(player, {
+if (mutationCoordinator?.watchTarget) {
+mutationCoordinator.watchTarget("zoom::playerVideoSwap", player, handlePlayerMutations, {
 childList: !0,
-subtree: !0
+subtree: !0,
+attributes: !1
 });
-window.YouTubeUtils?.cleanupManager?.registerObserver && window.YouTubeUtils.cleanupManager.registerObserver(playerObserver);
+playerObserverActive = !0;
 window.YouTubeUtils?.ObserverRegistry?.track && window.YouTubeUtils.ObserverRegistry.track();
+}
 } catch (err) {
-console.error("[YouTube+] Failed to observe player for video changes:", err);
+window.console.error("[YouTube+] Failed to observe player for video changes:", err);
 }
 const fullscreenHandler = () => {
 try {
 const current = readZoomPan().zoom || DEFAULT_ZOOM;
-setTimeout(() => {
+setTimeout_(() => {
 try {
 let attempts = 0;
 const tryApply = () => {
@@ -26701,19 +28528,19 @@ clampPan(current);
 video && applyZoomToVideo(video, current, panX, panY, !1, !0);
 if (!swapped && (!video || attempts < FULLSCREEN_APPLY_RETRIES)) {
 attempts += 1;
-setTimeout(tryApply, FULLSCREEN_APPLY_RETRY_DELAY);
+setTimeout_(tryApply, FULLSCREEN_APPLY_RETRY_DELAY);
 }
 } catch (e) {
-console.error("[YouTube+] Fullscreen apply attempt error:", e);
+window.console.error("[YouTube+] Fullscreen apply attempt error:", e);
 }
 };
 tryApply();
 } catch (e) {
-console.error("[YouTube+] Fullscreen inner apply error:", e);
+window.console.error("[YouTube+] Fullscreen inner apply error:", e);
 }
 }, FULLSCREEN_APPLY_DELAY);
 } catch (err) {
-console.error("[YouTube+] Fullscreen handler error:", err);
+window.console.error("[YouTube+] Fullscreen handler error:", err);
 }
 };
 [ "fullscreenchange", "webkitfullscreenchange", "mozfullscreenchange", "MSFullscreenChange" ].forEach(evt => {
@@ -26727,10 +28554,10 @@ Number.isFinite(s.panX) && (panX = s.panX);
 Number.isFinite(s.panY) && (panY = s.panY);
 clampPan(initZoomVal);
 } catch (err) {
-console.error("[YouTube+] Restore pan error:", err);
+window.console.error("[YouTube+] Restore pan error:", err);
 }
 } catch (err) {
-console.error("[YouTube+] Initial zoom setup error:", err);
+window.console.error("[YouTube+] Initial zoom setup error:", err);
 }
 try {
 const initialTransform = `translate(${panX.toFixed(2)}px, ${panY.toFixed(2)}px) scale(${initZoomVal.toFixed(3)})`;
@@ -26809,26 +28636,34 @@ return !1;
 })() ? wrap.classList.add("ytp-hidden") : wrap.classList.remove("ytp-hidden");
 } catch (e) {}
 };
-const visObserver = new MutationObserver(() => updateHidden());
+let visObserverPlayerActive = !1;
+let visObserverChromeActive = !1;
 try {
-visObserver.observe(player, {
+if (mutationCoordinator?.watchTarget) {
+mutationCoordinator.watchTarget("zoom::visibilityPlayer", player, updateHidden, {
 attributes: !0,
+childList: !1,
+subtree: !1,
 attributeFilter: [ "class", "style" ]
 });
-chromeBottom && visObserver.observe(chromeBottom, {
+visObserverPlayerActive = !0;
+if (chromeBottom) {
+mutationCoordinator.watchTarget("zoom::visibilityChrome", chromeBottom, updateHidden, {
 attributes: !0,
+childList: !1,
+subtree: !1,
 attributeFilter: [ "class", "style" ]
 });
-try {
-window.YouTubeUtils?.cleanupManager?.registerObserver?.(visObserver);
-} catch (e) {}
+visObserverChromeActive = !0;
+}
+}
 } catch (e) {}
 let showTimer = null;
 const mouseMoveShow = () => {
 try {
 wrap.classList.remove("ytp-hidden");
 showTimer && clearTimeout(showTimer);
-showTimer = setTimeout(updateHidden, 2200);
+showTimer = setTimeout_(updateHidden, 2200);
 } catch (e) {}
 };
 player.addEventListener("mousemove", mouseMoveShow, {
@@ -26877,19 +28712,24 @@ video.style.transition = "";
 } catch (e) {}
 }
 if (videoStyleObserver) {
-try {
-videoStyleObserver.disconnect();
-} catch (e) {}
+mutationCoordinator?.unwatch?.(videoStyleObserver);
 videoStyleObserver = null;
 }
-if (visObserver) {
+if (visObserverPlayerActive) {
+mutationCoordinator?.unwatch?.("zoom::visibilityPlayer");
+visObserverPlayerActive = !1;
+}
+if (visObserverChromeActive) {
+mutationCoordinator?.unwatch?.("zoom::visibilityChrome");
+visObserverChromeActive = !1;
+}
+if (playerObserverActive) {
+mutationCoordinator?.unwatch?.("zoom::playerVideoSwap");
+playerObserverActive = !1;
 try {
-visObserver.disconnect();
+window.YouTubeUtils?.ObserverRegistry?.untrack?.();
 } catch (e) {}
 }
-try {
-playerObserver && playerObserver.disconnect();
-} catch (e) {}
 try {
 document.removeEventListener("fullscreenchange", fullscreenHandler);
 } catch (e) {}
@@ -26899,7 +28739,7 @@ showTimer = null;
 }
 wrap.remove();
 } catch (err) {
-console.error("[YouTube+] Cleanup error:", err);
+window.console.error("[YouTube+] Cleanup error:", err);
 }
 };
 window.YouTubeUtils && YouTubeUtils.cleanupManager && YouTubeUtils.cleanupManager.register(cleanup);
@@ -26908,20 +28748,36 @@ return wrap;
 let _navigateListenerAdded = !1;
 function initZoom() {
 try {
-if (!featureEnabled) {
+if (!canRenderZoomUI()) {
+clearZoomUI();
 return;
 }
 const ensure = () => {
+if (!canRenderZoomUI()) {
+clearZoomUI();
+return;
+}
 const player = $("#movie_player");
-player ? createZoomUI() : setTimeout(ensure, 400);
+player ? player.closest("ytd-miniplayer") ? clearZoomUI() : createZoomUI() : setTimeout_(ensure, 400);
 };
 ensure();
 if (!_navigateListenerAdded) {
 _navigateListenerAdded = !0;
-window.addEventListener("yt-navigate-finish", () => setTimeout(() => createZoomUI(), 300));
+window.addEventListener("yt-navigate-finish", () => {
+setTimeout_(() => {
+try {
+canRenderZoomUI() ? createZoomUI() : clearZoomUI();
+} catch (e) {}
+}, 300);
+});
+window.addEventListener("ytp:nav-refresh", () => setTimeout_(() => {
+try {
+canRenderZoomUI() ? createZoomUI() : clearZoomUI();
+} catch (e) {}
+}, 300));
 }
 } catch (e) {
-console.error("initZoom error");
+window.console.error("initZoom error", e);
 }
 }
 window.addEventListener("youtube-plus-settings-updated", e => {
@@ -26933,7 +28789,7 @@ return;
 }
 setFeatureEnabled(nextEnabled);
 } catch (e) {
-setFeatureEnabled(loadFeatureEnabled());
+setFeatureEnabled(window.YouTubeUtils?.loadFeatureEnabled?.("enableZoom") ?? !0);
 }
 });
 try {
@@ -26941,24 +28797,65 @@ initZoom();
 } catch (e) {}
 };
 window.YouTubePlusLazyLoader ? window.YouTubePlusLazyLoader.register("zoom", initZoomModule, {
-priority: 1
+priority: 1,
+shouldLoad: isRelevantRoute
 }) : initZoomModule();
 })();
 
 !(function() {
 "use strict";
-const _createHTML = window._ytplusCreateHTML || (s => s);
+const setTimeout_ = setTimeout.bind(window);
+const _setSafeHTML = window.YouTubeUtils.setSafeHTML;
+const _createHTML = window._ytpDefaults?.createHTML || (s => s);
+const byId = window.YouTubeUtils?.byId || (id => document.getElementById(id));
+const $ = window.YouTubeUtils?.$ || ((selector, root) => (root || document).querySelector(selector));
 if ("undefined" == typeof window) {
 return;
 }
+const isRelevantRoute = () => {
+try {
+const host = window.location.hostname || "";
+if (!host.endsWith("youtube.com") || "music.youtube.com" === host) {
+return !1;
+}
+if ((() => {
+try {
+return Boolean(document.querySelector(".ytp-plus-settings-modal"));
+} catch (e) {
+return !1;
+}
+})()) {
+return !0;
+}
+const path = window.location.pathname || "";
+return "/watch" === path || path.startsWith("/shorts") || path.startsWith("/channel/");
+} catch (e) {
+return !1;
+}
+};
+const queryOne = (selector, root = document) => {
+const cache = window.YouTubeDOMCache;
+return cache && "function" == typeof cache.querySelector ? cache.querySelector(selector, root || document) : (root || document).querySelector(selector);
+};
+const renderTemplateClone = (container, html) => {
+if (!(container instanceof Element)) {
+return;
+}
+const template = document.createElement("template");
+const range = document.createRange();
+const root = document.body || document.documentElement;
+root && range.selectNode(root);
+template.content.append(range.createContextualFragment(_createHTML(html)));
+container.replaceChildren(template.content.cloneNode(!0));
+};
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkcGNjb2N4bHJkc3llamZocnZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMTAyNDYsImV4cCI6MjA4Nzc4NjI0Nn0.QfwrAG4SMJBPLoP-Mcq3hETQXt0ezinoi0CpN57Zn90";
 let votingInitialized = !1;
 let voteRequestInFlight = !1;
 let votingCommentsCache = {};
 let votingFeaturesCache = {};
 let settingsPanelBaseMarginLeftPx = null;
-const getSettingsShell = () => document.querySelector(".ytp-plus-settings-shell");
-const getSettingsPanel = () => document.querySelector(".ytp-plus-settings-panel");
+const getSettingsShell = () => queryOne(".ytp-plus-settings-shell");
+const getSettingsPanel = () => queryOne(".ytp-plus-settings-panel");
 function setSettingsPanelOffset(offsetPx) {
 const settingsShell = getSettingsShell();
 if (!(settingsShell instanceof HTMLElement)) {
@@ -27024,7 +28921,7 @@ el.style.opacity = "";
 }
 });
 }
-const t = window.YouTubeUtils?.t || (key => key || "");
+const t = window.YouTubeUtils.t;
 const tf = (key, fallback, params = {}) => {
 try {
 const value = t(key, params);
@@ -27047,6 +28944,12 @@ localStorage.setItem("ytp_voting_user_id", userId);
 }
 return userId;
 }
+const normalizeUserText = value => {
+const normalized = String(value || "").normalize("NFKC").replace(/[\u0000-\u001F\u007F]+/g, " ").trim();
+const sanitizeText = window.YouTubeSecurityUtils?.sanitizeText;
+const safe = "function" == typeof sanitizeText ? sanitizeText(normalized) : normalized;
+return safe.split(/\s+/).join(" ").trim();
+};
 function normalizeVoteType(value) {
 const numeric = Number(value);
 return 1 === numeric ? 1 : -1 === numeric ? -1 : 0;
@@ -27087,7 +28990,7 @@ error: msg
 async function getFeatures() {
 const {data, error} = await supabaseFetch("ytplus_feature_requests?select=*&order=created_at.desc");
 if (error) {
-console.error("[Voting] Error fetching features:", error);
+window.console.error("[Voting] Error fetching features:", error);
 return [];
 }
 return data || [];
@@ -27095,7 +28998,7 @@ return data || [];
 async function getAllVotes() {
 const {data, error} = await supabaseFetch("ytplus_feature_votes?select=feature_id,vote_type,ip_address");
 if (error) {
-console.error("[Voting] Error fetching votes:", error);
+window.console.error("[Voting] Error fetching votes:", error);
 return {};
 }
 const votes = {};
@@ -27113,7 +29016,7 @@ async function getUserVotes() {
 const userId = getLocalUserId();
 const {data, error} = await supabaseFetch(`ytplus_feature_votes?select=feature_id,vote_type&ip_address=eq.${userId}`);
 if (error) {
-console.error("[Voting] Error fetching user votes:", error);
+window.console.error("[Voting] Error fetching user votes:", error);
 return {};
 }
 const userVotes = {};
@@ -27163,7 +29066,7 @@ ip_address: userId
 })
 });
 if (error) {
-console.error("[Voting] Vote error:", error);
+window.console.error("[Voting] Vote error:", error);
 return {
 success: !1,
 error
@@ -27175,10 +29078,9 @@ action: "added"
 };
 }
 async function submitFeature(title, description) {
-const stripHTML = s => String(s || "").replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
-const normalizeTitle = value => stripHTML(value).toLocaleLowerCase();
-title = stripHTML(title).slice(0, 200);
-description = stripHTML(description).slice(0, 2e3);
+const normalizeTitle = value => normalizeUserText(value).toLocaleLowerCase();
+title = normalizeUserText(title).slice(0, 200);
+description = normalizeUserText(description).slice(0, 2e3);
 if (!title) {
 return {
 success: !1,
@@ -27210,7 +29112,7 @@ author_ip: userId
 })
 });
 if (error) {
-console.error("[Voting] Submit error:", error);
+window.console.error("[Voting] Submit error:", error);
 return {
 success: !1,
 error
@@ -27228,7 +29130,7 @@ return {};
 const inClause = ids.join(",");
 const {data, error} = await supabaseFetch(`ytplus_feature_comments?select=id,feature_id,comment,author_ip,created_at&feature_id=in.(${inClause})&order=created_at.asc`);
 if (error) {
-console.error("[Voting] Error fetching comments:", error);
+window.console.error("[Voting] Error fetching comments:", error);
 return {};
 }
 const grouped = {};
@@ -27245,7 +29147,7 @@ function isPreviewFeature(feature) {
 return "__ytp_preview_vote__" === String(feature?.title || "").trim();
 }
 function getRenderableFeatureTitle(feature) {
-return String(feature?.title || "").replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+return normalizeUserText(String(feature?.title || ""));
 }
 async function ensurePreviewFeature(features) {
 const fromList = Array.isArray(features) ? features.find(isPreviewFeature) : null;
@@ -27263,7 +29165,7 @@ author_ip: userId
 })
 });
 if (error) {
-console.error("[Voting] Error creating preview row:", error);
+window.console.error("[Voting] Error creating preview row:", error);
 const encodedTitle = encodeURIComponent("__ytp_preview_vote__");
 const {data: existingPreview} = await supabaseFetch(`ytplus_feature_requests?select=id,title,description,status&title=eq.${encodedTitle}&limit=1`);
 return Array.isArray(existingPreview) && existingPreview[0] ? existingPreview[0] : null;
@@ -27275,7 +29177,7 @@ const refreshed = await getFeatures();
 return refreshed.find(isPreviewFeature) || null;
 }
 function ensureCommentsModal() {
-if (document.getElementById("ytp-plus-comments-panel")) {
+if (byId("ytp-plus-comments-panel")) {
 return !0;
 }
 if (!document.body || !document.head) {
@@ -27284,16 +29186,16 @@ return !1;
 const panel = document.createElement("div");
 panel.id = "ytp-plus-comments-panel";
 panel.className = "ytp-plus-comments-sidepanel";
-panel.innerHTML = _createHTML(`\n      <div class="ytp-plus-comments-header">\n        <div class="ytp-plus-comments-title" id="ytp-plus-comments-title">${tf("comments", "Comments")}</div>\n        <button class="ytp-plus-comments-close" data-comments-close="1" type="button">×</button>\n      </div>\n      <div class="ytp-plus-comments-list" id="ytp-plus-comments-list"></div>\n      <div class="ytp-plus-comments-form">\n        <textarea id="ytp-plus-comments-input" maxlength="1000" placeholder="${tf("addCommentPlaceholder", "Add a comment...")}"></textarea>\n        <button id="ytp-plus-comments-submit" type="button">${tf("submit", "Submit")}</button>\n      </div>\n    `);
+renderTemplateClone(panel, `\n      <div class="ytp-plus-comments-header">\n        <div class="ytp-plus-comments-title" id="ytp-plus-comments-title">${tf("comments", "Comments")}</div>\n        <button class="ytp-plus-comments-close" data-comments-close="1" type="button">×</button>\n      </div>\n      <div class="ytp-plus-comments-list" id="ytp-plus-comments-list"></div>\n      <div class="ytp-plus-comments-form">\n        <textarea id="ytp-plus-comments-input" maxlength="1000" placeholder="${tf("addCommentPlaceholder", "Add a comment...")}"></textarea>\n        <button id="ytp-plus-comments-submit" type="button">${tf("submit", "Submit")}</button>\n      </div>\n    `);
 document.body.appendChild(panel);
-if (!document.getElementById("ytp-plus-comments-modal-style")) {
+if (!byId("ytp-plus-comments-modal-style")) {
 const style = document.createElement("style");
 style.id = "ytp-plus-comments-modal-style";
-style.textContent = "\n        .ytp-plus-comments-sidepanel{position:fixed;top:10vh;left:calc(50% + 390px);width:min(440px,34vw);max-width:92vw;height:60vh;background:var(--yt-glass-bg);border:1.5px solid var(--yt-glass-border);border-radius:24px;display:none;z-index:100001;box-shadow:0 12px 40px rgba(0,0,0,.45);overflow:hidden;backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);contain:layout style paint;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}\n        .ytp-plus-comments-sidepanel.open{display:flex;flex-direction:column}\n        .ytp-plus-comments-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.08)}\n        .ytp-plus-comments-title{font-size:16px;font-weight:500;color:var(--yt-text-primary);font-family:inherit}\n        .ytp-plus-comments-close{border:0;background:transparent;color:#cbd4e4;font-size:24px;cursor:pointer;line-height:1}\n        .ytp-plus-comments-list{flex:1;overflow:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px}\n        .ytp-plus-comments-item{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);border-radius:10px;padding:10px}\n        .ytp-plus-comments-item-text{color:#e7ecf5;white-space:pre-wrap;word-break:break-word}\n        .ytp-plus-comments-item-meta{margin-top:6px;color:#9aabc5;font-size:12px}\n        .ytp-plus-comments-form{padding:12px 16px;border-top:1px solid rgba(255,255,255,.08);display:flex;gap:8px;align-items:flex-end}\n        #ytp-plus-comments-input{flex:1;min-height:72px;max-height:160px;resize:vertical;background:var(--yt-glass-bg);color:var(--yt-text-primary);border:1px solid var(--yt-glass-border);border-radius:10px;padding:10px}\n        #ytp-plus-comments-submit{border:1px solid var(--yt-glass-border);background:var(--yt-accent);color:var(--yt-text-primary);border-radius:10px;padding:10px 14px;cursor:pointer}\n        .ytp-plus-voting-item-status-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px}\n        .ytp-plus-voting-comments-icon{border:1px solid var(--yt-glass-border);background:rgba(255,255,255,0.1);color:var(--yt-text-secondary);border-radius:999px;min-width:28px;height:28px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;line-height:1;transition:background-color .2s ease,color .2s ease,border-color .2s ease}\n        .ytp-plus-voting-comments-icon:hover{background:var(--yt-hover-bg);color:var(--yt-text-primary)}\n        .ytp-plus-voting-comments-icon svg{width:14px;height:14px;display:block;fill:currentColor}\n        .ytp-plus-comments-sidepanel textarea,\n        .ytp-plus-comments-sidepanel button,\n        .ytp-plus-comments-sidepanel .ytp-plus-comments-item,\n        .ytp-plus-comments-sidepanel .ytp-plus-comments-item-text,\n        .ytp-plus-comments-sidepanel .ytp-plus-comments-item-meta,\n        .ytp-plus-comments-sidepanel .ytp-plus-voting-empty{font-family:inherit}\n      ";
+style.textContent = "\n        .ytp-plus-comments-sidepanel{position:fixed;top:10vh;left:calc(50% + 390px);width:min(440px,34vw);max-width:92vw;height:60vh;background:var(--yt-glass-bg);border:1.5px solid var(--yt-glass-border);border-radius:24px;display:none;z-index:100001;box-shadow:0 12px 40px var(--yt-timecode-panel-shadow);overflow:hidden;backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);contain:layout style paint;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}\n        .ytp-plus-comments-sidepanel.open{display:flex;flex-direction:column}\n        .ytp-plus-comments-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--yt-stats-card-border-dark)}\n        .ytp-plus-comments-title{font-size:16px;font-weight:500;color:var(--yt-text-primary);font-family:inherit}\n        .ytp-plus-comments-close{border:0;background:transparent;color:var(--yt-text-secondary);font-size:24px;cursor:pointer;line-height:1}\n        .ytp-plus-comments-list{flex:1;overflow:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px}\n        .ytp-plus-comments-item{border:1px solid var(--yt-stats-card-border-dark);background:var(--yt-surface-overlay-faint);border-radius:10px;padding:10px}\n        .ytp-plus-comments-item-text{color:var(--yt-text-primary);white-space:pre-wrap;word-break:break-word;font-size:small}\n        .ytp-plus-comments-item-meta{margin-top:6px;color:var(--yt-text-secondary);font-size:12px}\n        .ytp-plus-comments-form{padding:12px 16px;border-top:1px solid var(--yt-stats-card-border-dark);display:flex;gap:8px;align-items:center}\n        #ytp-plus-comments-input{flex:1;min-height:15px;max-height:160px;resize:vertical;background:var(--yt-glass-bg);color:var(--yt-text-primary);border:1px solid var(--yt-glass-border);border-radius:10px;padding:10px}\n        #ytp-plus-comments-submit{border:1px solid var(--yt-glass-border);background:var(--yt-accent);color:var(--yt-text-primary);border-radius:10px;padding:10px 14px;cursor:pointer}\n        .ytp-plus-voting-item-status-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px}\n        .ytp-plus-voting-comments-icon{border:1px solid var(--yt-glass-border);background:var(--yt-button-bg);color:var(--yt-text-secondary);border-radius:999px;min-width:28px;height:28px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;line-height:1;transition:background-color .2s ease,color .2s ease,border-color .2s ease}\n        .ytp-plus-voting-comments-icon:hover{background:var(--yt-hover-bg);color:var(--yt-text-primary)}\n        .ytp-plus-voting-comments-icon svg{width:14px;height:14px;display:block;fill:currentColor}\n        .ytp-plus-comments-sidepanel textarea,\n        .ytp-plus-comments-sidepanel button,\n        .ytp-plus-comments-sidepanel .ytp-plus-comments-item,\n        .ytp-plus-comments-sidepanel .ytp-plus-comments-item-text,\n        .ytp-plus-comments-sidepanel .ytp-plus-comments-item-meta,\n        .ytp-plus-comments-sidepanel .ytp-plus-voting-empty{font-family:inherit}\n      ";
 document.head.appendChild(style);
 }
 const reposition = () => {
-const sidePanel = document.getElementById("ytp-plus-comments-panel");
+const sidePanel = byId("ytp-plus-comments-panel");
 sidePanel instanceof HTMLElement && sidePanel.classList.contains("open") && layoutCommentsPanel(sidePanel);
 };
 if (window.YouTubeUtils && YouTubeUtils.cleanupManager) {
@@ -27312,7 +29214,7 @@ window.YouTubeUtils && YouTubeUtils.cleanupManager ? YouTubeUtils.cleanupManager
 return !0;
 }
 function closeCommentsModal() {
-const panel = document.getElementById("ytp-plus-comments-panel");
+const panel = byId("ytp-plus-comments-panel");
 panel && panel.classList.remove("open");
 resetSettingsPanelOffset();
 }
@@ -27320,11 +29222,11 @@ function openCommentsModal(featureId) {
 if (!ensureCommentsModal()) {
 return;
 }
-const panel = document.getElementById("ytp-plus-comments-panel");
-const titleEl = document.getElementById("ytp-plus-comments-title");
-const listEl = document.getElementById("ytp-plus-comments-list");
-const inputEl = document.getElementById("ytp-plus-comments-input");
-const submitEl = document.getElementById("ytp-plus-comments-submit");
+const panel = byId("ytp-plus-comments-panel");
+const titleEl = byId("ytp-plus-comments-title");
+const listEl = byId("ytp-plus-comments-list");
+const inputEl = byId("ytp-plus-comments-input");
+const submitEl = byId("ytp-plus-comments-submit");
 if (!(panel && titleEl && listEl && inputEl && submitEl)) {
 return;
 }
@@ -27332,21 +29234,21 @@ const feature = votingFeaturesCache[featureId];
 const comments = votingCommentsCache[featureId] || [];
 panel.setAttribute("data-feature-id", featureId);
 titleEl.textContent = String(feature?.title || "").trim() || tf("comments", "Comments");
-listEl.innerHTML = comments.length ? comments.map(c => `\n          <div class="ytp-plus-comments-item">\n            <div class="ytp-plus-comments-item-text">${escapeHtml(String(c.comment || ""))}</div>\n            <div class="ytp-plus-comments-item-meta">${escapeHtml((function formatCommentDate(value) {
+renderTemplateClone(listEl, comments.length ? comments.map(c => `\n          <div class="ytp-plus-comments-item">\n            <div class="ytp-plus-comments-item-text">${escapeHtml(String(c.comment || ""))}</div>\n            <div class="ytp-plus-comments-item-meta">${escapeHtml((function formatCommentDate(value) {
 try {
 const d = new Date(value);
 return Number.isNaN(d.getTime()) ? "" : d.toLocaleString();
 } catch (e) {
 return "";
 }
-})(String(c.created_at || "")))}</div>\n          </div>\n        `).join("") : '<div class="ytp-plus-voting-empty">No comments yet</div>';
+})(String(c.created_at || "")))}</div>\n          </div>\n        `).join("") : '<div class="ytp-plus-voting-empty">No comments yet</div>');
 inputEl.value = "";
 submitEl.disabled = !1;
 panel.classList.add("open");
 panel instanceof HTMLElement && layoutCommentsPanel(panel);
 }
 async function loadFeatures() {
-const listEl = document.getElementById("ytp-plus-voting-list");
+const listEl = byId("ytp-plus-voting-list");
 if (!listEl) {
 return;
 }
@@ -27377,7 +29279,7 @@ renderFeatures.forEach(f => {
 votingFeaturesCache[String(f.id || "")] = f;
 });
 if (0 !== renderFeatures.length) {
-listEl.innerHTML = _createHTML(renderFeatures.map(f => {
+renderTemplateClone(listEl, renderFeatures.map(f => {
 const votes = allVotes[f.id] || {
 upvotes: 0,
 downvotes: 0
@@ -27401,9 +29303,9 @@ label: tf("statusProposed", "Proposed")
 })(f.status);
 const featureTitle = getRenderableFeatureTitle(f);
 const featureDescription = (function getRenderableFeatureDescription(feature) {
-return String(feature?.description || "").replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+return normalizeUserText(String(feature?.description || ""));
 })(f);
-return `\n          <div class="ytp-plus-voting-item" data-feature-id="${f.id}">\n            <div class="ytp-plus-voting-item-content">\n              <div class="ytp-plus-voting-item-title">${escapeHtml(featureTitle)}</div>\n              <div class="ytp-plus-voting-item-desc">${escapeHtml(featureDescription)}</div>\n              <div class="ytp-plus-voting-item-status-row">\n                <div class="ytp-plus-voting-item-status ${statusMeta.className}">${escapeHtml(statusMeta.label)}</div>\n                <button class="ytp-plus-voting-comments-icon" data-comments-open="1" type="button" title="${tf("comments", "Comments")} (${featureComments.length})" aria-label="${tf("comments", "Comments")} (${featureComments.length})"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"> <path opacity="0.5" d="M13.0867 21.3877L13.7321 21.7697L13.0867 21.3877ZM13.6288 20.4718L12.9833 20.0898L13.6288 20.4718ZM10.3712 20.4718L9.72579 20.8539H9.72579L10.3712 20.4718ZM10.9133 21.3877L11.5587 21.0057L10.9133 21.3877ZM13.5 2.75C13.9142 2.75 14.25 2.41421 14.25 2C14.25 1.58579 13.9142 1.25 13.5 1.25V2.75ZM22.75 10.5C22.75 10.0858 22.4142 9.75 22 9.75C21.5858 9.75 21.25 10.0858 21.25 10.5H22.75ZM2.3806 15.9134L3.07351 15.6264V15.6264L2.3806 15.9134ZM7.78958 18.9915L7.77666 19.7413L7.78958 18.9915ZM5.08658 18.6194L4.79957 19.3123H4.79957L5.08658 18.6194ZM21.6194 15.9134L22.3123 16.2004V16.2004L21.6194 15.9134ZM16.2104 18.9915L16.1975 18.2416L16.2104 18.9915ZM18.9134 18.6194L19.2004 19.3123H19.2004L18.9134 18.6194ZM4.38751 2.7368L3.99563 2.09732V2.09732L4.38751 2.7368ZM2.7368 4.38751L2.09732 3.99563H2.09732L2.7368 4.38751ZM9.40279 19.2098L9.77986 18.5615L9.77986 18.5615L9.40279 19.2098ZM13.7321 21.7697L14.2742 20.8539L12.9833 20.0898L12.4412 21.0057L13.7321 21.7697ZM9.72579 20.8539L10.2679 21.7697L11.5587 21.0057L11.0166 20.0898L9.72579 20.8539ZM12.4412 21.0057C12.2485 21.3313 11.7515 21.3313 11.5587 21.0057L10.2679 21.7697C11.0415 23.0767 12.9585 23.0767 13.7321 21.7697L12.4412 21.0057ZM10.5 2.75H13.5V1.25H10.5V2.75ZM21.25 10.5V11.5H22.75V10.5H21.25ZM2.75 11.5V10.5H1.25V11.5H2.75ZM1.25 11.5C1.25 12.6546 1.24959 13.5581 1.29931 14.2868C1.3495 15.0223 1.45323 15.6344 1.68769 16.2004L3.07351 15.6264C2.92737 15.2736 2.84081 14.8438 2.79584 14.1847C2.75041 13.5189 2.75 12.6751 2.75 11.5H1.25ZM7.8025 18.2416C6.54706 18.2199 5.88923 18.1401 5.37359 17.9265L4.79957 19.3123C5.60454 19.6457 6.52138 19.7197 7.77666 19.7413L7.8025 18.2416ZM1.68769 16.2004C2.27128 17.6093 3.39066 18.7287 4.79957 19.3123L5.3736 17.9265C4.33223 17.4951 3.50486 16.6678 3.07351 15.6264L1.68769 16.2004ZM21.25 11.5C21.25 12.6751 21.2496 13.5189 21.2042 14.1847C21.1592 14.8438 21.0726 15.2736 20.9265 15.6264L22.3123 16.2004C22.5468 15.6344 22.6505 15.0223 22.7007 14.2868C22.7504 13.5581 22.75 12.6546 22.75 11.5H21.25ZM16.2233 19.7413C17.4786 19.7197 18.3955 19.6457 19.2004 19.3123L18.6264 17.9265C18.1108 18.1401 17.4529 18.2199 16.1975 18.2416L16.2233 19.7413ZM20.9265 15.6264C20.4951 16.6678 19.6678 17.4951 18.6264 17.9265L19.2004 19.3123C20.6093 18.7287 21.7287 17.6093 22.3123 16.2004L20.9265 15.6264ZM10.5 1.25C8.87781 1.25 7.6085 1.24921 6.59611 1.34547C5.57256 1.44279 4.73445 1.64457 3.99563 2.09732L4.77938 3.37628C5.24291 3.09223 5.82434 2.92561 6.73809 2.83873C7.663 2.75079 8.84876 2.75 10.5 2.75V1.25ZM2.75 10.5C2.75 8.84876 2.75079 7.663 2.83873 6.73809C2.92561 5.82434 3.09223 5.24291 3.37628 4.77938L2.09732 3.99563C1.64457 4.73445 1.44279 5.57256 1.34547 6.59611C1.24921 7.6085 1.25 8.87781 1.25 10.5H2.75ZM3.99563 2.09732C3.22194 2.57144 2.57144 3.22194 2.09732 3.99563L3.37628 4.77938C3.72672 4.20752 4.20752 3.72672 4.77938 3.37628L3.99563 2.09732ZM11.0166 20.0898C10.8136 19.7468 10.6354 19.4441 10.4621 19.2063C10.2795 18.9559 10.0702 18.7304 9.77986 18.5615L9.02572 19.8582C9.07313 19.8857 9.13772 19.936 9.24985 20.0898C9.37122 20.2564 9.50835 20.4865 9.72579 20.8539L11.0166 20.0898ZM7.77666 19.7413C8.21575 19.7489 8.49387 19.7545 8.70588 19.7779C8.90399 19.7999 8.98078 19.832 9.02572 19.8582L9.77986 18.5615C9.4871 18.3912 9.18246 18.3215 8.87097 18.287C8.57339 18.2541 8.21375 18.2487 7.8025 18.2416L7.77666 19.7413ZM14.2742 20.8539C14.4916 20.4865 14.6287 20.2564 14.7501 20.0898C14.8622 19.936 14.9268 19.8857 14.9742 19.8582L14.2201 18.5615C13.9298 18.7304 13.7204 18.9559 13.5379 19.2063C13.3646 19.4441 13.1864 19.7468 12.9833 20.0898L14.2742 20.8539ZM16.1975 18.2416C15.7862 18.2487 15.4266 18.2541 15.129 18.287C14.8175 18.3215 14.5129 18.3912 14.2201 18.5615L14.9742 19.8582C15.0192 19.832 15.096 19.7999 15.2941 19.7779C15.5061 19.7545 15.7842 19.7489 16.2233 19.7413L16.1975 18.2416Z" fill="currentColor"></path> <circle cx="19" cy="5" r="3" stroke="currentColor" stroke-width="1.5"></circle> </svg></button>\n              </div>\n            </div>\n            <div class="ytp-plus-voting-item-votes">\n              <div class="ytp-plus-voting-score">\n                <span class="ytp-plus-vote-total">${totalVotes} ${tf("votes", "votes")}</span>\n              </div>\n              <div class="ytp-plus-voting-buttons">\n                <div class="ytp-plus-voting-buttons-track" style="background:linear-gradient(to right, #4caf50 ${upPercent}%, #f44336 ${upPercent}%);"></div>\n                <button class="ytp-plus-vote-btn ${1 === userVote ? "active" : ""}" data-vote="1" title="${tf("like", "Like")}" type="button" aria-label="${tf("like", "Like")}">\n                  <svg class="ytp-plus-vote-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M20.9751 12.1852L20.2361 12.0574L20.9751 12.1852ZM20.2696 16.265L19.5306 16.1371L20.2696 16.265ZM6.93776 20.4771L6.19055 20.5417H6.19055L6.93776 20.4771ZM6.1256 11.0844L6.87281 11.0198L6.1256 11.0844ZM13.9949 5.22142L14.7351 5.34269V5.34269L13.9949 5.22142ZM13.3323 9.26598L14.0724 9.38725V9.38725L13.3323 9.26598ZM6.69813 9.67749L6.20854 9.10933H6.20854L6.69813 9.67749ZM8.13687 8.43769L8.62646 9.00585H8.62646L8.13687 8.43769ZM10.518 4.78374L9.79207 4.59542L10.518 4.78374ZM10.9938 2.94989L11.7197 3.13821L11.7197 3.13821L10.9938 2.94989ZM12.6676 2.06435L12.4382 2.77841L12.4382 2.77841L12.6676 2.06435ZM12.8126 2.11093L13.0419 1.39687L13.0419 1.39687L12.8126 2.11093ZM9.86194 6.46262L10.5235 6.81599V6.81599L9.86194 6.46262ZM13.9047 3.24752L13.1787 3.43584V3.43584L13.9047 3.24752ZM11.6742 2.13239L11.3486 1.45675L11.3486 1.45675L11.6742 2.13239ZM20.2361 12.0574L19.5306 16.1371L21.0086 16.3928L21.7142 12.313L20.2361 12.0574ZM13.245 21.25H8.59634V22.75H13.245V21.25ZM7.68497 20.4125L6.87281 11.0198L5.37839 11.149L6.19055 20.5417L7.68497 20.4125ZM19.5306 16.1371C19.0238 19.0677 16.3813 21.25 13.245 21.25V22.75C17.0712 22.75 20.3708 20.081 21.0086 16.3928L19.5306 16.1371ZM13.2548 5.10015L12.5921 9.14472L14.0724 9.38725L14.7351 5.34269L13.2548 5.10015ZM7.18772 10.2456L8.62646 9.00585L7.64728 7.86954L6.20854 9.10933L7.18772 10.2456ZM11.244 4.97206L11.7197 3.13821L10.2678 2.76157L9.79207 4.59542L11.244 4.97206ZM12.4382 2.77841L12.5832 2.82498L13.0419 1.39687L12.897 1.3503L12.4382 2.77841ZM10.5235 6.81599C10.8354 6.23198 11.0777 5.61339 11.244 4.97206L9.79207 4.59542C9.65572 5.12107 9.45698 5.62893 9.20041 6.10924L10.5235 6.81599ZM12.5832 2.82498C12.8896 2.92342 13.1072 3.16009 13.1787 3.43584L14.6306 3.05921C14.4252 2.26719 13.819 1.64648 13.0419 1.39687L12.5832 2.82498ZM11.7197 3.13821C11.7547 3.0032 11.8522 2.87913 11.9998 2.80804L11.3486 1.45675C10.8166 1.71309 10.417 2.18627 10.2678 2.76157L11.7197 3.13821ZM11.9998 2.80804C12.1345 2.74311 12.2931 2.73181 12.4382 2.77841L12.897 1.3503C12.3872 1.18655 11.8312 1.2242 11.3486 1.45675L11.9998 2.80804ZM14.1537 10.9842H19.3348V9.4842H14.1537V10.9842ZM14.7351 5.34269C14.8596 4.58256 14.824 3.80477 14.6306 3.0592L13.1787 3.43584C13.3197 3.97923 13.3456 4.54613 13.2548 5.10016L14.7351 5.34269ZM8.59634 21.25C8.12243 21.25 7.726 20.887 7.68497 20.4125L6.19055 20.5417C6.29851 21.7902 7.34269 22.75 8.59634 22.75V21.25ZM8.62646 9.00585C9.30632 8.42 10.0391 7.72267 10.5235 6.81599L9.20041 6.10924C8.85403 6.75767 8.30249 7.30493 7.64728 7.86954L8.62646 9.00585ZM21.7142 12.313C21.9695 10.8365 20.8341 9.4842 19.3348 9.4842V10.9842C19.9014 10.9842 20.3332 11.4959 20.2361 12.0574L21.7142 12.313ZM12.5921 9.14471C12.4344 10.1076 13.1766 10.9842 14.1537 10.9842V9.4842C14.1038 9.4842 14.0639 9.43901 14.0724 9.38725L12.5921 9.14471ZM6.87281 11.0198C6.84739 10.7258 6.96474 10.4378 7.18772 10.2456L6.20854 9.10933C5.62021 9.61631 5.31148 10.3753 5.37839 11.149L6.87281 11.0198Z" fill="currentColor"></path> <path opacity="0.5" d="M3.9716 21.4709L3.22439 21.5355L3.9716 21.4709ZM3 10.2344L3.74721 10.1698C3.71261 9.76962 3.36893 9.46776 2.96767 9.48507C2.5664 9.50239 2.25 9.83274 2.25 10.2344L3 10.2344ZM4.71881 21.4063L3.74721 10.1698L2.25279 10.299L3.22439 21.5355L4.71881 21.4063ZM3.75 21.5129V10.2344H2.25V21.5129H3.75ZM3.22439 21.5355C3.2112 21.383 3.33146 21.2502 3.48671 21.2502V22.7502C4.21268 22.7502 4.78122 22.1281 4.71881 21.4063L3.22439 21.5355ZM3.48671 21.2502C3.63292 21.2502 3.75 21.3686 3.75 21.5129H2.25C2.25 22.1954 2.80289 22.7502 3.48671 22.7502V21.2502Z" fill="currentColor"></path> </svg>\n                </button>\n                <button class="ytp-plus-vote-btn ${-1 === userVote ? "active" : ""}" data-vote="-1" title="${tf("dislike", "Dislike")}" type="button" aria-label="${tf("dislike", "Dislike")}">\n                  <svg class="ytp-plus-vote-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M20.9751 11.8148L20.2361 11.9426L20.9751 11.8148ZM20.2696 7.73505L19.5306 7.86285L20.2696 7.73505ZM6.93776 3.52293L6.19055 3.45832H6.19055L6.93776 3.52293ZM6.1256 12.9156L6.87281 12.9802L6.1256 12.9156ZM13.9949 18.7786L14.7351 18.6573V18.6573L13.9949 18.7786ZM13.3323 14.734L14.0724 14.6128V14.6128L13.3323 14.734ZM6.69813 14.3225L6.20854 14.8907H6.20854L6.69813 14.3225ZM8.13687 15.5623L8.62646 14.9942H8.62646L8.13687 15.5623ZM10.518 19.2163L9.79207 19.4046L10.518 19.2163ZM10.9938 21.0501L11.7197 20.8618L11.7197 20.8618L10.9938 21.0501ZM12.6676 21.9356L12.4382 21.2216L12.4382 21.2216L12.6676 21.9356ZM12.8126 21.8891L13.0419 22.6031L13.0419 22.6031L12.8126 21.8891ZM9.86194 17.5374L10.5235 17.184V17.184L9.86194 17.5374ZM13.9047 20.7525L13.1787 20.5642V20.5642L13.9047 20.7525ZM11.6742 21.8676L11.3486 22.5433L11.3486 22.5433L11.6742 21.8676ZM20.2361 11.9426L19.5306 7.86285L21.0086 7.60724L21.7142 11.687L20.2361 11.9426ZM13.245 2.75H8.59634V1.25H13.245V2.75ZM7.68497 3.58754L6.87281 12.9802L5.37839 12.851L6.19055 3.45832L7.68497 3.58754ZM19.5306 7.86285C19.0238 4.93226 16.3813 2.75 13.245 2.75V1.25C17.0712 1.25 20.3708 3.91895 21.0086 7.60724L19.5306 7.86285ZM13.2548 18.8998L12.5921 14.8553L14.0724 14.6128L14.7351 18.6573L13.2548 18.8998ZM7.18772 13.7544L8.62646 14.9942L7.64728 16.1305L6.20854 14.8907L7.18772 13.7544ZM11.244 19.0279L11.7197 20.8618L10.2678 21.2384L9.79207 19.4046L11.244 19.0279ZM12.4382 21.2216L12.5832 21.175L13.0419 22.6031L12.897 22.6497L12.4382 21.2216ZM10.5235 17.184C10.8354 17.768 11.0777 18.3866 11.244 19.0279L9.79207 19.4046C9.65572 18.8789 9.45698 18.3711 9.20041 17.8908L10.5235 17.184ZM12.5832 21.175C12.8896 21.0766 13.1072 20.8399 13.1787 20.5642L14.6306 20.9408C14.4252 21.7328 13.819 22.3535 13.0419 22.6031L12.5832 21.175ZM11.7197 20.8618C11.7547 20.9968 11.8522 21.1209 11.9998 21.192L11.3486 22.5433C10.8166 22.2869 10.417 21.8137 10.2678 21.2384L11.7197 20.8618ZM11.9998 21.192C12.1345 21.2569 12.2931 21.2682 12.4382 21.2216L12.897 22.6497C12.3872 22.8135 11.8312 22.7758 11.3486 22.5433L11.9998 21.192ZM14.1537 13.0158H19.3348V14.5158H14.1537V13.0158ZM14.7351 18.6573C14.8596 19.4174 14.824 20.1952 14.6306 20.9408L13.1787 20.5642C13.3197 20.0208 13.3456 19.4539 13.2548 18.8998L14.7351 18.6573ZM8.59634 2.75C8.12243 2.75 7.726 3.11302 7.68497 3.58754L6.19055 3.45832C6.29851 2.20975 7.34269 1.25 8.59634 1.25V2.75ZM8.62646 14.9942C9.30632 15.58 10.0391 16.2773 10.5235 17.184L9.20041 17.8908C8.85403 17.2423 8.30249 16.6951 7.64728 16.1305L8.62646 14.9942ZM21.7142 11.687C21.9695 13.1635 20.8341 14.5158 19.3348 14.5158V13.0158C19.9014 13.0158 20.3332 12.5041 20.2361 11.9426L21.7142 11.687ZM12.5921 14.8553C12.4344 13.8924 13.1766 13.0158 14.1537 13.0158V14.5158C14.1038 14.5158 14.0639 14.561 14.0724 14.6128L12.5921 14.8553ZM6.87281 12.9802C6.84739 13.2742 6.96474 13.5622 7.18772 13.7544L6.20854 14.8907C5.62021 14.3837 5.31148 13.6247 5.37839 12.851L6.87281 12.9802Z" fill="currentColor"></path> <path opacity="0.5" d="M3.9716 2.52911L3.22439 2.4645L3.9716 2.52911ZM3 13.7656L3.74721 13.8302C3.71261 14.2304 3.36893 14.5322 2.96767 14.5149C2.5664 14.4976 2.25 14.1673 2.25 13.7656L3 13.7656ZM4.71881 2.59372L3.74721 13.8302L2.25279 13.701L3.22439 2.4645L4.71881 2.59372ZM3.75 2.48709V13.7656H2.25V2.48709H3.75ZM3.22439 2.4645C3.2112 2.61704 3.33146 2.74983 3.48671 2.74983V1.24983C4.21268 1.24983 4.78122 1.87192 4.71881 2.59372L3.22439 2.4645ZM3.48671 2.74983C3.63292 2.74983 3.75 2.63139 3.75 2.48709H2.25C2.25 1.80457 2.80289 1.24983 3.48671 1.24983V2.74983Z" fill="currentColor"></path> </svg>\n                </button>\n              </div>\n            </div>\n          </div>\n        `;
+return `\n          <div class="ytp-plus-voting-item" data-feature-id="${f.id}">\n            <div class="ytp-plus-voting-item-content">\n              <div class="ytp-plus-voting-item-title">${escapeHtml(featureTitle)}</div>\n              <div class="ytp-plus-voting-item-desc">${escapeHtml(featureDescription)}</div>\n              <div class="ytp-plus-voting-item-status-row">\n                <div class="ytp-plus-voting-item-status ${statusMeta.className}">${escapeHtml(statusMeta.label)}</div>\n                <button class="ytp-plus-voting-comments-icon" data-comments-open="1" type="button" title="${tf("comments", "Comments")} (${featureComments.length})" aria-label="${tf("comments", "Comments")} (${featureComments.length})"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"> <path opacity="0.5" d="M13.0867 21.3877L13.7321 21.7697L13.0867 21.3877ZM13.6288 20.4718L12.9833 20.0898L13.6288 20.4718ZM10.3712 20.4718L9.72579 20.8539H9.72579L10.3712 20.4718ZM10.9133 21.3877L11.5587 21.0057L10.9133 21.3877ZM13.5 2.75C13.9142 2.75 14.25 2.41421 14.25 2C14.25 1.58579 13.9142 1.25 13.5 1.25V2.75ZM22.75 10.5C22.75 10.0858 22.4142 9.75 22 9.75C21.5858 9.75 21.25 10.0858 21.25 10.5H22.75ZM2.3806 15.9134L3.07351 15.6264V15.6264L2.3806 15.9134ZM7.78958 18.9915L7.77666 19.7413L7.78958 18.9915ZM5.08658 18.6194L4.79957 19.3123H4.79957L5.08658 18.6194ZM21.6194 15.9134L22.3123 16.2004V16.2004L21.6194 15.9134ZM16.2104 18.9915L16.1975 18.2416L16.2104 18.9915ZM18.9134 18.6194L19.2004 19.3123H19.2004L18.9134 18.6194ZM4.38751 2.7368L3.99563 2.09732V2.09732L4.38751 2.7368ZM2.7368 4.38751L2.09732 3.99563H2.09732L2.7368 4.38751ZM9.40279 19.2098L9.77986 18.5615L9.77986 18.5615L9.40279 19.2098ZM13.7321 21.7697L14.2742 20.8539L12.9833 20.0898L12.4412 21.0057L13.7321 21.7697ZM9.72579 20.8539L10.2679 21.7697L11.5587 21.0057L11.0166 20.0898L9.72579 20.8539ZM12.4412 21.0057C12.2485 21.3313 11.7515 21.3313 11.5587 21.0057L10.2679 21.7697C11.0415 23.0767 12.9585 23.0767 13.7321 21.7697L12.4412 21.0057ZM10.5 2.75H13.5V1.25H10.5V2.75ZM21.25 10.5V11.5H22.75V10.5H21.25ZM2.75 11.5V10.5H1.25V11.5H2.75ZM1.25 11.5C1.25 12.6546 1.24959 13.5581 1.29931 14.2868C1.3495 15.0223 1.45323 15.6344 1.68769 16.2004L3.07351 15.6264C2.92737 15.2736 2.84081 14.8438 2.79584 14.1847C2.75041 13.5189 2.75 12.6751 2.75 11.5H1.25ZM7.8025 18.2416C6.54706 18.2199 5.88923 18.1401 5.37359 17.9265L4.79957 19.3123C5.60454 19.6457 6.52138 19.7197 7.77666 19.7413L7.8025 18.2416ZM1.68769 16.2004C2.27128 17.6093 3.39066 18.7287 4.79957 19.3123L5.3736 17.9265C4.33223 17.4951 3.50486 16.6678 3.07351 15.6264L1.68769 16.2004ZM21.25 11.5C21.25 12.6751 21.2496 13.5189 21.2042 14.1847C21.1592 14.8438 21.0726 15.2736 20.9265 15.6264L22.3123 16.2004C22.5468 15.6344 22.6505 15.0223 22.7007 14.2868C22.7504 13.5581 22.75 12.6546 22.75 11.5H21.25ZM16.2233 19.7413C17.4786 19.7197 18.3955 19.6457 19.2004 19.3123L18.6264 17.9265C18.1108 18.1401 17.4529 18.2199 16.1975 18.2416L16.2233 19.7413ZM20.9265 15.6264C20.4951 16.6678 19.6678 17.4951 18.6264 17.9265L19.2004 19.3123C20.6093 18.7287 21.7287 17.6093 22.3123 16.2004L20.9265 15.6264ZM10.5 1.25C8.87781 1.25 7.6085 1.24921 6.59611 1.34547C5.57256 1.44279 4.73445 1.64457 3.99563 2.09732L4.77938 3.37628C5.24291 3.09223 5.82434 2.92561 6.73809 2.83873C7.663 2.75079 8.84876 2.75 10.5 2.75V1.25ZM2.75 10.5C2.75 8.84876 2.75079 7.663 2.83873 6.73809C2.92561 5.82434 3.09223 5.24291 3.37628 4.77938L2.09732 3.99563C1.64457 4.73445 1.44279 5.57256 1.34547 6.59611C1.24921 7.6085 1.25 8.87781 1.25 10.5H2.75ZM3.99563 2.09732C3.22194 2.57144 2.57144 3.22194 2.09732 3.99563L3.37628 4.77938C3.72672 4.20752 4.20752 3.72672 4.77938 3.37628L3.99563 2.09732ZM11.0166 20.0898C10.8136 19.7468 10.6354 19.4441 10.4621 19.2063C10.2795 18.9559 10.0702 18.7304 9.77986 18.5615L9.02572 19.8582C9.07313 19.8857 9.13772 19.936 9.24985 20.0898C9.37122 20.2564 9.50835 20.4865 9.72579 20.8539L11.0166 20.0898ZM7.77666 19.7413C8.21575 19.7489 8.49387 19.7545 8.70588 19.7779C8.90399 19.7999 8.98078 19.832 9.02572 19.8582L9.77986 18.5615C9.4871 18.3912 9.18246 18.3215 8.87097 18.287C8.57339 18.2541 8.21375 18.2487 7.8025 18.2416L7.77666 19.7413ZM14.2742 20.8539C14.4916 20.4865 14.6287 20.2564 14.7501 20.0898C14.8622 19.936 14.9268 19.8857 14.9742 19.8582L14.2201 18.5615C13.9298 18.7304 13.7204 18.9559 13.5379 19.2063C13.3646 19.4441 13.1864 19.7468 12.9833 20.0898L14.2742 20.8539ZM16.1975 18.2416C15.7862 18.2487 15.4266 18.2541 15.129 18.287C14.8175 18.3215 14.5129 18.3912 14.2201 18.5615L14.9742 19.8582C15.0192 19.832 15.096 19.7999 15.2941 19.7779C15.5061 19.7545 15.7842 19.7489 16.2233 19.7413L16.1975 18.2416Z" fill="currentColor"></path> <circle cx="19" cy="5" r="3" stroke="currentColor" stroke-width="1.5"></circle> </svg></button>\n              </div>\n            </div>\n            <div class="ytp-plus-voting-item-votes">\n              <div class="ytp-plus-voting-score">\n                <span class="ytp-plus-vote-total">${totalVotes} ${tf("votes", "votes")}</span>\n              </div>\n              <div class="ytp-plus-voting-buttons">\n                <div class="ytp-plus-voting-buttons-track" style="background:linear-gradient(to right, var(--yt-success) ${upPercent}%, var(--yt-danger) ${upPercent}%);"></div>\n                <button class="ytp-plus-vote-btn ${1 === userVote ? "active" : ""}" data-vote="1" title="${tf("like", "Like")}" type="button" aria-label="${tf("like", "Like")}">\n                  <svg class="ytp-plus-vote-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M20.9751 12.1852L20.2361 12.0574L20.9751 12.1852ZM20.2696 16.265L19.5306 16.1371L20.2696 16.265ZM6.93776 20.4771L6.19055 20.5417H6.19055L6.93776 20.4771ZM6.1256 11.0844L6.87281 11.0198L6.1256 11.0844ZM13.9949 5.22142L14.7351 5.34269V5.34269L13.9949 5.22142ZM13.3323 9.26598L14.0724 9.38725V9.38725L13.3323 9.26598ZM6.69813 9.67749L6.20854 9.10933H6.20854L6.69813 9.67749ZM8.13687 8.43769L8.62646 9.00585H8.62646L8.13687 8.43769ZM10.518 4.78374L9.79207 4.59542L10.518 4.78374ZM10.9938 2.94989L11.7197 3.13821L11.7197 3.13821L10.9938 2.94989ZM12.6676 2.06435L12.4382 2.77841L12.4382 2.77841L12.6676 2.06435ZM12.8126 2.11093L13.0419 1.39687L13.0419 1.39687L12.8126 2.11093ZM9.86194 6.46262L10.5235 6.81599V6.81599L9.86194 6.46262ZM13.9047 3.24752L13.1787 3.43584V3.43584L13.9047 3.24752ZM11.6742 2.13239L11.3486 1.45675L11.3486 1.45675L11.6742 2.13239ZM20.2361 12.0574L19.5306 16.1371L21.0086 16.3928L21.7142 12.313L20.2361 12.0574ZM13.245 21.25H8.59634V22.75H13.245V21.25ZM7.68497 20.4125L6.87281 11.0198L5.37839 11.149L6.19055 20.5417L7.68497 20.4125ZM19.5306 16.1371C19.0238 19.0677 16.3813 21.25 13.245 21.25V22.75C17.0712 22.75 20.3708 20.081 21.0086 16.3928L19.5306 16.1371ZM13.2548 5.10015L12.5921 9.14472L14.0724 9.38725L14.7351 5.34269L13.2548 5.10015ZM7.18772 10.2456L8.62646 9.00585L7.64728 7.86954L6.20854 9.10933L7.18772 10.2456ZM11.244 4.97206L11.7197 3.13821L10.2678 2.76157L9.79207 4.59542L11.244 4.97206ZM12.4382 2.77841L12.5832 2.82498L13.0419 1.39687L12.897 1.3503L12.4382 2.77841ZM10.5235 6.81599C10.8354 6.23198 11.0777 5.61339 11.244 4.97206L9.79207 4.59542C9.65572 5.12107 9.45698 5.62893 9.20041 6.10924L10.5235 6.81599ZM12.5832 2.82498C12.8896 2.92342 13.1072 3.16009 13.1787 3.43584L14.6306 3.05921C14.4252 2.26719 13.819 1.64648 13.0419 1.39687L12.5832 2.82498ZM11.7197 3.13821C11.7547 3.0032 11.8522 2.87913 11.9998 2.80804L11.3486 1.45675C10.8166 1.71309 10.417 2.18627 10.2678 2.76157L11.7197 3.13821ZM11.9998 2.80804C12.1345 2.74311 12.2931 2.73181 12.4382 2.77841L12.897 1.3503C12.3872 1.18655 11.8312 1.2242 11.3486 1.45675L11.9998 2.80804ZM14.1537 10.9842H19.3348V9.4842H14.1537V10.9842ZM14.7351 5.34269C14.8596 4.58256 14.824 3.80477 14.6306 3.0592L13.1787 3.43584C13.3197 3.97923 13.3456 4.54613 13.2548 5.10016L14.7351 5.34269ZM8.59634 21.25C8.12243 21.25 7.726 20.887 7.68497 20.4125L6.19055 20.5417C6.29851 21.7902 7.34269 22.75 8.59634 22.75V21.25ZM8.62646 9.00585C9.30632 8.42 10.0391 7.72267 10.5235 6.81599L9.20041 6.10924C8.85403 6.75767 8.30249 7.30493 7.64728 7.86954L8.62646 9.00585ZM21.7142 12.313C21.9695 10.8365 20.8341 9.4842 19.3348 9.4842V10.9842C19.9014 10.9842 20.3332 11.4959 20.2361 12.0574L21.7142 12.313ZM12.5921 9.14471C12.4344 10.1076 13.1766 10.9842 14.1537 10.9842V9.4842C14.1038 9.4842 14.0639 9.43901 14.0724 9.38725L12.5921 9.14471ZM6.87281 11.0198C6.84739 10.7258 6.96474 10.4378 7.18772 10.2456L6.20854 9.10933C5.62021 9.61631 5.31148 10.3753 5.37839 11.149L6.87281 11.0198Z" fill="currentColor"></path> <path opacity="0.5" d="M3.9716 21.4709L3.22439 21.5355L3.9716 21.4709ZM3 10.2344L3.74721 10.1698C3.71261 9.76962 3.36893 9.46776 2.96767 9.48507C2.5664 9.50239 2.25 9.83274 2.25 10.2344L3 10.2344ZM4.71881 21.4063L3.74721 10.1698L2.25279 10.299L3.22439 21.5355L4.71881 21.4063ZM3.75 21.5129V10.2344H2.25V21.5129H3.75ZM3.22439 21.5355C3.2112 21.383 3.33146 21.2502 3.48671 21.2502V22.7502C4.21268 22.7502 4.78122 22.1281 4.71881 21.4063L3.22439 21.5355ZM3.48671 21.2502C3.63292 21.2502 3.75 21.3686 3.75 21.5129H2.25C2.25 22.1954 2.80289 22.7502 3.48671 22.7502V21.2502Z" fill="currentColor"></path> </svg>\n                </button>\n                <button class="ytp-plus-vote-btn ${-1 === userVote ? "active" : ""}" data-vote="-1" title="${tf("dislike", "Dislike")}" type="button" aria-label="${tf("dislike", "Dislike")}">\n                  <svg class="ytp-plus-vote-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M20.9751 11.8148L20.2361 11.9426L20.9751 11.8148ZM20.2696 7.73505L19.5306 7.86285L20.2696 7.73505ZM6.93776 3.52293L6.19055 3.45832H6.19055L6.93776 3.52293ZM6.1256 12.9156L6.87281 12.9802L6.1256 12.9156ZM13.9949 18.7786L14.7351 18.6573V18.6573L13.9949 18.7786ZM13.3323 14.734L14.0724 14.6128V14.6128L13.3323 14.734ZM6.69813 14.3225L6.20854 14.8907H6.20854L6.69813 14.3225ZM8.13687 15.5623L8.62646 14.9942H8.62646L8.13687 15.5623ZM10.518 19.2163L9.79207 19.4046L10.518 19.2163ZM10.9938 21.0501L11.7197 20.8618L11.7197 20.8618L10.9938 21.0501ZM12.6676 21.9356L12.4382 21.2216L12.4382 21.2216L12.6676 21.9356ZM12.8126 21.8891L13.0419 22.6031L13.0419 22.6031L12.8126 21.8891ZM9.86194 17.5374L10.5235 17.184V17.184L9.86194 17.5374ZM13.9047 20.7525L13.1787 20.5642V20.5642L13.9047 20.7525ZM11.6742 21.8676L11.3486 22.5433L11.3486 22.5433L11.6742 21.8676ZM20.2361 11.9426L19.5306 7.86285L21.0086 7.60724L21.7142 11.687L20.2361 11.9426ZM13.245 2.75H8.59634V1.25H13.245V2.75ZM7.68497 3.58754L6.87281 12.9802L5.37839 12.851L6.19055 3.45832L7.68497 3.58754ZM19.5306 7.86285C19.0238 4.93226 16.3813 2.75 13.245 2.75V1.25C17.0712 1.25 20.3708 3.91895 21.0086 7.60724L19.5306 7.86285ZM13.2548 18.8998L12.5921 14.8553L14.0724 14.6128L14.7351 18.6573L13.2548 18.8998ZM7.18772 13.7544L8.62646 14.9942L7.64728 16.1305L6.20854 14.8907L7.18772 13.7544ZM11.244 19.0279L11.7197 20.8618L10.2678 21.2384L9.79207 19.4046L11.244 19.0279ZM12.4382 21.2216L12.5832 21.175L13.0419 22.6031L12.897 22.6497L12.4382 21.2216ZM10.5235 17.184C10.8354 17.768 11.0777 18.3866 11.244 19.0279L9.79207 19.4046C9.65572 18.8789 9.45698 18.3711 9.20041 17.8908L10.5235 17.184ZM12.5832 21.175C12.8896 21.0766 13.1072 20.8399 13.1787 20.5642L14.6306 20.9408C14.4252 21.7328 13.819 22.3535 13.0419 22.6031L12.5832 21.175ZM11.7197 20.8618C11.7547 20.9968 11.8522 21.1209 11.9998 21.192L11.3486 22.5433C10.8166 22.2869 10.417 21.8137 10.2678 21.2384L11.7197 20.8618ZM11.9998 21.192C12.1345 21.2569 12.2931 21.2682 12.4382 21.2216L12.897 22.6497C12.3872 22.8135 11.8312 22.7758 11.3486 22.5433L11.9998 21.192ZM14.1537 13.0158H19.3348V14.5158H14.1537V13.0158ZM14.7351 18.6573C14.8596 19.4174 14.824 20.1952 14.6306 20.9408L13.1787 20.5642C13.3197 20.0208 13.3456 19.4539 13.2548 18.8998L14.7351 18.6573ZM8.59634 2.75C8.12243 2.75 7.726 3.11302 7.68497 3.58754L6.19055 3.45832C6.29851 2.20975 7.34269 1.25 8.59634 1.25V2.75ZM8.62646 14.9942C9.30632 15.58 10.0391 16.2773 10.5235 17.184L9.20041 17.8908C8.85403 17.2423 8.30249 16.6951 7.64728 16.1305L8.62646 14.9942ZM21.7142 11.687C21.9695 13.1635 20.8341 14.5158 19.3348 14.5158V13.0158C19.9014 13.0158 20.3332 12.5041 20.2361 11.9426L21.7142 11.687ZM12.5921 14.8553C12.4344 13.8924 13.1766 13.0158 14.1537 13.0158V14.5158C14.1038 14.5158 14.0639 14.561 14.0724 14.6128L12.5921 14.8553ZM6.87281 12.9802C6.84739 13.2742 6.96474 13.5622 7.18772 13.7544L6.20854 14.8907C5.62021 14.3837 5.31148 13.6247 5.37839 12.851L6.87281 12.9802Z" fill="currentColor"></path> <path opacity="0.5" d="M3.9716 2.52911L3.22439 2.4645L3.9716 2.52911ZM3 13.7656L3.74721 13.8302C3.71261 14.2304 3.36893 14.5322 2.96767 14.5149C2.5664 14.4976 2.25 14.1673 2.25 13.7656L3 13.7656ZM4.71881 2.59372L3.74721 13.8302L2.25279 13.701L3.22439 2.4645L4.71881 2.59372ZM3.75 2.48709V13.7656H2.25V2.48709H3.75ZM3.22439 2.4645C3.2112 2.61704 3.33146 2.74983 3.48671 2.74983V1.24983C4.21268 1.24983 4.78122 1.87192 4.71881 2.59372L3.22439 2.4645ZM3.48671 2.74983C3.63292 2.74983 3.75 2.63139 3.75 2.48709H2.25C2.25 1.80457 2.80289 1.24983 3.48671 1.24983V2.74983Z" fill="currentColor"></path> </svg>\n                </button>\n              </div>\n            </div>\n          </div>\n        `;
 }).join(""));
 listEl.querySelectorAll(".ytp-plus-vote-btn").forEach(btn => {
 btn.addEventListener("click", async () => {
@@ -27432,13 +29334,16 @@ setVoteControlsBusy(listEl.closest(".ytp-plus-settings-section, .ytp-plus-voting
 });
 updateVoteBar(allVotes, userVotes, previewFeature?.id || null);
 } else {
-listEl.innerHTML = _createHTML(`<div class="ytp-plus-voting-empty">${tf("noFeatures", "No feature requests yet")}</div>`);
+_setSafeHTML(listEl, `<div class="ytp-plus-voting-empty">${tf("noFeatures", "No feature requests yet")}</div>`);
 updateVoteBar(allVotes, userVotes, previewFeature?.id || null);
 }
 }
 function escapeHtml(str) {
 if (!str) {
 return "";
+}
+if (window.YouTubeSafeDOM?.escapeHTML) {
+return window.YouTubeSafeDOM.escapeHTML(str);
 }
 if (window.YouTubeSecurityUtils?.escapeHtml) {
 return window.YouTubeSecurityUtils.escapeHtml(str);
@@ -27448,10 +29353,10 @@ div.textContent = str;
 return div.innerHTML;
 }
 function updateVoteBar(allVotes, userVotes, previewFeatureId) {
-const fillEl = document.getElementById("ytp-plus-vote-bar-fill");
-const countEl = document.getElementById("ytp-plus-vote-bar-count");
-const upBtn = document.getElementById("ytp-plus-vote-bar-up");
-const downBtn = document.getElementById("ytp-plus-vote-bar-down");
+const fillEl = byId("ytp-plus-vote-bar-fill");
+const countEl = byId("ytp-plus-vote-bar-count");
+const upBtn = byId("ytp-plus-vote-bar-up");
+const downBtn = byId("ytp-plus-vote-bar-down");
 if (!fillEl || !countEl) {
 return;
 }
@@ -27463,13 +29368,16 @@ const totalUp = previewVotes.upvotes || 0;
 const totalDown = previewVotes.downvotes || 0;
 const total = totalUp + totalDown;
 const pct = total > 0 ? Math.round(totalUp / total * 100) : 50;
-fillEl.style.background = `linear-gradient(to right, #4caf50 ${pct}%, #f44336 ${pct}%)`;
+fillEl.style.background = `linear-gradient(to right, var(--yt-success) ${pct}%, var(--yt-danger) ${pct}%)`;
 countEl.textContent = total > 0 ? `${total}` : "0";
 const previewUserVote = previewFeatureId && userVotes[previewFeatureId] || 0;
 upBtn && upBtn.classList.toggle("active", 1 === previewUserVote);
 downBtn && downBtn.classList.toggle("active", -1 === previewUserVote);
 }
 function initVoting() {
+if (!isRelevantRoute()) {
+return;
+}
 if (votingInitialized) {
 return;
 }
@@ -27480,7 +29388,7 @@ ensureCommentsModal();
 };
 "loading" === document.readyState ? document.addEventListener("DOMContentLoaded", onReady, {
 once: !0
-}) : setTimeout(onReady, 0);
+}) : setTimeout_(onReady, 0);
 }
 const voteBarHandler = async e => {
 const barBtn = e.target?.closest?.(".ytp-plus-vote-bar-btn");
@@ -27514,24 +29422,24 @@ const showAddBtn = e.target?.closest?.("#ytp-plus-show-add-feature");
 const cancelBtn = e.target?.closest?.("#ytp-plus-cancel-feature");
 const submitBtn = e.target?.closest?.("#ytp-plus-submit-feature");
 if (showAddBtn) {
-const addFormEl = document.getElementById("ytp-plus-voting-add-form");
-const showAddEl = document.getElementById("ytp-plus-show-add-feature");
+const addFormEl = byId("ytp-plus-voting-add-form");
+const showAddEl = byId("ytp-plus-show-add-feature");
 addFormEl && (addFormEl.style.display = "block");
 showAddEl && (showAddEl.style.display = "none");
 }
 if (cancelBtn) {
-const addFormEl = document.getElementById("ytp-plus-voting-add-form");
-const showAddEl = document.getElementById("ytp-plus-show-add-feature");
-const titleEl = document.getElementById("ytp-plus-feature-title");
-const descEl = document.getElementById("ytp-plus-feature-desc");
+const addFormEl = byId("ytp-plus-voting-add-form");
+const showAddEl = byId("ytp-plus-show-add-feature");
+const titleEl = byId("ytp-plus-feature-title");
+const descEl = byId("ytp-plus-feature-desc");
 addFormEl && (addFormEl.style.display = "none");
 showAddEl && (showAddEl.style.display = "block");
 titleEl && (titleEl.value = "");
 descEl && (descEl.value = "");
 }
 if (submitBtn) {
-const titleInput = document.getElementById("ytp-plus-feature-title");
-const descInput = document.getElementById("ytp-plus-feature-desc");
+const titleInput = byId("ytp-plus-feature-title");
+const descInput = byId("ytp-plus-feature-desc");
 const title = titleInput?.value?.trim?.() || "";
 const desc = descInput?.value?.trim?.() || "";
 titleInput instanceof HTMLInputElement && titleInput.setCustomValidity("");
@@ -27547,8 +29455,8 @@ submitBtn.disabled = !1;
 submitBtn.textContent = tf("submit", "Submit");
 if (result.success) {
 if (result.success) {
-const addFormEl = document.getElementById("ytp-plus-voting-add-form");
-const showAddEl = document.getElementById("ytp-plus-show-add-feature");
+const addFormEl = byId("ytp-plus-voting-add-form");
+const showAddEl = byId("ytp-plus-show-add-feature");
 addFormEl && (addFormEl.style.display = "none");
 showAddEl && (showAddEl.style.display = "block");
 titleInput && (titleInput.value = "");
@@ -27584,14 +29492,14 @@ const submitCommentBtn = e.target?.closest?.("#ytp-plus-comments-submit");
 if (!submitCommentBtn) {
 return;
 }
-const panel = document.getElementById("ytp-plus-comments-panel");
+const panel = byId("ytp-plus-comments-panel");
 const featureId = panel?.getAttribute("data-feature-id") || "";
-const input = document.getElementById("ytp-plus-comments-input");
+const input = byId("ytp-plus-comments-input");
 const value = String(input?.value || "").trim();
 if (featureId && value) {
 submitCommentBtn.disabled = !0;
 (async function addComment(featureId, commentText) {
-const text = String(commentText || "").replace(/<[^>]*>/g, "").trim().slice(0, 1e3);
+const text = normalizeUserText(commentText).slice(0, 1e3);
 if (!text) {
 return {
 success: !1,
@@ -27608,7 +29516,7 @@ author_ip: userId
 })
 });
 if (error) {
-console.error("[Voting] Add comment error:", error);
+window.console.error("[Voting] Add comment error:", error);
 return {
 success: !1,
 error
@@ -27641,14 +29549,14 @@ document.addEventListener("click", commentHandler);
 const VotingSystem = {
 init: initVoting,
 createUI: function createVotingUI(container) {
-container.innerHTML = _createHTML(`\n      <div class="ytp-plus-voting">\n        <div class="ytp-plus-voting-header">\n          <h3>${tf("featureRequests", "Feature Requests")}</h3>\n          <button class="ytp-plus-voting-add-btn" id="ytp-plus-show-add-feature">\n            + ${tf("addFeature", "Add Feature")}\n          </button>\n        </div>\n        <div class="ytp-plus-voting-list" id="ytp-plus-voting-list">\n          <div class="ytp-plus-voting-loading">${tf("loading", "Loading...")}</div>\n        </div>\n        <div class="ytp-plus-voting-add-form" id="ytp-plus-voting-add-form" style="display:none;">\n          <input type="text" id="ytp-plus-feature-title" placeholder="${tf("featureTitle", "Feature title")}" />\n          <textarea id="ytp-plus-feature-desc" placeholder="${tf("featureDescription", "Description")}"></textarea>\n          <div class="ytp-plus-voting-form-actions">\n            <button class="ytp-plus-voting-cancel" id="ytp-plus-cancel-feature">${tf("cancel", "Cancel")}</button>\n            <button class="ytp-plus-voting-submit" id="ytp-plus-submit-feature">${tf("submit", "Submit")}</button>\n          </div>\n        </div>\n      </div>\n    `);
+renderTemplateClone(container, `\n      <div class="ytp-plus-voting">\n        <div class="ytp-plus-voting-header">\n          <h3>${tf("featureRequests", "Feature Requests")}</h3>\n          <button class="ytp-plus-voting-add-btn" id="ytp-plus-show-add-feature">\n            + ${tf("addFeature", "Add Feature")}\n          </button>\n        </div>\n        <div class="ytp-plus-voting-list" id="ytp-plus-voting-list">\n          <div class="ytp-plus-voting-loading">${tf("loading", "Loading...")}</div>\n        </div>\n        <div class="ytp-plus-voting-add-form" id="ytp-plus-voting-add-form" style="display:none;">\n          <input type="text" id="ytp-plus-feature-title" placeholder="${tf("featureTitle", "Feature title")}" />\n          <textarea id="ytp-plus-feature-desc" placeholder="${tf("featureDescription", "Description")}"></textarea>\n          <div class="ytp-plus-voting-form-actions">\n            <button class="ytp-plus-voting-cancel" id="ytp-plus-cancel-feature">${tf("cancel", "Cancel")}</button>\n            <button class="ytp-plus-voting-submit" id="ytp-plus-submit-feature">${tf("submit", "Submit")}</button>\n          </div>\n        </div>\n      </div>\n    `);
 },
 loadFeatures,
 getFeatures,
 vote,
 submitFeature,
 initSlider: function initSlider() {
-const container = document.querySelector(".ytp-plus-ba-container");
+const container = $(".ytp-plus-ba-container");
 if (!container || container.dataset.sliderInit) {
 return;
 }
@@ -27678,7 +29586,7 @@ cancelAnimationFrame(rafId);
 rafId = null;
 }
 resumeTimer && clearTimeout(resumeTimer);
-resumeTimer = setTimeout(() => {
+resumeTimer = setTimeout_(() => {
 divider.classList.add("autoplay");
 startAutoplayRaf();
 }, 3e3);
@@ -27752,7 +29660,7 @@ e.preventDefault();
 }
 });
 setPosition(50, !0);
-setTimeout(() => {
+setTimeout_(() => {
 divider.classList.add("autoplay");
 startAutoplayRaf();
 }, 400);
@@ -27761,7 +29669,13 @@ updateVoteBar
 };
 void 0 === window.YouTubePlus && (window.YouTubePlus = {});
 window.YouTubePlus.Voting = VotingSystem;
-window.YouTubePlusLazyLoader && window.YouTubePlusLazyLoader.register("voting", initVoting, {
-priority: 0
+window.YouTubePlusLazyLoader ? window.YouTubePlusLazyLoader.register("voting", initVoting, {
+priority: 0,
+shouldLoad: isRelevantRoute
+}) : isRelevantRoute() && initVoting();
+window.YouTubeUtils?.cleanupManager ? window.YouTubeUtils.cleanupManager.registerListener(window, "yt-navigate-start", () => {
+closeCommentsModal();
+}) : window.addEventListener("yt-navigate-start", () => {
+closeCommentsModal();
 });
 })();

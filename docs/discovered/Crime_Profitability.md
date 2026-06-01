@@ -32,14 +32,14 @@ title: "犯罪收益显示器"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：92/100　　**分析时间**：2026-05-25
+**风险等级**：🟡 LOW　　**安全评分**：64/100　　**分析时间**：2026-06-01
 
-> 该脚本主要用于展示犯罪页面的每神经价值，核心功能为请求 Google Sheets 数据并在页面展示。未检测到高危数据外传、隐私采集、远程代码执行、混淆、XSS、权限滥用、敏感 API、供应链或 iframe 风险。唯一风险为通过 GM.xmlHttpRequest 请求第三方公开数据和使用 localStorage，未涉及敏感信息。整体安全性较高，评分为92。
+> 该脚本主要功能为从 Google Sheets 公共表格拉取犯罪收益数据并在页面展示。未发现向第三方服务器上传用户数据、cookie、页面内容或行为。未监听键盘、表单、剪贴板等敏感输入。未发现 eval、动态脚本注入、远程代码执行、代码混淆、DOM XSS 等高危行为。主要风险为外部数据拉取和 localStorage 使用，未发现隐私外传。整体风险较低。
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：https://docs.google.com/spreadsheets/d/13wUFhhssuPdAONI_OmRJi6l_Bs7KRZXDgVFCn7uJJNQ/gviz/tq?tqx=out:csv&gid=560321570, https://docs.google.com/spreadsheets/d/13wUFhhssuPdAONI_OmRJi6l_Bs7KRZXDgVFCn7uJJNQ/gviz/tq?tqx=out:csv&gid=1626436424） |
-| 隐私采集 | ❌ 检测到（localStorage） |
+| 隐私采集 | ❌ 检测到（读取 localStorage 进行数据缓存和设置存储） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -47,50 +47,20 @@ title: "犯罪收益显示器"
 
 ### 发现的问题
 
-**🟠 MEDIUM** — 数据外传  
-> 脚本通过 GM.xmlHttpRequest 请求 Google Sheets CSV 数据，属于第三方数据源，但未携带用户数据、cookie 或页面内容。  
-> 位置：GM.xmlHttpRequest 调用 emforusData/crackingData URL  
-> 建议：确保请求仅用于公开数据，不携带敏感信息。
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过 fetch/GM.xmlHttpRequest 方式从 Google Sheets 公共 CSV 读取数据，但未向第三方服务器上传用户数据、cookie 或页面内容。  
+> 位置：全局（emforusData, crackingData 变量及相关请求）  
+> 建议：确认不会将用户数据拼接到 URL 或请求体中。
 
-**🟠 MEDIUM** — 隐私采集  
-> 脚本读取和写入 localStorage 以缓存数据和设置。未涉及敏感信息（如 cookie、表单、剪贴板、密码等）。  
-> 位置：localStorage.getItem/setItem 多处  
-> 建议：避免存储敏感信息于 localStorage。
+**⛔ CRITICAL** — 隐私采集  
+> 脚本大量读取 localStorage 项用于缓存数据和设置。  
+> 位置：localStorage 相关代码  
+> 建议：确认 localStorage 仅用于本地缓存，不与外部服务器交互。
 
-**🟡 LOW** — 远程代码执行  
-> 未检测到 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险。  
-> 位置：全局  
-> 建议：保持代码无动态执行字符串。
-
-**🟡 LOW** — 代码混淆  
-> 未检测到代码混淆、base64 解码、字符串数组映射或高度压缩代码。  
-> 位置：全局  
-> 建议：保持代码可读性。
-
-**🟡 LOW** — DOM XSS  
-> 未检测到 DOM XSS 或用户输入直接插入 innerHTML/outerHTML。  
-> 位置：全局  
-> 建议：如需插入用户输入，需严格转义。
-
-**🟡 LOW** — 权限滥用  
-> @grant 仅申请 GM.xmlHttpRequest，权限与实际使用相符，无滥用高权限。  
-> 位置：元数据  
-> 建议：仅申请实际需要的权限。
-
-**🟡 LOW** — 敏感 API 调用  
-> 未检测到敏感 API 调用（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。  
-> 位置：全局  
-> 建议：如需调用敏感 API，需征得用户同意。
-
-**🟡 LOW** — 供应链风险  
-> @require 未使用，未检测到供应链风险。  
-> 位置：元数据  
-> 建议：如需加载第三方库，建议固定版本哈希并使用官方 CDN。
-
-**🟡 LOW** — ClickJacking/iframe  
-> 未检测到 ClickJacking 或 iframe 风险。  
-> 位置：全局  
-> 建议：如需操作 iframe，需明确用途并防范数据提取。
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 GM.xmlHttpRequest 权限，但仅用于拉取 Google Sheets 公共数据。  
+> 位置：@grant 元数据  
+> 建议：如未来无跨域需求，可考虑移除高权限。
 
 ---
 

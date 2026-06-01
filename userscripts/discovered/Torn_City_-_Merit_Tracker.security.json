@@ -14,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "Torn City - Merit Tracker",
   "security_score": 100,
-  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码为纯前端数据展示，无任何网络请求或敏感操作，安全性极高。",
+  "summary": "该脚本仅在页面本地运行，不进行任何网络请求、数据外传、隐私采集或远程代码执行。代码结构清晰，无混淆、无危险 DOM 操作、无权限滥用，也未加载任何第三方依赖。安全性极高。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-25T06:37:41.329828+00:00",
+  "analyzed_at": "2026-06-01T07:07:36.345972+00:00",
   "slug": "Torn_City_-_Merit_Tracker"
 }

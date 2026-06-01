@@ -10,55 +10,62 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "Script uses GM_xmlhttpRequest to send data to discord.com, likely for sharing map pins or game data. This is a third-party server and may transmit user/game information.",
-      "location": "GM_xmlhttpRequest usage, @connect discord.com",
-      "recommendation": "Ensure only minimal, non-sensitive data is sent. Warn users about external transmission.",
+      "description": "The script uses GM_xmlhttpRequest and/or fetch to send data to discord.com (e.g., for 'send to Discord' feature). This may include map coordinates, user actions, or other gameplay data.",
+      "location": "Functions related to 'sendToDiscord', network requests to discord.com",
+      "recommendation": "Ensure only non-sensitive, user-approved data is sent. Inform users clearly about what is transmitted. Do not send cookies or authentication tokens.",
       "severity": "CRITICAL",
       "type": "Data Exfiltration"
     },
     {
-      "description": "Script uses GM_xmlhttpRequest to nominatim.openstreetmap.org for geocoding. While this is a public API, user coordinates or map data may be transmitted.",
-      "location": "GM_xmlhttpRequest usage, @connect nominatim.openstreetmap.org",
-      "recommendation": "Avoid sending sensitive or identifiable user data. Document what is sent.",
-      "severity": "CRITICAL",
-      "type": "Data Exfiltration"
+      "description": "The script sends requests to nominatim.openstreetmap.org for reverse geocoding (address lookup). While this is a public API, it may leak user location or gameplay data.",
+      "location": "Network requests to nominatim.openstreetmap.org",
+      "recommendation": "Minimize data sent; avoid sending user-identifiable information. Document this behavior for users.",
+      "severity": "MEDIUM",
+      "type": "Data Transmission"
     },
     {
-      "description": "Script listens for keyboard events (hotkeys) and may transmit map pin data to Discord. If user input or coordinates are sent, this is a privacy risk.",
-      "location": "Hotkey handlers, sendToDiscord feature",
-      "recommendation": "Limit data sent to Discord, avoid transmitting user input or sensitive information.",
-      "severity": "CRITICAL",
-      "type": "Privacy Collection"
-    },
-    {
-      "description": "Script requests Notification API permission and may send notifications.",
+      "description": "The script requests Notification API permission and can send browser notifications.",
       "location": "state.notificationPermission, Notification API usage",
-      "recommendation": "Ensure notifications are not abused or spammed.",
+      "recommendation": "Limit notification usage to essential events. Do not abuse notifications for spam.",
       "severity": "MEDIUM",
       "type": "Sensitive API Usage"
     },
     {
-      "description": "Script grants GM_xmlhttpRequest but does not appear to use GM_download or GM_openInTab. Permissions are appropriate.",
-      "location": "@grant section",
-      "recommendation": "Do not request unnecessary permissions.",
-      "severity": "LOW",
-      "type": "Permission Usage"
+      "description": "The script modifies Element.prototype.setAttribute and Array.prototype.push via Proxy, which can introduce compatibility or security issues if not carefully handled.",
+      "location": "Element.prototype.setAttribute, Array.prototype.push Proxy wrappers",
+      "recommendation": "Limit prototype modifications to only necessary cases. Document and test for side effects.",
+      "severity": "HIGH",
+      "type": "Prototype Pollution Risk"
+    },
+    {
+      "description": "The script disables or bypasses anti-cheat and ban mechanisms on target platforms by patching Storage, gtag, fetch, etc.",
+      "location": "Platform-specific code blocks (e.g., WORLDGUESSR, FREEGUESSR)",
+      "recommendation": "Such behavior may violate terms of service and can be considered malicious if abused.",
+      "severity": "HIGH",
+      "type": "Anti-Detection/Anti-Ban Bypass"
+    },
+    {
+      "description": "The script requests GM_xmlhttpRequest permission, which is high-privilege and should be justified.",
+      "location": "@grant GM_xmlhttpRequest in metadata",
+      "recommendation": "Only request this permission if strictly necessary. Remove if not used.",
+      "severity": "MEDIUM",
+      "type": "Permission Overprovision"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "Keyboard input (hotkeys) is monitored.",
-      "Map pin/location data may be sent externally."
+      "Reads and writes to localStorage via GM_getValue/GM_setValue for hotkeys and toggles.",
+      "May access gameplay state (map coordinates, address) for Discord sharing and Google Maps opening."
     ],
     "detected": true
   },
-  "risk_level": "CRITICAL",
+  "risk_level": "HIGH",
   "script_name": "CheatGuessr Universal | GeoGuessr | OpenGuessr | WorldGuessr | FreeGuessr | GeoDuels",
-  "security_score": 25,
-  "summary": "This script transmits map/location data to third-party servers (discord.com, nominatim.openstreetmap.org) and monitors keyboard input for hotkeys. There is a risk of user/game data exfiltration and privacy leakage. Notification API is used but not abused. No code obfuscation or DOM XSS detected. Supply chain risk is low as no @require external scripts are used. Overall, the script poses CRITICAL risk due to data transmission and privacy concerns.",
+  "security_score": 37,
+  "summary": "This script transmits gameplay data to third-party services (discord.com, nominatim.openstreetmap.org), modifies browser prototypes, and bypasses anti-cheat mechanisms on supported platforms. It also requests high-privilege permissions. While there is no evidence of credential theft or keylogging, the script's behavior introduces significant security and ethical risks, especially regarding data exfiltration and anti-detection measures.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-25T06:28:39.093481+00:00",
+  "analyzed_at": "2026-06-01T06:56:57.728471+00:00",
   "slug": "CheatGuessr_Universal_GeoGuessr_OpenGuessr_WorldGuessr_FreeGuessr_GeoDuels"
 }

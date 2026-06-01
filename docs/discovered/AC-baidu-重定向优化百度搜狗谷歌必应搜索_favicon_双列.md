@@ -30,9 +30,9 @@ title: "AC-baidu-重定向优化百度搜狗谷歌必应搜索_favicon_双列"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：47/100　　**分析时间**：2026-05-25
+**风险等级**：🔴 HIGH　　**安全评分**：44/100　　**分析时间**：2026-06-01
 
-> 该脚本未发现实际敏感数据外传、隐私采集、远程代码执行、DOM XSS 或代码混淆行为，但元数据中存在严重权限滥用（@connect *）、供应链风险（第三方库和样式文件来源不可信），以及部分未使用的高权限申请。建议收紧权限、优化供应链安全。
+> 该脚本存在严重的权限滥用问题，@connect * 允许任意外联，结合 GM_xmlhttpRequest 权限，理论上可外传任意数据，属于高危设计。虽然当前片段未见实际数据外传和隐私收集代码，但供应链风险和权限冗余也较为突出。建议严格限制 @connect 域名、精简权限、锁定依赖版本，并定期审查依赖资源。未发现代码混淆、DOM XSS、WebSocket、隐私采集等直接高危实现。整体风险评级为 HIGH，不建议在敏感环境下使用。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -45,25 +45,30 @@ title: "AC-baidu-重定向优化百度搜狗谷歌必应搜索_favicon_双列"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Permission Risk  
-> @connect * 允许任意域名的网络请求，存在数据外传风险，虽然代码未见实际敏感数据外传，但此权限极高。  
-> 位置：UserScript metadata (@connect *)  
-> 建议：移除 @connect *，只保留实际需要的域名，避免潜在数据外传。
+**⛔ CRITICAL** — 权限滥用/潜在数据外传  
+> @connect * 允许任意域名的网络请求，存在数据外传的高风险窗口，虽然代码片段未见实际外传实现，但权限极高。  
+> 位置：元数据 @connect  
+> 建议：移除 @connect *，仅保留实际需要的域名，最小化外联权限。
 
-**🟠 MEDIUM** — Permission Abuse  
-> 大量 @grant 权限申请（GM_xmlhttpRequest、unsafeWindow等），部分未在代码中实际使用，存在权限滥用风险。  
-> 位置：UserScript metadata (@grant)  
-> 建议：仅申请实际需要的权限，移除未使用的高权限项。
+**🔴 HIGH** — 权限滥用  
+> 脚本申请了 GM_xmlhttpRequest 权限，具备跨域请求能力，结合 @connect *，理论上可外传任意数据。  
+> 位置：元数据 @grant  
+> 建议：仅在确有必要时申请 GM_xmlhttpRequest，并严格限制 @connect 域名。
 
-**🟠 MEDIUM** — Supply Chain Risk  
-> @require 加载第三方库（less.js、vue.js）来源为 registry.npmmirror.com，非官方CDN，存在供应链风险。  
-> 位置：UserScript metadata (@require)  
-> 建议：建议使用官方CDN并固定版本哈希，避免供应链污染。
+**🟠 MEDIUM** — 供应链风险  
+> 脚本通过 @require 加载 less.js 和 vue.runtime.global.prod.js，来源为 registry.npmmirror.com，虽然为知名镜像，但未锁定哈希，存在供应链污染风险。  
+> 位置：元数据 @require  
+> 建议：建议使用官方 CDN 并锁定具体版本或哈希，避免依赖被篡改。
 
-**🟠 MEDIUM** — Supply Chain Risk  
-> @resource 加载大量样式文件，部分来源为 ibaidu.tujidu.com 和 gitcode.net，非官方域名，存在供应链风险。  
-> 位置：UserScript metadata (@resource)  
-> 建议：建议使用可信官方源并固定版本，避免样式文件被篡改。
+**🟠 MEDIUM** — 供应链风险  
+> 脚本通过 @resource 加载多个 .less 和 .css 文件，部分来源为 ibaidu.tujidu.com、gitcode.net 等非官方 CDN，存在供应链风险。  
+> 位置：元数据 @resource  
+> 建议：建议仅使用可信赖的官方 CDN，并校验资源完整性。
+
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了大量 GM_* 权限（如 GM_setValue, GM_getValue, GM_addValueChangeListener, unsafeWindow 等），部分权限未在片段代码中实际使用，存在权限冗余。  
+> 位置：元数据 @grant  
+> 建议：仅申请实际使用的权限，减少攻击面。
 
 ---
 

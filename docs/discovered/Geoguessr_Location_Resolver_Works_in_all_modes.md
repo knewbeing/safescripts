@@ -32,9 +32,9 @@ title: "GeoGuessr 地点解析助手"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：81/100　　**分析时间**：2026-05-25
+**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-01
 
-> The script does not transmit data externally, does not collect sensitive user information, and avoids XSS/DOM injection risks. It requests an unused GM_webRequest permission, which should be removed. No obfuscation or supply chain risks detected. Overall, the script is safe with minor improvements recommended.
+> The script does not transmit any user data externally, does not collect sensitive information, and does not execute remote or obfuscated code. It overrides XMLHttpRequest to extract coordinates from Google Maps API responses, but this data is only used locally. The only notable issue is the unnecessary GM_webRequest permission, which should be removed to minimize potential risk.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -47,25 +47,15 @@ title: "GeoGuessr 地点解析助手"
 
 ### 发现的问题
 
-**🟠 MEDIUM** — Network interception  
-> Script overrides XMLHttpRequest.prototype.open to intercept Google Maps API responses, but does not transmit data externally.  
+**🟠 MEDIUM** — Permission misuse  
+> The script requests the GM_webRequest permission, but does not use any GM_* APIs in the code.  
+> 位置：@grant GM_webRequest in metadata  
+> 建议：Remove unused permissions to reduce attack surface.
+
+**🟡 LOW** — Network interception  
+> The script overrides XMLHttpRequest.prototype.open to intercept Google Maps API responses, but does not transmit any data to third-party servers.  
 > 位置：XMLHttpRequest.prototype.open override  
-> 建议：Monitor for future changes; ensure no data is sent to third-party servers.
-
-**🟠 MEDIUM** — Permission  
-> Script requests GM_webRequest permission, but does not use it in the code.  
-> 位置：@grant GM_webRequest  
-> 建议：Remove unused permission to minimize attack surface.
-
-**🟡 LOW** — Event listener  
-> Script listens for keydown events to trigger actions, but does not collect or transmit input data.  
-> 位置：document.addEventListener("keydown", onKeyDown)  
-> 建议：Ensure no sensitive input is captured or transmitted.
-
-**🟡 LOW** — DOM manipulation  
-> Script manipulates DOM and React internals to place markers, but does not insert untrusted content or expose XSS vectors.  
-> 位置：placeMarker, placeMarkerStreaks functions  
-> 建议：Continue to avoid inserting user-controlled data into innerHTML.
+> 建议：Monitor for any future changes that may introduce data exfiltration.
 
 ---
 

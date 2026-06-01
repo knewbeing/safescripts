@@ -30,50 +30,50 @@ title: "CheatGuessr Universal (Works in GeoGuessr | OpenGuessr | WorldGuessr | F
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：25/100　　**分析时间**：2026-05-25
+**风险等级**：⛔ CRITICAL　　**安全评分**：50/100　　**分析时间**：2026-06-01
 
-> 该脚本存在严重的数据外传和隐私采集风险，尤其是自动或手动将用户地理位置、地址等敏感信息发送到 Discord Webhook 和第三方地理解析服务。未检测到远程代码执行、混淆、DOM XSS、供应链风险等问题，但权限申请较宽泛。建议仅在完全信任环境下使用，并确保用户知晓所有数据流向和风险。
+> 该脚本存在严重的数据外传风险：会将地理坐标、地址等信息通过 GM_xmlhttpRequest 发送到 nominatim.openstreetmap.org 进行反查，并允许用户配置 Discord Webhook，将地理信息主动推送到 Discord 服务器。若 Webhook 配置为第三方地址，可能导致敏感信息泄露。脚本未发现代码混淆和 DOM XSS 问题，但存在权限滥用、供应链风险和敏感 API 调用等中等风险。总体安全性较低，不建议在含有敏感信息的环境下使用。
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：nominatim.openstreetmap.org, discord.com） |
-| 隐私采集 | ❌ 检测到（读取地理坐标（lat/lng）, 解析地址信息, 结合用户操作发送到第三方） |
+| 隐私采集 | ❌ 检测到（存储 Discord Webhook URL 到本地, 存储用户热键、功能开关设置） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ✅ 可信 |
+| 供应链风险 | ⚠️ 存在风险 |
 
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本通过 GM_xmlhttpRequest 向 nominatim.openstreetmap.org 发送地理坐标请求，可能包含用户游戏位置数据。  
-> 位置：function _getAddress(lat, lng)  
-> 建议：仅在用户明确同意时发送请求，并限制数据内容。
+> 脚本通过 GM_xmlhttpRequest 向 nominatim.openstreetmap.org 发送地理坐标，获取地址信息。  
+> 位置：_getAddress() 函数  
+> 建议：仅允许必要的地理查询，避免发送敏感信息。
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本通过 GM_xmlhttpRequest 向 Discord Webhook（用户输入）发送地理坐标、地址、地图截图等敏感信息。  
-> 位置：function sendToDiscord(embed)  
-> 建议：确保用户知晓数据内容和风险，避免自动发送敏感信息。
-
-**⛔ CRITICAL** — 隐私采集  
-> 脚本读取页面中的地理坐标信息（lat/lng），并结合地址解析后外传到第三方。  
-> 位置：function getCoordinates()  
-> 建议：限制采集范围，避免采集其他敏感数据。
+> 脚本通过 GM_xmlhttpRequest 向用户配置的 Discord Webhook 发送地理坐标、地址、地图截图等信息。  
+> 位置：sendToDiscord() 函数  
+> 建议：警告用户不要填写第三方 Webhook，防止敏感信息泄露。
 
 **🟠 MEDIUM** — 权限滥用  
-> 脚本申请 GM_xmlhttpRequest 权限并实际使用，存在数据外传风险。  
-> 位置：@grant GM_xmlhttpRequest  
-> 建议：仅申请必要权限，减少攻击面。
+> 脚本申请了 GM_xmlhttpRequest 权限，并允许 @connect 到 discord.com 和 nominatim.openstreetmap.org，存在外传风险。  
+> 位置：元数据 @grant/@connect  
+> 建议：限制 @connect 域名，最小化权限。
 
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请 @connect discord.com 和 nominatim.openstreetmap.org，允许任意外部通信。  
-> 位置：@connect discord.com, @connect nominatim.openstreetmap.org  
-> 建议：限制 connect 域名，仅允许必要的 API。
+**🟠 MEDIUM** — 供应链风险  
+> 脚本未检测到代码混淆，但部分功能依赖用户输入 Discord Webhook，存在供应链风险（如钓鱼 Webhook）。  
+> 位置：sendToDiscord() 函数  
+> 建议：提醒用户仅使用可信 Webhook。
 
-**🟡 LOW** — 一般安全建议  
-> 脚本未检测到远程代码执行、混淆、DOM XSS、敏感 API 调用、供应链风险、iframe 风险等问题。  
-> 位置：全局  
-> 建议：保持代码透明，避免引入高风险操作。
+**🟠 MEDIUM** — 敏感 API 调用  
+> 脚本通过 Notification API 发送通知，可能被滥用。  
+> 位置：sendNotification() 函数  
+> 建议：仅在用户明确授权后使用通知。
+
+**🟡 LOW** — 隐私采集  
+> 脚本通过 GM_setValue/GM_getValue 存储和读取用户设置，包括 Discord Webhook URL。  
+> 位置：全局状态管理  
+> 建议：确保存储内容不包含敏感信息。
 
 ---
 

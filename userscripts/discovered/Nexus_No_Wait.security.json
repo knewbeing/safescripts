@@ -10,67 +10,67 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "使用 GM.xmlHttpRequest 和 fetch 进行网络请求，仅向 *.nexusmods.com 和 raw.githubusercontent.com 发起请求，未检测到用户数据、页面内容或 Cookie 外传。",
-      "location": "gmRequest, getDownloadUrl, normalizeDownloadUrl, startDownloadFlow",
-      "recommendation": "确保请求仅用于功能所需，避免携带敏感用户数据。",
+      "description": "使用 GM.xmlHttpRequest/GM_xmlhttpRequest 进行网络请求，仅限于 nexusmods.com 和 raw.githubusercontent.com，无发现向第三方服务器外传用户数据。",
+      "location": "gmRequest, getDownloadUrl, normalizeDownloadUrl",
+      "recommendation": "确保请求内容不包含敏感用户数据，且目标域名可信。",
       "severity": "CRITICAL",
-      "type": "数据外传"
+      "type": "数据外传检查"
     },
     {
-      "description": "未检测到隐私采集行为，如读取 cookie、localStorage、sessionStorage、IndexedDB、剪贴板、表单字段或监听键盘输入。",
+      "description": "未发现 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板读取、键盘监听、表单读取等隐私采集行为。",
       "location": "全局",
-      "recommendation": "保持现状，勿添加隐私采集代码。",
+      "recommendation": "保持不采集用户隐私数据。",
       "severity": "CRITICAL",
-      "type": "隐私采集"
+      "type": "隐私采集检查"
     },
     {
-      "description": "未检测到远程代码执行风险，如 eval、new Function、setTimeout(string)、setInterval(string)、innerHTML 插入脚本、@require 加载远程 JS。",
+      "description": "未发现 eval、new Function、setTimeout(string)、setInterval(string)、动态 script 标签、@require 动态远程 JS、document.write 插入脚本等远程代码执行风险。",
       "location": "全局",
-      "recommendation": "保持现状，勿添加动态代码执行。",
+      "recommendation": "继续避免使用动态代码执行相关 API。",
       "severity": "HIGH",
-      "type": "远程代码执行"
+      "type": "远程代码执行检查"
     },
     {
-      "description": "未检测到代码混淆行为，代码结构清晰，无 base64/unicode 混淆，无高度压缩单行代码。",
+      "description": "未发现代码混淆、base64 解码执行、字符串数组混淆、unicode 混淆或高度压缩单行代码。",
       "location": "全局",
-      "recommendation": "保持代码可读性。",
+      "recommendation": "保持代码可读性，便于安全审计。",
       "severity": "HIGH",
-      "type": "代码混淆"
+      "type": "代码混淆检查"
     },
     {
-      "description": "未检测到 DOM XSS 或注入风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML。",
+      "description": "未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未见 document.write 注入不可信内容，未见 iframe src 为 javascript:。",
       "location": "全局",
-      "recommendation": "如需插入内容，务必转义。",
+      "recommendation": "继续避免 DOM XSS 风险。",
       "severity": "HIGH",
-      "type": "DOM XSS / 注入"
+      "type": "DOM XSS 检查"
     },
     {
-      "description": "申请了 GM.xmlHttpRequest、GM_xmlhttpRequest、GM_getValue、GM_setValue、GM_info、GM_addStyle、GM_registerMenuCommand 权限，均有实际使用，无权限滥用。",
-      "location": "元数据与实际代码",
-      "recommendation": "仅申请实际需要的权限。",
+      "description": "@grant 权限与实际代码使用基本匹配，未见高权限滥用。",
+      "location": "元数据与全局",
+      "recommendation": "如未使用 GM_download、GM_openInTab 等高权限，建议不申请。",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "权限滥用检查"
     },
     {
-      "description": "未检测到敏感 API 调用，如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API。",
+      "description": "未发现敏感 API（地理位置、RTCPeerConnection、摄像头/麦克风、剪贴板读取、通知）调用。",
       "location": "全局",
-      "recommendation": "保持现状，勿调用敏感 API。",
+      "recommendation": "继续避免敏感 API 滥用。",
       "severity": "MEDIUM",
-      "type": "敏感 API 调用"
+      "type": "敏感 API 检查"
     },
     {
-      "description": "未使用 @require 加载第三方库，无供应链风险。",
+      "description": "@require 未使用，第三方库仅通过 @connect raw.githubusercontent.com 加载音频文件，来源可信。",
       "location": "元数据",
-      "recommendation": "如需加载第三方库，固定版本哈希并使用官方 CDN。",
+      "recommendation": "如需第三方库，建议锁定版本哈希并使用官方 CDN。",
       "severity": "MEDIUM",
-      "type": "供应链风险"
+      "type": "供应链风险检查"
     },
     {
-      "description": "未检测到修改 frame 保护策略或创建隐藏 iframe。",
+      "description": "未发现修改 frame 保护策略或创建隐藏 iframe 用于数据提取。",
       "location": "全局",
-      "recommendation": "如需使用 iframe，确保安全。",
+      "recommendation": "继续避免 ClickJacking/iframe 风险。",
       "severity": "LOW",
-      "type": "ClickJacking / iframe 风险"
+      "type": "ClickJacking/iframe 检查"
     }
   ],
   "obfuscation_detected": false,
@@ -81,9 +81,9 @@
   "risk_level": "SAFE",
   "script_name": "Nexus No Wait ++",
   "security_score": 100,
-  "summary": "该脚本仅与 NexusMods 官方域和 raw.githubusercontent.com 通信，无用户数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。安全评分为 100，风险极低。",
+  "summary": "该脚本主要用于提升 Nexus Mods 下载体验，未发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用、供应链或 iframe 风险。网络请求仅限于 nexusmods.com 官方域名和 raw.githubusercontent.com（音频文件），无用户数据外传。整体安全性高，建议继续保持良好安全实践。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-25T06:34:09.540473+00:00",
+  "analyzed_at": "2026-06-01T07:03:36.636047+00:00",
   "slug": "Nexus_No_Wait"
 }
