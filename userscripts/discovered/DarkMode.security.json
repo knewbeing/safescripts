@@ -7,18 +7,18 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "申请了 GM_openInTab 权限，但仅用于打开反馈页面，不存在滥用行为。",
-      "location": "@grant 元数据及 window.GM_openInTab 调用",
-      "recommendation": "仅在必要时申请高权限，当前用途合理。",
+      "description": "申请了 GM_openInTab 权限，但仅用于打开开发者主页或反馈页面，未发现滥用。",
+      "location": "@grant 元数据与 window.GM_openInTab 调用",
+      "recommendation": "确认仅用于跳转可信页面，避免用于恶意跳转。",
       "severity": "MEDIUM",
-      "type": "权限申请"
+      "type": "权限滥用"
     },
     {
-      "description": "脚本注册了多个菜单项并存储用户设置，未发现敏感数据外传。",
-      "location": "主逻辑",
-      "recommendation": "继续保持不收集或外传用户隐私数据。",
+      "description": "脚本通过 GM_getValue/GM_setValue 存储和读取用户设置，但未涉及敏感信息。",
+      "location": "多处 GM_getValue/GM_setValue 调用",
+      "recommendation": "确保不存储敏感隐私数据。",
       "severity": "LOW",
-      "type": "隐私合规"
+      "type": "敏感 API 调用"
     }
   ],
   "obfuscation_detected": false,
@@ -28,10 +28,10 @@
   },
   "risk_level": "SAFE",
   "script_name": "Dark Mode",
-  "security_score": 92,
-  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 或供应链风险。所有设置均本地存储，未与外部服务器通信。权限申请合理，整体安全性高。",
+  "security_score": 89,
+  "summary": "该脚本主要用于实现网页暗黑模式，未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险或 WebSocket 使用。权限申请合理，未发现高危行为。整体安全性高。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-01T06:57:30.079289+00:00",
+  "analyzed_at": "2026-06-08T06:38:46.968377+00:00",
   "slug": "DarkMode"
 }

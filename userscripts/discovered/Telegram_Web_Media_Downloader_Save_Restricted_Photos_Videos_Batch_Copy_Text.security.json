@@ -1,0 +1,22 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "SAFE",
+  "script_name": "Telegram Web Media Downloader — Save Restricted Photos & Videos (Batch) + Copy Text",
+  "security_score": 100,
+  "summary": "该脚本仅在 Telegram Web 客户端页面作用，未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。所有下载操作均调用页面内已存在的下载管理器，无任何外部通信或敏感数据处理。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-06-08T06:48:30.034174+00:00",
+  "slug": "Telegram_Web_Media_Downloader_Save_Restricted_Photos_Videos_Batch_Copy_Text"
+}

@@ -38,14 +38,14 @@ title: "地理猜谜助手通用版"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：42/100　　**分析时间**：2026-06-01
+**风险等级**：⛔ CRITICAL　　**安全评分**：42/100　　**分析时间**：2026-06-08
 
-> This script transmits user location data to discord.com and nominatim.openstreetmap.org, which are third-party services. It does not appear to collect sensitive user input (e.g., passwords, cookies), nor does it use eval or dynamic code execution. There is no evidence of code obfuscation or DOM XSS. However, the use of Notification API, modification of native prototypes, and broad permissions increase the risk profile. The main critical risk is data exfiltration of user coordinates.
+> 该脚本存在严重的数据外传风险，尤其是地理坐标可能被发送到 Discord Webhook 和第三方地理编码服务（nominatim.openstreetmap.org），可能导致用户隐私泄露。未发现明显的隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。脚本权限申请合理但存在一定滥用空间。总体安全风险为 CRITICAL，不建议在敏感环境下使用。
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：discord.com, nominatim.openstreetmap.org） |
-| 隐私采集 | ❌ 检测到（Reads and stores user hotkey and feature toggle preferences via GM_getValue/GM_setValue., Sends user coordinates to third-party services.） |
+| 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -53,30 +53,25 @@ title: "地理猜谜助手通用版"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Exfiltration  
-> The script sends location data to discord.com via GM_xmlhttpRequest, which may include user coordinates or game-related information. This is a third-party server and may be used for tracking or data collection.  
-> 位置：send location to discord (feature, implied by description and GM_xmlhttpRequest usage)  
-> 建议：Warn users about data transmission to discord.com. Only send minimal necessary data and allow users to opt-out.
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过 GM_xmlhttpRequest 发送地理坐标到 nominatim.openstreetmap.org 进行逆地理编码。  
+> 位置：_getAddress() 函数  
+> 建议：仅允许可信第三方服务，避免发送敏感用户数据。
 
-**⛔ CRITICAL** — Data Exfiltration  
-> The script sends reverse geocoding requests to nominatim.openstreetmap.org with user coordinates to obtain address information.  
-> 位置：_getAddress() function using GM_xmlhttpRequest  
-> 建议：Inform users that their coordinates are sent to a third-party geocoding service. Consider caching or minimizing requests.
+**⛔ CRITICAL** — 数据外传  
+> 脚本支持将地理坐标通过 Discord Webhook 发送到 discord.com，可能导致用户地理位置外泄。  
+> 位置：功能描述和 @connect discord.com  
+> 建议：仅允许用户主动触发，明确告知用户数据外传风险。
 
-**🟠 MEDIUM** — Sensitive API Usage  
-> The script requests Notification API permission and can send browser notifications.  
-> 位置：requestNotificationPermission(), sendNotification()  
-> 建议：Ensure notifications are not abused for spam. Only use with user consent.
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 GM_xmlhttpRequest 权限并实际使用，存在向第三方服务器发送数据的能力。  
+> 位置：元数据 @grant GM_xmlhttpRequest, 代码多处  
+> 建议：最小化权限申请，限制外部通信。
 
-**🟠 MEDIUM** — Sensitive API Usage  
-> The script applies Proxy wrappers to native prototypes (e.g., Array.prototype.push, Element.prototype.setAttribute, Storage.prototype.setItem, String.prototype.startsWith, fetch) to bypass anti-cheat and detection mechanisms.  
-> 位置：Multiple locations, e.g., platform-specific blocks  
-> 建议：Modifying native prototypes can introduce compatibility and security risks. Limit scope and document changes.
-
-**🟠 MEDIUM** — Permission Usage  
-> The script requests GM_xmlhttpRequest permission, which allows arbitrary cross-origin requests.  
-> 位置：@grant GM_xmlhttpRequest  
-> 建议：Ensure this permission is strictly necessary and not abused.
+**🟠 MEDIUM** — 敏感 API 调用  
+> 脚本使用 Notification API 发送通知，可能被滥用。  
+> 位置：sendNotification() 函数  
+> 建议：确保仅在用户明确授权和交互下使用通知。
 
 ---
 

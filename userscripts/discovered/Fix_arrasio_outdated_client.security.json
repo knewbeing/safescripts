@@ -1,0 +1,22 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "SAFE",
+  "script_name": "Fix arras.io outdated client",
+  "security_score": 100,
+  "summary": "该脚本仅重写了 WebSocket 构造函数以修正 arras.io 客户端的时间戳参数，没有任何数据外传、隐私采集、远程代码执行、混淆、XSS、权限滥用或供应链风险。未检测到安全隐患。",
+  "supply_chain_risk": false,
+  "websocket_usage": true,
+  "analyzed_at": "2026-06-08T06:41:53.606825+00:00",
+  "slug": "Fix_arrasio_outdated_client"
+}

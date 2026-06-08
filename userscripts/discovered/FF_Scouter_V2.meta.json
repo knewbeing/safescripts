@@ -23,62 +23,60 @@
   "require": [],
   "metadata_raw": "// @name  FF Scouter V2\n// @namespace  Violentmonkey Scripts\n// @match  https://www.torn.com/*\n// @version  2.77\n// @author  rDacted, Weav3r, xentac, Glasnost\n// @description  Shows the expected Fair Fight score against targets and faction war status\n// @grant  GM_xmlhttpRequest\n// @grant  GM_setValue\n// @grant  GM_getValue\n// @grant  GM_listValues\n// @grant  GM_deleteValue\n// @grant  GM_registerMenuCommand\n// @grant  GM_addStyle\n// @connect  ffscouter.com\n// @license  GPL-3.0\n// @downloadURL  https://update.greasyfork.org/scripts/535292/FF%20Scouter%20V2.user.js\n// @updateURL  https://update.greasyfork.org/scripts/535292/FF%20Scouter%20V2.meta.js",
   "sha256": "785e4510a197fc33397b0a91dace999c6555d9a29d01237840ae35e708c52975",
-  "discovered_at": "2026-06-01T06:51:29.976747+00:00",
+  "discovered_at": "2026-06-08T06:33:34.937969+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 16204,
+  "install_count": 16711,
   "good_ratings": 3,
   "bad_ratings": 3,
   "summary": {
     "applicable_sites": [
-      "Torn 城市游戏"
+      "Torn 城市"
     ],
-    "description": "此脚本在 Torn 游戏网站上显示目标玩家的公平战斗分数和帮派战争状态，帮助你更好地选择攻击对象。它会自动获取相关数据并在页面上展示，提升游戏策略性。",
+    "description": "此脚本在 Torn 游戏网站上显示目标玩家的公平战斗分数和帮派战争状态，帮助玩家更好地评估攻击目标。它会自动获取并展示相关信息，提升游戏策略性。",
     "permissions": [
       {
-        "explanation": "用于从外部网站获取公平战斗分数和帮派信息。",
+        "explanation": "用于发送网络请求，获取外部数据。",
         "grant": "GM_xmlhttpRequest"
       },
       {
-        "explanation": "保存脚本设置和缓存数据，避免重复请求。",
+        "explanation": "用于保存脚本设置和数据。",
         "grant": "GM_setValue"
       },
       {
-        "explanation": "读取已保存的脚本设置和缓存数据。",
+        "explanation": "用于读取脚本保存的数据。",
         "grant": "GM_getValue"
       },
       {
-        "explanation": "列出所有已保存的脚本数据键，方便管理。",
+        "explanation": "用于列出所有已保存的数据项。",
         "grant": "GM_listValues"
       },
       {
-        "explanation": "删除不再需要的脚本数据，保持存储整洁。",
+        "explanation": "用于删除脚本保存的数据。",
         "grant": "GM_deleteValue"
       },
       {
-        "explanation": "在脚本菜单中添加自定义命令，方便用户操作。",
+        "explanation": "用于在用户脚本菜单中添加自定义命令。",
         "grant": "GM_registerMenuCommand"
       },
       {
-        "explanation": "为页面添加自定义样式，让脚本内容更美观。",
+        "explanation": "用于添加自定义样式，让信息显示更美观。",
         "grant": "GM_addStyle"
       }
     ],
     "tags": [
       "游戏辅助",
-      "数据展示",
+      "信息展示",
       "策略优化",
-      "Torn",
       "帮派管理",
-      "玩家分析"
+      "网页增强"
     ],
     "usage": [
-      "安装脚本后，打开 Torn 游戏网站。",
+      "安装脚本后，访问 Torn 网站。",
       "在玩家或帮派页面会自动显示公平战斗分数和战争状态。",
-      "根据显示信息选择合适的攻击目标。",
-      "如需调整脚本设置，可在浏览器扩展菜单中找到相关命令。"
+      "如需调整设置，可通过用户脚本菜单进行操作。"
     ],
-    "zh_name": "公平战斗分数助手"
+    "zh_name": "公平战斗侦查器 V2"
   }
 }

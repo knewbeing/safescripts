@@ -9,32 +9,39 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script requests @connect permission for translate.googleapis.com and grants GM_xmlhttpRequest, but no actual data transmission to third-party endpoints is present in the provided code. However, the permission could be used for network requests.",
-      "location": "Metadata block (@grant, @connect)",
-      "recommendation": "Restrict @connect and @grant permissions to only those strictly necessary. Review any future code changes for actual data transmission.",
+      "description": "The script requests GM_xmlhttpRequest and @connect permission for translate.googleapis.com, but no actual GM_xmlhttpRequest usage is present in the provided code. This may be over-privileged.",
+      "location": "Metadata block",
+      "recommendation": "Remove unused GM_xmlhttpRequest grant and @connect if not used.",
       "severity": "MEDIUM",
-      "type": "Permission Overprovision"
+      "type": "Permission Overgrant"
     },
     {
-      "description": "The script overrides window.fetch and XMLHttpRequest.prototype.open to block requests to 'neo.character.ai/feature_limits', but does not exfiltrate user data or send it to third-party servers.",
-      "location": "window.fetch, XMLHttpRequest.prototype.open",
-      "recommendation": "Ensure that no user data is sent to untrusted endpoints in future updates.",
+      "description": "The script overrides window.fetch and XMLHttpRequest.prototype.open to block requests to 'neo.character.ai/feature_limits'. This is a form of request interception but does not transmit data to third parties.",
+      "location": "Main script body",
+      "recommendation": "Ensure no sensitive data is leaked in custom fetch/XHR handlers.",
       "severity": "LOW",
       "type": "Network Interception"
     },
     {
-      "description": "The script uses localStorage to store feature toggles (e.g., 'cai_adv_fake_verify', 'cai_bypass_limit'), but does not collect or transmit sensitive user data.",
-      "location": "localStorage usage",
-      "recommendation": "Do not store sensitive information in localStorage. Current usage is safe.",
+      "description": "The script uses localStorage to store feature toggles (e.g., 'cai_adv_fake_verify', 'cai_bypass_limit').",
+      "location": "Main script body",
+      "recommendation": "No sensitive user data is stored; usage is acceptable.",
       "severity": "LOW",
-      "type": "Local Storage Usage"
+      "type": "LocalStorage Usage"
     },
     {
-      "description": "The script uses @require to load turndown.js from unpkg.com, a reputable CDN, but does not pin a specific file hash.",
-      "location": "@require https://unpkg.com/turndown@7.1.3/lib/turndown.browser.umd.js",
-      "recommendation": "Pin the dependency to a specific version and hash if possible to prevent supply chain attacks.",
-      "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
+      "description": "The script uses GM_addStyle to inject CSS and manipulates the DOM to add UI elements. No evidence of DOM XSS or injection of untrusted content.",
+      "location": "initCustomizeButton function",
+      "recommendation": "Continue to avoid inserting untrusted user input into innerHTML.",
+      "severity": "LOW",
+      "type": "DOM Manipulation"
+    },
+    {
+      "description": "The script uses @require to load turndown from unpkg.com, a reputable CDN, and pins the version to 7.1.3.",
+      "location": "Metadata block",
+      "recommendation": "Continue to pin versions for supply chain safety.",
+      "severity": "LOW",
+      "type": "Supply Chain"
     }
   ],
   "obfuscation_detected": false,
@@ -44,10 +51,10 @@
   },
   "risk_level": "LOW",
   "script_name": "C.AI Custom Chat Bubbles + Bypass Chat Limit (Unlock edit message button)",
-  "security_score": 81,
-  "summary": "The script does not exfiltrate user data, collect sensitive information, or execute remote code. It mainly customizes UI and bypasses certain feature limits by intercepting network requests. Permissions are slightly overprovisioned, and a third-party library is loaded from a reputable CDN without a hash. No obfuscation or XSS risks detected. Overall, the script is low risk but should improve supply chain hygiene and permission minimization.",
-  "supply_chain_risk": true,
+  "security_score": 89,
+  "summary": "该脚本主要用于美化 character.ai 聊天界面和绕过聊天限制。未发现数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。权限申请略有冗余（GM_xmlhttpRequest/@connect），但未被实际利用。@require 的第三方库来源可信且已锁定版本。整体风险较低，安全性良好。",
+  "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-01T06:56:19.385698+00:00",
+  "analyzed_at": "2026-06-08T06:37:26.032889+00:00",
   "slug": "CAI_Custom_Chat_Bubbles_Bypass_Chat_Limit_Unlock_edit_message_button"
 }

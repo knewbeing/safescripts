@@ -14,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "GitHub AI 代码分析助手",
   "security_score": 100,
-  "summary": "该脚本仅在 GitHub 仓库页面插入本地按钮和下拉菜单，未检测到任何网络请求、数据外传、隐私采集、远程代码执行、代码混淆、XSS 风险或供应链风险。未申请任何 @grant 权限，未加载远程 JS。整体实现安全，未发现安全隐患。",
+  "summary": "该脚本仅在 GitHub 仓库页面插入本地按钮和下拉菜单，未检测到任何网络请求、数据外传、隐私采集、远程代码执行、代码混淆、XSS、权限滥用或供应链风险。实现逻辑简单，未申请任何 @grant 权限，未加载远程脚本，未监听敏感输入或访问敏感 API。整体安全性高。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-01T06:46:13.791376+00:00",
+  "analyzed_at": "2026-06-08T06:27:56.023595+00:00",
   "slug": "GitHub_20AI_20_E4_BB_A3_E7_A0_81_E5_88_86_E6_9E_90_E5_8A_A9_E6_89_8B"
 }

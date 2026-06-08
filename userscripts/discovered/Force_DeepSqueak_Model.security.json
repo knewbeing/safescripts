@@ -4,52 +4,36 @@
     "destinations": [
       "https://character.ai/*"
     ],
-    "detected": true
+    "detected": false
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script intercepts and replays up to 5 recent XMLHttpRequests using GM_xmlhttpRequest. All requests are sent only to the original domain (character.ai), and no user data is sent to third-party servers. However, replaying requests could potentially duplicate actions or leak sensitive data if the captured requests contain such information.",
-      "location": "XHR interception and replay logic (entire script)",
-      "recommendation": "Warn users about the risks of replaying requests, especially if sensitive actions are involved. Ensure users understand the consequences.",
-      "severity": "MEDIUM",
-      "type": "Data Replay Risk"
+      "description": "The script overrides XMLHttpRequest to capture all XHR requests and allows replaying them using GM_xmlhttpRequest. However, all requests are only sent to the same origin (character.ai) and there is no evidence of exfiltration to third-party servers.",
+      "location": "XMLHttpRequest interception and GM_xmlhttpRequest usage",
+      "recommendation": "Ensure that captured requests are not sent to unintended destinations. Monitor for any future code changes that might introduce third-party endpoints.",
+      "severity": "LOW",
+      "type": "Data Transmission"
     },
     {
-      "description": "The script requests GM_xmlhttpRequest permission, which is used only for replaying requests to the same domain. No evidence of third-party exfiltration or abuse.",
-      "location": "@grant metadata and replay logic",
-      "recommendation": "No action needed, but periodically review for scope creep.",
+      "description": "The script requests GM_xmlhttpRequest permission, which is necessary for its replay functionality, but does not request any other high-risk permissions.",
+      "location": "UserScript metadata",
+      "recommendation": "Limit permissions to only those required. No action needed unless new permissions are added.",
       "severity": "LOW",
       "type": "Permission Usage"
-    },
-    {
-      "description": "The script logs captured request details and replay results to the browser console. If sensitive data is present in requests, it may be exposed in the console.",
-      "location": "console.log statements throughout replay logic",
-      "recommendation": "Consider redacting or minimizing sensitive data in logs.",
-      "severity": "LOW",
-      "type": "Information Disclosure"
-    },
-    {
-      "description": "The script does not use eval, new Function, or dynamic script injection. No obfuscation detected.",
-      "location": "N/A",
-      "recommendation": "No action needed.",
-      "severity": "LOW",
-      "type": "Code Clarity"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [
-      "Intercepts and stores up to 5 recent XHR request details (method, URL, headers, body) in memory only. No evidence of exfiltration."
-    ],
+    "details": [],
     "detected": false
   },
   "risk_level": "LOW",
   "script_name": "Force DeepSqueak Model",
-  "security_score": 89,
-  "summary": "The script is generally safe. It intercepts and replays up to 5 recent XHR requests, but only to the original domain (character.ai). No third-party data exfiltration, privacy-invasive behavior, or code execution risks were found. The main risk is accidental replay of sensitive or state-changing requests, which is mitigated by user confirmation prompts. Logging of request details to the console could expose sensitive data if present. No obfuscation or supply chain risks detected.",
+  "security_score": 97,
+  "summary": "The script does not transmit data to third-party servers, does not collect sensitive user data, and does not use dangerous code execution patterns. It only interacts with the character.ai domain and provides a utility to replay recent XHR requests. No critical or high-risk issues were found. The overall risk is LOW.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-01T07:00:59.544125+00:00",
+  "analyzed_at": "2026-06-08T06:42:01.471425+00:00",
   "slug": "Force_DeepSqueak_Model"
 }

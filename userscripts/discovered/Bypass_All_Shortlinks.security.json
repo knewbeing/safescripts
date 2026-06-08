@@ -2,32 +2,25 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
-      "Third-party shortlink services (dynamic, based on visited URLs)"
+      "update.greasyfork.org (for @require)"
     ],
-    "detected": true
+    "detected": false
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本使用 GM_xmlhttpRequest 进行网络请求，目标为动态短链服务，可能会携带当前页面 URL、Referer、部分页面内容等信息。",
-      "location": "主逻辑代码（未完全展示，但根据功能和 grant 权限推断）",
-      "recommendation": "仅允许请求已知可信短链 API，避免发送敏感信息到第三方，增加用户确认。",
-      "severity": "CRITICAL",
-      "type": "数据外传"
-    },
-    {
-      "description": "@require 加载了 https://update.greasyfork.org/scripts/528923/1588272/MonkeyConfig%20Mod.js，来源为 GreasyFork，但未锁定版本哈希，存在供应链污染风险。",
-      "location": "元数据 @require",
-      "recommendation": "建议使用固定哈希或官方 CDN，定期核查依赖安全性。",
-      "severity": "MEDIUM",
-      "type": "供应链风险"
-    },
-    {
-      "description": "脚本申请了 GM_openInTab、GM_setClipboard、GM_xmlhttpRequest 等高权限，但部分权限可能未被实际使用，存在权限滥用风险。",
+      "description": "脚本申请了 GM_openInTab、GM_setClipboard、GM_xmlhttpRequest 等高权限，但主代码未见实际调用（仅元数据和 @require）。",
       "location": "元数据 @grant",
-      "recommendation": "仅申请实际需要的权限，移除未使用的高权限。",
+      "recommendation": "仅申请实际需要的权限，避免权限滥用。",
       "severity": "MEDIUM",
       "type": "权限滥用"
+    },
+    {
+      "description": "通过 @require 加载了第三方库 MonkeyConfig Mod.js，来源为 greasyfork 官方 CDN，未锁定具体版本哈希。",
+      "location": "@require https://update.greasyfork.org/scripts/528923/1588272/MonkeyConfig%20Mod.js",
+      "recommendation": "建议锁定具体版本或哈希，防止供应链污染。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
     }
   ],
   "obfuscation_detected": false,
@@ -35,12 +28,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "HIGH",
+  "risk_level": "LOW",
   "script_name": "Bypass All Shortlinks",
-  "security_score": 67,
-  "summary": "该脚本通过 GM_xmlhttpRequest 动态访问第三方短链服务，存在数据外传风险，尤其是在未限制目标域名和请求内容的情况下。未发现明显隐私采集、代码混淆或 DOM XSS 风险。@require 依赖未锁定版本，存在一定供应链风险。部分高权限申请可能未被实际使用，建议精简权限。总体安全风险较高，不建议在敏感环境下使用。",
+  "security_score": 84,
+  "summary": "本脚本元数据部分未发现数据外传、隐私采集、远程代码执行、混淆、DOM XSS 等高危行为。存在权限滥用和供应链风险（@require 未锁定版本），但整体风险较低。建议仅保留实际需要的权限，并锁定第三方依赖版本。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-01T06:55:59.616881+00:00",
+  "analyzed_at": "2026-06-08T06:37:08.276097+00:00",
   "slug": "Bypass_All_Shortlinks"
 }

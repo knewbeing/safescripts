@@ -4,15 +4,15 @@ title: "Ping.Sx 增强"
 
 # Ping.Sx 增强
 
-`IP工具`  `批量复制`  `页面增强`  `Ping.Sx`  `效率提升`
+`IP工具`  `页面增强`  `快捷操作`  `复制功能`  `Ping.Sx专用`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/Ping_Sx-Enhanced.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**1.0.3**　　发现时间：**2026-05-18**　　来源：[XIU2/UserScript](https://github.com/XIU2/UserScript) <Badge type="tip" text="GitHub" />
+> 版本：**1.0.3**　　发现时间：**2026-06-08**　　来源：[XIU2/UserScript](https://github.com/XIU2/UserScript) <Badge type="tip" text="GitHub" />
 
 ## 功能介绍
 
-本脚本为 Ping.Sx 网站提供增强功能，包括一键复制所有 IP 地址、点击 IP 链接直接复制而非跳转、以及通过右键点击页面两侧空白处快速返回顶部。让批量操作和页面浏览更加高效便捷。
+本脚本为 Ping.Sx 网站提供增强功能，包括一键复制所有 IP、点击 IP 链接直接复制而不是跳转，以及通过右键点击页面两侧空白处快速回到顶部。
 
 ## 适用网站
 
@@ -21,27 +21,27 @@ title: "Ping.Sx 增强"
 ## 使用方法
 
 1. 安装脚本后，访问 Ping.Sx 网站的 ping、dig 或 check-port 页面。
-2. 点击新增的“一键复制所有 IP”按钮，即可快速复制所有 IP 地址。
-3. 点击 IP 链接时，自动复制 IP 而不是跳转。
-4. 右键点击页面两侧空白区域，可快速返回页面顶部。
-5. 如需切换 IP 复制的分隔方式，可在脚本菜单中设置。
+2. 页面会新增一键复制所有 IP 的按钮。
+3. 点击 IP 链接会直接复制 IP，而不是跳转。
+4. 右键点击页面两侧空白处可快速回到顶部。
+5. 可通过脚本菜单切换 IP 复制的分隔方式。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `GM_setClipboard` | 用于将复制的 IP 地址内容写入剪贴板。 |
-| `GM_registerMenuCommand` | 在脚本菜单中添加自定义命令，方便切换复制分隔方式。 |
-| `GM_unregisterMenuCommand` | 移除已注册的菜单命令，避免重复。 |
-| `GM_getValue` | 读取和保存用户设置（如复制分隔符）。 |
-| `GM_setValue` | 保存用户自定义设置（如分隔符偏好）。 |
-| `window.onurlchange` | 监听网页地址变化，确保功能在页面切换时依然可用。 |
+| `GM_setClipboard` | 允许脚本将内容复制到剪贴板，方便一键复制 IP。 |
+| `GM_registerMenuCommand` | 允许脚本添加自定义菜单命令，便于切换复制 IP 的分隔方式。 |
+| `GM_unregisterMenuCommand` | 允许脚本移除自定义菜单命令，管理菜单项。 |
+| `GM_getValue` | 允许脚本读取存储的设置，如复制分隔方式。 |
+| `GM_setValue` | 允许脚本保存用户设置，如分隔方式切换。 |
+| `window.onurlchange` | 允许脚本监听网址变化，适应页面切换。 |
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-06-01
+**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-06-08
 
-> 该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。所有功能均在本地页面 DOM 操作和剪贴板操作范围内，未与第三方服务器通信。权限申请与实际使用相符，未发现高危行为。
+> 该脚本未检测到任何网络数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。所有功能均为本地页面增强，未与第三方服务器通信。权限申请合理，未超出实际使用范围。整体安全性高，适合使用。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -56,4 +56,4 @@ title: "Ping.Sx 增强"
 
 ---
 
-*由 SafeScripts 自动发现 · [查看原始来源](https://raw.githubusercontent.com/XIU2/UserScript/de4fcb506ced59aa0c6637ab7c52a2594fa050ed/Ping.Sx-Enhanced.user.js)*
+*由 SafeScripts 自动发现 · [查看原始来源](https://raw.githubusercontent.com/XIU2/UserScript/d8fcb017ba7108be3b9813667e63b7f28cbf6424/Ping.Sx-Enhanced.user.js)*

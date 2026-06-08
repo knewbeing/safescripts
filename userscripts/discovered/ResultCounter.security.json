@@ -14,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "搜索结果自动加序号",
   "security_score": 100,
-  "summary": "该脚本仅在搜索结果页面为每条结果添加序号，不涉及任何网络请求、隐私数据收集、远程代码执行、代码混淆或供应链风险。未发现安全隐患。",
+  "summary": "该脚本仅在搜索引擎页面为搜索结果添加序号，不涉及任何网络请求、隐私数据采集、远程代码执行、代码混淆、DOM XSS、权限滥用或供应链风险。代码结构简单，无安全隐患。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-01T07:06:04.627318+00:00",
+  "analyzed_at": "2026-06-08T06:46:55.050222+00:00",
   "slug": "ResultCounter"
 }

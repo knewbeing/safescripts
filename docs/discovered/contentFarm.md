@@ -1,18 +1,18 @@
 ---
-title: "屏蔽内容农场"
+title: "屏蔽内容农场（油猴脚本）"
 ---
 
-# 屏蔽内容农场
+# 屏蔽内容农场（油猴脚本）
 
-`广告屏蔽`  `内容农场过滤`  `搜索优化`  `谷歌`  `必应`  `清爽体验`
+`广告屏蔽`  `内容农场过滤`  `搜索优化`  `谷歌`  `必应`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/contentFarm.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**0.3.4**　　发现时间：**2026-06-01**　　来源：[limbopro/Adblock4limbo](https://github.com/limbopro/Adblock4limbo) <Badge type="tip" text="GitHub" />
+> 版本：**0.3.4**　　发现时间：**2026-06-08**　　来源：[limbopro/Adblock4limbo](https://github.com/limbopro/Adblock4limbo) <Badge type="tip" text="GitHub" />
 
 ## 功能介绍
 
-该脚本可以自动屏蔽谷歌和必应搜索结果中的内容农场网站，并去除谷歌搜索页面上的Adsense广告，让你的中文搜索体验更加清爽。
+该脚本可以自动屏蔽谷歌和必应搜索结果中的内容农场网站，并清除谷歌搜索结果中的广告，让你的中文搜索体验更加清爽。
 
 ## 适用网站
 
@@ -22,15 +22,15 @@ title: "屏蔽内容农场"
 
 ## 使用方法
 
-1. 安装脚本后，访问谷歌或必应搜索页面。
-2. 搜索任意内容，内容农场结果和广告会自动被隐藏。
-3. 无需手动操作，脚本自动生效。
+1. 1. 安装脚本后，访问谷歌或必应搜索页面。
+2. 2. 搜索任意关键词，内容农场和广告会自动被隐藏。
+3. 3. 无需额外设置，脚本自动运行。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `none` | 脚本不需要额外权限，直接在网页上运行。 |
+| `none` | 脚本不需要额外权限，直接在网页运行。 |
 
 ## 安全分析
 

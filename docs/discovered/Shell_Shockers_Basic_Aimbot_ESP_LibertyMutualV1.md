@@ -30,9 +30,9 @@ title: "Shell Shockers Basic Aimbot + ESP: LibertyMutualV1"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：84/100　　**分析时间**：2026-06-01
+**风险等级**：🟡 LOW　　**安全评分**：84/100　　**分析时间**：2026-06-08
 
-> 该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 或 WebSocket 使用等高危行为。仅存在中等风险项：申请了高权限（unsafeWindows）但未滥用，以及依赖第三方库但来源可信。整体风险较低，建议关注依赖安全和权限最小化。
+> 该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。主要风险为申请了高权限（unsafeWindows）和依赖第三方库（已指定版本，风险较低）。整体安全性较高，适合一般用户使用，但建议持续关注依赖库安全和权限最小化原则。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -46,14 +46,14 @@ title: "Shell Shockers Basic Aimbot + ESP: LibertyMutualV1"
 ### 发现的问题
 
 **🟠 MEDIUM** — 权限滥用  
-> 脚本通过 @grant 申请了 unsafeWindows 权限，但未发现对敏感 API 的滥用。  
-> 位置：@grant 元数据  
-> 建议：仅申请实际需要的权限，避免不必要的高权限。
+> 申请了 @grant unsafeWindows 权限，但实际代码中仅用于访问 unsafeWindow 下的对象和函数，没有发现高危滥用行为。但该权限本身风险较高，建议仅在必要时使用。  
+> 位置：元数据 @grant unsafeWindows  
+> 建议：如非必要，建议移除 unsafeWindows 权限，或限制其使用范围。
 
 **🟠 MEDIUM** — 供应链风险  
-> 脚本通过 @require 加载了第三方库（crypto-js 和 babylonjs），但均来自官方 CDN，且指定了明确版本。  
-> 位置：@require 元数据  
-> 建议：确保第三方库来源可信，并定期检查依赖安全性。
+> 通过 @require 加载了第三方库 babylonjs 和 crypto-js，均来自官方 CDN，且指定了明确版本号，供应链风险较低。但仍建议定期检查依赖安全性。  
+> 位置：元数据 @require  
+> 建议：确保依赖来源可信，定期检查依赖安全性。
 
 ---
 

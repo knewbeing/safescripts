@@ -14,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "Ping.Sx enhancement",
   "security_score": 100,
-  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。所有功能均在本地页面 DOM 操作和剪贴板操作范围内，未与第三方服务器通信。权限申请与实际使用相符，未发现高危行为。",
+  "summary": "该脚本未检测到任何网络数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。所有功能均为本地页面增强，未与第三方服务器通信。权限申请合理，未超出实际使用范围。整体安全性高，适合使用。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-01T07:05:31.939330+00:00",
+  "analyzed_at": "2026-06-08T06:46:27.801420+00:00",
   "slug": "Ping_Sx-Enhanced"
 }

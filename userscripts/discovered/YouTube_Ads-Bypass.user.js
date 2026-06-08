@@ -25,7 +25,7 @@
 // @name:zh-CN           YouTube Ads-Bypass (跳过并隐藏所有广告)
 // @name:zh-TW           YouTube Ads-Bypass (跳過並隱藏所有廣告)
 // @namespace            YouTube_Ad-Bypass_Fckoff
-// @version              1.28.1
+// @version              1.28.2
 // @description:ar       سكربت خفيف وعالي الأداء لتخطي إعلانات الفيديو وإخفاء عناصر واجهة المستخدم المزعجة (اللافتات، التراكبات، والعروض الترويجية).
 // @description:bn       ভিডিও বিজ্ঞাপন এড়িয়ে যাওয়ার এবং বিরক্তিকর ইউআই উপাদান (ব্যানার, ওভারলে এবং প্রমো) লুকানোর জন্য লাইটওয়েট এবং উচ্চ-ক্ষমতাসম্পন্ন স্ক্রিপ্ট।
 // @description:cs       Lehký a vysoce výkonný skript pro přeskočení video reklam a skrytí otravných prvků rozhraní (bannery, překryvy a promo akce).
@@ -65,11 +65,12 @@
     'use strict';
 
     // ==========================================
-    // Opciones del Sistema de Diagnóstico (Debug)
+    // Opciones del Sistema
     // ==========================================
-    const DEBUG_CONFIG = {
-      enabled: true,
-      prefix: '[YouTube Ads-Bypass]'
+    const CONFIG = {
+      debug: true,
+      prefix: '[YouTube Ads-Bypass]',
+      maxCheckAttempt: 2
     };
 
     const LANGS = {
@@ -77,25 +78,29 @@
         bn: { wait_or_skip: 'অপেক্ষা করুন বা স্কিপ টিপুন' }, // Bengalí
         cs: { wait_or_skip: 'Počkejte nebo klikněte na Přeskočit' }, // Checo
         de: { wait_or_skip: 'Warten oder Überspringen' }, // Alemán
+        el: { wait_or_skip: 'Περιμένετε ή πατήστε Παράλειψη' }, // Griego
         en: { wait_or_skip: 'Wait or Press Skip' }, // Inglés
         es: { wait_or_skip: 'Espera o Presiona Saltar' }, // Español
         fa: { wait_or_skip: 'منتظر بمانید یا رد کردن را فشار دهید' }, // Persa
         fr: { wait_or_skip: 'Attendre ou Passer' }, // Francés
+        he: { wait_or_skip: 'המתן או לחץ על דילוג' }, // Hebreo
         hi: { wait_or_skip: 'प्रतीक्षा करें या छोड़ें दबाएं' }, // Hindi
+        hu: { wait_or_skip: 'Várjon vagy nyomja meg a Kihagyást' }, // Húngaro
         id: { wait_or_skip: 'Tunggu atau Tekan Lewati' }, // Indonesio
         it: { wait_or_skip: 'Aspetta o Premi Salta' }, // Italiano
         ja: { wait_or_skip: '待つかスキップを押す' }, // Japonés
         ko: { wait_or_skip: '기다리거나 건너뛰기 누르기' }, // Coreano
         nl: { wait_or_skip: 'Wacht of druk op Overslaan' }, // Neerlandés
         pl: { wait_or_skip: 'Czekaj lub naciśnij Pomiń' }, // Polaco
-        pt: { wait_or_skip: 'Aguarde ou Pressione Pular' }, // Português
+        pt: { wait_or_skip: 'Aguarde ou Pressione Pular' }, // Portugués
         ro: { wait_or_skip: 'Așteaptă sau apasă Înapoi/Sari' }, // Rumano
         ru: { wait_or_skip: 'Подождите или нажмите Пропустить' }, // Ruso
+        sv: { wait_or_skip: 'Vänta eller tryck på Hoppa över' }, // Sueco
         th: { wait_or_skip: 'รอหรือกดข้าม' }, // Tailandés
         tr: { wait_or_skip: 'Bekleyin veya Atla Tuşuna Basın' }, // Turco
         uk: { wait_or_skip: 'Зачекайте або натисніть Пропустити' }, // Ucraniano
         vi: { wait_or_skip: 'Chờ hoặc nhấn Bỏ qua' }, // Vietnamita
-        zh: { wait_or_skip: '等待或点击跳过' } // Chino Simplificado (zh-CN)
+        zh: { wait_or_skip: '等待或点击跳过' } // Chino
     };
 
     const userLang = navigator.language.substring(0, 2);
@@ -105,15 +110,11 @@
     * Centralized message router for the developer console.
     * Applies a standard prefix and allows categorization by alert levels.
     */
-    function log(message, type = 'log') {
-        if (!DEBUG_CONFIG.enabled) return;
-        if (type === 'error') console.error(`${DEBUG_CONFIG.prefix} ❌ ${message}`);
-        else if (type === 'warn') console.warn(`${DEBUG_CONFIG.prefix} ⚠️ ${message}`);
-        else if (type === 'info') console.info(`${DEBUG_CONFIG.prefix} ℹ️ ${message}`);
-        else console.log(`${DEBUG_CONFIG.prefix} ⚙️ ${message}`);
+    function log(message) {
+        console.log(`${CONFIG.prefix} ⚙️ ${message}`);
     }
 
-    log('Starting script...', 'info');
+    log('Starting script...');
 
     /**
      * Configuration object containing CSS selectors for different types of ad elements.
@@ -152,12 +153,6 @@
             '#movie_player',
             '.html5-video-player'
         ],
-        // Classes added by YouTube when an ad is active
-        adsClasses: [
-            '.ad-showing',
-            '.ad-interrupting',
-            '.ytp-ad-player-overlay'
-        ],
         // Selectors for the various "Skip Ad" buttons
         skipButtons: [
             '.ytp-ad-skip-button-modern',
@@ -167,6 +162,14 @@
             '.ytp-ad-skip-button-container'
         ]
     };
+
+    // Classes added by YouTube when an ad is active
+    const adsClasses = [
+        'ad-showing',
+        'ad-interrupting',
+        'ytp-ad-player-overlay',
+        'ytp-ad-display-override'
+    ];
 
     const selector = {
         playerSpinner: '.ytp-spinner',
@@ -188,6 +191,7 @@
     let spinner = null;
     let cuedThumbOverlay = null;
     let lastSkipAttempt = 0;
+    let lastCheckAttempt = 0;
     let isAdDetected = false;
 
     /**
@@ -224,14 +228,16 @@
             }
             ${selectors.skipButtons} {
                 display: flex !important;
-                border: 1px solid yellow !important;
-                background-color: rgba(247,241,40,0.6) !important;
-                box-shadow: 0 0 20px #DD3 !important;
+                text-transform: uppercase !important;
+                border: 1px solid #fd0 !important;
+                background-color: rgba(255,230,50,0.65) !important;
+                box-shadow: 0 0 20px #fc0 !important;
                 overflow: hidden !important;
             }
-            .ytp-skip-ad {
-                display: flex !important;
+            ${adsClasses.map(c => `.${c} .ytp-spinner-circle`).join(', ')} {
+                border-color: #fc0 #fc0 transparent !important;
             }
+            .ytp-skip-ad,
             .ytp-prev-button,
             .ytp-next-button {
                 display: flex !important;
@@ -254,16 +260,17 @@
             }
         `;
         (document.head || document.documentElement).appendChild(style);
-        log('Styles injected', 'info');
+        log('Styles injected');
     };
 
+    /**
+     * Checks if the player has some ad class.
+     */
      const isAdActive = () => {
-        return (
-            player.classList.contains('ad-showing') ||
-            player.classList.contains('ad-interrupting') ||
-            player.classList.contains('ytp-ad-player-overlay')
-        );
-    }
+         return adsClasses.some(function(item) {
+             return player.classList.contains(item);
+         });
+     };
 
     /**
      * Executes the skipping logic: fast-forwards the video to the end and clicks the skip button.
@@ -276,109 +283,126 @@
         }
         if (spinner){
             spinner.style.display = '';
-            if (cuedThumbOverlay){
-                cuedThumbOverlay.style.display = 'none';
-            }
+        }
+        if (cuedThumbOverlay){
+            cuedThumbOverlay.style.display = 'none';
         }
         if (video.style.display != 'none') {
             video.style.display = 'none';
         }
         if (!video.paused){
-            log('Ad paused', 'info');
+            log('Ad paused');
             video.pause();
             video.paused = true;
         }
         if (!video.muted) {
             video.muted = true;
-            video.volume = 0;
-            log('Ad muted', 'info');
+            log('Ad muted');
         }
-        if (video.playbackRate !== 2.0) {
+        if (video.playbackRate != 2.0) {
             video.playbackRate = 2.0;
-            log('Ad accelerated', 'info');
+            log('Ad accelerated');
         }
         if (isFinite(video.duration) && video.duration > 0) {
             video.currentTime = video.duration - 0.1;
-            log('Ad seekToEnd', 'info');
+            log('Ad seekToEnd');
         }
         if (video.style.display == 'none') {
             video.style.display = 'block';
         }
         if (video.paused) {
             video.play();
-            log('Ad play', 'info');
+            log('Ad play');
         }
     };
 
     /**
      * Checks if the player is currently showing an ad.
      */
-    const checkAndSkip = () => {
+    const checkVideoAds = () => {
        // Re-fetch the video element if it's missing or disconnected from DOM
        if (!video || !video.isConnected) {
-            video = document.querySelector('video');
+            video = player.querySelector('video');
         }
         if (!video) return;
 
         const now = Date.now();
         // Throttle skip attempts to avoid rapid loops
-        if (now - lastSkipAttempt < 500) return;
+        if (now - lastSkipAttempt < 250) return;
         lastSkipAttempt = now;
 
         // If player has ad-related classes, trigger skip; otherwise, reset playback speed
-        if (isAdActive()) {
+        if ( isAdActive() ) {
             isAdDetected = true;
-            log('SkipAd start', 'info');
+            lastCheckAttempt = CONFIG.maxCheckAttempt;
+            log('SkipAd start');
             skipAction();
-            log('SkipAd end', 'info');
-        } else if (isAdDetected) {
+            log('SkipAd end');
+        } else if (lastCheckAttempt > 0) {
             isAdDetected = false;
-            video.style.display = 'block';
+            lastCheckAttempt--;
+            if (video.style.display == 'none') {
+                video.style.display = 'block';
+            }
             if (spinner) {
                 spinner.style.display = 'none';
-                if (cuedThumbOverlay){
-                    cuedThumbOverlay.style.display = 'none';
-                }
-                log('Hide spinner and cued thumbnail', 'info');
+                log('Hide cued thumbnail');
+            }
+            if (cuedThumbOverlay){
+                cuedThumbOverlay.style.display = 'none';
+                log('Hide spinner');
             }
             if (video.muted) {
                 video.muted = false;
-                log('Restore mute', 'info');
+                log('Restore mute');
             }
             // Restore normal speed if the script had previously accelerated it
             if (video.playbackRate > 1) {
                 video.playbackRate = 1;
-                log('Restore playRate', 'info');
+                log('Restore playRate');
             }
-            //if (video.paused) { video.play(); log('Restore pause');}
-            log('Restore Play', 'info');
+            if (video.paused) {
+                video.play();
+                log('Restore pause');
+            }
+            log('Restore Play');
         }
     };
+
 
     /**
      * Initializes a MutationObserver to watch for changes in the player's class attribute.
      * This allows the script to react instantly when an ad starts.
      */
     const setupPlayerObserver = () => {
-        player = document.querySelector(selectors.player);
+        if (!player) {
+            player = document.querySelector(selectors.player);
+        }
 
         if (player && !playerObserver) {
-            playerObserver = new MutationObserver(() => checkAndSkip(player));
+            video = player.querySelector('video');
+
+            playerObserver = new MutationObserver(() => checkVideoAds());
             // Monitor class changes which indicate ad transitions
             playerObserver.observe(player, { attributes: true, attributeFilter: ['class'] });
 
-            spinner = player.querySelector(selector.playerSpinner);
-            cuedThumbOverlay = player.querySelector(selector.cuedThumbOverlay);
-
-            // Run initial check
-            checkAndSkip(player);
+             // Run initial check
+            checkVideoAds();
         }
     };
 
     // Event listeners to handle page loads and YouTube's internal navigation (SPA)
     window.addEventListener('yt-navigate-finish', setupPlayerObserver);
     window.addEventListener('yt-page-data-updated', setupPlayerObserver);
+
     window.addEventListener('load', (event) => {
+        if (!player) {
+            player = document.querySelector(selectors.player);
+        }
+        if (player) {
+            spinner = player.querySelector(selector.playerSpinner);
+            cuedThumbOverlay = player.querySelector(selector.cuedThumbOverlay);
+        }
         setupPlayerObserver();
     });
 
@@ -387,19 +411,18 @@
         injectStyles();
     });
 
-
     /**
      * Fallback mechanism: attempts to initialize the observer every 1000ms
      * in case 'load' events fire before the player is ready.
      */
     let retry = 0;
     const fallback = setInterval(() => {
-        log('attempt setupPlayerObserver:' + retry, 'info');
+        log('attempt setupPlayerObserver:' + retry);
         setupPlayerObserver();
         // Stop retrying if observer is active or after 10 failed attempts
         if (playerObserver || retry > 10) clearInterval(fallback);
         retry++;
     }, 1000);
 
-    log('Script loaded!', 'info');
+    log('Script loaded!');
 })();

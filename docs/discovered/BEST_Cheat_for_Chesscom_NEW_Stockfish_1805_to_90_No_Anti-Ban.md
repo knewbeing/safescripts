@@ -35,9 +35,9 @@ title: "Chess.com高级作弊助手"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：42/100　　**分析时间**：2026-06-01
+**风险等级**：⛔ CRITICAL　　**安全评分**：50/100　　**分析时间**：2026-06-08
 
-> 该脚本存在严重的数据外传风险，因 @connect * 允许任意域名通信，且与多个第三方服务器交互，可能导致用户数据泄露。部分高权限申请未实际使用，存在权限滥用嫌疑。依赖第三方 CDN 加载引擎文件，存在一定供应链风险。未发现明显隐私采集、代码混淆或 DOM XSS 问题。总体安全风险极高，不建议在生产环境或含敏感信息的环境中使用。
+> 该脚本存在严重的数据外传风险（@connect * 允许任意域名通信），并允许加载远程 JS/WASM 资源，存在远程代码执行和供应链污染隐患。未发现明显隐私采集、代码混淆或 DOM XSS 问题。建议移除 @connect * 并限制资源加载来源。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -50,30 +50,25 @@ title: "Chess.com高级作弊助手"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> @connect * 允许脚本向任意域名发起网络请求，存在数据外传和隐私泄露的高风险。  
-> 位置：@connect * (元数据)  
+**⛔ CRITICAL** — Data Exfiltration  
+> @connect * 允许脚本向任意域名发起网络请求，存在严重的数据外传风险。  
+> 位置：metadata (@connect *)  
 > 建议：移除 @connect *，仅允许必要的可信域名。
 
-**⛔ CRITICAL** — 数据外传  
-> @connect stockfish.online、chess-api.com 允许与第三方服务器通信，可能导致用户数据外传。  
-> 位置：@connect (元数据)  
-> 建议：仅允许必要的可信域名，明确数据传输内容。
+**🔴 HIGH** — Remote Code Execution / Supply Chain  
+> 脚本通过 GM_xmlhttpRequest 加载外部资源（如 Stockfish 引擎），并允许自定义 WASM/JS URL，存在远程代码执行和供应链污染风险。  
+> 位置：LOCAL_ENGINES 配置与 GM_xmlhttpRequest 调用  
+> 建议：仅允许加载官方 CDN 且固定版本哈希，禁止自定义任意 URL。
 
-**🟠 MEDIUM** — 供应链风险  
-> 脚本通过 GM_xmlhttpRequest、fetch 等方式加载外部 JS/WASM 引擎，部分来源为 unpkg.com、cdnjs.cloudflare.com，存在供应链污染风险。  
-> 位置：LOCAL_ENGINES 配置、@resource stockfish.js  
-> 建议：仅使用官方 CDN 并锁定具体版本，避免使用可变 URL。
+**🟠 MEDIUM** — Permission Abuse  
+> @grant 申请了 GM_xmlhttpRequest、GM_getResourceText 等高权限，但部分权限未在代码片段中实际使用，存在权限滥用嫌疑。  
+> 位置：metadata (@grant)  
+> 建议：仅申请实际需要的权限，最小化权限集。
 
-**🟠 MEDIUM** — 权限滥用  
-> 申请了 GM_xmlhttpRequest、GM_getResourceText 等高权限，但部分权限未在代码片段中实际使用，存在权限滥用嫌疑。  
-> 位置：@grant (元数据)  
-> 建议：仅申请实际需要的权限，移除未使用的高权限。
-
-**🟠 MEDIUM** — 供应链风险  
-> @resource stockfish.js 通过 unpkg.com 加载，虽然锁定了版本，但依赖第三方 CDN，存在一定供应链风险。  
-> 位置：@resource (元数据)  
-> 建议：建议校验资源完整性或使用官方发布渠道。
+**🟠 MEDIUM** — Supply Chain Risk  
+> @resource 加载的 stockfish.js 来自 unpkg.com，虽然为官方 CDN，但未锁定内容哈希，存在供应链变更风险。  
+> 位置：metadata (@resource stockfish.js)  
+> 建议：建议使用带有内容哈希的 CDN 地址，或本地托管。
 
 ---
 

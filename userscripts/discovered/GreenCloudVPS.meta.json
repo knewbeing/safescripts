@@ -17,7 +17,7 @@
   "require": [],
   "metadata_raw": "// @name  GreenCloudVPS\n// @namespace  http://tampermonkey.net/\n// @version  0.1\n// @description  try to take over the world!\n// @author  You\n// @include  https://greencloudvps.com/*\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=greencloudvps.com\n// @grant  none",
   "sha256": "bf9e479d88f8125948ae08fb54df670409555954cb5105fb521050a150726f50",
-  "discovered_at": "2026-06-01T06:48:30.305562+00:00",
+  "discovered_at": "2026-06-08T06:31:11.788388+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
@@ -28,26 +28,25 @@
     "applicable_sites": [
       "GreenCloudVPS官网"
     ],
-    "description": "本脚本自动化GreenCloudVPS官网的购物流程，包括自动点击按钮、选择支付方式和同意条款，帮助用户快速完成订单。适用于促销和购物车页面。",
+    "description": "本脚本自动化GreenCloudVPS官网的购物流程，包括自动点击继续、结账、选择支付方式和同意条款，减少手动操作。适用于抢购活动或快速下单。",
     "permissions": [
       {
-        "explanation": "脚本无需特殊权限，仅操作网页内容。",
+        "explanation": "脚本无需额外权限，仅操作网页上的元素。",
         "grant": "none"
       }
     ],
     "tags": [
       "自动化",
       "购物助手",
+      "抢购",
       "VPS",
-      "网站脚本",
-      "支付流程"
+      "网页操作"
     ],
     "usage": [
-      "1. 安装脚本后，访问GreenCloudVPS官网。",
-      "2. 进入促销或购物车页面，脚本会自动进行下一步操作。",
-      "3. 在支付页面，脚本会自动选择支付宝并同意条款。",
-      "4. 无需手动点击按钮，订单流程自动完成。"
+      "安装脚本后，访问GreenCloudVPS官网。",
+      "在购物流程页面，脚本会自动点击相关按钮，无需手动操作。",
+      "如遇抢购活动，脚本会自动刷新页面并处理异常。"
     ],
-    "zh_name": "GreenCloudVPS购物自动化"
+    "zh_name": "GreenCloudVPS自动购物助手"
   }
 }

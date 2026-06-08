@@ -7,16 +7,16 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "申请了 GM_xmlhttpRequest 权限，但实际代码未发现任何外部网络请求或数据外传行为。",
+      "description": "申请了 GM_xmlhttpRequest 权限，但在当前代码片段未见实际使用。若后续代码有使用需重点关注其目标地址和数据内容。",
       "location": "元数据 @grant",
-      "recommendation": "如无实际用途，建议移除 GM_xmlhttpRequest 权限以降低权限滥用风险。",
+      "recommendation": "如无实际用途建议移除高权限申请，或确保仅用于本地导出/下载。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "申请了 GM_openInTab / GM.openInTab 权限，但实际代码未发现相关 API 使用。",
+      "description": "申请了 GM_openInTab/GM.openInTab 权限，但在当前代码片段未见实际使用。",
       "location": "元数据 @grant",
-      "recommendation": "如无实际用途，建议移除 GM_openInTab / GM.openInTab 权限以降低权限滥用风险。",
+      "recommendation": "如无实际用途建议移除高权限申请，减少潜在滥用风险。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     }
@@ -29,9 +29,9 @@
   "risk_level": "LOW",
   "script_name": "Export ChatGPT/Gemini/Grok conversations as Markdown",
   "security_score": 84,
-  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险等高危行为。仅存在申请了未使用的高权限（GM_xmlhttpRequest, GM_openInTab），建议去除以进一步降低风险。整体安全性较高，适合日常使用。",
+  "summary": "该脚本主要功能为将 ChatGPT/Gemini/Grok 聊天记录导出为 Markdown，本地处理页面内容，无发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险等高危行为。仅存在未使用的高权限申请（GM_xmlhttpRequest, GM_openInTab），建议根据实际用途精简权限。整体安全风险较低。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-01T07:00:28.753205+00:00",
+  "analyzed_at": "2026-06-08T06:41:27.127113+00:00",
   "slug": "Export_ChatGPTGeminiGrok_conversations_as_Markdown"
 }

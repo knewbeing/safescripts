@@ -2,95 +2,70 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
-      "discord.com",
-      "nominatim.openstreetmap.org"
+      "nominatim.openstreetmap.org",
+      "discord.com"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 GM_xmlhttpRequest 发送请求到 nominatim.openstreetmap.org（第三方地理反查 API），可能传递用户操作的地理坐标。",
-      "location": "_getAddress() 函数",
-      "recommendation": "仅在用户明确操作时发送请求，并在文档中告知用户。",
+      "description": "The script sends latitude and longitude coordinates to nominatim.openstreetmap.org for reverse geocoding using GM_xmlhttpRequest.",
+      "location": "function _getAddress(lat, lng)",
+      "recommendation": "Ensure only non-sensitive, non-personal data is sent. Inform users about this external request.",
       "severity": "CRITICAL",
-      "type": "数据外传"
+      "type": "Data Exfiltration"
     },
     {
-      "description": "脚本通过 GM_xmlhttpRequest 发送数据到 discord.com（通常为 webhook），用于“send to discord”功能，可能包含用户游戏内坐标、猜测等敏感信息。",
-      "location": "sendToDiscord 相关功能（未完全展示，但元数据和描述已表明）",
-      "recommendation": "确保用户知情并自愿触发，避免自动上报。",
+      "description": "The script is designed to send map pin data to Discord (discord.com) via webhook or API (as indicated by @connect and feature description).",
+      "location": "Feature: sendToDiscord",
+      "recommendation": "Ensure no sensitive or personal user data is sent. Make this behavior opt-in and clearly inform users.",
       "severity": "CRITICAL",
-      "type": "数据外传"
+      "type": "Data Exfiltration"
     },
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限，并声明 @connect discord.com，存在将用户数据外传到第三方的能力。",
-      "location": "元数据 @grant/@connect",
-      "recommendation": "仅在必要时申请权限，最小化外联域名。",
+      "description": "The script requests Notification API permission and can send browser notifications.",
+      "location": "requestNotificationPermission, sendNotification",
+      "recommendation": "Only use Notification API with clear user consent and avoid spamming notifications.",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "Sensitive API Usage"
     },
     {
-      "description": "脚本申请了 GM_setValue/GM_getValue 权限，但实际仅用于本地存储热键和功能开关，无明显滥用。",
-      "location": "元数据 @grant/@实际代码",
-      "recommendation": "无。",
-      "severity": "LOW",
-      "type": "权限滥用"
+      "description": "The script applies Proxy wrappers to native prototypes (e.g., setAttribute, push, setItem, fetch) which may break page functionality or introduce unexpected behavior.",
+      "location": "Multiple locations (platform-specific code blocks)",
+      "recommendation": "Limit prototype modifications to only what is strictly necessary and document all changes.",
+      "severity": "MEDIUM",
+      "type": "Potential Stability/Security Risk"
     },
     {
-      "description": "脚本未检测到 eval、new Function、setTimeout(string) 等远程代码执行风险。",
-      "location": "全局",
-      "recommendation": "保持此安全实践。",
-      "severity": "LOW",
-      "type": "远程代码执行"
+      "description": "The script requests GM_xmlhttpRequest permission, which allows arbitrary cross-origin requests.",
+      "location": "@grant GM_xmlhttpRequest",
+      "recommendation": "Limit usage to only required domains and document all external requests.",
+      "severity": "MEDIUM",
+      "type": "Permission Usage"
     },
     {
-      "description": "脚本未检测到代码混淆、base64 解码、字符串数组映射等混淆特征。",
-      "location": "全局",
-      "recommendation": "保持代码可读性。",
-      "severity": "LOW",
-      "type": "代码混淆"
-    },
-    {
-      "description": "脚本未检测到 DOM XSS 风险（未直接插入用户输入到 innerHTML/outerHTML）。",
-      "location": "全局",
-      "recommendation": "保持此安全实践。",
-      "severity": "LOW",
-      "type": "DOM XSS"
-    },
-    {
-      "description": "脚本未检测到供应链风险（无 @require 第三方库）。",
-      "location": "全局",
-      "recommendation": "保持此安全实践。",
-      "severity": "LOW",
-      "type": "供应链风险"
-    },
-    {
-      "description": "脚本未检测到 WebSocket/EventSource 用法。",
-      "location": "全局",
-      "recommendation": "无。",
-      "severity": "LOW",
-      "type": "数据外传"
-    },
-    {
-      "description": "脚本未检测到敏感 API（如 geolocation、摄像头、麦克风、剪贴板）调用。",
-      "location": "全局",
-      "recommendation": "无。",
-      "severity": "LOW",
-      "type": "敏感 API"
+      "description": "The script requests @connect for discord.com and nominatim.openstreetmap.org, which are third-party services.",
+      "location": "@connect metadata",
+      "recommendation": "Ensure only necessary domains are listed and inform users about all external connections.",
+      "severity": "MEDIUM",
+      "type": "Supply Chain/External Service Risk"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [],
-    "detected": false
+    "details": [
+      "Reads and stores user hotkey and feature toggle preferences via GM_getValue/GM_setValue.",
+      "Sends map coordinates (potentially user location) to external services."
+    ],
+    "detected": true
   },
-  "risk_level": "HIGH",
+  "risk_level": "CRITICAL",
   "script_name": "CheatGuessr Universal | GeoGuessr | OpenGuessr | WorldGuessr | FreeGuessr",
-  "security_score": 50,
-  "summary": "该脚本存在高风险的数据外传行为，主要通过 GM_xmlhttpRequest 将用户游戏数据（如地理坐标、猜测结果等）发送到第三方服务器（nominatim.openstreetmap.org 和 discord.com）。虽然未检测到代码混淆、远程代码执行、DOM XSS 或隐私采集行为，但数据外传风险极高，尤其是自动或未明确告知用户的情况下。建议仅在用户主动操作时发送数据，并在脚本说明中明确告知用户数据流向。",
+  "security_score": 42,
+  "summary": "This script transmits map coordinates to external services (nominatim.openstreetmap.org for reverse geocoding and discord.com for sharing pins), which constitutes critical data exfiltration and privacy risk. It also requests notification permissions and modifies native prototypes, which may impact page stability. No code obfuscation or DOM XSS risks were detected. The script should be considered high risk unless all data transmissions are made fully transparent and strictly limited to non-sensitive information.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-01T06:56:44.121166+00:00",
+  "analyzed_at": "2026-06-08T06:37:48.097014+00:00",
   "slug": "CheatGuessr_Universal_GeoGuessr_OpenGuessr_WorldGuessr_FreeGuessr"
 }

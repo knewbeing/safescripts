@@ -35,13 +35,13 @@ title: "强制使用 DeepSqueak 模型"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-01
+**风险等级**：🟡 LOW　　**安全评分**：97/100　　**分析时间**：2026-06-08
 
-> The script is generally safe. It intercepts and replays up to 5 recent XHR requests, but only to the original domain (character.ai). No third-party data exfiltration, privacy-invasive behavior, or code execution risks were found. The main risk is accidental replay of sensitive or state-changing requests, which is mitigated by user confirmation prompts. Logging of request details to the console could expose sensitive data if present. No obfuscation or supply chain risks detected.
+> The script does not transmit data to third-party servers, does not collect sensitive user data, and does not use dangerous code execution patterns. It only interacts with the character.ai domain and provides a utility to replay recent XHR requests. No critical or high-risk issues were found. The overall risk is LOW.
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：https://character.ai/*） |
+| 数据外传 | ✅ 未检测到 |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
@@ -50,25 +50,15 @@ title: "强制使用 DeepSqueak 模型"
 
 ### 发现的问题
 
-**🟠 MEDIUM** — Data Replay Risk  
-> The script intercepts and replays up to 5 recent XMLHttpRequests using GM_xmlhttpRequest. All requests are sent only to the original domain (character.ai), and no user data is sent to third-party servers. However, replaying requests could potentially duplicate actions or leak sensitive data if the captured requests contain such information.  
-> 位置：XHR interception and replay logic (entire script)  
-> 建议：Warn users about the risks of replaying requests, especially if sensitive actions are involved. Ensure users understand the consequences.
+**🟡 LOW** — Data Transmission  
+> The script overrides XMLHttpRequest to capture all XHR requests and allows replaying them using GM_xmlhttpRequest. However, all requests are only sent to the same origin (character.ai) and there is no evidence of exfiltration to third-party servers.  
+> 位置：XMLHttpRequest interception and GM_xmlhttpRequest usage  
+> 建议：Ensure that captured requests are not sent to unintended destinations. Monitor for any future code changes that might introduce third-party endpoints.
 
 **🟡 LOW** — Permission Usage  
-> The script requests GM_xmlhttpRequest permission, which is used only for replaying requests to the same domain. No evidence of third-party exfiltration or abuse.  
-> 位置：@grant metadata and replay logic  
-> 建议：No action needed, but periodically review for scope creep.
-
-**🟡 LOW** — Information Disclosure  
-> The script logs captured request details and replay results to the browser console. If sensitive data is present in requests, it may be exposed in the console.  
-> 位置：console.log statements throughout replay logic  
-> 建议：Consider redacting or minimizing sensitive data in logs.
-
-**🟡 LOW** — Code Clarity  
-> The script does not use eval, new Function, or dynamic script injection. No obfuscation detected.  
-> 位置：N/A  
-> 建议：No action needed.
+> The script requests GM_xmlhttpRequest permission, which is necessary for its replay functionality, but does not request any other high-risk permissions.  
+> 位置：UserScript metadata  
+> 建议：Limit permissions to only those required. No action needed unless new permissions are added.
 
 ---
 

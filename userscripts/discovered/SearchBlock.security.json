@@ -9,23 +9,30 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 GM_xmlhttpRequest 向第三方服务器 xbaidu.ntaow.com 发起网络请求，可能导致用户数据外传风险。虽然当前请求未携带页面内容或用户数据，但第三方服务器可追踪请求行为。",
+      "description": "脚本通过 GM_xmlhttpRequest 向第三方服务器 xbaidu.ntaow.com 发起网络请求，可能外传用户 Cookie 或页面信息。",
       "location": "GM_xmlhttpRequest 调用",
-      "recommendation": "仅允许可信服务器通信，避免向第三方服务器发送敏感信息。",
+      "recommendation": "仅允许请求可信服务器，避免发送敏感信息，或在代码中明确说明用途。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
       "description": "@grant 仅申请了 GM_xmlhttpRequest，未发现权限滥用。",
       "location": "元数据 @grant",
-      "recommendation": "无须修改。",
+      "recommendation": "无风险。",
       "severity": "LOW",
       "type": "权限申请"
     },
     {
-      "description": "@require 未使用，未发现供应链风险。",
-      "location": "元数据 @require",
-      "recommendation": "无须修改。",
+      "description": "未发现代码混淆、eval、远程代码执行等高危操作。",
+      "location": "全局",
+      "recommendation": "保持代码可读性，避免后续引入高危操作。",
+      "severity": "LOW",
+      "type": "远程代码执行/混淆"
+    },
+    {
+      "description": "@require 未使用，无供应链风险。",
+      "location": "元数据",
+      "recommendation": "如需引入第三方库，建议使用官方 CDN 并锁定版本。",
       "severity": "LOW",
       "type": "供应链风险"
     }
@@ -35,12 +42,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "HIGH",
+  "risk_level": "CRITICAL",
   "script_name": "AC-有道取词+翻译-库文件",
   "security_score": 75,
-  "summary": "该脚本作为库文件，主要通过 GM_xmlhttpRequest 请求第三方服务器获取密钥。未发现隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。但存在向第三方服务器发起请求的行为，存在一定数据外传和追踪风险。建议仅在可信环境下使用。",
+  "summary": "该脚本作为库文件，核心行为是通过 GM_xmlhttpRequest 请求第三方服务器 xbaidu.ntaow.com 获取 SoGouKey。虽然未直接收集用户隐私数据，但存在向第三方服务器发起请求的行为，存在数据外传风险。未发现代码混淆、远程代码执行、隐私采集或供应链风险。建议明确请求用途，确保不会外传敏感信息。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-01T07:06:11.717666+00:00",
+  "analyzed_at": "2026-06-08T06:47:02.747457+00:00",
   "slug": "SearchBlock"
 }

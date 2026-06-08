@@ -30,9 +30,9 @@ title: "Krunker Cheat v2"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：84/100　　**分析时间**：2026-06-01
+**风险等级**：🟡 LOW　　**安全评分**：84/100　　**分析时间**：2026-06-08
 
-> 该脚本主要实现 Krunker.io 游戏的辅助功能（Aimbot、ESP、Wallhack 等），未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。存在的主要风险为申请了高权限（unsafeWindow）但未发现实际滥用，以及 @require 加载第三方库时未锁定哈希，存在一定供应链风险。整体安全性较高，但建议关注依赖安全和权限最小化原则。
+> No critical or high-risk security issues detected. The script does not transmit data externally, collect sensitive user data, or execute remote code unsafely. It does not use eval, dynamic script injection, or obfuscation. There is minor risk due to the use of @grant unsafeWindow and loading a third-party library via @require without hash pinning. No DOM XSS or clipboard/geolocation/camera access detected. Overall, the script is considered low risk.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -45,15 +45,15 @@ title: "Krunker Cheat v2"
 
 ### 发现的问题
 
-**🟠 MEDIUM** — 权限滥用  
-> 使用了 @grant unsafeWindow，允许脚本访问页面上下文，存在一定权限滥用风险，但未发现实际滥用。  
-> 位置：元数据 @grant unsafeWindow  
-> 建议：仅在确有必要时申请 unsafeWindow，避免滥用高权限。
+**🟠 MEDIUM** — Permission Abuse  
+> The script requests @grant unsafeWindow, which exposes the page's window object to the userscript context and vice versa. This can increase the attack surface if the script is compromised or if other scripts are present.  
+> 位置：Metadata block (@grant unsafeWindow)  
+> 建议：Remove @grant unsafeWindow if not strictly necessary. Limit its usage and ensure no untrusted code is executed in this context.
 
-**🟠 MEDIUM** — 供应链风险  
-> @require 加载了 three.js，来源为 unpkg CDN，虽然为官方库，但未锁定具体文件哈希，存在供应链污染风险。  
-> 位置：@require https://unpkg.com/three@0.150.0/build/three.min.js  
-> 建议：建议使用官方 CDN 并锁定具体版本和哈希，或本地托管依赖。
+**🟠 MEDIUM** — Supply Chain  
+> The script uses @require to load three.min.js from unpkg.com. While unpkg is a widely used CDN, the version is pinned but not by hash, so there is a minor supply chain risk if the CDN is compromised.  
+> 位置：Metadata block (@require https://unpkg.com/three@0.150.0/build/three.min.js)  
+> 建议：Use a hash-pinned or official CDN with integrity checks if possible. Monitor for supply chain attacks.
 
 ---
 

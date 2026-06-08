@@ -30,13 +30,13 @@ title: "Picviewer CE+"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：67/100　　**分析时间**：2026-06-01
+**风险等级**：🔴 HIGH　　**安全评分**：52/100　　**分析时间**：2026-06-08
 
-> Picviewer CE+ requests broad network access (@connect *) and several high-privilege grants, which increases the risk of data exfiltration and abuse if the script or its dependencies are compromised. No direct privacy collection or DOM XSS risks were found in the provided code. The script is not obfuscated. Supply chain risk exists due to external dependencies not being pinned with integrity hashes. Restrict network permissions, minimize grants, and pin dependencies to improve security.
+> Picviewer CE+ requests broad network access (@connect *) and high-privilege grants, which pose significant security risks if the script or its supply chain is compromised. No direct evidence of privacy-invasive behavior or obfuscation is found in the provided code, but the supply chain risk and permission overuse lower the overall security. Restrict network permissions, minimize grants, and pin third-party dependencies to improve security.
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：*, www.google.com, www.google.com.hk） |
+| 数据外传 | ❌ 检测到（目标：www.google.com, www.google.com.hk, www.google.co.jp） |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
@@ -46,19 +46,19 @@ title: "Picviewer CE+"
 ### 发现的问题
 
 **⛔ CRITICAL** — Data Exfiltration  
-> The script requests broad network access via @connect *, allowing GM_xmlhttpRequest to any domain. This can be abused for data exfiltration.  
+> The script requests broad network access via @connect *, allowing GM_xmlhttpRequest to any domain. This is a critical risk for data exfiltration if the script is compromised.  
 > 位置：Metadata block (@connect *)  
-> 建议：Restrict @connect to only necessary domains. Remove wildcard if not strictly needed.
+> 建议：Restrict @connect to only necessary domains. Remove or avoid using wildcard.
 
 **🟠 MEDIUM** — Permission Overuse  
-> The script requests high-privilege grants such as GM_download, GM_openInTab, GM_setClipboard, and unsafeWindow, which can be abused if the script is compromised.  
+> The script requests high-privilege grants such as GM_download, GM_openInTab, unsafeWindow, and GM_setClipboard, but not all are clearly used in the provided code. Over-privileged grants increase attack surface.  
 > 位置：Metadata block (@grant ...)  
-> 建议：Only request the minimum necessary permissions. Remove unused or high-risk grants.
+> 建议：Only request permissions that are strictly necessary for script functionality.
 
 **🟠 MEDIUM** — Supply Chain Risk  
-> The script loads external dependencies via @require from update.greasyfork.org, which is generally trusted but not version-pinned with integrity hashes.  
+> The script uses @require to load external scripts from update.greasyfork.org, but does not pin to a specific version hash. This introduces supply chain risk if the remote script is updated or compromised.  
 > 位置：Metadata block (@require ...)  
-> 建议：Pin dependencies to specific versions and verify their integrity. Consider using official CDNs with SRI hashes if possible.
+> 建议：Pin @require URLs to specific, immutable versions or hashes. Regularly audit third-party code.
 
 ---
 

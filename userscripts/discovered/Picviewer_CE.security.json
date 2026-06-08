@@ -2,37 +2,37 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
-      "*",
       "www.google.com",
       "www.google.com.hk",
       "www.google.co.jp",
       "ipv4.google.com",
       "image.baidu.com",
       "www.tineye.com",
-      "hoothin.com"
+      "hoothin.com",
+      "*"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script requests broad network access via @connect *, allowing GM_xmlhttpRequest to any domain. This can be abused for data exfiltration.",
+      "description": "The script requests broad network access via @connect *, allowing GM_xmlhttpRequest to any domain. This is a critical risk for data exfiltration if the script is compromised.",
       "location": "Metadata block (@connect *)",
-      "recommendation": "Restrict @connect to only necessary domains. Remove wildcard if not strictly needed.",
+      "recommendation": "Restrict @connect to only necessary domains. Remove or avoid using wildcard.",
       "severity": "CRITICAL",
       "type": "Data Exfiltration"
     },
     {
-      "description": "The script requests high-privilege grants such as GM_download, GM_openInTab, GM_setClipboard, and unsafeWindow, which can be abused if the script is compromised.",
+      "description": "The script requests high-privilege grants such as GM_download, GM_openInTab, unsafeWindow, and GM_setClipboard, but not all are clearly used in the provided code. Over-privileged grants increase attack surface.",
       "location": "Metadata block (@grant ...)",
-      "recommendation": "Only request the minimum necessary permissions. Remove unused or high-risk grants.",
+      "recommendation": "Only request permissions that are strictly necessary for script functionality.",
       "severity": "MEDIUM",
       "type": "Permission Overuse"
     },
     {
-      "description": "The script loads external dependencies via @require from update.greasyfork.org, which is generally trusted but not version-pinned with integrity hashes.",
+      "description": "The script uses @require to load external scripts from update.greasyfork.org, but does not pin to a specific version hash. This introduces supply chain risk if the remote script is updated or compromised.",
       "location": "Metadata block (@require ...)",
-      "recommendation": "Pin dependencies to specific versions and verify their integrity. Consider using official CDNs with SRI hashes if possible.",
+      "recommendation": "Pin @require URLs to specific, immutable versions or hashes. Regularly audit third-party code.",
       "severity": "MEDIUM",
       "type": "Supply Chain Risk"
     }
@@ -44,10 +44,10 @@
   },
   "risk_level": "HIGH",
   "script_name": "Picviewer CE+",
-  "security_score": 67,
-  "summary": "Picviewer CE+ requests broad network access (@connect *) and several high-privilege grants, which increases the risk of data exfiltration and abuse if the script or its dependencies are compromised. No direct privacy collection or DOM XSS risks were found in the provided code. The script is not obfuscated. Supply chain risk exists due to external dependencies not being pinned with integrity hashes. Restrict network permissions, minimize grants, and pin dependencies to improve security.",
+  "security_score": 52,
+  "summary": "Picviewer CE+ requests broad network access (@connect *) and high-privilege grants, which pose significant security risks if the script or its supply chain is compromised. No direct evidence of privacy-invasive behavior or obfuscation is found in the provided code, but the supply chain risk and permission overuse lower the overall security. Restrict network permissions, minimize grants, and pin third-party dependencies to improve security.",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-01T07:05:25.756718+00:00",
+  "analyzed_at": "2026-06-08T06:46:22.329759+00:00",
   "slug": "Picviewer_CE"
 }

@@ -7,18 +7,32 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script overrides XMLHttpRequest.prototype.open to intercept Google Maps API responses, but does not transmit any data to third-party servers.",
+      "description": "The script overrides XMLHttpRequest.prototype.open to intercept Google Maps API responses. While it does not transmit data externally, this is a sensitive operation and should be reviewed for future risks if modified.",
       "location": "XMLHttpRequest.prototype.open override",
-      "recommendation": "Monitor for any future changes that may introduce data exfiltration.",
-      "severity": "LOW",
-      "type": "Network interception"
+      "recommendation": "Ensure no code changes introduce data exfiltration. Monitor for future updates.",
+      "severity": "MEDIUM",
+      "type": "Sensitive API interception"
     },
     {
       "description": "The script requests the GM_webRequest permission, but does not use any GM_* APIs in the code.",
       "location": "@grant GM_webRequest in metadata",
-      "recommendation": "Remove unused permissions to reduce attack surface.",
+      "recommendation": "Remove unnecessary permissions to reduce attack surface.",
       "severity": "MEDIUM",
       "type": "Permission misuse"
+    },
+    {
+      "description": "The script listens for keydown events globally, but only uses them for local feature triggers. No keylogger behavior detected.",
+      "location": "document.addEventListener('keydown', ...)",
+      "recommendation": "No action needed, but be cautious if future versions combine this with network requests.",
+      "severity": "LOW",
+      "type": "Key event usage"
+    },
+    {
+      "description": "The script manipulates React internal properties to trigger map actions. This is fragile and may break with site updates, but does not introduce direct security risk.",
+      "location": "placeMarker / placeMarkerStreaks functions",
+      "recommendation": "Monitor for site changes that may affect script behavior.",
+      "severity": "LOW",
+      "type": "DOM manipulation"
     }
   ],
   "obfuscation_detected": false,
@@ -28,10 +42,10 @@
   },
   "risk_level": "LOW",
   "script_name": "Geoguessr Location Resolver (Works in all modes)",
-  "security_score": 89,
-  "summary": "The script does not transmit any user data externally, does not collect sensitive information, and does not execute remote or obfuscated code. It overrides XMLHttpRequest to extract coordinates from Google Maps API responses, but this data is only used locally. The only notable issue is the unnecessary GM_webRequest permission, which should be removed to minimize potential risk.",
+  "security_score": 81,
+  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要问题为申请了未使用的 GM_webRequest 权限和敏感 API 拦截。整体风险较低，但建议移除不必要的权限，并持续关注未来代码变更。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-01T07:01:34.022954+00:00",
+  "analyzed_at": "2026-06-08T06:42:30.438800+00:00",
   "slug": "Geoguessr_Location_Resolver_Works_in_all_modes"
 }

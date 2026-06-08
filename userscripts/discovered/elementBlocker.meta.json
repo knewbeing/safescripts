@@ -17,10 +17,10 @@
   "require": [],
   "metadata_raw": "// @name  元素屏蔽/追踪器 (V26.39.10 - 拦截程序化点击和 PostMessage)\n// @namespace  http://tampermonkey.net/\n// @version  26.39.12\n// @description  V26.39.11：在 V26.39.9 同步中断的基础上，新增拦截 Element.prototype.click（用于程序化重定向）和 window.postMessage（用于跨框架侧信道重定向）。这是对高级绕过机制的最后防线。\n// @author  Gemini\n// @match  *://*/*\n// @grant  none\n// @run-at  document-start",
   "sha256": "15fa86a27745044584f70036f4631db02d4160402f661effa601ff6f512930bb",
-  "discovered_at": "2026-06-01T06:48:56.844604+00:00",
+  "discovered_at": "2026-06-08T06:31:31.172097+00:00",
   "ai_reason": "",
   "target_roles": "",
-  "is_new": true,
+  "is_new": false,
   "install_count": null,
   "good_ratings": null,
   "bad_ratings": null,
@@ -28,7 +28,7 @@
     "applicable_sites": [
       "所有网站"
     ],
-    "description": "本脚本可屏蔽网页中的特定元素，拦截程序化点击和跨框架消息，防止恶意重定向和高级广告绕过。它是保护用户免受自动跳转和广告干扰的最后防线。",
+    "description": "该脚本可以屏蔽页面上的特定元素，并拦截程序化点击和跨框架消息，防止自动重定向和广告追踪。它是针对高级绕过机制的最后防线，提升网页浏览安全和体验。",
     "permissions": [
       {
         "explanation": "脚本无需额外权限，仅使用网页自身功能。",
@@ -38,13 +38,14 @@
     "tags": [
       "广告屏蔽",
       "安全防护",
-      "重定向拦截",
+      "隐私保护",
       "元素管理",
-      "隐私保护"
+      "反重定向"
     ],
     "usage": [
-      "安装脚本后，自动在所有网站生效，无需手动操作。",
-      "如需调试或管理屏蔽元素，可根据页面提示进行操作。"
+      "安装脚本后，自动在所有网站生效。",
+      "无需手动操作，脚本会自动拦截程序化点击和跨框架消息。",
+      "如需调试或自定义屏蔽，可根据脚本说明调整相关设置。"
     ],
     "zh_name": "元素屏蔽/追踪器"
   }

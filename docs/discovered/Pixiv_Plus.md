@@ -44,9 +44,9 @@ title: "Pixiv 增强"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-01
+**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-08
 
-> 该脚本主要功能为增强 Pixiv 使用体验，未发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危安全问题。所有网络请求均指向 Pixiv 官方域名，@require 的第三方库来源可信且锁定版本。部分 @grant 权限如 unsafeWindow、GM.setClipboard 具有一定风险，但当前代码未见滥用。整体安全风险较低，建议定期复查依赖库和权限申请。
+> 该脚本主要用于增强 Pixiv 网页体验，未发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。所有网络请求均指向 Pixiv 官方图片 CDN 或本地 API，无第三方数据上报。@require 的第三方库均为官方 CDN 且固定版本。存在部分未使用的高权限申请，建议最小化权限。整体安全风险较低，适合一般用户使用。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -59,40 +59,15 @@ title: "Pixiv 增强"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本通过 @grant 申请了 GM.xmlHttpRequest/GM_xmlhttpRequest，但实际代码仅通过 jQuery.ajax 访问 pixiv.net 站内 API，未见向第三方域名发送数据。  
-> 位置：全局  
-> 建议：确保所有网络请求仅指向 Pixiv 官方域名，避免未来代码变更导致数据外传。
-
-**⛔ CRITICAL** — 隐私采集  
-> 脚本未见读取 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板、表单字段、键盘输入等敏感信息。  
-> 位置：全局  
-> 建议：保持不采集用户隐私数据，勿添加相关代码。
-
-**🔴 HIGH** — 远程代码执行  
-> 未发现 eval、new Function、setTimeout(string)、setInterval(string)、动态 script 标签、document.write 插入脚本等远程代码执行风险。  
-> 位置：全局  
-> 建议：继续避免使用动态代码执行相关 API。
-
-**🔴 HIGH** — 代码混淆  
-> 未发现代码混淆、base64 解码执行、字符串数组映射、unicode 混淆或高度压缩单行代码。  
-> 位置：全局  
-> 建议：保持代码可读性，便于社区安全审查。
-
-**🔴 HIGH** — DOM XSS / 注入  
-> 未见将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未见 document.write 注入不可信内容。  
-> 位置：全局  
-> 建议：如需插入动态内容，务必进行转义。
-
 **🟠 MEDIUM** — 权限滥用  
-> @grant 申请了 unsafeWindow、GM.setClipboard、GM.setValue、GM.getValue、GM_addStyle、GM_registerMenuCommand、GM_unregisterMenuCommand 等，部分权限如 unsafeWindow、GM.setClipboard 具有一定风险，但当前代码未见滥用。  
-> 位置：元数据 @grant  
-> 建议：仅申请实际需要的权限，避免高权限冗余。
+> 申请了多个高权限（如 unsafeWindow、GM_setValue/GM_getValue/GM_setClipboard），但实际代码未见明显滥用。  
+> 位置：Meta @grant  
+> 建议：仅申请实际使用的权限，减少攻击面。
 
-**🟠 MEDIUM** — 供应链风险  
-> @require 加载的第三方库均来自 greasyfork 官方 CDN，且为具体版本号，供应链风险较低。  
-> 位置：元数据 @require  
-> 建议：如需加载第三方库，优先选择可信 CDN 并锁定版本。
+**🟡 LOW** — 供应链风险  
+> 通过 @require 加载了多个第三方库（jQuery、jszip、FileSaver、gifjs、gm4-polyfill），但均来自 greasyfork 官方 CDN，且带有固定版本号。  
+> 位置：Meta @require  
+> 建议：继续保持使用可信源和固定版本，避免使用未知或可变 URL。
 
 ---
 

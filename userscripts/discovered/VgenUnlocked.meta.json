@@ -1,0 +1,54 @@
+{
+  "slug": "VgenUnlocked",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/581400-vgenunlocked",
+  "source_repo": "581400",
+  "raw_url": "https://update.greasyfork.org/scripts/581400/VgenUnlocked.user.js",
+  "filename": "VgenUnlocked.user.js",
+  "name": "VgenUnlocked",
+  "version": "1.0",
+  "description": "Adds minimum price badges, advanced sorting, price filtering, quick preview modals, help popup, and mature content hover unblur to VGen listings.",
+  "match": [
+    "https://vgen.co/*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  VgenUnlocked\n// @namespace  https://vgen.co/\n// @version  1.0\n// @description  Adds minimum price badges, advanced sorting, price filtering, quick preview modals, help popup, and mature content hover unblur to VGen listings.\n// @author  TheDarkEnjoyer\n// @match  https://vgen.co/*\n// @run-at  document-start\n// @grant  none\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/581400/VgenUnlocked.user.js\n// @updateURL  https://update.greasyfork.org/scripts/581400/VgenUnlocked.meta.js",
+  "sha256": "43a6c4c0655771222af6c7e13a35f4a923a71706c4b8af8919b36a187444069e",
+  "discovered_at": "2026-06-08T06:32:54.547363+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 159,
+  "good_ratings": 0,
+  "bad_ratings": 0,
+  "summary": {
+    "applicable_sites": [
+      "VGen平台"
+    ],
+    "description": "本脚本为VGen平台的服务列表页面增强功能。它会显示最低价格标签，提供高级排序和价格筛选，支持快速预览弹窗、帮助提示，以及让成人内容在鼠标悬停时自动去除模糊。",
+    "permissions": [
+      {
+        "explanation": "脚本无需特殊权限，所有功能均在网页内实现。",
+        "grant": "none"
+      }
+    ],
+    "tags": [
+      "价格筛选",
+      "排序增强",
+      "内容预览",
+      "界面优化",
+      "成人内容解锁"
+    ],
+    "usage": [
+      "安装脚本后，访问VGen平台服务列表页面。",
+      "页面会自动显示最低价格标签和筛选、排序选项。",
+      "可通过筛选框输入价格范围，或选择排序方式。",
+      "鼠标悬停在成人内容图片上可自动去除模糊。",
+      "点击服务可快速预览详情弹窗。"
+    ],
+    "zh_name": "VGen解锁增强"
+  }
+}

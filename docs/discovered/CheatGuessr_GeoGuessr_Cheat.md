@@ -30,9 +30,9 @@ title: "CheatGuessr | GeoGuessr Cheat"
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：67/100　　**分析时间**：2026-06-01
+**风险等级**：🟠 MEDIUM　　**安全评分**：67/100　　**分析时间**：2026-06-08
 
-> The script does not contain malicious code, obfuscation, or direct privacy-invasive behavior. It does transmit coordinates to a third-party API (OpenStreetMap Nominatim) for reverse geocoding, which is a critical data transmission but not a privacy risk for most users. There is no evidence of keylogging, DOM XSS, or remote code execution. The script requests an unused high-privilege permission (GM_webRequest), which should be removed. Overall, the script is safe for most users, but transparency about data transmission and permissions is recommended.
+> The script does not collect or transmit sensitive user data, but it does send coordinates to a third-party API (OpenStreetMap Nominatim) for reverse geocoding. It stores settings in localStorage and unnecessarily requests the GM_webRequest permission. No code obfuscation, XSS, or remote code execution risks were found. Overall, the script is relatively safe for use, but users should be aware of the data transmission to OpenStreetMap and the unnecessary permission request.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -46,19 +46,19 @@ title: "CheatGuessr | GeoGuessr Cheat"
 ### 发现的问题
 
 **⛔ CRITICAL** — Data Transmission  
-> The script sends latitude and longitude coordinates to the public OpenStreetMap Nominatim API to reverse geocode the location. This is a third-party data transmission, but the data is not user-identifiable or sensitive (just coordinates).  
-> 位置：fetchLocationDetails() function  
-> 建议：Document this behavior for transparency. If privacy is a concern, consider making this feature optional or warning users.
+> The script sends latitude and longitude coordinates to the public OpenStreetMap Nominatim API to reverse geocode the location. This is a third-party server, but the data sent is not user-identifiable or sensitive (just coordinates).  
+> 位置：fetchLocationDetails() function (fetch to https://nominatim.openstreetmap.org)  
+> 建议：Document this behavior in the script description. If privacy is a concern, allow users to disable this feature.
 
 **🟠 MEDIUM** — Privacy Collection  
-> The script stores user settings in localStorage under the key 'geoGuessrHelper'.  
+> The script stores user settings in localStorage under the key 'geoGuessrHelper'. No sensitive data is stored, but localStorage is used.  
 > 位置：loadSettings() and saveSettings() functions  
-> 建议：No sensitive data is stored; this is a standard practice. If storing sensitive data in the future, consider using secure storage.
+> 建议：No action needed unless sensitive data is stored. Document usage for transparency.
 
 **🟠 MEDIUM** — Permission Abuse  
-> The script requests the GM_webRequest permission, but does not use any GM_* APIs in the code provided.  
+> The script requests the GM_webRequest permission, but does not use any GM_* API in the code. This is an unnecessary high privilege.  
 > 位置：@grant GM_webRequest in metadata  
-> 建议：Remove unused permissions to minimize attack surface and follow the principle of least privilege.
+> 建议：Remove unused @grant GM_webRequest to reduce attack surface.
 
 ---
 

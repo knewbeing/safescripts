@@ -6,48 +6,47 @@
   "raw_url": "https://update.greasyfork.org/scripts/579300/Torn%20City%20-%20Merit%20Tracker.user.js",
   "filename": "Torn_City_-_Merit_Tracker.user.js",
   "name": "Torn City - Merit Tracker",
-  "version": "2.4",
+  "version": "2.5",
   "description": "See your easiest missing honors first, learn how to get them, browse by category",
   "match": [
     "https://www.torn.com/*"
   ],
   "grant": [
-    "none"
+    "GM_xmlhttpRequest"
   ],
   "require": [],
-  "metadata_raw": "// @name  Torn City - Merit Tracker\n// @namespace  Merit Tracker\n// @version  2.4\n// @description  See your easiest missing honors first, learn how to get them, browse by category\n// @author  _Solenya_ [4053619]\n// @match  https://www.torn.com/*\n// @grant  none\n// @downloadURL  https://update.greasyfork.org/scripts/579300/Torn%20City%20-%20Merit%20Tracker.user.js\n// @updateURL  https://update.greasyfork.org/scripts/579300/Torn%20City%20-%20Merit%20Tracker.meta.js",
-  "sha256": "a82c3608ca77ebb2d20fe51a262e5fdc0f1b8356fa96ef7d41a787616f000c32",
-  "discovered_at": "2026-05-25T06:22:20.573207+00:00",
+  "metadata_raw": "// @name  Torn City - Merit Tracker\n// @namespace  Merit Tracker\n// @version  2.5\n// @description  See your easiest missing honors first, learn how to get them, browse by category\n// @author  _Solenya_ [4053619]\n// @match  https://www.torn.com/*\n// @grant  GM_xmlhttpRequest\n// @connect  greasyfork.org\n// @downloadURL  https://update.greasyfork.org/scripts/579300/Torn%20City%20-%20Merit%20Tracker.user.js\n// @updateURL  https://update.greasyfork.org/scripts/579300/Torn%20City%20-%20Merit%20Tracker.meta.js",
+  "sha256": "b2471b53e484455189d5d03b0eaa979b238394025818fe45732f1bb4313d0774",
+  "discovered_at": "2026-06-08T06:33:27.191834+00:00",
   "ai_reason": "",
   "target_roles": "",
-  "is_new": true,
-  "install_count": 99,
+  "is_new": false,
+  "install_count": 935,
   "good_ratings": 1,
   "bad_ratings": 0,
   "summary": {
     "applicable_sites": [
       "Torn City"
     ],
-    "description": "本脚本帮助玩家追踪游戏中未获得的荣誉，优先显示最容易完成的任务，并提供获取方法。用户可以按类别浏览荣誉，快速了解如何达成目标。",
+    "description": "此脚本帮助玩家追踪在 Torn City 游戏中尚未获得的荣誉，优先展示最容易达成的荣誉，并提供获取方法和按类别浏览功能。让玩家更高效地规划荣誉收集。",
     "permissions": [
       {
-        "explanation": "脚本不需要额外权限，仅在网页上运行。",
-        "grant": "none"
+        "explanation": "允许脚本发送网络请求获取外部数据，如荣誉信息或脚本更新。",
+        "grant": "GM_xmlhttpRequest"
       }
     ],
     "tags": [
       "游戏辅助",
-      "成就追踪",
-      "荣誉管理",
-      "任务攻略",
+      "荣誉追踪",
+      "成就管理",
       "Torn City",
       "效率提升"
     ],
     "usage": [
       "安装脚本后，进入 Torn City 网站。",
-      "在页面上会显示未获得荣誉及其完成方法。",
-      "可按类别浏览不同荣誉，优先查看最容易完成的任务。"
+      "在页面上会显示未获得荣誉及其获取方法。",
+      "可按类别浏览和筛选荣誉，优先显示最容易达成的。"
     ],
-    "zh_name": "Torn City荣誉追踪器"
+    "zh_name": "Torn City 荣誉追踪器"
   }
 }

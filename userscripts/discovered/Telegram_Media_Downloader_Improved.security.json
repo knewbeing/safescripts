@@ -14,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "Telegram Media Downloader (Improved)",
   "security_score": 100,
-  "summary": "该脚本主要用于在 Telegram Web 客户端页面上添加媒体下载功能。代码未发现任何数据外传、隐私采集、远程代码执行、混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。所有操作均在本地页面 DOM 上进行，未与第三方服务器通信。",
+  "summary": "该脚本主要用于在 Telegram Web 客户端页面上添加媒体下载功能。代码未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。所有操作均在本地页面 DOM 上进行，未与第三方服务器通信。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-01T07:07:27.571642+00:00",
+  "analyzed_at": "2026-06-08T06:48:21.005544+00:00",
   "slug": "Telegram_Media_Downloader_Improved"
 }

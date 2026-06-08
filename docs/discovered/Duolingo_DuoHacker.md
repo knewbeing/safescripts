@@ -35,9 +35,9 @@ title: "多邻国 DuoHacker"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：42/100　　**分析时间**：2026-06-01
+**风险等级**：🔴 HIGH　　**安全评分**：67/100　　**分析时间**：2026-06-08
 
-> 该脚本声明了高权限（GM_xmlhttpRequest）和多个第三方 @connect 域名，包括非官方服务器（api.twisk.fun），存在严重的数据外传和供应链风险。主代码片段未见实际数据收集或外传实现，但元数据配置已构成高风险。建议严格限制 @connect 域名和 @grant 权限，仅保留必要项。未发现代码混淆、DOM XSS、隐私采集或远程代码执行行为。
+> 该脚本在元数据区声明了高权限 GM_xmlhttpRequest 并允许连接多个第三方域名，存在数据外传和供应链风险。虽然当前代码片段未见明显隐私采集、远程代码执行或混淆行为，但由于未展示全部逻辑，无法排除后续代码存在更高风险。建议限制 @connect 域名、最小化权限，并进一步审查完整实现。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -51,24 +51,19 @@ title: "多邻国 DuoHacker"
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本声明了 @grant GM_xmlhttpRequest 权限，并通过 @connect 允许向多个第三方域名发起网络请求，包括 api.twisk.fun（非官方域名）。虽然主代码片段未见实际请求，但权限和域名声明存在数据外传风险。  
-> 位置：元数据区  
-> 建议：仅允许必要的 @connect 域名，移除不必要的第三方域名，限制 GM_xmlhttpRequest 的使用范围。
-
-**⛔ CRITICAL** — 数据外传  
-> 脚本允许 @connect raw.githubusercontent.com、avatars.githubusercontent.com、fonts.googleapis.com、greasyfork.org、api.twisk.fun 等第三方域名，存在供应链和数据外传风险。  
-> 位置：元数据区  
-> 建议：仅允许可信、必要的第三方域名，避免通过不受信任的域名加载资源或传输数据。
-
-**🟠 MEDIUM** — 权限滥用  
-> 脚本声明了 GM_xmlhttpRequest 权限，但主代码未见实际使用，存在权限滥用风险。  
-> 位置：元数据区  
-> 建议：移除未使用的高权限 @grant 权限，最小化权限申请。
+> 脚本声明了 @grant GM_xmlhttpRequest 并允许连接多个第三方域名（如 raw.githubusercontent.com、api.twisk.fun、fonts.googleapis.com、greasyfork.org），但完整代码未展示实际网络请求逻辑，存在数据外传潜在风险。  
+> 位置：元数据区 @grant/@connect  
+> 建议：仅允许必要的域名，限制敏感数据外传，代码需进一步审查实际请求内容。
 
 **🟠 MEDIUM** — 供应链风险  
-> 脚本通过 @connect fonts.googleapis.com 并动态插入字体样式，存在供应链风险（如字体 CDN 被污染）。  
-> 位置：主代码  
-> 建议：建议固定字体文件版本或使用本地字体，减少外部依赖。
+> 脚本允许连接 raw.githubusercontent.com、api.twisk.fun 等非官方/个人域名，存在供应链风险。  
+> 位置：元数据区 @connect  
+> 建议：仅允许可信、官方 CDN，避免个人/未知域名，建议固定版本哈希。
+
+**🟠 MEDIUM** — 权限滥用  
+> 脚本声明了 GM_xmlhttpRequest 高权限，但当前代码片段未见实际使用。  
+> 位置：元数据区 @grant  
+> 建议：如未使用 GM_xmlhttpRequest，应移除高权限声明，最小化权限。
 
 ---
 

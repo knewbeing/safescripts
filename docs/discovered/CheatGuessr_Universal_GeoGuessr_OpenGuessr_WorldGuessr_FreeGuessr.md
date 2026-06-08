@@ -30,14 +30,14 @@ title: "CheatGuessr Universal | GeoGuessr | OpenGuessr | WorldGuessr | FreeGuess
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：50/100　　**分析时间**：2026-06-01
+**风险等级**：⛔ CRITICAL　　**安全评分**：42/100　　**分析时间**：2026-06-08
 
-> 该脚本存在高风险的数据外传行为，主要通过 GM_xmlhttpRequest 将用户游戏数据（如地理坐标、猜测结果等）发送到第三方服务器（nominatim.openstreetmap.org 和 discord.com）。虽然未检测到代码混淆、远程代码执行、DOM XSS 或隐私采集行为，但数据外传风险极高，尤其是自动或未明确告知用户的情况下。建议仅在用户主动操作时发送数据，并在脚本说明中明确告知用户数据流向。
+> This script transmits map coordinates to external services (nominatim.openstreetmap.org for reverse geocoding and discord.com for sharing pins), which constitutes critical data exfiltration and privacy risk. It also requests notification permissions and modifies native prototypes, which may impact page stability. No code obfuscation or DOM XSS risks were detected. The script should be considered high risk unless all data transmissions are made fully transparent and strictly limited to non-sensitive information.
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：discord.com, nominatim.openstreetmap.org） |
-| 隐私采集 | ✅ 未检测到 |
+| 数据外传 | ❌ 检测到（目标：nominatim.openstreetmap.org, discord.com） |
+| 隐私采集 | ❌ 检测到（Reads and stores user hotkey and feature toggle preferences via GM_getValue/GM_setValue., Sends map coordinates (potentially user location) to external services.） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -45,55 +45,35 @@ title: "CheatGuessr Universal | GeoGuessr | OpenGuessr | WorldGuessr | FreeGuess
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本通过 GM_xmlhttpRequest 发送请求到 nominatim.openstreetmap.org（第三方地理反查 API），可能传递用户操作的地理坐标。  
-> 位置：_getAddress() 函数  
-> 建议：仅在用户明确操作时发送请求，并在文档中告知用户。
+**⛔ CRITICAL** — Data Exfiltration  
+> The script sends latitude and longitude coordinates to nominatim.openstreetmap.org for reverse geocoding using GM_xmlhttpRequest.  
+> 位置：function _getAddress(lat, lng)  
+> 建议：Ensure only non-sensitive, non-personal data is sent. Inform users about this external request.
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本通过 GM_xmlhttpRequest 发送数据到 discord.com（通常为 webhook），用于“send to discord”功能，可能包含用户游戏内坐标、猜测等敏感信息。  
-> 位置：sendToDiscord 相关功能（未完全展示，但元数据和描述已表明）  
-> 建议：确保用户知情并自愿触发，避免自动上报。
+**⛔ CRITICAL** — Data Exfiltration  
+> The script is designed to send map pin data to Discord (discord.com) via webhook or API (as indicated by @connect and feature description).  
+> 位置：Feature: sendToDiscord  
+> 建议：Ensure no sensitive or personal user data is sent. Make this behavior opt-in and clearly inform users.
 
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_xmlhttpRequest 权限，并声明 @connect discord.com，存在将用户数据外传到第三方的能力。  
-> 位置：元数据 @grant/@connect  
-> 建议：仅在必要时申请权限，最小化外联域名。
+**🟠 MEDIUM** — Sensitive API Usage  
+> The script requests Notification API permission and can send browser notifications.  
+> 位置：requestNotificationPermission, sendNotification  
+> 建议：Only use Notification API with clear user consent and avoid spamming notifications.
 
-**🟡 LOW** — 权限滥用  
-> 脚本申请了 GM_setValue/GM_getValue 权限，但实际仅用于本地存储热键和功能开关，无明显滥用。  
-> 位置：元数据 @grant/@实际代码  
-> 建议：无。
+**🟠 MEDIUM** — Potential Stability/Security Risk  
+> The script applies Proxy wrappers to native prototypes (e.g., setAttribute, push, setItem, fetch) which may break page functionality or introduce unexpected behavior.  
+> 位置：Multiple locations (platform-specific code blocks)  
+> 建议：Limit prototype modifications to only what is strictly necessary and document all changes.
 
-**🟡 LOW** — 远程代码执行  
-> 脚本未检测到 eval、new Function、setTimeout(string) 等远程代码执行风险。  
-> 位置：全局  
-> 建议：保持此安全实践。
+**🟠 MEDIUM** — Permission Usage  
+> The script requests GM_xmlhttpRequest permission, which allows arbitrary cross-origin requests.  
+> 位置：@grant GM_xmlhttpRequest  
+> 建议：Limit usage to only required domains and document all external requests.
 
-**🟡 LOW** — 代码混淆  
-> 脚本未检测到代码混淆、base64 解码、字符串数组映射等混淆特征。  
-> 位置：全局  
-> 建议：保持代码可读性。
-
-**🟡 LOW** — DOM XSS  
-> 脚本未检测到 DOM XSS 风险（未直接插入用户输入到 innerHTML/outerHTML）。  
-> 位置：全局  
-> 建议：保持此安全实践。
-
-**🟡 LOW** — 供应链风险  
-> 脚本未检测到供应链风险（无 @require 第三方库）。  
-> 位置：全局  
-> 建议：保持此安全实践。
-
-**🟡 LOW** — 数据外传  
-> 脚本未检测到 WebSocket/EventSource 用法。  
-> 位置：全局  
-> 建议：无。
-
-**🟡 LOW** — 敏感 API  
-> 脚本未检测到敏感 API（如 geolocation、摄像头、麦克风、剪贴板）调用。  
-> 位置：全局  
-> 建议：无。
+**🟠 MEDIUM** — Supply Chain/External Service Risk  
+> The script requests @connect for discord.com and nominatim.openstreetmap.org, which are third-party services.  
+> 位置：@connect metadata  
+> 建议：Ensure only necessary domains are listed and inform users about all external connections.
 
 ---
 

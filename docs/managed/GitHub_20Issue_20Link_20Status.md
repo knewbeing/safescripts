@@ -41,30 +41,35 @@ title: "Github 增强 - 高速下载"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-01
+**风险等级**：🟠 MEDIUM　　**安全评分**：67/100　　**分析时间**：2026-06-08
 
-> The script does not collect or transmit user data, does not execute remote code, and does not use obfuscation. It generates download links pointing to third-party acceleration services, but does not itself transmit data to them unless the user clicks the links. There is minor permission over-provisioning. Overall, the script is safe for use, with a low security risk. Users should be aware that using third-party acceleration services may expose their download activity to those services.
+> The script does not collect user privacy data or perform code obfuscation. Its main risk is redirecting downloads to a large number of third-party proxy services, which could log or process user download requests. There is no evidence of keylogging, clipboard reading, or DOM XSS. The script requests more permissions than strictly necessary, and some proxy endpoints are hosted on less-known domains, introducing supply chain risk. Overall, the script is safe for most users but carries medium risk due to third-party data transmission and supply chain concerns. Users should be aware that their download requests are visible to the proxy operators.
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ✅ 未检测到 |
+| 数据外传 | ❌ 检测到（目标：Multiple public GitHub acceleration proxy services (e.g., gh.h233.eu.org, gh-proxy.org, ghproxy.net, wget.la, etc.)） |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ✅ 可信 |
+| 供应链风险 | ⚠️ 存在风险 |
 
 ### 发现的问题
 
-**🟠 MEDIUM** — Permission over-provisioning  
-> The script requests several GM_* permissions, including GM_openInTab, GM_notification, GM_setClipboard, and window.onurlchange. Not all of these are strictly necessary for the core download link generation functionality.  
-> 位置：@grant metadata block  
-> 建议：Review and minimize permissions to only those required for core functionality. Remove unnecessary permissions to reduce attack surface.
+**⛔ CRITICAL** — Data Transmission to Third Parties  
+> The script rewrites download links to use third-party GitHub acceleration proxy services. This involves redirecting user-initiated downloads to external servers, which may log or process user download requests.  
+> 位置：download_url_us, clone_url, raw_url, etc. (proxy list and link rewriting logic)  
+> 建议：Clearly inform users of the proxy services used and their privacy policies. Consider allowing users to opt-out or select preferred proxies. Warn users about potential privacy risks when using third-party proxies.
 
-**🟡 LOW** — Third-party download link generation  
-> The script constructs download URLs using a list of public acceleration proxy services. These URLs are used to facilitate high-speed downloads from GitHub. However, the script itself does not send user data, cookies, or page content to these services; it only generates download links for the user to click.  
-> 位置：download_url_us, clone_url, clone_ssh_url, raw_url arrays and related logic  
-> 建议：Clearly inform users that clicking these links will send requests to third-party acceleration services, and users should be aware of the privacy policy of those services.
+**🟠 MEDIUM** — Permission Overgrant  
+> The script requests a large set of @grant permissions, including GM_openInTab, GM_notification, GM_setClipboard, and window.onurlchange, some of which are not strictly necessary for the core download acceleration functionality.  
+> 位置：@grant metadata block  
+> 建议：Reduce @grant permissions to the minimum required for functionality. Remove unused or unnecessary permissions to minimize attack surface.
+
+**🟠 MEDIUM** — Supply Chain Risk  
+> Some acceleration proxy URLs are hosted on less-known or personal domains, which may pose supply chain risks if the proxy operator is compromised or acts maliciously.  
+> 位置：download_url_us, clone_url, raw_url, etc. (proxy list)  
+> 建议：Prefer well-known, reputable proxy services. Allow users to review and manage the list of proxies. Warn users about the risks of using unknown third-party proxies.
 
 ---
 

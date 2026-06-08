@@ -14,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "HWHNewCharacterExt",
   "security_score": 100,
-  "summary": "该脚本主要为 HeroWarsHelper 扩展提供多语言文本和界面提示，未检测到任何网络请求、隐私数据采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用或供应链风险。代码结构清晰，未发现安全隐患。",
+  "summary": "该脚本为 HeroWarsHelper 的扩展，代码结构清晰，无混淆，无外部数据传输，无隐私采集行为，也未检测到远程代码执行、高危 DOM 操作或供应链风险。未发现任何安全隐患，权限申请最小化，整体安全性高。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-01T07:02:21.892381+00:00",
+  "analyzed_at": "2026-06-08T06:43:26.602387+00:00",
   "slug": "HWHNewCharacterExt"
 }

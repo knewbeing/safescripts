@@ -41,13 +41,13 @@ title: "Github增强 - 高速下载"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：94/100　　**分析时间**：2026-06-01
+**风险等级**：🟠 MEDIUM　　**安全评分**：75/100　　**分析时间**：2026-06-08
 
-> The script does not perform any automatic data exfiltration, privacy collection, or remote code execution. It does not use eval, dynamic script loading, or obfuscation. All network activity is user-initiated (by clicking download links), and no sensitive user data is collected or transmitted. The only minor risks are user awareness of third-party proxy usage and the presence of high-privilege GM_* APIs, which are not abused. Overall, the script is safe for use, with a low risk profile.
+> 该脚本主要通过将 Github 下载请求重定向到多个第三方公益加速节点实现高速下载。未检测到隐私采集、远程代码执行、代码混淆、DOM XSS、供应链等高危风险。主要安全关注点为数据外传：所有通过加速节点下载的内容、请求、甚至可能的账号相关资源，都会经过第三方服务器，存在被记录、篡改或泄露的理论风险。建议用户下载敏感或私有内容时谨慎使用。整体安全性中等，适合公开仓库文件加速下载场景。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ✅ 未检测到 |
+| 数据外传 | ❌ 检测到（目标：https://gh.h233.eu.org, https://rapidgit.jjda.de5.net, https://gh.ddlc.top） |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
@@ -56,15 +56,50 @@ title: "Github增强 - 高速下载"
 
 ### 发现的问题
 
-**🟡 LOW** — Potential user awareness issue  
-> The script provides a large list of third-party download acceleration proxy URLs, and modifies download links to point to these proxies. However, it does not automatically send user data or make network requests to these proxies unless the user clicks the generated links. No automatic data exfiltration is detected.  
-> 位置：Definition and usage of download_url_us, download_url, clone_url, etc.  
-> 建议：Clearly inform users that clicking the generated links will send requests to third-party acceleration servers. Consider allowing users to customize or disable certain proxies.
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过构造加速下载链接，将用户的 Github 下载请求重定向到第三方加速节点（如 gh.h233.eu.org、ghproxy.net 等），涉及页面内容的外部传输。  
+> 位置：download_url_us, clone_url, raw_url 等数组及相关逻辑  
+> 建议：提醒用户这些加速节点为第三方服务，下载敏感内容需谨慎，建议在代码注释和文档中明确风险。
 
-**🟡 LOW** — Permission usage review  
-> The script requests several high-privilege GM_* APIs (GM_openInTab, GM_setClipboard, GM_notification), but all are used for legitimate UI/UX purposes (open links, copy URLs, show notifications). No evidence of abuse or privilege escalation.  
-> 位置：@grant metadata and corresponding API usage in code  
-> 建议：No action needed unless future code changes introduce abuse. Review permissions periodically.
+**⛔ CRITICAL** — 隐私采集  
+> 脚本未检测到主动收集用户隐私数据（如 cookie、localStorage、表单、指纹等）或监听键盘输入等行为。  
+> 位置：全局  
+> 建议：保持现状，勿添加隐私采集逻辑。
+
+**🔴 HIGH** — 远程代码执行  
+> 脚本未检测到 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险，也未动态加载远程 JS。  
+> 位置：全局  
+> 建议：保持现状，勿添加动态代码执行逻辑。
+
+**🔴 HIGH** — 代码混淆  
+> 脚本未检测到明显的代码混淆、base64 解码、字符串数组映射或高度压缩代码。  
+> 位置：全局  
+> 建议：保持代码可读性，便于社区审计。
+
+**🔴 HIGH** — DOM XSS / 注入  
+> 脚本未检测到 DOM XSS 风险（如用户输入直接插入 innerHTML/outerHTML），也未操作 iframe src 为 javascript:。  
+> 位置：全局  
+> 建议：继续避免不安全的 DOM 操作。
+
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 GM_openInTab、GM_notification、GM_setClipboard 等权限，均有实际用途（如打开新标签、通知、复制下载链接），未发现权限滥用。  
+> 位置：元数据 @grant  
+> 建议：仅申请实际需要的权限，定期复查。
+
+**🟠 MEDIUM** — 敏感 API 调用  
+> 脚本未检测到敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API 读取、Notification 滥用）调用。  
+> 位置：全局  
+> 建议：继续避免敏感 API 滥用。
+
+**🟠 MEDIUM** — 供应链风险  
+> 脚本未使用 @require 加载第三方库，无供应链风险。  
+> 位置：元数据  
+> 建议：如需引入第三方库，建议使用可信官方 CDN 并锁定版本。
+
+**🟡 LOW** — ClickJacking / iframe 风险  
+> 脚本未检测到修改 frame 保护策略或创建隐藏 iframe 用于数据提取。  
+> 位置：全局  
+> 建议：继续避免相关风险。
 
 ---
 

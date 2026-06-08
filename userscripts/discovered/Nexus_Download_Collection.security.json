@@ -10,65 +10,65 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 fetch 向 nexusmods.com 及其子域名（api-router.nexusmods.com）发送请求以获取和下载 mod 信息。未发现向第三方域名或非官方服务器发送数据。",
-      "location": "fetchMods, fetchDownloadLink, fetch",
-      "recommendation": "仅与目标站点通信，避免向未知服务器发送数据。",
+      "description": "脚本通过 fetch 向 nexusmods.com 和 api-router.nexusmods.com 发送请求以获取和下载 mod 信息。所有请求均为官方域名，未发现向第三方服务器或未知域名传输数据。",
+      "location": "fetchMods, fetchDownloadLink 等函数",
+      "recommendation": "仅允许与受信任的官方域名通信，避免将用户数据发送到第三方。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本未检测到对 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板、表单字段、键盘事件的读取或监听。",
+      "description": "脚本未发现读取 cookie/localStorage/sessionStorage/IndexedDB、监听键盘输入、读取表单字段、访问指纹 API 或读取剪贴板内容的行为。",
       "location": "全局",
-      "recommendation": "继续保持，不采集用户隐私数据。",
+      "recommendation": "保持当前实现，避免添加隐私采集代码。",
       "severity": "CRITICAL",
       "type": "隐私采集"
     },
     {
-      "description": "未检测到 eval、new Function、setTimeout(string)、setInterval(string)、动态 script 标签、@require 远程 JS、document.write 等远程代码执行风险。",
+      "description": "未发现 eval、new Function、setTimeout(string)、setInterval(string)、动态 script 标签、@require 加载远程 JS 或 document.write 插入脚本内容。",
       "location": "全局",
-      "recommendation": "避免动态执行字符串代码。",
+      "recommendation": "避免远程代码执行相关 API。",
       "severity": "HIGH",
       "type": "远程代码执行"
     },
     {
-      "description": "未检测到代码混淆、base64 解码、字符串数组映射、unicode 混淆或高度压缩单行代码。",
+      "description": "未发现明显的代码混淆、base64 解码、字符串数组混淆或高度压缩代码。",
       "location": "全局",
-      "recommendation": "保持代码可读性，便于安全审计。",
+      "recommendation": "保持代码可读性，避免混淆。",
       "severity": "HIGH",
       "type": "代码混淆"
     },
     {
-      "description": "未检测到用户输入或 URL 参数直接插入 innerHTML/outerHTML，未发现 DOM XSS 风险。",
+      "description": "未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未见 document.write 注入或 iframe src 操作。",
       "location": "全局",
-      "recommendation": "插入 HTML 时始终进行转义。",
+      "recommendation": "插入 HTML 时应始终进行转义。",
       "severity": "HIGH",
-      "type": "DOM XSS"
+      "type": "DOM XSS / 注入"
     },
     {
       "description": "@grant 权限与实际代码使用基本匹配，未发现高权限滥用。",
-      "location": "元数据",
-      "recommendation": "仅申请实际需要的权限。",
+      "location": "元数据与全局",
+      "recommendation": "如未使用部分 GM API，可移除对应 @grant。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "未检测到敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）调用。",
+      "description": "未发现敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）调用。",
       "location": "全局",
       "recommendation": "避免调用敏感 API。",
       "severity": "MEDIUM",
       "type": "敏感 API 调用"
     },
     {
-      "description": "未检测到 @require 加载第三方库，未发现供应链风险。",
+      "description": "未使用 @require 加载第三方库，无供应链风险。",
       "location": "元数据",
-      "recommendation": "如需第三方库，建议固定版本哈希并使用可信 CDN。",
+      "recommendation": "如需加载第三方库，请使用官方 CDN 并锁定版本。",
       "severity": "MEDIUM",
       "type": "供应链风险"
     },
     {
-      "description": "未检测到脚本修改 frame 保护策略或创建隐藏 iframe。",
+      "description": "未发现修改 frame 保护策略或创建隐藏 iframe。",
       "location": "全局",
-      "recommendation": "避免创建隐藏 iframe 进行数据提取。",
+      "recommendation": "避免通过 iframe 进行数据提取。",
       "severity": "LOW",
       "type": "ClickJacking / iframe 风险"
     }
@@ -80,10 +80,10 @@
   },
   "risk_level": "LOW",
   "script_name": "Nexus Download Collection",
-  "security_score": 75,
-  "summary": "该脚本仅与 nexusmods.com 官方域名通信，未发现隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链或 iframe 风险。主要风险为数据外传（仅限目标站点），整体安全性较高。",
+  "security_score": 97,
+  "summary": "该脚本仅与 nexusmods.com 官方域名通信，未发现隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。整体安全性高，风险极低。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-01T07:03:22.385228+00:00",
+  "analyzed_at": "2026-06-08T06:44:35.854521+00:00",
   "slug": "Nexus_Download_Collection"
 }

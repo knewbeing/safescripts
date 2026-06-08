@@ -33,9 +33,9 @@ title: "Deadshot.io 自动瞄准与高亮"
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-06-01
+**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-06-08
 
-> 该 UserScript 主要实现游戏辅助功能（Chams & Aimbot），未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用、供应链或 iframe 风险。仅申请了 unsafeWindow 权限，代码结构清晰，安全性高。
+> 该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。其主要功能为 WebGL hook、UI 注入和鼠标事件代理，用于游戏辅助。未发现安全风险。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -46,52 +46,7 @@ title: "Deadshot.io 自动瞄准与高亮"
 | DOM XSS 风险 | ✅ 未检测到 |
 | 供应链风险 | ✅ 可信 |
 
-### 发现的问题
-
-**⛔ CRITICAL** — 数据外传  
-> 脚本未检测到任何外部数据传输、统计或追踪行为。  
-> 位置：全局  
-> 建议：保持现状，勿添加外传逻辑。
-
-**⛔ CRITICAL** — 隐私采集  
-> 未检测到 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板、表单字段、键盘输入监听与外传等隐私采集行为。  
-> 位置：全局  
-> 建议：保持现状，勿采集用户隐私数据。
-
-**🔴 HIGH** — 远程代码执行  
-> 未检测到 eval、new Function、setTimeout(string)、setInterval(string)、动态 script 标签、@require 远程 JS、document.write 等远程代码执行风险。  
-> 位置：全局  
-> 建议：保持现状，勿引入动态代码执行。
-
-**🔴 HIGH** — 代码混淆  
-> 未检测到代码混淆、base64 解码、字符串数组映射、unicode 混淆或高度压缩单行代码。  
-> 位置：全局  
-> 建议：保持代码可读性，便于安全审计。
-
-**🔴 HIGH** — DOM XSS  
-> 未检测到 DOM XSS 风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML。  
-> 位置：createUI()  
-> 建议：如需插入动态内容，务必进行转义。
-
-**🟠 MEDIUM** — 权限滥用  
-> 仅申请了 unsafeWindow 权限，未检测到高权限滥用。  
-> 位置：@grant  
-> 建议：仅申请实际需要的权限。
-
-**🟠 MEDIUM** — 敏感 API 调用  
-> 未检测到敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）调用。  
-> 位置：全局  
-> 建议：如需使用敏感 API，需明确告知用户。
-
-**🟠 MEDIUM** — 供应链风险  
-> 未检测到 @require 加载第三方库，无供应链风险。  
-> 位置：元数据  
-> 建议：如需引入第三方库，建议使用可信 CDN 并锁定版本。
-
-**🟡 LOW** — ClickJacking/iframe 风险  
-> 未检测到对 frame 保护策略的修改或隐藏 iframe 的创建。  
-> 位置：全局  
-> 建议：如需操作 iframe，需明确用途并告知用户。
+### 未发现安全问题 ✅
 
 ---
 

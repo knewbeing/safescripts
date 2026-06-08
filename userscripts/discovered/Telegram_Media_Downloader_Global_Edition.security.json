@@ -5,33 +5,18 @@
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [
-    {
-      "description": "申请了 @grant unsafeWindow 权限，但代码中未使用该权限。",
-      "location": "元数据 @grant",
-      "recommendation": "移除未使用的高权限申请，减少潜在攻击面。",
-      "severity": "MEDIUM",
-      "type": "权限滥用"
-    },
-    {
-      "description": "未锁定 @downloadURL 和 @updateURL 版本哈希，存在供应链污染风险。",
-      "location": "元数据 @downloadURL/@updateURL",
-      "recommendation": "建议固定版本哈希或定期核查更新源完整性。",
-      "severity": "MEDIUM",
-      "type": "供应链风险"
-    }
-  ],
+  "issues": [],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
     "detected": false
   },
-  "risk_level": "LOW",
+  "risk_level": "SAFE",
   "script_name": "Telegram Media Downloader (Global Edition)",
-  "security_score": 84,
-  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要问题为申请了未使用的高权限（unsafeWindow）和未锁定更新源，属于中低风险。整体安全性较高，建议移除未使用权限并关注供应链完整性。",
-  "supply_chain_risk": true,
+  "security_score": 100,
+  "summary": "该脚本仅包含元数据和描述信息，没有实际的 JavaScript 代码实现功能。未检测到任何网络请求、隐私数据采集、远程代码执行、混淆、XSS、权限滥用或供应链风险。安全性极高。",
+  "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-01T07:07:22.552867+00:00",
+  "analyzed_at": "2026-06-08T06:48:16.755957+00:00",
   "slug": "Telegram_Media_Downloader_Global_Edition"
 }

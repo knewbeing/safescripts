@@ -40,9 +40,9 @@ title: "物品市场集市浏览增强"
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：67/100　　**分析时间**：2026-06-01
+**风险等级**：🟡 LOW　　**安全评分**：64/100　　**分析时间**：2026-06-08
 
-> The script requests network access to a third-party server (weav3r.dev) and stores settings in localStorage and GM storage. No evidence of sensitive data exfiltration, privacy-invasive collection, or code obfuscation is present. The main risk is the potential for data transmission to a third-party server, though the current code does not show sensitive data being sent. Permissions could be reduced for better security.
+> The script transmits data to a third-party server (weav3r.dev) using GM.xmlHttpRequest, which is a critical risk if sensitive data is sent. No evidence of credential or keylogging behavior. No code obfuscation or XSS risk detected. Some permission overuse and localStorage usage, but no major privacy collection. Overall, the script is relatively safe for typical use, but users should be aware of the external data transmission.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -55,25 +55,25 @@ title: "物品市场集市浏览增强"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Transmission  
-> The script uses GM.xmlHttpRequest and @connect to weav3r.dev, which is a third-party server. However, the code provided does not show any sensitive user data, cookies, or page content being sent. The actual payload of the requests is not visible in the snippet, but the risk is present due to the network permission.  
-> 位置：GM.xmlHttpRequest usage and @connect weav3r.dev in metadata  
-> 建议：Review all network requests to ensure no sensitive data is transmitted. Limit data sent to only what is necessary for the script's function.
+**⛔ CRITICAL** — Data Exfiltration  
+> Script uses GM.xmlHttpRequest to connect to weav3r.dev, which is a third-party server. This may transmit user interaction data or page context, depending on request payloads.  
+> 位置：GM.xmlHttpRequest usage (enabled by @grant and @connect)  
+> 建议：Review all transmitted data to ensure no sensitive information (user credentials, cookies, personal data) is sent. Limit data to only what is necessary for functionality.
 
 **🟠 MEDIUM** — Privacy Collection  
-> The script reads and writes to localStorage and GM storage for settings and caching. No evidence of privacy-invasive data collection (such as cookies, form fields, or clipboard) is present.  
-> 位置：GM_getValue, GM_setValue, localStorage usage  
-> 建议：Ensure only non-sensitive script settings are stored. Do not store or transmit user credentials or personal data.
+> Script reads and writes to localStorage for settings and caching, but does not appear to transmit this data externally. No evidence of document.cookie, sessionStorage, or IndexedDB access for sensitive data.  
+> 位置：localStorage usage in GM_getValue/GM_setValue compatibility layer  
+> 建议：Ensure no sensitive user data is stored in localStorage. Avoid storing authentication tokens or personal information.
 
-**🟠 MEDIUM** — Permission Abuse  
-> The script requests multiple GM_* permissions, including both legacy and modern APIs. Some permissions (e.g., GM_deleteValue, GM_listValues) may not be strictly necessary.  
-> 位置：Metadata block (@grant)  
-> 建议：Remove unused permissions to reduce attack surface.
+**🟠 MEDIUM** — Permission Overuse  
+> Script requests more @grant permissions than it uses (both legacy and modern GM APIs).  
+> 位置：@grant block in metadata  
+> 建议：Remove unused permissions to reduce attack surface and follow the principle of least privilege.
 
-**🟡 LOW** — General Best Practice  
-> The script loads styles and manipulates the DOM, but does not use innerHTML/outerHTML with untrusted input, nor does it use eval or similar dynamic code execution.  
-> 位置：DOM manipulation code  
-> 建议：Continue to avoid dynamic code execution and direct insertion of untrusted data into the DOM.
+**🟡 LOW** — Supply Chain  
+> @require is not used, but @downloadURL and @updateURL point to greasyfork CDN, which is generally trusted. No supply chain risk detected.  
+> 位置：Metadata block  
+> 建议：If adding @require in the future, pin to official, versioned CDN URLs.
 
 ---
 

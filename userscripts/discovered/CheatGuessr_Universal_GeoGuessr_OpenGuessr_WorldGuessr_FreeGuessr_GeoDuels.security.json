@@ -10,62 +10,45 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script uses GM_xmlhttpRequest and/or fetch to send data to discord.com (e.g., for 'send to Discord' feature). This may include map coordinates, user actions, or other gameplay data.",
-      "location": "Functions related to 'sendToDiscord', network requests to discord.com",
-      "recommendation": "Ensure only non-sensitive, user-approved data is sent. Inform users clearly about what is transmitted. Do not send cookies or authentication tokens.",
+      "description": "The script uses GM_xmlhttpRequest and/or fetch to send data to discord.com (likely for the 'send to Discord' feature). This may include map pin data or user actions.",
+      "location": "Network requests, feature: sendToDiscord",
+      "recommendation": "Ensure only intended, non-sensitive data is sent. Warn users about data transmission to third-party services.",
       "severity": "CRITICAL",
       "type": "Data Exfiltration"
     },
     {
-      "description": "The script sends requests to nominatim.openstreetmap.org for reverse geocoding (address lookup). While this is a public API, it may leak user location or gameplay data.",
-      "location": "Network requests to nominatim.openstreetmap.org",
-      "recommendation": "Minimize data sent; avoid sending user-identifiable information. Document this behavior for users.",
-      "severity": "MEDIUM",
-      "type": "Data Transmission"
+      "description": "The script requests access to nominatim.openstreetmap.org, likely for reverse geocoding. While this is a public API, user location data (map pins) may be sent.",
+      "location": "Network requests, reverse geocoding",
+      "recommendation": "Disclose to users that their map pin/location data may be sent to OpenStreetMap servers.",
+      "severity": "CRITICAL",
+      "type": "Data Exfiltration"
     },
     {
-      "description": "The script requests Notification API permission and can send browser notifications.",
-      "location": "state.notificationPermission, Notification API usage",
-      "recommendation": "Limit notification usage to essential events. Do not abuse notifications for spam.",
+      "description": "The script requests Notification API permission and uses Notification.permission, which can be abused for spam or phishing.",
+      "location": "Notification API usage",
+      "recommendation": "Limit notification usage to essential features and inform users.",
       "severity": "MEDIUM",
       "type": "Sensitive API Usage"
     },
     {
-      "description": "The script modifies Element.prototype.setAttribute and Array.prototype.push via Proxy, which can introduce compatibility or security issues if not carefully handled.",
-      "location": "Element.prototype.setAttribute, Array.prototype.push Proxy wrappers",
-      "recommendation": "Limit prototype modifications to only necessary cases. Document and test for side effects.",
-      "severity": "HIGH",
-      "type": "Prototype Pollution Risk"
-    },
-    {
-      "description": "The script disables or bypasses anti-cheat and ban mechanisms on target platforms by patching Storage, gtag, fetch, etc.",
-      "location": "Platform-specific code blocks (e.g., WORLDGUESSR, FREEGUESSR)",
-      "recommendation": "Such behavior may violate terms of service and can be considered malicious if abused.",
-      "severity": "HIGH",
-      "type": "Anti-Detection/Anti-Ban Bypass"
-    },
-    {
-      "description": "The script requests GM_xmlhttpRequest permission, which is high-privilege and should be justified.",
-      "location": "@grant GM_xmlhttpRequest in metadata",
-      "recommendation": "Only request this permission if strictly necessary. Remove if not used.",
-      "severity": "MEDIUM",
-      "type": "Permission Overprovision"
+      "description": "The script requests and uses GM_xmlhttpRequest, a high-privilege API, but only for the two declared domains. No evidence of over-privilege.",
+      "location": "@grant and @connect usage",
+      "recommendation": "No action needed unless additional domains are added.",
+      "severity": "LOW",
+      "type": "Permission Usage"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [
-      "Reads and writes to localStorage via GM_getValue/GM_setValue for hotkeys and toggles.",
-      "May access gameplay state (map coordinates, address) for Discord sharing and Google Maps opening."
-    ],
-    "detected": true
+    "details": [],
+    "detected": false
   },
   "risk_level": "HIGH",
   "script_name": "CheatGuessr Universal | GeoGuessr | OpenGuessr | WorldGuessr | FreeGuessr | GeoDuels",
-  "security_score": 37,
-  "summary": "This script transmits gameplay data to third-party services (discord.com, nominatim.openstreetmap.org), modifies browser prototypes, and bypasses anti-cheat mechanisms on supported platforms. It also requests high-privilege permissions. While there is no evidence of credential theft or keylogging, the script's behavior introduces significant security and ethical risks, especially regarding data exfiltration and anti-detection measures.",
+  "security_score": 50,
+  "summary": "This script transmits user map pin/location data to discord.com and nominatim.openstreetmap.org, which constitutes a critical data exfiltration risk. No evidence of privacy-invasive collection (e.g., cookies, keylogging), code obfuscation, or DOM XSS. Notification API is used, which is a medium risk. Permissions are appropriate for declared features. Supply chain risk is low as no @require is used. Overall, the script is high risk due to third-party data transmission.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-01T06:56:57.728471+00:00",
+  "analyzed_at": "2026-06-08T06:37:58.792992+00:00",
   "slug": "CheatGuessr_Universal_GeoGuessr_OpenGuessr_WorldGuessr_FreeGuessr_GeoDuels"
 }

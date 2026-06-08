@@ -35,9 +35,9 @@ title: "Songsterr高级功能解锁"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：81/100　　**分析时间**：2026-06-01
+**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-08
 
-> The script does not transmit user data or page content to third-party servers and does not collect sensitive information. No code obfuscation or DOM XSS risks are present. The main issues are over-granted permissions (@grant GM_xmlhttpRequest and unsafeWindow) which are not used in the code, and minor supply chain risk from @require (mitigated by version pinning). Overall, the script is safe for use with a low risk profile.
+> 该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。仅存在未使用的高权限声明（GM_xmlhttpRequest、unsafeWindow），建议移除以降低潜在风险。@require 的第三方库来源可信且已锁定版本。整体安全风险较低。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -50,25 +50,20 @@ title: "Songsterr高级功能解锁"
 
 ### 发现的问题
 
-**🟠 MEDIUM** — Permission Overgrant  
-> The script requests GM_xmlhttpRequest permission, but no usage is found in the provided code. This is a high-privilege API that could be abused if present without need.  
-> 位置：Metadata block (@grant GM_xmlhttpRequest)  
-> 建议：Remove the @grant GM_xmlhttpRequest if not used to reduce attack surface.
+**🟠 MEDIUM** — 权限滥用  
+> @grant 申请了 GM_xmlhttpRequest 权限，但脚本本体未发现实际使用（仅元数据声明）。  
+> 位置：@grant 元数据  
+> 建议：移除未使用的高权限声明，减少权限滥用风险。
 
-**🟠 MEDIUM** — Permission Overgrant  
-> The script requests unsafeWindow permission, but no usage is found in the provided code. This is a high-privilege API that could be abused if present without need.  
-> 位置：Metadata block (@grant unsafeWindow)  
-> 建议：Remove the @grant unsafeWindow if not used to reduce attack surface.
+**🟠 MEDIUM** — 权限滥用  
+> @grant 申请了 unsafeWindow 权限，但脚本本体未发现实际使用（仅元数据声明）。  
+> 位置：@grant 元数据  
+> 建议：移除未使用的高权限声明，减少权限滥用风险。
 
-**🟡 LOW** — LocalStorage Usage  
-> The script uses localStorage to store logging and YouTube audio-only mode preferences. No sensitive user data is stored or transmitted.  
-> 位置：Functions: logging system, YouTube audio-only toggle  
-> 建议：No action needed, but ensure no sensitive data is stored in localStorage.
-
-**🟡 LOW** — Supply Chain  
-> The script uses @require to load alphaTab from jsdelivr CDN. The version is pinned (1.8.1), which reduces supply chain risk.  
-> 位置：Metadata block (@require https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.1/dist/alphaTab.min.js)  
-> 建议：Continue to pin versions and use reputable CDNs.
+**🟡 LOW** — 供应链风险  
+> @require 加载了第三方库 alphaTab，来源为 jsdelivr 官方 CDN，版本已锁定。  
+> 位置：@require 元数据  
+> 建议：已锁定版本，供应链风险较低，但建议定期检查依赖安全性。
 
 ---
 

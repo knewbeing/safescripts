@@ -35,9 +35,35 @@ title: "Torn战争信息增强"
 
 ## 安全分析
 
-::: info 等待分析
-安全分析将在下次流水线运行时自动更新。
-:::
+**风险等级**：🟠 MEDIUM　　**安全评分**：67/100　　**分析时间**：2026-06-08
+
+> The script is generally safe for use, with its main risk being the storage and transmission of a user-provided API key to a third-party API (api.torn.com). There is no evidence of code obfuscation, DOM XSS, or supply chain risk. Users should be aware that their API key is stored in localStorage and only use a public key as recommended by the script author.
+
+| 检查项 | 结果 |
+|--------|------|
+| 数据外传 | ❌ 检测到（目标：api.torn.com） |
+| 隐私采集 | ❌ 检测到（Reads and writes API key to localStorage） |
+| 代码混淆 | ✅ 未检测到 |
+| WebSocket/SSE | ✅ 未使用 |
+| DOM XSS 风险 | ✅ 未检测到 |
+| 供应链风险 | ✅ 可信 |
+
+### 发现的问题
+
+**⛔ CRITICAL** — Data Transmission  
+> The script uses GM_xmlhttpRequest to communicate with api.torn.com, which is a third-party API, and sends a user-provided API key (stored in localStorage).  
+> 位置：GM_xmlhttpRequest usage (implied by @grant and @connect, though not shown in the truncated code)  
+> 建议：Ensure only the minimum required data is sent and the API key is not reused elsewhere. Warn users not to use sensitive/private API keys.
+
+**🔴 HIGH** — Privacy Collection  
+> The script stores and retrieves the API key from localStorage, which is accessible to any script running on the page.  
+> 位置：localStorage.getItem/setItem for API key  
+> 建议：Warn users that the API key is stored in localStorage and may be accessible to other scripts. Consider using a more secure storage method if possible.
+
+**🟠 MEDIUM** — Permission Usage  
+> The script requests GM_xmlhttpRequest permission, which is a high-privilege API, but only uses it for api.torn.com as declared in @connect.  
+> 位置：@grant GM_xmlhttpRequest, @connect api.torn.com  
+> 建议：Limit @connect to only required domains and ensure GM_xmlhttpRequest is not used for other destinations.
 
 ---
 

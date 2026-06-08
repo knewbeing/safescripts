@@ -30,9 +30,9 @@ title: "C.AI Custom Chat Bubbles + Bypass Chat Limit (Unlock edit message button
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：81/100　　**分析时间**：2026-06-01
+**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-08
 
-> The script does not exfiltrate user data, collect sensitive information, or execute remote code. It mainly customizes UI and bypasses certain feature limits by intercepting network requests. Permissions are slightly overprovisioned, and a third-party library is loaded from a reputable CDN without a hash. No obfuscation or XSS risks detected. Overall, the script is low risk but should improve supply chain hygiene and permission minimization.
+> 该脚本主要用于美化 character.ai 聊天界面和绕过聊天限制。未发现数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。权限申请略有冗余（GM_xmlhttpRequest/@connect），但未被实际利用。@require 的第三方库来源可信且已锁定版本。整体风险较低，安全性良好。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -41,29 +41,34 @@ title: "C.AI Custom Chat Bubbles + Bypass Chat Limit (Unlock edit message button
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ⚠️ 存在风险 |
+| 供应链风险 | ✅ 可信 |
 
 ### 发现的问题
 
-**🟠 MEDIUM** — Permission Overprovision  
-> The script requests @connect permission for translate.googleapis.com and grants GM_xmlhttpRequest, but no actual data transmission to third-party endpoints is present in the provided code. However, the permission could be used for network requests.  
-> 位置：Metadata block (@grant, @connect)  
-> 建议：Restrict @connect and @grant permissions to only those strictly necessary. Review any future code changes for actual data transmission.
-
-**🟠 MEDIUM** — Supply Chain Risk  
-> The script uses @require to load turndown.js from unpkg.com, a reputable CDN, but does not pin a specific file hash.  
-> 位置：@require https://unpkg.com/turndown@7.1.3/lib/turndown.browser.umd.js  
-> 建议：Pin the dependency to a specific version and hash if possible to prevent supply chain attacks.
+**🟠 MEDIUM** — Permission Overgrant  
+> The script requests GM_xmlhttpRequest and @connect permission for translate.googleapis.com, but no actual GM_xmlhttpRequest usage is present in the provided code. This may be over-privileged.  
+> 位置：Metadata block  
+> 建议：Remove unused GM_xmlhttpRequest grant and @connect if not used.
 
 **🟡 LOW** — Network Interception  
-> The script overrides window.fetch and XMLHttpRequest.prototype.open to block requests to 'neo.character.ai/feature_limits', but does not exfiltrate user data or send it to third-party servers.  
-> 位置：window.fetch, XMLHttpRequest.prototype.open  
-> 建议：Ensure that no user data is sent to untrusted endpoints in future updates.
+> The script overrides window.fetch and XMLHttpRequest.prototype.open to block requests to 'neo.character.ai/feature_limits'. This is a form of request interception but does not transmit data to third parties.  
+> 位置：Main script body  
+> 建议：Ensure no sensitive data is leaked in custom fetch/XHR handlers.
 
-**🟡 LOW** — Local Storage Usage  
-> The script uses localStorage to store feature toggles (e.g., 'cai_adv_fake_verify', 'cai_bypass_limit'), but does not collect or transmit sensitive user data.  
-> 位置：localStorage usage  
-> 建议：Do not store sensitive information in localStorage. Current usage is safe.
+**🟡 LOW** — LocalStorage Usage  
+> The script uses localStorage to store feature toggles (e.g., 'cai_adv_fake_verify', 'cai_bypass_limit').  
+> 位置：Main script body  
+> 建议：No sensitive user data is stored; usage is acceptable.
+
+**🟡 LOW** — DOM Manipulation  
+> The script uses GM_addStyle to inject CSS and manipulates the DOM to add UI elements. No evidence of DOM XSS or injection of untrusted content.  
+> 位置：initCustomizeButton function  
+> 建议：Continue to avoid inserting untrusted user input into innerHTML.
+
+**🟡 LOW** — Supply Chain  
+> The script uses @require to load turndown from unpkg.com, a reputable CDN, and pins the version to 7.1.3.  
+> 位置：Metadata block  
+> 建议：Continue to pin versions for supply chain safety.
 
 ---
 

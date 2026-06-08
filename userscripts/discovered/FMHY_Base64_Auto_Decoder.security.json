@@ -4,14 +4,14 @@
     "destinations": [],
     "detected": false
   },
-  "dom_xss_risk": false,
+  "dom_xss_risk": true,
   "issues": [
     {
-      "description": "The script uses innerHTML to insert decoded and linkified content, but only for content that is already present in the page and after decoding base64. The decoded content is not user input, but there is a theoretical risk if the decoded base64 contains malicious HTML/JS.",
-      "location": "Multiple locations: element.innerHTML assignment in Pastebin, Rentry, Privatebin handlers",
-      "recommendation": "Sanitize decoded content before inserting with innerHTML to prevent possible XSS if the base64 source is compromised.",
+      "description": "The script uses innerHTML to insert decoded and linkified content based on page text, which may include untrusted input. If the decoded base64 content is attacker-controlled, this could lead to DOM XSS.",
+      "location": "Multiple locations, e.g., element.innerHTML = htmlWithLinks; and prettyPrintElement.innerHTML = decryptedText;",
+      "recommendation": "Sanitize all decoded content before inserting with innerHTML. Use DOM methods to create elements instead of string concatenation.",
       "severity": "HIGH",
-      "type": "Potential DOM XSS"
+      "type": "DOM XSS Risk"
     }
   ],
   "obfuscation_detected": false,
@@ -22,9 +22,9 @@
   "risk_level": "LOW",
   "script_name": "FMHY Base64 Auto Decoder",
   "security_score": 85,
-  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、权限滥用、敏感 API 调用或供应链风险。唯一的安全关注点是使用 innerHTML 插入解码内容，理论上存在 DOM XSS 风险，若 base64 源被恶意利用。整体风险较低，建议对插入内容进行 HTML 转义或严格校验。",
+  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、权限滥用、敏感 API 滥用或供应链风险。主要安全隐患为在插入解码内容时使用 innerHTML，存在一定 DOM XSS 风险。建议对解码内容进行严格转义或使用安全的 DOM API 插入，避免 XSS 攻击。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-01T07:00:50.470157+00:00",
+  "analyzed_at": "2026-06-08T06:41:44.086122+00:00",
   "slug": "FMHY_Base64_Auto_Decoder"
 }

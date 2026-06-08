@@ -1,88 +1,69 @@
 ---
-title: "毒奶去网页广告计划"
+title: "毒奶网页广告清理"
 ---
 
-# 毒奶去网页广告计划
+# 毒奶网页广告清理
 
-`广告屏蔽`  `视频网站`  `漫画网站`  `搜索引擎优化`  `弹窗清理`  `网页美化`
+`广告屏蔽`  `影视网站`  `漫画网站`  `搜索引擎`  `弹窗清理`  `网页优化`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/Adblock4limbo.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**0.2025.12.27**　　发现时间：**2026-06-01**　　来源：[limbopro/Adblock4limbo](https://github.com/limbopro/Adblock4limbo) <Badge type="tip" text="GitHub" />
+> 版本：**0.2025.12.27**　　发现时间：**2026-06-08**　　来源：[limbopro/Adblock4limbo](https://github.com/limbopro/Adblock4limbo) <Badge type="tip" text="GitHub" />
 
 ## 功能介绍
 
-本脚本可自动移除各类视频网站、漫画站、搜索引擎等网页上的广告，包括弹窗、视频广告、Gif广告等，并清理内容农场结果。页面右下角新增导航按钮，使用体验更清爽。
+本脚本可自动移除各类网站上的广告，包括弹窗、视频广告、Gif图片广告等，保持网页清爽。支持搜索引擎、影视、漫画、小说等众多网站。页面右下角新增导航，方便快速访问常用功能。
 
 ## 适用网站
 
 - 百度搜索
-- 百度知道
 - 谷歌搜索
 - 必应搜索
-- BTBD影视
-- 低端影视
+- 知乎
+- Instagram
 - 欧乐影院
-- 爱壹帆
+- 低端影视
 - 哔滴影视
-- Pornhub
-- Javbus
-- Supjav
+- iyf爱壹帆
 - Jable
 - MissAv
 - 91porn
-- hitomi漫画
-- 绅士漫画
+- hitomi
+- 紳士漫畫
 - 禁漫天堂
-- Gimy
-- 小宝TV
-- 小新TV
-- 华人直播
-- Cupfox
-- DMM
+- Pornhub
+- Javbus
+- Supjav
 - Javdb
-- Javday
-- Xvideos
-- 4hu
-- Netflav
-- T66y
-- Xchina
+- Javlibrary
 - Anime1
-- 知乎
-- Instagram
-- HLTV
-- Novel543
+- Cupfox
+- BTBDYS
 - Duboku
 - Libvio
 - TVN
-- Hanime
-- Rouman
-- Pica漫画
-- OP.GG
-- Telegram
-- Wangdoc
-- Mozilla开发者文档
-- Javascript.info
-- Deerchao文档
+- Novel543
+- HLTV
+- 等众多视频、漫画、小说及ACG网站
 
 ## 使用方法
 
-1. 安装油猴（Tampermonkey）扩展。
-2. 添加并启用本脚本。
-3. 访问支持的网站，广告会自动被屏蔽。
-4. 页面右下角可使用新增导航按钮。
+1. 1. 安装油猴（Tampermonkey）扩展。
+2. 2. 添加此脚本并启用。
+3. 3. 访问支持的网站，广告会自动被移除。
+4. 4. 页面右下角可使用导航功能。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `none` | 脚本无需额外权限，直接在网页运行。 |
+| `none` | 脚本无需特殊权限，直接运行在网页上。 |
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-06-01
+**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-06-08
 
-> 该脚本主要用于移除特定网站广告和提供页面导航功能。未检测到任何数据外传、隐私采集（除本地 cookie 设置）、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。脚本未申请任何 @grant 权限，未加载远程代码，未见 fetch、GM_xmlhttpRequest、WebSocket 等网络请求。整体结构清晰，安全性高。
+> 该脚本主要用于移除特定网站广告和提供导航功能。未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用、供应链风险或 iframe 风险。脚本未使用任何 @grant 权限，未加载远程 JS，也未进行任何网络请求。整体结构清晰，功能单一，安全性高。
 
 | 检查项 | 结果 |
 |--------|------|

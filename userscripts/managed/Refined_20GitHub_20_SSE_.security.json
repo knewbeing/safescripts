@@ -6,37 +6,30 @@
       "localhost",
       "*"
     ],
-    "detected": true
+    "detected": false
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 @connect * 允许向任意域名发起网络请求，存在数据外传高风险。",
-      "location": "@connect * 元数据声明",
-      "recommendation": "限制 @connect 域名范围，仅允许必要的可信域名。",
+      "description": "@connect * 允许任意外部服务器的网络请求，存在严重数据外传风险。",
+      "location": "metadata block",
+      "recommendation": "严格限制 @connect 域名，仅允许可信的 API 服务器，移除 @connect *。",
       "severity": "CRITICAL",
-      "type": "数据外传"
+      "type": "Data Exfiltration"
     },
     {
-      "description": "脚本声明了 GM.xmlHttpRequest 和 GM_xmlhttpRequest 权限，允许跨域请求任意第三方服务器，可能导致用户数据外传。",
-      "location": "@grant GM.xmlHttpRequest, GM_xmlhttpRequest",
-      "recommendation": "仅在确有必要时申请跨域请求权限，并限制请求目标。",
-      "severity": "CRITICAL",
-      "type": "数据外传"
-    },
-    {
-      "description": "脚本允许连接 dav.jianguoyun.com、localhost 及任意域名，存在隐私数据被上传到第三方服务器的风险。",
-      "location": "@connect dav.jianguoyun.com, @connect localhost, @connect *",
-      "recommendation": "移除不必要的 @connect 声明，避免隐私数据泄露。",
-      "severity": "CRITICAL",
-      "type": "数据外传"
-    },
-    {
-      "description": "脚本声明了较多 GM_* 权限，包括 GM.addValueChangeListener、GM.getValue、GM.setValue、GM.deleteValue、GM_addElement、GM.registerMenuCommand，部分权限可能未被实际使用，存在权限滥用风险。",
-      "location": "@grant 多项 GM_* 权限",
-      "recommendation": "仅申请实际使用的最小权限集。",
+      "description": "申请了 GM.xmlHttpRequest 和 GM_xmlhttpRequest 高权限，但未提供代码无法判断实际用途，存在权限滥用和潜在数据外传风险。",
+      "location": "metadata block",
+      "recommendation": "仅申请实际需要的权限，移除未使用的高权限。",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "申请了 GM.addValueChangeListener, GM.getValue, GM.setValue, GM.deleteValue 等存储相关权限，可能涉及用户数据存储和同步，需关注是否与外部服务器同步。",
+      "location": "metadata block",
+      "recommendation": "确保本地存储数据不被外传，代码需进一步审查。",
+      "severity": "MEDIUM",
+      "type": "Privacy Collection"
     }
   ],
   "obfuscation_detected": false,
@@ -45,11 +38,11 @@
     "detected": false
   },
   "risk_level": "CRITICAL",
-  "script_name": "🏷️ UTags - Add usertags to links",
-  "security_score": 25,
-  "summary": "该脚本在元数据声明中允许向任意域名发起跨域网络请求（@connect *），并申请了 GM_xmlhttpRequest 等高权限 API，存在严重的数据外传和隐私泄露风险。未发现代码混淆、DOM XSS 或隐私采集行为，但由于权限过高，安全风险极大。建议严格限制网络请求目标和最小化权限申请。",
+  "script_name": "\u001f🏷️ UTags - Add usertags to links",
+  "security_score": 50,
+  "summary": "该脚本元数据中 @connect * 允许任意外部服务器的网络请求，存在严重数据外传风险。虽然未提供实际代码，无法判断是否有隐私采集、远程代码执行、XSS 等高危行为，但高权限申请和广泛的网络访问权限已构成重大安全隐患。建议仅在完全信任来源和代码的情况下使用，并强烈建议移除 @connect * 并最小化权限申请。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-01T06:47:14.721406+00:00",
+  "analyzed_at": "2026-06-08T06:30:21.815231+00:00",
   "slug": "Refined_20GitHub_20_SSE_"
 }

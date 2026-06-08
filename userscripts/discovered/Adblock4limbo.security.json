@@ -9,16 +9,16 @@
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "脚本通过自定义函数 settingCookie 和 getCookie_ 读写 document.cookie，但仅用于自身功能（导航按钮和成人模式设置），未见外传。"
+      "设置和读取 cookie（settingCookie, getCookie_），但仅用于本地功能控制（如导航按钮、成人模式），未见外传。"
     ],
     "detected": false
   },
   "risk_level": "SAFE",
   "script_name": "Adblock4limbo.[github]",
   "security_score": 100,
-  "summary": "该脚本主要用于移除特定网站广告和提供页面导航功能。未检测到任何数据外传、隐私采集（除本地 cookie 设置）、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。脚本未申请任何 @grant 权限，未加载远程代码，未见 fetch、GM_xmlhttpRequest、WebSocket 等网络请求。整体结构清晰，安全性高。",
+  "summary": "该脚本主要用于移除特定网站广告和提供导航功能。未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用、供应链风险或 iframe 风险。脚本未使用任何 @grant 权限，未加载远程 JS，也未进行任何网络请求。整体结构清晰，功能单一，安全性高。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-01T06:54:56.050799+00:00",
+  "analyzed_at": "2026-06-08T06:36:02.787286+00:00",
   "slug": "Adblock4limbo"
 }

@@ -32,9 +32,9 @@ title: "GeoGuessr 地点解析助手"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-01
+**风险等级**：🟡 LOW　　**安全评分**：81/100　　**分析时间**：2026-06-08
 
-> The script does not transmit any user data externally, does not collect sensitive information, and does not execute remote or obfuscated code. It overrides XMLHttpRequest to extract coordinates from Google Maps API responses, but this data is only used locally. The only notable issue is the unnecessary GM_webRequest permission, which should be removed to minimize potential risk.
+> 该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要问题为申请了未使用的 GM_webRequest 权限和敏感 API 拦截。整体风险较低，但建议移除不必要的权限，并持续关注未来代码变更。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -47,15 +47,25 @@ title: "GeoGuessr 地点解析助手"
 
 ### 发现的问题
 
+**🟠 MEDIUM** — Sensitive API interception  
+> The script overrides XMLHttpRequest.prototype.open to intercept Google Maps API responses. While it does not transmit data externally, this is a sensitive operation and should be reviewed for future risks if modified.  
+> 位置：XMLHttpRequest.prototype.open override  
+> 建议：Ensure no code changes introduce data exfiltration. Monitor for future updates.
+
 **🟠 MEDIUM** — Permission misuse  
 > The script requests the GM_webRequest permission, but does not use any GM_* APIs in the code.  
 > 位置：@grant GM_webRequest in metadata  
-> 建议：Remove unused permissions to reduce attack surface.
+> 建议：Remove unnecessary permissions to reduce attack surface.
 
-**🟡 LOW** — Network interception  
-> The script overrides XMLHttpRequest.prototype.open to intercept Google Maps API responses, but does not transmit any data to third-party servers.  
-> 位置：XMLHttpRequest.prototype.open override  
-> 建议：Monitor for any future changes that may introduce data exfiltration.
+**🟡 LOW** — Key event usage  
+> The script listens for keydown events globally, but only uses them for local feature triggers. No keylogger behavior detected.  
+> 位置：document.addEventListener('keydown', ...)  
+> 建议：No action needed, but be cautious if future versions combine this with network requests.
+
+**🟡 LOW** — DOM manipulation  
+> The script manipulates React internal properties to trigger map actions. This is fragile and may break with site updates, but does not introduce direct security risk.  
+> 位置：placeMarker / placeMarkerStreaks functions  
+> 建议：Monitor for site changes that may affect script behavior.
 
 ---
 

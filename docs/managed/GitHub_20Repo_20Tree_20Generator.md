@@ -35,9 +35,9 @@ title: "GitHub仓库目录树生成器"
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-06-01
+**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-06-08
 
-> 该 UserScript 代码结构清晰，无任何数据外传、隐私采集、远程代码执行、混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。所有 @require 均为可信 CDN 且锁定版本，@grant 权限与实际用途匹配。整体安全性极高，适合公开分发。
+> 该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。所有 @require 均为可信 CDN 且锁定版本，@grant 权限合理。整体安全性高，适合公开使用。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -50,38 +50,38 @@ title: "GitHub仓库目录树生成器"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Transmission  
-> 脚本未检测到任何网络请求（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource 等），无数据外传行为。  
+**⛔ CRITICAL** — 数据外传  
+> 脚本未检测到任何外部数据传输（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource、sendBeacon 等），也未发现任何数据外传行为。  
 > 位置：全局  
-> 建议：保持当前实现，勿添加外传逻辑。
+> 建议：保持当前实现，勿添加任何外传逻辑。
 
-**⛔ CRITICAL** — Privacy Collection  
-> 未检测到任何隐私采集行为（如读取 cookie、localStorage、sessionStorage、IndexedDB、剪贴板、表单、指纹等）。  
+**⛔ CRITICAL** — 隐私采集  
+> 未检测到任何隐私采集行为（如读取 cookie、localStorage、sessionStorage、IndexedDB、监听键盘输入、读取表单字段、访问指纹 API、读取剪贴板内容等）。  
 > 位置：全局  
-> 建议：保持当前实现，勿采集用户隐私数据。
+> 建议：保持当前实现，勿添加隐私采集逻辑。
 
-**🔴 HIGH** — Remote Code Execution  
+**🔴 HIGH** — 远程代码执行  
 > 未检测到 eval、new Function、setTimeout(string)、setInterval(string)、动态 script 标签、document.write 等远程代码执行风险。  
 > 位置：全局  
-> 建议：保持当前实现，避免动态执行代码。
+> 建议：保持当前实现，勿引入动态代码执行。
 
-**🔴 HIGH** — Obfuscation  
-> 未检测到代码混淆、base64 解码、字符串数组映射、unicode 混淆或高度压缩代码。  
+**🔴 HIGH** — 代码混淆  
+> 未检测到代码混淆、base64 解码执行、字符串数组混淆、unicode 混淆或高度压缩单行代码。  
 > 位置：全局  
-> 建议：保持代码可读性，避免混淆。
+> 建议：保持代码可读性，便于安全审计。
 
 **🔴 HIGH** — DOM XSS  
-> 未检测到 DOM XSS 风险（如用户输入/URL参数直接插入 innerHTML/outerHTML、document.write 注入、iframe src 操作等）。  
+> 未检测到 DOM XSS 风险（如用户输入或 URL 参数直接插入 innerHTML/outerHTML、document.write、iframe src 为 javascript: 等）。  
 > 位置：全局  
 > 建议：如后续处理用户输入，需严格转义。
 
-**🟠 MEDIUM** — Permission Usage  
-> @grant 仅申请了 GM_addStyle、GM_setClipboard、GM_download，均有实际用途，无权限滥用。  
+**🟠 MEDIUM** — 权限滥用  
+> @grant 权限仅申请了 GM_addStyle、GM_setClipboard、GM_download，均有实际用途，无权限滥用。  
 > 位置：元数据 @grant  
 > 建议：仅申请实际需要的权限。
 
-**🟠 MEDIUM** — Supply Chain  
-> @require 加载的第三方库均来自官方 CDN（cdnjs），且指定了固定版本。  
+**🟠 MEDIUM** — 供应链风险  
+> @require 加载的第三方库均为官方 CDN（cdnjs），且指定了具体版本，无供应链风险。  
 > 位置：元数据 @require  
 > 建议：继续使用可信 CDN 并锁定版本。
 

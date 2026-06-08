@@ -10,67 +10,25 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "使用 GM.xmlHttpRequest/GM_xmlhttpRequest 进行网络请求，仅限于 nexusmods.com 和 raw.githubusercontent.com，无发现向第三方服务器外传用户数据。",
-      "location": "gmRequest, getDownloadUrl, normalizeDownloadUrl",
-      "recommendation": "确保请求内容不包含敏感用户数据，且目标域名可信。",
-      "severity": "CRITICAL",
-      "type": "数据外传检查"
-    },
-    {
-      "description": "未发现 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板读取、键盘监听、表单读取等隐私采集行为。",
-      "location": "全局",
-      "recommendation": "保持不采集用户隐私数据。",
-      "severity": "CRITICAL",
-      "type": "隐私采集检查"
-    },
-    {
-      "description": "未发现 eval、new Function、setTimeout(string)、setInterval(string)、动态 script 标签、@require 动态远程 JS、document.write 插入脚本等远程代码执行风险。",
-      "location": "全局",
-      "recommendation": "继续避免使用动态代码执行相关 API。",
-      "severity": "HIGH",
-      "type": "远程代码执行检查"
-    },
-    {
-      "description": "未发现代码混淆、base64 解码执行、字符串数组混淆、unicode 混淆或高度压缩单行代码。",
-      "location": "全局",
-      "recommendation": "保持代码可读性，便于安全审计。",
-      "severity": "HIGH",
-      "type": "代码混淆检查"
-    },
-    {
-      "description": "未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未见 document.write 注入不可信内容，未见 iframe src 为 javascript:。",
-      "location": "全局",
-      "recommendation": "继续避免 DOM XSS 风险。",
-      "severity": "HIGH",
-      "type": "DOM XSS 检查"
-    },
-    {
-      "description": "@grant 权限与实际代码使用基本匹配，未见高权限滥用。",
-      "location": "元数据与全局",
-      "recommendation": "如未使用 GM_download、GM_openInTab 等高权限，建议不申请。",
-      "severity": "MEDIUM",
-      "type": "权限滥用检查"
-    },
-    {
-      "description": "未发现敏感 API（地理位置、RTCPeerConnection、摄像头/麦克风、剪贴板读取、通知）调用。",
-      "location": "全局",
-      "recommendation": "继续避免敏感 API 滥用。",
-      "severity": "MEDIUM",
-      "type": "敏感 API 检查"
-    },
-    {
-      "description": "@require 未使用，第三方库仅通过 @connect raw.githubusercontent.com 加载音频文件，来源可信。",
-      "location": "元数据",
-      "recommendation": "如需第三方库，建议锁定版本哈希并使用官方 CDN。",
-      "severity": "MEDIUM",
-      "type": "供应链风险检查"
-    },
-    {
-      "description": "未发现修改 frame 保护策略或创建隐藏 iframe 用于数据提取。",
-      "location": "全局",
-      "recommendation": "继续避免 ClickJacking/iframe 风险。",
+      "description": "The script uses GM.xmlHttpRequest/GM_xmlhttpRequest and fetch to communicate with *.nexusmods.com and raw.githubusercontent.com. All requests are related to Nexus Mods download automation and error sound fetching. No evidence of user data, cookies, or page content being sent to third-party servers beyond the intended domains.",
+      "location": "gmRequest, fetch, ErrorSoundUrl",
+      "recommendation": "Ensure requests are strictly limited to necessary endpoints and do not include sensitive user data.",
       "severity": "LOW",
-      "type": "ClickJacking/iframe 检查"
+      "type": "Network Request"
+    },
+    {
+      "description": "The script requests GM.xmlHttpRequest/GM_xmlhttpRequest permission, but only uses them for Nexus Mods and GitHub raw content. No evidence of over-privileged or unused permissions.",
+      "location": "Metadata block",
+      "recommendation": "Review permissions periodically to ensure no unnecessary grants are present.",
+      "severity": "LOW",
+      "type": "Permission Usage"
+    },
+    {
+      "description": "The script loads an error sound from raw.githubusercontent.com. This is a trusted source, but supply chain risk exists if the file is replaced upstream.",
+      "location": "cfg.ErrorSoundUrl",
+      "recommendation": "Pin to a specific commit hash or version if possible to prevent supply chain attacks.",
+      "severity": "MEDIUM",
+      "type": "Supply Chain"
     }
   ],
   "obfuscation_detected": false,
@@ -78,12 +36,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "SAFE",
+  "risk_level": "LOW",
   "script_name": "Nexus No Wait ++",
-  "security_score": 100,
-  "summary": "该脚本主要用于提升 Nexus Mods 下载体验，未发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用、供应链或 iframe 风险。网络请求仅限于 nexusmods.com 官方域名和 raw.githubusercontent.com（音频文件），无用户数据外传。整体安全性高，建议继续保持良好安全实践。",
-  "supply_chain_risk": false,
+  "security_score": 89,
+  "summary": "The script automates download flows on Nexus Mods, skipping countdowns and handling download links. It does not collect or transmit user data, does not use eval or dynamic code execution, and does not manipulate the DOM in a way that introduces XSS risk. The only external network requests are to Nexus Mods and GitHub for an error sound. The main risk is a minor supply chain concern with the audio file. Overall, the script is safe for use.",
+  "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-01T07:03:36.636047+00:00",
+  "analyzed_at": "2026-06-08T06:44:45.546497+00:00",
   "slug": "Nexus_No_Wait"
 }

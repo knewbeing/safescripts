@@ -1,0 +1,51 @@
+{
+  "slug": "Fix_arrasio_outdated_client",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/581502-fix-arras-io-outdated-client",
+  "source_repo": "581502",
+  "raw_url": "https://update.greasyfork.org/scripts/581502/Fix%20arrasio%20outdated%20client.user.js",
+  "filename": "Fix_arrasio_outdated_client.user.js",
+  "name": "Fix arras.io outdated client",
+  "version": "2026-06-07",
+  "description": "Fixes shooting and connection issues with arras.io due to outdated client build",
+  "match": [
+    "https://arras.io/"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Fix arras.io outdated client\n// @namespace  http://tampermonkey.net/\n// @version  2026-06-07\n// @description  Fixes shooting and connection issues with arras.io due to outdated client build\n// @author  pr20000\n// @license  MIT\n// @match  https://arras.io/\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=arras.io\n// @grant  none\n// @downloadURL  https://update.greasyfork.org/scripts/581502/Fix%20arrasio%20outdated%20client.user.js\n// @updateURL  https://update.greasyfork.org/scripts/581502/Fix%20arrasio%20outdated%20client.meta.js",
+  "sha256": "0926e60eadd5348cc98678b4ead4400551fb8c21a379122581faa40c1221d672",
+  "discovered_at": "2026-06-08T06:32:21.509391+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 120,
+  "good_ratings": 0,
+  "bad_ratings": 0,
+  "summary": {
+    "applicable_sites": [
+      "Arras.io"
+    ],
+    "description": "本脚本修复 arras.io 游戏因客户端版本过旧导致的射击和连接问题，让玩家能够正常游戏。安装后无需手动操作，自动更新连接参数。",
+    "permissions": [
+      {
+        "explanation": "脚本无需额外权限，仅在网页内运行。",
+        "grant": "none"
+      }
+    ],
+    "tags": [
+      "游戏辅助",
+      "连接修复",
+      "自动更新",
+      "网页游戏",
+      "arras.io"
+    ],
+    "usage": [
+      "安装脚本后，打开 arras.io 网站。",
+      "游戏射击和连接问题将自动修复，无需额外操作。"
+    ],
+    "zh_name": "修复 arras.io 客户端过期问题"
+  }
+}

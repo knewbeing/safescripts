@@ -1,0 +1,51 @@
+{
+  "slug": "Fix_Arrasio_shooting",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/581498-fix-arras-io-shooting",
+  "source_repo": "581498",
+  "raw_url": "https://update.greasyfork.org/scripts/581498/Fix%20Arrasio%20shooting.user.js",
+  "filename": "Fix_Arrasio_shooting.user.js",
+  "name": "Fix Arras.io shooting",
+  "version": "1.0",
+  "description": "07/06/2026, 00:27:26",
+  "match": [
+    "https://arras.io/*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Fix Arras.io shooting\n// @namespace  Violentmonkey Scripts\n// @match  https://arras.io/*\n// @grant  none\n// @version  1.0\n// @author  -\n// @license  MIT\n// @description  07/06/2026, 00:27:26\n// @run-at  document-start\n// @downloadURL  https://update.greasyfork.org/scripts/581498/Fix%20Arrasio%20shooting.user.js\n// @updateURL  https://update.greasyfork.org/scripts/581498/Fix%20Arrasio%20shooting.meta.js",
+  "sha256": "0e7f7cd8cbdd93c1ac51bf8626c9dd83545e82e0039b52c01ea27cc4e2779077",
+  "discovered_at": "2026-06-08T06:33:32.093726+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 56,
+  "good_ratings": 1,
+  "bad_ratings": 0,
+  "summary": {
+    "applicable_sites": [
+      "Arras.io"
+    ],
+    "description": "本脚本修复了 Arras.io 游戏中的射击功能，通过修改网络连接参数，提升游戏体验。安装后，射击相关问题将自动得到改善，无需手动操作。",
+    "permissions": [
+      {
+        "explanation": "脚本不需要任何特殊权限，仅在页面上运行。",
+        "grant": "none"
+      }
+    ],
+    "tags": [
+      "游戏辅助",
+      "射击修复",
+      "Arras.io",
+      "自动优化",
+      "网页游戏"
+    ],
+    "usage": [
+      "安装脚本后，打开 Arras.io 网站。",
+      "进入游戏后，射击功能会自动修复，无需额外操作。"
+    ],
+    "zh_name": "修复Arras.io射击"
+  }
+}

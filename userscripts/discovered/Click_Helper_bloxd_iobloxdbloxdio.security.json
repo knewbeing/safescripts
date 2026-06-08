@@ -7,34 +7,90 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本会读取和写入 localStorage（如 clickHelper-keybinds、clickHelper-settings），用于保存和加载用户设置和按键绑定。",
+      "description": "脚本通过 localStorage 读写用户设置和按键绑定，但未发现外传行为。",
       "location": "StorageManager.loadBinds, StorageManager.loadSettings, StorageManager.saveBinds, StorageManager.saveSettings",
-      "recommendation": "仅用于本地配置存储，无外传风险。请确保未存储敏感信息。",
+      "recommendation": "仅本地存储用户设置，风险较低。",
       "severity": "MEDIUM",
       "type": "localStorage usage"
     },
     {
-      "description": "脚本会清除 localStorage 和 document.cookie（AccountModule.clearAndReload），以实现账号重置功能。",
+      "description": "脚本读取并清除 document.cookie（用于账号生成/切换），但未发现外传。",
       "location": "AccountModule.clearAndReload",
-      "recommendation": "此操作会影响用户本地数据和登录状态，但未发现数据外传。",
+      "recommendation": "仅本地操作，未外传，注意不要误删敏感 Cookie。",
       "severity": "MEDIUM",
-      "type": "cookie/localStorage clear"
+      "type": "cookie access"
+    },
+    {
+      "description": "未发现任何网络请求、WebSocket、fetch、GM_xmlhttpRequest 等外传代码。",
+      "location": "全局",
+      "recommendation": "保持无外传，安全。",
+      "severity": "LOW",
+      "type": "network request"
+    },
+    {
+      "description": "未发现 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险。",
+      "location": "全局",
+      "recommendation": "保持无动态代码执行，安全。",
+      "severity": "LOW",
+      "type": "code execution"
+    },
+    {
+      "description": "未发现代码混淆、base64 解码、字符串数组映射、unicode 混淆等。",
+      "location": "全局",
+      "recommendation": "保持源码可读性，安全。",
+      "severity": "LOW",
+      "type": "obfuscation"
+    },
+    {
+      "description": "未发现 DOM XSS、用户输入插入 innerHTML/outerHTML、document.write 等注入风险。",
+      "location": "全局",
+      "recommendation": "保持安全的 DOM 操作。",
+      "severity": "LOW",
+      "type": "dom xss"
+    },
+    {
+      "description": "未申请任何 @grant 权限，实际代码也未用 GM_* API。",
+      "location": "元数据",
+      "recommendation": "最小权限原则，安全。",
+      "severity": "LOW",
+      "type": "permissions"
+    },
+    {
+      "description": "未发现敏感 API（摄像头、麦克风、地理位置、剪贴板读取、通知等）调用。",
+      "location": "全局",
+      "recommendation": "保持不调用敏感 API，安全。",
+      "severity": "LOW",
+      "type": "sensitive api"
+    },
+    {
+      "description": "未通过 @require 加载第三方库，无供应链风险。",
+      "location": "元数据",
+      "recommendation": "如需第三方库，建议固定版本和可信源。",
+      "severity": "LOW",
+      "type": "supply chain"
+    },
+    {
+      "description": "未发现对 iframe、frame 保护策略的修改或隐藏 iframe 注入。",
+      "location": "全局",
+      "recommendation": "保持无 iframe 风险。",
+      "severity": "LOW",
+      "type": "iframe"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "读取和写入 localStorage（仅限 clickHelper-keybinds、clickHelper-settings）",
-      "清除 localStorage 和 document.cookie"
+      "localStorage 读写用户设置和按键绑定",
+      "document.cookie 读取和清除（本地账号切换用途）"
     ],
     "detected": true
   },
   "risk_level": "LOW",
   "script_name": "Click Helper [bloxd io/bloxd/bloxd.io]",
   "security_score": 84,
-  "summary": "该脚本未检测到任何数据外传、远程代码执行、代码混淆、DOM XSS 或供应链风险。主要的隐私相关行为为本地存储和清除 localStorage/cookie，未发现敏感信息外传。未申请任何 @grant 权限，未检测到 WebSocket、fetch、GM_xmlhttpRequest 等网络请求。整体风险较低，适合普通用户使用。",
+  "summary": "该脚本未发现任何数据外传、远程代码执行、代码混淆、DOM XSS、供应链等高危风险。主要涉及本地 localStorage 和 cookie 读写（用于设置和账号切换），未发现外传行为。未使用高权限 API，无敏感信息采集。整体安全风险低，适合一般用户使用。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-01T06:57:15.178117+00:00",
+  "analyzed_at": "2026-06-08T06:38:28.733893+00:00",
   "slug": "Click_Helper_bloxd_iobloxdbloxdio"
 }

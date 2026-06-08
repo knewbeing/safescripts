@@ -7,18 +7,18 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "使用了 @grant unsafeWindow，允许脚本访问页面上下文，存在一定权限滥用风险，但未发现实际滥用。",
-      "location": "元数据 @grant unsafeWindow",
-      "recommendation": "仅在确有必要时申请 unsafeWindow，避免滥用高权限。",
+      "description": "The script requests @grant unsafeWindow, which exposes the page's window object to the userscript context and vice versa. This can increase the attack surface if the script is compromised or if other scripts are present.",
+      "location": "Metadata block (@grant unsafeWindow)",
+      "recommendation": "Remove @grant unsafeWindow if not strictly necessary. Limit its usage and ensure no untrusted code is executed in this context.",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "Permission Abuse"
     },
     {
-      "description": "@require 加载了 three.js，来源为 unpkg CDN，虽然为官方库，但未锁定具体文件哈希，存在供应链污染风险。",
-      "location": "@require https://unpkg.com/three@0.150.0/build/three.min.js",
-      "recommendation": "建议使用官方 CDN 并锁定具体版本和哈希，或本地托管依赖。",
+      "description": "The script uses @require to load three.min.js from unpkg.com. While unpkg is a widely used CDN, the version is pinned but not by hash, so there is a minor supply chain risk if the CDN is compromised.",
+      "location": "Metadata block (@require https://unpkg.com/three@0.150.0/build/three.min.js)",
+      "recommendation": "Use a hash-pinned or official CDN with integrity checks if possible. Monitor for supply chain attacks.",
       "severity": "MEDIUM",
-      "type": "供应链风险"
+      "type": "Supply Chain"
     }
   ],
   "obfuscation_detected": false,
@@ -29,9 +29,9 @@
   "risk_level": "LOW",
   "script_name": "Krunker Cheat v2",
   "security_score": 84,
-  "summary": "该脚本主要实现 Krunker.io 游戏的辅助功能（Aimbot、ESP、Wallhack 等），未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。存在的主要风险为申请了高权限（unsafeWindow）但未发现实际滥用，以及 @require 加载第三方库时未锁定哈希，存在一定供应链风险。整体安全性较高，但建议关注依赖安全和权限最小化原则。",
+  "summary": "No critical or high-risk security issues detected. The script does not transmit data externally, collect sensitive user data, or execute remote code unsafely. It does not use eval, dynamic script injection, or obfuscation. There is minor risk due to the use of @grant unsafeWindow and loading a third-party library via @require without hash pinning. No DOM XSS or clipboard/geolocation/camera access detected. Overall, the script is considered low risk.",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-01T07:02:47.558451+00:00",
+  "analyzed_at": "2026-06-08T06:43:57.150416+00:00",
   "slug": "Krunker_Cheat_v2"
 }

@@ -14,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "Telegram Media Downloader",
   "security_score": 100,
-  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。其主要功能为在 Telegram Web 客户端页面上实现媒体文件的分段下载和本地保存，未发现有安全隐患。",
+  "summary": "该脚本仅在 Telegram Web 页面上运行，核心功能为为受限媒体内容添加下载按钮，通过分片 fetch 下载媒体文件并本地保存。未发现任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。整体实现透明，安全性高。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-01T07:07:15.593350+00:00",
+  "analyzed_at": "2026-06-08T06:48:11.793916+00:00",
   "slug": "Telegram_Media_Downloader"
 }

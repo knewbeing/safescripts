@@ -20,7 +20,7 @@
 // @description:zh-CN    隐蔽式 GeoGuessr 辅助器｜按 Tab 打开设置菜单｜地图标点｜发送 Discord｜在 Google 地图中打开当前位置
 // @description:ja    検出されにくい GeoGuessr 支援ツール｜Tabキーで設定メニューを開く｜マップにピンを配置｜Discord送信｜Googleマップで現在地を開く
 // @namespace    https://greasyfork.org/en/users/1588266-woggieboost
-// @version    10.82
+// @version    11.89
 // @author    woggieboost
 // @license    MIT
 // @include    *://*.geoguessr.com/*
@@ -32,6 +32,7 @@
 // @include    *://guesswhereyouare.com/*
 // @grant    GM_setValue
 // @grant    GM_getValue
+// @grant    GM_deleteValue
 // @grant    GM_xmlhttpRequest
 // @connect    discord.com
 // @connect    nominatim.openstreetmap.org
@@ -39,7 +40,6 @@
 // @downloadURL https://update.greasyfork.org/scripts/572651/CheatGuessr%20Universal%20%7C%20GeoGuessr%20%7C%20OpenGuessr%20%7C%20WorldGuessr%20%7C%20FreeGuessr%20%7C%20GeoDuels.user.js
 // @updateURL https://update.greasyfork.org/scripts/572651/CheatGuessr%20Universal%20%7C%20GeoGuessr%20%7C%20OpenGuessr%20%7C%20WorldGuessr%20%7C%20FreeGuessr%20%7C%20GeoDuels.meta.js
 // ==/UserScript==
-
 (function () {
     'use strict';
 
@@ -469,15 +469,25 @@
                 const iframe = document.querySelector('#PanoramaIframe') ||
                       document.querySelector('iframe[src*="location"]') ||
                       document.querySelector('.iframeWithStreetView')||
-                      document.querySelector('[title="Street View"]');
+                      document.querySelector('[title="Street View"]')||
+                      document.querySelector('#streetview');
 
                 if (iframe && (iframe.src || iframe.data)) {
                     const loc = new URL(iframe.src || iframe.data).searchParams.get('location');
+
                     if (loc) {
                         const [lat, lng] = loc.split(',').map(Number);
                         return { lat, lng };
                     }
                     else{
+                        const match = (iframe.src || iframe.data).match(/!1d(-?\d+(?:\.\d+)?)!2d(-?\d+(?:\.\d+)?)/);
+                        if(match){
+                            return {
+                                lat: Number(match[1]),
+                                lng: Number(match[2])
+                            };
+                        }
+
                         const pano_id = new URL(iframe.src || iframe.data).searchParams.get('pano')
                         const metadata = await getMetadata(pano_id);
                         return {lat:metadata?.[1]?.[0]?.[5]?.[0]?.[1]?.[0]?.[2], lng:metadata?.[1]?.[0]?.[5]?.[0]?.[1]?.[0]?.[3] };
@@ -499,12 +509,12 @@
     function getNicknameElement() {
         if (platform === PLATFORM.GEOGUESSR) {
             state.nicknameEl = document.querySelector("[class*='health-bar_nick_']") ||
-                document.querySelector("[class*='nick_nick']")||
+                document.querySelector('[class*="health-bar_nickContainer"] span')||
                 document.querySelector("[class*='status_value__']") ||
                 document.querySelector("[class*='live-players-count_count']");
         }
         else if (platform == PLATFORM.GEODUEL){
-            state.nicknameEl = document.querySelector('span.inline-flex.max-w-full.items-center.gap-1\\.5 > span');
+            state.nicknameEl = document.querySelector('p');
             state.nicknameEl.className = '';
             state.nicknameEl.style.whiteSpace='normal';
         }
@@ -526,7 +536,7 @@
     // Flag getter/setter
     function getFlagElement() {
         if (platform === PLATFORM.GEOGUESSR) {
-            return document.querySelector("[class*='flag_flag_']");
+            return document.querySelector("[class*='health-bar_nickContainer'] img");
         } else {
             let flagEl = document.querySelectorAll('.player-name-wrapper .player-name img')[1];
             if (!flagEl) {
@@ -826,8 +836,8 @@
                     transition: 0.15s;
                 }
                 .save-btn { background: #4caf50; color: white; }
-                .reset-btn { background: #2196f3; color: white; }
-                .reset-btn:hover { background: #42a5f5; }
+                .reset-btn, .reset-webhook-btn { background: #2196f3; color: white; }
+                .reset-btn:hover, .reset-webhook-btn:hover { background: #42a5f5; }
                 .btn:disabled {
                     background: #c0c0c0 !important;
                     cursor: default;
@@ -896,7 +906,8 @@
             `).join('')}
 
             <button class="btn save-btn">Save</button>
-            <button class="btn reset-btn">Reset</button>
+            <button class="btn reset-btn">Reset Keybinds</button>
+            <button class="btn reset-webhook-btn">Reset Discord Webhook</button>
         `;
 
         document.body.appendChild(state.panel);
@@ -946,9 +957,13 @@
             state.panel.querySelectorAll('.input').forEach(input => {
                 input.value = state.hotkeys[input.dataset.key];
             });
-
-            resetBtn.textContent = 'Reset';
             resetBtn.disabled = true;
+        };
+
+        const resetWebhookBtn = document.querySelector('.reset-webhook-btn');
+        resetWebhookBtn.onclick = () => {
+            GM_deleteValue('discordWebhookUrl')
+            resetWebhookBtn.disabled = true;
         };
 
         // Key input handling
@@ -970,7 +985,7 @@
 
     function extractStreetView() {
         try {
-            const container = document.querySelector('div[data-qa="panorama"]');
+            const container = document.querySelector('[class*="duels-panorama_panorama"]') || document.querySelector('div[data-qa="panorama"]');
             if (!container) return;
 
             const fiberKey = Object.keys(container).find(k => k.startsWith('__reactFiber'));
@@ -978,12 +993,12 @@
 
             const fiberNode = container[fiberKey];
             state.streetView =
+                fiberNode.return?.return?.return?.return?.return?.memoizedProps?.value?.panoramaRef?.current ||
                 fiberNode.child?.memoizedProps?.panorama||
                 fiberNode.return?.memoizedProps?.panorama||
                 fiberNode.return?.return?.updateQueue?.lastEffect?.deps?.[0]||
                 fiberNode.return?.return?.return?.sibling?.memoizedProps?.panorama ||
                 fiberNode.return?.return?.return?.return?.sibling?.memoizedProps?.panorama||
-                fiberNode.return?.updateQueue?.lastEffect?.next?.next?.next?.next?.next?.next?.next?.next?.next?.next?.next?.deps?.[0]||
                 fiberNode.return?.updateQueue?.lastEffect?.deps?.[0];
         } catch (err) {
             state.streetView = null;
@@ -1030,7 +1045,6 @@
               key === state.hotkeys.openInGoogle
 
         if (!isHotkey) return;
-
         if (key === state.hotkeys.openPanel) {
             if (state.panel) {
                 state.panel.style.display = state.panel.style.display === 'none' ? 'block' : 'none';
@@ -1098,6 +1112,66 @@
                 sendToDiscord(createEmbed());
             }
         }, 800);
+
+        /*let scriptObserver = new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+                for (const node of mutation.addedNodes) {
+                    if (node.tagName === "SCRIPT" && node.src.startsWith("https://maps.googleapis.com/maps/api/js?")) {
+                        node.addEventListener('load', () =>{
+                            const originSV = google.maps.StreetViewPanorama;
+                            google.maps.StreetViewPanorama = Object.assign(function (...args) {
+                                const res = originSV.apply(this, args);
+                                state.streetView = this
+                                this.addListener('position_changed', handlePositionChanged);
+                                return res;
+                            }, {
+                                prototype: Object.create(originSV.prototype)
+                            });
+
+                            const originMap = google.maps.Map;
+                            google.maps.Map = Object.assign(function (...args) {
+                                const res = originMap.apply(this, args);
+                                state.gameMap = this
+                                return res;
+                            }, {
+                                prototype: Object.create(originMap.prototype)
+                            });
+
+                            document.addEventListener('keydown', handleKeyDown);
+                        });
+                        if (scriptObserver) scriptObserver.disconnect();
+                        scriptObserver = undefined;
+                    }
+                }
+            }})
+
+        let bodyDone = false;
+        let headDone = false;
+
+        new MutationObserver((_, observer) => {
+            if (!bodyDone && document.body) {
+                bodyDone = true;
+
+                scriptObserver?.observe(document.body, {
+                    childList: true
+                });
+            }
+
+            if (!headDone && document.head) {
+                headDone = true;
+
+                scriptObserver?.observe(document.head, {
+                    childList: true
+                });
+            }
+
+            if (headDone && bodyDone) {
+                observer.disconnect();
+            }
+        }).observe(document.documentElement, {
+            childList: true,
+            subtree: true
+        });*/
 
         const observer = new MutationObserver(() => {
             const panoCanvas = document.querySelector('.widget-scene-canvas');

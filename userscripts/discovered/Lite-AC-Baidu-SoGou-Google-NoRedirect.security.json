@@ -2,26 +2,60 @@
   "approved": true,
   "data_transmission": {
     "destinations": [
-      "www.baidu.com",
-      "sogou.com"
+      "www.baidu.com"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本使用 GM_xmlhttpRequest 发送 GET 请求到 baidu.com 和 sogou.com，以获取真实跳转链接。请求目标为搜索引擎自身，无明显用户数据外传到第三方。",
-      "location": "resetURL -> GM_xmlhttpRequest",
-      "recommendation": "确认不会携带敏感用户数据，且请求目标可信。",
+      "description": "脚本使用 GM_xmlhttpRequest 仅向 www.baidu.com 发起 GET 请求以获取真实目标链接，无用户数据、cookie、页面内容等敏感信息被外传。",
+      "location": "resetURL() / GM_xmlhttpRequest",
+      "recommendation": "确认请求目标仅为百度官方域名，避免未来代码变更导致外传。",
       "severity": "MEDIUM",
       "type": "数据外传"
     },
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限，并实际使用，未发现权限滥用。",
-      "location": "元数据 @grant",
-      "recommendation": "无多余高权限申请，符合最小权限原则。",
+      "description": "脚本申请了 GM_xmlhttpRequest 权限，且仅用于百度重定向解析，未发现权限滥用。",
+      "location": "@grant 元数据",
+      "recommendation": "无实际风险，但建议仅申请实际需要的权限。",
       "severity": "LOW",
       "type": "权限滥用"
+    },
+    {
+      "description": "未发现 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险。",
+      "location": "全局",
+      "recommendation": "保持当前实现，避免引入动态代码执行。",
+      "severity": "LOW",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "未发现代码混淆、base64 解码、字符串数组映射或高度压缩代码。",
+      "location": "全局",
+      "recommendation": "保持代码可读性，便于社区审计。",
+      "severity": "LOW",
+      "type": "代码混淆"
+    },
+    {
+      "description": "未发现对用户输入、URL 参数直接插入 innerHTML/outerHTML，未发现 DOM XSS 风险。",
+      "location": "全局",
+      "recommendation": "如后续处理用户输入，需严格转义。",
+      "severity": "LOW",
+      "type": "DOM XSS"
+    },
+    {
+      "description": "未发现对 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板、表单字段、指纹 API 的访问。",
+      "location": "全局",
+      "recommendation": "保持当前实现，避免采集用户隐私。",
+      "severity": "LOW",
+      "type": "隐私采集"
+    },
+    {
+      "description": "未发现 @require 加载第三方库，无供应链风险。",
+      "location": "元数据",
+      "recommendation": "如需引入第三方库，建议使用官方 CDN 并锁定版本。",
+      "severity": "LOW",
+      "type": "供应链风险"
     }
   ],
   "obfuscation_detected": false,
@@ -32,9 +66,9 @@
   "risk_level": "LOW",
   "script_name": "AC-baidu： 优化百度、搜狗、谷歌搜索结果之重定向 lite",
   "security_score": 89,
-  "summary": "该脚本主要通过 GM_xmlhttpRequest 请求百度和搜狗自身服务器以获取真实跳转链接，未发现数据外传到第三方、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险等高危行为。仅存在对目标站点的网络请求，风险较低。整体安全性较高，适合一般用户使用。",
+  "summary": "该脚本主要功能为去除百度、搜狗等搜索结果中的重定向链接，直接访问真实目标地址。代码结构清晰，无混淆，无远程代码执行、DOM XSS、隐私采集等高危行为。唯一的外部网络请求为通过 GM_xmlhttpRequest 向 www.baidu.com 获取真实链接，未携带用户敏感信息。整体安全风险极低，适合日常使用。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-01T07:03:10.733482+00:00",
+  "analyzed_at": "2026-06-08T06:44:23.621752+00:00",
   "slug": "Lite-AC-Baidu-SoGou-Google-NoRedirect"
 }

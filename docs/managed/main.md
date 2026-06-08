@@ -43,13 +43,13 @@ title: "GitHub 中文化插件"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：42/100　　**分析时间**：2026-06-01
+**风险等级**：🟡 LOW　　**安全评分**：84/100　　**分析时间**：2026-06-08
 
-> 该脚本主要功能为本地化 GitHub 界面，未发现明显的隐私采集、代码混淆或 DOM XSS 风险。主要安全隐患为通过 GM_xmlhttpRequest 将页面内容发送到第三方翻译接口（fanyi.iflyrec.com），存在数据外传风险。@require 依赖未锁定 commit 哈希，存在一定供应链风险。部分申请的权限未见实际使用，建议精简。总体风险等级为 HIGH，不建议在敏感环境下直接使用。
+> 该脚本主代码为空，核心逻辑依赖于 @require 的外部 locals.js 文件。元数据未发现明显的高危行为，但存在供应链风险（未锁定依赖版本）和权限过度声明（如未实际使用 GM_xmlhttpRequest）。未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。整体安全风险较低，但建议加强依赖管理和权限最小化。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：fanyi.iflyrec.com） |
+| 数据外传 | ✅ 未检测到 |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
@@ -58,20 +58,15 @@ title: "GitHub 中文化插件"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本通过 GM_xmlhttpRequest 访问第三方翻译接口 https://fanyi.iflyrec.com，可能传递页面内容进行翻译。  
-> 位置：TRANS_ENGINES 配置与后续网络请求逻辑  
-> 建议：仅允许用户主动触发翻译请求，明确告知用户数据将被发送到第三方服务器。避免自动上传页面内容。
+**🟠 MEDIUM** — Supply Chain Risk  
+> @require 加载的第三方库（locals.js）来自 raw.githubusercontent.com，属于官方 GitHub 静态资源，但未锁定具体 commit 哈希，存在一定供应链风险。  
+> 位置：元数据 @require  
+> 建议：建议使用特定 commit 哈希的 URL 以防止上游代码被篡改。
 
-**🟠 MEDIUM** — 供应链风险  
-> @require 加载的 locals.js 文件来自 raw.githubusercontent.com，虽然为 GitHub 官方 CDN，但未锁定具体 commit 哈希，存在一定供应链风险。  
-> 位置：@require https://raw.githubusercontent.com/maboloshi/github-chinese/gh-pages/locals.js?v1.9.4-2026-05-21  
-> 建议：建议使用特定 commit 哈希锁定依赖，防止上游代码被篡改。
-
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_xmlhttpRequest、GM_getValue、GM_setValue、GM_registerMenuCommand、GM_unregisterMenuCommand、GM_notification 等多项权限，但部分权限如 GM_notification 在当前代码片段未见实际使用。  
-> 位置：元数据 @grant 字段  
-> 建议：仅申请实际使用的权限，减少权限滥用风险。
+**🟠 MEDIUM** — Permission Overprovision  
+> 脚本声明了 GM_xmlhttpRequest 权限，并允许连接 fanyi.iflyrec.com，但主脚本内容为空，无法判断是否实际发起请求。  
+> 位置：元数据 @grant, @connect  
+> 建议：如未使用 GM_xmlhttpRequest，建议移除相关权限和 @connect 域。
 
 ---
 

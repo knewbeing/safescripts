@@ -5,71 +5,7 @@
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [
-    {
-      "description": "脚本未检测到任何外部数据传输、统计或追踪行为。",
-      "location": "全局",
-      "recommendation": "保持现状，勿添加外传逻辑。",
-      "severity": "CRITICAL",
-      "type": "数据外传"
-    },
-    {
-      "description": "未检测到 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板、表单字段、键盘输入监听与外传等隐私采集行为。",
-      "location": "全局",
-      "recommendation": "保持现状，勿采集用户隐私数据。",
-      "severity": "CRITICAL",
-      "type": "隐私采集"
-    },
-    {
-      "description": "未检测到 eval、new Function、setTimeout(string)、setInterval(string)、动态 script 标签、@require 远程 JS、document.write 等远程代码执行风险。",
-      "location": "全局",
-      "recommendation": "保持现状，勿引入动态代码执行。",
-      "severity": "HIGH",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "未检测到代码混淆、base64 解码、字符串数组映射、unicode 混淆或高度压缩单行代码。",
-      "location": "全局",
-      "recommendation": "保持代码可读性，便于安全审计。",
-      "severity": "HIGH",
-      "type": "代码混淆"
-    },
-    {
-      "description": "未检测到 DOM XSS 风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML。",
-      "location": "createUI()",
-      "recommendation": "如需插入动态内容，务必进行转义。",
-      "severity": "HIGH",
-      "type": "DOM XSS"
-    },
-    {
-      "description": "仅申请了 unsafeWindow 权限，未检测到高权限滥用。",
-      "location": "@grant",
-      "recommendation": "仅申请实际需要的权限。",
-      "severity": "MEDIUM",
-      "type": "权限滥用"
-    },
-    {
-      "description": "未检测到敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）调用。",
-      "location": "全局",
-      "recommendation": "如需使用敏感 API，需明确告知用户。",
-      "severity": "MEDIUM",
-      "type": "敏感 API 调用"
-    },
-    {
-      "description": "未检测到 @require 加载第三方库，无供应链风险。",
-      "location": "元数据",
-      "recommendation": "如需引入第三方库，建议使用可信 CDN 并锁定版本。",
-      "severity": "MEDIUM",
-      "type": "供应链风险"
-    },
-    {
-      "description": "未检测到对 frame 保护策略的修改或隐藏 iframe 的创建。",
-      "location": "全局",
-      "recommendation": "如需操作 iframe，需明确用途并告知用户。",
-      "severity": "LOW",
-      "type": "ClickJacking/iframe 风险"
-    }
-  ],
+  "issues": [],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
@@ -78,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "Deadshot.io Chams & Aimbot",
   "security_score": 100,
-  "summary": "该 UserScript 主要实现游戏辅助功能（Chams & Aimbot），未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用、供应链或 iframe 风险。仅申请了 unsafeWindow 权限，代码结构清晰，安全性高。",
+  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。其主要功能为 WebGL hook、UI 注入和鼠标事件代理，用于游戏辅助。未发现安全风险。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-01T06:57:44.390971+00:00",
+  "analyzed_at": "2026-06-08T06:38:51.059705+00:00",
   "slug": "Deadshotio_Chams_Aimbot"
 }

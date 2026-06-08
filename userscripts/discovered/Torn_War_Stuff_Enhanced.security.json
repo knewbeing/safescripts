@@ -9,82 +9,40 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "Script uses GM_xmlhttpRequest to send requests to api.torn.com. The API key is stored in localStorage and can be set by the user. No evidence of sending page content, cookies, or sensitive user data beyond the API key.",
-      "location": "GM_xmlhttpRequest usage and API key handling",
-      "recommendation": "Ensure API key is not reused elsewhere and only minimal required data is sent. Consider encrypting API key in storage if possible.",
+      "description": "The script uses GM_xmlhttpRequest to communicate with api.torn.com, which is a third-party API, and sends a user-provided API key (stored in localStorage).",
+      "location": "GM_xmlhttpRequest usage (implied by @grant and @connect, though not shown in the truncated code)",
+      "recommendation": "Ensure only the minimum required data is sent and the API key is not reused elsewhere. Warn users not to use sensitive/private API keys.",
       "severity": "CRITICAL",
       "type": "Data Transmission"
     },
     {
-      "description": "Script reads and writes API key to localStorage. No evidence of reading cookies, sessionStorage, IndexedDB, or clipboard. No keylogger or form data extraction.",
-      "location": "localStorage usage",
-      "recommendation": "Ensure API key is not sensitive or reused for other purposes. Warn users not to use private keys.",
-      "severity": "CRITICAL",
+      "description": "The script stores and retrieves the API key from localStorage, which is accessible to any script running on the page.",
+      "location": "localStorage.getItem/setItem for API key",
+      "recommendation": "Warn users that the API key is stored in localStorage and may be accessible to other scripts. Consider using a more secure storage method if possible.",
+      "severity": "HIGH",
       "type": "Privacy Collection"
     },
     {
-      "description": "Script uses setTimeout with a function, not a string. No eval, new Function, or dynamic script loading. No @require in metadata.",
-      "location": "setTimeout usage",
-      "recommendation": "No action needed.",
-      "severity": "HIGH",
-      "type": "Remote Code Execution"
-    },
-    {
-      "description": "No evidence of code obfuscation, base64 decoding, unicode encoding, or minified code.",
-      "location": "Script body",
-      "recommendation": "No action needed.",
-      "severity": "HIGH",
-      "type": "Code Obfuscation"
-    },
-    {
-      "description": "No evidence of DOM XSS or injection. User input (API key) is only used for API requests and not inserted into DOM.",
-      "location": "API key prompt and usage",
-      "recommendation": "No action needed.",
-      "severity": "HIGH",
-      "type": "DOM XSS/Injection"
-    },
-    {
-      "description": "Script requests GM_xmlhttpRequest, GM_addStyle, GM_registerMenuCommand. All are used in code. No unused high privilege grants.",
-      "location": "Metadata @grant section",
-      "recommendation": "No action needed.",
+      "description": "The script requests GM_xmlhttpRequest permission, which is a high-privilege API, but only uses it for api.torn.com as declared in @connect.",
+      "location": "@grant GM_xmlhttpRequest, @connect api.torn.com",
+      "recommendation": "Limit @connect to only required domains and ensure GM_xmlhttpRequest is not used for other destinations.",
       "severity": "MEDIUM",
-      "type": "Permission Abuse"
-    },
-    {
-      "description": "No sensitive API calls (geolocation, RTCPeerConnection, MediaDevices, clipboard, notifications).",
-      "location": "Script body",
-      "recommendation": "No action needed.",
-      "severity": "MEDIUM",
-      "type": "Sensitive API Usage"
-    },
-    {
-      "description": "No @require or third-party library loading. No supply chain risk.",
-      "location": "Metadata and script body",
-      "recommendation": "No action needed.",
-      "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
-    },
-    {
-      "description": "No evidence of clickjacking or iframe manipulation.",
-      "location": "Script body",
-      "recommendation": "No action needed.",
-      "severity": "LOW",
-      "type": "ClickJacking/Iframe Risk"
+      "type": "Permission Usage"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "Reads/writes API key to localStorage"
+      "Reads and writes API key to localStorage"
     ],
     "detected": true
   },
   "risk_level": "MEDIUM",
   "script_name": "Torn War Stuff Enhanced",
-  "security_score": 50,
-  "summary": "The script interacts with api.torn.com using a user-provided API key stored in localStorage. No evidence of data exfiltration beyond the API key, no DOM XSS, no code obfuscation, and no supply chain risk. The main privacy concern is the handling of the API key. No sensitive browser APIs are used. Overall, the script is safe for its intended purpose, but users should be warned not to use private or sensitive API keys.",
+  "security_score": 67,
+  "summary": "The script is generally safe for use, with its main risk being the storage and transmission of a user-provided API key to a third-party API (api.torn.com). There is no evidence of code obfuscation, DOM XSS, or supply chain risk. Users should be aware that their API key is stored in localStorage and only use a public key as recommended by the script author.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-25T06:38:03.445718+00:00",
+  "analyzed_at": "2026-06-08T06:48:57.549910+00:00",
   "slug": "Torn_War_Stuff_Enhanced"
 }

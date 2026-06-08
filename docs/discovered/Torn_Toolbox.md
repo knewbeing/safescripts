@@ -30,9 +30,9 @@ title: "Torn Toolbox"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-01
+**风险等级**：🟡 LOW　　**安全评分**：97/100　　**分析时间**：2026-06-08
 
-> 该脚本主要与 Torn 官方 API 通信，未发现隐私数据采集、远程代码执行、代码混淆或 DOM XSS 风险。存在未使用的 @connect 和 @grant 权限，建议精简元数据以进一步降低权限暴露。整体安全风险低。
+> 该脚本整体安全，未发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。仅与 Torn 官方 API 通信，未发现向第三方服务器发送用户数据。建议移除未使用的 @connect weav3r.dev 权限。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -45,40 +45,45 @@ title: "Torn Toolbox"
 
 ### 发现的问题
 
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM.xmlHttpRequest/GM_xmlhttpRequest 权限，但实际仅使用 fetch 进行网络请求。  
-> 位置：元数据 @grant  
-> 建议：建议移除未使用的 GM.xmlHttpRequest/GM_xmlhttpRequest 权限。
-
-**🟡 LOW** — 数据外传  
+**🟡 LOW** — Network request  
 > 脚本通过 fetch 请求 Torn 官方 API（api.torn.com），未发现向第三方服务器发送用户数据。  
 > 位置：AIO.getMarket (fetch https://api.torn.com/torn/)  
 > 建议：仅与官方 API 通信，避免向未知第三方域名发送数据。
 
-**🟡 LOW** — 权限滥用  
-> 脚本声明 @connect weav3r.dev，但代码中未发现实际向 weav3r.dev 发起网络请求。  
-> 位置：元数据 @connect  
-> 建议：如无实际用途，建议移除 @connect weav3r.dev，减少权限暴露。
+**🟡 LOW** — Permission  
+> 脚本元数据声明 @connect weav3r.dev，但代码中未发现实际对 weav3r.dev 的请求。  
+> 位置：metadata / code  
+> 建议：如未使用第三方域名建议移除 @connect weav3r.dev，减少权限暴露。
 
-**🟡 LOW** — 隐私采集  
-> 脚本未发现对用户输入、cookie、localStorage、sessionStorage、IndexedDB、剪贴板等隐私数据的读取和外传。  
+**🟡 LOW** — Code execution  
+> 未发现 eval、new Function、setTimeout(string) 等远程代码执行风险。  
 > 位置：全局  
-> 建议：保持现状，勿采集用户隐私数据。
+> 建议：保持此安全实践，避免动态执行字符串代码。
 
-**🟡 LOW** — 远程代码执行  
-> 脚本未发现 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险。  
+**🟡 LOW** — Privacy  
+> 未发现 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板、键盘监听等隐私采集行为。  
 > 位置：全局  
-> 建议：继续避免动态执行字符串代码。
+> 建议：继续避免采集用户隐私数据。
 
-**🟡 LOW** — 代码混淆  
-> 脚本未发现代码混淆、base64 解码、字符串数组映射、unicode 混淆等特征。  
+**🟡 LOW** — Obfuscation  
+> 未发现代码混淆、base64 解码、字符串数组映射、unicode 混淆等特征。  
 > 位置：全局  
-> 建议：保持代码可读性，便于安全审计。
+> 建议：保持代码可读性，便于社区审查。
 
 **🟡 LOW** — DOM XSS  
-> 脚本未发现 DOM XSS 风险（未将用户输入直接插入 innerHTML/outerHTML）。  
+> 未发现 DOM XSS 风险，未将用户输入直接插入 innerHTML/outerHTML。  
 > 位置：全局  
-> 建议：继续避免插入不可信内容到 DOM。
+> 建议：如后续涉及用户输入，需严格转义。
+
+**🟡 LOW** — Permission  
+> @grant 仅申请了实际使用的 GM_* API，无权限滥用。  
+> 位置：metadata  
+> 建议：仅申请所需权限，避免过度授权。
+
+**🟡 LOW** — Supply chain  
+> 未发现 @require 加载第三方库，无供应链风险。  
+> 位置：metadata  
+> 建议：如需第三方库，建议固定版本并使用可信 CDN。
 
 ---
 

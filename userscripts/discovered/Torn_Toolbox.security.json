@@ -13,49 +13,56 @@
       "location": "AIO.getMarket (fetch https://api.torn.com/torn/)",
       "recommendation": "仅与官方 API 通信，避免向未知第三方域名发送数据。",
       "severity": "LOW",
-      "type": "数据外传"
+      "type": "Network request"
     },
     {
-      "description": "脚本声明 @connect weav3r.dev，但代码中未发现实际向 weav3r.dev 发起网络请求。",
-      "location": "元数据 @connect",
-      "recommendation": "如无实际用途，建议移除 @connect weav3r.dev，减少权限暴露。",
+      "description": "脚本元数据声明 @connect weav3r.dev，但代码中未发现实际对 weav3r.dev 的请求。",
+      "location": "metadata / code",
+      "recommendation": "如未使用第三方域名建议移除 @connect weav3r.dev，减少权限暴露。",
       "severity": "LOW",
-      "type": "权限滥用"
+      "type": "Permission"
     },
     {
-      "description": "脚本未发现对用户输入、cookie、localStorage、sessionStorage、IndexedDB、剪贴板等隐私数据的读取和外传。",
+      "description": "未发现 eval、new Function、setTimeout(string) 等远程代码执行风险。",
       "location": "全局",
-      "recommendation": "保持现状，勿采集用户隐私数据。",
+      "recommendation": "保持此安全实践，避免动态执行字符串代码。",
       "severity": "LOW",
-      "type": "隐私采集"
+      "type": "Code execution"
     },
     {
-      "description": "脚本未发现 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险。",
+      "description": "未发现 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板、键盘监听等隐私采集行为。",
       "location": "全局",
-      "recommendation": "继续避免动态执行字符串代码。",
+      "recommendation": "继续避免采集用户隐私数据。",
       "severity": "LOW",
-      "type": "远程代码执行"
+      "type": "Privacy"
     },
     {
-      "description": "脚本未发现代码混淆、base64 解码、字符串数组映射、unicode 混淆等特征。",
+      "description": "未发现代码混淆、base64 解码、字符串数组映射、unicode 混淆等特征。",
       "location": "全局",
-      "recommendation": "保持代码可读性，便于安全审计。",
+      "recommendation": "保持代码可读性，便于社区审查。",
       "severity": "LOW",
-      "type": "代码混淆"
+      "type": "Obfuscation"
     },
     {
-      "description": "脚本未发现 DOM XSS 风险（未将用户输入直接插入 innerHTML/outerHTML）。",
+      "description": "未发现 DOM XSS 风险，未将用户输入直接插入 innerHTML/outerHTML。",
       "location": "全局",
-      "recommendation": "继续避免插入不可信内容到 DOM。",
+      "recommendation": "如后续涉及用户输入，需严格转义。",
       "severity": "LOW",
       "type": "DOM XSS"
     },
     {
-      "description": "脚本申请了 GM.xmlHttpRequest/GM_xmlhttpRequest 权限，但实际仅使用 fetch 进行网络请求。",
-      "location": "元数据 @grant",
-      "recommendation": "建议移除未使用的 GM.xmlHttpRequest/GM_xmlhttpRequest 权限。",
-      "severity": "MEDIUM",
-      "type": "权限滥用"
+      "description": "@grant 仅申请了实际使用的 GM_* API，无权限滥用。",
+      "location": "metadata",
+      "recommendation": "仅申请所需权限，避免过度授权。",
+      "severity": "LOW",
+      "type": "Permission"
+    },
+    {
+      "description": "未发现 @require 加载第三方库，无供应链风险。",
+      "location": "metadata",
+      "recommendation": "如需第三方库，建议固定版本并使用可信 CDN。",
+      "severity": "LOW",
+      "type": "Supply chain"
     }
   ],
   "obfuscation_detected": false,
@@ -65,10 +72,10 @@
   },
   "risk_level": "LOW",
   "script_name": "Torn Toolbox",
-  "security_score": 89,
-  "summary": "该脚本主要与 Torn 官方 API 通信，未发现隐私数据采集、远程代码执行、代码混淆或 DOM XSS 风险。存在未使用的 @connect 和 @grant 权限，建议精简元数据以进一步降低权限暴露。整体安全风险低。",
+  "security_score": 97,
+  "summary": "该脚本整体安全，未发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。仅与 Torn 官方 API 通信，未发现向第三方服务器发送用户数据。建议移除未使用的 @connect weav3r.dev 权限。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-01T07:07:45.982018+00:00",
+  "analyzed_at": "2026-06-08T06:48:47.027386+00:00",
   "slug": "Torn_Toolbox"
 }

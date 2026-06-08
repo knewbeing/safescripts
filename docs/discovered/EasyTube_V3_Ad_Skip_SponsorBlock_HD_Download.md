@@ -30,9 +30,9 @@ title: "EasyTube V3 — Ad Skip, SponsorBlock & HD Download⬇️🚀"
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：75/100　　**分析时间**：2026-06-01
+**风险等级**：🟠 MEDIUM　　**安全评分**：67/100　　**分析时间**：2026-06-08
 
-> 脚本核心功能涉及与 SponsorBlock API 及多个 Cobalt 实例的网络通信，存在数据外传风险（如视频 ID、SponsorBlock 查询、下载请求等）。未发现隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链或 iframe 风险。建议用户知悉其与第三方服务器通信，避免在敏感环境下使用。
+> The script is generally well-structured and does not exhibit code obfuscation, remote code execution, or DOM XSS risks. The main security concern is the transmission of YouTube video IDs and possibly other metadata to third-party APIs (SponsorBlock and Cobalt downloaders). No evidence of sensitive privacy data collection or excessive permissions. Supply chain risk is present due to reliance on external APIs. Overall, the script is medium risk, primarily due to third-party data transmission.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -41,54 +41,44 @@ title: "EasyTube V3 — Ad Skip, SponsorBlock & HD Download⬇️🚀"
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ✅ 可信 |
+| 供应链风险 | ⚠️ 存在风险 |
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本通过 GM_xmlhttpRequest 访问 SponsorBlock API（sponsor.ajay.app）和多个 Cobalt 实例（co.wuk.sh、cobalt.api.timelessnesses.me、api.cobalt.tools），用于获取 SponsorBlock 片段和视频下载服务。虽然这些用途与功能描述一致，但属于第三方服务器，存在数据外传风险。  
-> 位置：CFG.sbApi, CFG.cobaltInstances, GM_xmlhttpRequest 调用  
-> 建议：仅允许可信 API 域名，明确告知用户外部通信内容，避免发送敏感信息。
+**⛔ CRITICAL** — Data Exfiltration  
+> The script makes network requests to third-party APIs (SponsorBlock and multiple Cobalt instances) using GM_xmlhttpRequest. These requests may include the current YouTube video ID and possibly other metadata, which could be considered user data.  
+> 位置：CFG.sbApi, CFG.cobaltInstances, functions using GM_xmlhttpRequest  
+> 建议：Document all data sent to third-party APIs. Consider adding user consent and clear privacy notice. Limit data to only what is strictly necessary.
 
-**⛔ CRITICAL** — 隐私采集（未发现问题，仅说明）  
-> 脚本使用 GM_setValue/GM_getValue 持久化用户设置，但未发现读取 cookie、localStorage、sessionStorage、IndexedDB、表单字段、剪贴板或监听键盘输入等隐私采集行为。  
-> 位置：S, save()  
-> 建议：继续避免收集用户敏感信息。
+**🟠 MEDIUM** — Supply Chain Risk  
+> The script connects to multiple third-party APIs for SponsorBlock and Cobalt download functionality. These are public APIs, but supply chain risk exists if these endpoints are compromised or change behavior.  
+> 位置：@connect metadata, CFG.sbApi, CFG.cobaltInstances  
+> 建议：Monitor third-party API trustworthiness. Consider allowing users to configure endpoints.
 
-**🔴 HIGH** — 远程代码执行（未发现问题，仅说明）  
-> 未发现 eval、new Function、setTimeout(string)、setInterval(string)、动态 script 标签、@require 或 document.write 执行远程代码。  
-> 位置：全局  
-> 建议：保持不使用远程代码执行相关 API。
+**🟡 LOW** — Privacy Collection  
+> The script stores user toggle settings (ad skip, SponsorBlock, quality) using GM_setValue/GM_getValue. While this is local, it does not appear to collect or transmit sensitive user data such as cookies, form fields, or clipboard contents.  
+> 位置：Persistent state section (S object, save function)  
+> 建议：No action needed unless future versions add sensitive data collection.
 
-**🔴 HIGH** — 代码混淆（未发现问题，仅说明）  
-> 未发现代码混淆、base64 解码、字符串数组映射或高度压缩单行代码。  
-> 位置：全局  
-> 建议：保持代码可读性，便于安全审计。
+**🟡 LOW** — Remote Code Execution  
+> The script does not use eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection. No remote code execution risk detected.  
+> 位置：Full script  
+> 建议：Continue to avoid dynamic code execution patterns.
 
-**🔴 HIGH** — DOM XSS/注入（未发现问题，仅说明）  
-> 未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未见 document.write 注入不可信内容。  
-> 位置：全局  
-> 建议：继续避免 DOM XSS 风险。
+**🟡 LOW** — Obfuscation  
+> No code obfuscation or minification detected. Code is readable and not packed.  
+> 位置：Full script  
+> 建议：Maintain code transparency for user trust.
 
-**🟠 MEDIUM** — 权限滥用（未发现问题，仅说明）  
-> @grant 申请了 GM_addStyle、GM_xmlhttpRequest、GM_setValue、GM_getValue，均有实际使用，无权限滥用。  
-> 位置：元数据 @grant  
-> 建议：仅申请实际需要的权限。
+**🟡 LOW** — DOM XSS  
+> No direct DOM XSS risk detected. The script does not insert untrusted user input into innerHTML/outerHTML or document.write.  
+> 位置：UI and toast functions  
+> 建议：Continue to sanitize any future user input if used in DOM.
 
-**🟠 MEDIUM** — 敏感 API 调用（未发现问题，仅说明）  
-> 未发现敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API）调用。  
-> 位置：全局  
-> 建议：避免调用敏感 API。
-
-**🟠 MEDIUM** — 供应链风险（未发现问题，仅说明）  
-> 未使用 @require 加载第三方库，无供应链风险。  
-> 位置：元数据 @require  
-> 建议：如需第三方库，建议使用官方 CDN 并锁定版本哈希。
-
-**🟡 LOW** — ClickJacking/iframe 风险（未发现问题，仅说明）  
-> 未见修改 frame 保护策略或创建隐藏 iframe。  
-> 位置：全局  
-> 建议：继续避免 ClickJacking/iframe 风险。
+**🟡 LOW** — Permission Usage  
+> The script requests GM_xmlhttpRequest, GM_setValue, GM_getValue, and GM_addStyle. All are used appropriately. No excessive or unused permissions detected.  
+> 位置：@grant metadata and usage in code  
+> 建议：Keep permissions minimal and only as needed.
 
 ---
 

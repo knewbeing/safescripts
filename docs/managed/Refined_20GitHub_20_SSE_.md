@@ -64,13 +64,13 @@ title: 🏷️ 小鱼标签 (UTags) - 为链接添加用户标签
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：25/100　　**分析时间**：2026-06-01
+**风险等级**：⛔ CRITICAL　　**安全评分**：50/100　　**分析时间**：2026-06-08
 
-> 该脚本在元数据声明中允许向任意域名发起跨域网络请求（@connect *），并申请了 GM_xmlhttpRequest 等高权限 API，存在严重的数据外传和隐私泄露风险。未发现代码混淆、DOM XSS 或隐私采集行为，但由于权限过高，安全风险极大。建议严格限制网络请求目标和最小化权限申请。
+> 该脚本元数据中 @connect * 允许任意外部服务器的网络请求，存在严重数据外传风险。虽然未提供实际代码，无法判断是否有隐私采集、远程代码执行、XSS 等高危行为，但高权限申请和广泛的网络访问权限已构成重大安全隐患。建议仅在完全信任来源和代码的情况下使用，并强烈建议移除 @connect * 并最小化权限申请。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：dav.jianguoyun.com, localhost, *） |
+| 数据外传 | ✅ 未检测到 |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
@@ -79,25 +79,20 @@ title: 🏷️ 小鱼标签 (UTags) - 为链接添加用户标签
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本通过 @connect * 允许向任意域名发起网络请求，存在数据外传高风险。  
-> 位置：@connect * 元数据声明  
-> 建议：限制 @connect 域名范围，仅允许必要的可信域名。
+**⛔ CRITICAL** — Data Exfiltration  
+> @connect * 允许任意外部服务器的网络请求，存在严重数据外传风险。  
+> 位置：metadata block  
+> 建议：严格限制 @connect 域名，仅允许可信的 API 服务器，移除 @connect *。
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本声明了 GM.xmlHttpRequest 和 GM_xmlhttpRequest 权限，允许跨域请求任意第三方服务器，可能导致用户数据外传。  
-> 位置：@grant GM.xmlHttpRequest, GM_xmlhttpRequest  
-> 建议：仅在确有必要时申请跨域请求权限，并限制请求目标。
+**🟠 MEDIUM** — Permission Abuse  
+> 申请了 GM.xmlHttpRequest 和 GM_xmlhttpRequest 高权限，但未提供代码无法判断实际用途，存在权限滥用和潜在数据外传风险。  
+> 位置：metadata block  
+> 建议：仅申请实际需要的权限，移除未使用的高权限。
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本允许连接 dav.jianguoyun.com、localhost 及任意域名，存在隐私数据被上传到第三方服务器的风险。  
-> 位置：@connect dav.jianguoyun.com, @connect localhost, @connect *  
-> 建议：移除不必要的 @connect 声明，避免隐私数据泄露。
-
-**🟠 MEDIUM** — 权限滥用  
-> 脚本声明了较多 GM_* 权限，包括 GM.addValueChangeListener、GM.getValue、GM.setValue、GM.deleteValue、GM_addElement、GM.registerMenuCommand，部分权限可能未被实际使用，存在权限滥用风险。  
-> 位置：@grant 多项 GM_* 权限  
-> 建议：仅申请实际使用的最小权限集。
+**🟠 MEDIUM** — Privacy Collection  
+> 申请了 GM.addValueChangeListener, GM.getValue, GM.setValue, GM.deleteValue 等存储相关权限，可能涉及用户数据存储和同步，需关注是否与外部服务器同步。  
+> 位置：metadata block  
+> 建议：确保本地存储数据不被外传，代码需进一步审查。
 
 ---
 

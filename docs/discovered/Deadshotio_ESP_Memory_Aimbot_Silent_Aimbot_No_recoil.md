@@ -30,9 +30,9 @@ title: "Deadshot.io ESP & Memory Aimbot & Silent Aimbot & No recoil"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：0/100　　**分析时间**：2026-06-01
+**风险等级**：⛔ CRITICAL　　**安全评分**：0/100　　**分析时间**：2026-06-08
 
-> 该脚本存在极高安全风险：动态从第三方服务器拉取并 eval 执行远程代码，属于严重的远程代码执行和数据外传行为，极易被用于注入恶意代码、窃取用户数据或劫持浏览器环境。强烈不建议安装和使用。
+> 该脚本存在严重安全风险：动态拉取并 eval 执行远程代码，主动与第三方服务器通信，权限申请冗余，且未对远程代码进行校验。极易被用于后门、恶意代码注入或供应链攻击。强烈不建议使用。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -45,25 +45,30 @@ title: "Deadshot.io ESP & Memory Aimbot & Silent Aimbot & No recoil"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 远程代码执行 & 数据外传  
-> 脚本通过 GM_xmlhttpRequest 动态从第三方服务器 deadshot-cheat.netlify.app 拉取并执行远程 JavaScript 代码，存在严重的数据外传和远程代码执行风险。  
-> 位置：fetchAndCacheCode() & eval(customCode)  
-> 建议：禁止从不受信任的第三方服务器动态加载和执行代码，改为本地集成或固定版本哈希的可信 CDN。
+**⛔ CRITICAL** — 远程代码执行  
+> 脚本通过 GM_xmlhttpRequest 动态从 https://deadshot-cheat.netlify.app/index.js 拉取远程 JS 代码，并 eval 执行，属于远程代码执行高危行为。  
+> 位置：fetchAndCacheCode() 和 patchImports() 中 (0, eval)(customCode)  
+> 建议：禁止动态加载和执行远程代码，改为本地集成或固定版本哈希的 @require。
+
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过 GM_xmlhttpRequest 主动访问第三方服务器 deadshot-cheat.netlify.app，可能导致用户信息、环境信息被第三方服务器收集。  
+> 位置：fetchAndCacheCode()  
+> 建议：仅允许访问可信、必要的服务器，避免向第三方域名发送请求。
 
 **🔴 HIGH** — 远程代码执行  
-> 使用 eval() 执行远程拉取的代码，极易导致任意代码执行（RCE），攻击面极大。  
-> 位置：mod[TARGET_METHOD] = (...args) => { (0, eval)(customCode); ... }  
-> 建议：严禁使用 eval 执行外部代码，尤其是网络动态获取的内容。
-
-**🟠 MEDIUM** — 权限滥用  
-> 申请了 GM_xmlhttpRequest、unsafeWindow 等高权限，且实际使用 GM_xmlhttpRequest 进行远程通信，unsafeWindow 未直接使用但存在滥用风险。  
-> 位置：@grant  
-> 建议：仅申请实际需要的最低权限，移除未使用的高权限。
+> 脚本使用 eval 执行远程拉取的代码，极易被利用为后门或植入恶意代码。  
+> 位置：patchImports() 中 (0, eval)(customCode)  
+> 建议：禁止使用 eval 执行外部代码。
 
 **🟠 MEDIUM** — 供应链风险  
-> 通过 @connect deadshot-cheat.netlify.app 允许与第三方服务器通信，增加供应链和数据外传风险。  
-> 位置：@connect  
-> 建议：仅允许可信域名通信，避免第三方动态代码注入。
+> 脚本未对拉取的远程代码进行任何校验（如哈希校验），存在供应链污染风险。  
+> 位置：fetchAndCacheCode()  
+> 建议：固定远程代码版本或进行哈希校验，避免供应链攻击。
+
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 unsafeWindow、GM_xmlhttpRequest、GM_setValue、GM_getValue 等高权限，但未见对 unsafeWindow 的直接使用，存在权限冗余。  
+> 位置：元数据 @grant  
+> 建议：仅申请实际需要的权限，移除未使用的高权限。
 
 ---
 

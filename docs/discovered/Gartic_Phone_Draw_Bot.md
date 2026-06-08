@@ -35,9 +35,9 @@ title: "Gartic Phone自动绘画机器人"
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：67/100　　**分析时间**：2026-06-01
+**风险等级**：🟡 LOW　　**安全评分**：66/100　　**分析时间**：2026-06-08
 
-> 该脚本主要通过 WebSocket 与 garticphone.com 服务器通信，实现自动绘图功能。未发现隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。存在数据外传（仅限目标站点）、未使用的高权限申请（GM_xmlhttpRequest）和对 WebSocket 的全局代理（可能影响页面其他功能）。建议移除未使用的权限，并限制 WebSocket 代理范围。
+> 该脚本主要通过代理 WebSocket 与 garticphone.com 官方服务器通信，实现自动绘图功能。未发现向第三方服务器外传数据或隐私采集行为。未检测到远程代码执行、代码混淆、DOM XSS、供应链风险等高危问题。存在未使用的 GM_xmlhttpRequest 权限和 unsafeWindow 权限申请，建议移除未用权限以降低潜在风险。整体风险较低。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -51,19 +51,24 @@ title: "Gartic Phone自动绘画机器人"
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本通过 WebSocket 发送数据包到 garticphone.com 服务器，内容为自动绘图生成的数据。  
-> 位置：sendPackets()、customWebSocket 类  
-> 建议：确认仅发送游戏相关数据，不包含用户敏感信息。
+> 使用 fetch 进行网络请求，目标为 garticphone.com（与脚本运行域一致），未见向第三方域名外传数据。  
+> 位置：requestText, requestBuffer 函数  
+> 建议：确保仅请求可信站点资源，避免携带敏感用户数据。
+
+**⛔ CRITICAL** — 数据外传  
+> WebSocket 用于与 garticphone.com 服务器通信，未见向第三方服务器发送数据。  
+> 位置：customWebSocket 类、sendPackets 函数  
+> 建议：确保 WebSocket 仅连接官方服务器，避免敏感信息泄露。
 
 **🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_xmlhttpRequest 权限，但实际代码未使用该 API。  
+> 申请了 GM_xmlhttpRequest 权限，但实际代码未使用该 API。  
 > 位置：@grant 元数据  
 > 建议：移除未使用的高权限申请，减少权限滥用风险。
 
-**🟠 MEDIUM** — 敏感 API 调用  
-> 脚本通过 Proxy 劫持 WebSocket 构造函数，可能影响页面其他 WebSocket 行为。  
-> 位置：customWebSocket 类  
-> 建议：确保只影响目标 WebSocket，避免副作用。
+**🟠 MEDIUM** — 权限滥用  
+> 申请了 unsafeWindow 权限，实际用于重写 WebSocket 构造函数，存在一定安全风险。  
+> 位置：@grant 元数据、unsafeWindow.WebSocket  
+> 建议：仅在必要时使用 unsafeWindow，并确保无副作用。
 
 ---
 

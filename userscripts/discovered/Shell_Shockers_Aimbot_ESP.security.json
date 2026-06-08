@@ -7,25 +7,25 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script requests @grant unsafeWindow, which provides high-privilege access to the page context and can be abused if the script is compromised.",
-      "location": "// @grant unsafeWindow (metadata) and multiple uses in code",
-      "recommendation": "Only request unsafeWindow if absolutely necessary. Review all code paths that interact with unsafeWindow for potential risks.",
+      "description": "The script requests @grant unsafeWindow, which exposes the page's JS context and can be abused if the script is compromised or if supply chain risk is realized.",
+      "location": "@grant unsafeWindow in metadata",
+      "recommendation": "Only request unsafeWindow if absolutely necessary. Review all code paths that interact with unsafeWindow for possible injection or privilege escalation.",
       "severity": "MEDIUM",
-      "type": "Permission Risk"
+      "type": "Permission Overgrant"
     },
     {
-      "description": "The script stores and loads settings from localStorage, which may include user preferences but not sensitive data. No evidence of exfiltration found.",
-      "location": "localStorage.getItem / setItem (settings persistence)",
-      "recommendation": "Ensure only non-sensitive data is stored. Do not store credentials or personal information.",
-      "severity": "LOW",
-      "type": "Privacy Risk"
-    },
-    {
-      "description": "The script loads Babylon.js from jsdelivr CDN via @require. While jsdelivr is a reputable CDN, supply chain risk exists if the CDN is compromised or the library is updated with malicious code.",
+      "description": "The script loads Babylon.js from jsdelivr CDN via @require. While jsdelivr is a reputable CDN, the version is pinned but not by hash, so supply chain risk exists if the CDN is compromised or the package is hijacked.",
       "location": "@require https://cdn.jsdelivr.net/npm/babylonjs@7.15.0/babylon.min.js",
-      "recommendation": "Pin to a specific version (already done) and periodically verify the integrity of the library.",
+      "recommendation": "Use SRI hash or a trusted, immutable CDN. Monitor for upstream package hijacking.",
       "severity": "MEDIUM",
       "type": "Supply Chain Risk"
+    },
+    {
+      "description": "The script stores and loads settings from localStorage. While this is not a privacy leak by itself, if combined with network requests or exfiltration, it could be abused. No such exfiltration is present here.",
+      "location": "localStorage usage (SETTINGS_KEY)",
+      "recommendation": "Do not store sensitive information in localStorage. No privacy issue detected in current usage.",
+      "severity": "LOW",
+      "type": "LocalStorage Usage"
     }
   ],
   "obfuscation_detected": false,
@@ -36,9 +36,9 @@
   "risk_level": "LOW",
   "script_name": "Shell Shockers Aimbot + ESP",
   "security_score": 89,
-  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要风险为申请了高权限（unsafeWindow）和供应链依赖（Babylon.js），但未发现实际滥用。整体安全性较高，建议定期复查依赖库和权限申请。",
+  "summary": "No critical or high-risk security issues detected. The script does not transmit data to third-party servers, does not collect sensitive user data, and does not use eval or dynamic code execution. It does request unsafeWindow (medium risk) and loads a third-party library via CDN (medium supply chain risk). No obfuscation, DOM XSS, or privacy collection detected. Overall, the script is low risk for end-users, but supply chain and privilege risks should be monitored.",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-01T07:06:19.935510+00:00",
+  "analyzed_at": "2026-06-08T06:47:10.532754+00:00",
   "slug": "Shell_Shockers_Aimbot_ESP"
 }

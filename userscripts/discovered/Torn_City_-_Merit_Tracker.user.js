@@ -1,11 +1,12 @@
 // ==UserScript==
 // @name         Torn City - Merit Tracker
 // @namespace    Merit Tracker
-// @version      2.4
+// @version      2.5
 // @description  See your easiest missing honors first, learn how to get them, browse by category
 // @author       _Solenya_ [4053619]
 // @match        https://www.torn.com/*
-// @grant        none
+// @grant        GM_xmlhttpRequest
+// @connect      greasyfork.org
 // License       MIT
 // @downloadURL https://update.greasyfork.org/scripts/579300/Torn%20City%20-%20Merit%20Tracker.user.js
 // @updateURL https://update.greasyfork.org/scripts/579300/Torn%20City%20-%20Merit%20Tracker.meta.js
@@ -13,15 +14,15 @@
 
 (function () {
   'use strict';
-  const VERSION = '2.0';
+  const VERSION = '2.5';
   const GF_URL  = 'https://greasyfork.org/en/scripts/579300-torn-city-merit-tracker';
   const GF_API  = 'https://greasyfork.org/scripts/579300.json';
 
   const DIFF_META = {
-    1: { label: 'Instant',     color: '#f87171', bg: '#2d0a0a', desc: 'Do it right now with little or no cost' },
-    2: { label: 'Easy',        color: '#fb923c', bg: '#2d1500', desc: 'Might need a friend or quick coordination to get it quickly' },
-    3: { label: 'Costs Money', color: '#facc15', bg: '#292100', desc: 'Can do it now but requires spending' },
-    4: { label: 'Grind',       color: '#60a5fa', bg: '#0a1628', desc: 'Simple but needs time or repetition' },
+    1: { label: 'Instant',     color: '#facc15', bg: '#292100', desc: 'Do it right now with little or no cost' },
+    2: { label: 'Easy',        color: '#60a5fa', bg: '#0a1628', desc: 'Might need a friend or quick coordination to get it quickly' },
+    3: { label: 'Costs Money', color: '#fb923c', bg: '#2d1500', desc: 'Can do it now but requires spending' },
+    4: { label: 'Grind',       color: '#f87171', bg: '#2d0a0a', desc: 'Simple but needs time or repetition' },
     5: { label: 'Complex',     color: '#c084fc', bg: '#1a0a28', desc: 'Multi-step, RNG-heavy, or tricky' },
     6: { label: 'Unknown',     color: '#4b5563', bg: '#111827', desc: 'No guide yet — check Torn forums' },
   };
@@ -29,7 +30,7 @@
   const DB = {
     // ═══════════════ INSTANT (Red) ═══════════════
     838:  { d:1, g:"Defeat two players who are married to each other (in any order). The well-known pair monkey_D and Left4Dead12 are a reliable target — defeat one, then the other." },
-    367:  { d:1, g:"Buy Ipecac Syrup from the City (~$80k) and use it from your inventory — it instantly hospitalizes you. Alternatively, use a blood bag of the wrong type (requires Intravenous Therapy education course)." },
+    367:  { d:1, g:"Buy Ipecac Syrup from the City (~$45k) and use it from your inventory — it instantly hospitalizes you. Alternatively, use a blood bag of the wrong type (requires Intravenous Therapy education course)." },
     902:  { d:1, g:"Attack pops333 using ONLY your fists so you lose — he beats you with a trout. Unequip all weapons first or use fists only. You want to lose this fight deliberately." },
     230:  { d:1, g:"Defeat any player who currently has the Domino Effect honor equipped on their profile. L3Milk is a well-known low-stat player who displays it and is an easy kill." },
     639:  { d:1, g:"Join an attack as an assist — you must NOT deliver the killing blow. Best method: during Loot Rangers NPC events, join the attack. Or have a friend start an attack on a target and you click Assist without finishing them." },
@@ -40,7 +41,7 @@
     40:   { d:1, g:"Win 20 attacks. Keep attacking low-level inactives." },
     41:   { d:1, g:"Win 50 attacks total." },
     42:   { d:1, g:"Win 100 attacks total." },
-    43:   { d:1, g:"Win 250 attacks total." },
+    43:   { d:4, g:"Win 250 attacks total." },
     18:   { d:1, g:"Reach level 10. Just keep playing — this comes naturally." },
     20:   { d:1, g:"Achieve 25 critical hits. These accumulate naturally as you attack anyone." },
     253:  { d:1, g:"Participate in a faction chain of at least 10 hits. Just join during any chain your faction runs." },
@@ -53,7 +54,7 @@
     1326: { d:1, g:"Go to Crimes → Search for Cash → Beach. Search repeatedly — you'll randomly dig up sand. Doesn't take long." },
     1349: { d:1, g:"Go to Crimes → Burglary, click the area dropdown (shows 'Any Residential' etc.) and pick a specific target like 'Beach Hut', then click Locate. Done — costs 9 nerve." },
     665:  { d:1, g:"Participate in defeating a lootable NPC (Duke, Jimmy, Leslie). Check yata.yt for the Loot Rangers schedule and just hit the NPC at least once — you don't need top damage." },
-    288:  { d:1, g:"Reset your merits from the Merits page. The first reset may be free; after that it costs 500 points (~$19M). This wipes your current merit allocations — plan accordingly." },
+    288:  { d:3, g:"Reset your merits from the Merits page. The first reset may be free; after that it costs 500 points (~$19M). This wipes your current merit allocations — plan accordingly." },
     606:  { d:1, g:"Achieve 100 total awards (honors + medals combined). Just keep playing and collecting awards naturally." },
     653:  { d:4, g:"Complete 10 education courses total. Each course takes anywhere from 3 days to over a month — just keep one queued at all times in the Education section." },
     659:  { d:4, g:"Complete 25 education courses total. Courses range from 3 days to 30+ days each. Keep one queued constantly and this comes naturally over time." },
@@ -300,7 +301,7 @@
     1031: { d:4, g:"Acquire 10,000 customers on your Bootlegging online DVD store. Unlock via ICT Computer Science education, set up the store, and leave it running ~2 weeks." },
     1032: { d:4, g:"Become initiated into one of Torn's 5 Graffiti crews. Reach Graffiti skill 70 and 500 reputation with the East Side crew, then complete the Unique crime at East Side." },
     1034: { d:4, g:"Achieve skill level 100 in Graffiti. Grind Graffiti crimes daily across all 7 locations." },
-    1038: { d:1, g:"Achieve 100% notoriety at all Shoplifting stores simultaneously. Best done EARLY before your skill is too high. Have 200+ nerve available, then spam all areas until each hits 100%." },
+    1038: { d:4, g:"Achieve 100% notoriety at all Shoplifting stores simultaneously. Best done EARLY before your skill is too high. Have 200+ nerve available, then spam all areas until each hits 100%." },
     1053: { d:4, g:"Achieve skill level 100 in Card Skimming. Place 20 skimmers at Bus Station and leave for 2-3 weeks at a time. Very low nerve cost per XP — set and forget." },
     1064: { d:4, g:"Achieve skill level 100 in Burglary. Grind daily. Residential areas generally give better XP. Always case to maximum to avoid critical failures." },
     1076: { d:5, g:"Pickpocket a police officer's badge. Officers appear as 'running' targets and are rare. Very high critical fail chance — attempt at skill level 0 (no skill to lose) or wait until level 100." },
@@ -408,6 +409,158 @@
   };
 
   /* ─────────────────────────────────────────────────────────────
+     PERSONAL STATS PROGRESS MAP
+     path is relative to personalstats{}
+     target is the goal number; fmt(val,target) optional formatter
+  ───────────────────────────────────────────────────────────── */
+  const PROGRESS_MAP = {
+    // ── Attacks ──
+    39:   { path:'attacking.attacks.won',            target:5,          label:'Attacks won' },
+    40:   { path:'attacking.attacks.won',            target:20,         label:'Attacks won' },
+    41:   { path:'attacking.attacks.won',            target:50,         label:'Attacks won' },
+    42:   { path:'attacking.attacks.won',            target:100,        label:'Attacks won' },
+    43:   { path:'attacking.attacks.won',            target:250,        label:'Attacks won' },
+    20:   { path:'attacking.hits.critical',          target:25,         label:'Critical hits' },
+    270:  { path:'attacking.attacks.stalemate',      target:100,        label:'Stalemates' },
+    490:  { path:'attacking.attacks.assist',         target:250,        label:'Assists' },
+    639:  { path:'attacking.attacks.assist',         target:1,          label:'Assists' },
+    254:  { path:'attacking.hits.one_hit_kills',     target:1,          label:'One-hit kills' },
+    517:  { path:'attacking.hits.one_hit_kills',     target:100,        label:'One-hit kills' },
+    601:  { path:'attacking.hits.success',           target:10000,      label:'Total hits' },
+    1004: { path:'attacking.damage.total',           target:100000,     label:'Total damage dealt' },
+    1002: { path:'attacking.damage.total',           target:1000000,    label:'Total damage dealt' },
+    1001: { path:'attacking.damage.total',           target:10000000,   label:'Total damage dealt' },
+    1003: { path:'attacking.damage.total',           target:100000000,  label:'Total damage dealt' },
+    740:  { path:'attacking.damage.best',            target:5000,       label:'Best single hit' },
+    741:  { path:'attacking.damage.best',            target:10000,      label:'Best single hit' },
+    786:  { path:'attacking.damage.best',            target:15000,      label:'Best single hit' },
+    15:   { path:'attacking.killstreak.best',        target:10,         label:'Best kill streak' },
+    16:   { path:'attacking.killstreak.best',        target:100,        label:'Best kill streak' },
+    22:   { path:'attacking.defends.won',            target:50,         label:'Defends won' },
+    228:  [
+            { path:'attacking.attacks.won',   target:1000, label:'Attacks won' },
+            { path:'attacking.defends.total', target:1000, label:'Total defends' },
+          ],
+    763:  { path:'attacking.unarmored_wins',         target:250,        label:'Unarmored wins' },
+    232:  { path:'bounties.collected.amount',        target:250,        label:'Bounties collected' },
+    236:  { path:'bounties.collected.value',         target:10000000,   label:'Bounty earnings ($)' },
+    // ── Ammunition ──
+    140:  { path:'attacking.ammunition.total',       target:1000,       label:'Rounds fired' },
+    151:  { path:'attacking.ammunition.total',       target:10000,      label:'Rounds fired' },
+    834:  { path:'attacking.ammunition.total',       target:100000,     label:'Rounds fired' },
+    836:  { path:'attacking.ammunition.total',       target:1000000,    label:'Rounds fired' },
+    800:  { path:'attacking.ammunition.special',     target:100,        label:'Special ammo used' },
+    793:  { path:'attacking.ammunition.special',     target:1000,       label:'Special ammo used' },
+    791:  { path:'attacking.ammunition.special',     target:10000,      label:'Special ammo used' },
+    942:  { path:'attacking.ammunition.hollow_point',target:2500,       label:'Hollow Point used' },
+    943:  { path:'attacking.ammunition.piercing',    target:2500,       label:'Piercing ammo used' },
+    944:  { path:'attacking.ammunition.incendiary',  target:2500,       label:'Incendiary ammo used' },
+    945:  { path:'attacking.ammunition.tracer',      target:2500,       label:'Tracer ammo used' },
+    // ── Finishing hits ──
+    141:  { path:'finishing_hits.heavy_artillery',   target:100,        label:'Heavy artillery kills' },
+    144:  { path:'finishing_hits.machine_guns',      target:100,        label:'Machine gun kills' },
+    146:  { path:'finishing_hits.rifles',            target:100,        label:'Rifle kills' },
+    148:  { path:'finishing_hits.sub_machine_guns',  target:100,        label:'SMG kills' },
+    147:  { path:'finishing_hits.shotguns',          target:100,        label:'Shotgun kills' },
+    145:  { path:'finishing_hits.pistols',           target:100,        label:'Pistol kills' },
+    143:  { path:'finishing_hits.temporary',         target:100,        label:'Temporary weapon kills' },
+    149:  { path:'finishing_hits.piercing',          target:100,        label:'Piercing kills' },
+    150:  { path:'finishing_hits.slashing',          target:100,        label:'Slashing kills' },
+    142:  { path:'finishing_hits.clubbing',          target:100,        label:'Clubbing kills' },
+    515:  { path:'finishing_hits.hand_to_hand',      target:100,        label:'Hand-to-hand kills' },
+    // ── Crime skills ──
+    1014: { path:'crimes.skills.search_for_cash',    target:100,        label:'Search for Cash skill' },
+    1025: { path:'crimes.skills.bootlegging',        target:100,        label:'Bootlegging skill' },
+    1029: { path:'crimes.skills.shoplifting',        target:100,        label:'Shoplifting skill' },
+    1053: { path:'crimes.skills.card_skimming',      target:100,        label:'Card Skimming skill' },
+    1064: { path:'crimes.skills.burglary',           target:100,        label:'Burglary skill' },
+    1078: { path:'crimes.skills.pickpocketing',      target:100,        label:'Pickpocketing skill' },
+    1083: { path:'crimes.skills.hustling',           target:100,        label:'Hustling skill' },
+    1104: { path:'crimes.skills.disposal',           target:100,        label:'Disposal skill' },
+    1118: { path:'crimes.skills.cracking',           target:100,        label:'Cracking skill' },
+    1130: { path:'crimes.skills.forgery',            target:100,        label:'Forgery skill' },
+    1277: { path:'crimes.skills.scamming',           target:100,        label:'Scamming skill' },
+    1374: { path:'crimes.skills.arson',              target:100,        label:'Arson skill' },
+    251:  { path:'crimes.offenses.total',            target:10000,      label:'Total crimes committed' },
+    // ── Hospital ──
+    903:  { path:'hospital.times_hospitalized',      target:250,        label:'Times hospitalized' },
+    7:    { path:'hospital.medical_items_used',      target:5000,       label:'Medical items used' },
+    23:   { path:'hospital.reviving.revives',        target:500,        label:'Players revived' },
+    267:  { path:'hospital.reviving.revives',        target:1000,       label:'Players revived' },
+    418:  { path:'hospital.blood_withdrawn',         target:250,        label:'Blood bags filled' },
+    398:  { path:'hospital.blood_withdrawn',         target:1000,       label:'Blood bags filled' },
+    // ── Jail ──
+    906:  { path:'jail.times_jailed',                target:250,        label:'Times jailed' },
+    248:  { path:'jail.busts.success',               target:1000,       label:'Successful jail busts' },
+    249:  { path:'jail.busts.success',               target:2500,       label:'Successful jail busts' },
+    250:  { path:'jail.busts.success',               target:10000,      label:'Successful jail busts' },
+    252:  { path:'jail.bails.amount',                target:500,        label:'Bail payments made' },
+    // ── Drugs ──
+    29:   { path:'drugs.cannabis',  target:50, label:'Cannabis used' },
+    30:   { path:'drugs.ecstasy',   target:50, label:'Ecstasy used' },
+    31:   { path:'drugs.ketamine',  target:50, label:'Ketamine used' },
+    32:   { path:'drugs.lsd',       target:50, label:'LSD used' },
+    33:   { path:'drugs.opium',     target:50, label:'Opium used' },
+    34:   { path:'drugs.shrooms',   target:50, label:'Shrooms used' },
+    35:   { path:'drugs.speed',     target:50, label:'Speed used' },
+    36:   { path:'drugs.pcp',       target:50, label:'PCP used' },
+    37:   { path:'drugs.xanax',     target:50, label:'Xanax used' },
+    38:   { path:'drugs.vicodin',   target:50, label:'Vicodin used' },
+    // ── Travel ──
+    11:   { path:'travel.total',    target:100,  label:'Trips abroad' },
+    165:  { path:'travel.total',    target:1000, label:'Trips abroad' },
+    130:  { path:'travel.argentina',          target:50, label:'Argentina trips' },
+    131:  { path:'travel.mexico',             target:50, label:'Mexico trips' },
+    132:  { path:'travel.united_arab_emirates',target:50,label:'UAE trips' },
+    133:  { path:'travel.hawaii',             target:50, label:'Hawaii trips' },
+    134:  { path:'travel.japan',              target:50, label:'Japan trips' },
+    135:  { path:'travel.united_kingdom',     target:50, label:'UK trips' },
+    136:  { path:'travel.south_africa',       target:50, label:'South Africa trips' },
+    137:  { path:'travel.switzerland',        target:50, label:'Switzerland trips' },
+    138:  { path:'travel.china',              target:50, label:'China trips' },
+    139:  { path:'travel.canada',             target:50, label:'Canada trips' },
+    272:  { path:'travel.cayman_islands',     target:50, label:'Cayman Islands trips' },
+    549:  { path:'travel.time_spent', target:604800,    label:'Air time',
+            fmt:(v,t)=>`${(v/86400).toFixed(1)}d / ${(t/86400).toFixed(0)}d` },
+    567:  { path:'travel.time_spent', target:2678400,   label:'Air time',
+            fmt:(v,t)=>`${(v/86400).toFixed(1)}d / ${(t/86400).toFixed(0)}d` },
+    557:  { path:'travel.time_spent', target:31536000,  label:'Air time',
+            fmt:(v,t)=>`${(v/86400).toFixed(1)}d / ${(t/86400).toFixed(0)}d` },
+    541:  { path:'travel.items_bought', target:100,    label:'Items imported' },
+    542:  { path:'travel.items_bought', target:1000,   label:'Items imported' },
+    543:  { path:'travel.items_bought', target:10000,  label:'Items imported' },
+    50:   { path:'travel.hunting.skill', target:50,    label:'Hunting skill' },
+    51:   { path:'travel.hunting.skill', target:75,    label:'Hunting skill' },
+    52:   { path:'travel.hunting.skill', target:100,   label:'Hunting skill' },
+    // ── Jobs ──
+    4:    { path:'jobs.job_points_used', target:100,   label:'Job points used' },
+    164:  { path:'jobs.job_points_used', target:1000,  label:'Job points used' },
+    742:  { path:'jobs.job_points_used', target:10000, label:'Job points used' },
+    // ── Racing ──
+    571:  { path:'racing.races.won', target:100, label:'Races won' },
+    572:  { path:'racing.skill',     target:10,  label:'Racing skill' },
+    // ── Activity / Awards ──
+    245:  { path:'other.activity.time', target:3600000, label:'Activity time',
+            fmt:(v,t)=>`${Math.floor(v/3600).toLocaleString()}h / ${Math.floor(t/3600).toLocaleString()}h` },
+    606:  { path:'other.awards', target:100,  label:'Total awards' },
+    229:  { path:'other.awards', target:250,  label:'Total awards' },
+    614:  { path:'other.awards', target:500,  label:'Total awards' },
+    873:  { path:'other.activity.streak.current', target:100, label:'Daily login streak' },
+    // ── Items ──
+    1:    { path:'items.found.city',          target:50,   label:'City items found' },
+    238:  { path:'items.found.dump',          target:1000, label:'Dump items found' },
+    271:  { path:'items.trashed',             target:5000, label:'Items trashed' },
+    539:  { path:'items.used.books',          target:10,   label:'Books read' },
+    537:  { path:'items.used.candy',          target:500,  label:'Candy eaten' },
+    534:  { path:'items.used.alcohol',        target:500,  label:'Alcohol drunk' },
+    538:  { path:'items.used.energy_drinks',  target:500,  label:'Energy drinks used' },
+    527:  { path:'items.used.stat_enhancers', target:1,    label:'Stat enhancers used' },
+    // ── Trading ──
+    268:  { path:'trading.points.sold',       target:1000, label:'Points sold' },
+    239:  { path:'trading.bazaar.customers',  target:100,  label:'Bazaar customers' },
+  };
+
+  /* ─────────────────────────────────────────────────────────────
      CATEGORIES
   ───────────────────────────────────────────────────────────── */
   const CATS = {
@@ -444,12 +597,13 @@
   /* ─────────────────────────────────────────────────────────────
      STATE
   ───────────────────────────────────────────────────────────── */
-  const LS_KEYS = { KEY:'tht_key',UH:'tht_uh',AH:'tht_ah',HID:'tht_hid',MAN:'tht_man',REF:'tht_ref',OPEN:'tht_open' };
+  const LS_KEYS = { KEY:'tht_key',UH:'tht_uh',AH:'tht_ah',HID:'tht_hid',MAN:'tht_man',REF:'tht_ref',OPEN:'tht_open',PS:'tht_ps',BNRDIS:'tht_bnrdis' };
   const REFRESH_MS = 5 * 60 * 1000;
 
   let S = {
     apiKey:'', userHonors:new Set(), allHonors:[],
     hidden:new Set(), manual:new Set(),
+    personalStats:null, bannerDismissed:false,
     mode:'easy',           // 'easy' | 'category' | 'all'
     activeCat:-1,          // category type.id; -1 = all
     easyFilter:0,          // 0 = all tiers, 1-5 = specific tier
@@ -468,7 +622,9 @@
     S.hidden      = new Set(JSON.parse(localStorage.getItem(LS_KEYS.HID) || '[]'));
     S.manual      = new Set(JSON.parse(localStorage.getItem(LS_KEYS.MAN) || '[]'));
     S.lastRefresh = +(localStorage.getItem(LS_KEYS.REF) || 0);
-    S.panelOpen   = localStorage.getItem(LS_KEYS.OPEN) === '1';
+    S.panelOpen        = localStorage.getItem(LS_KEYS.OPEN) === '1';
+    S.personalStats    = JSON.parse(localStorage.getItem(LS_KEYS.PS) || 'null');
+    S.bannerDismissed  = localStorage.getItem(LS_KEYS.BNRDIS) || '';
   }
 
   function saveState() {
@@ -478,7 +634,9 @@
     localStorage.setItem(LS_KEYS.HID,  JSON.stringify([...S.hidden]));
     localStorage.setItem(LS_KEYS.MAN,  JSON.stringify([...S.manual]));
     localStorage.setItem(LS_KEYS.REF,  S.lastRefresh);
-    localStorage.setItem(LS_KEYS.OPEN, S.panelOpen ? '1' : '0');
+    localStorage.setItem(LS_KEYS.OPEN,   S.panelOpen ? '1' : '0');
+    localStorage.setItem(LS_KEYS.PS,     JSON.stringify(S.personalStats));
+    localStorage.setItem(LS_KEYS.BNRDIS, S.bannerDismissed);
   }
 
   /* ─────────────────────────────────────────────────────────────
@@ -506,6 +664,10 @@
       }
       const user = await fetchJSON(`https://api.torn.com/v2/user/honors?key=${S.apiKey}`);
       S.userHonors = new Set((user.honors || []).map(h => h.id));
+      try {
+        const ps = await fetchJSON(`https://api.torn.com/v2/user/personalstats?cat=all&key=${S.apiKey}`);
+        S.personalStats = ps.personalstats || null;
+      } catch(e) { /* personal stats optional — don't fail whole refresh */ }
       S.lastRefresh = Date.now();
       S.error = '';
       saveState();
@@ -526,18 +688,23 @@
     return false;
   }
 
-  async function checkForUpdate() {
-    try {
-      const res = await fetch(GF_API);
-      if (!res.ok) return;
-      const d = await res.json();
-      const remote = d.version || '';
-      if (remote && versionNewer(remote, VERSION)) {
-        S.hasUpdate = true;
-        S.latestVersion = remote;
-        renderUpdateUI();
-      }
-    } catch(e) { /* silent — no CORS or network, just skip */ }
+function checkForUpdate() {
+    GM_xmlhttpRequest({
+      method: 'GET',
+      url: GF_API,
+      onload: function(res) {
+        try {
+          const d = JSON.parse(res.responseText);
+          const remote = d.version || '';
+          if (remote && versionNewer(remote, VERSION)) {
+            S.hasUpdate = true;
+            S.latestVersion = remote;
+            renderUpdateUI();
+          }
+        } catch(e) { /* silent */ }
+      },
+      onerror: function() { /* silent */ }
+    });
   }
 
   function renderUpdateUI() {
@@ -545,11 +712,26 @@
     if (btn) btn.classList.toggle('has-update', S.hasUpdate);
     const banner = document.getElementById('tht-update-banner');
     if (!banner) return;
-    if (S.hasUpdate) {
-      banner.innerHTML = `<a href="${GF_URL}" target="_blank" class="tht-update-link">
-        ⬆ v${S.latestVersion} available — click to update on GreasyFork
-      </a>`;
+    if (S.hasUpdate && S.bannerDismissed !== S.latestVersion) {
+      banner.innerHTML = `
+        <div class="tht-update-link">
+          <a href="${GF_URL}" target="_blank"
+             style="color:inherit;text-decoration:none;flex:1;display:flex;align-items:center;gap:6px;">
+            ⬆ v${S.latestVersion} available — click to update on GreasyFork
+          </a>
+          <button id="tht-banner-dismiss"
+            style="background:none;border:none;color:#4ade80;opacity:.6;cursor:pointer;
+                   font-size:13px;padding:0 2px;line-height:1;font-family:inherit;"
+            title="Dismiss">✕</button>
+        </div>`;
       banner.style.display = '';
+      const db = document.getElementById('tht-banner-dismiss');
+      if (db) db.onclick = (e) => {
+        e.preventDefault();
+        S.bannerDismissed = S.latestVersion;
+        saveState();
+        renderUpdateUI();
+      };
     } else {
       banner.style.display = 'none';
     }
@@ -619,6 +801,43 @@
     return { total, earned, missing: total - earned };
   }
 
+  function getStatValue(path) {
+    if (!S.personalStats) return null;
+    const parts = path.split('.');
+    let cur = S.personalStats;
+    for (const p of parts) {
+      if (cur == null || typeof cur !== 'object') return null;
+      cur = cur[p];
+    }
+    return typeof cur === 'number' ? cur : null;
+  }
+
+  function renderProgressEntry({ path, target, label, fmt }) {
+    const raw = getStatValue(path);
+    if (raw === null) return '';
+    const pct   = Math.min(100, Math.round(raw / target * 100));
+    const done  = raw >= target;
+    const valStr = fmt ? fmt(raw, target) : `${raw.toLocaleString()} / ${target.toLocaleString()}`;
+    const color  = done ? '#4ade80' : pct >= 75 ? '#f5a623' : pct >= 40 ? '#60a5fa' : '#6b7280';
+    return `<div class="tht-progress">
+      <div class="tht-progress-lbl">
+        <span>${label}</span>
+        <span style="color:${color};font-weight:600;">${done ? '✓ Done' : valStr}</span>
+      </div>
+      <div class="tht-pbar-bg">
+        <div class="tht-pbar-fill" style="width:${pct}%;background:${color};"></div>
+      </div>
+    </div>`;
+  }
+
+  function progressHTML(h) {
+    if (isEarned(h.id) || !S.personalStats) return '';
+    const pm = PROGRESS_MAP[h.id];
+    if (!pm) return '';
+    const entries = Array.isArray(pm) ? pm : [pm];
+    return `<div class="tht-progress-wrap">${entries.map(renderProgressEntry).filter(Boolean).join('')}</div>`;
+  }
+
   function esc(s) {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
@@ -674,15 +893,19 @@ function injectStyles() {
       display:flex;align-items:center;gap:8px;padding:7px 12px;
       background:linear-gradient(90deg,rgba(74,222,128,.07),rgba(74,222,128,.03));
       border:1px solid rgba(74,222,128,.22);border-radius:8px;
-      color:#4ade80;font-size:11.5px;font-weight:600;text-decoration:none;
+      color:#4ade80;font-size:11.5px;font-weight:600;
       transition:background .2s;
     }
     .tht-update-link:hover {
       background:linear-gradient(90deg,rgba(74,222,128,.13),rgba(74,222,128,.06));
     }
+    .tht-update-link a { color:inherit;text-decoration:none;flex:1; }
+    .tht-update-link:hover {
+      background:linear-gradient(90deg,rgba(74,222,128,.13),rgba(74,222,128,.06));
+    }
 
     #tht-panel {
-      position:fixed;top:0;right:0;height:100vh;width:420px;max-width:99vw;
+      position:fixed;top:0;right:0;height:100vh;width:450px;max-width:99vw;
       z-index:2147483647;background:#0c0c14;border-left:1px solid #181825;
       display:flex;flex-direction:column;
       font-family:'Outfit',system-ui,sans-serif;color:#e2e8f0;
@@ -753,13 +976,13 @@ function injectStyles() {
     }
     .tht-btn-gold:hover { background:#b45309; }
     .tht-btn-grey {
-      background:rgba(255,255,255,.04);color:#303048;
-      border:1px solid rgba(255,255,255,.07);border-radius:6px;
+      background:rgba(255,255,255,.06);color:#9aa3b4;
+      border:1px solid rgba(255,255,255,.15);border-radius:6px;
       padding:5px 10px;font-size:11px;cursor:pointer;white-space:nowrap;
       transition:all .15s;font-family:'Outfit',system-ui,sans-serif;
       touch-action:manipulation;
     }
-    .tht-btn-grey:hover { background:rgba(255,255,255,.07);color:#777; }
+    .tht-btn-grey:hover { background:rgba(255,255,255,.1);color:#d0d6e0; }
 
     .tht-ctrl-row { display:flex;gap:6px;align-items:center;margin-bottom:8px; }
     .tht-search {
@@ -889,14 +1112,14 @@ function injectStyles() {
       width:2px;border-radius:1px;
     }
 
-    .tht-d1::before { background:linear-gradient(to right,rgba(220,60,35,.19),transparent); }
-    .tht-d1::after  { background:#c8381c; }
-    .tht-d2::before { background:linear-gradient(to right,rgba(215,140,25,.16),transparent); }
-    .tht-d2::after  { background:#c88818; }
-    .tht-d3::before { background:linear-gradient(to right,rgba(185,185,18,.13),transparent); }
-    .tht-d3::after  { background:#aaaa0e; }
-    .tht-d4::before { background:linear-gradient(to right,rgba(40,120,210,.15),transparent); }
-    .tht-d4::after  { background:#2878d2; }
+    .tht-d1::before { background:linear-gradient(to right,rgba(200,180,0,.19),transparent); }
+    .tht-d1::after  { background:#c8b400; }
+    .tht-d2::before { background:linear-gradient(to right,rgba(40,120,210,.15),transparent); }
+    .tht-d2::after  { background:#2878d2; }
+    .tht-d3::before { background:linear-gradient(to right,rgba(215,140,25,.16),transparent); }
+    .tht-d3::after  { background:#c88818; }
+    .tht-d4::before { background:linear-gradient(to right,rgba(220,60,35,.19),transparent); }
+    .tht-d4::after  { background:#c8381c; }
     .tht-d5::before { background:linear-gradient(to right,rgba(148,68,220,.15),transparent); }
     .tht-d5::after  { background:#9444dc; }
     .tht-d6::before { background:linear-gradient(to right,rgba(65,65,65,.11),transparent); }
@@ -920,9 +1143,9 @@ function injectStyles() {
       font-size:15px;
     }
     .tht-card-info { flex:1;min-width:0; }
-    .tht-hname { font-size:13px;font-weight:700;color:#efefef;line-height:1.3; }
+.tht-hdesc { font-size:12.5px;color:#b8c0cf;margin-top:2px;line-height:1.5; }
     .tht-card.earned .tht-hname { color:#4ade80; }
-    .tht-hdesc { font-size:11.5px;color:#7a8499;margin-top:2px;line-height:1.5; }
+.tht-hdesc { font-size:12.5px;color:#b8c0cf;margin-top:2px;line-height:1.5; }
 
     .tht-card-actions { display:flex;flex-direction:column;gap:3px;flex-shrink:0; }
     .tht-action {
@@ -947,7 +1170,7 @@ function injectStyles() {
 
     /* Guide */
     .tht-guide-btn {
-      font-size:11px;font-weight:500;color:#6b7280;cursor:pointer;
+      font-size:11px;font-weight:500;color:#9aa3b4;cursor:pointer;
       background:none;border:none;font-family:'Outfit',system-ui,sans-serif;
       display:inline-flex;align-items:center;gap:5px;
       padding:2px 0 0;transition:color .15s;
@@ -966,7 +1189,24 @@ function injectStyles() {
     .tht-guide-inner {
       background:rgba(255,255,255,.022);border:1px solid rgba(255,255,255,.05);
       border-left:2px solid #d97706;border-radius:0 6px 6px 0;
-      padding:9px 11px;font-size:11.5px;color:#555;line-height:1.7;margin-top:7px;
+      padding:9px 11px;font-size:13px;color:#555;line-height:1.75;margin-top:7px;
+    }
+    .tht-progress-wrap { display:flex;flex-direction:column;gap:5px;position:relative;z-index:1; }
+    .tht-progress { }
+    .tht-progress-lbl {
+      display:flex;justify-content:space-between;align-items:center;
+      margin-bottom:3px;font-size:10.5px;color:#4a5060;
+    }
+    .tht-pbar-bg {
+      height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;
+    }
+    .tht-pbar-fill {
+      height:100%;border-radius:2px;transition:width .4s ease;min-width:2px;
+    }
+    .tht-complete-banner {
+      padding:10px 14px;background:rgba(74,222,128,.05);
+      border:1px solid rgba(74,222,128,.15);border-radius:8px;
+      color:#4ade80;font-size:12px;text-align:center;
     }
     .tht-diff-tag {
       display:inline-flex;align-items:center;gap:5px;font-size:9.5px;font-weight:700;
@@ -984,7 +1224,7 @@ function injectStyles() {
       .tht-action { padding:4px 7px;min-height:32px;touch-action:manipulation; }
       #tht-main { padding-bottom:80px; }
     }
-    .tht-hdesc{color:#7a8499!important}.tht-action{color:#6b7280!important}.tht-bpill{color:#6b7280!important}.tht-cat{color:#6b7280!important}.tht-cat .cc{color:#5a6070!important}.tht-sort-sel{color:#8892a4!important}.tht-sdim,.tht-sg,.tht-sr{color:#6b7280!important}
+.tht-hdesc{color:#b8c0cf!important}.tht-action{color:#6b7280!important}.tht-bpill{color:#6b7280!important}.tht-cat{color:#6b7280!important}.tht-cat .cc{color:#5a6070!important}.tht-sort-sel{color:#8892a4!important}.tht-sdim,.tht-sg,.tht-sr{color:#6b7280!important}
     </style>`);
   }
 
@@ -1028,7 +1268,7 @@ function injectStyles() {
 
         <div class="tht-api-row">
           <input class="tht-api-input" id="tht-api-key" type="password"
-            placeholder="API key (any access level)…" autocomplete="off" />
+           placeholder="Limited API key…" autocomplete="off" />
           <button class="tht-btn-gold" id="tht-refresh-btn">Sync</button>
         </div>
 
@@ -1141,12 +1381,16 @@ function injectStyles() {
       Guided (${easyCount})
     </button>`;
     for (let d = 1; d <= 5; d++) {
-      const m = DIFF_META[d];
-      const count = S.allHonors.filter(h => !isEarned(h.id) && getDiff(h) === d && DB[h.id]).length;
-      if (!count) continue;
+      const m          = DIFF_META[d];
+      const totalInTier = S.allHonors.filter(h => getDiff(h) === d && DB[h.id]).length;
+      if (!totalInTier) continue;
+      const remaining  = S.allHonors.filter(h => !isEarned(h.id) && getDiff(h) === d && DB[h.id]).length;
+      const allDone    = remaining === 0;
+      const pillColor  = allDone ? '#4ade80' : m.color;
+      const pillLabel  = allDone ? `${m.label} ✓` : `${m.label} (${remaining})`;
       html += `<button class="tht-dpill${S.easyFilter===d?' active':''}" data-d="${d}"
-        style="color:${m.color};border-color:${S.easyFilter===d?m.color:'rgba(255,255,255,.07)'};">
-        ${m.label} (${count})
+        style="color:${pillColor};border-color:${S.easyFilter===d?pillColor:'rgba(255,255,255,.07)'};">
+        ${pillLabel}
       </button>`;
     }
     container.innerHTML = html;
@@ -1275,6 +1519,10 @@ function injectStyles() {
       `;
       if (groups[d]) {
         html += groups[d].map(h => cardHTML(h, Math.min(cardIdx++, 10) * 30)).join('');
+      } else if (allDone) {
+        const earnedInTier = S.allHonors.filter(h => DB[h.id] && getDiff(h) === +d && isEarned(h.id));
+        html += `<div class="tht-complete-banner">🎉 All ${total} honors in this tier are earned!</div>`;
+        html += earnedInTier.map(h => cardHTML(h, Math.min(cardIdx++, 10) * 30)).join('');
       }
     });
     main.innerHTML = html;
@@ -1321,7 +1569,7 @@ function injectStyles() {
             <span class="tht-diff-tag" style="background:${dm.bg};color:${dm.color};">
               ${dm.label} &nbsp;·&nbsp; ${dm.desc}
             </span>
-            <div style="color:#555;">${esc(dbEntry.g)}</div>
+            <div style="color:#c8d0dc;">${esc(dbEntry.g)}</div>
           </div>
         </div>
       `;
@@ -1341,6 +1589,7 @@ function injectStyles() {
           <div class="tht-card-actions">${acts}</div>
         </div>
         ${badges ? `<div class="tht-badges">${badges}</div>` : ''}
+        ${progressHTML(h)}
         ${guide}
       </div>
     `;
