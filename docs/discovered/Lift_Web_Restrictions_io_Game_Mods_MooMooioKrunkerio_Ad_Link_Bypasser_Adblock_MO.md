@@ -65,7 +65,7 @@ title: "解除网络限制：.io游戏模型 、广告链接绕过器、广告�
 ### 发现的问题
 
 **⛔ CRITICAL** — Remote Code Execution  
-> The script uses XMLHttpRequest to fetch arbitrary code and executes it via a[a][a](x.responseText), which is equivalent to eval(). This is a remote code execution vulnerability.  
+> The script uses XMLHttpRequest to fetch arbitrary code and executes it via `a[a][a](x.responseText)`, which is equivalent to eval(). This is a remote code execution vulnerability.  
 > 位置：Utils.loadModule function  
 > 建议：Remove dynamic code execution or restrict to trusted, versioned sources. Avoid using eval or Function constructors.
 
