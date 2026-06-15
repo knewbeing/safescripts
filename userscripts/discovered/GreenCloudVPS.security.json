@@ -5,7 +5,15 @@
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [],
+  "issues": [
+    {
+      "description": "脚本自动点击页面按钮并提交表单，但未涉及用户输入或外部数据插入。",
+      "location": "safeWaitFunc、主流程",
+      "recommendation": "确保自动化操作不会误触敏感操作，建议用户知情。",
+      "severity": "LOW",
+      "type": "自动化操作风险"
+    }
+  ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
@@ -13,10 +21,10 @@
   },
   "risk_level": "SAFE",
   "script_name": "GreenCloudVPS",
-  "security_score": 100,
-  "summary": "该脚本未检测到任何安全或隐私风险。代码未包含任何网络请求、数据外传、隐私采集、远程代码执行、混淆、XSS、权限滥用或供应链风险。仅实现了页面自动化点击，无敏感操作。",
+  "security_score": 97,
+  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用或供应链风险。仅实现页面自动化点击操作，未涉及安全高风险行为。整体安全性高。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-08T06:42:57.277721+00:00",
+  "analyzed_at": "2026-06-15T07:22:30.078549+00:00",
   "slug": "GreenCloudVPS"
 }

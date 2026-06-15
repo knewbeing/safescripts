@@ -33,35 +33,35 @@ title: "蛋壳射击自动瞄准+透视"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-08
+**风险等级**：🟠 MEDIUM　　**安全评分**：77/100　　**分析时间**：2026-06-15
 
-> No critical or high-risk security issues detected. The script does not transmit data to third-party servers, does not collect sensitive user data, and does not use eval or dynamic code execution. It does request unsafeWindow (medium risk) and loads a third-party library via CDN (medium supply chain risk). No obfuscation, DOM XSS, or privacy collection detected. Overall, the script is low risk for end-users, but supply chain and privilege risks should be monitored.
+> The script does not transmit data externally and does not collect sensitive user information. It uses unsafeWindow, which is a high-risk permission, and loads a third-party library from a reputable CDN with a fixed version. No code obfuscation or DOM XSS risks are detected. The main risks are privilege escalation and supply chain vulnerabilities.
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ✅ 未检测到 |
-| 隐私采集 | ✅ 未检测到 |
+| 隐私采集 | ❌ 检测到（Reads and writes settings to localStorage） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ⚠️ 存在风险 |
+| 供应链风险 | ✅ 可信 |
 
 ### 发现的问题
 
-**🟠 MEDIUM** — Permission Overgrant  
-> The script requests @grant unsafeWindow, which exposes the page's JS context and can be abused if the script is compromised or if supply chain risk is realized.  
-> 位置：@grant unsafeWindow in metadata  
-> 建议：Only request unsafeWindow if absolutely necessary. Review all code paths that interact with unsafeWindow for possible injection or privilege escalation.
+**🔴 HIGH** — Privilege Escalation  
+> The script uses @grant unsafeWindow, which exposes the userscript context to the page and vice versa. This increases the risk of privilege escalation or data leakage if the page is malicious.  
+> 位置：Metadata (@grant unsafeWindow)  
+> 建议：Avoid using unsafeWindow unless strictly necessary. Consider safer alternatives or restrict usage.
 
-**🟠 MEDIUM** — Supply Chain Risk  
-> The script loads Babylon.js from jsdelivr CDN via @require. While jsdelivr is a reputable CDN, the version is pinned but not by hash, so supply chain risk exists if the CDN is compromised or the package is hijacked.  
-> 位置：@require https://cdn.jsdelivr.net/npm/babylonjs@7.15.0/babylon.min.js  
-> 建议：Use SRI hash or a trusted, immutable CDN. Monitor for upstream package hijacking.
+**🟠 MEDIUM** — Supply Chain  
+> The script loads Babylon.js from jsdelivr CDN via @require. While jsdelivr is a reputable CDN, the version is fixed (7.15.0), reducing supply chain risk but not eliminating it.  
+> 位置：Metadata (@require https://cdn.jsdelivr.net/npm/babylonjs@7.15.0/babylon.min.js)  
+> 建议：Always use official, version-pinned sources for third-party libraries. Monitor for vulnerabilities in dependencies.
 
-**🟡 LOW** — LocalStorage Usage  
-> The script stores and loads settings from localStorage. While this is not a privacy leak by itself, if combined with network requests or exfiltration, it could be abused. No such exfiltration is present here.  
-> 位置：localStorage usage (SETTINGS_KEY)  
-> 建议：Do not store sensitive information in localStorage. No privacy issue detected in current usage.
+**🟠 MEDIUM** — Privacy Collection  
+> The script reads and writes settings to localStorage, which is a common practice for storing user preferences. No sensitive data is stored, but localStorage is accessible by the page.  
+> 位置：localStorage access (SETTINGS_KEY)  
+> 建议：Do not store sensitive information in localStorage. Consider using GM_setValue/GM_getValue for more isolation.
 
 ---
 

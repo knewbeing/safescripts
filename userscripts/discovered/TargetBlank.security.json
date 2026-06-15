@@ -14,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "新标签页打开链接",
   "security_score": 100,
-  "summary": "该脚本仅修改页面中所有链接的 target 属性为 '_blank'，以便在新标签页中打开链接。未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。脚本结构清晰，未申请任何 @grant 权限，安全性高。",
+  "summary": "该脚本仅修改页面链接和表单的 target 属性，使其在新标签页打开，并针对 Discuz! 论坛做了特殊处理。未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码结构清晰，无安全隐患，安全评分为 100。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-08T06:48:06.865575+00:00",
+  "analyzed_at": "2026-06-15T07:28:42.884568+00:00",
   "slug": "TargetBlank"
 }

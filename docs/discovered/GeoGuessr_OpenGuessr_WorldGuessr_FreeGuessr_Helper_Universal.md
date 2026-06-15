@@ -38,14 +38,14 @@ title: "地理猜谜助手通用版"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：42/100　　**分析时间**：2026-06-08
+**风险等级**：⛔ CRITICAL　　**安全评分**：22/100　　**分析时间**：2026-06-15
 
-> 该脚本存在严重的数据外传风险，尤其是地理坐标可能被发送到 Discord Webhook 和第三方地理编码服务（nominatim.openstreetmap.org），可能导致用户隐私泄露。未发现明显的隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。脚本权限申请合理但存在一定滥用空间。总体安全风险为 CRITICAL，不建议在敏感环境下使用。
+> 该脚本存在严重的数据外传和隐私采集风险，尤其是地理位置和用户数据被发送到 discord.com 和 nominatim.openstreetmap.org。未发现远程代码执行、混淆、DOM XSS 等高危行为，但权限申请和敏感 API 调用存在中等风险。建议严格限制数据外传、优化权限申请，并加强用户告知与控制。
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：discord.com, nominatim.openstreetmap.org） |
-| 隐私采集 | ✅ 未检测到 |
+| 隐私采集 | ❌ 检测到（操作 localStorage, 发送地理坐标到第三方） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -54,24 +54,34 @@ title: "地理猜谜助手通用版"
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本通过 GM_xmlhttpRequest 发送地理坐标到 nominatim.openstreetmap.org 进行逆地理编码。  
-> 位置：_getAddress() 函数  
-> 建议：仅允许可信第三方服务，避免发送敏感用户数据。
+> 脚本通过 GM_xmlhttpRequest 向 discord.com 发送地理位置数据（send location to discord），属于用户数据外传到第三方服务器。  
+> 位置：sendToDiscord 功能相关代码（未完整展示，但描述和 @connect 指明）  
+> 建议：仅允许用户主动触发数据发送，明确告知用户数据内容和目的，避免自动上报。建议移除或限制敏感数据外传。
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本支持将地理坐标通过 Discord Webhook 发送到 discord.com，可能导致用户地理位置外泄。  
-> 位置：功能描述和 @connect discord.com  
-> 建议：仅允许用户主动触发，明确告知用户数据外传风险。
+> 脚本通过 GM_xmlhttpRequest 向 nominatim.openstreetmap.org 查询地理位置，涉及用户坐标数据外传。  
+> 位置：_getAddress() 函数  
+> 建议：仅在用户明确操作下发送请求，避免自动批量外传。建议在隐私政策中说明用途。
+
+**⛔ CRITICAL** — 隐私采集  
+> 脚本读取并操作 localStorage（Storage.prototype.setItem Proxy），可能涉及隐私数据采集。  
+> 位置：WORLDGUESSR 分支  
+> 建议：仅操作必要的存储项，避免读取或修改用户敏感数据。
 
 **🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_xmlhttpRequest 权限并实际使用，存在向第三方服务器发送数据的能力。  
-> 位置：元数据 @grant GM_xmlhttpRequest, 代码多处  
-> 建议：最小化权限申请，限制外部通信。
+> 脚本申请 GM_xmlhttpRequest 高权限，并允许任意外部请求（@connect discord.com, nominatim.openstreetmap.org），存在权限滥用风险。  
+> 位置：元数据 @grant/@connect  
+> 建议：仅申请实际需要的权限，限制 connect 域名范围。
 
 **🟠 MEDIUM** — 敏感 API 调用  
-> 脚本使用 Notification API 发送通知，可能被滥用。  
+> 脚本调用 Notification API，可能被滥用发送通知。  
 > 位置：sendNotification() 函数  
-> 建议：确保仅在用户明确授权和交互下使用通知。
+> 建议：仅在用户允许和主动操作下发送通知。
+
+**🟡 LOW** — 一般安全建议  
+> 脚本未检测到远程代码执行、代码混淆、DOM XSS、供应链风险等高危行为。  
+> 位置：全局代码审查  
+> 建议：保持代码透明，避免动态加载和混淆。
 
 ---
 

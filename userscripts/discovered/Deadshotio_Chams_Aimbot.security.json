@@ -5,18 +5,26 @@
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [],
+  "issues": [
+    {
+      "description": "申请了 unsafeWindow 权限，但实际代码未使用 unsafeWindow。该权限可能被滥用，增加攻击面。",
+      "location": "UserScript metadata (@grant unsafeWindow)",
+      "recommendation": "移除 @grant unsafeWindow，除非确实需要与页面脚本交互。",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    }
+  ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
     "detected": false
   },
-  "risk_level": "SAFE",
+  "risk_level": "LOW",
   "script_name": "Deadshot.io Chams & Aimbot",
-  "security_score": 100,
-  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。其主要功能为 WebGL hook、UI 注入和鼠标事件代理，用于游戏辅助。未发现安全风险。",
+  "security_score": 92,
+  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险等高危行为。唯一风险为申请了未使用的 unsafeWindow 权限，建议移除。整体安全性较高，但需注意权限最小化原则。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-08T06:38:51.059705+00:00",
+  "analyzed_at": "2026-06-15T07:19:24.072426+00:00",
   "slug": "Deadshotio_Chams_Aimbot"
 }

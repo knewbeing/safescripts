@@ -7,38 +7,40 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script requests @grant unsafeWindow, which exposes the page's JS context and can be abused if the script is compromised or if supply chain risk is realized.",
-      "location": "@grant unsafeWindow in metadata",
-      "recommendation": "Only request unsafeWindow if absolutely necessary. Review all code paths that interact with unsafeWindow for possible injection or privilege escalation.",
-      "severity": "MEDIUM",
-      "type": "Permission Overgrant"
+      "description": "The script uses @grant unsafeWindow, which exposes the userscript context to the page and vice versa. This increases the risk of privilege escalation or data leakage if the page is malicious.",
+      "location": "Metadata (@grant unsafeWindow)",
+      "recommendation": "Avoid using unsafeWindow unless strictly necessary. Consider safer alternatives or restrict usage.",
+      "severity": "HIGH",
+      "type": "Privilege Escalation"
     },
     {
-      "description": "The script loads Babylon.js from jsdelivr CDN via @require. While jsdelivr is a reputable CDN, the version is pinned but not by hash, so supply chain risk exists if the CDN is compromised or the package is hijacked.",
-      "location": "@require https://cdn.jsdelivr.net/npm/babylonjs@7.15.0/babylon.min.js",
-      "recommendation": "Use SRI hash or a trusted, immutable CDN. Monitor for upstream package hijacking.",
+      "description": "The script loads Babylon.js from jsdelivr CDN via @require. While jsdelivr is a reputable CDN, the version is fixed (7.15.0), reducing supply chain risk but not eliminating it.",
+      "location": "Metadata (@require https://cdn.jsdelivr.net/npm/babylonjs@7.15.0/babylon.min.js)",
+      "recommendation": "Always use official, version-pinned sources for third-party libraries. Monitor for vulnerabilities in dependencies.",
       "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
+      "type": "Supply Chain"
     },
     {
-      "description": "The script stores and loads settings from localStorage. While this is not a privacy leak by itself, if combined with network requests or exfiltration, it could be abused. No such exfiltration is present here.",
-      "location": "localStorage usage (SETTINGS_KEY)",
-      "recommendation": "Do not store sensitive information in localStorage. No privacy issue detected in current usage.",
-      "severity": "LOW",
-      "type": "LocalStorage Usage"
+      "description": "The script reads and writes settings to localStorage, which is a common practice for storing user preferences. No sensitive data is stored, but localStorage is accessible by the page.",
+      "location": "localStorage access (SETTINGS_KEY)",
+      "recommendation": "Do not store sensitive information in localStorage. Consider using GM_setValue/GM_getValue for more isolation.",
+      "severity": "MEDIUM",
+      "type": "Privacy Collection"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [],
-    "detected": false
+    "details": [
+      "Reads and writes settings to localStorage"
+    ],
+    "detected": true
   },
-  "risk_level": "LOW",
+  "risk_level": "MEDIUM",
   "script_name": "Shell Shockers Aimbot + ESP",
-  "security_score": 89,
-  "summary": "No critical or high-risk security issues detected. The script does not transmit data to third-party servers, does not collect sensitive user data, and does not use eval or dynamic code execution. It does request unsafeWindow (medium risk) and loads a third-party library via CDN (medium supply chain risk). No obfuscation, DOM XSS, or privacy collection detected. Overall, the script is low risk for end-users, but supply chain and privilege risks should be monitored.",
-  "supply_chain_risk": true,
+  "security_score": 77,
+  "summary": "The script does not transmit data externally and does not collect sensitive user information. It uses unsafeWindow, which is a high-risk permission, and loads a third-party library from a reputable CDN with a fixed version. No code obfuscation or DOM XSS risks are detected. The main risks are privilege escalation and supply chain vulnerabilities.",
+  "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-08T06:47:10.532754+00:00",
+  "analyzed_at": "2026-06-15T07:27:00.047255+00:00",
   "slug": "Shell_Shockers_Aimbot_ESP"
 }

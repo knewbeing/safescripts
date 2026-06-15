@@ -9,47 +9,82 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "Script uses GM.xmlHttpRequest to connect to weav3r.dev, which is a third-party server. This may transmit user interaction data or page context, depending on request payloads.",
-      "location": "GM.xmlHttpRequest usage (enabled by @grant and @connect)",
-      "recommendation": "Review all transmitted data to ensure no sensitive information (user credentials, cookies, personal data) is sent. Limit data to only what is necessary for functionality.",
+      "description": "脚本通过 GM.xmlHttpRequest 访问 weav3r.dev，可能传递用户行为或页面数据。",
+      "location": "GM.xmlHttpRequest 调用（@connect weav3r.dev）",
+      "recommendation": "明确检查请求内容，确保不包含敏感用户数据、Cookie、页面内容。建议在文档中声明用途。",
       "severity": "CRITICAL",
-      "type": "Data Exfiltration"
+      "type": "数据外传"
     },
     {
-      "description": "Script reads and writes to localStorage for settings and caching, but does not appear to transmit this data externally. No evidence of document.cookie, sessionStorage, or IndexedDB access for sensitive data.",
-      "location": "localStorage usage in GM_getValue/GM_setValue compatibility layer",
-      "recommendation": "Ensure no sensitive user data is stored in localStorage. Avoid storing authentication tokens or personal information.",
+      "description": "脚本使用 localStorage 存储和读取设置数据，部分 GM_*Value 兼容实现涉及 localStorage。",
+      "location": "GM_getValue, GM_setValue, GM_deleteValue, GM_listValues 兼容实现",
+      "recommendation": "确保存储内容不包含敏感信息（如密码、token）。当前仅存储脚本设置，风险较低。",
       "severity": "MEDIUM",
-      "type": "Privacy Collection"
+      "type": "隐私采集"
     },
     {
-      "description": "Script requests more @grant permissions than it uses (both legacy and modern GM APIs).",
-      "location": "@grant block in metadata",
-      "recommendation": "Remove unused permissions to reduce attack surface and follow the principle of least privilege.",
+      "description": "脚本申请了 GM.xmlHttpRequest、GM_setValue 等高权限，但实际代码未使用 GM_download、GM_openInTab。",
+      "location": "@grant 元数据",
+      "recommendation": "建议仅申请实际使用的权限，减少权限滥用风险。",
       "severity": "MEDIUM",
-      "type": "Permission Overuse"
+      "type": "权限滥用"
     },
     {
-      "description": "@require is not used, but @downloadURL and @updateURL point to greasyfork CDN, which is generally trusted. No supply chain risk detected.",
-      "location": "Metadata block",
-      "recommendation": "If adding @require in the future, pin to official, versioned CDN URLs.",
+      "description": "未发现远程代码执行相关风险（未使用 eval、new Function、动态 script 标签等）。",
+      "location": "全局代码审查",
+      "recommendation": "保持当前实现，避免动态执行外部代码。",
       "severity": "LOW",
-      "type": "Supply Chain"
+      "type": "远程代码执行"
+    },
+    {
+      "description": "未发现代码混淆、压缩或 base64/unicode 混淆特征。",
+      "location": "全局代码审查",
+      "recommendation": "保持代码可读性，便于社区审查。",
+      "severity": "LOW",
+      "type": "代码混淆"
+    },
+    {
+      "description": "未发现 DOM XSS 或注入风险，未直接插入用户输入到 innerHTML。",
+      "location": "全局代码审查",
+      "recommendation": "继续避免直接插入用户输入到 DOM。",
+      "severity": "LOW",
+      "type": "DOM XSS"
+    },
+    {
+      "description": "未发现敏感 API 调用（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API）。",
+      "location": "全局代码审查",
+      "recommendation": "保持当前实现，避免调用敏感 API。",
+      "severity": "LOW",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "未使用 @require 加载第三方库，无供应链风险。",
+      "location": "元数据 @require",
+      "recommendation": "如需加载第三方库，建议使用官方 CDN 并固定版本。",
+      "severity": "LOW",
+      "type": "供应链风险"
+    },
+    {
+      "description": "未发现 ClickJacking 或 iframe 风险。",
+      "location": "全局代码审查",
+      "recommendation": "继续避免创建隐藏 iframe 或修改 frame 保护策略。",
+      "severity": "LOW",
+      "type": "ClickJacking/iframe"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "localStorage read/write for settings"
+      "localStorage 用于存储脚本设置"
     ],
-    "detected": false
+    "detected": true
   },
-  "risk_level": "LOW",
+  "risk_level": "HIGH",
   "script_name": "Bazaars in Item Market Powered by TornW3B",
-  "security_score": 64,
-  "summary": "The script transmits data to a third-party server (weav3r.dev) using GM.xmlHttpRequest, which is a critical risk if sensitive data is sent. No evidence of credential or keylogging behavior. No code obfuscation or XSS risk detected. Some permission overuse and localStorage usage, but no major privacy collection. Overall, the script is relatively safe for typical use, but users should be aware of the external data transmission.",
+  "security_score": 67,
+  "summary": "脚本主要风险为通过 GM.xmlHttpRequest 与 weav3r.dev 通信，存在数据外传风险。未发现远程代码执行、混淆、DOM XSS、敏感 API 调用等高危问题。localStorage 用于存储设置，风险较低。建议明确请求内容，减少权限申请。整体安全性中等偏高，但因数据外传扣分，安全评分为 67。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-08T06:36:47.325071+00:00",
+  "analyzed_at": "2026-06-15T07:16:24.904523+00:00",
   "slug": "Bazaars_in_Item_Market_Powered_by_TornW3B"
 }

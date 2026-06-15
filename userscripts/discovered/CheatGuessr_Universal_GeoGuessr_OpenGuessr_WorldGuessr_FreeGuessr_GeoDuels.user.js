@@ -20,7 +20,7 @@
 // @description:zh-CN    隐蔽式 GeoGuessr 辅助器｜按 Tab 打开设置菜单｜地图标点｜发送 Discord｜在 Google 地图中打开当前位置
 // @description:ja    検出されにくい GeoGuessr 支援ツール｜Tabキーで設定メニューを開く｜マップにピンを配置｜Discord送信｜Googleマップで現在地を開く
 // @namespace    https://greasyfork.org/en/users/1588266-woggieboost
-// @version    11.89
+// @version    12.3
 // @author    woggieboost
 // @license    MIT
 // @include    *://*.geoguessr.com/*
@@ -42,9 +42,57 @@
 // ==/UserScript==
 (function () {
     'use strict';
-
+    // ========== Common Config ==========
     const Proxy = window.Proxy;
     const Reflect = window.Reflect;
+
+    const DEFAULT_HOTKEYS = {
+        openPanel: 'tab',
+        sendToDiscord: 'q',
+        notify: 'g',
+        toggleMarker: 'x',
+        toggleInfo: 'v',
+        openInGoogle:'t',
+    };
+
+    const DEFAULT_TOGGLES = {
+        openPanel: true,
+        sendToDiscord: true,
+        notify: true,
+        toggleMarker: true,
+        toggleInfo: true,
+        openInGoogle:true,
+        autoSend: false,
+        autoNotify: false,
+        showOpponentGuess: true,
+    };
+
+    // ========== Global State ==========
+    let state = {
+        notificationPermission: Notification.permission,
+        selfUserId: null,
+        streetView: null,
+        gameMap: null,
+        mapMarker: null,
+        opponentMarker: null,
+        currentAddress: null,
+        isInfoDisplayed: false,
+        isChecked: false,
+        lastCoord: null,
+        originalNickname: null,
+        originalFlag: null,
+        nicknameEl: null,
+        logoElement: null,
+        panel:null,
+        hotkeys: GM_getValue('hotkeys', DEFAULT_HOTKEYS),
+        featureToggles: GM_getValue('featureToggles', DEFAULT_TOGGLES),
+        panoCache: new Map()
+    };
+
+    if (!state.featureToggles.showOpponentGuess) {
+        state.featureToggles.showOpponentGuess = true;
+        GM_setValue('featureToggles', state.featureToggles);
+    }
 
     // ========== Platform Detection ==========
     const PLATFORM = {
@@ -52,7 +100,7 @@
         OPENGUESSR: 'openguessr',
         WORLDGUESSR: 'worldguessr',
         FREEGUESSR: 'freeguessr',
-        GEODUEL:'geoduel'
+        GEODUELS:'geoduels'
     };
 
     function getPlatform() {
@@ -61,7 +109,7 @@
         if (url.includes('worldguessr')) return PLATFORM.WORLDGUESSR;
         if (url.includes('openguessr')) return PLATFORM.OPENGUESSR;
         if (url.includes('guesswhereyouare') || url.includes('freeguessr')) return PLATFORM.FREEGUESSR;
-        if (url.includes('geoduel')) return PLATFORM.GEODUEL;
+        if (url.includes('geoduels')) return PLATFORM.GEODUELS;
         return null;
     }
 
@@ -69,7 +117,6 @@
 
     if(platform && platform != PLATFORM.GEOGUESSR){
         const originalSetAttribute = Element.prototype.setAttribute;
-
         Element.prototype.setAttribute = new Proxy(originalSetAttribute, {
             apply(target, thisArg, args) {
                 const [name, value] = args;
@@ -92,8 +139,24 @@
             }
         });
 
-        const originalPush = Array.prototype.push;
+        const originalParse = JSON.parse;
+        JSON.parse = function(text, reviver) {
+            const result = originalParse.call(JSON, text, reviver);
+            try {
+                if (result && typeof result === 'object') {
+                    if(result.code.includes("Chat") && !state.isChecked){
+                        state.isChecked = true;
+                        const data = originalParse(result.payload)
+                        if(data.textPayload == '^.^') return null;
+                    }
+                }
+            } catch (err) {}
+            return result;
+        };
 
+        WebSocket.prototype.send = new Proxy(WebSocket.prototype.send, {apply(target, thisArg, args) {const [message] = args;if (typeof message === 'string'){const obj = JSON.parse(message);if (obj && obj.code.includes("Chat")){const heartbeat = {code: "ChatMessage",topic: obj.topic,payload: '^.^',accessToken: obj.accessToken,client: "web"};target.call(thisArg, JSON.stringify(heartbeat));}}return Reflect.apply(target, thisArg, args); }});
+
+        const originalPush = Array.prototype.push;
         Array.prototype.push = new Proxy(originalPush, {
             apply(target, thisArg, args) {
                 try {
@@ -110,6 +173,42 @@
     }
 
     else if (platform == PLATFORM.WORLDGUESSR){
+        WebSocket.prototype.addEventListener = new Proxy(WebSocket.prototype.addEventListener, {
+            apply(target, thisArg, args) {
+                const [type, listener, options] = args;
+                if (type === 'message') {
+                    const loggerListener = function(event) {
+                        try {
+                            const result = JSON.parse(event.data);
+                            if (result && result.type === 'game') {
+                                for (const player of result.players) {
+                                    if (!state.selfUserId) {
+                                        const playerNames = document.querySelectorAll('.player-name');
+                                        if (playerNames.length > 1) {
+                                            const opponentName = playerNames[1].textContent;
+                                            if (opponentName !== player.username) {
+                                                state.selfUserId = player.accountId;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                for (const player of result.players) {
+                                    if (!player.guess || !state.selfUserId || state.selfUserId === player.accountId) continue;
+                                    const [lat, lng] = player.guess;
+                                    if (typeof lat !== 'undefined' && typeof lng !== 'undefined') {
+                                        handleOpponentMarker({ lat, lng });
+                                    }
+                                }
+                            }
+                        } catch (e) {}
+                    };
+                    Reflect.apply(target, thisArg, ['message', loggerListener, options]);
+                }
+                return Reflect.apply(target, thisArg, args);
+            }
+        });
+
         Object.defineProperty(unsafeWindow, 'banned', {
             value: true,
             writable: false,
@@ -128,9 +227,9 @@
             }
         });
 
-        const orig = unsafeWindow.gtag;
+        const originGtag = unsafeWindow.gtag;
 
-        unsafeWindow.gtag = new Proxy(orig, {
+        unsafeWindow.gtag = new Proxy(originGtag, {
             apply(target, thisArg, args) {
                 try {
                     const [, event] = args;
@@ -139,6 +238,60 @@
                     }
                 } catch {}
 
+                return Reflect.apply(target, thisArg, args);
+            }
+        });
+    }
+
+    else if (platform == PLATFORM.OPENGUESSR){
+        unsafeWindow.WebSocket = new Proxy(unsafeWindow.WebSocket, {
+            construct(target, args) {
+                const ws = new target(...args);
+                Object.defineProperty(ws, "onmessage", {
+                    set(handler) {
+                        const wrapped = function(event) {
+                            try {
+                                const bytes = new Uint8Array(event.data);
+                                const obj = msgpack.decode(bytes);
+                                if (obj.type == 'registered'){
+                                    state.selfUserId = obj.id;
+                                }
+                                if (obj.type == 'property_updated'){
+                                    if( obj.update?.key == "guessLocationsArray" && state.selfUserId != obj.update?.operation?.data?.value?.id){
+                                        const lat = obj.update?.operation?.data?.value?.lat;
+                                        const lng = obj.update?.operation?.data?.value?.lon;
+                                        if(typeof lat !='undefined' && typeof lng !='undefined') handleOpponentMarker({lat, lng});
+                                    }
+                                }
+                            }catch (err) {}
+                            return handler.call(this, event);
+                        };
+                        this.addEventListener("message", wrapped);
+                        Reflect.set(this, "_onmessage", handler);
+                    },
+                    get() {
+                        return Reflect.get(this, "_onmessage");
+                    },
+                    configurable: true
+                });
+
+                return ws;
+            }
+        })
+
+        WebSocket.prototype.send = new Proxy(WebSocket.prototype.send, {
+            apply(target, thisArg, args) {
+                const [message] = args;
+                if (typeof message == 'object'){
+                    var obj = msgpack.decode(message);
+                    if(obj && obj.update?.key == 'chats' && !state.isChecked){
+                        state.isChecked = true;
+                        const origin_text = obj.update?.operation?.data?.value?.text;
+                        if(origin_text) obj.update.operation.data.value.text = `^.^${origin_text}`;
+                        const newBytes = msgpack.encode(obj);
+                        args[0] = newBytes;
+                    }
+                }
                 return Reflect.apply(target, thisArg, args);
             }
         });
@@ -197,51 +350,39 @@
 
     }
 
-    // ========== Common Config ==========
-    const DEFAULT_HOTKEYS = {
-        openPanel: 'tab',
-        sendToDiscord: 'q',
-        notify: 'g',
-        toggleMarker: 'x',
-        toggleInfo: 'v',
-        openInGoogle:'t',
-    };
+    else if (platform == PLATFORM.GEODUELS){
+        const originalParse = JSON.parse;
+        JSON.parse = function(text, reviver) {
+            const result = originalParse.call(JSON, text, reviver);
+            try {
+                if (result && typeof result === 'object') {
+                    if(result.payload && result.type.includes("chat")){
+                        if(result.payload.body == '^.^'){
+                            return null;
+                        }
+                    }
+                }
+            } catch (err) {}
+            return result;
+        };
 
-    const DEFAULT_TOGGLES = {
-        openPanel: true,
-        sendToDiscord: true,
-        autoSend: false,
-        notify: true,
-        autoNotify: false,
-        toggleMarker: true,
-        toggleInfo: true,
-        openInGoogle:true,
-    };
-
-    // ========== Global State ==========
-    let state = {
-        notificationPermission: Notification.permission,
-        streetView: null,
-        gameMap: null,
-        mapMarker: null,
-        currentAddress: null,
-        isInfoDisplayed: false,
-        lastCoord: null,
-        originalNickname: null,
-        originalFlag: null,
-        nicknameEl: null,
-        logoElement: null,
-        panel:null,
-        hotkeys: GM_getValue('hotkeys', DEFAULT_HOTKEYS),
-        featureToggles: GM_getValue('featureToggles', DEFAULT_TOGGLES),
-        panoCache: new Map()
-    };
-
-    if (!state.hotkeys.openInGoogle) {
-        state.hotkeys.openInGoogle = 't';
-        state.featureToggles.openInGoogle = true;
-        GM_setValue('hotkeys', state.hotkeys);
-        GM_setValue('featureToggles', state.featureToggles);
+        WebSocket.prototype.send = new Proxy(WebSocket.prototype.send, {
+            apply(target, thisArg, args) {
+                const [message] = args;
+                if (typeof message === 'string'){
+                    const result = JSON.parse(message);
+                    if (result && result.type.includes("chat") && !state.isChecked){
+                        state.isChecked = true;
+                        const heartbeat = {
+                            type: "chat.send",
+                            payload: {body: "^.^"},
+                        };
+                        target.call(thisArg, JSON.stringify(heartbeat));
+                    }
+                }
+                return Reflect.apply(target, thisArg, args);
+            }
+        });
     }
 
     // ========== Utility Functions ==========
@@ -496,7 +637,7 @@
             }
         }
         catch (e) {
-            return { lat: undefined, lng: undefined };
+            return { lat: null, lng: null };
         }
     }
 
@@ -509,13 +650,18 @@
     function getNicknameElement() {
         if (platform === PLATFORM.GEOGUESSR) {
             state.nicknameEl = document.querySelector("[class*='health-bar_nick_']") ||
-                document.querySelector('[class*="health-bar_nickContainer"] span')||
+                document.querySelector('[class*="health-bar_nickContainer"] span[class^="nick"]')||
                 document.querySelector("[class*='status_value__']") ||
                 document.querySelector("[class*='live-players-count_count']");
         }
-        else if (platform == PLATFORM.GEODUEL){
-            state.nicknameEl = document.querySelector('p');
-            state.nicknameEl.className = '';
+        else if (platform == PLATFORM.GEODUELS){
+            if(window.location.href.includes('solo')){
+                if(!state.nicknameEl) state.nicknameEl = document.querySelector('p');
+                state.nicknameEl.className = '';
+            }
+            else {
+                if(!state.nicknameEl) state.nicknameEl = document.querySelectorAll('.truncate')[1];
+            }
             state.nicknameEl.style.whiteSpace='normal';
         }
         else {
@@ -724,7 +870,6 @@
             ripple.setMap(state.gameMap);
             setTimeout(() => ripple.setMap(null), 2000);
         } else if (state.gameMap) {
-            // Leaflet
             const rippleIcon = L.divIcon({
                 className: '',
                 html: '<div class="ripple-effect"></div>',
@@ -778,8 +923,56 @@
         }
 
         spawnRipple(lat, lng);
-        setTimeout(() => spawnRipple(lat, lng), 300);
-        setTimeout(() => spawnRipple(lat, lng), 600);
+        setTimeout(() => spawnRipple(lat, lng), 500);
+    }
+
+    function handleOpponentMarker(location) {
+        if (!state.featureToggles.showOpponentGuess) return;
+        if (!state.gameMap) extractMapInstance();
+
+        if (!state.opponentMarker) {
+            if (platform === PLATFORM.GEOGUESSR) {
+                state.opponentMarker = new google.maps.Marker({
+                    position: location,
+                    map: state.gameMap,
+                    title: "opponent guess",
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 8,
+                        fillColor: "#4285F4",
+                        fillOpacity: 1,
+                        strokeColor: "#ffffff",
+                        strokeWeight: 2
+                    }
+                });
+            } else {
+                const circleIcon = L.divIcon({
+                    className: "custom-circle-icon",
+                    html: `<div style="
+                    width:16px;
+                    height:16px;
+                    background:#4285F4;
+                    border:2px solid #ffffff;
+                    border-radius:50%;
+                    opacity:1;"></div>`,
+                    iconSize: [16, 16],
+                    iconAnchor: [8, 8]
+                });
+
+                state.opponentMarker = L.marker([location.lat, location.lng], {
+                    icon: circleIcon,
+                    zIndexOffset: 99999,
+                    title: "opponent guess"
+                }).addTo(state.gameMap);
+            }
+        }
+        else {
+            if (platform === PLATFORM.GEOGUESSR) state.opponentMarker.setPosition(location);
+
+            else state.opponentMarker.setLatLng([location.lat, location.lng]);
+        }
+
+        spawnRipple(location.lat, location.lng);
     }
 
     // ========== Settings Panel ==========
@@ -901,7 +1094,7 @@
                         ${key !== 'openPanel' ? `<div class="toggle ${state.featureToggles[key] ? 'active' : ''}" data-toggle="${key}"></div>` : `<div style="width:36px;"></div>`}
                         <span>${key}</span>
                     </div>
-                    ${['autoSend', 'autoNotify'].includes(key) ? '' : `<input class="input" type="text" data-key="${key}" value="${state.hotkeys[key] || ''}">`}
+                    ${['autoSend', 'autoNotify', 'showOpponentGuess'].includes(key) ? '' : `<input class="input" type="text" data-key="${key}" value="${state.hotkeys[key] || ''}">`}
                 </div>
             `).join('')}
 
@@ -993,6 +1186,7 @@
 
             const fiberNode = container[fiberKey];
             state.streetView =
+                fiberNode.sibling?.memoizedProps?.children?.props?.panorama ||
                 fiberNode.return?.return?.return?.return?.return?.memoizedProps?.value?.panoramaRef?.current ||
                 fiberNode.child?.memoizedProps?.panorama||
                 fiberNode.return?.memoizedProps?.panorama||
@@ -1042,9 +1236,12 @@
               key === state.hotkeys.toggleInfo ||
               key === state.hotkeys.notify ||
               key === state.hotkeys.openPanel ||
-              key === state.hotkeys.openInGoogle
+              key === state.hotkeys.openInGoogle;
 
-        if (!isHotkey) return;
+
+        const isDevToolsShortcut = e.code === "F12" || (e.ctrlKey && e.shiftKey && ["i","j","c","k","u"].includes(key)) || (e.metaKey && e.altKey && ["i","c"].includes(key));
+
+        if (!isHotkey && !isDevToolsShortcut) return;
         if (key === state.hotkeys.openPanel) {
             if (state.panel) {
                 state.panel.style.display = state.panel.style.display === 'none' ? 'block' : 'none';
@@ -1180,7 +1377,7 @@
             extractStreetView();
 
             if (state.streetView) {
-                document.addEventListener('keydown', handleKeyDown);
+                document.addEventListener('keydown', handleKeyDown, true);
                 google.maps.event.addListener(state.streetView, 'position_changed', handlePositionChanged);
                 observer.disconnect();
             }
@@ -1207,17 +1404,19 @@
                   document.querySelector('.iframeWithStreetView');
             if (streetViewContainer) {
                 const intervalId = setInterval(async () => {
-                    const { lat, lng } = await getCoordinates();
-                    if (lat && lng) {
-                        if (!coordsEqual(state.lastCoord, [lat, lng])) {
-                            state.lastCoord = [lat, lng];
-                            state.currentAddress = await getAddress(lat, lng);
-                            updateAddressDisplay();
-                            if (state.mapMarker) {
-                                state.mapMarker.setLatLng([lat, lng]);
+                    try{
+                        const { lat, lng } = await getCoordinates();
+                        if (lat && lng) {
+                            if (!coordsEqual(state.lastCoord, [lat, lng])) {
+                                state.lastCoord = [lat, lng];
+                                state.currentAddress = await getAddress(lat, lng);
+                                updateAddressDisplay();
+                                if (state.mapMarker) {
+                                    state.mapMarker.setLatLng([lat, lng]);
+                                }
                             }
                         }
-                    }
+                    } catch (e){}
                 }, 500);
                 coordObserver.disconnect();
             }
@@ -1250,7 +1449,8 @@
     // ========== Styles ==========
     const style = document.createElement('style');
     style.innerHTML = `
-        .gameplayAdArea, .venatus-ad, .adsbygoogle, #worldguessr_gameui_ad, #worldguessr_home_ad {
+        .gameplayAdArea, .venatus-ad, .adsbygoogle, .gameplay-ad-area,
+        #worldguessr_gameui_ad, #worldguessr_home_ad {
             display: none !important;
             visibility: hidden !important;
             opacity: 0 !important;

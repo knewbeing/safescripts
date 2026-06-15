@@ -10,18 +10,18 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script uses @require to load three external scripts from update.greasyfork.org. These URLs are not version-pinned with a hash and could be updated by the author at any time, introducing supply chain risk.",
-      "location": "@require metadata",
-      "recommendation": "Pin @require URLs to a specific version or hash, and only use trusted sources.",
+      "description": "@require 加载的第三方库（LegacyGMjs.js, CommLinkjs.js, UniversalBoardDrawerjs.js）均来自 update.greasyfork.org，未固定版本哈希，存在供应链风险。",
+      "location": "UserScript metadata (@require)",
+      "recommendation": "建议使用官方 CDN 并固定版本哈希，避免供应链污染。",
       "severity": "MEDIUM",
       "type": "Supply Chain Risk"
     },
     {
-      "description": "The script requests a large set of GM_* permissions, including GM_openInTab, GM_setClipboard, GM_notification, and unsafeWindow, some of which are not clearly used in the visible code.",
-      "location": "@grant metadata",
-      "recommendation": "Only request the minimum permissions required for script functionality.",
+      "description": "脚本申请了 GM_openInTab、GM_setClipboard、GM_notification、unsafeWindow 等高权限，但代码中未见全部实际使用，存在权限滥用风险。",
+      "location": "UserScript metadata (@grant)",
+      "recommendation": "仅申请实际需要的权限，移除未使用的高权限。",
       "severity": "MEDIUM",
-      "type": "Permission Overprovision"
+      "type": "Permission Abuse"
     }
   ],
   "obfuscation_detected": false,
@@ -32,9 +32,9 @@
   "risk_level": "MEDIUM",
   "script_name": "\u001f [#1 Chess Assistant] A.C.A.S (Advanced Chess Assistance System)",
   "security_score": 84,
-  "summary": "No critical or high-risk issues were found in the visible code. The script does not appear to transmit user data or collect privacy-sensitive information directly. However, it loads three external scripts via @require from GreasyFork without version pinning, introducing a supply chain risk. It also requests more permissions than are clearly needed. No code obfuscation, DOM XSS, or direct data exfiltration was detected in the provided code.",
+  "summary": "脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要风险为供应链风险（@require 未固定版本哈希）和权限滥用（申请高权限但未全部使用）。建议加强供应链安全和权限最小化。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-08T06:35:19.070700+00:00",
+  "analyzed_at": "2026-06-15T07:15:15.306893+00:00",
   "slug": "1_Chess_Assistant_ACAS_Advanced_Chess_Assistance_System"
 }

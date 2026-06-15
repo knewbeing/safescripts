@@ -1,62 +1,22 @@
 {
-  "approved": false,
+  "approved": true,
   "data_transmission": {
-    "destinations": [
-      "https://tenzaa.com/api/download"
-    ],
-    "detected": true
+    "destinations": [],
+    "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [
-    {
-      "description": "脚本通过 fetch 向 https://tenzaa.com/api/download 发送当前页面的视频 URL，可能包含用户行为数据。",
-      "location": "主逻辑函数（fetch 调用）",
-      "recommendation": "仅发送必要的视频标识符，避免发送多余的用户数据。",
-      "severity": "CRITICAL",
-      "type": "数据外传"
-    },
-    {
-      "description": "脚本会收集当前页面的视频 URL 并发送到第三方服务器（tenzaa.com），属于隐私采集。",
-      "location": "主逻辑函数（fetch 调用）",
-      "recommendation": "应明确告知用户数据用途，并最小化采集范围。",
-      "severity": "CRITICAL",
-      "type": "隐私采集"
-    },
-    {
-      "description": "未发现代码混淆，但脚本通过 fetch 动态请求第三方接口，存在远程代码执行的间接风险（如接口返回 JS 并 eval）。",
-      "location": "fetch 响应处理",
-      "recommendation": "确保不对接口返回内容进行 eval 或 new Function 执行。",
-      "severity": "HIGH",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "脚本未使用 @grant，但通过 fetch 访问第三方 API，若未来升级为 GM_xmlhttpRequest 等高权限接口，需关注权限滥用。",
-      "location": "元数据 @grant",
-      "recommendation": "仅申请必要权限，避免未来升级时滥用。",
-      "severity": "MEDIUM",
-      "type": "权限滥用"
-    },
-    {
-      "description": "@require 未使用，供应链风险较低，但如未来引入第三方库需固定版本和来源。",
-      "location": "元数据 @require",
-      "recommendation": "如需引入第三方库，建议使用官方 CDN 并锁定版本。",
-      "severity": "LOW",
-      "type": "供应链风险"
-    }
-  ],
+  "issues": [],
   "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [
-      "收集当前页面的视频 URL 并发送到第三方服务器"
-    ],
-    "detected": true
+    "details": [],
+    "detected": false
   },
-  "risk_level": "CRITICAL",
+  "risk_level": "SAFE",
   "script_name": "🔥🔥🔥All-in-One Video Downloader (YouTube, Twitter, TikTok, Instagram, Facebook) - Tenzaa",
-  "security_score": 50,
-  "summary": "该脚本存在严重的数据外传和隐私采集风险，会将当前页面的视频 URL 发送到第三方服务器（tenzaa.com），可能涉及用户隐私。未发现代码混淆和 DOM XSS 问题，远程代码执行风险较低，但需关注接口返回内容的处理。建议仅在信任该服务的前提下使用。",
+  "security_score": 100,
+  "summary": "该脚本仅包含元数据和注释，无任何实际功能代码。未检测到任何数据外传、隐私采集、远程代码执行、混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。安全评分为100分。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-08T06:36:27.823242+00:00",
+  "analyzed_at": "2026-06-15T07:16:02.006846+00:00",
   "slug": "All-in-One_Video_Downloader_YouTube_Twitter_TikTok_Instagram_Facebook_-_Tenzaa"
 }

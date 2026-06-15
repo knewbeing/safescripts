@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Torn City - Merit Tracker
 // @namespace    Merit Tracker
-// @version      2.5
+// @version      2.6
 // @description  See your easiest missing honors first, learn how to get them, browse by category
 // @author       _Solenya_ [4053619]
 // @match        https://www.torn.com/*
@@ -14,7 +14,7 @@
 
 (function () {
   'use strict';
-  const VERSION = '2.5';
+  const VERSION = '2.6';
   const GF_URL  = 'https://greasyfork.org/en/scripts/579300-torn-city-merit-tracker';
   const GF_API  = 'https://greasyfork.org/scripts/579300.json';
 
@@ -909,11 +909,10 @@ function injectStyles() {
       z-index:2147483647;background:#0c0c14;border-left:1px solid #181825;
       display:flex;flex-direction:column;
       font-family:'Outfit',system-ui,sans-serif;color:#e2e8f0;
-      box-shadow:-6px 0 36px rgba(0,0,0,.9);
-      transform:translateX(100%);transition:transform .32s cubic-bezier(.4,0,.2,1);
+transform:translateX(100%);transition:transform .32s cubic-bezier(.4,0,.2,1);
       isolation:isolate;overscroll-behavior:contain;
     }
-    #tht-panel.open { transform:translateX(0); }
+#tht-panel.open { transform:translateX(0);box-shadow:-6px 0 36px rgba(0,0,0,.9); }
 
     #tht-hd {
       background:#09090f;border-bottom:1px solid #131320;

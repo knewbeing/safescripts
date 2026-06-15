@@ -35,9 +35,9 @@ title: "Songsterr高级功能解锁"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-08
+**风险等级**：🟡 LOW　　**安全评分**：81/100　　**分析时间**：2026-06-15
 
-> 该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。仅存在未使用的高权限声明（GM_xmlhttpRequest、unsafeWindow），建议移除以降低潜在风险。@require 的第三方库来源可信且已锁定版本。整体安全风险较低。
+> The script does not transmit user data externally, does not collect sensitive information, and does not execute remote code or use obfuscation. Supply chain risk is mitigated by fixed library version. Permissions are slightly overgranted but not abused. Overall, the script is safe with minor improvements recommended.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -50,20 +50,25 @@ title: "Songsterr高级功能解锁"
 
 ### 发现的问题
 
-**🟠 MEDIUM** — 权限滥用  
-> @grant 申请了 GM_xmlhttpRequest 权限，但脚本本体未发现实际使用（仅元数据声明）。  
-> 位置：@grant 元数据  
-> 建议：移除未使用的高权限声明，减少权限滥用风险。
+**🟠 MEDIUM** — Supply Chain Risk  
+> Script requests @require for alphaTab library from jsdelivr CDN. The CDN is reputable, but version is fixed to 1.8.1, reducing supply chain risk.  
+> 位置：@require https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.1/dist/alphaTab.min.js  
+> 建议：Monitor for upstream vulnerabilities in alphaTab. Prefer integrity hashes if possible.
 
-**🟠 MEDIUM** — 权限滥用  
-> @grant 申请了 unsafeWindow 权限，但脚本本体未发现实际使用（仅元数据声明）。  
-> 位置：@grant 元数据  
-> 建议：移除未使用的高权限声明，减少权限滥用风险。
+**🟠 MEDIUM** — Permission Overgrant  
+> Script requests GM_xmlhttpRequest and @connect permissions for two CloudFront endpoints, but no actual network requests are present in the visible code.  
+> 位置：Metadata block (@grant GM_xmlhttpRequest, @connect ...)  
+> 建议：Remove unused permissions if not required. Monitor for future code changes that may use these endpoints.
 
-**🟡 LOW** — 供应链风险  
-> @require 加载了第三方库 alphaTab，来源为 jsdelivr 官方 CDN，版本已锁定。  
-> 位置：@require 元数据  
-> 建议：已锁定版本，供应链风险较低，但建议定期检查依赖安全性。
+**🟠 MEDIUM** — Permission Overgrant  
+> Script uses unsafeWindow grant, which can expose privileged script context to the page. No evidence of abuse in current code.  
+> 位置：@grant unsafeWindow  
+> 建议：Avoid unsafeWindow unless strictly necessary. Monitor for future code changes.
+
+**🟡 LOW** — Privacy Collection  
+> Script uses localStorage to store logging and YouTube audio-only mode preferences. No sensitive data is stored.  
+> 位置：window.toggleSgdLogging, window.toggleYtAudioOnly  
+> 建议：Ensure only non-sensitive preferences are stored.
 
 ---
 

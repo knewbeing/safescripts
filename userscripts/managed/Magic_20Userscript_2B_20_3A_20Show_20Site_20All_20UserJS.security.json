@@ -13,32 +13,32 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本未提供完整代码，无法分析实际数据外传、隐私采集、远程代码执行等实现细节。仅根据元数据分析。",
-      "location": "N/A",
-      "recommendation": "建议补充完整代码以进行更全面的安全审查。",
-      "severity": "LOW",
-      "type": "审查范围受限"
+      "description": "脚本未提供完整代码，仅元数据。无法检测实际数据外传、隐私采集、远程代码执行等关键风险。",
+      "location": "全局",
+      "recommendation": "请补充完整代码以便进行全面安全审查。仅凭元数据无法确认脚本行为。",
+      "severity": "CRITICAL",
+      "type": "代码缺失"
     },
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限，并声明 @connect 多个第三方域名，理论上具备向这些域名发起网络请求的能力。",
+      "description": "元数据申请了 GM_xmlhttpRequest 权限，并声明 @connect 多个第三方域名，存在潜在数据外传能力。",
       "location": "元数据 @grant/@connect",
-      "recommendation": "确认实际代码中网络请求内容，确保不外传用户敏感信息。",
+      "recommendation": "审查实际代码中 GM_xmlhttpRequest 的使用，确保不外传敏感用户数据。",
       "severity": "MEDIUM",
-      "type": "潜在数据外传风险"
+      "type": "权限滥用/数据外传潜力"
     },
     {
-      "description": "脚本申请了 GM_openInTab 权限，但元数据未见明显滥用迹象。",
+      "description": "申请了 GM_openInTab 权限，可能被滥用打开恶意页面。",
       "location": "元数据 @grant",
-      "recommendation": "确认实际代码中 GM_openInTab 的使用场景，避免被用于恶意跳转。",
+      "recommendation": "确认实际代码是否合理使用 GM_openInTab，避免钓鱼或恶意跳转。",
       "severity": "MEDIUM",
-      "type": "权限申请风险"
+      "type": "权限滥用"
     },
     {
-      "description": "脚本申请了 GM_getValue/GM_setValue 等存储权限，理论上可访问用户本地存储。",
-      "location": "元数据 @grant",
-      "recommendation": "确认实际代码中未收集或外传敏感隐私数据。",
-      "severity": "MEDIUM",
-      "type": "隐私存储权限风险"
+      "description": "未检测到 @require 第三方库，供应链风险较低。",
+      "location": "元数据",
+      "recommendation": "如后续添加 @require，请固定版本哈希并使用官方 CDN。",
+      "severity": "LOW",
+      "type": "供应链风险"
     }
   ],
   "obfuscation_detected": false,
@@ -46,12 +46,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "LOW",
+  "risk_level": "CRITICAL",
   "script_name": "Magic Userscript+ : Show Site All UserJS",
-  "security_score": 81,
-  "summary": "仅根据元数据分析，未发现明显高危安全问题。脚本声明的 @connect 域名均为主流 UserScript 社区，权限申请合理但较多，理论上具备网络请求和本地存储能力。未见远程代码执行、混淆、XSS、供应链等高危风险。建议补充完整代码以完成全面审查。",
+  "security_score": 25,
+  "summary": "仅提供元数据，缺失完整代码，无法评估实际安全风险。元数据显示脚本有潜在数据外传和权限滥用能力，建议补充完整代码进行详细审查。当前安全评分为 25，风险等级 CRITICAL。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-08T06:29:06.765406+00:00",
+  "analyzed_at": "2026-06-15T07:09:43.746761+00:00",
   "slug": "Magic_20Userscript_2B_20_3A_20Show_20Site_20All_20UserJS"
 }

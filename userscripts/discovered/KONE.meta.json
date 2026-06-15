@@ -1,0 +1,90 @@
+{
+  "slug": "KONE",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/581965-kone",
+  "source_repo": "581965",
+  "raw_url": "https://update.greasyfork.org/scripts/581965/KONE%20%2B.user.js",
+  "filename": "KONE.user.js",
+  "name": "KONE +",
+  "version": "17.3",
+  "description": "Base64/braille decoder, DLsite/Steam product cards, link-health checker, and password auto-fill for kone.gg.",
+  "match": [
+    "*://kone.gg/*",
+    "*://*.kone.gg/*",
+    "*://kio.ac/*",
+    "*://kiosk.ac/*",
+    "*://mega.nz/*",
+    "*://transfer.it/*",
+    "*://gofile.io/*",
+    "*://workupload.com/*",
+    "*://mypikpak.com/*"
+  ],
+  "grant": [
+    "GM_xmlhttpRequest",
+    "GM_registerMenuCommand",
+    "GM_unregisterMenuCommand",
+    "GM_getValue",
+    "GM_setValue"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  KONE +\n// @namespace  https://kone.gg/kone-plus-KRUI\n// @version  17.3\n// @description  Base64/braille decoder, DLsite/Steam product cards, link-health checker, and password auto-fill for kone.gg.\n// @description:ko  base64/점자 디코딩 · DLsite/Steam 링크 카드 · 링크 활성화 체크 · 비번 자동입력. kone.gg 전용.\n// @author  KRUI\n// @match  *://kone.gg/*\n// @match  *://*.kone.gg/*\n// @match  *://kio.ac/*\n// @match  *://kiosk.ac/*\n// @match  *://mega.nz/*\n// @match  *://transfer.it/*\n// @match  *://gofile.io/*\n// @match  *://workupload.com/*\n// @match  *://mypikpak.com/*\n// @run-at  document-start\n// @grant  GM_xmlhttpRequest\n// @grant  GM_registerMenuCommand\n// @grant  GM_unregisterMenuCommand\n// @grant  GM_getValue\n// @grant  GM_setValue\n// @connect  dlsite.com\n// @connect  store.steampowered.com\n// @connect  kio.ac\n// @connect  kiosk.ac\n// @connect  *\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/581965/KONE%20%2B.user.js\n// @updateURL  https://update.greasyfork.org/scripts/581965/KONE%20%2B.meta.js",
+  "sha256": "56882d1ca06aa7f313ece2fcd9f225d412b1a7c184be2882153a176158edb127",
+  "discovered_at": "2026-06-15T07:13:39.826102+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 465,
+  "good_ratings": 0,
+  "bad_ratings": 0,
+  "summary": {
+    "applicable_sites": [
+      "KONE社区",
+      "KIO",
+      "KIOSK",
+      "MEGA网盘",
+      "Transfer.it",
+      "Gofile.io",
+      "Workupload",
+      "Pikpak"
+    ],
+    "description": "本脚本为 kone.gg 社区及相关网盘网站提供多项实用功能，包括Base64和盲文解码、DLsite和Steam商品卡片展示、链接健康检测，以及自动填写密码。安装后可提升资源管理和浏览体验。",
+    "permissions": [
+      {
+        "explanation": "用于发起跨域网络请求，检测链接状态和获取商品信息。",
+        "grant": "GM_xmlhttpRequest"
+      },
+      {
+        "explanation": "允许在浏览器菜单中添加自定义操作按钮，方便用户手动触发功能。",
+        "grant": "GM_registerMenuCommand"
+      },
+      {
+        "explanation": "允许移除自定义菜单命令，管理脚本功能入口。",
+        "grant": "GM_unregisterMenuCommand"
+      },
+      {
+        "explanation": "用于保存和读取用户的脚本设置，如功能开关。",
+        "grant": "GM_getValue"
+      },
+      {
+        "explanation": "用于存储用户偏好和配置，保证个性化体验。",
+        "grant": "GM_setValue"
+      }
+    ],
+    "tags": [
+      "社区增强",
+      "网盘助手",
+      "自动填充",
+      "链接检测",
+      "资源管理",
+      "信息展示"
+    ],
+    "usage": [
+      "安装脚本后，访问 kone.gg 或相关网盘网站。",
+      "在页面上自动显示商品卡片和链接健康状态。",
+      "遇到加密内容时，自动或手动进行Base64/盲文解码。",
+      "如需自动填写密码，脚本会在相关页面自动完成。",
+      "可通过浏览器脚本菜单调整功能设置。"
+    ],
+    "zh_name": "KONE增强工具"
+  }
+}

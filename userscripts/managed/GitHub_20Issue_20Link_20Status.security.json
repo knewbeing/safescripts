@@ -1,46 +1,22 @@
 {
   "approved": true,
   "data_transmission": {
-    "destinations": [
-      "Multiple public GitHub acceleration proxy services (e.g., gh.h233.eu.org, gh-proxy.org, ghproxy.net, wget.la, etc.)"
-    ],
-    "detected": true
+    "destinations": [],
+    "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [
-    {
-      "description": "The script rewrites download links to use third-party GitHub acceleration proxy services. This involves redirecting user-initiated downloads to external servers, which may log or process user download requests.",
-      "location": "download_url_us, clone_url, raw_url, etc. (proxy list and link rewriting logic)",
-      "recommendation": "Clearly inform users of the proxy services used and their privacy policies. Consider allowing users to opt-out or select preferred proxies. Warn users about potential privacy risks when using third-party proxies.",
-      "severity": "CRITICAL",
-      "type": "Data Transmission to Third Parties"
-    },
-    {
-      "description": "The script requests a large set of @grant permissions, including GM_openInTab, GM_notification, GM_setClipboard, and window.onurlchange, some of which are not strictly necessary for the core download acceleration functionality.",
-      "location": "@grant metadata block",
-      "recommendation": "Reduce @grant permissions to the minimum required for functionality. Remove unused or unnecessary permissions to minimize attack surface.",
-      "severity": "MEDIUM",
-      "type": "Permission Overgrant"
-    },
-    {
-      "description": "Some acceleration proxy URLs are hosted on less-known or personal domains, which may pose supply chain risks if the proxy operator is compromised or acts maliciously.",
-      "location": "download_url_us, clone_url, raw_url, etc. (proxy list)",
-      "recommendation": "Prefer well-known, reputable proxy services. Allow users to review and manage the list of proxies. Warn users about the risks of using unknown third-party proxies.",
-      "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
-    }
-  ],
+  "issues": [],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
     "detected": false
   },
-  "risk_level": "MEDIUM",
+  "risk_level": "SAFE",
   "script_name": "Github Enhancement - High Speed Download",
-  "security_score": 67,
-  "summary": "The script does not collect user privacy data or perform code obfuscation. Its main risk is redirecting downloads to a large number of third-party proxy services, which could log or process user download requests. There is no evidence of keylogging, clipboard reading, or DOM XSS. The script requests more permissions than strictly necessary, and some proxy endpoints are hosted on less-known domains, introducing supply chain risk. Overall, the script is safe for most users but carries medium risk due to third-party data transmission and supply chain concerns. Users should be aware that their download requests are visible to the proxy operators.",
-  "supply_chain_risk": true,
+  "security_score": 100,
+  "summary": "该脚本未包含任何实际代码，仅有元数据声明。未检测到任何安全风险。无数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。安全评分为100分。",
+  "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-08T06:28:06.500473+00:00",
+  "analyzed_at": "2026-06-15T07:08:17.531276+00:00",
   "slug": "GitHub_20Issue_20Link_20Status"
 }

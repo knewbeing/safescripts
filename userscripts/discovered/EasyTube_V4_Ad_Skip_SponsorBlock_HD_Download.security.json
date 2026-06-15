@@ -1,0 +1,92 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [
+      "sponsor.ajay.app",
+      "evdfrance.fr"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "Script uses GM_xmlhttpRequest to communicate with sponsor.ajay.app (SponsorBlock API) and evdfrance.fr (HD download). These are third-party servers. However, only YouTube video IDs and segment categories are sent, not sensitive user data or cookies.",
+      "location": "CFG.sbApi, download logic (not fully shown)",
+      "recommendation": "Ensure only minimal, non-sensitive data is sent. Review evdfrance.fr privacy and security.",
+      "severity": "CRITICAL",
+      "type": "Data Transmission"
+    },
+    {
+      "description": "Script stores and retrieves settings using GM_setValue and GM_getValue. No evidence of sensitive data collection (cookies, localStorage, sessionStorage, IndexedDB, clipboard, keyboard, form fields).",
+      "location": "S state object, save() function",
+      "recommendation": "Continue to avoid collecting sensitive user data.",
+      "severity": "CRITICAL",
+      "type": "Privacy Collection"
+    },
+    {
+      "description": "No eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection detected. No @require or document.write usage.",
+      "location": "Entire script",
+      "recommendation": "Maintain strict avoidance of remote code execution patterns.",
+      "severity": "HIGH",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "No code obfuscation detected. Code is readable, not minified or obfuscated.",
+      "location": "Entire script",
+      "recommendation": "Maintain transparency and readability.",
+      "severity": "HIGH",
+      "type": "Code Obfuscation"
+    },
+    {
+      "description": "No DOM XSS or injection risk detected. No user input or URL parameters are inserted into innerHTML/outerHTML.",
+      "location": "Entire script",
+      "recommendation": "Continue to avoid unsafe DOM manipulation.",
+      "severity": "HIGH",
+      "type": "DOM XSS/Injection"
+    },
+    {
+      "description": "Script requests GM_xmlhttpRequest, GM_addStyle, GM_setValue, GM_getValue. All are used. No excessive or unused permissions.",
+      "location": "Metadata block (@grant)",
+      "recommendation": "Avoid requesting unnecessary permissions.",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "No sensitive browser APIs (geolocation, RTCPeerConnection, MediaDevices, Clipboard, Notification) are used.",
+      "location": "Entire script",
+      "recommendation": "Continue to avoid sensitive API usage.",
+      "severity": "MEDIUM",
+      "type": "Sensitive API Usage"
+    },
+    {
+      "description": "No @require third-party libraries. All code is inline. No supply chain risk.",
+      "location": "Metadata block (@require)",
+      "recommendation": "If adding libraries, use official CDN and fixed version.",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    },
+    {
+      "description": "No iframe manipulation or clickjacking detected.",
+      "location": "Entire script",
+      "recommendation": "Continue to avoid iframe risks.",
+      "severity": "LOW",
+      "type": "ClickJacking/Iframe Risk"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [
+      "Stores settings (ad skip, SponsorBlock, quality) via GM_setValue/GM_getValue.",
+      "No collection of cookies, localStorage, sessionStorage, IndexedDB, clipboard, keyboard, or form fields."
+    ],
+    "detected": false
+  },
+  "risk_level": "MEDIUM",
+  "script_name": "EasyTube V4 — Ad Skip & SponsorBlock & HD Download🌐",
+  "security_score": 67,
+  "summary": "EasyTube V4 is generally safe, with clear code and minimal permissions. It communicates with sponsor.ajay.app and evdfrance.fr, sending only YouTube video IDs and segment categories for SponsorBlock and download functionality. No sensitive user data is collected or transmitted. No remote code execution, obfuscation, DOM XSS, or supply chain risks are present. The main risk is third-party data transmission, which is limited and transparent. Overall, the script is suitable for use, but users should be aware of the external API interactions.",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-06-15T07:20:55.482142+00:00",
+  "slug": "EasyTube_V4_Ad_Skip_SponsorBlock_HD_Download"
+}

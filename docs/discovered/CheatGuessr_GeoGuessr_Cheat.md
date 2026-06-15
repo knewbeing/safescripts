@@ -30,14 +30,14 @@ title: "CheatGuessr | GeoGuessr Cheat"
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：67/100　　**分析时间**：2026-06-08
+**风险等级**：⛔ CRITICAL　　**安全评分**：42/100　　**分析时间**：2026-06-15
 
-> The script does not collect or transmit sensitive user data, but it does send coordinates to a third-party API (OpenStreetMap Nominatim) for reverse geocoding. It stores settings in localStorage and unnecessarily requests the GM_webRequest permission. No code obfuscation, XSS, or remote code execution risks were found. Overall, the script is relatively safe for use, but users should be aware of the data transmission to OpenStreetMap and the unnecessary permission request.
+> 该脚本存在数据外传（地理坐标发送到第三方服务器）和隐私采集（localStorage存储用户设置）等关键安全风险。还存在权限滥用（申请未用GM_webRequest）和敏感API调用。未检测到代码混淆、DOM XSS或供应链风险。建议移除未用权限、明确告知用户数据用途，并避免发送敏感信息。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：https://nominatim.openstreetmap.org） |
-| 隐私采集 | ❌ 检测到（localStorage: stores user settings） |
+| 数据外传 | ❌ 检测到（目标：https://nominatim.openstreetmap.org/reverse） |
+| 隐私采集 | ❌ 检测到（localStorage: 存储用户设置） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -45,20 +45,25 @@ title: "CheatGuessr | GeoGuessr Cheat"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Transmission  
-> The script sends latitude and longitude coordinates to the public OpenStreetMap Nominatim API to reverse geocode the location. This is a third-party server, but the data sent is not user-identifiable or sensitive (just coordinates).  
-> 位置：fetchLocationDetails() function (fetch to https://nominatim.openstreetmap.org)  
-> 建议：Document this behavior in the script description. If privacy is a concern, allow users to disable this feature.
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过 fetch 向 https://nominatim.openstreetmap.org/reverse 发送地理坐标数据，存在用户数据外传风险。  
+> 位置：fetchLocationDetails()  
+> 建议：仅在用户明确同意时发送数据，并在文档中声明数据用途。避免发送敏感信息。
 
-**🟠 MEDIUM** — Privacy Collection  
-> The script stores user settings in localStorage under the key 'geoGuessrHelper'. No sensitive data is stored, but localStorage is used.  
-> 位置：loadSettings() and saveSettings() functions  
-> 建议：No action needed unless sensitive data is stored. Document usage for transparency.
+**⛔ CRITICAL** — 隐私采集  
+> 脚本读取并存储用户设置到 localStorage，涉及隐私采集。  
+> 位置：loadSettings()/saveSettings()  
+> 建议：确保仅存储必要的非敏感数据，并在文档中告知用户。
 
-**🟠 MEDIUM** — Permission Abuse  
-> The script requests the GM_webRequest permission, but does not use any GM_* API in the code. This is an unnecessary high privilege.  
-> 位置：@grant GM_webRequest in metadata  
-> 建议：Remove unused @grant GM_webRequest to reduce attack surface.
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 GM_webRequest 权限，但实际代码未使用该 API，存在权限滥用风险。  
+> 位置：@grant GM_webRequest  
+> 建议：移除未使用的高权限申请，减少攻击面。
+
+**🟠 MEDIUM** — 敏感 API 调用  
+> 脚本通过 XMLHttpRequest.prototype.open 拦截并处理 Google Maps API 响应，属于敏感 API 调用。  
+> 位置：XMLHttpRequest.prototype.open  
+> 建议：确保拦截逻辑不会泄露用户敏感信息，且仅用于本地处理。
 
 ---
 

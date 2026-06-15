@@ -5,7 +5,15 @@
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [],
+  "issues": [
+    {
+      "description": "脚本未包含任何实际功能代码，仅为元数据部分。未检测到任何网络请求、数据外传、隐私采集、远程代码执行、混淆、XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。",
+      "location": "全局",
+      "recommendation": "补充完整功能代码后再进行安全审查。当前仅元数据部分，无安全风险。",
+      "severity": "LOW",
+      "type": "代码缺失"
+    }
+  ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
@@ -13,10 +21,10 @@
   },
   "risk_level": "SAFE",
   "script_name": "🔥 [2026] All-in-One Video Downloader | YouTube, TikTok, X(Twitter), Instagram, Facebook",
-  "security_score": 100,
-  "summary": "该脚本仅包含元数据注释，无任何实际 JavaScript 代码逻辑。未检测到任何网络请求、隐私数据采集、远程代码执行、混淆、XSS、权限滥用或供应链风险。安全性极高。",
+  "security_score": 97,
+  "summary": "该脚本仅包含元数据部分，没有实际功能代码，因此不存在安全风险。未检测到任何数据外传、隐私采集、远程代码执行、混淆、XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。安全评分高。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-08T06:35:24.298023+00:00",
+  "analyzed_at": "2026-06-15T07:15:19.871516+00:00",
   "slug": "2026_All-in-One_Video_Downloader_YouTube_TikTok_X_Twitter_Instagram_Facebook"
 }

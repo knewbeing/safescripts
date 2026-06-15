@@ -64,14 +64,14 @@ title: 🏷️ 小鱼标签 (UTags) - 为链接添加用户标签
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：50/100　　**分析时间**：2026-06-08
+**风险等级**：⛔ CRITICAL　　**安全评分**：50/100　　**分析时间**：2026-06-15
 
-> 该脚本元数据中 @connect * 允许任意外部服务器的网络请求，存在严重数据外传风险。虽然未提供实际代码，无法判断是否有隐私采集、远程代码执行、XSS 等高危行为，但高权限申请和广泛的网络访问权限已构成重大安全隐患。建议仅在完全信任来源和代码的情况下使用，并强烈建议移除 @connect * 并最小化权限申请。
+> 该脚本元数据存在严重安全风险，尤其是 @connect * 及 GM_xmlHttpRequest 权限组合，允许向任意第三方服务器发送数据，存在数据外传和隐私泄露隐患。未见代码内容，无法进一步评估实际行为，但仅凭元数据配置已属高危。建议严格限制网络请求目标、移除不必要高权限，并审查实际代码实现。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ✅ 未检测到 |
-| 隐私采集 | ✅ 未检测到 |
+| 数据外传 | ❌ 检测到（目标：dav.jianguoyun.com, localhost, any (*)） |
+| 隐私采集 | ❌ 检测到（GM storage API 可用于存储用户标签、备注等信息） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -79,20 +79,35 @@ title: 🏷️ 小鱼标签 (UTags) - 为链接添加用户标签
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Exfiltration  
-> @connect * 允许任意外部服务器的网络请求，存在严重数据外传风险。  
-> 位置：metadata block  
-> 建议：严格限制 @connect 域名，仅允许可信的 API 服务器，移除 @connect *。
+**⛔ CRITICAL** — Data Transmission  
+> @connect * 允许脚本向任意域名发起网络请求，存在严重数据外传风险。  
+> 位置：metadata (@connect *)  
+> 建议：限制 @connect 域名范围，仅允许必要的可信域名。
 
-**🟠 MEDIUM** — Permission Abuse  
-> 申请了 GM.xmlHttpRequest 和 GM_xmlhttpRequest 高权限，但未提供代码无法判断实际用途，存在权限滥用和潜在数据外传风险。  
-> 位置：metadata block  
-> 建议：仅申请实际需要的权限，移除未使用的高权限。
+**⛔ CRITICAL** — Data Transmission  
+> 申请了 GM.xmlHttpRequest 和 GM_xmlhttpRequest 权限，结合 @connect *，可向任意第三方服务器发送数据。  
+> 位置：metadata (@grant GM.xmlHttpRequest, GM_xmlhttpRequest)  
+> 建议：移除不必要的高权限申请，限制网络请求目标。
+
+**🔴 HIGH** — Data Transmission  
+> 脚本可访问本地服务器 (localhost)，存在本地服务数据泄露风险。  
+> 位置：metadata (@connect localhost)  
+> 建议：移除对 localhost 的连接权限，除非确有必要。
 
 **🟠 MEDIUM** — Privacy Collection  
-> 申请了 GM.addValueChangeListener, GM.getValue, GM.setValue, GM.deleteValue 等存储相关权限，可能涉及用户数据存储和同步，需关注是否与外部服务器同步。  
-> 位置：metadata block  
-> 建议：确保本地存储数据不被外传，代码需进一步审查。
+> 申请了 GM.addValueChangeListener, GM.getValue, GM.setValue, GM.deleteValue 权限，可能用于存储和同步用户数据。  
+> 位置：metadata (@grant GM.addValueChangeListener, GM.getValue, GM.setValue, GM.deleteValue)  
+> 建议：确保所有存储和同步操作不涉及敏感隐私数据或外传。
+
+**🟠 MEDIUM** — DOM XSS  
+> 申请了 GM_addElement 权限，允许动态插入元素，若结合 innerHTML/outerHTML 使用可能导致 XSS。  
+> 位置：metadata (@grant GM_addElement)  
+> 建议：插入内容时需严格过滤和转义用户输入。
+
+**🟡 LOW** — Permission Abuse  
+> 申请了 GM.registerMenuCommand 权限，允许脚本注册菜单命令，若滥用可能影响用户体验。  
+> 位置：metadata (@grant GM.registerMenuCommand)  
+> 建议：仅注册必要且安全的菜单命令。
 
 ---
 

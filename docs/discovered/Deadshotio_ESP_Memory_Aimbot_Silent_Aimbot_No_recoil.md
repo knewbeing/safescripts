@@ -30,13 +30,13 @@ title: "Deadshot.io ESP & Memory Aimbot & Silent Aimbot & No recoil"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：0/100　　**分析时间**：2026-06-08
+**风险等级**：⛔ CRITICAL　　**安全评分**：32/100　　**分析时间**：2026-06-15
 
-> 该脚本存在严重安全风险：动态拉取并 eval 执行远程代码，主动与第三方服务器通信，权限申请冗余，且未对远程代码进行校验。极易被用于后门、恶意代码注入或供应链攻击。强烈不建议使用。
+> 该脚本存在严重安全风险：通过 GM_xmlhttpRequest 向第三方服务器 deadshot-cheat.netlify.app 下载并 eval 执行远程代码，属于数据外传和远程代码执行的高危行为。未固定版本哈希，存在供应链污染风险。申请了未使用的高权限 unsafeWindow。未检测到隐私采集、代码混淆、DOM XSS、WebSocket 使用等其他风险。强烈建议禁止使用该脚本。已判定为 CRITICAL 级别风险。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：https://deadshot-cheat.netlify.app/index.js） |
+| 数据外传 | ❌ 检测到（目标：deadshot-cheat.netlify.app） |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
@@ -45,30 +45,25 @@ title: "Deadshot.io ESP & Memory Aimbot & Silent Aimbot & No recoil"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 远程代码执行  
-> 脚本通过 GM_xmlhttpRequest 动态从 https://deadshot-cheat.netlify.app/index.js 拉取远程 JS 代码，并 eval 执行，属于远程代码执行高危行为。  
-> 位置：fetchAndCacheCode() 和 patchImports() 中 (0, eval)(customCode)  
-> 建议：禁止动态加载和执行远程代码，改为本地集成或固定版本哈希的 @require。
+**⛔ CRITICAL** — Data Exfiltration & Remote Code Execution  
+> 脚本通过 GM_xmlhttpRequest 向 deadshot-cheat.netlify.app 发起网络请求，下载并执行远程 JavaScript 代码，存在数据外传和远程代码执行风险。  
+> 位置：GM_xmlhttpRequest 调用和 eval(customCode)  
+> 建议：禁止下载和执行远程代码，或仅允许可信源并固定版本哈希。
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本通过 GM_xmlhttpRequest 主动访问第三方服务器 deadshot-cheat.netlify.app，可能导致用户信息、环境信息被第三方服务器收集。  
-> 位置：fetchAndCacheCode()  
-> 建议：仅允许访问可信、必要的服务器，避免向第三方域名发送请求。
+**🔴 HIGH** — Remote Code Execution  
+> 脚本使用 eval() 执行从外部服务器下载的代码，存在远程代码执行风险。  
+> 位置：eval(customCode)  
+> 建议：避免使用 eval 执行外部代码，改为本地静态代码或受信任的库。
 
-**🔴 HIGH** — 远程代码执行  
-> 脚本使用 eval 执行远程拉取的代码，极易被利用为后门或植入恶意代码。  
-> 位置：patchImports() 中 (0, eval)(customCode)  
-> 建议：禁止使用 eval 执行外部代码。
+**🟠 MEDIUM** — Supply Chain Risk  
+> 脚本通过 GM_xmlhttpRequest 下载远程 JS，且未固定版本哈希，存在供应链风险。  
+> 位置：GM_xmlhttpRequest url: https://deadshot-cheat.netlify.app/index.js  
+> 建议：仅允许官方 CDN 且固定版本哈希，避免可变 URL。
 
-**🟠 MEDIUM** — 供应链风险  
-> 脚本未对拉取的远程代码进行任何校验（如哈希校验），存在供应链污染风险。  
-> 位置：fetchAndCacheCode()  
-> 建议：固定远程代码版本或进行哈希校验，避免供应链攻击。
-
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 unsafeWindow、GM_xmlhttpRequest、GM_setValue、GM_getValue 等高权限，但未见对 unsafeWindow 的直接使用，存在权限冗余。  
-> 位置：元数据 @grant  
-> 建议：仅申请实际需要的权限，移除未使用的高权限。
+**🟠 MEDIUM** — Permission Abuse  
+> 脚本申请了 unsafeWindow 权限，但实际代码未使用，存在权限滥用风险。  
+> 位置：@grant unsafeWindow  
+> 建议：移除未使用的高权限申请。
 
 ---
 

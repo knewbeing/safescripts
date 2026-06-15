@@ -30,9 +30,9 @@ title: "C.AI Custom Chat Bubbles + Bypass Chat Limit (Unlock edit message button
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-08
+**风险等级**：🟡 LOW　　**安全评分**：81/100　　**分析时间**：2026-06-15
 
-> 该脚本主要用于美化 character.ai 聊天界面和绕过聊天限制。未发现数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。权限申请略有冗余（GM_xmlhttpRequest/@connect），但未被实际利用。@require 的第三方库来源可信且已锁定版本。整体风险较低，安全性良好。
+> 该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要风险为权限申请与供应链依赖，均为中低风险。功能绕过行为仅影响本地页面，无敏感数据泄露。整体安全性较高，建议移除未使用的高权限申请并定期检查依赖库安全。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -45,30 +45,25 @@ title: "C.AI Custom Chat Bubbles + Bypass Chat Limit (Unlock edit message button
 
 ### 发现的问题
 
-**🟠 MEDIUM** — Permission Overgrant  
-> The script requests GM_xmlhttpRequest and @connect permission for translate.googleapis.com, but no actual GM_xmlhttpRequest usage is present in the provided code. This may be over-privileged.  
-> 位置：Metadata block  
-> 建议：Remove unused GM_xmlhttpRequest grant and @connect if not used.
+**🟠 MEDIUM** — 权限滥用  
+> 申请了 GM_xmlhttpRequest 权限，但实际代码未使用该 API进行外部数据传输。仅 @connect translate.googleapis.com，但未见实际调用。  
+> 位置：metadata (@grant, @connect)  
+> 建议：移除未使用的高权限申请，或确保 GM_xmlhttpRequest 仅用于可信目的。
 
-**🟡 LOW** — Network Interception  
-> The script overrides window.fetch and XMLHttpRequest.prototype.open to block requests to 'neo.character.ai/feature_limits'. This is a form of request interception but does not transmit data to third parties.  
-> 位置：Main script body  
-> 建议：Ensure no sensitive data is leaked in custom fetch/XHR handlers.
+**🟠 MEDIUM** — 供应链风险  
+> 通过 @require 加载 turndown 库，来源为 unpkg.com（官方 CDN），版本号已固定（7.1.3），供应链风险较低。  
+> 位置：metadata (@require)  
+> 建议：建议定期检查依赖库安全，确保 CDN 未被污染。
 
-**🟡 LOW** — LocalStorage Usage  
-> The script uses localStorage to store feature toggles (e.g., 'cai_adv_fake_verify', 'cai_bypass_limit').  
-> 位置：Main script body  
-> 建议：No sensitive user data is stored; usage is acceptable.
+**🟡 LOW** — 功能绕过  
+> 脚本会修改页面的 __NEXT_DATA__ JSON内容，模拟 age_data，绕过年龄验证和功能限制。此行为属于功能绕过，但未涉及敏感数据外传。  
+> 位置：代码（fakeVerifyEnabled/bypassUI）  
+> 建议：仅在用户知情情况下启用此类功能绕过，避免违反目标网站政策。
 
-**🟡 LOW** — DOM Manipulation  
-> The script uses GM_addStyle to inject CSS and manipulates the DOM to add UI elements. No evidence of DOM XSS or injection of untrusted content.  
-> 位置：initCustomizeButton function  
-> 建议：Continue to avoid inserting untrusted user input into innerHTML.
-
-**🟡 LOW** — Supply Chain  
-> The script uses @require to load turndown from unpkg.com, a reputable CDN, and pins the version to 7.1.3.  
-> 位置：Metadata block  
-> 建议：Continue to pin versions for supply chain safety.
+**🟡 LOW** — 功能绕过  
+> 脚本会拦截 fetch 和 XMLHttpRequest，阻止对 neo.character.ai/feature_limits 的请求，实现 chat limit bypass。未见数据外传，仅本地拦截。  
+> 位置：代码（window.fetch, XMLHttpRequest.prototype.open）  
+> 建议：确保拦截逻辑不会影响其他正常功能或引发兼容性问题。
 
 ---
 

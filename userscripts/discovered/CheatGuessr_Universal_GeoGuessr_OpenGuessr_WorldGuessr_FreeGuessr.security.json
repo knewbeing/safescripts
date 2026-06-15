@@ -2,70 +2,102 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
-      "nominatim.openstreetmap.org",
-      "discord.com"
+      "discord.com",
+      "nominatim.openstreetmap.org"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script sends latitude and longitude coordinates to nominatim.openstreetmap.org for reverse geocoding using GM_xmlhttpRequest.",
-      "location": "function _getAddress(lat, lng)",
-      "recommendation": "Ensure only non-sensitive, non-personal data is sent. Inform users about this external request.",
+      "description": "Script sends data to discord.com via GM_xmlhttpRequest, potentially including game coordinates or user actions.",
+      "location": "GM_xmlhttpRequest usage, @connect discord.com",
+      "recommendation": "Limit data sent to Discord, ensure no sensitive user information or authentication tokens are transmitted.",
       "severity": "CRITICAL",
-      "type": "Data Exfiltration"
+      "type": "Data Transmission"
     },
     {
-      "description": "The script is designed to send map pin data to Discord (discord.com) via webhook or API (as indicated by @connect and feature description).",
-      "location": "Feature: sendToDiscord",
-      "recommendation": "Ensure no sensitive or personal user data is sent. Make this behavior opt-in and clearly inform users.",
+      "description": "Script sends coordinates to nominatim.openstreetmap.org for reverse geocoding.",
+      "location": "_getAddress function, GM_xmlhttpRequest usage",
+      "recommendation": "Ensure only non-sensitive data (coordinates) are sent; avoid transmitting user identifiers or cookies.",
       "severity": "CRITICAL",
-      "type": "Data Exfiltration"
+      "type": "Data Transmission"
     },
     {
-      "description": "The script requests Notification API permission and can send browser notifications.",
-      "location": "requestNotificationPermission, sendNotification",
-      "recommendation": "Only use Notification API with clear user consent and avoid spamming notifications.",
+      "description": "Script requests Notification API permission and sends notifications.",
+      "location": "requestNotificationPermission, sendNotification functions",
+      "recommendation": "Avoid excessive or misleading notifications; do not use Notification API for phishing or spam.",
       "severity": "MEDIUM",
       "type": "Sensitive API Usage"
     },
     {
-      "description": "The script applies Proxy wrappers to native prototypes (e.g., setAttribute, push, setItem, fetch) which may break page functionality or introduce unexpected behavior.",
-      "location": "Multiple locations (platform-specific code blocks)",
-      "recommendation": "Limit prototype modifications to only what is strictly necessary and document all changes.",
-      "severity": "MEDIUM",
-      "type": "Potential Stability/Security Risk"
+      "description": "Script applies Proxy wrappers to built-in methods (setAttribute, push, fetch, setItem) to bypass cheat detection and manipulate behavior.",
+      "location": "Proxy usage throughout platform-specific code blocks",
+      "recommendation": "Ensure Proxy usage does not introduce security vulnerabilities or break site functionality.",
+      "severity": "HIGH",
+      "type": "Remote Code Execution"
     },
     {
-      "description": "The script requests GM_xmlhttpRequest permission, which allows arbitrary cross-origin requests.",
-      "location": "@grant GM_xmlhttpRequest",
-      "recommendation": "Limit usage to only required domains and document all external requests.",
-      "severity": "MEDIUM",
-      "type": "Permission Usage"
+      "description": "Script modifies iframe sandbox attributes, potentially weakening frame protection.",
+      "location": "Element.prototype.setAttribute Proxy (worldguessr, openguessr, freeguessr platforms)",
+      "recommendation": "Do not remove sandbox attributes from iframes unless absolutely necessary and safe.",
+      "severity": "LOW",
+      "type": "ClickJacking / iframe Risk"
     },
     {
-      "description": "The script requests @connect for discord.com and nominatim.openstreetmap.org, which are third-party services.",
-      "location": "@connect metadata",
-      "recommendation": "Ensure only necessary domains are listed and inform users about all external connections.",
+      "description": "Script applies Proxy to unsafeWindow.fetch, potentially interfering with legitimate network requests.",
+      "location": "unsafeWindow.fetch Proxy (freeguessr platform)",
+      "recommendation": "Limit Proxy scope to only cheat-related requests; avoid interfering with unrelated fetch calls.",
+      "severity": "HIGH",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "Script applies Proxy to Array.prototype.push, which may affect unrelated code and introduce unpredictable behavior.",
+      "location": "Array.prototype.push Proxy (multiple platforms)",
+      "recommendation": "Restrict Proxy usage to only relevant arrays or contexts.",
+      "severity": "HIGH",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "Script requests @grant GM_xmlhttpRequest, but also manipulates fetch and other APIs, potentially exceeding necessary permissions.",
+      "location": "@grant section",
+      "recommendation": "Review granted permissions and remove any not strictly required.",
       "severity": "MEDIUM",
-      "type": "Supply Chain/External Service Risk"
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "Script requests Notification API permission, which could be abused for spam or phishing.",
+      "location": "Notification API usage",
+      "recommendation": "Use Notification API responsibly and only for legitimate user alerts.",
+      "severity": "MEDIUM",
+      "type": "Sensitive API Usage"
+    },
+    {
+      "description": "Script does not use code obfuscation or minification.",
+      "location": "Entire script",
+      "recommendation": "Maintain transparency; avoid obfuscation unless necessary for protection.",
+      "severity": "LOW",
+      "type": "Obfuscation"
+    },
+    {
+      "description": "Script uses @require only for update/download URLs, not for third-party libraries.",
+      "location": "@downloadURL, @updateURL",
+      "recommendation": "If using @require for libraries, ensure source is trusted and version is fixed.",
+      "severity": "LOW",
+      "type": "Supply Chain Risk"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [
-      "Reads and stores user hotkey and feature toggle preferences via GM_getValue/GM_setValue.",
-      "Sends map coordinates (potentially user location) to external services."
-    ],
-    "detected": true
+    "details": [],
+    "detected": false
   },
   "risk_level": "CRITICAL",
   "script_name": "CheatGuessr Universal | GeoGuessr | OpenGuessr | WorldGuessr | FreeGuessr",
-  "security_score": 42,
-  "summary": "This script transmits map coordinates to external services (nominatim.openstreetmap.org for reverse geocoding and discord.com for sharing pins), which constitutes critical data exfiltration and privacy risk. It also requests notification permissions and modifies native prototypes, which may impact page stability. No code obfuscation or DOM XSS risks were detected. The script should be considered high risk unless all data transmissions are made fully transparent and strictly limited to non-sensitive information.",
+  "security_score": 0,
+  "summary": "该脚本存在严重的数据外传风险（向 discord.com 和 nominatim.openstreetmap.org 发送数据），并通过 Proxy 操作多个原生方法（如 fetch、push、setAttribute），可能导致远程代码执行和页面行为异常。脚本未收集隐私数据，但存在权限滥用、敏感 API 调用、iframe 风险等问题。安全评分为 0，建议谨慎使用并严格限制数据传输内容。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-08T06:37:48.097014+00:00",
+  "analyzed_at": "2026-06-15T07:18:25.043942+00:00",
   "slug": "CheatGuessr_Universal_GeoGuessr_OpenGuessr_WorldGuessr_FreeGuessr"
 }

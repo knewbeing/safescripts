@@ -29,60 +29,18 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限并声明了大量 @connect 域名，允许跨域访问视频 CDN，但未见明显的数据外传或统计追踪代码。",
-      "location": "元数据区",
-      "recommendation": "确保仅用于视频下载请求，不要上传用户数据或页面内容。",
-      "severity": "MEDIUM",
-      "type": "数据外传风险"
+      "description": "脚本申请了 GM_xmlhttpRequest 权限，并声明 @connect 多个第三方视频 CDN 域名，存在数据外传风险。",
+      "location": "元数据 @grant/@connect",
+      "recommendation": "确保所有网络请求仅用于视频下载，不携带用户敏感数据、Cookie 或页面内容。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
     },
     {
-      "description": "脚本申请了 GM_openInTab、GM_download、unsafeWindow 等高权限，但代码未见实际使用。",
-      "location": "元数据区",
-      "recommendation": "仅申请实际需要的权限，移除未使用的高权限申请。",
+      "description": "脚本申请了 GM_openInTab、GM_download、unsafeWindow 等高权限，但代码未展示实际用途，存在权限滥用风险。",
+      "location": "元数据 @grant",
+      "recommendation": "仅申请实际需要的权限，移除未使用或高风险权限。",
       "severity": "MEDIUM",
       "type": "权限滥用"
-    },
-    {
-      "description": "脚本未见 eval、new Function、setTimeout(string) 等动态代码执行，也无远程 @require。",
-      "location": "全局",
-      "recommendation": "保持当前实现，避免远程代码执行风险。",
-      "severity": "LOW",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "脚本未见 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板、键盘监听等隐私采集行为。",
-      "location": "全局",
-      "recommendation": "保持当前实现，避免隐私采集。",
-      "severity": "LOW",
-      "type": "隐私采集"
-    },
-    {
-      "description": "脚本未见代码混淆、base64 解码、字符串数组映射或高度压缩代码。",
-      "location": "全局",
-      "recommendation": "保持代码可读性，便于安全审计。",
-      "severity": "LOW",
-      "type": "代码混淆"
-    },
-    {
-      "description": "脚本未见 DOM XSS、document.write、innerHTML 注入等注入风险。",
-      "location": "全局",
-      "recommendation": "继续避免不可信内容插入 DOM。",
-      "severity": "LOW",
-      "type": "DOM XSS"
-    },
-    {
-      "description": "脚本未见敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Notification、Clipboard）调用。",
-      "location": "全局",
-      "recommendation": "避免调用敏感 API，保护用户隐私。",
-      "severity": "LOW",
-      "type": "敏感 API"
-    },
-    {
-      "description": "脚本未见 @require 加载第三方库，无供应链风险。",
-      "location": "元数据区",
-      "recommendation": "如需第三方库，建议固定版本并使用可信 CDN。",
-      "severity": "LOW",
-      "type": "供应链风险"
     }
   ],
   "obfuscation_detected": false,
@@ -90,12 +48,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "LOW",
+  "risk_level": "HIGH",
   "script_name": "All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)",
-  "security_score": 84,
-  "summary": "该脚本主要用于多平台视频下载，未见明显的数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 滥用等高危行为。主要风险为申请了较多高权限（如 GM_openInTab、GM_download、unsafeWindow）但未见实际使用，建议最小化权限。数据传输仅限于视频 CDN 域名，未见上传用户数据。整体安全风险较低。",
+  "security_score": 67,
+  "summary": "脚本主要用于视频下载，声明了大量第三方 CDN 域名用于网络请求，存在数据外传风险。未发现隐私采集、代码混淆、DOM XSS 或供应链风险，但高权限申请存在滥用可能。建议进一步审查实际网络请求内容，确保不泄露用户敏感信息。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-08T06:36:16.648232+00:00",
+  "analyzed_at": "2026-06-15T07:15:58.809701+00:00",
   "slug": "All-in-One_Video_Downloader_HD_YouTube_TikTok_Instagram_X_More"
 }

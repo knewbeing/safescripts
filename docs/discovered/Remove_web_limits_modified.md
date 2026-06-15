@@ -30,9 +30,9 @@ title: "网页限制解除(改)"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-08
+**风险等级**：🟡 LOW　　**安全评分**：84/100　　**分析时间**：2026-06-15
 
-> 该脚本主要用于解除网页的复制、剪切、选择文本、右键菜单等限制。未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险等高危行为。存在申请未使用的高权限（GM_xmlhttpRequest、GM_setClipboard），建议移除。整体风险较低。
+> 该脚本主要用于解除网页复制、剪切、选择文本、右键菜单等限制。未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险等高危行为。存在未使用的高权限申请（GM_xmlhttpRequest、GM_setClipboard），建议移除。整体安全风险较低，适合公开使用。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -46,19 +46,54 @@ title: "网页限制解除(改)"
 ### 发现的问题
 
 **🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_xmlhttpRequest 权限，但实际代码未使用。  
-> 位置：元数据与全局  
-> 建议：移除未使用的高权限申请，减少攻击面。
+> 脚本申请了 GM_xmlhttpRequest 权限，但实际代码未发现任何网络请求（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource 等）。@connect 仅指定了 eemm.me，但未见实际调用。  
+> 位置：元数据与主代码  
+> 建议：如无实际用途，建议移除 GM_xmlhttpRequest 权限和 @connect 域名，减少攻击面。
 
 **🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_setClipboard 权限，但实际代码未使用。  
-> 位置：元数据与全局  
-> 建议：移除未使用的高权限申请，减少攻击面。
+> 脚本申请了 GM_setClipboard 权限，但主代码未见实际调用。  
+> 位置：元数据与主代码  
+> 建议：如无实际用途，建议移除 GM_setClipboard 权限。
 
-**🟡 LOW** — 潜在数据外传风险  
-> 脚本声明了 @connect eemm.me 但实际代码未发现任何 GM_xmlhttpRequest、fetch、WebSocket、EventSource、sendBeacon 等网络请求代码。  
-> 位置：元数据与全局  
-> 建议：如未来添加网络请求，需严格限制目标和数据内容。
+**🟡 LOW** — 敏感 API 调用  
+> 脚本申请了 GM_getValue、GM_setValue、GM_deleteValue 权限，并用于存储用户设置数据。未见敏感数据采集行为。  
+> 位置：主代码  
+> 建议：仅存储脚本配置，无隐私风险。
+
+**🟡 LOW** — 远程代码执行  
+> 脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等动态代码执行方式。  
+> 位置：主代码  
+> 建议：保持现状，避免远程代码执行风险。
+
+**🟡 LOW** — 供应链风险  
+> 脚本未加载任何第三方库（无 @require），无供应链风险。  
+> 位置：元数据  
+> 建议：保持现状。
+
+**🟡 LOW** — 隐私采集  
+> 脚本未监听键盘输入、未读取表单字段、未访问剪贴板、未访问浏览器指纹 API，未采集用户隐私。  
+> 位置：主代码  
+> 建议：保持现状。
+
+**🟡 LOW** — 代码混淆  
+> 脚本未检测到代码混淆、base64 解码、字符串映射、unicode 混淆等特征。  
+> 位置：主代码  
+> 建议：保持现状。
+
+**🟡 LOW** — DOM XSS / 注入  
+> 脚本未检测到 DOM XSS 或注入风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML。  
+> 位置：主代码  
+> 建议：保持现状。
+
+**🟡 LOW** — 数据外传  
+> 脚本未使用 WebSocket、EventSource、navigator.sendBeacon 等实时数据传输方式。  
+> 位置：主代码  
+> 建议：保持现状。
+
+**🟡 LOW** — ClickJacking / iframe 风险  
+> 脚本未检测到修改 frame 保护策略或创建隐藏 iframe 用于数据提取。  
+> 位置：主代码  
+> 建议：保持现状。
 
 ---
 

@@ -7,11 +7,18 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script requests @grant unsafeWindow, which exposes the page's JS context and can be abused if the script is compromised.",
-      "location": "Metadata block (@grant unsafeWindow)",
-      "recommendation": "Only use @grant unsafeWindow if strictly necessary and ensure the script is obtained from a trusted source.",
+      "description": "Uses @grant unsafeWindow, which exposes privileged script context to the page and may increase attack surface if the page is compromised.",
+      "location": "UserScript metadata (@grant unsafeWindow)",
+      "recommendation": "Avoid using unsafeWindow unless strictly necessary. Consider using safer alternatives or limiting exposure.",
       "severity": "MEDIUM",
-      "type": "Permission Overuse"
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "Modifies DOM element innerHTML with JSON data from the page, but does not insert untrusted user input. Risk is low, but should be monitored if future changes allow user-controlled data.",
+      "location": "window.addEventListener('DOMContentLoaded') -> stateElement.innerHTML",
+      "recommendation": "Ensure only trusted data is inserted into innerHTML. If user input is ever used, sanitize appropriately.",
+      "severity": "LOW",
+      "type": "DOM Manipulation"
     }
   ],
   "obfuscation_detected": false,
@@ -21,10 +28,10 @@
   },
   "risk_level": "LOW",
   "script_name": "Songsterr Plus Patcher",
-  "security_score": 92,
-  "summary": "The script does not transmit data to third-party servers, does not collect sensitive user data, and does not use dangerous code execution patterns. It modifies the Songsterr site's JS state to unlock features, but does not introduce privacy or supply chain risks. The only notable issue is the use of @grant unsafeWindow, which is necessary for its function but increases the attack surface if the script is ever compromised.",
+  "security_score": 89,
+  "summary": "The script does not transmit data externally, does not collect privacy-sensitive information, and does not execute remote code or use obfuscation. The main risk is the use of @grant unsafeWindow, which is a medium-level concern. No critical or high risks detected. Overall, the script is safe for use, but users should be aware of the increased attack surface due to unsafeWindow.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-08T06:47:35.144787+00:00",
+  "analyzed_at": "2026-06-15T07:27:22.111582+00:00",
   "slug": "Songsterr_Plus_Patcher"
 }

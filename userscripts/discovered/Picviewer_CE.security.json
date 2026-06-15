@@ -2,37 +2,37 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
+      "*",
       "www.google.com",
       "www.google.com.hk",
       "www.google.co.jp",
       "ipv4.google.com",
       "image.baidu.com",
       "www.tineye.com",
-      "hoothin.com",
-      "*"
+      "hoothin.com"
     ],
-    "detected": true
+    "detected": false
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script requests broad network access via @connect *, allowing GM_xmlhttpRequest to any domain. This is a critical risk for data exfiltration if the script is compromised.",
-      "location": "Metadata block (@connect *)",
-      "recommendation": "Restrict @connect to only necessary domains. Remove or avoid using wildcard.",
+      "description": "@connect * 允许任意域名的网络请求，存在数据外传潜在风险，尤其是 GM_xmlhttpRequest 可用于任意第三方通信。",
+      "location": "元数据 @connect",
+      "recommendation": "限制 @connect 域名范围，仅允许必要的目标，避免 wildcard。",
       "severity": "CRITICAL",
-      "type": "Data Exfiltration"
+      "type": "Data Transmission"
     },
     {
-      "description": "The script requests high-privilege grants such as GM_download, GM_openInTab, unsafeWindow, and GM_setClipboard, but not all are clearly used in the provided code. Over-privileged grants increase attack surface.",
-      "location": "Metadata block (@grant ...)",
-      "recommendation": "Only request permissions that are strictly necessary for script functionality.",
+      "description": "脚本申请了大量高权限，包括 GM_download、GM_openInTab、GM_setClipboard、unsafeWindow 等，部分权限未在当前代码片段中实际使用，存在权限滥用风险。",
+      "location": "元数据 @grant",
+      "recommendation": "仅申请实际需要的权限，移除未使用的高权限。",
       "severity": "MEDIUM",
-      "type": "Permission Overuse"
+      "type": "Permission Abuse"
     },
     {
-      "description": "The script uses @require to load external scripts from update.greasyfork.org, but does not pin to a specific version hash. This introduces supply chain risk if the remote script is updated or compromised.",
-      "location": "Metadata block (@require ...)",
-      "recommendation": "Pin @require URLs to specific, immutable versions or hashes. Regularly audit third-party code.",
+      "description": "@require 加载的第三方库未固定版本哈希，来源为 greasyfork update CDN，虽然较可信，但仍有供应链污染风险。",
+      "location": "元数据 @require",
+      "recommendation": "建议使用官方 CDN 并固定版本哈希，避免供应链风险。",
       "severity": "MEDIUM",
       "type": "Supply Chain Risk"
     }
@@ -45,9 +45,9 @@
   "risk_level": "HIGH",
   "script_name": "Picviewer CE+",
   "security_score": 52,
-  "summary": "Picviewer CE+ requests broad network access (@connect *) and high-privilege grants, which pose significant security risks if the script or its supply chain is compromised. No direct evidence of privacy-invasive behavior or obfuscation is found in the provided code, but the supply chain risk and permission overuse lower the overall security. Restrict network permissions, minimize grants, and pin third-party dependencies to improve security.",
+  "summary": "Picviewer CE+ 申请了广泛的网络访问权限（@connect *），允许任意域名通信，存在严重数据外传风险。虽然当前代码片段未发现实际数据外传和隐私采集行为，但高权限申请和供应链风险降低了整体安全性。建议收紧 @connect 域名、精简 @grant 权限、固定第三方库版本。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-08T06:46:22.329759+00:00",
+  "analyzed_at": "2026-06-15T07:26:03.285918+00:00",
   "slug": "Picviewer_CE"
 }

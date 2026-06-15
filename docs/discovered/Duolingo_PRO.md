@@ -33,55 +33,80 @@ title: "多邻国PRO增强版"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：0/100　　**分析时间**：2026-06-08
+**风险等级**：⛔ CRITICAL　　**安全评分**：25/100　　**分析时间**：2026-06-15
 
-> This script presents critical security and privacy risks. It is designed to interact with external servers for core features, likely transmitting user data to third-party domains. It reads cookies and uses browser APIs that can be used for fingerprinting. The lack of visible network request code in the snippet does not mitigate these risks, as the UI and feature set imply such behavior. The script should not be considered safe for use without a full code review and explicit user consent for any data transmission. Supply chain risks are present due to non-pinned update URLs. No evidence of code obfuscation or DOM XSS in the provided snippet, but further review is needed for the complete script.
+> Duolingo PRO script transmits data to third-party servers (duolingopro.net, api.duolingopro.net), reads cookies, and references server-side processing for user actions. These behaviors pose critical risks of data exfiltration and privacy violation. No evidence of code obfuscation, remote code execution, DOM XSS, or supply chain risk in the visible code. Permission usage is minimal. The script is NOT approved for safe use.
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：https://www.duolingopro.net, https://api.duolingopro.net） |
-| 隐私采集 | ❌ 检测到（Reads document.cookie for 'lang' value, Uses navigator.language and Intl.Locale for region detection） |
+| 隐私采集 | ❌ 检测到（Reads document.cookie for language setting, Uses navigator.language and Intl.Locale for region detection, Uses crypto.getRandomValues for duplicate detection marker） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ⚠️ 存在风险 |
+| 供应链风险 | ✅ 可信 |
 
 ### 发现的问题
 
 **⛔ CRITICAL** — Data Exfiltration  
-> The script defines and uses external server URLs (https://www.duolingopro.net, https://api.duolingopro.net) and contains UI text referencing feedback submission, XP/gem redemption, and server-side processing. This strongly suggests network requests and user data transmission to third-party servers, even though the actual network request code is not present in the provided snippet. The script is designed to interact with external APIs for core features.  
-> 位置：Global scope, variables serverURL/apiURL, UI text, and feature descriptions  
-> 建议：Explicitly review all network request code (fetch, XMLHttpRequest, GM_xmlhttpRequest, WebSocket, etc.) and ensure no sensitive user data is transmitted without user consent. Remove or clearly disclose any telemetry or data collection.
+> Script defines server endpoints (duolingopro.net, api.duolingopro.net) and references server-side processing for XP, gems, and other features. This strongly suggests user data or actions are transmitted to third-party servers.  
+> 位置：Global variables and feature descriptions  
+> 建议：Review all network requests and ensure no sensitive user data is transmitted. Avoid sending cookies, authentication tokens, or personal information to third-party servers.
 
 **⛔ CRITICAL** — Privacy Collection  
-> The script reads document.cookie to extract the 'lang' value for localization. This is a privacy-sensitive operation, as cookies may contain session or authentication data.  
+> Script reads document.cookie to extract language settings. While not directly exfiltrated in the visible code, this is a privacy-sensitive operation.  
 > 位置：let systemLanguage = document.cookie.split('; ').find(row => row.startsWith('lang=')).split('=')[1];  
-> 建议：Avoid reading cookies unless strictly necessary. Do not transmit cookie values to external servers. Limit access to only non-sensitive cookie keys.
+> 建议：Do not read cookies unless strictly necessary. Ensure no sensitive cookies (e.g., session/auth tokens) are accessed or transmitted.
 
-**🔴 HIGH** — Privacy Collection  
-> The script uses navigator.language and Intl.Locale to infer region and measurement system, which can be used for fingerprinting.  
-> 位置：const region = new Intl.Locale(navigator.language).maximize().region;  
-> 建议：Minimize use of browser fingerprinting APIs. Do not transmit this information to external servers unless essential for functionality.
+**⛔ CRITICAL** — Data Exfiltration  
+> Script references server-side processing for 'instant results powered by server-side processing' and 'auto-solved lessons', implying possible transmission of user actions or progress to external servers.  
+> 位置：systemText.en[61]  
+> 建议：Clarify what data is sent to external servers. Avoid sending user progress, answers, or authentication data.
 
 **🔴 HIGH** — Remote Code Execution  
-> The script does not appear to use eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection in the provided code. However, the code is incomplete and further review is needed for the full implementation.  
-> 位置：N/A (based on provided snippet)  
-> 建议：Ensure no dynamic code execution or remote script loading is present in the full script.
+> No evidence of eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection in the visible code.  
+> 位置：Full script up to provided cutoff  
+> 建议：Avoid dynamic code execution. If used elsewhere, review carefully.
 
 **🔴 HIGH** — Code Obfuscation  
-> The script is not minified or obfuscated in the provided snippet. However, the full script should be checked for obfuscation techniques such as base64 decoding, string array mapping, or unicode escapes.  
-> 位置：N/A (based on provided snippet)  
-> 建议：Avoid code obfuscation. Publish readable source code for transparency.
+> No evidence of code obfuscation, base64 decoding, or unicode string mangling in the visible code.  
+> 位置：Full script up to provided cutoff  
+> 建议：Keep code readable and avoid obfuscation.
 
-**🟠 MEDIUM** — Permission Abuse  
-> The script only requests the GM_log permission, which is not excessive. No evidence of permission abuse in the provided snippet.  
-> 位置：@grant GM_log  
-> 建议：Limit permissions to only those required. Avoid requesting high-risk permissions such as GM_xmlhttpRequest, GM_download, or GM_openInTab unless necessary.
+**🔴 HIGH** — DOM XSS  
+> No evidence of DOM XSS or unsafe innerHTML/outerHTML usage in the visible code.  
+> 位置：Full script up to provided cutoff  
+> 建议：Sanitize all user input before inserting into DOM.
+
+**🟠 MEDIUM** — Privacy Collection  
+> Script uses navigator.language and Intl.Locale to determine region, which is a minor fingerprinting vector.  
+> 位置：const region = new Intl.Locale(navigator.language).maximize().region;  
+> 建议：Avoid collecting browser locale or fingerprinting information unless necessary.
+
+**🟠 MEDIUM** — Sensitive API Usage  
+> No evidence of sensitive API usage (geolocation, RTCPeerConnection, MediaDevices, Clipboard, Notification) in the visible code.  
+> 位置：Full script up to provided cutoff  
+> 建议：Avoid using sensitive APIs unless strictly necessary.
 
 **🟠 MEDIUM** — Supply Chain Risk  
-> The script uses @require and @updateURL pointing to greasyfork.org, which is a trusted source. However, the download/update URLs are not version-pinned, which could allow supply chain attacks if the remote file is compromised.  
-> 位置：@downloadURL, @updateURL  
-> 建议：Pin @require URLs to specific versions or hashes. Monitor for supply chain risks.
+> No @require third-party libraries or supply chain risk in metadata.  
+> 位置：Metadata block  
+> 建议：If using external libraries, ensure they are from trusted sources and version-pinned.
+
+**🟡 LOW** — Privacy Collection  
+> Script uses crypto.getRandomValues for duplicate detection marker, which is not a security issue but may be used for tracking if combined with network requests.  
+> 位置：const random16Numbers = Array.from(crypto.getRandomValues(new Uint8Array(16)), b => (b % 10)).join('');  
+> 建议：Ensure random markers are not used for user tracking or sent to external servers.
+
+**🟡 LOW** — Permission Abuse  
+> Script only requests GM_log permission, which is minimal and not abused.  
+> 位置：@grant GM_log  
+> 建议：Do not request unnecessary permissions.
+
+**🟡 LOW** — ClickJacking  
+> No evidence of clickjacking or iframe manipulation in the visible code.  
+> 位置：Full script up to provided cutoff  
+> 建议：Do not create hidden iframes or modify frame protection.
 
 ---
 

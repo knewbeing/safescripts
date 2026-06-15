@@ -30,13 +30,13 @@ title: "Picviewer CE+"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：52/100　　**分析时间**：2026-06-08
+**风险等级**：🔴 HIGH　　**安全评分**：52/100　　**分析时间**：2026-06-15
 
-> Picviewer CE+ requests broad network access (@connect *) and high-privilege grants, which pose significant security risks if the script or its supply chain is compromised. No direct evidence of privacy-invasive behavior or obfuscation is found in the provided code, but the supply chain risk and permission overuse lower the overall security. Restrict network permissions, minimize grants, and pin third-party dependencies to improve security.
+> Picviewer CE+ 申请了广泛的网络访问权限（@connect *），允许任意域名通信，存在严重数据外传风险。虽然当前代码片段未发现实际数据外传和隐私采集行为，但高权限申请和供应链风险降低了整体安全性。建议收紧 @connect 域名、精简 @grant 权限、固定第三方库版本。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：www.google.com, www.google.com.hk, www.google.co.jp） |
+| 数据外传 | ✅ 未检测到 |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
@@ -45,20 +45,20 @@ title: "Picviewer CE+"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Exfiltration  
-> The script requests broad network access via @connect *, allowing GM_xmlhttpRequest to any domain. This is a critical risk for data exfiltration if the script is compromised.  
-> 位置：Metadata block (@connect *)  
-> 建议：Restrict @connect to only necessary domains. Remove or avoid using wildcard.
+**⛔ CRITICAL** — Data Transmission  
+> @connect * 允许任意域名的网络请求，存在数据外传潜在风险，尤其是 GM_xmlhttpRequest 可用于任意第三方通信。  
+> 位置：元数据 @connect  
+> 建议：限制 @connect 域名范围，仅允许必要的目标，避免 wildcard。
 
-**🟠 MEDIUM** — Permission Overuse  
-> The script requests high-privilege grants such as GM_download, GM_openInTab, unsafeWindow, and GM_setClipboard, but not all are clearly used in the provided code. Over-privileged grants increase attack surface.  
-> 位置：Metadata block (@grant ...)  
-> 建议：Only request permissions that are strictly necessary for script functionality.
+**🟠 MEDIUM** — Permission Abuse  
+> 脚本申请了大量高权限，包括 GM_download、GM_openInTab、GM_setClipboard、unsafeWindow 等，部分权限未在当前代码片段中实际使用，存在权限滥用风险。  
+> 位置：元数据 @grant  
+> 建议：仅申请实际需要的权限，移除未使用的高权限。
 
 **🟠 MEDIUM** — Supply Chain Risk  
-> The script uses @require to load external scripts from update.greasyfork.org, but does not pin to a specific version hash. This introduces supply chain risk if the remote script is updated or compromised.  
-> 位置：Metadata block (@require ...)  
-> 建议：Pin @require URLs to specific, immutable versions or hashes. Regularly audit third-party code.
+> @require 加载的第三方库未固定版本哈希，来源为 greasyfork update CDN，虽然较可信，但仍有供应链污染风险。  
+> 位置：元数据 @require  
+> 建议：建议使用官方 CDN 并固定版本哈希，避免供应链风险。
 
 ---
 

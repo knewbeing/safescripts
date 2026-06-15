@@ -2,75 +2,33 @@
   "approved": true,
   "data_transmission": {
     "destinations": [
-      "nexusmods.com",
-      "api-router.nexusmods.com"
+      "api-router.nexusmods.com",
+      "www.nexusmods.com"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 fetch 向 nexusmods.com 和 api-router.nexusmods.com 发送请求以获取和下载 mod 信息。所有请求均为官方域名，未发现向第三方服务器或未知域名传输数据。",
-      "location": "fetchMods, fetchDownloadLink 等函数",
-      "recommendation": "仅允许与受信任的官方域名通信，避免将用户数据发送到第三方。",
+      "description": "Script uses fetch and GM_xmlhttpRequest to communicate with api-router.nexusmods.com and www.nexusmods.com. All requests are to official Nexus Mods endpoints and do not transmit user data beyond what is required for mod download functionality.",
+      "location": "fetchMods(), fetchDownloadLink()",
+      "recommendation": "Ensure only necessary data is sent and no sensitive user information is included in requests.",
       "severity": "CRITICAL",
-      "type": "数据外传"
+      "type": "Data Transmission"
     },
     {
-      "description": "脚本未发现读取 cookie/localStorage/sessionStorage/IndexedDB、监听键盘输入、读取表单字段、访问指纹 API 或读取剪贴板内容的行为。",
-      "location": "全局",
-      "recommendation": "保持当前实现，避免添加隐私采集代码。",
-      "severity": "CRITICAL",
-      "type": "隐私采集"
-    },
-    {
-      "description": "未发现 eval、new Function、setTimeout(string)、setInterval(string)、动态 script 标签、@require 加载远程 JS 或 document.write 插入脚本内容。",
-      "location": "全局",
-      "recommendation": "避免远程代码执行相关 API。",
-      "severity": "HIGH",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "未发现明显的代码混淆、base64 解码、字符串数组混淆或高度压缩代码。",
-      "location": "全局",
-      "recommendation": "保持代码可读性，避免混淆。",
-      "severity": "HIGH",
-      "type": "代码混淆"
-    },
-    {
-      "description": "未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未见 document.write 注入或 iframe src 操作。",
-      "location": "全局",
-      "recommendation": "插入 HTML 时应始终进行转义。",
-      "severity": "HIGH",
-      "type": "DOM XSS / 注入"
-    },
-    {
-      "description": "@grant 权限与实际代码使用基本匹配，未发现高权限滥用。",
-      "location": "元数据与全局",
-      "recommendation": "如未使用部分 GM API，可移除对应 @grant。",
+      "description": "Script requests multiple @grant permissions (GM.xmlHttpRequest, GM_xmlhttpRequest, GM_setValue, GM_getValue, GM.setValue, GM.getValue, GM_addStyle), but only uses GM_xmlhttpRequest, GM.getValue, GM.setValue, and GM_addStyle in the code.",
+      "location": "Metadata block",
+      "recommendation": "Remove unused permissions (@grant GM.xmlHttpRequest, GM_setValue, GM_getValue) to minimize attack surface.",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "Permission Abuse"
     },
     {
-      "description": "未发现敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）调用。",
-      "location": "全局",
-      "recommendation": "避免调用敏感 API。",
+      "description": "Script uses fetch with credentials: 'include', which may transmit cookies to Nexus Mods endpoints.",
+      "location": "fetchMods(), fetchDownloadLink()",
+      "recommendation": "Ensure cookies are only sent to trusted domains and not to third parties.",
       "severity": "MEDIUM",
-      "type": "敏感 API 调用"
-    },
-    {
-      "description": "未使用 @require 加载第三方库，无供应链风险。",
-      "location": "元数据",
-      "recommendation": "如需加载第三方库，请使用官方 CDN 并锁定版本。",
-      "severity": "MEDIUM",
-      "type": "供应链风险"
-    },
-    {
-      "description": "未发现修改 frame 保护策略或创建隐藏 iframe。",
-      "location": "全局",
-      "recommendation": "避免通过 iframe 进行数据提取。",
-      "severity": "LOW",
-      "type": "ClickJacking / iframe 风险"
+      "type": "Sensitive API Usage"
     }
   ],
   "obfuscation_detected": false,
@@ -78,12 +36,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "LOW",
+  "risk_level": "MEDIUM",
   "script_name": "Nexus Download Collection",
-  "security_score": 97,
-  "summary": "该脚本仅与 nexusmods.com 官方域名通信，未发现隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。整体安全性高，风险极低。",
+  "security_score": 67,
+  "summary": "该脚本仅与 Nexus Mods 官方 API 和页面进行通信，不存在隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要风险为数据外传（仅限官方域名）、权限滥用（申请未使用的高权限）和敏感 API（cookie 传递）。整体风险为中等，建议移除未使用权限并持续关注官方 API 的安全性。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-08T06:44:35.854521+00:00",
+  "analyzed_at": "2026-06-15T07:25:13.808048+00:00",
   "slug": "Nexus_Download_Collection"
 }

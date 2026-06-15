@@ -33,9 +33,9 @@ title: "Omoggle作弊工具"
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-06-08
+**风险等级**：🟢 SAFE　　**安全评分**：97/100　　**分析时间**：2026-06-15
 
-> 该脚本仅在页面加载时插入一个自定义覆盖层 UI，要求用户输入访问码。未检测到任何网络请求、数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用或供应链风险。整体实现简单，未发现安全隐患。
+> This UserScript creates a custom overlay UI to collect an access code from the user. The code is checked locally and no network requests are made. No privileged APIs or permissions are used. There is no evidence of data exfiltration, privacy collection, remote code execution, obfuscation, DOM XSS, supply chain risk, or iframe/clickjacking risk. The script is safe in its current form, but future updates should be monitored for changes in behavior.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -46,7 +46,22 @@ title: "Omoggle作弊工具"
 | DOM XSS 风险 | ✅ 未检测到 |
 | 供应链风险 | ✅ 可信 |
 
-### 未发现安全问题 ✅
+### 发现的问题
+
+**🟡 LOW** — User input collection  
+> The script creates a custom overlay UI and collects user input (access code) via an input field. However, the input is only checked locally and not transmitted anywhere.  
+> 位置：createOverlay function  
+> 建议：Ensure that no future versions transmit user input externally.
+
+**🟡 LOW** — DOM manipulation  
+> The script uses innerHTML to insert a static HTML template. No user input or variable data is inserted directly into innerHTML.  
+> 位置：createOverlay function  
+> 建议：If dynamic content is ever inserted, sanitize user input before using innerHTML.
+
+**🟡 LOW** — Permissions  
+> The script requests no special permissions (@grant none) and does not use any privileged APIs.  
+> 位置：Metadata block  
+> 建议：Keep permissions minimal for best security.
 
 ---
 

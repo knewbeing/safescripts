@@ -4,15 +4,15 @@ title: "智友邦论坛美化"
 
 # 智友邦论坛美化
 
-`页面美化`  `论坛优化`  `宽屏显示`  `内容精简`  `用户体验`
+`页面美化`  `论坛优化`  `内容精简`  `宽屏显示`  `用户体验`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/Zhiyoo-Beautification.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**1.0.2**　　发现时间：**2026-06-08**　　来源：[XIU2/UserScript](https://github.com/XIU2/UserScript) <Badge type="tip" text="GitHub" />
+> 版本：**1.0.2**　　发现时间：**2026-06-15**　　来源：[XIU2/UserScript](https://github.com/XIU2/UserScript) <Badge type="tip" text="GitHub" />
 
 ## 功能介绍
 
-本脚本用于美化智友邦论坛页面，自动隐藏多余内容，优化版面样式，并支持宽屏显示。让论坛浏览更简洁、舒适。
+本脚本为智友邦论坛页面进行美化，去除多余内容，优化版面样式，并实现宽屏显示，让浏览体验更加简洁舒适。
 
 ## 适用网站
 
@@ -20,8 +20,8 @@ title: "智友邦论坛美化"
 
 ## 使用方法
 
-1. 安装脚本后，访问智友邦论坛即可自动生效。
-2. 无需额外操作，页面会自动变得简洁宽屏。
+1. 安装脚本后，访问智友邦论坛页面即可自动生效。
+2. 无需手动操作，页面会自动变得简洁宽屏。
 
 ## 权限说明
 

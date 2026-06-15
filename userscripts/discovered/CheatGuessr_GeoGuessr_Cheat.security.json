@@ -1,48 +1,55 @@
 {
-  "approved": true,
+  "approved": false,
   "data_transmission": {
     "destinations": [
-      "https://nominatim.openstreetmap.org"
+      "https://nominatim.openstreetmap.org/reverse"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script sends latitude and longitude coordinates to the public OpenStreetMap Nominatim API to reverse geocode the location. This is a third-party server, but the data sent is not user-identifiable or sensitive (just coordinates).",
-      "location": "fetchLocationDetails() function (fetch to https://nominatim.openstreetmap.org)",
-      "recommendation": "Document this behavior in the script description. If privacy is a concern, allow users to disable this feature.",
+      "description": "脚本通过 fetch 向 https://nominatim.openstreetmap.org/reverse 发送地理坐标数据，存在用户数据外传风险。",
+      "location": "fetchLocationDetails()",
+      "recommendation": "仅在用户明确同意时发送数据，并在文档中声明数据用途。避免发送敏感信息。",
       "severity": "CRITICAL",
-      "type": "Data Transmission"
+      "type": "数据外传"
     },
     {
-      "description": "The script stores user settings in localStorage under the key 'geoGuessrHelper'. No sensitive data is stored, but localStorage is used.",
-      "location": "loadSettings() and saveSettings() functions",
-      "recommendation": "No action needed unless sensitive data is stored. Document usage for transparency.",
-      "severity": "MEDIUM",
-      "type": "Privacy Collection"
+      "description": "脚本读取并存储用户设置到 localStorage，涉及隐私采集。",
+      "location": "loadSettings()/saveSettings()",
+      "recommendation": "确保仅存储必要的非敏感数据，并在文档中告知用户。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
     },
     {
-      "description": "The script requests the GM_webRequest permission, but does not use any GM_* API in the code. This is an unnecessary high privilege.",
-      "location": "@grant GM_webRequest in metadata",
-      "recommendation": "Remove unused @grant GM_webRequest to reduce attack surface.",
+      "description": "脚本申请了 GM_webRequest 权限，但实际代码未使用该 API，存在权限滥用风险。",
+      "location": "@grant GM_webRequest",
+      "recommendation": "移除未使用的高权限申请，减少攻击面。",
       "severity": "MEDIUM",
-      "type": "Permission Abuse"
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本通过 XMLHttpRequest.prototype.open 拦截并处理 Google Maps API 响应，属于敏感 API 调用。",
+      "location": "XMLHttpRequest.prototype.open",
+      "recommendation": "确保拦截逻辑不会泄露用户敏感信息，且仅用于本地处理。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "localStorage: stores user settings"
+      "localStorage: 存储用户设置"
     ],
     "detected": true
   },
-  "risk_level": "MEDIUM",
+  "risk_level": "CRITICAL",
   "script_name": "CheatGuessr | GeoGuessr Cheat",
-  "security_score": 67,
-  "summary": "The script does not collect or transmit sensitive user data, but it does send coordinates to a third-party API (OpenStreetMap Nominatim) for reverse geocoding. It stores settings in localStorage and unnecessarily requests the GM_webRequest permission. No code obfuscation, XSS, or remote code execution risks were found. Overall, the script is relatively safe for use, but users should be aware of the data transmission to OpenStreetMap and the unnecessary permission request.",
+  "security_score": 42,
+  "summary": "该脚本存在数据外传（地理坐标发送到第三方服务器）和隐私采集（localStorage存储用户设置）等关键安全风险。还存在权限滥用（申请未用GM_webRequest）和敏感API调用。未检测到代码混淆、DOM XSS或供应链风险。建议移除未用权限、明确告知用户数据用途，并避免发送敏感信息。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-08T06:37:34.493999+00:00",
+  "analyzed_at": "2026-06-15T07:17:12.361626+00:00",
   "slug": "CheatGuessr_GeoGuessr_Cheat"
 }

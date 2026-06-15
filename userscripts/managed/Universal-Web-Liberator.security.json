@@ -14,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "Universal Web Liberator",
   "security_score": 100,
-  "summary": "该脚本主要用于解除网页上的右键、选择、复制、拖拽等限制，未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。代码结构清晰，所有功能均在本地实现，未与外部服务器通信。",
+  "summary": "该脚本仅操作页面事件和样式，未检测到任何数据外传、隐私采集、远程代码执行、混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。所有 @grant 权限均为本地操作，无高风险行为。整体安全性极高。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-08T06:30:25.963102+00:00",
+  "analyzed_at": "2026-06-15T07:10:10.327067+00:00",
   "slug": "Universal-Web-Liberator"
 }

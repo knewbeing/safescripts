@@ -1,68 +1,17 @@
 {
   "approved": false,
   "data_transmission": {
-    "destinations": [
-      "https://gh.h233.eu.org",
-      "https://rapidgit.jjda.de5.net",
-      "https://gh.ddlc.top",
-      "https://gh-proxy.org",
-      "https://cdn.gh-proxy.org",
-      "https://edgeone.gh-proxy.org",
-      "https://cors.isteed.cc",
-      "https://ghproxy.it",
-      "https://github.boki.moe",
-      "https://gh.jasonzeng.dev",
-      "https://gh.monlor.com",
-      "https://github.tbedu.top",
-      "https://github.geekery.cn",
-      "https://github.ednovas.xyz",
-      "https://ghfile.geekertao.top",
-      "https://ghp.keleyaa.com",
-      "https://gh.chjina.com",
-      "https://ghpxy.hwinzniej.top",
-      "https://cdn.crashmc.com",
-      "https://git.yylx.win",
-      "https://gitproxy.mrhjx.cn",
-      "https://ghproxy.cxkpro.top",
-      "https://gh.xxooo.cf",
-      "https://gh.idayer.com",
-      "https://down.npee.cn",
-      "https://raw.ihtw.moe",
-      "https://xget.xi-xu.me",
-      "https://gh.zwy.one",
-      "https://ghproxy.monkeyray.net",
-      "https://ghproxy.net",
-      "https://ghfast.top",
-      "https://wget.la",
-      "https://gitclone.com",
-      "https://githubfast.com",
-      "https://hk.gh-proxy.org",
-      "https://hub.glowp.xyz"
-    ],
-    "detected": true
+    "destinations": [],
+    "detected": false
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过构造大量第三方加速下载链接，将用户的下载请求重定向到非官方 Github 加速节点，涉及大量第三方域名。",
-      "location": "download_url_us, clone_url, raw_url 等数组及相关逻辑",
-      "recommendation": "仅允许用户自定义可信加速节点，或在文档中明确所有加速节点的归属和隐私政策。",
+      "description": "无法审查脚本安全：未提供完整代码，仅有元数据。无法判断是否存在数据外传、隐私采集、远程代码执行等风险。",
+      "location": "全局",
+      "recommendation": "请提供完整的 UserScript 源代码，以便进行全面安全审查。",
       "severity": "CRITICAL",
-      "type": "数据外传"
-    },
-    {
-      "description": "部分加速节点为个人或未知运营方，存在供应链风险（如节点被劫持、内容篡改、流量分析等）。",
-      "location": "download_url_us, clone_url, raw_url 等数组",
-      "recommendation": "建议仅使用官方或知名 CDN 节点，或允许用户自定义节点并默认关闭第三方节点。",
-      "severity": "MEDIUM",
-      "type": "供应链风险"
-    },
-    {
-      "description": "脚本申请了 GM_openInTab、GM_setClipboard、GM_notification 等高权限，但未见明显滥用。",
-      "location": "元数据 @grant",
-      "recommendation": "建议仅申请实际使用的权限，定期复查权限申请。",
-      "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "Code Missing"
     }
   ],
   "obfuscation_detected": false,
@@ -70,12 +19,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "HIGH",
+  "risk_level": "CRITICAL",
   "script_name": "Github Enhancement - High Speed Download",
-  "security_score": 60,
-  "summary": "该脚本通过大量第三方加速节点实现 Github 文件下载加速，涉及用户下载行为的外部重定向，存在数据外传和供应链风险。未发现隐私采集、代码混淆、远程代码执行或 DOM XSS 风险。建议仅在信任这些加速节点的前提下使用，并关注节点的安全性和可用性。",
-  "supply_chain_risk": true,
+  "security_score": 0,
+  "summary": "未提供完整代码，无法进行安全审查。请补充完整 UserScript 源代码。",
+  "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-08T06:28:33.959471+00:00",
+  "analyzed_at": "2026-06-15T07:09:30.966370+00:00",
   "slug": "GithubEnhanced-High-Speed-Download"
 }

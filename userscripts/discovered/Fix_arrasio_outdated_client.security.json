@@ -1,11 +1,21 @@
 {
   "approved": true,
   "data_transmission": {
-    "destinations": [],
+    "destinations": [
+      "arras.io (original WebSocket endpoint)"
+    ],
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [],
+  "issues": [
+    {
+      "description": "The script overrides the global WebSocket constructor to modify the connection URL parameter (&t=...), but does not transmit any additional data or intercept messages.",
+      "location": "WebSocket override",
+      "recommendation": "Ensure only the intended URL parameter is modified and no user data is injected.",
+      "severity": "LOW",
+      "type": "WebSocket modification"
+    }
+  ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
@@ -13,10 +23,10 @@
   },
   "risk_level": "SAFE",
   "script_name": "Fix arras.io outdated client",
-  "security_score": 100,
-  "summary": "该脚本仅重写了 WebSocket 构造函数以修正 arras.io 客户端的时间戳参数，没有任何数据外传、隐私采集、远程代码执行、混淆、XSS、权限滥用或供应链风险。未检测到安全隐患。",
+  "security_score": 97,
+  "summary": "This UserScript is safe. It only modifies the WebSocket connection URL to update a timestamp parameter, without collecting user data, transmitting information to third parties, or introducing code execution or supply chain risks. No critical or high-risk issues detected.",
   "supply_chain_risk": false,
   "websocket_usage": true,
-  "analyzed_at": "2026-06-08T06:41:53.606825+00:00",
+  "analyzed_at": "2026-06-15T07:21:20.956933+00:00",
   "slug": "Fix_arrasio_outdated_client"
 }

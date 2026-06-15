@@ -32,9 +32,9 @@ title: "Deadshot.io 辅助脚本"
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：84/100　　**分析时间**：2026-06-08
+**风险等级**：🟠 MEDIUM　　**安全评分**：77/100　　**分析时间**：2026-06-15
 
-> 该脚本未检测到明显的数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要风险为申请了 unsafeWindow 权限（中等风险），以及深度 hook 游戏 WebAssembly/渲染流程（高危行为，可能影响浏览器稳定性和安全性）。未发现数据外传、WebSocket、fetch、GM_xmlhttpRequest 等网络请求。未发现敏感隐私采集。未发现供应链风险。总体安全评分为 84，建议仅在无敏感信息环境下使用。
+> 该脚本未检测到数据外传和隐私采集行为，但存在高权限申请（unsafeWindow）和 WebAssembly 方法重写，属于远程代码执行高风险。未发现代码混淆、DOM XSS、敏感 API 调用、供应链风险等问题。整体安全评分为77，建议谨慎使用并持续关注后续版本的安全变化。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -47,15 +47,60 @@ title: "Deadshot.io 辅助脚本"
 
 ### 发现的问题
 
-**🔴 HIGH** — 敏感 API 调用/高危行为  
-> 脚本通过 hook WebAssembly 实例、canvas、shader、内存等方式，深度操作游戏页面，属于高风险作弊行为，可能导致浏览器崩溃或被利用。  
-> 位置：全局  
-> 建议：仅在可信环境下运行此类脚本，避免在含敏感信息的环境中使用。
+**🔴 HIGH** — 远程代码执行  
+> 脚本通过覆盖 WebAssembly.instantiate 和 WebAssembly.instantiateStreaming，拦截并操作 WASM 实例，可能影响页面正常行为并存在远程代码执行风险。  
+> 位置：WebAssembly.instantiate 重写  
+> 建议：避免拦截和修改 WebAssembly 原生方法，除非有充分理由并确保安全。
 
 **🟠 MEDIUM** — 权限滥用  
-> 使用了 @grant unsafeWindow，允许脚本以页面上下文运行，可能被滥用提升权限。  
-> 位置：元数据 @grant  
-> 建议：仅在确有必要时申请 unsafeWindow，避免滥用。
+> 脚本申请了 @grant unsafeWindow 权限，允许脚本访问和修改页面的全局对象，存在高权限滥用风险。  
+> 位置：元数据 @grant unsafeWindow  
+> 建议：仅申请必要权限，避免使用 unsafeWindow，除非确实需要与页面脚本交互。
+
+**🟡 LOW** — 敏感 API 调用  
+> 脚本通过 window.ipcRenderer.send 方法模拟鼠标移动事件，可能被滥用为自动化操作或作弊行为。  
+> 位置：window.ipcRenderer.send  
+> 建议：限制自动化操作的范围，避免影响用户体验或违反目标网站规则。
+
+**🟡 LOW** — 数据外传  
+> 脚本未检测到任何网络请求（如 GM_xmlhttpRequest、fetch、WebSocket 等），未发现数据外传行为。  
+> 位置：全局代码  
+> 建议：继续监控后续版本，防止新增数据外传代码。
+
+**🟡 LOW** — 隐私采集  
+> 脚本未检测到 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板读取等隐私采集行为。  
+> 位置：全局代码  
+> 建议：继续监控后续版本，防止新增隐私采集代码。
+
+**🟡 LOW** — 远程代码执行  
+> 脚本未检测到 eval、new Function、setTimeout(string)、setInterval(string) 等动态执行代码行为。  
+> 位置：全局代码  
+> 建议：避免使用动态执行代码，防止远程代码注入风险。
+
+**🟡 LOW** — 代码混淆  
+> 脚本未检测到代码混淆（如 base64 解码、字符串数组映射、unicode 混淆、大量压缩单行代码等）。  
+> 位置：全局代码  
+> 建议：保持代码可读性，便于安全审查。
+
+**🟡 LOW** — DOM XSS / 注入  
+> 脚本未检测到 DOM XSS 或注入风险（如未转义用户输入插入 innerHTML/outerHTML、document.write 插入不可信内容等）。  
+> 位置：全局代码  
+> 建议：确保所有用户输入经过严格转义后再插入 DOM。
+
+**🟡 LOW** — 敏感 API 调用  
+> 脚本未检测到敏感 API 调用（如 geolocation、RTCPeerConnection、MediaDevices、Notification、Clipboard API 等）。  
+> 位置：全局代码  
+> 建议：避免调用敏感 API，除非确实需要并征得用户同意。
+
+**🟡 LOW** — 供应链风险  
+> 脚本未检测到供应链风险（未使用 @require 加载第三方库）。  
+> 位置：元数据  
+> 建议：如需加载第三方库，请使用官方 CDN 并固定版本哈希。
+
+**🟡 LOW** — ClickJacking / iframe 风险  
+> 脚本未检测到 ClickJacking 或 iframe 风险（未修改 frame 保护策略或创建隐藏 iframe）。  
+> 位置：全局代码  
+> 建议：避免创建隐藏 iframe 或修改 frame 保护策略。
 
 ---
 

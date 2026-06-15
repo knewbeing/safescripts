@@ -35,35 +35,50 @@ title: "多邻国 DuoHacker"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：67/100　　**分析时间**：2026-06-08
+**风险等级**：🟡 LOW　　**安全评分**：85/100　　**分析时间**：2026-06-15
 
-> 该脚本在元数据区声明了高权限 GM_xmlhttpRequest 并允许连接多个第三方域名，存在数据外传和供应链风险。虽然当前代码片段未见明显隐私采集、远程代码执行或混淆行为，但由于未展示全部逻辑，无法排除后续代码存在更高风险。建议限制 @connect 域名、最小化权限，并进一步审查完整实现。
+> Duolingo DuoHacker 用户脚本当前版本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险等高危行为。主要风险为申请了高权限（GM_xmlhttpRequest）和多个 @connect 域名但未实际使用，建议后续代码补全时严格审查网络请求与数据传输。整体安全风险较低，安全评分为85分。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：duolingo.com, stories.duolingo.com, goals-api.duolingo.com） |
+| 数据外传 | ✅ 未检测到 |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ⚠️ 存在风险 |
+| 供应链风险 | ✅ 可信 |
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本声明了 @grant GM_xmlhttpRequest 并允许连接多个第三方域名（如 raw.githubusercontent.com、api.twisk.fun、fonts.googleapis.com、greasyfork.org），但完整代码未展示实际网络请求逻辑，存在数据外传潜在风险。  
-> 位置：元数据区 @grant/@connect  
-> 建议：仅允许必要的域名，限制敏感数据外传，代码需进一步审查实际请求内容。
-
-**🟠 MEDIUM** — 供应链风险  
-> 脚本允许连接 raw.githubusercontent.com、api.twisk.fun 等非官方/个人域名，存在供应链风险。  
-> 位置：元数据区 @connect  
-> 建议：仅允许可信、官方 CDN，避免个人/未知域名，建议固定版本哈希。
-
 **🟠 MEDIUM** — 权限滥用  
-> 脚本声明了 GM_xmlhttpRequest 高权限，但当前代码片段未见实际使用。  
-> 位置：元数据区 @grant  
-> 建议：如未使用 GM_xmlhttpRequest，应移除高权限声明，最小化权限。
+> 脚本申请了 GM_xmlhttpRequest 权限，并声明了多个 @connect 域名，但完整代码未包含任何实际网络请求逻辑（如 GM_xmlhttpRequest、fetch、WebSocket 等）。如后续代码补全或更新，需重点关注数据外传行为。  
+> 位置：元数据与代码头部  
+> 建议：仅申请实际需要的 @grant/@connect 权限，避免高权限滥用。后续代码如涉及网络请求，需严格审查数据传输内容与目的地。
+
+**🟡 LOW** — 隐私采集  
+> 脚本未包含任何隐私采集代码（如读取 cookie、localStorage、sessionStorage、IndexedDB、剪贴板、表单、键盘监听等）。  
+> 位置：完整代码  
+> 建议：保持不采集用户隐私数据，后续如需采集需明确告知用户并最小化范围。
+
+**🟡 LOW** — 远程代码执行  
+> 脚本未包含远程代码执行相关风险（如 eval、new Function、setTimeout(string)、setInterval(string)、动态 script 标签等）。  
+> 位置：完整代码  
+> 建议：避免使用动态执行代码方式，确保所有依赖库来源可信且版本固定。
+
+**🟡 LOW** — 代码混淆  
+> 脚本未包含代码混淆、压缩、base64/unicode编码等混淆特征。  
+> 位置：完整代码  
+> 建议：保持代码可读性，避免混淆以便社区审查。
+
+**🟡 LOW** — DOM XSS  
+> 脚本未包含 DOM XSS 或注入风险（如未转义用户输入插入 innerHTML、document.write、iframe src 操作等）。  
+> 位置：完整代码  
+> 建议：如后续涉及 DOM 操作，需对用户输入进行严格转义。
+
+**🟡 LOW** — 供应链风险  
+> 脚本通过 @require fonts.googleapis.com 加载字体，但未涉及第三方 JS 依赖。字体 CDN可信，未见供应链风险。  
+> 位置：元数据  
+> 建议：如后续加载第三方 JS，需固定版本并使用官方 CDN。
 
 ---
 

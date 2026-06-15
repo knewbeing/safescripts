@@ -4,7 +4,7 @@
   "raw_url": "https://raw.githubusercontent.com/maboloshi/github-chinese/gh-pages/main.user.js",
   "filename": "main.user.js",
   "name": "GitHub 中文化插件",
-  "version": "1.9.4-2026-05-21",
+  "version": "1.9.4-2026-06-10",
   "description": "中文化 GitHub 界面的部分菜单及内容。原作者为楼教主(http://www.52cik.com/)。",
   "match": [
     "https://github.com/*",
@@ -23,11 +23,11 @@
     "GM_notification"
   ],
   "require": [
-    "https://raw.githubusercontent.com/maboloshi/github-chinese/gh-pages/locals.js?v1.9.4-2026-05-21"
+    "https://raw.githubusercontent.com/maboloshi/github-chinese/gh-pages/locals.js?v1.9.4-2026-06-10"
   ],
-  "metadata_raw": "// @name  GitHub 中文化插件\n// @namespace  https://github.com/maboloshi/github-chinese\n// @description  中文化 GitHub 界面的部分菜单及内容。原作者为楼教主(http://www.52cik.com/)。\n// @copyright  2021, 沙漠之子 (https://maboloshi.github.io/Blog)\n// @icon  https://github.githubassets.com/pinned-octocat.svg\n// @version  1.9.4-2026-05-21\n// @author  沙漠之子\n// @license  GPL-3.0\n// @match  https://github.com/*\n// @match  https://skills.github.com/*\n// @match  https://gist.github.com/*\n// @match  https://education.github.com/*\n// @match  https://www.githubstatus.com/*\n// @require  https://raw.githubusercontent.com/maboloshi/github-chinese/gh-pages/locals.js?v1.9.4-2026-05-21\n// @run-at  document-start\n// @grant  GM_addStyle\n// @grant  GM_xmlhttpRequest\n// @grant  GM_getValue\n// @grant  GM_setValue\n// @grant  GM_registerMenuCommand\n// @grant  GM_unregisterMenuCommand\n// @grant  GM_notification\n// @connect  fanyi.iflyrec.com\n// @supportURL  https://github.com/maboloshi/github-chinese/issues",
-  "sha256": "2b0a12dc81744a198aee33b72bd71fc5d7cca2b075e8dc49050fc7eb21c49769",
-  "updated_at": "2026-06-01T06:45:05.628732+00:00",
+  "metadata_raw": "// @name  GitHub 中文化插件\n// @namespace  https://github.com/maboloshi/github-chinese\n// @description  中文化 GitHub 界面的部分菜单及内容。原作者为楼教主(http://www.52cik.com/)。\n// @copyright  2021, 沙漠之子 (https://maboloshi.github.io/Blog)\n// @icon  https://github.githubassets.com/pinned-octocat.svg\n// @version  1.9.4-2026-06-10\n// @author  沙漠之子\n// @license  GPL-3.0\n// @match  https://github.com/*\n// @match  https://skills.github.com/*\n// @match  https://gist.github.com/*\n// @match  https://education.github.com/*\n// @match  https://www.githubstatus.com/*\n// @require  https://raw.githubusercontent.com/maboloshi/github-chinese/gh-pages/locals.js?v1.9.4-2026-06-10\n// @run-at  document-start\n// @grant  GM_addStyle\n// @grant  GM_xmlhttpRequest\n// @grant  GM_getValue\n// @grant  GM_setValue\n// @grant  GM_registerMenuCommand\n// @grant  GM_unregisterMenuCommand\n// @grant  GM_notification\n// @connect  fanyi.iflyrec.com\n// @supportURL  https://github.com/maboloshi/github-chinese/issues",
+  "sha256": "e8a3895efb21b5cc7d4b0b346cde17459279297a3ebcafd69db413a5fbc80cef",
+  "updated_at": "2026-06-15T07:07:26.083399+00:00",
   "is_new": false,
   "summary": {
     "applicable_sites": [
@@ -37,10 +37,10 @@
       "GitHub Education",
       "GitHub Status"
     ],
-    "description": "本脚本将 GitHub 及其相关网站的部分菜单和界面内容翻译为中文，提升中文用户的使用体验。支持自动翻译和界面本地化，部分内容可自定义。",
+    "description": "本脚本可以将 GitHub 及其相关网站的部分菜单和内容翻译为中文，提升中文用户的使用体验。支持多站点，自动翻译界面元素。",
     "permissions": [
       {
-        "explanation": "用于添加或修改页面样式，让翻译内容显示更美观。",
+        "explanation": "用于添加自定义样式，让翻译内容显示更美观。",
         "grant": "GM_addStyle"
       },
       {
@@ -48,39 +48,38 @@
         "grant": "GM_xmlhttpRequest"
       },
       {
-        "explanation": "用于保存用户设置或翻译缓存。",
+        "explanation": "用于保存用户设置，如语言偏好。",
         "grant": "GM_getValue"
       },
       {
-        "explanation": "用于存储用户设置或翻译缓存。",
+        "explanation": "用于存储用户设置，如语言偏好。",
         "grant": "GM_setValue"
       },
       {
-        "explanation": "用于在脚本菜单中添加自定义操作按钮。",
+        "explanation": "用于在脚本菜单中添加自定义命令，方便用户操作。",
         "grant": "GM_registerMenuCommand"
       },
       {
-        "explanation": "用于移除脚本菜单中的自定义操作按钮。",
+        "explanation": "用于移除脚本菜单中的自定义命令。",
         "grant": "GM_unregisterMenuCommand"
       },
       {
-        "explanation": "用于弹出通知，提醒用户翻译或设置结果。",
+        "explanation": "用于弹出通知，提醒用户脚本相关信息。",
         "grant": "GM_notification"
       }
     ],
     "tags": [
       "界面翻译",
       "GitHub增强",
-      "中文本地化",
+      "中文化",
       "开发者工具",
-      "自动翻译",
-      "网页优化"
+      "多站点支持"
     ],
     "usage": [
       "安装 Tampermonkey 插件。",
       "在 Tampermonkey 中添加本脚本。",
-      "访问 GitHub 及相关网站，界面会自动显示中文。",
-      "如需自定义或反馈问题，可通过脚本菜单操作或访问支持页面。"
+      "打开 GitHub 或相关网站，界面会自动显示中文。",
+      "如需调整设置，可通过浏览器脚本菜单操作。"
     ],
     "zh_name": "GitHub 中文化插件"
   }

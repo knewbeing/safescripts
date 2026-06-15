@@ -2,39 +2,53 @@
   "approved": true,
   "data_transmission": {
     "destinations": [
-      "garticphone.com"
+      "garticphone.com (via WebSocket)"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "使用 fetch 进行网络请求，目标为 garticphone.com（与脚本运行域一致），未见向第三方域名外传数据。",
-      "location": "requestText, requestBuffer 函数",
-      "recommendation": "确保仅请求可信站点资源，避免携带敏感用户数据。",
+      "description": "Script establishes a WebSocket connection to garticphone.com and sends drawing packets, which may include user-generated drawing data.",
+      "location": "customWebSocket class, sendPackets function",
+      "recommendation": "Ensure only intended drawing data is sent; avoid sending sensitive or unintended user information.",
       "severity": "CRITICAL",
-      "type": "数据外传"
+      "type": "Data Transmission"
     },
     {
-      "description": "WebSocket 用于与 garticphone.com 服务器通信，未见向第三方服务器发送数据。",
-      "location": "customWebSocket 类、sendPackets 函数",
-      "recommendation": "确保 WebSocket 仅连接官方服务器，避免敏感信息泄露。",
-      "severity": "CRITICAL",
-      "type": "数据外传"
-    },
-    {
-      "description": "申请了 GM_xmlhttpRequest 权限，但实际代码未使用该 API。",
-      "location": "@grant 元数据",
-      "recommendation": "移除未使用的高权限申请，减少权限滥用风险。",
+      "description": "Script grants GM_xmlhttpRequest but does not use it in the code. Unused high privilege.",
+      "location": "Metadata (@grant GM_xmlhttpRequest)",
+      "recommendation": "Remove unused GM_xmlhttpRequest grant to minimize attack surface.",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "Permission Abuse"
     },
     {
-      "description": "申请了 unsafeWindow 权限，实际用于重写 WebSocket 构造函数，存在一定安全风险。",
-      "location": "@grant 元数据、unsafeWindow.WebSocket",
-      "recommendation": "仅在必要时使用 unsafeWindow，并确保无副作用。",
+      "description": "Script grants unsafeWindow, which can expose internal variables to the page context and vice versa.",
+      "location": "Metadata (@grant unsafeWindow)",
+      "recommendation": "Review necessity of unsafeWindow; restrict usage if possible.",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "Script uses fetch to load external scripts and resources, but only from garticphone.com domain.",
+      "location": "requestText, requestBuffer functions",
+      "recommendation": "Ensure fetch is not used to load from untrusted domains.",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    },
+    {
+      "description": "Script dynamically modifies and injects game scripts via Proxy on Node.prototype.appendChild, but only for scripts containing 'draw' in their src.",
+      "location": "Node.prototype.appendChild Proxy",
+      "recommendation": "Carefully validate injected code and avoid introducing vulnerabilities.",
+      "severity": "HIGH",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "Script uses setTimeout with string arguments in sendPackets function.",
+      "location": "sendPackets function",
+      "recommendation": "Replace setTimeout(string) with setTimeout(function) to avoid code injection risks.",
+      "severity": "HIGH",
+      "type": "Remote Code Execution"
     }
   ],
   "obfuscation_detected": false,
@@ -42,12 +56,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "LOW",
+  "risk_level": "MEDIUM",
   "script_name": "Gartic Phone Draw Bot",
-  "security_score": 66,
-  "summary": "该脚本主要通过代理 WebSocket 与 garticphone.com 官方服务器通信，实现自动绘图功能。未发现向第三方服务器外传数据或隐私采集行为。未检测到远程代码执行、代码混淆、DOM XSS、供应链风险等高危问题。存在未使用的 GM_xmlhttpRequest 权限和 unsafeWindow 权限申请，建议移除未用权限以降低潜在风险。整体风险较低。",
+  "security_score": 49,
+  "summary": "该脚本主要通过 WebSocket 向 garticphone.com 发送自动绘图数据，未发现明显的隐私采集行为。存在远程代码执行风险（动态修改脚本、setTimeout 字符串用法），以及权限滥用（未使用的 GM_xmlhttpRequest、unsafeWindow）。未检测到代码混淆或 DOM XSS。整体风险为中等，建议优化权限申请和远程代码执行方式。",
   "supply_chain_risk": false,
   "websocket_usage": true,
-  "analyzed_at": "2026-06-08T06:42:10.295483+00:00",
+  "analyzed_at": "2026-06-15T07:21:41.185104+00:00",
   "slug": "Gartic_Phone_Draw_Bot"
 }

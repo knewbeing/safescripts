@@ -1,28 +1,11 @@
 {
   "approved": true,
   "data_transmission": {
-    "destinations": [
-      "greasyfork.org"
-    ],
+    "destinations": [],
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [
-    {
-      "description": "@grant 申请了 GM_xmlhttpRequest 权限，但脚本本身未检测到实际调用 GM_xmlhttpRequest。",
-      "location": "元数据与主代码",
-      "recommendation": "如无实际用途，建议移除 @grant GM_xmlhttpRequest 权限，最小化权限申请。",
-      "severity": "MEDIUM",
-      "type": "权限滥用"
-    },
-    {
-      "description": "@connect 仅允许 greasyfork.org，未发现第三方数据外传代码。",
-      "location": "元数据",
-      "recommendation": "保持 @connect 范围最小化，避免添加不必要的外部域名。",
-      "severity": "LOW",
-      "type": "数据外传"
-    }
-  ],
+  "issues": [],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
@@ -30,10 +13,10 @@
   },
   "risk_level": "SAFE",
   "script_name": "Torn City - Merit Tracker",
-  "security_score": 89,
-  "summary": "该脚本主要为 Torn City 游戏提供荣誉成就提示，无数据外传、隐私采集、远程代码执行、混淆、XSS、供应链等高风险行为。唯一中等风险为申请了未使用的 GM_xmlhttpRequest 权限，建议移除以进一步提升安全性。整体安全，适合使用。",
+  "security_score": 100,
+  "summary": "该脚本仅在 Torn City 页面上运行，未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。唯一申请的 GM_xmlhttpRequest 权限仅用于 greasyfork.org，且代码未实际调用网络请求。整体安全性极高。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-08T06:48:36.182258+00:00",
+  "analyzed_at": "2026-06-15T07:29:20.303817+00:00",
   "slug": "Torn_City_-_Merit_Tracker"
 }

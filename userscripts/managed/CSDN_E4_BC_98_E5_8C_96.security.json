@@ -10,18 +10,32 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "@grant 申请了较多 GM_* 权限，但部分如 GM_getResourceText、GM_setValues、GM_unregisterMenuCommand 在脚本中未见实际使用，存在权限冗余。",
-      "location": "元数据 @grant 字段",
-      "recommendation": "仅申请实际使用的权限，减少潜在攻击面。",
+      "description": "@require 加载了多个第三方库，部分为作者自建仓库（CoverUMD），其余为 npm 包通过 jsdelivr CDN加载，均为固定版本哈希或官方CDN，供应链风险较低但需持续关注。",
+      "location": "元数据 @require",
+      "recommendation": "定期审查依赖库代码，确保无恶意变更；优先使用官方CDN和固定版本哈希。",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "Supply Chain Risk"
     },
     {
-      "description": "所有 @require 的第三方库均通过 jsdelivr CDN 并锁定了具体版本或 commit hash，来源可信，但依赖较多，存在一定供应链风险。",
-      "location": "元数据 @require 字段",
-      "recommendation": "定期检查依赖库安全性，关注依赖库的安全公告。",
+      "description": "申请了 GM_xmlhttpRequest 权限，但代码未发现实际使用，存在权限冗余。",
+      "location": "元数据 @grant",
+      "recommendation": "移除未使用的高权限申请，减少攻击面。",
       "severity": "MEDIUM",
-      "type": "供应链风险"
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "申请了 unsafeWindow 权限，但代码未发现实际使用，存在权限冗余。",
+      "location": "元数据 @grant",
+      "recommendation": "移除未使用的高权限申请，减少攻击面。",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "部分代码为高度压缩单行代码（minified），但未见混淆器特征，整体可读性尚可。",
+      "location": "主脚本函数体",
+      "recommendation": "建议提供未压缩源码以便社区审查。",
+      "severity": "LOW",
+      "type": "Obfuscation"
     }
   ],
   "obfuscation_detected": false,
@@ -31,10 +45,10 @@
   },
   "risk_level": "LOW",
   "script_name": "CSDN优化",
-  "security_score": 84,
-  "summary": "该脚本主要用于优化 CSDN 站点体验，未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。所有网络请求仅限于 CSDN 官方域名，且未见主动外传用户数据。@require 的第三方库均锁定版本，供应链风险较低。存在部分未使用的 GM_* 权限申请，建议精简。整体安全风险较低，适合一般用户使用。",
+  "security_score": 81,
+  "summary": "该脚本主要用于优化CSDN页面体验，屏蔽广告、自动展开内容等。未检测到数据外传、隐私采集、远程代码执行、DOM XSS等高危行为。依赖库均为固定版本，供应链风险较低。存在部分权限冗余和代码压缩，建议移除未用权限并提供未压缩源码。整体安全风险较低，适合使用。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-08T06:27:51.513536+00:00",
+  "analyzed_at": "2026-06-15T07:08:03.617629+00:00",
   "slug": "CSDN_E4_BC_98_E5_8C_96"
 }

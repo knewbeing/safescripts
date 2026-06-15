@@ -5,18 +5,26 @@
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [],
+  "issues": [
+    {
+      "description": "@require 加载了 https://greasyfork.org/scripts/456228/code/456228.js?version=1309113，存在供应链风险（未固定哈希，第三方代码可能变更）",
+      "location": "UserScript metadata (@require)",
+      "recommendation": "建议仅使用官方 CDN 且固定版本哈希，或将依赖代码本地化到脚本内",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    }
+  ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
     "detected": false
   },
-  "risk_level": "SAFE",
+  "risk_level": "LOW",
   "script_name": "Bypass Pahe Links",
-  "security_score": 100,
-  "summary": "该脚本未检测到任何网络数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用或敏感 API 调用等安全风险。唯一的供应链风险为 @require 加载的外部脚本，但该链接为 greasyfork 官方 CDN 并带有固定版本号，风险极低。整体安全性高。",
-  "supply_chain_risk": false,
+  "security_score": 92,
+  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用等高风险行为。唯一风险为 @require 加载第三方库，存在供应链风险。整体安全性较高，但建议关注依赖库的安全更新和来源可信度。",
+  "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-08T06:37:13.872486+00:00",
+  "analyzed_at": "2026-06-15T07:16:53.563760+00:00",
   "slug": "Bypass_Pahe_Links"
 }

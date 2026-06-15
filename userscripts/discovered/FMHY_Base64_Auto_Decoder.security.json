@@ -4,27 +4,19 @@
     "destinations": [],
     "detected": false
   },
-  "dom_xss_risk": true,
-  "issues": [
-    {
-      "description": "The script uses innerHTML to insert decoded and linkified content based on page text, which may include untrusted input. If the decoded base64 content is attacker-controlled, this could lead to DOM XSS.",
-      "location": "Multiple locations, e.g., element.innerHTML = htmlWithLinks; and prettyPrintElement.innerHTML = decryptedText;",
-      "recommendation": "Sanitize all decoded content before inserting with innerHTML. Use DOM methods to create elements instead of string concatenation.",
-      "severity": "HIGH",
-      "type": "DOM XSS Risk"
-    }
-  ],
+  "dom_xss_risk": false,
+  "issues": [],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
     "detected": false
   },
-  "risk_level": "LOW",
+  "risk_level": "SAFE",
   "script_name": "FMHY Base64 Auto Decoder",
-  "security_score": 85,
-  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、权限滥用、敏感 API 滥用或供应链风险。主要安全隐患为在插入解码内容时使用 innerHTML，存在一定 DOM XSS 风险。建议对解码内容进行严格转义或使用安全的 DOM API 插入，避免 XSS 攻击。",
+  "security_score": 100,
+  "summary": "该脚本仅在本地页面内容中查找并解码 Base64 字符串，将其转为可点击链接。未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码结构清晰，未申请任何高权限，未加载外部库，未使用危险 API。整体安全性极高。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-08T06:41:44.086122+00:00",
+  "analyzed_at": "2026-06-15T07:21:13.032730+00:00",
   "slug": "FMHY_Base64_Auto_Decoder"
 }

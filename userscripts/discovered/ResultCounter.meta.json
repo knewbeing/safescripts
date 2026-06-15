@@ -27,7 +27,7 @@
   "require": [],
   "metadata_raw": "// @name  搜索结果自动加序号\n// @author  burningall\n// @description  给百度\\谷歌\\必应等搜索结果加上序号\n// @version  2017.7.21\n// @include  *www.baidu.com*\n// @include  *news.baidu.com*\n// @include  *zhidao.baidu.com*\n// @include  *wenku.baidu.com*\n// @include  *v.baidu.com*\n// @include  *tieba.baidu.com/f/search/*\n// @include  *image.baidu.com*\n// @include  *www.google.com*\n// @include  *cn.bing.com*\n// @include  *www.sogou.com*\n// @include  *www.so.com*\n// @include  *www.youdao.com*\n// @include  *bbs.kafan.cn*\n// @contributionURL  troy450409405@gmail.com\n// @namespace  https://greasyfork.org/zh-CN/users/3400-axetroy\n// @note  Edit from axetroy 感谢axetroy大神的脚本，我只是基于大神的脚本，进行了简单的修复",
   "sha256": "15121dd49cc9c2ea8a758cd86862282103373d4eab3222105cd21399495d87dd",
-  "discovered_at": "2026-06-08T06:31:14.270476+00:00",
+  "discovered_at": "2026-06-15T07:10:44.829288+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
@@ -41,7 +41,7 @@
       "百度知道",
       "百度文库",
       "百度视频",
-      "百度贴吧搜索",
+      "百度贴吧",
       "百度图片",
       "谷歌",
       "必应",
@@ -50,19 +50,18 @@
       "有道",
       "卡饭论坛"
     ],
-    "description": "本脚本会在各大搜索引擎的搜索结果旁自动添加序号，方便用户快速查看和定位结果。支持百度、谷歌、必应等主流搜索网站。",
+    "description": "本脚本会在各大搜索网站的搜索结果旁自动添加序号，方便用户快速辨认和查找结果。支持百度、谷歌、必应等主流搜索平台。",
     "permissions": [],
     "tags": [
-      "搜索引擎",
+      "搜索增强",
       "界面优化",
       "效率提升",
-      "百度",
-      "谷歌",
-      "必应"
+      "实用工具",
+      "多平台支持"
     ],
     "usage": [
-      "安装脚本后，访问百度、谷歌、必应等支持的网站。",
-      "进行搜索后，搜索结果左侧会自动显示序号。",
+      "安装脚本后，访问任意支持的搜索网站。",
+      "进行搜索后，搜索结果旁会自动显示序号。",
       "无需额外操作，序号自动添加。"
     ],
     "zh_name": "搜索结果自动加序号"

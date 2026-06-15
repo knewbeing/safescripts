@@ -49,14 +49,14 @@ title: "点击助手（Bloxd.io 游戏专用）"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：84/100　　**分析时间**：2026-06-08
+**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-15
 
-> 该脚本未发现任何数据外传、远程代码执行、代码混淆、DOM XSS、供应链等高危风险。主要涉及本地 localStorage 和 cookie 读写（用于设置和账号切换），未发现外传行为。未使用高权限 API，无敏感信息采集。整体安全风险低，适合一般用户使用。
+> 该脚本未发现数据外传、远程代码执行、代码混淆、DOM XSS、敏感 API 调用、供应链风险等高危安全问题。仅存在 localStorage 读写用户配置的中低风险隐私采集行为。整体安全风险较低，安全评分为 89。
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ✅ 未检测到 |
-| 隐私采集 | ❌ 检测到（localStorage 读写用户设置和按键绑定, document.cookie 读取和清除（本地账号切换用途）） |
+| 隐私采集 | ❌ 检测到（localStorage 读写用户配置和按键绑定） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -64,55 +64,50 @@ title: "点击助手（Bloxd.io 游戏专用）"
 
 ### 发现的问题
 
-**🟠 MEDIUM** — localStorage usage  
-> 脚本通过 localStorage 读写用户设置和按键绑定，但未发现外传行为。  
-> 位置：StorageManager.loadBinds, StorageManager.loadSettings, StorageManager.saveBinds, StorageManager.saveSettings  
-> 建议：仅本地存储用户设置，风险较低。
+**⛔ CRITICAL** — 数据外传  
+> 未发现网络请求（GM_xmlhttpRequest、fetch、WebSocket、sendBeacon、EventSource等），无数据外传行为。  
+> 位置：全局代码审查  
+> 建议：继续保持无外传，若后续添加联网功能需严格审查。
 
-**🟠 MEDIUM** — cookie access  
-> 脚本读取并清除 document.cookie（用于账号生成/切换），但未发现外传。  
-> 位置：AccountModule.clearAndReload  
-> 建议：仅本地操作，未外传，注意不要误删敏感 Cookie。
+**🔴 HIGH** — 远程代码执行  
+> 未发现 eval、new Function、setTimeout(string)、setInterval(string) 等动态代码执行，未见远程脚本加载。  
+> 位置：全局代码审查  
+> 建议：避免动态执行和远程加载，防止远程代码注入风险。
 
-**🟡 LOW** — network request  
-> 未发现任何网络请求、WebSocket、fetch、GM_xmlhttpRequest 等外传代码。  
-> 位置：全局  
-> 建议：保持无外传，安全。
+**🔴 HIGH** — 代码混淆  
+> 未发现代码混淆（无 atob/btoa、字符串数组映射、unicode 混淆、大量压缩单行代码等）。  
+> 位置：全局代码审查  
+> 建议：保持代码可读性，便于社区审查。
 
-**🟡 LOW** — code execution  
-> 未发现 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险。  
-> 位置：全局  
-> 建议：保持无动态代码执行，安全。
+**🔴 HIGH** — DOM XSS / 注入  
+> 未发现 DOM XSS 风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未使用 document.write 插入不可信内容。  
+> 位置：全局代码审查  
+> 建议：如需插入用户输入，务必进行转义。
 
-**🟡 LOW** — obfuscation  
-> 未发现代码混淆、base64 解码、字符串数组映射、unicode 混淆等。  
-> 位置：全局  
-> 建议：保持源码可读性，安全。
+**🟠 MEDIUM** — 隐私采集  
+> 脚本通过 localStorage 读写存储用户设置和按键绑定信息。未发现敏感数据（如 cookie、表单、密码等）被读取或外传。  
+> 位置：StorageManager.loadBinds/loadSettings/saveBinds/saveSettings  
+> 建议：确保仅存储非敏感配置数据，避免存储账号、密码等敏感信息。
 
-**🟡 LOW** — dom xss  
-> 未发现 DOM XSS、用户输入插入 innerHTML/outerHTML、document.write 等注入风险。  
-> 位置：全局  
-> 建议：保持安全的 DOM 操作。
+**🟠 MEDIUM** — 敏感 API 调用  
+> 未发现敏感 API 调用（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API）。  
+> 位置：全局代码审查  
+> 建议：如需调用敏感 API，需征得用户明确同意。
 
-**🟡 LOW** — permissions  
-> 未申请任何 @grant 权限，实际代码也未用 GM_* API。  
-> 位置：元数据  
-> 建议：最小权限原则，安全。
+**🟠 MEDIUM** — 供应链风险  
+> 未使用 @require 加载第三方库，无供应链风险。  
+> 位置：元数据 @require  
+> 建议：如需引入第三方库，建议使用官方 CDN 并固定版本哈希。
 
-**🟡 LOW** — sensitive api  
-> 未发现敏感 API（摄像头、麦克风、地理位置、剪贴板读取、通知等）调用。  
-> 位置：全局  
-> 建议：保持不调用敏感 API，安全。
+**🟡 LOW** — 权限滥用  
+> 脚本未申请任何 @grant 权限，实际代码也未使用 GM_* API，权限申请合理。  
+> 位置：元数据 @grant none  
+> 建议：保持最小权限原则，避免申请不必要的高权限。
 
-**🟡 LOW** — supply chain  
-> 未通过 @require 加载第三方库，无供应链风险。  
-> 位置：元数据  
-> 建议：如需第三方库，建议固定版本和可信源。
-
-**🟡 LOW** — iframe  
-> 未发现对 iframe、frame 保护策略的修改或隐藏 iframe 注入。  
-> 位置：全局  
-> 建议：保持无 iframe 风险。
+**🟡 LOW** — ClickJacking / iframe 风险  
+> 未发现 ClickJacking 或 iframe 风险，未修改 frame 保护策略，未创建隐藏 iframe。  
+> 位置：全局代码审查  
+> 建议：如需操作 iframe，需严格控制来源和用途。
 
 ---
 

@@ -1,0 +1,79 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [
+      "greasyfork.org",
+      "sleazyfork.org"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "脚本使用 GM_xmlhttpRequest 向 greasyfork.org 和 sleazyfork.org 发起 GET 请求，目的是抓取搜索结果并合并显示。未发现向第三方域名发送用户数据或页面内容。",
+      "location": "GM_xmlhttpRequest 调用",
+      "recommendation": "确保仅请求官方域名，避免携带敏感用户数据。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本读取和写入 localStorage 以及 GM_setValue/GM_getValue，用于存储脚本配置。未发现读取 cookie、sessionStorage、IndexedDB、表单字段或剪贴板内容。",
+      "location": "storage.getItem/setItem",
+      "recommendation": "仅存储必要的非敏感配置数据，避免存储敏感信息。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本通过 innerHTML 插入来自 greasyfork/sleazyfork 的 HTML，但未直接插入用户输入或 URL 参数，且内容来源可信。",
+      "location": "doc.documentElement.innerHTML = result.responseText",
+      "recommendation": "如后续插入用户输入，需严格转义。",
+      "severity": "HIGH",
+      "type": "DOM XSS / 注入"
+    },
+    {
+      "description": "脚本申请了 GM_notification、GM_registerMenuCommand 等权限，但实际代码仅有限使用，未发现滥用。",
+      "location": "元数据 @grant",
+      "recommendation": "建议只申请实际需要的权限。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行方式。",
+      "location": "全局代码检查",
+      "recommendation": "保持禁止远程代码执行。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本未使用 WebSocket、EventSource、navigator.sendBeacon 等实时数据传输方式。",
+      "location": "全局代码检查",
+      "recommendation": "如需使用，需严格限制目标和数据内容。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "脚本未通过 @require 加载第三方库，也未动态加载外部 JS。",
+      "location": "元数据检查",
+      "recommendation": "如需加载第三方库，建议固定版本哈希并使用官方 CDN。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [
+      "localStorage",
+      "GM_setValue",
+      "GM_getValue"
+    ],
+    "detected": true
+  },
+  "risk_level": "MEDIUM",
+  "script_name": "Greasyfork Search with Sleazyfork Results include",
+  "security_score": 59,
+  "summary": "脚本主要用于合并 greasyfork 和 sleazyfork 的搜索结果，未发现向第三方服务器发送敏感数据，也未发现恶意隐私采集、远程代码执行或代码混淆。存在一定的权限申请冗余和通过 innerHTML 插入外部 HTML 的风险，但内容来源可信。整体风险为中等，建议持续关注权限申请和 HTML 注入方式。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-06-15T07:22:26.897749+00:00",
+  "slug": "Greasyfork_Search_with_Sleazyfork_Results_include"
+}

@@ -25,7 +25,7 @@
 // @name:zh-CN           YouTube Ads-Bypass (跳过并隐藏所有广告)
 // @name:zh-TW           YouTube Ads-Bypass (跳過並隱藏所有廣告)
 // @namespace            YouTube_Ad-Bypass_Fckoff
-// @version              1.28.2
+// @version              1.28.3
 // @description:ar       سكربت خفيف وعالي الأداء لتخطي إعلانات الفيديو وإخفاء عناصر واجهة المستخدم المزعجة (اللافتات، التراكبات، والعروض الترويجية).
 // @description:bn       ভিডিও বিজ্ঞাপন এড়িয়ে যাওয়ার এবং বিরক্তিকর ইউআই উপাদান (ব্যানার, ওভারলে এবং প্রমো) লুকানোর জন্য লাইটওয়েট এবং উচ্চ-ক্ষমতাসম্পন্ন স্ক্রিপ্ট।
 // @description:cs       Lehký a vysoce výkonný skript pro přeskočení video reklam a skrytí otravných prvků rozhraní (bannery, překryvy a promo akce).
@@ -310,10 +310,12 @@
         if (video.style.display == 'none') {
             video.style.display = 'block';
         }
+        /* It was deactivated because this triggers the YouTube block
         if (video.paused) {
             video.play();
             log('Ad play');
         }
+        */
     };
 
     /**
@@ -361,10 +363,12 @@
                 video.playbackRate = 1;
                 log('Restore playRate');
             }
+            /* It was deactivated because this triggers the YouTube block
             if (video.paused) {
                 video.play();
                 log('Restore pause');
             }
+            */
             log('Restore Play');
         }
     };

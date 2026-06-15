@@ -2,18 +2,18 @@
   "approved": true,
   "data_transmission": {
     "destinations": [
-      "arras.io (modified WebSocket URL)"
+      "arras.io WebSocket endpoint (modified URL)"
     ],
     "detected": false
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script overrides the global WebSocket constructor to modify the connection URL by appending custom query parameters. This could potentially interfere with other scripts or site functionality, but does not transmit user data or content.",
-      "location": "Global scope, WebSocket class override",
-      "recommendation": "Limit the override to only the intended WebSocket connections if possible. Document the behavior for maintainability.",
+      "description": "The script overrides the global WebSocket constructor to modify the connection URL by appending custom query parameters. This could potentially interfere with legitimate WebSocket usage or introduce compatibility issues.",
+      "location": "WebSocket class override",
+      "recommendation": "Limit WebSocket overrides to specific contexts if possible. Ensure the modification does not leak sensitive data or break site functionality.",
       "severity": "MEDIUM",
-      "type": "WebSocket override"
+      "type": "WebSocket manipulation"
     }
   ],
   "obfuscation_detected": false,
@@ -23,10 +23,10 @@
   },
   "risk_level": "LOW",
   "script_name": "Fix Arras.io shooting",
-  "security_score": 92,
-  "summary": "The script modifies the WebSocket constructor to change the connection URL for arras.io, appending static parameters and a timestamp. It does not collect or transmit user data, nor does it introduce code execution or XSS risks. No obfuscation or supply chain risks detected. The main concern is the global override of WebSocket, which could have unintended side effects.",
+  "security_score": 89,
+  "summary": "The script modifies the WebSocket constructor to change the connection URL for arras.io, adding custom parameters. No data exfiltration, privacy collection, code execution risks, or supply chain issues are detected. The only concern is the global WebSocket override, which is a medium risk for compatibility and maintainability, but does not introduce critical security threats.",
   "supply_chain_risk": false,
   "websocket_usage": true,
-  "analyzed_at": "2026-06-08T06:41:49.745991+00:00",
+  "analyzed_at": "2026-06-15T07:21:17.535723+00:00",
   "slug": "Fix_Arrasio_shooting"
 }

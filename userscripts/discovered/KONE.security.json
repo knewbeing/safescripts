@@ -1,0 +1,74 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [
+      "dlsite.com",
+      "store.steampowered.com",
+      "kio.ac",
+      "kiosk.ac",
+      "*"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "脚本申请了 GM_xmlhttpRequest 权限，并通过 @connect * 允许向任意域名发送网络请求，存在数据外传风险。虽然主要用于产品卡片预览和链接健康检查，但理论上可向任意第三方服务器发送数据。",
+      "location": "元数据 @grant GM_xmlhttpRequest, @connect *",
+      "recommendation": "限制 @connect 域名范围，避免允许任意外部通信。审查所有 GM_xmlhttpRequest 调用，确保不携带敏感用户数据。",
+      "severity": "CRITICAL",
+      "type": "Data Transmission"
+    },
+    {
+      "description": "脚本包含密码自动填充功能，涉及读取和存储用户输入的密码（通过 GM_getValue/GM_setValue 管理密码列表），存在隐私采集风险。",
+      "location": "CFG.PW_AUTO, getPwList(), savePwList()",
+      "recommendation": "确保密码仅在本地存储且不外传，避免通过网络请求发送密码数据。建议对密码数据加密存储。",
+      "severity": "CRITICAL",
+      "type": "Privacy Collection"
+    },
+    {
+      "description": "脚本允许通过 GM_xmlhttpRequest 向任意域名发送请求，理论上可被滥用为远程代码执行通道。",
+      "location": "元数据 @connect *",
+      "recommendation": "移除 @connect *，仅允许可信域名。审查所有网络请求，避免动态加载和执行外部代码。",
+      "severity": "HIGH",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "脚本未混淆，但部分功能涉及 base64 解码（如 Base64/braille decoder），需警惕混淆代码被插入。",
+      "location": "Base64 decoder 相关函数",
+      "recommendation": "确保所有解码操作仅针对用户明确输入，不自动执行未知来源代码。",
+      "severity": "HIGH",
+      "type": "Obfuscation"
+    },
+    {
+      "description": "脚本申请了 GM_registerMenuCommand、GM_unregisterMenuCommand、GM_getValue、GM_setValue 等权限，部分权限未被充分使用，存在权限滥用风险。",
+      "location": "元数据 @grant",
+      "recommendation": "仅申请实际需要的权限，移除未使用的高权限。",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "脚本通过 @require 加载自身更新，但未加载第三方库，供应链风险较低。但 @downloadURL 和 @updateURL 使用 GreasyFork 官方 CDN，可信。",
+      "location": "元数据 @downloadURL, @updateURL",
+      "recommendation": "如需加载第三方库，务必固定版本哈希并使用官方 CDN。",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [
+      "密码自动填充功能涉及读取和存储用户密码",
+      "使用 GM_getValue/GM_setValue 管理密码列表"
+    ],
+    "detected": true
+  },
+  "risk_level": "CRITICAL",
+  "script_name": "KONE +",
+  "security_score": 34,
+  "summary": "KONE + 脚本存在严重安全风险，主要体现在数据外传（@connect * 允许任意域名通信）、隐私采集（密码自动填充功能）、远程代码执行风险（理论上可被滥用为远程通信通道）。建议限制网络请求目标、加强密码数据保护、减少权限申请。当前不建议在敏感环境下使用。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-06-15T07:24:34.731500+00:00",
+  "slug": "KONE"
+}

@@ -2,7 +2,6 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
-      "*",
       "baidu.com",
       "google.com",
       "google.com.hk",
@@ -12,32 +11,47 @@
       "dogedoge.com",
       "so.com",
       "localhost",
-      "90dao.com"
+      "90dao.com",
+      "*"
     ],
     "detected": false
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "@connect * 允许任意域名的网络请求，存在数据外传潜在风险，尤其是脚本后续代码如有 GM_xmlhttpRequest/fetch/WS 等调用。",
-      "location": "元数据 @connect",
-      "recommendation": "移除 @connect *，仅保留实际需要的域名，最小化外联范围。",
+      "description": "@connect * 允许任意域名的网络请求，存在数据外传风险，虽然代码未见明显数据上报，但此权限极高危。",
+      "location": "UserScript metadata (@connect *)",
+      "recommendation": "移除 @connect *，仅保留实际需要的域名，避免任意外部请求。",
       "severity": "CRITICAL",
-      "type": "数据外传"
+      "type": "Permission Risk"
     },
     {
-      "description": "部分 @resource 样式文件和 @require 的 JS 依赖（如 less.js、vue.js）来自第三方 CDN，部分为非官方源（如 ibaidu.tujidu.com、gitcode.net），存在供应链污染风险。",
-      "location": "元数据 @resource/@require",
-      "recommendation": "建议仅使用官方 CDN 并固定版本哈希，避免使用未知或不可信第三方源。",
-      "severity": "MEDIUM",
-      "type": "供应链风险"
+      "description": "大量 @grant GM_xmlhttpRequest 权限，结合 @connect *，理论上可向任意域名发送请求，存在滥用风险。",
+      "location": "UserScript metadata (@grant GM_xmlhttpRequest)",
+      "recommendation": "仅申请实际需要的权限，移除不必要的高权限。",
+      "severity": "HIGH",
+      "type": "Permission Risk"
     },
     {
-      "description": "脚本申请了大量 GM_* 权限（如 GM_xmlhttpRequest、GM_addValueChangeListener、unsafeWindow），部分高权限如 GM_xmlhttpRequest、unsafeWindow 可能被滥用，且未见全部实际使用。",
-      "location": "元数据 @grant",
-      "recommendation": "仅申请实际使用的权限，避免权限滥用，移除未用高权限。",
+      "description": "动态加载第三方库（less.js、vue.js）通过 @require，虽然来源为 npmmirror 官方镜像，但未固定哈希，存在供应链风险。",
+      "location": "UserScript metadata (@require)",
+      "recommendation": "使用官方 CDN 并固定版本哈希，避免供应链污染。",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "Supply Chain Risk"
+    },
+    {
+      "description": "大量 @resource 加载样式文件，部分来源为非官方域名（ibaidu.tujidu.com），存在供应链风险。",
+      "location": "UserScript metadata (@resource)",
+      "recommendation": "确保资源来源可信，建议使用官方 CDN 并固定版本。",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    },
+    {
+      "description": "申请了 unsafeWindow 权限，可能导致脚本可访问页面全局对象，存在被滥用风险。",
+      "location": "UserScript metadata (@grant unsafeWindow)",
+      "recommendation": "仅在确实需要时使用 unsafeWindow，避免滥用。",
+      "severity": "MEDIUM",
+      "type": "Permission Risk"
     }
   ],
   "obfuscation_detected": false,
@@ -45,12 +59,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "HIGH",
+  "risk_level": "CRITICAL",
   "script_name": "AC-baidu-重定向优化百度搜狗谷歌必应搜索_favicon_双列",
-  "security_score": 52,
-  "summary": "该脚本元数据存在严重安全隐患：@connect * 允许任意域名网络请求，理论上可导致数据外传（CRITICAL）；部分依赖和样式文件来源于非官方第三方 CDN，存在供应链风险（MEDIUM）；权限申请过多，部分高权限未必实际使用（MEDIUM）。当前未发现明显隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。建议严格限制 @connect 域名、仅使用可信依赖、最小化权限申请。若后续代码有网络请求或外部脚本注入行为，需进一步详细审查。",
+  "security_score": 25,
+  "summary": "该脚本存在严重安全风险，主要体现在 @connect * 允许任意域名网络请求，结合 GM_xmlhttpRequest 权限理论上可外传任意数据。虽然代码未见明显数据上报，但权限配置极高危。另有供应链风险（第三方库和样式资源未固定哈希，部分来源非官方）。未检测到隐私采集、代码混淆、DOM XSS、WebSocket 使用等问题。建议严格收缩权限、固定依赖来源和版本。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-08T06:35:43.253834+00:00",
+  "analyzed_at": "2026-06-15T07:15:32.835969+00:00",
   "slug": "AC-baidu-重定向优化百度搜狗谷歌必应搜索_favicon_双列"
 }

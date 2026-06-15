@@ -1,18 +1,18 @@
 ---
-title: "公平战斗侦查器 V2"
+title: "公平战斗侦查器"
 ---
 
-# 公平战斗侦查器 V2
+# 公平战斗侦查器
 
-`游戏辅助`  `信息展示`  `策略优化`  `帮派管理`  `网页增强`
+`游戏辅助`  `数据展示`  `策略优化`  `Torn`  `帮派管理`  `玩家分析`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/FF_Scouter_V2.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**2.77**　　发现时间：**2026-06-08**　　来源：[GreasyFork](https://greasyfork.org/scripts/535292-ff-scouter-v2) <Badge type="tip" text="GreasyFork" />　　安装量：**16,711**　　评分：👍3 / 👎3
+> 版本：**2.77**　　发现时间：**2026-06-15**　　来源：[GreasyFork](https://greasyfork.org/scripts/535292-ff-scouter-v2) <Badge type="tip" text="GreasyFork" />　　安装量：**17,209**　　评分：👍3 / 👎3
 
 ## 功能介绍
 
-此脚本在 Torn 游戏网站上显示目标玩家的公平战斗分数和帮派战争状态，帮助玩家更好地评估攻击目标。它会自动获取并展示相关信息，提升游戏策略性。
+此脚本在 Torn 游戏网站上显示目标玩家的 Fair Fight 分数和帮派战争状态，帮助玩家更好地评估对手和战局。通过自动获取和展示相关数据，提升游戏策略体验。
 
 ## 适用网站
 
@@ -20,27 +20,27 @@ title: "公平战斗侦查器 V2"
 
 ## 使用方法
 
-1. 安装脚本后，访问 Torn 网站。
-2. 在玩家或帮派页面会自动显示公平战斗分数和战争状态。
-3. 如需调整设置，可通过用户脚本菜单进行操作。
+1. 安装脚本后，登录 Torn 网站。
+2. 在目标玩家页面或帮派相关页面，会自动显示 Fair Fight 分数和帮派战争状态。
+3. 可通过脚本菜单进行设置或刷新数据。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `GM_xmlhttpRequest` | 用于发送网络请求，获取外部数据。 |
-| `GM_setValue` | 用于保存脚本设置和数据。 |
-| `GM_getValue` | 用于读取脚本保存的数据。 |
-| `GM_listValues` | 用于列出所有已保存的数据项。 |
-| `GM_deleteValue` | 用于删除脚本保存的数据。 |
-| `GM_registerMenuCommand` | 用于在用户脚本菜单中添加自定义命令。 |
-| `GM_addStyle` | 用于添加自定义样式，让信息显示更美观。 |
+| `GM_xmlhttpRequest` | 用于向外部网站请求数据，获取 Fair Fight 分数和帮派信息。 |
+| `GM_setValue` | 保存脚本设置和缓存数据，方便下次使用。 |
+| `GM_getValue` | 读取脚本保存的数据，如用户偏好和缓存信息。 |
+| `GM_listValues` | 列出所有已保存的数据键，便于管理缓存和设置。 |
+| `GM_deleteValue` | 删除不再需要的脚本数据，保持数据整洁。 |
+| `GM_registerMenuCommand` | 在脚本菜单中添加自定义命令，方便用户操作。 |
+| `GM_addStyle` | 为页面添加自定义样式，让显示效果更美观。 |
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：60/100　　**分析时间**：2026-06-08
+**风险等级**：🔴 HIGH　　**安全评分**：67/100　　**分析时间**：2026-06-15
 
-> The script transmits data to a third-party server (ffscouter.com) using GM_xmlhttpRequest, which is a critical risk if sensitive user data is sent. There is no evidence of privacy-invasive data collection, code obfuscation, or DOM XSS in the provided code. The script requests several GM_* permissions, some of which may not be necessary. No supply chain risk is present unless @require is added in the future. Overall, the main risk is data exfiltration to an external server, and the script should be reviewed for the exact data sent in these requests.
+> FF Scouter V2 communicates with ffscouter.com using GM_xmlhttpRequest, which is a third-party server. No evidence of privacy collection, code obfuscation, or DOM XSS. Permissions are standard, but GM_xmlhttpRequest is a high privilege. Supply chain risk is minimal as no third-party libraries are loaded. Main risk is data transmission to external server; review payloads for sensitive data.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -53,25 +53,25 @@ title: "公平战斗侦查器 V2"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Exfiltration  
-> The script uses GM_xmlhttpRequest to communicate with ffscouter.com, which is a third-party server. This may transmit user data or page context, depending on request payloads.  
-> 位置：GM_xmlhttpRequest calls (likely in main logic, not shown in snippet)  
-> 建议：Review all data sent to ffscouter.com; ensure no sensitive or unnecessary user data is transmitted. Document what is sent and why.
+**⛔ CRITICAL** — Data Transmission  
+> Script uses GM_xmlhttpRequest to communicate with ffscouter.com, a third-party server. Potential for user data transmission exists, but only ffscouter.com is targeted.  
+> 位置：GM_xmlhttpRequest calls and @connect ffscouter.com  
+> 建议：Review transmitted data payloads to ensure no sensitive user information is sent. Limit data sent to only what is necessary for functionality.
 
-**🔴 HIGH** — Remote Code/Data Risk  
-> The script requests and is granted GM_xmlhttpRequest permission, which allows cross-origin requests to arbitrary endpoints specified in @connect. Here, only ffscouter.com is allowed, but this still poses a risk if the remote endpoint is compromised.  
-> 位置：@grant GM_xmlhttpRequest, @connect ffscouter.com  
-> 建议：Limit data sent, validate all remote responses, and consider using a more trusted/official API if possible.
+**🟠 MEDIUM** — Permission Usage  
+> Script requests GM_xmlhttpRequest permission, which is high privilege and can be abused if not properly controlled.  
+> 位置：@grant GM_xmlhttpRequest  
+> 建议：Ensure only necessary requests are made and no excessive privileges are requested.
 
-**🟠 MEDIUM** — Permission Overuse  
-> The script requests several GM_* permissions, but not all are necessarily used in the provided code. Over-privileging increases attack surface.  
-> 位置：@grant GM_setValue, GM_getValue, GM_listValues, GM_deleteValue, GM_registerMenuCommand, GM_addStyle  
-> 建议：Remove unused permissions to reduce risk.
+**🟡 LOW** — Permission Usage  
+> Script requests GM_setValue, GM_getValue, GM_listValues, GM_deleteValue, GM_registerMenuCommand, GM_addStyle. These are standard, but review for privilege minimization.  
+> 位置：@grant declarations  
+> 建议：Remove unused permissions if any.
 
-**🟠 MEDIUM** — Supply Chain Risk  
-> @require is not used, but if added in the future, ensure only trusted, version-pinned sources are used.  
-> 位置：N/A (precaution)  
-> 建议：Always pin @require URLs to specific versions and use official CDNs.
+**🟡 LOW** — Supply Chain  
+> Script uses @require only for update/download URLs, not for third-party libraries. No supply chain risk detected.  
+> 位置：@downloadURL, @updateURL  
+> 建议：If third-party libraries are used in the future, ensure version pinning and trusted sources.
 
 ---
 

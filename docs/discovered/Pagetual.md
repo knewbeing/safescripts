@@ -52,9 +52,9 @@ title: "东方永页机"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：67/100　　**分析时间**：2026-06-08
+**风险等级**：⛔ CRITICAL　　**安全评分**：34/100　　**分析时间**：2026-06-15
 
-> Pagetual 脚本主要风险在于允许向任意域名发起网络请求（@connect *），这为数据外传和供应链攻击提供了通道。虽然未检测到隐私采集、代码混淆或 DOM XSS 风险，但高权限申请和第三方依赖也需警惕。建议严格限制网络请求目标和最小化权限申请。
+> Pagetual 脚本存在严重安全风险，主要由于申请了广泛的 @connect * 权限和 GM_xmlhttpRequest，理论上可向任意域名发送数据，存在数据外传风险。虽然当前代码未检测到隐私采集、远程代码执行、混淆、DOM XSS、敏感 API 调用等高风险行为，但权限申请过多且未实际使用，存在权限滥用风险。建议严格限制 @connect 域名范围，移除未使用的高权限申请，并持续关注后续代码更新。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -63,24 +63,89 @@ title: "东方永页机"
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ⚠️ 存在风险 |
+| 供应链风险 | ✅ 可信 |
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本通过 @connect * 允许向任意域名发起 GM_xmlhttpRequest 网络请求，存在数据外传的高风险。  
-> 位置：元数据 @connect *  
-> 建议：移除 @connect *，仅允许可信域名。
-
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了大量高权限（如 GM_openInTab、GM_setClipboard、GM_notification），但部分权限在代码中未必全部使用，存在权限滥用的可能。  
-> 位置：元数据 @grant  
-> 建议：仅申请实际需要的权限，最小化授权。
-
-**🟠 MEDIUM** — 供应链风险  
-> 脚本允许从多个第三方域名加载数据（wedata.net、githubusercontent.com、ghproxy.com、ghp.ci、hoothin.github.io），存在供应链风险。  
+**⛔ CRITICAL** — Data Transmission  
+> 脚本申请了广泛的 @connect 权限，包括 *，允许向任意域名发起网络请求，存在数据外传风险。  
 > 位置：元数据 @connect  
-> 建议：仅允许可信、必要的第三方域名，避免供应链污染。
+> 建议：限制 @connect 域名范围，仅允许必要的可信域名。
+
+**⛔ CRITICAL** — Data Transmission  
+> 脚本申请了 GM_xmlhttpRequest 和 GM.xmlHttpRequest 权限，并在代码中用于自动翻页功能，可能会向第三方网站请求页面内容。虽然主要用于目标网站分页，但由于 @connect * 存在，理论上可外传任意数据。  
+> 位置：元数据 @grant, 代码自动翻页逻辑  
+> 建议：移除 @connect *，并审查所有网络请求目的地和数据内容。
+
+**🟠 MEDIUM** — Permission Abuse  
+> 脚本申请了 GM_openInTab 权限，但代码中未发现实际使用，存在权限滥用风险。  
+> 位置：元数据 @grant  
+> 建议：移除未使用的高权限申请。
+
+**🟠 MEDIUM** — Permission Abuse  
+> 脚本申请了 GM_setClipboard 权限，但代码中未发现实际使用，存在权限滥用风险。  
+> 位置：元数据 @grant  
+> 建议：移除未使用的高权限申请。
+
+**🟠 MEDIUM** — Permission Abuse  
+> 脚本申请了 GM_notification 权限，但代码中未发现实际使用，存在权限滥用风险。  
+> 位置：元数据 @grant  
+> 建议：移除未使用的高权限申请。
+
+**🟠 MEDIUM** — Permission Abuse  
+> 脚本申请了 GM_addStyle 权限，但代码中未发现实际使用，存在权限滥用风险。  
+> 位置：元数据 @grant  
+> 建议：移除未使用的高权限申请。
+
+**🟠 MEDIUM** — Permission Abuse  
+> 脚本申请了 GM_info 权限，但代码中未发现实际使用，存在权限滥用风险。  
+> 位置：元数据 @grant  
+> 建议：移除未使用的高权限申请。
+
+**🟠 MEDIUM** — Permission Abuse  
+> 脚本申请了 GM_getValue/GM_setValue/GM_deleteValue 权限，但代码中未发现实际使用，存在权限滥用风险。  
+> 位置：元数据 @grant  
+> 建议：移除未使用的高权限申请。
+
+**🟡 LOW** — Obfuscation  
+> 脚本未使用混淆或压缩代码，代码结构清晰。  
+> 位置：完整代码  
+> 建议：无
+
+**🟡 LOW** — DOM XSS  
+> 脚本未检测到 DOM XSS 风险，未直接插入用户输入到 innerHTML/outerHTML。  
+> 位置：完整代码  
+> 建议：无
+
+**🟡 LOW** — Privacy Collection  
+> 脚本未检测到隐私采集行为，如读取 cookie、localStorage、sessionStorage、IndexedDB、剪贴板、表单字段或监听键盘输入。  
+> 位置：完整代码  
+> 建议：无
+
+**🟡 LOW** — Remote Code Execution  
+> 脚本未检测到远程代码执行风险，如 eval/new Function/setTimeout(string)/setInterval(string) 或动态加载外部 JS。  
+> 位置：完整代码  
+> 建议：无
+
+**🟡 LOW** — WebSocket Usage  
+> 脚本未检测到 WebSocket/EventSource(SSE) 使用。  
+> 位置：完整代码  
+> 建议：无
+
+**🟡 LOW** — Sensitive API  
+> 脚本未检测到敏感 API 调用，如 geolocation、RTCPeerConnection、MediaDevices、Notification、Clipboard。  
+> 位置：完整代码  
+> 建议：无
+
+**🟡 LOW** — Supply Chain  
+> 脚本未检测到供应链风险，未通过 @require 加载第三方库。  
+> 位置：元数据  
+> 建议：无
+
+**🟡 LOW** — ClickJacking  
+> 脚本未检测到 ClickJacking 或 iframe 风险，未修改 frame 保护策略或创建隐藏 iframe。  
+> 位置：完整代码  
+> 建议：无
 
 ---
 

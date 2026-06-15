@@ -5,7 +5,71 @@
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [],
+  "issues": [
+    {
+      "description": "脚本通过 fetch 请求 Telegram 本地资源（视频、图片等），但未向第三方服务器发送数据，也未携带用户敏感信息或 Cookie。未发现数据外传行为。",
+      "location": "tel_download_video()、fetchNextPart()",
+      "recommendation": "保持现有行为，勿添加任何外部数据上报。",
+      "severity": "CRITICAL",
+      "type": "Data Transmission"
+    },
+    {
+      "description": "未发现隐私采集行为。脚本未读取 cookie、localStorage、sessionStorage、IndexedDB，也未监听键盘输入或表单字段。",
+      "location": "全局",
+      "recommendation": "保持现有行为，勿添加隐私采集代码。",
+      "severity": "CRITICAL",
+      "type": "Privacy Collection"
+    },
+    {
+      "description": "未发现远程代码执行风险。脚本未使用 eval、new Function、setTimeout(string)、setInterval(string)，也未动态加载外部 JS。",
+      "location": "全局",
+      "recommendation": "避免动态执行字符串代码或加载不可信 JS。",
+      "severity": "HIGH",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "未发现代码混淆。代码结构清晰，无 base64/unicode 混淆，无高度压缩单行代码。",
+      "location": "全局",
+      "recommendation": "保持代码可读性，避免混淆。",
+      "severity": "HIGH",
+      "type": "Code Obfuscation"
+    },
+    {
+      "description": "未发现 DOM XSS 或注入风险。未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未操作 iframe src 为 javascript:。",
+      "location": "全局",
+      "recommendation": "插入内容时始终注意转义。",
+      "severity": "HIGH",
+      "type": "DOM XSS/Injection"
+    },
+    {
+      "description": "未申请任何 @grant 权限，未滥用高权限 API。",
+      "location": "元数据",
+      "recommendation": "仅申请必要权限。",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。",
+      "location": "全局",
+      "recommendation": "避免调用敏感 API。",
+      "severity": "MEDIUM",
+      "type": "Sensitive API Usage"
+    },
+    {
+      "description": "未使用 @require 加载第三方库，无供应链风险。",
+      "location": "元数据",
+      "recommendation": "如需加载第三方库，固定版本并使用官方 CDN。",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    },
+    {
+      "description": "未修改 frame 保护策略，未创建隐藏 iframe。",
+      "location": "全局",
+      "recommendation": "避免 iframe 滥用。",
+      "severity": "LOW",
+      "type": "ClickJacking/Iframe Risk"
+    }
+  ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
@@ -14,9 +78,9 @@
   "risk_level": "SAFE",
   "script_name": "Telegram Media Downloader",
   "security_score": 100,
-  "summary": "该脚本仅在 Telegram Web 页面上运行，核心功能为为受限媒体内容添加下载按钮，通过分片 fetch 下载媒体文件并本地保存。未发现任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。整体实现透明，安全性高。",
+  "summary": "该脚本仅用于在 Telegram Web 客户端下载受限媒体内容，未发现任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。安全性极高，适合公开使用。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-08T06:48:11.793916+00:00",
+  "analyzed_at": "2026-06-15T07:28:51.410337+00:00",
   "slug": "Telegram_Media_Downloader"
 }
