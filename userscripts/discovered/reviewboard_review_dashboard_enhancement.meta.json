@@ -1,0 +1,45 @@
+{
+  "slug": "reviewboard_review_dashboard_enhancement",
+  "platform": "github",
+  "source_url": "https://raw.githubusercontent.com/vlovich/reviewboard-greasemonkey/e8632dbba381b1152416ea073f99ac1fc56bf307/reviewboard_review_dashboard_enhancement.user.js",
+  "source_repo": "vlovich/reviewboard-greasemonkey",
+  "raw_url": "https://raw.githubusercontent.com/vlovich/reviewboard-greasemonkey/e8632dbba381b1152416ea073f99ac1fc56bf307/reviewboard_review_dashboard_enhancement.user.js",
+  "filename": "reviewboard_review_dashboard_enhancement.user.js",
+  "name": "Reviewboard Dashboard Enhancement",
+  "version": "unknown",
+  "description": "Make the dashboard links available from reviews",
+  "match": [
+    "https://review.mydomain.com/*"
+  ],
+  "grant": [],
+  "require": [],
+  "metadata_raw": "// @name  Reviewboard Dashboard Enhancement\n// @namespace  https://github.com/vlovich\n// @description  Make the dashboard links available from reviews\n// @include  https://review.mydomain.com/*",
+  "sha256": "59ad60609f330a3aff19a4652c19d8f277d87be7d50f72a4c4ace23e6b92e218",
+  "discovered_at": "2026-06-22T07:13:21.288780+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": null,
+  "good_ratings": null,
+  "bad_ratings": null,
+  "summary": {
+    "applicable_sites": [
+      "Reviewboard企业代码评审平台"
+    ],
+    "description": "本脚本为Reviewboard平台的评审页面添加快捷导航栏，让用户在查看评审时也能快速访问仪表盘等主要页面。增强了页面的导航体验，提升工作效率。",
+    "permissions": [],
+    "tags": [
+      "导航增强",
+      "代码评审",
+      "企业工具",
+      "页面优化",
+      "效率提升"
+    ],
+    "usage": [
+      "安装脚本后，访问Reviewboard评审页面。",
+      "页面顶部会出现新的导航栏，包含仪表盘等快捷链接。",
+      "点击链接即可快速跳转到相关页面。"
+    ],
+    "zh_name": "Reviewboard仪表盘增强"
+  }
+}

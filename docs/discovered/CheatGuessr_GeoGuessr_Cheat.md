@@ -30,14 +30,14 @@ title: "CheatGuessr | GeoGuessr Cheat"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：42/100　　**分析时间**：2026-06-15
+**风险等级**：🔴 HIGH　　**安全评分**：52/100　　**分析时间**：2026-06-22
 
-> 该脚本存在数据外传（地理坐标发送到第三方服务器）和隐私采集（localStorage存储用户设置）等关键安全风险。还存在权限滥用（申请未用GM_webRequest）和敏感API调用。未检测到代码混淆、DOM XSS或供应链风险。建议移除未用权限、明确告知用户数据用途，并避免发送敏感信息。
+> This script transmits user location data to a third-party (OpenStreetMap Nominatim) for reverse geocoding, which is a critical privacy risk. It also requests an unused high-privilege permission (GM_webRequest), and monkey-patches XMLHttpRequest, which is a high-risk pattern. There is no evidence of code obfuscation or DOM XSS, but localStorage is used for settings. The overall risk is HIGH and the script is NOT approved for use in sensitive environments.
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：https://nominatim.openstreetmap.org/reverse） |
-| 隐私采集 | ❌ 检测到（localStorage: 存储用户设置） |
+| 数据外传 | ❌ 检测到（目标：https://nominatim.openstreetmap.org） |
+| 隐私采集 | ❌ 检测到（localStorage: stores user settings） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -45,25 +45,30 @@ title: "CheatGuessr | GeoGuessr Cheat"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本通过 fetch 向 https://nominatim.openstreetmap.org/reverse 发送地理坐标数据，存在用户数据外传风险。  
-> 位置：fetchLocationDetails()  
-> 建议：仅在用户明确同意时发送数据，并在文档中声明数据用途。避免发送敏感信息。
+**⛔ CRITICAL** — Data Exfiltration  
+> The script sends latitude and longitude coordinates to the public OpenStreetMap Nominatim API to reverse geocode the location. This is a third-party server and may receive user-derived location data.  
+> 位置：fetchLocationDetails() function (fetch to https://nominatim.openstreetmap.org)  
+> 建议：Warn users about third-party data transmission. Consider making this feature optional or allow users to use their own API endpoint.
 
-**⛔ CRITICAL** — 隐私采集  
-> 脚本读取并存储用户设置到 localStorage，涉及隐私采集。  
-> 位置：loadSettings()/saveSettings()  
-> 建议：确保仅存储必要的非敏感数据，并在文档中告知用户。
+**🔴 HIGH** — Remote Code Execution Risk  
+> The script monkey-patches XMLHttpRequest.prototype.open to intercept requests. While not directly dangerous here, this is a high-risk pattern that can lead to breakage or security issues if misused.  
+> 位置：XMLHttpRequest.prototype.open override  
+> 建议：Limit monkey-patching to only what is necessary and document the rationale. Monitor for compatibility issues.
 
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_webRequest 权限，但实际代码未使用该 API，存在权限滥用风险。  
-> 位置：@grant GM_webRequest  
-> 建议：移除未使用的高权限申请，减少攻击面。
+**🟠 MEDIUM** — Privacy Collection  
+> The script stores user settings in localStorage, which is accessible by any script running on the same domain. While not directly exfiltrated, this is a privacy consideration.  
+> 位置：loadSettings() and saveSettings() functions (localStorage usage)  
+> 建议：Consider using GM_setValue/GM_getValue for more isolated storage, or clearly document the privacy model.
 
-**🟠 MEDIUM** — 敏感 API 调用  
-> 脚本通过 XMLHttpRequest.prototype.open 拦截并处理 Google Maps API 响应，属于敏感 API 调用。  
-> 位置：XMLHttpRequest.prototype.open  
-> 建议：确保拦截逻辑不会泄露用户敏感信息，且仅用于本地处理。
+**🟠 MEDIUM** — Permission Abuse  
+> The script requests the GM_webRequest permission, but does not use it in the code. Unused high-privilege permissions increase attack surface.  
+> 位置：@grant GM_webRequest in metadata  
+> 建议：Remove unused permissions from @grant to minimize risk.
+
+**🟡 LOW** — DOM XSS Risk  
+> The script dynamically creates and injects HTML for the settings modal using innerHTML. However, no user input is inserted into the DOM without escaping, so XSS risk is low in this context.  
+> 位置：toggleSettingsModal() function (modal.innerHTML assignment)  
+> 建议：If user input is ever inserted, sanitize it before using innerHTML.
 
 ---
 

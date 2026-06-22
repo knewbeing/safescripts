@@ -32,9 +32,9 @@ title: "GeoGuessr 地点解析助手"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-15
+**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-22
 
-> 该脚本未发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险或敏感 API 调用。主要风险为权限滥用（申请未使用的 GM_webRequest）和网络拦截行为。整体安全风险较低，建议移除未使用权限。
+> 该脚本主要通过拦截 Google Maps API 响应，解析地理坐标并自动在 Geoguessr 地图上标记，未发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。唯一中等风险为申请了未使用的 GM_webRequest 权限，建议移除。整体风险较低，安全性良好。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -47,20 +47,30 @@ title: "GeoGuessr 地点解析助手"
 
 ### 发现的问题
 
-**🟠 MEDIUM** — Network interception  
-> Overrides XMLHttpRequest.prototype.open to intercept Google Maps API responses. No data is sent externally; only local extraction.  
-> 位置：XMLHttpRequest.prototype.open override  
-> 建议：Ensure no code modifications allow data exfiltration in future updates.
+**🟠 MEDIUM** — 权限滥用  
+> @grant 仅申请 GM_webRequest，实际代码未使用该 API，存在权限冗余。  
+> 位置：元数据 @grant  
+> 建议：移除未使用的 GM_webRequest 权限。
 
-**🟠 MEDIUM** — Permission misuse  
-> Uses @grant GM_webRequest, but script does not utilize GM_webRequest API.  
-> 位置：Metadata block  
-> 建议：Remove unused @grant permissions to minimize attack surface.
+**🟡 LOW** — 网络请求拦截  
+> 脚本重写 XMLHttpRequest.prototype.open 以拦截 Google Maps API 响应内容，但未将数据外传，仅本地处理。  
+> 位置：XMLHttpRequest.prototype.open  
+> 建议：确保未来无外传代码加入。
 
-**🟡 LOW** — Event listener  
-> Listens for keydown events to trigger script actions. No evidence of keylogger behavior or data exfiltration.  
-> 位置：document.addEventListener("keydown", onKeyDown)  
-> 建议：Limit event listeners to only necessary keys and actions.
+**🟡 LOW** — 键盘事件监听  
+> 脚本监听键盘事件（keydown），但未将输入内容外传。  
+> 位置：document.addEventListener('keydown', ...)  
+> 建议：仅用于快捷键控制，风险较低。
+
+**🟡 LOW** — 远程代码执行  
+> 脚本未使用 eval、new Function、setTimeout(string) 等动态执行代码。  
+> 位置：全局  
+> 建议：保持此安全实践。
+
+**🟡 LOW** — 代码混淆  
+> 未发现代码混淆、base64 解码、字符串数组混淆等特征。  
+> 位置：全局  
+> 建议：保持代码可读性。
 
 ---
 

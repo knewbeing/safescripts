@@ -31,9 +31,9 @@ title: "修复Arras.io射击"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-15
+**风险等级**：🟡 LOW　　**安全评分**：97/100　　**分析时间**：2026-06-22
 
-> The script modifies the WebSocket constructor to change the connection URL for arras.io, adding custom parameters. No data exfiltration, privacy collection, code execution risks, or supply chain issues are detected. The only concern is the global WebSocket override, which is a medium risk for compatibility and maintainability, but does not introduce critical security threats.
+> The script does not perform any data exfiltration, privacy-invasive actions, or remote code execution. It only modifies the WebSocket URL used by the site to include additional query parameters. There is no evidence of obfuscation, XSS, or supply chain risk. The only minor concern is the global override of the WebSocket constructor, which is a low risk.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -46,10 +46,10 @@ title: "修复Arras.io射击"
 
 ### 发现的问题
 
-**🟠 MEDIUM** — WebSocket manipulation  
-> The script overrides the global WebSocket constructor to modify the connection URL by appending custom query parameters. This could potentially interfere with legitimate WebSocket usage or introduce compatibility issues.  
-> 位置：WebSocket class override  
-> 建议：Limit WebSocket overrides to specific contexts if possible. Ensure the modification does not leak sensitive data or break site functionality.
+**🟡 LOW** — WebSocket override  
+> The script overrides the global WebSocket constructor to inject custom query parameters into the WebSocket URL. This could potentially interfere with other scripts or site functionality if not carefully scoped.  
+> 位置：Global WebSocket override  
+> 建议：Limit the override to only the intended WebSocket connections if possible, and document the behavior.
 
 ---
 

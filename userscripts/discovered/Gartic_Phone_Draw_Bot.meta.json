@@ -19,21 +19,21 @@
   "require": [],
   "metadata_raw": "// @name  Gartic Phone Draw Bot\n// @namespace  http://tampermonkey.net/\n// @version  0.1\n// @license  GNU\n// @description  Auto drawing bot!\n// @author  petmshall (peter-marshall5)\n// @match  *://garticphone.com/*\n// @connect  garticphone.com\n// @exclude  *://garticphone.com/_next/*\n// @icon  https://www.google.com/s2/favicons?domain=garticphone.com\n// @grant  unsafeWindow\n// @grant  GM_xmlhttpRequest\n// @grant  GM_log\n// @run-at  document-start\n// @downloadURL  https://update.greasyfork.org/scripts/495177/Gartic%20Phone%20Draw%20Bot.user.js\n// @updateURL  https://update.greasyfork.org/scripts/495177/Gartic%20Phone%20Draw%20Bot.meta.js",
   "sha256": "707e3d01a569f29a13f2bcadf0e81618f62f68e75b03971fd1dd8fddc9471770",
-  "discovered_at": "2026-06-15T07:12:35.445847+00:00",
+  "discovered_at": "2026-06-22T07:17:30.260100+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 12529,
+  "install_count": 12810,
   "good_ratings": 1,
   "bad_ratings": 1,
   "summary": {
     "applicable_sites": [
       "Gartic Phone"
     ],
-    "description": "本脚本可自动在 Gartic Phone 游戏中进行绘画，模拟玩家的画图操作。适用于需要快速完成绘画任务或自动生成图案的场景。",
+    "description": "本脚本可以自动在 Gartic Phone 游戏中绘画，模拟玩家的画图操作，帮助快速完成绘画任务。适合想要自动作画或尝试机器人绘画效果的用户。",
     "permissions": [
       {
-        "explanation": "允许脚本访问和修改网页的全局对象，便于与游戏内部交互。",
+        "explanation": "允许脚本访问和修改网页中的全局变量，便于控制游戏行为。",
         "grant": "unsafeWindow"
       },
       {
@@ -41,7 +41,7 @@
         "grant": "GM_xmlhttpRequest"
       },
       {
-        "explanation": "用于在调试时输出日志信息，帮助开发者追踪脚本运行情况。",
+        "explanation": "用于在调试时输出日志信息，方便开发者查看脚本运行情况。",
         "grant": "GM_log"
       }
     ],
@@ -49,15 +49,15 @@
       "自动绘画",
       "游戏辅助",
       "Gartic Phone",
-      "脚本工具",
+      "机器人",
       "娱乐",
       "自动化"
     ],
     "usage": [
       "安装脚本后，进入 Gartic Phone 网站。",
       "开始游戏时，脚本会自动接管绘画环节。",
-      "无需手动操作，脚本会自动完成画图。"
+      "无需手动操作，自动完成画图。"
     ],
-    "zh_name": "Gartic Phone自动绘画机器人"
+    "zh_name": "Gartic Phone自动画图机器人"
   }
 }

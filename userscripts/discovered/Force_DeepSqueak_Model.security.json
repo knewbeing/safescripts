@@ -2,76 +2,52 @@
   "approved": true,
   "data_transmission": {
     "destinations": [
-      "character.ai (same-origin)",
-      "Any endpoint previously requested by the page (captured XHRs)"
+      "https://character.ai/*"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "Script intercepts and replays XHR requests using GM_xmlhttpRequest, potentially sending user actions/data to endpoints previously contacted by the page. However, all requests are to character.ai (same-origin), not third-party servers.",
-      "location": "XHR interception and replay logic",
-      "recommendation": "Ensure replayed requests do not contain sensitive user data or authentication tokens. Limit replay to trusted endpoints.",
+      "description": "The script intercepts and replays up to 5 recent XMLHttpRequests using GM_xmlhttpRequest. All requests are sent to the same origin (character.ai), and no third-party endpoints are involved. However, replaying requests could potentially leak user actions if the captured requests contain sensitive data (e.g., authentication tokens, chat content).",
+      "location": "XHR interception and replay logic (entire script)",
+      "recommendation": "Warn users about the risks of replaying requests that may contain sensitive data. Ensure no requests are sent to third-party domains.",
       "severity": "CRITICAL",
       "type": "Data Transmission"
     },
     {
-      "description": "Script captures request bodies and headers, which may include sensitive information (e.g., authentication tokens, user input).",
-      "location": "XHR interception (send method)",
-      "recommendation": "Avoid capturing or storing sensitive data. Warn users about potential privacy implications.",
-      "severity": "CRITICAL",
-      "type": "Privacy Collection"
-    },
-    {
-      "description": "GM_xmlhttpRequest is granted and used, but only for replaying previously captured requests. No evidence of abuse or third-party transmission.",
-      "location": "GM_xmlhttpRequest usage",
-      "recommendation": "Restrict GM_xmlhttpRequest usage to same-origin or trusted endpoints.",
+      "description": "The script requests GM_xmlhttpRequest permission, which is high-privilege, but only uses it for same-origin requests. No evidence of over-privileged grants, but GM_xmlhttpRequest is not strictly necessary for same-origin requests unless CORS is an issue.",
+      "location": "@grant metadata and replay logic",
+      "recommendation": "Consider using fetch for same-origin requests if possible, or document the need for GM_xmlhttpRequest.",
       "severity": "MEDIUM",
       "type": "Permission Usage"
     },
     {
-      "description": "No evidence of eval, new Function, setTimeout(string), or dynamic script injection.",
+      "description": "No evidence of code obfuscation, eval, or dynamic code execution. All code is readable and not minified.",
       "location": "Entire script",
-      "recommendation": "Maintain code clarity and avoid dynamic code execution.",
-      "severity": "LOW",
-      "type": "Remote Code Execution"
-    },
-    {
-      "description": "No code obfuscation detected. Code is readable and not minified.",
-      "location": "Entire script",
-      "recommendation": "Continue to publish unobfuscated code for transparency.",
+      "recommendation": "No action needed.",
       "severity": "LOW",
       "type": "Obfuscation"
     },
     {
-      "description": "No DOM XSS or injection risks found. User input is not inserted into the DOM.",
-      "location": "Entire script",
-      "recommendation": "Continue to avoid unsafe DOM manipulation.",
-      "severity": "LOW",
-      "type": "DOM XSS"
-    },
-    {
-      "description": "No supply chain risk: No @require or external libraries loaded.",
+      "description": "No supply chain risk detected. No @require or external scripts loaded.",
       "location": "Metadata",
-      "recommendation": "If adding dependencies, use official sources and fixed versions.",
+      "recommendation": "No action needed.",
       "severity": "LOW",
       "type": "Supply Chain"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [
-      "Captures XHR request bodies and headers, which may include user data and authentication tokens."
-    ],
-    "detected": true
+    "details": [],
+    "detected": false
   },
-  "risk_level": "HIGH",
+  "risk_level": "LOW",
   "script_name": "Force DeepSqueak Model",
-  "security_score": 50,
-  "summary": "The script intercepts and replays XHR requests, which may expose sensitive user data and actions. All transmissions are to same-origin endpoints (character.ai), but replaying requests can have privacy and security implications. No evidence of code obfuscation, remote code execution, DOM XSS, or supply chain risk. Users should be warned about potential privacy risks when replaying requests.",
+  "security_score": 89,
+  "summary": "The script intercepts and replays up to 5 recent XHR requests, modifying PATCH requests to force a model change. All network activity is restricted to the same origin (character.ai), and there is no evidence of third-party data exfiltration, privacy collection, or code execution risks. The main risk is the potential for replaying sensitive user actions, but this is under user control. Permissions are appropriate, and there is no supply chain or obfuscation risk. Overall, the script is considered low risk for the intended use case.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-15T07:21:31.089623+00:00",
+  "analyzed_at": "2026-06-22T07:28:39.215802+00:00",
   "slug": "Force_DeepSqueak_Model"
 }

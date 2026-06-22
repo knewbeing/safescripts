@@ -7,25 +7,39 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "Overrides XMLHttpRequest.prototype.open to intercept Google Maps API responses. No data is sent externally; only local extraction.",
-      "location": "XMLHttpRequest.prototype.open override",
-      "recommendation": "Ensure no code modifications allow data exfiltration in future updates.",
-      "severity": "MEDIUM",
-      "type": "Network interception"
-    },
-    {
-      "description": "Listens for keydown events to trigger script actions. No evidence of keylogger behavior or data exfiltration.",
-      "location": "document.addEventListener(\"keydown\", onKeyDown)",
-      "recommendation": "Limit event listeners to only necessary keys and actions.",
+      "description": "脚本重写 XMLHttpRequest.prototype.open 以拦截 Google Maps API 响应内容，但未将数据外传，仅本地处理。",
+      "location": "XMLHttpRequest.prototype.open",
+      "recommendation": "确保未来无外传代码加入。",
       "severity": "LOW",
-      "type": "Event listener"
+      "type": "网络请求拦截"
     },
     {
-      "description": "Uses @grant GM_webRequest, but script does not utilize GM_webRequest API.",
-      "location": "Metadata block",
-      "recommendation": "Remove unused @grant permissions to minimize attack surface.",
+      "description": "脚本监听键盘事件（keydown），但未将输入内容外传。",
+      "location": "document.addEventListener('keydown', ...)",
+      "recommendation": "仅用于快捷键控制，风险较低。",
+      "severity": "LOW",
+      "type": "键盘事件监听"
+    },
+    {
+      "description": "脚本未使用 eval、new Function、setTimeout(string) 等动态执行代码。",
+      "location": "全局",
+      "recommendation": "保持此安全实践。",
+      "severity": "LOW",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "未发现代码混淆、base64 解码、字符串数组混淆等特征。",
+      "location": "全局",
+      "recommendation": "保持代码可读性。",
+      "severity": "LOW",
+      "type": "代码混淆"
+    },
+    {
+      "description": "@grant 仅申请 GM_webRequest，实际代码未使用该 API，存在权限冗余。",
+      "location": "元数据 @grant",
+      "recommendation": "移除未使用的 GM_webRequest 权限。",
       "severity": "MEDIUM",
-      "type": "Permission misuse"
+      "type": "权限滥用"
     }
   ],
   "obfuscation_detected": false,
@@ -36,9 +50,9 @@
   "risk_level": "LOW",
   "script_name": "Geoguessr Location Resolver (Works in all modes)",
   "security_score": 89,
-  "summary": "该脚本未发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险或敏感 API 调用。主要风险为权限滥用（申请未使用的 GM_webRequest）和网络拦截行为。整体安全风险较低，建议移除未使用权限。",
+  "summary": "该脚本主要通过拦截 Google Maps API 响应，解析地理坐标并自动在 Geoguessr 地图上标记，未发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。唯一中等风险为申请了未使用的 GM_webRequest 权限，建议移除。整体风险较低，安全性良好。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-15T07:22:00.580416+00:00",
+  "analyzed_at": "2026-06-22T07:29:34.061082+00:00",
   "slug": "Geoguessr_Location_Resolver_Works_in_all_modes"
 }

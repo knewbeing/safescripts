@@ -40,65 +40,40 @@ title: "物品市场集市浏览增强"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：67/100　　**分析时间**：2026-06-15
+**风险等级**：🟠 MEDIUM　　**安全评分**：59/100　　**分析时间**：2026-06-22
 
-> 脚本主要风险为通过 GM.xmlHttpRequest 与 weav3r.dev 通信，存在数据外传风险。未发现远程代码执行、混淆、DOM XSS、敏感 API 调用等高危问题。localStorage 用于存储设置，风险较低。建议明确请求内容，减少权限申请。整体安全性中等偏高，但因数据外传扣分，安全评分为 67。
+> The script requests data from a third-party server (weav3r.dev) and uses localStorage for settings. No evidence of sensitive data exfiltration or DOM XSS was found in the provided code. There is no code obfuscation or dynamic code execution. Permissions could be reduced. The main risk is data transmission to a third-party server and potential supply chain issues if the server is compromised. Overall, the script is moderately safe but should be reviewed for the exact data sent to weav3r.dev.
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：weav3r.dev） |
-| 隐私采集 | ❌ 检测到（localStorage 用于存储脚本设置） |
+| 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ✅ 可信 |
+| 供应链风险 | ⚠️ 存在风险 |
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本通过 GM.xmlHttpRequest 访问 weav3r.dev，可能传递用户行为或页面数据。  
-> 位置：GM.xmlHttpRequest 调用（@connect weav3r.dev）  
-> 建议：明确检查请求内容，确保不包含敏感用户数据、Cookie、页面内容。建议在文档中声明用途。
+**⛔ CRITICAL** — Data Exfiltration  
+> Script uses GM.xmlHttpRequest to connect to weav3r.dev, which is a third-party server. The request may transmit user data depending on implementation.  
+> 位置：@connect weav3r.dev and any GM.xmlHttpRequest usage (full code not shown, but permission is present)  
+> 建议：Review all requests to weav3r.dev to ensure no sensitive user data (such as cookies, authentication tokens, or personal information) is transmitted. Limit data sent to only what is necessary for functionality.
 
-**🟠 MEDIUM** — 隐私采集  
-> 脚本使用 localStorage 存储和读取设置数据，部分 GM_*Value 兼容实现涉及 localStorage。  
-> 位置：GM_getValue, GM_setValue, GM_deleteValue, GM_listValues 兼容实现  
-> 建议：确保存储内容不包含敏感信息（如密码、token）。当前仅存储脚本设置，风险较低。
+**🟠 MEDIUM** — Privacy Collection  
+> Script reads and writes to localStorage for settings persistence and compatibility with GM_*Value APIs. No evidence of sensitive data (like cookies or passwords) being accessed or exfiltrated.  
+> 位置：GM_getValue, GM_setValue compatibility wrappers and usage  
+> 建议：Ensure only non-sensitive settings are stored. Do not store authentication tokens, passwords, or personal identifiers in localStorage.
 
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM.xmlHttpRequest、GM_setValue 等高权限，但实际代码未使用 GM_download、GM_openInTab。  
-> 位置：@grant 元数据  
-> 建议：建议仅申请实际使用的权限，减少权限滥用风险。
+**🟠 MEDIUM** — Permission Overuse  
+> Script requests a broad set of GM_*Value permissions, including both legacy and modern APIs. Some permissions may not be used.  
+> 位置：@grant block in metadata  
+> 建议：Remove unused permissions to reduce attack surface and follow the principle of least privilege.
 
-**🟡 LOW** — 远程代码执行  
-> 未发现远程代码执行相关风险（未使用 eval、new Function、动态 script 标签等）。  
-> 位置：全局代码审查  
-> 建议：保持当前实现，避免动态执行外部代码。
-
-**🟡 LOW** — 代码混淆  
-> 未发现代码混淆、压缩或 base64/unicode 混淆特征。  
-> 位置：全局代码审查  
-> 建议：保持代码可读性，便于社区审查。
-
-**🟡 LOW** — DOM XSS  
-> 未发现 DOM XSS 或注入风险，未直接插入用户输入到 innerHTML。  
-> 位置：全局代码审查  
-> 建议：继续避免直接插入用户输入到 DOM。
-
-**🟡 LOW** — 敏感 API 调用  
-> 未发现敏感 API 调用（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API）。  
-> 位置：全局代码审查  
-> 建议：保持当前实现，避免调用敏感 API。
-
-**🟡 LOW** — 供应链风险  
-> 未使用 @require 加载第三方库，无供应链风险。  
-> 位置：元数据 @require  
-> 建议：如需加载第三方库，建议使用官方 CDN 并固定版本。
-
-**🟡 LOW** — ClickJacking/iframe  
-> 未发现 ClickJacking 或 iframe 风险。  
-> 位置：全局代码审查  
-> 建议：继续避免创建隐藏 iframe 或修改 frame 保护策略。
+**🟠 MEDIUM** — Supply Chain Risk  
+> @require is not used, but the script does connect to a third-party domain (weav3r.dev). If the server is compromised, it could serve malicious data.  
+> 位置：@connect weav3r.dev  
+> 建议：Ensure the third-party server is trustworthy and uses HTTPS. Monitor for supply chain risks.
 
 ---
 

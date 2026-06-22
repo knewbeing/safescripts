@@ -1,0 +1,47 @@
+{
+  "slug": "GitHub-Enhancements",
+  "platform": "github",
+  "source_url": "https://raw.githubusercontent.com/xadamxk/Userscripts/a670d2cb8cbfcf5e2c775ee4a980835024c68670/github/GitHub-Enhancements.user.js",
+  "source_repo": "xadamxk/Userscripts",
+  "raw_url": "https://raw.githubusercontent.com/xadamxk/Userscripts/a670d2cb8cbfcf5e2c775ee4a980835024c68670/github/GitHub-Enhancements.user.js",
+  "filename": "GitHub-Enhancements.user.js",
+  "name": "GitHub Enhancements",
+  "version": "1.0.0",
+  "description": "Adds enhancements to GitHub.com",
+  "match": [
+    "*://github.com/*"
+  ],
+  "grant": [],
+  "require": [
+    "https://code.jquery.com/jquery-3.1.1.js"
+  ],
+  "metadata_raw": "// @name  GitHub Enhancements\n// @author  xadamxk\n// @namespace  https://github.com/xadamxk/Userscripts\n// @version  1.0.0\n// @description  Adds enhancements to GitHub.com\n// @require  https://code.jquery.com/jquery-3.1.1.js\n// @match  *://github.com/*\n// @copyright  2016+",
+  "sha256": "f0b94671f0f74be89aeeeda27af633701bb2293b2eaba17d3aab36b416d67273",
+  "discovered_at": "2026-06-22T07:13:10.000297+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": null,
+  "good_ratings": null,
+  "bad_ratings": null,
+  "summary": {
+    "applicable_sites": [
+      "GitHub"
+    ],
+    "description": "本脚本为 GitHub 网站添加实用增强功能，包括将关注者、分叉和点赞数变为可点击链接，方便跳转查看详情，并优化删除仓库时的操作流程。",
+    "permissions": [],
+    "tags": [
+      "GitHub",
+      "界面增强",
+      "快捷操作",
+      "开发者工具",
+      "效率提升"
+    ],
+    "usage": [
+      "1. 安装脚本后，访问 GitHub 网站。",
+      "2. 在仓库页面，关注者、分叉和点赞数变为可点击，点击可跳转到对应列表。",
+      "3. 删除仓库时，确认提示变为可点击，自动填写仓库名并启用删除按钮。"
+    ],
+    "zh_name": "GitHub增强功能"
+  }
+}

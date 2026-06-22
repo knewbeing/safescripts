@@ -49,14 +49,14 @@ title: "点击助手（Bloxd.io 游戏专用）"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-15
+**风险等级**：🟠 MEDIUM　　**安全评分**：75/100　　**分析时间**：2026-06-22
 
-> 该脚本未发现数据外传、远程代码执行、代码混淆、DOM XSS、敏感 API 调用、供应链风险等高危安全问题。仅存在 localStorage 读写用户配置的中低风险隐私采集行为。整体安全风险较低，安全评分为 89。
+> 该脚本未检测到任何数据外传、远程代码执行、代码混淆、DOM XSS 或供应链风险。主要的隐私风险在于脚本会读取和写入 localStorage，并在某些操作下清除 localStorage 和 cookie，但未发现数据被外传。未申请任何 @grant 权限，未检测到 WebSocket、敏感 API 调用或 iframe 风险。整体风险为中等，建议关注 localStorage 和 cookie 的操作。
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ✅ 未检测到 |
-| 隐私采集 | ❌ 检测到（localStorage 读写用户配置和按键绑定） |
+| 隐私采集 | ❌ 检测到（读取 localStorage 项 clickHelper-keybinds 和 clickHelper-settings, 清除 localStorage 和 cookie） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -64,50 +64,15 @@ title: "点击助手（Bloxd.io 游戏专用）"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 未发现网络请求（GM_xmlhttpRequest、fetch、WebSocket、sendBeacon、EventSource等），无数据外传行为。  
-> 位置：全局代码审查  
-> 建议：继续保持无外传，若后续添加联网功能需严格审查。
+**⛔ CRITICAL** — 隐私采集  
+> 脚本通过 localStorage 读取和写入用户设置和按键绑定。  
+> 位置：StorageManager.loadBinds, StorageManager.loadSettings, StorageManager.saveBinds, StorageManager.saveSettings  
+> 建议：仅存储必要的设置，不要存储敏感信息。
 
-**🔴 HIGH** — 远程代码执行  
-> 未发现 eval、new Function、setTimeout(string)、setInterval(string) 等动态代码执行，未见远程脚本加载。  
-> 位置：全局代码审查  
-> 建议：避免动态执行和远程加载，防止远程代码注入风险。
-
-**🔴 HIGH** — 代码混淆  
-> 未发现代码混淆（无 atob/btoa、字符串数组映射、unicode 混淆、大量压缩单行代码等）。  
-> 位置：全局代码审查  
-> 建议：保持代码可读性，便于社区审查。
-
-**🔴 HIGH** — DOM XSS / 注入  
-> 未发现 DOM XSS 风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未使用 document.write 插入不可信内容。  
-> 位置：全局代码审查  
-> 建议：如需插入用户输入，务必进行转义。
-
-**🟠 MEDIUM** — 隐私采集  
-> 脚本通过 localStorage 读写存储用户设置和按键绑定信息。未发现敏感数据（如 cookie、表单、密码等）被读取或外传。  
-> 位置：StorageManager.loadBinds/loadSettings/saveBinds/saveSettings  
-> 建议：确保仅存储非敏感配置数据，避免存储账号、密码等敏感信息。
-
-**🟠 MEDIUM** — 敏感 API 调用  
-> 未发现敏感 API 调用（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API）。  
-> 位置：全局代码审查  
-> 建议：如需调用敏感 API，需征得用户明确同意。
-
-**🟠 MEDIUM** — 供应链风险  
-> 未使用 @require 加载第三方库，无供应链风险。  
-> 位置：元数据 @require  
-> 建议：如需引入第三方库，建议使用官方 CDN 并固定版本哈希。
-
-**🟡 LOW** — 权限滥用  
-> 脚本未申请任何 @grant 权限，实际代码也未使用 GM_* API，权限申请合理。  
-> 位置：元数据 @grant none  
-> 建议：保持最小权限原则，避免申请不必要的高权限。
-
-**🟡 LOW** — ClickJacking / iframe 风险  
-> 未发现 ClickJacking 或 iframe 风险，未修改 frame 保护策略，未创建隐藏 iframe。  
-> 位置：全局代码审查  
-> 建议：如需操作 iframe，需严格控制来源和用途。
+**⛔ CRITICAL** — 隐私采集  
+> 脚本会清除所有 localStorage 和 cookie（AccountModule.clearAndReload），但未发现外传。  
+> 位置：AccountModule.clearAndReload  
+> 建议：确保不会将敏感信息外传。
 
 ---
 

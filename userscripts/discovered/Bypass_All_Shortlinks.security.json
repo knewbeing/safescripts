@@ -2,77 +2,45 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
-      "Third-party shortlink services",
-      "External APIs (potentially for bypass logic)"
+      "https://update.greasyfork.org/scripts/528923/1588272/MonkeyConfig%20Mod.js"
     ],
-    "detected": true
+    "detected": false
   },
-  "dom_xss_risk": true,
+  "dom_xss_risk": false,
   "issues": [
     {
-      "description": "Script uses GM_xmlhttpRequest to interact with external shortlink services and APIs, potentially transmitting user navigation data and page context.",
-      "location": "Multiple places in main script logic (bypass routines)",
-      "recommendation": "Restrict external requests to only necessary endpoints, avoid transmitting sensitive user data, and document all external destinations.",
+      "description": "脚本通过 @require 加载了外部 JS（MonkeyConfig Mod.js），但未锁定版本哈希，存在供应链风险。",
+      "location": "@require 元数据",
+      "recommendation": "建议使用可信 CDN 并锁定具体版本或哈希，避免加载可变内容。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    },
+    {
+      "description": "脚本申请了 GM_openInTab、GM_setClipboard、GM_xmlhttpRequest 等高权限，但主代码未见实际使用，存在权限滥用风险。",
+      "location": "@grant 元数据",
+      "recommendation": "仅申请实际需要的权限，减少攻击面。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本主代码缺失，无法判断是否存在数据外传、隐私采集、远程代码执行、DOM XSS 等高危行为。",
+      "location": "主代码缺失",
+      "recommendation": "请补充完整脚本代码以进行全面安全审查。",
       "severity": "CRITICAL",
-      "type": "Data Exfiltration"
-    },
-    {
-      "description": "Script reads and manipulates localStorage, sessionStorage, and may access cookies to manage bypass state and tokens.",
-      "location": "Bypass logic and storage routines",
-      "recommendation": "Ensure only non-sensitive data is accessed and never transmitted externally.",
-      "severity": "CRITICAL",
-      "type": "Privacy Collection"
-    },
-    {
-      "description": "Script uses innerHTML and document.write to inject bypassed links and content, which may allow DOM XSS if user input or URL parameters are not sanitized.",
-      "location": "Link injection and redirection logic",
-      "recommendation": "Always sanitize user input and URL parameters before inserting into DOM.",
-      "severity": "HIGH",
-      "type": "DOM XSS"
-    },
-    {
-      "description": "Script loads external code via @require from update.greasyfork.org, but does not use version hash or integrity checks.",
-      "location": "Metadata block (@require)",
-      "recommendation": "Pin @require to a specific version hash and verify source integrity.",
-      "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
-    },
-    {
-      "description": "Script requests high privileges (GM_openInTab, GM_setClipboard, GM_xmlhttpRequest) but may not use all safely or minimally.",
-      "location": "Metadata block (@grant)",
-      "recommendation": "Reduce privilege scope to only what is strictly necessary.",
-      "severity": "MEDIUM",
-      "type": "Permission Abuse"
-    },
-    {
-      "description": "Script uses GM_setClipboard to copy bypassed links, which could be abused if malicious links are injected.",
-      "location": "Clipboard manipulation routines",
-      "recommendation": "Validate all links before copying to clipboard.",
-      "severity": "MEDIUM",
-      "type": "Sensitive API Usage"
-    },
-    {
-      "description": "Script uses innerHTML and document.write with dynamic content, increasing risk of injection.",
-      "location": "DOM manipulation routines",
-      "recommendation": "Avoid using innerHTML/document.write with unsanitized data.",
-      "severity": "HIGH",
-      "type": "DOM XSS"
+      "type": "代码完整性"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [
-      "Accesses localStorage/sessionStorage",
-      "May access cookies for bypass tokens"
-    ],
-    "detected": true
+    "details": [],
+    "detected": false
   },
   "risk_level": "CRITICAL",
   "script_name": "Bypass All Shortlinks",
-  "security_score": 9,
-  "summary": "The script poses significant risks due to data transmission to third-party services, privacy collection, DOM XSS vulnerabilities, and supply chain risks. It requests high privileges and manipulates sensitive APIs. Use with caution and only after thorough review of all external endpoints and bypass logic.",
+  "security_score": 42,
+  "summary": "该脚本元数据声明了高权限和外部依赖，但缺少主代码，无法判断其核心行为是否安全。存在供应链风险和权限滥用嫌疑。强烈建议补充完整代码并限制权限、锁定依赖版本。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-15T07:16:49.258654+00:00",
+  "analyzed_at": "2026-06-22T07:21:21.110148+00:00",
   "slug": "Bypass_All_Shortlinks"
 }

@@ -71,7 +71,7 @@
 // @description:zh-CN 一款多合一、快速且免费的在线视频下载器。支持从 YouTube、TikTok、抖音、Instagram、Facebook、Threads、TED、小红书、X（Twitter）等平台下载视频。享受无水印、高质量、流畅便捷的下载体验
 // @description:zh-TW 一款多合一、快速且免費的線上視頻下載器。支援從 YouTube、TikTok、抖音、Instagram、Facebook、Threads、TED、小紅書、X（Twitter）等平台下載視頻。享受無水印、高質量、流暢便捷的下載體驗
 // @namespace   AllInOneDownloader_Daniel
-// @version     1.0.14
+// @version     1.0.15
 // @author      Daniel
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADQAAAAwCAYAAABe6Vn9AAACZElEQVR4AeyZbVKDMBCGgYuJ/9WT2CNoqx6hnkT9T72YuA+WDg0M2SSblnFwWCfNfuR9EhqatiqM/+72bX3/3jZirccaYo2HL8yByrLYishazHfVx1hfXJDfHEhG18BIWHeFxHYJvn85gHxjZvWvQFmn16D4ukIGk5i1xLpCWafXoPi6QgaTmLXEukJZp9eg+LpCBpOYtYR6hTi7yPnGe84JVSs1feemlrG1ddVAx7OL+cd9jdDj2JpQ+wOeatTwIPVEqleobYuXcB3zGVqvjH2rjVUDfW3KQ3kFKGAY2xyIgh+bcndJqFAYNKpXiGDsUlAxMOgLBiIpN1QsDNqigEjMBZUCg65oIJKtoVJh0JQERAErKAsY9CQDUSQVygoGLSZAFIqFsoRBhxkQxUKheKaFPDQZw2emQAymhQKGWHIszRwIcQhFMO0pw0fMlC+1rwN62Lc7zblkLsY9syAY4a5A+vAN+8mdq63xwUDNikb795sOr6NNziyjH7AQDgAmhQ9sAPRJ+3QBQ+6pI7IBg4A/VzQia4zSEIbAoQMA7POxvHU3AGLJGcYntp+6Wy6xyFk6AhF61jnxghhiJ1xJXeZAqEEotzLtKcsFw1hZgCjMrQwUBkBvcp83ABOTw7IBIRYoDIDepF/9/YDEBl9qoODKV0pYIlC3vcuuWMqcHMTca9a/OCB5Zn3327s8t0bfNPn8iwP6KYrTqoi40ftt6C8m/iRnoveKXbJ5bPudUTaUG1fK0E/b9S8OSATWArIVsQ1tMfea9S8RyAUIel3Jm2z0xguqsKzgt4oPjv8BCgbZ6l9/AQAA//9HnEu0AAAABklEQVQDAI1HmgBXKvxdAAAAAElFTkSuQmCC
 // @include     https://www.ted.com/*
@@ -106,6 +106,7 @@
 // @include     https://*.licdn.com/*
 // @include     https://*.sc-cdn.net/*
 // @include     https://*.pinimg.com/*
+// @include     https://open.spotify.com/*
 // @connect     googlevideo.com
 // @connect     tiktokcdn.com
 // @connect     snssdk.com
@@ -498,6 +499,7 @@
 	      }
 	      button.style.top = `${top}px`;
 	      button.style.left = `${left}px`;
+	      button.style.zIndex = zIndex + "!important";
 	    };
 	    const pickTarget = () => {
 	      const targets = document.querySelectorAll(targetSelector);
@@ -1934,6 +1936,213 @@
 	  }
 	};
 
+	const SpotifyDownloader = {
+	  _debounceTimer: null,
+	  _playerAnchorPollTimer: null,
+	  _pendingPlayerAnchor: null,
+	  extractTrackIds: function() {
+	    const ids = /* @__PURE__ */ new Set();
+	    document.querySelectorAll("aside a[href]").forEach((link) => {
+	      const href = link.getAttribute("href");
+	      if (!href) {
+	        return;
+	      }
+	      const uriMatch = href.match(/spotify:track:([a-zA-Z0-9]+)/);
+	      const webMatch = href.match(/track\/([a-zA-Z0-9]+)/);
+	      if (uriMatch) {
+	        ids.add(uriMatch[1]);
+	      }
+	      if (webMatch) {
+	        ids.add(webMatch[1]);
+	      }
+	    });
+	    return [...ids];
+	  },
+	  buildDownloadUrl: function(trackId) {
+	    return `https://www.spotriff.com/en?url=https://open.spotify.com/track/${trackId}`;
+	  },
+	  createDownloadSvg: function(color = "#1ed760", size = 20) {
+	    const svgNS = "http://www.w3.org/2000/svg";
+	    const svg = document.createElementNS(svgNS, "svg");
+	    svg.setAttribute("class", "icon");
+	    svg.setAttribute("viewBox", "0 0 1045 1024");
+	    svg.setAttribute("xmlns", svgNS);
+	    svg.setAttribute("width", String(size));
+	    svg.setAttribute("height", String(size));
+	    [
+	      "M503.806 583.233c2.47 3.347 5.795 5.422 9.469 5.422s6.998-2.075 9.469-5.422l198.018-268.933c1.328-1.81 1.849-4.715 1.142-7.332-0.731-2.595-2.454-4.194-4.279-4.194h-128.113v-273.353c0-5.11-1.351-10.221-4.047-14.059-2.702-3.922-6.252-5.881-9.787-5.881h-124.78c-3.534 0-7.084 1.949-9.787 5.881-2.704 3.844-4.047 8.956-4.047 14.059v273.353h-128.121c-1.825 0-3.55 1.6-4.279 4.194-0.706 2.618-0.208 5.508 1.142 7.332l198.002 268.933z",
+	      "M881.309 622.062l-119.507-82.941h-74.672l125.271 101.382-137.726-1.804c-3.992 0-9.729 3.849-11.538 7.051l-38.258 92.528h-224.016l-38.258-92.528c-1.793-3.201-7.531-7.051-11.539-7.051h-136.904l124.469-99.578h-74.705l-119.49 82.941c-18.657 11.196-29.868 36.961-24.864 57.311l22.155 121.494c5.036 20.335 27.247 36.962 49.375 36.962h643.554c22.112 0 44.34-16.627 49.375-36.962l22.128-121.494c5.020-20.35-6.175-46.117-24.848-57.311v0 0z"
+	    ].forEach((d) => {
+	      const path = document.createElementNS(svgNS, "path");
+	      path.setAttribute("d", d);
+	      path.setAttribute("fill", color);
+	      svg.appendChild(path);
+	    });
+	    return svg;
+	  },
+	  createDownloadButton: function(sourceButton, removeAttributes = false, svgSize = 20, onClick) {
+	    const button = sourceButton.cloneNode(false);
+	    if (removeAttributes) {
+	      const className = button.getAttribute("class");
+	      [...button.attributes].forEach((attr) => {
+	        button.removeAttribute(attr.name);
+	      });
+	      if (className) {
+	        button.setAttribute("class", className);
+	      }
+	    }
+	    button.style.cursor = "pointer";
+	    button.setAttribute("userscript-v", "true");
+	    button.appendChild(this.createDownloadSvg("#1ed760", svgSize));
+	    button.addEventListener("click", onClick);
+	    return button;
+	  },
+	  isVisible: function(el) {
+	    if (!el?.isConnected) {
+	      return false;
+	    }
+	    const { width, height } = el.getBoundingClientRect();
+	    if (width === 0 || height === 0) {
+	      return false;
+	    }
+	    const style = getComputedStyle(el);
+	    return style.display !== "none" && style.visibility !== "hidden";
+	  },
+	  findPlayerAnchor: function() {
+	    const selectors = [
+	      '[data-testid="fullscreen-mode-button"]',
+	      '[data-testid="pip-toggle-button"]'
+	    ];
+	    for (const selector of selectors) {
+	      const anchor = document.querySelector(selector);
+	      if (anchor && this.isVisible(anchor)) {
+	        return anchor;
+	      }
+	    }
+	    return null;
+	  },
+	  stopPlayerAnchorPoll: function() {
+	    if (!this._playerAnchorPollTimer) {
+	      return;
+	    }
+	    clearTimeout(this._playerAnchorPollTimer);
+	    this._playerAnchorPollTimer = null;
+	  },
+	  getPlayerAnchor: function() {
+	    const pollMs = 500;
+	    const timeoutMs = 1e4;
+	    const anchor = this.findPlayerAnchor();
+	    if (anchor) {
+	      return Promise.resolve(anchor);
+	    }
+	    if (this._pendingPlayerAnchor) {
+	      return this._pendingPlayerAnchor;
+	    }
+	    this._pendingPlayerAnchor = new Promise((resolve) => {
+	      let elapsed = 0;
+	      const poll = () => {
+	        this._playerAnchorPollTimer = null;
+	        const found = this.findPlayerAnchor();
+	        if (found) {
+	          this._pendingPlayerAnchor = null;
+	          resolve(found);
+	          return;
+	        }
+	        elapsed += pollMs;
+	        if (elapsed >= timeoutMs) {
+	          this._pendingPlayerAnchor = null;
+	          resolve(null);
+	          return;
+	        }
+	        this._playerAnchorPollTimer = setTimeout(poll, pollMs);
+	      };
+	      this.stopPlayerAnchorPoll();
+	      this._playerAnchorPollTimer = setTimeout(poll, pollMs);
+	    });
+	    return this._pendingPlayerAnchor;
+	  },
+	  injectPlayer: async function() {
+	    const anchor = await this.getPlayerAnchor();
+	    if (!anchor?.parentElement) {
+	      return;
+	    }
+	    if (anchor.parentElement.querySelector('button[userscript-v="true"]')) {
+	      return;
+	    }
+	    const button = this.createDownloadButton(anchor, true, 30, () => {
+	      const ids = this.extractTrackIds();
+	      const trackId = ids.length ? ids[0] : null;
+	      if (!trackId) {
+	        return;
+	      }
+	      CommonUtils.openInTab(this.buildDownloadUrl(trackId));
+	    });
+	    anchor.parentElement.insertBefore(button, anchor.parentElement.firstChild);
+	    this.stopPlayerAnchorPoll();
+	  },
+	  extractTrackIdFromElement: function(el) {
+	    const scope = el.closest('[role="row"]') || el;
+	    for (const link of scope.querySelectorAll("a[href]")) {
+	      const href = link.getAttribute("href");
+	      if (!href) {
+	        continue;
+	      }
+	      const uriMatch = href.match(/spotify:track:([a-zA-Z0-9]+)/);
+	      if (uriMatch) {
+	        return uriMatch[1];
+	      }
+	      const webMatch = href.match(/track\/([a-zA-Z0-9]+)/);
+	      if (webMatch) {
+	        return webMatch[1];
+	      }
+	    }
+	    return null;
+	  },
+	  injectTracklist: function() {
+	    document.querySelectorAll('[data-testid="tracklist-row"]:not([track-userscript-v="true"])').forEach((tracklist) => {
+	      tracklist.setAttribute("track-userscript-v", "true");
+	      const gridcells = tracklist.querySelectorAll('[role="gridcell"]');
+	      const gridcell = gridcells[gridcells.length - 1];
+	      if (!gridcell) {
+	        return;
+	      }
+	      const sourceButton = gridcell.querySelector("button");
+	      if (!sourceButton) {
+	        return;
+	      }
+	      const button = this.createDownloadButton(sourceButton, false, 18, (e) => {
+	        e.stopPropagation();
+	        e.preventDefault();
+	        const trackId = this.extractTrackIdFromElement(gridcell);
+	        if (!trackId) {
+	          return;
+	        }
+	        CommonUtils.openInTab(this.buildDownloadUrl(trackId));
+	      });
+	      gridcell.insertBefore(button, gridcell.firstChild);
+	    });
+	  },
+	  scheduleInject: function() {
+	    clearTimeout(this._debounceTimer);
+	    this._debounceTimer = setTimeout(() => {
+	      this.injectPlayer();
+	      this.injectTracklist();
+	    }, 300);
+	  },
+	  start: function() {
+	    const isRun = /spotify\.com/.test(window.location.host);
+	    if (isRun) {
+	      new MutationObserver(() => {
+	        this.scheduleInject();
+	      }).observe(document.body, {
+	        childList: true,
+	        subtree: true
+	      });
+	      this.scheduleInject();
+	    }
+	  }
+	};
+
 	[
 	  YouTubeDownloader,
 	  TiktokDownloader,
@@ -1946,7 +2155,8 @@
 	  TedDownloader,
 	  FacebookDownloader,
 	  PinterestDownloader,
-	  SnapchatDownloader
+	  SnapchatDownloader,
+	  SpotifyDownloader
 	].forEach((m) => m.start());
 
 }());

@@ -30,13 +30,13 @@ title: "CheatGuessr Universal | GeoGuessr | OpenGuessr | WorldGuessr | FreeGuess
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：0/100　　**分析时间**：2026-06-15
+**风险等级**：🔴 HIGH　　**安全评分**：42/100　　**分析时间**：2026-06-22
 
-> 该脚本存在严重的数据外传风险（向 discord.com 和 nominatim.openstreetmap.org 发送数据），并通过 Proxy 操作多个原生方法（如 fetch、push、setAttribute），可能导致远程代码执行和页面行为异常。脚本未收集隐私数据，但存在权限滥用、敏感 API 调用、iframe 风险等问题。安全评分为 0，建议谨慎使用并严格限制数据传输内容。
+> This UserScript transmits user location data to third-party services (nominatim.openstreetmap.org for reverse geocoding and discord.com for Discord integration), which constitutes a critical privacy and data exfiltration risk. It does not appear to collect cookies, localStorage, or sensitive form data, nor does it use obfuscation or dynamic code execution. The script uses Proxy wrappers on native functions to bypass anti-cheat mechanisms, which increases the attack surface. Notification API and GM_xmlhttpRequest permissions are requested, which are medium risks. No DOM XSS or supply chain risks were detected. The overall risk is HIGH due to critical data transmission issues.
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：discord.com, nominatim.openstreetmap.org） |
+| 数据外传 | ❌ 检测到（目标：nominatim.openstreetmap.org, discord.com） |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
@@ -45,60 +45,35 @@ title: "CheatGuessr Universal | GeoGuessr | OpenGuessr | WorldGuessr | FreeGuess
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Transmission  
-> Script sends data to discord.com via GM_xmlhttpRequest, potentially including game coordinates or user actions.  
-> 位置：GM_xmlhttpRequest usage, @connect discord.com  
-> 建议：Limit data sent to Discord, ensure no sensitive user information or authentication tokens are transmitted.
+**⛔ CRITICAL** — Data Exfiltration  
+> The script sends latitude and longitude coordinates to nominatim.openstreetmap.org for reverse geocoding via GM_xmlhttpRequest. This is a third-party service and may receive user location data.  
+> 位置：_getAddress function  
+> 建议：Inform users about third-party data transmission and consider proxying requests if privacy is a concern.
 
-**⛔ CRITICAL** — Data Transmission  
-> Script sends coordinates to nominatim.openstreetmap.org for reverse geocoding.  
-> 位置：_getAddress function, GM_xmlhttpRequest usage  
-> 建议：Ensure only non-sensitive data (coordinates) are sent; avoid transmitting user identifiers or cookies.
-
-**🔴 HIGH** — Remote Code Execution  
-> Script applies Proxy wrappers to built-in methods (setAttribute, push, fetch, setItem) to bypass cheat detection and manipulate behavior.  
-> 位置：Proxy usage throughout platform-specific code blocks  
-> 建议：Ensure Proxy usage does not introduce security vulnerabilities or break site functionality.
-
-**🔴 HIGH** — Remote Code Execution  
-> Script applies Proxy to unsafeWindow.fetch, potentially interfering with legitimate network requests.  
-> 位置：unsafeWindow.fetch Proxy (freeguessr platform)  
-> 建议：Limit Proxy scope to only cheat-related requests; avoid interfering with unrelated fetch calls.
-
-**🔴 HIGH** — Remote Code Execution  
-> Script applies Proxy to Array.prototype.push, which may affect unrelated code and introduce unpredictable behavior.  
-> 位置：Array.prototype.push Proxy (multiple platforms)  
-> 建议：Restrict Proxy usage to only relevant arrays or contexts.
+**⛔ CRITICAL** — Data Exfiltration  
+> The script is designed to send map pin data to Discord (discord.com) via webhook or API, which may include user actions or location data.  
+> 位置：@connect discord.com (potential usage in sendToDiscord feature)  
+> 建议：Ensure users are aware of what data is sent to Discord and allow them to opt-in/opt-out.
 
 **🟠 MEDIUM** — Sensitive API Usage  
-> Script requests Notification API permission and sends notifications.  
+> The script requests Notification API permission and can send notifications to the user.  
 > 位置：requestNotificationPermission, sendNotification functions  
-> 建议：Avoid excessive or misleading notifications; do not use Notification API for phishing or spam.
+> 建议：Ensure notifications are not abused and only used for legitimate user alerts.
+
+**🟠 MEDIUM** — Sensitive API Usage  
+> The script applies Proxy wrappers to native functions (e.g., setAttribute, push, fetch) to bypass anti-cheat and tracking mechanisms. While not directly malicious, this increases attack surface and may break page logic.  
+> 位置：Multiple locations (platform-specific logic)  
+> 建议：Minimize Proxy usage and ensure it does not introduce security regressions or unexpected behavior.
 
 **🟠 MEDIUM** — Permission Abuse  
-> Script requests @grant GM_xmlhttpRequest, but also manipulates fetch and other APIs, potentially exceeding necessary permissions.  
-> 位置：@grant section  
-> 建议：Review granted permissions and remove any not strictly required.
+> The script requests GM_xmlhttpRequest permission, which allows arbitrary cross-origin requests. This is necessary for its features but increases risk if the script is compromised.  
+> 位置：@grant GM_xmlhttpRequest  
+> 建议：Limit @connect domains to only those strictly necessary and review code for misuse.
 
 **🟠 MEDIUM** — Sensitive API Usage  
-> Script requests Notification API permission, which could be abused for spam or phishing.  
-> 位置：Notification API usage  
-> 建议：Use Notification API responsibly and only for legitimate user alerts.
-
-**🟡 LOW** — ClickJacking / iframe Risk  
-> Script modifies iframe sandbox attributes, potentially weakening frame protection.  
-> 位置：Element.prototype.setAttribute Proxy (worldguessr, openguessr, freeguessr platforms)  
-> 建议：Do not remove sandbox attributes from iframes unless absolutely necessary and safe.
-
-**🟡 LOW** — Obfuscation  
-> Script does not use code obfuscation or minification.  
-> 位置：Entire script  
-> 建议：Maintain transparency; avoid obfuscation unless necessary for protection.
-
-**🟡 LOW** — Supply Chain Risk  
-> Script uses @require only for update/download URLs, not for third-party libraries.  
-> 位置：@downloadURL, @updateURL  
-> 建议：If using @require for libraries, ensure source is trusted and version is fixed.
+> The script requests Notification API permission and can send notifications to the user.  
+> 位置：requestNotificationPermission, sendNotification functions  
+> 建议：Ensure notifications are not abused and only used for legitimate user alerts.
 
 ---
 

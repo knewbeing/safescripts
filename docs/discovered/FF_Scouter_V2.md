@@ -1,46 +1,46 @@
 ---
-title: "公平战斗侦查器"
+title: "公平战斗侦查器V2"
 ---
 
-# 公平战斗侦查器
+# 公平战斗侦查器V2
 
-`游戏辅助`  `数据展示`  `策略优化`  `Torn`  `帮派管理`  `玩家分析`
+`游戏辅助`  `Torn`  `战斗分析`  `帮派管理`  `信息展示`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/FF_Scouter_V2.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**2.77**　　发现时间：**2026-06-15**　　来源：[GreasyFork](https://greasyfork.org/scripts/535292-ff-scouter-v2) <Badge type="tip" text="GreasyFork" />　　安装量：**17,209**　　评分：👍3 / 👎3
+> 版本：**2.77**　　发现时间：**2026-06-22**　　来源：[GreasyFork](https://greasyfork.org/scripts/535292-ff-scouter-v2) <Badge type="tip" text="GreasyFork" />　　安装量：**17,704**　　评分：👍3 / 👎3
 
 ## 功能介绍
 
-此脚本在 Torn 游戏网站上显示目标玩家的 Fair Fight 分数和帮派战争状态，帮助玩家更好地评估对手和战局。通过自动获取和展示相关数据，提升游戏策略体验。
+本脚本可在 Torn 游戏网站上显示目标玩家的公平战斗分数和帮派战争状态，帮助玩家更好地评估战斗对象。它会自动获取并展示相关信息，提升游戏策略体验。
 
 ## 适用网站
 
-- Torn 城市
+- Torn 游戏网站
 
 ## 使用方法
 
-1. 安装脚本后，登录 Torn 网站。
-2. 在目标玩家页面或帮派相关页面，会自动显示 Fair Fight 分数和帮派战争状态。
-3. 可通过脚本菜单进行设置或刷新数据。
+1. 安装脚本后，访问 Torn 游戏网站。
+2. 在玩家资料或相关页面会自动显示公平战斗分数和帮派战争状态。
+3. 如需调整脚本设置，可通过浏览器的用户脚本菜单操作。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `GM_xmlhttpRequest` | 用于向外部网站请求数据，获取 Fair Fight 分数和帮派信息。 |
-| `GM_setValue` | 保存脚本设置和缓存数据，方便下次使用。 |
-| `GM_getValue` | 读取脚本保存的数据，如用户偏好和缓存信息。 |
-| `GM_listValues` | 列出所有已保存的数据键，便于管理缓存和设置。 |
-| `GM_deleteValue` | 删除不再需要的脚本数据，保持数据整洁。 |
-| `GM_registerMenuCommand` | 在脚本菜单中添加自定义命令，方便用户操作。 |
-| `GM_addStyle` | 为页面添加自定义样式，让显示效果更美观。 |
+| `GM_xmlhttpRequest` | 用于发送跨域网络请求，获取外部数据。 |
+| `GM_setValue` | 保存脚本设置和数据到本地。 |
+| `GM_getValue` | 读取本地保存的脚本数据。 |
+| `GM_listValues` | 列出所有已保存的脚本数据键。 |
+| `GM_deleteValue` | 删除本地保存的脚本数据。 |
+| `GM_registerMenuCommand` | 在浏览器菜单中添加自定义命令，方便用户操作脚本。 |
+| `GM_addStyle` | 为页面添加自定义样式，优化显示效果。 |
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：67/100　　**分析时间**：2026-06-15
+**风险等级**：🔴 HIGH　　**安全评分**：50/100　　**分析时间**：2026-06-22
 
-> FF Scouter V2 communicates with ffscouter.com using GM_xmlhttpRequest, which is a third-party server. No evidence of privacy collection, code obfuscation, or DOM XSS. Permissions are standard, but GM_xmlhttpRequest is a high privilege. Supply chain risk is minimal as no third-party libraries are loaded. Main risk is data transmission to external server; review payloads for sensitive data.
+> The script makes network requests to a third-party server (ffscouter.com) using GM_xmlhttpRequest, which is a critical risk if user data or sensitive information is transmitted. There is no evidence of code obfuscation, DOM XSS, or dangerous dynamic code execution in the provided snippet. The script requests several GM_* permissions, but their usage appears standard. The main risk is data exfiltration and supply chain trust in ffscouter.com. Review all network payloads and ensure no sensitive data is sent. The script is not approved for use in sensitive environments without further review of the full code and network behavior.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -49,29 +49,34 @@ title: "公平战斗侦查器"
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ✅ 可信 |
+| 供应链风险 | ⚠️ 存在风险 |
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Transmission  
-> Script uses GM_xmlhttpRequest to communicate with ffscouter.com, a third-party server. Potential for user data transmission exists, but only ffscouter.com is targeted.  
-> 位置：GM_xmlhttpRequest calls and @connect ffscouter.com  
-> 建议：Review transmitted data payloads to ensure no sensitive user information is sent. Limit data sent to only what is necessary for functionality.
+**⛔ CRITICAL** — Data Exfiltration  
+> The script uses GM_xmlhttpRequest to communicate with ffscouter.com, which is a third-party server. This may transmit user data or page context, depending on the request payloads.  
+> 位置：GM_xmlhttpRequest calls (likely in main logic, not shown in snippet)  
+> 建议：Review all data sent to ffscouter.com. Ensure no sensitive user data, cookies, or authentication tokens are transmitted. Document what is sent and why.
 
-**🟠 MEDIUM** — Permission Usage  
-> Script requests GM_xmlhttpRequest permission, which is high privilege and can be abused if not properly controlled.  
+**⛔ CRITICAL** — Data Exfiltration  
+> The script requests and is granted GM_xmlhttpRequest permission, but the code snippet does not show any other network request methods (fetch, XHR, WebSocket, etc.).  
 > 位置：@grant GM_xmlhttpRequest  
-> 建议：Ensure only necessary requests are made and no excessive privileges are requested.
+> 建议：Limit network requests to only what is necessary. Avoid sending sensitive data.
+
+**🟠 MEDIUM** — Privacy Collection  
+> The script requests GM_setValue, GM_getValue, GM_listValues, and GM_deleteValue permissions, which allow persistent storage. While not inherently dangerous, these should be reviewed for privacy implications if used to store sensitive data.  
+> 位置：@grant GM_setValue, GM_getValue, GM_listValues, GM_deleteValue  
+> 建议：Ensure no sensitive user data is stored insecurely. Document what is stored and why.
+
+**🟠 MEDIUM** — Supply Chain Risk  
+> The script connects to ffscouter.com, a third-party server, as specified by @connect. This introduces supply chain risk if the remote server is compromised or malicious.  
+> 位置：@connect ffscouter.com  
+> 建议：Ensure ffscouter.com is trustworthy and uses HTTPS. Monitor for supply chain attacks.
 
 **🟡 LOW** — Permission Usage  
-> Script requests GM_setValue, GM_getValue, GM_listValues, GM_deleteValue, GM_registerMenuCommand, GM_addStyle. These are standard, but review for privilege minimization.  
-> 位置：@grant declarations  
-> 建议：Remove unused permissions if any.
-
-**🟡 LOW** — Supply Chain  
-> Script uses @require only for update/download URLs, not for third-party libraries. No supply chain risk detected.  
-> 位置：@downloadURL, @updateURL  
-> 建议：If third-party libraries are used in the future, ensure version pinning and trusted sources.
+> The script requests GM_registerMenuCommand and GM_addStyle, which are not high risk but should be used as intended.  
+> 位置：@grant GM_registerMenuCommand, GM_addStyle  
+> 建议：Ensure these are not abused for privilege escalation or UI spoofing.
 
 ---
 

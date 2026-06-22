@@ -42,14 +42,14 @@ title: "CheatGuessr 通用版｜GeoGuessr 辅助"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：25/100　　**分析时间**：2026-06-15
+**风险等级**：🔴 HIGH　　**安全评分**：35/100　　**分析时间**：2026-06-22
 
-> 该脚本存在严重的数据外传和隐私采集风险，尤其是向 discord.com 和 nominatim.openstreetmap.org 发送用户游戏行为和位置数据。脚本未检测到远程代码执行、代码混淆、DOM XSS、供应链风险等问题，但因数据外传和隐私采集，安全评分较低。建议仅在用户明确同意下发送数据，并减少敏感信息采集与外传。
+> 该脚本存在高风险数据外传行为，允许用户将游戏坐标、昵称等信息通过 GM_xmlhttpRequest 主动发送到 Discord（第三方服务器），以及通过 nominatim.openstreetmap.org 进行地理反查。虽然未见自动化隐私采集和远程代码执行，但涉及敏感数据外传，需用户高度警惕。建议仅在用户明确知情同意下使用相关功能，并避免自动化批量外传。
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：discord.com, nominatim.openstreetmap.org） |
-| 隐私采集 | ❌ 检测到（玩家猜测坐标, 玩家昵称, 玩家账号ID） |
+| 隐私采集 | ❌ 检测到（可能处理昵称、坐标等游戏相关信息用于 Discord 发送） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ⚠️ 使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -58,59 +58,49 @@ title: "CheatGuessr 通用版｜GeoGuessr 辅助"
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本通过 GM_xmlhttpRequest 向 discord.com 发送数据，可能包含用户游戏位置、行为等敏感信息。  
-> 位置：GM_xmlhttpRequest 调用，@connect discord.com  
-> 建议：仅允许用户主动发送数据，避免自动上报；明确告知用户数据内容和用途。
+> 脚本允许通过 GM_xmlhttpRequest 发送数据到 discord.com（如 sendToDiscord 功能），可能外传用户游戏坐标、昵称等信息。  
+> 位置：GM_xmlhttpRequest 调用（sendToDiscord 相关功能）  
+> 建议：仅允许用户主动触发发送，明确告知用户外传内容，避免自动上报敏感信息。
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本通过 GM_xmlhttpRequest 向 nominatim.openstreetmap.org 查询地理位置，可能包含用户游戏坐标。  
-> 位置：GM_xmlhttpRequest 调用，@connect nominatim.openstreetmap.org  
-> 建议：避免发送精确用户坐标，或在发送前征得用户同意。
+> 脚本允许通过 GM_xmlhttpRequest 访问 nominatim.openstreetmap.org 进行地理反查，可能外传用户游戏坐标。  
+> 位置：GM_xmlhttpRequest 调用（地理反查功能）  
+> 建议：仅在用户明确操作下请求，避免自动批量查询。
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本监听 WebSocket 消息并处理玩家猜测数据，存在将用户行为数据外传的风险。  
-> 位置：WebSocket.prototype.send/Proxy、WebSocket.prototype.addEventListener/Proxy  
-> 建议：确保仅在本地处理数据，不向第三方服务器发送用户行为。
+**🔴 HIGH** — WebSocket 使用  
+> 脚本通过 WebSocket 监听和发送消息，部分代码会拦截/伪造聊天消息，但未见将用户行为数据主动外传到第三方。  
+> 位置：WebSocket 相关代理代码  
+> 建议：确保不将用户敏感数据通过 WebSocket 发送到非游戏官方服务器。
 
-**⛔ CRITICAL** — 隐私采集  
-> 脚本读取并操作游戏中的玩家猜测、昵称、坐标等信息，属于隐私采集。  
-> 位置：handleOpponentMarker、player.guess、player.username、player.accountId  
-> 建议：仅在本地显示，不外传敏感信息；告知用户采集内容。
-
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请 GM_xmlhttpRequest 高权限，但未申请 GM_download、GM_openInTab 等其他高权限。  
-> 位置：@grant GM_xmlhttpRequest  
-> 建议：仅申请实际需要的权限，避免权限滥用。
-
-**🟠 MEDIUM** — 敏感 API 调用  
-> 脚本使用 Notification API，可能被滥用发送通知。  
-> 位置：state.notificationPermission、Notification.permission  
-> 建议：仅在用户主动操作时发送通知。
+**🔴 HIGH** — 隐私采集  
+> 脚本未见明显隐私采集（如读取 cookie、localStorage、表单、剪贴板等），但部分功能可能间接处理昵称、坐标等信息。  
+> 位置：全局变量与 sendToDiscord 相关逻辑  
+> 建议：确保所有敏感信息仅在用户知情同意下处理和外传。
 
 **🟡 LOW** — 远程代码执行  
-> 脚本未使用 eval、new Function、setTimeout(string) 等远程代码执行方式。  
-> 位置：全局代码审查  
-> 建议：保持当前安全实践。
+> 脚本未见 eval、new Function、setTimeout(string) 等远程代码执行风险。  
+> 位置：全局  
+> 建议：保持禁止动态代码执行。
 
 **🟡 LOW** — 代码混淆  
-> 脚本未检测到代码混淆、base64、unicode、字符串数组映射等混淆特征。  
-> 位置：全局代码审查  
-> 建议：保持代码可读性。
+> 脚本未见明显代码混淆、base64 解码、字符串数组混淆等。  
+> 位置：全局  
+> 建议：保持代码可读性，便于安全审计。
 
-**🟡 LOW** — DOM XSS / 注入  
-> 脚本未检测到 DOM XSS 或注入风险，未直接插入用户输入到 innerHTML。  
-> 位置：全局代码审查  
-> 建议：保持当前安全实践。
+**🟡 LOW** — DOM XSS  
+> 脚本未见 DOM XSS 风险（未直接将用户输入插入 innerHTML/outerHTML）。  
+> 位置：全局  
+> 建议：如后续涉及 DOM 操作，需严格转义。
+
+**🟡 LOW** — 权限滥用  
+> @grant 仅申请了实际用到的权限，无明显权限滥用。  
+> 位置：元数据 @grant  
+> 建议：仅申请必要权限。
 
 **🟡 LOW** — 供应链风险  
-> 脚本未检测到供应链风险，未通过 @require 加载第三方库。  
-> 位置：元数据 @require 缺失  
-> 建议：如需加载第三方库，请固定版本哈希并使用官方 CDN。
-
-**🟡 LOW** — ClickJacking / iframe 风险  
-> 脚本未检测到 clickjacking 或 iframe 风险。  
-> 位置：全局代码审查  
-> 建议：保持当前安全实践。
+> @require 未使用，未见供应链风险。  
+> 位置：元数据  
+> 建议：如需第三方库，建议固定版本和可信来源。
 
 ---
 

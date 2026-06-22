@@ -1,0 +1,89 @@
+{
+  "slug": "github-enhancement",
+  "platform": "github",
+  "source_url": "https://raw.githubusercontent.com/pdone/jset/4ceee304614b90219ecdf58633516b71f49511d1/src/github-enhancement.user.js",
+  "source_repo": "pdone/jset",
+  "raw_url": "https://raw.githubusercontent.com/pdone/jset/4ceee304614b90219ecdf58633516b71f49511d1/src/github-enhancement.user.js",
+  "filename": "github-enhancement.user.js",
+  "name": "Github Enhancement",
+  "version": "0.0.2",
+  "description": "High-speed download of Git Clone/SSH, Release, Raw, Code(ZIP) and other files",
+  "match": [
+    "*://github.com/*"
+  ],
+  "grant": [
+    "GM_registerMenuCommand",
+    "GM_unregisterMenuCommand",
+    "GM_openInTab",
+    "GM_getValue",
+    "GM_setValue",
+    "GM_notification",
+    "GM_setClipboard",
+    "window.onurlchange"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Github Enhancement\n// @name:zh-CN  Github 增强\n// @namespace  http://tampermonkey.net/\n// @version  0.0.2\n// @description  High-speed download of Git Clone/SSH, Release, Raw, Code(ZIP) and other files\n// @description:zh-CN  高速下载 Git Clone/SSH、Release、Raw、Code(ZIP) 等文件 (公益加速)、项目列表单文件快捷下载 (☁)\n// @author  pdone\n// @supportURL  https://github.com/pdone/jset/issues\n// @homepageURL  https://github.com/pdone/jset\n// @icon  data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAACEUExURUxpcRgWFhsYGBgWFhcWFh8WFhoYGBgWFiUlJRcVFRkWFhgVFRgWFhgVFRsWFhgWFigeHhkWFv////////////r6+h4eHv///xcVFfLx8SMhIUNCQpSTk/r6+jY0NCknJ97e3ru7u+fn51BOTsPCwqGgoISDg6empmpoaK2srNDQ0FhXV3eXcCcAAAAXdFJOUwCBIZXMGP70BuRH2Ze/LpIMUunHkpQR34sfygAAAVpJREFUOMt1U+magjAMDAVb5BDU3W25b9T1/d9vaYpQKDs/rF9nSNJkArDA9ezQZ8wPbc8FE6eAiQUsOO1o19JolFibKCdHGHC0IJezOMD5snx/yE+KOYYr42fPSufSZyazqDoseTPw4lGJNOu6LBXVUPBG3lqYAOv/5ZwnNUfUifzBt8gkgfgINmjxOpgqUA147QWNaocLniqq3QsSVbQHNp45N/BAwoYQz9oUJEiE4GMGfoBSMj5gjeWRIMMqleD/CAzUHFqTLyjOA5zjNnwa4UCEZ2YK3khEcBXHjVBtEFeIZ6+NxYbPqWp1DLKV42t6Ujn2ydyiPi9nX0TTNAkVVZ/gozsl6FbrktkwaVvL2TRK0C8Ca7Hck7f5OBT6FFbLATkL2ugV0tm0RLM9fedDvhWstl8Wp9AFDjFX7yOY/lJrv8AkYuz7fuP8dv9izCYH+x3/LBnj9fYPBTpJDNzX+7cAAAAASUVORK5CYII=\n// @match  *://github.com/*\n// @grant  GM_registerMenuCommand\n// @grant  GM_unregisterMenuCommand\n// @grant  GM_openInTab\n// @grant  GM_getValue\n// @grant  GM_setValue\n// @grant  GM_notification\n// @grant  GM_setClipboard\n// @grant  window.onurlchange\n// @run-at  document-end\n// @license  MIT",
+  "sha256": "fea1265a31ad48782a9d2232f3c6ccd3386d765e651b39c3482cf330827a0dfe",
+  "discovered_at": "2026-06-22T07:12:52.900254+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": null,
+  "good_ratings": null,
+  "bad_ratings": null,
+  "summary": {
+    "applicable_sites": [
+      "Github"
+    ],
+    "description": "本脚本为 Github 网站提供高速下载功能，包括 Git Clone/SSH、Release、Raw、Code(ZIP) 等文件的加速下载。支持项目列表中单文件的快捷下载，提升文件获取效率。",
+    "permissions": [
+      {
+        "explanation": "用于在脚本菜单中添加自定义命令，方便用户操作。",
+        "grant": "GM_registerMenuCommand"
+      },
+      {
+        "explanation": "用于移除脚本菜单中的命令。",
+        "grant": "GM_unregisterMenuCommand"
+      },
+      {
+        "explanation": "允许脚本在新标签页打开链接，便于下载或查看文件。",
+        "grant": "GM_openInTab"
+      },
+      {
+        "explanation": "用于存储和读取用户的配置或偏好设置。",
+        "grant": "GM_getValue"
+      },
+      {
+        "explanation": "用于保存用户的配置或偏好设置。",
+        "grant": "GM_setValue"
+      },
+      {
+        "explanation": "在桌面弹出通知，提醒用户操作结果。",
+        "grant": "GM_notification"
+      },
+      {
+        "explanation": "将内容复制到剪贴板，方便用户快速获取下载链接。",
+        "grant": "GM_setClipboard"
+      },
+      {
+        "explanation": "监听页面地址变化，确保脚本在页面切换时正常工作。",
+        "grant": "window.onurlchange"
+      }
+    ],
+    "tags": [
+      "下载加速",
+      "Github增强",
+      "文件管理",
+      "快捷操作",
+      "开发工具",
+      "公益加速"
+    ],
+    "usage": [
+      "安装脚本后，访问 Github 网站。",
+      "在项目页面或文件列表中，会出现加速下载按钮。",
+      "点击相应按钮即可高速下载文件或项目。",
+      "可在脚本菜单中调整相关功能设置。"
+    ],
+    "zh_name": "Github增强"
+  }
+}

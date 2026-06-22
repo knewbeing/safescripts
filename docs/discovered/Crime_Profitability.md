@@ -32,9 +32,9 @@ title: "犯罪收益显示器"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：92/100　　**分析时间**：2026-06-15
+**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-22
 
-> 该脚本主要用于展示犯罪页面的每神经价值，核心功能为从 Google Sheets 获取公开数据并在页面展示。未检测到敏感数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。唯一中等风险为通过 GM.xmlHttpRequest 请求第三方数据源，但未携带用户数据。整体安全性较高，评分为 92。
+> 该脚本主要通过 GM.xmlHttpRequest 拉取 Google Sheets 公共数据，并在本地 localStorage 缓存数据。未检测到用户数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用等高风险行为。整体安全性较高，风险等级为 LOW。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -47,50 +47,35 @@ title: "犯罪收益显示器"
 
 ### 发现的问题
 
-**🟠 MEDIUM** — 数据外传  
-> 脚本通过 GM.xmlHttpRequest 请求 Google Sheets CSV 数据，属于第三方数据源，但未携带用户数据、cookie 或页面内容。  
-> 位置：emforusData, crackingData URLs in main function  
-> 建议：确认请求内容仅为公开数据，避免携带敏感信息。
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过 GM.xmlHttpRequest/fetch 方式访问 Google Sheets 公共 CSV 数据，未向第三方服务器上传用户数据，仅拉取公开数据。  
+> 位置：emforusData / crackingData 变量与 GM.xmlHttpRequest 调用  
+> 建议：确认不会将用户数据、cookie、页面内容等敏感信息通过网络请求外传。
+
+**🔴 HIGH** — 远程代码执行  
+> 脚本未检测到 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险。  
+> 位置：全局  
+> 建议：保持此安全实践。
+
+**🔴 HIGH** — 代码混淆  
+> 脚本未检测到代码混淆、base64 解码、字符串数组映射或高度压缩代码。  
+> 位置：全局  
+> 建议：保持代码可读性，便于安全审计。
 
 **🟠 MEDIUM** — 隐私采集  
-> 脚本读取和写入 localStorage，用于缓存数据和设置，但未采集敏感信息。  
-> 位置：localStorage.getItem/setItem calls  
-> 建议：确保 localStorage 仅用于非敏感数据缓存。
+> 脚本大量使用 localStorage 存储和读取自身数据（如缓存、设置），但未读取 cookie、sessionStorage、IndexedDB 或表单/剪贴板/指纹信息。  
+> 位置：localStorage.getItem / setItem  
+> 建议：仅存储必要的非敏感数据，避免存储敏感信息。
 
-**🟡 LOW** — 远程代码执行  
-> 脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险函数。  
-> 位置：全局代码审查  
-> 建议：保持当前安全实践。
-
-**🟡 LOW** — 代码混淆  
-> 未检测到代码混淆、base64 解码、字符串数组映射或高度压缩代码。  
-> 位置：全局代码审查  
-> 建议：保持代码可读性。
-
-**🟡 LOW** — DOM XSS  
-> 未检测到 DOM XSS 或用户输入直接插入 innerHTML/outerHTML。  
-> 位置：全局代码审查  
-> 建议：继续避免直接插入用户输入。
-
-**🟡 LOW** — 权限滥用  
-> 脚本申请 GM.xmlHttpRequest 权限，实际用于获取 Google Sheets 数据，未滥用高权限。  
-> 位置：@grant 元数据  
+**🟠 MEDIUM** — 权限滥用  
+> @grant 仅申请了 GM.xmlHttpRequest，未滥用高权限。  
+> 位置：元数据 @grant  
 > 建议：仅申请实际需要的权限。
 
-**🟡 LOW** — 敏感 API 调用  
-> 未检测到敏感 API 调用（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。  
-> 位置：全局代码审查  
-> 建议：继续避免敏感 API 调用。
-
-**🟡 LOW** — 供应链风险  
-> @require 未使用，第三方库未引入，供应链风险较低。  
+**🟠 MEDIUM** — 供应链风险  
+> @require 未使用，未检测到供应链风险。  
 > 位置：元数据  
-> 建议：如需引入第三方库，建议使用官方 CDN 并固定版本。
-
-**🟡 LOW** — ClickJacking/iframe  
-> 未检测到 ClickJacking 或 iframe 风险。  
-> 位置：全局代码审查  
-> 建议：继续避免 iframe 操作。
+> 建议：如需引入第三方库，建议使用可信 CDN 并锁定版本。
 
 ---
 

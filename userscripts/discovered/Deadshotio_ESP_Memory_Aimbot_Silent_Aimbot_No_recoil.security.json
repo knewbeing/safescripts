@@ -2,39 +2,39 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
-      "deadshot-cheat.netlify.app"
+      "https://deadshot-cheat.netlify.app/index.js"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 GM_xmlhttpRequest 向 deadshot-cheat.netlify.app 发起网络请求，下载并执行远程 JavaScript 代码，存在数据外传和远程代码执行风险。",
-      "location": "GM_xmlhttpRequest 调用和 eval(customCode)",
-      "recommendation": "禁止下载和执行远程代码，或仅允许可信源并固定版本哈希。",
+      "description": "The script fetches and executes remote JavaScript code from https://deadshot-cheat.netlify.app/index.js at runtime using eval(). This is a critical remote code execution risk, as the remote code can be changed at any time and executed with full user privileges.",
+      "location": "fetchAndCacheCode() and patchImports() functions",
+      "recommendation": "Avoid dynamic code execution from remote sources. Bundle all code with the script and avoid eval(). If remote code is necessary, use integrity checks and fixed versions.",
       "severity": "CRITICAL",
-      "type": "Data Exfiltration & Remote Code Execution"
-    },
-    {
-      "description": "脚本使用 eval() 执行从外部服务器下载的代码，存在远程代码执行风险。",
-      "location": "eval(customCode)",
-      "recommendation": "避免使用 eval 执行外部代码，改为本地静态代码或受信任的库。",
-      "severity": "HIGH",
       "type": "Remote Code Execution"
     },
     {
-      "description": "脚本通过 GM_xmlhttpRequest 下载远程 JS，且未固定版本哈希，存在供应链风险。",
-      "location": "GM_xmlhttpRequest url: https://deadshot-cheat.netlify.app/index.js",
-      "recommendation": "仅允许官方 CDN 且固定版本哈希，避免可变 URL。",
-      "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
+      "description": "The script uses eval() to execute arbitrary code loaded from a remote server. This is a high-severity security risk.",
+      "location": "patchImports() function: (0, eval)(customCode);",
+      "recommendation": "Do not use eval() on untrusted or remote code. Refactor to avoid eval() entirely.",
+      "severity": "HIGH",
+      "type": "Dynamic Code Execution"
     },
     {
-      "description": "脚本申请了 unsafeWindow 权限，但实际代码未使用，存在权限滥用风险。",
-      "location": "@grant unsafeWindow",
-      "recommendation": "移除未使用的高权限申请。",
+      "description": "The script requests GM_xmlhttpRequest and unsafeWindow permissions, which are high-privilege and can be abused if the script or remote code is compromised.",
+      "location": "UserScript metadata",
+      "recommendation": "Minimize permissions to only those required. Avoid unsafeWindow and GM_xmlhttpRequest unless absolutely necessary.",
       "severity": "MEDIUM",
-      "type": "Permission Abuse"
+      "type": "Permission Overuse"
+    },
+    {
+      "description": "The script loads remote code from a non-official domain (deadshot-cheat.netlify.app) without version pinning or integrity verification, introducing supply chain risk.",
+      "location": "CUSTOM_SCRIPT_URL and fetchAndCacheCode()",
+      "recommendation": "Only load code from trusted, official sources with version pinning and integrity checks.",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
     }
   ],
   "obfuscation_detected": false,
@@ -44,10 +44,10 @@
   },
   "risk_level": "CRITICAL",
   "script_name": "Deadshot.io ESP & Memory Aimbot & Silent Aimbot & No recoil",
-  "security_score": 32,
-  "summary": "该脚本存在严重安全风险：通过 GM_xmlhttpRequest 向第三方服务器 deadshot-cheat.netlify.app 下载并 eval 执行远程代码，属于数据外传和远程代码执行的高危行为。未固定版本哈希，存在供应链污染风险。申请了未使用的高权限 unsafeWindow。未检测到隐私采集、代码混淆、DOM XSS、WebSocket 使用等其他风险。强烈建议禁止使用该脚本。已判定为 CRITICAL 级别风险。",
+  "security_score": 0,
+  "summary": "This UserScript presents a critical security risk. It dynamically fetches and executes remote JavaScript code using eval(), granting the remote server full control over the user's browser context. This exposes users to arbitrary code execution, data theft, and other severe threats. The use of high-privilege permissions and unpinned remote code further increases the risk. This script should NOT be approved or used in any secure environment.",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-15T07:19:31.319325+00:00",
+  "analyzed_at": "2026-06-22T07:23:59.863280+00:00",
   "slug": "Deadshotio_ESP_Memory_Aimbot_Silent_Aimbot_No_recoil"
 }

@@ -1,0 +1,51 @@
+{
+  "slug": "github-repo-counts",
+  "platform": "github",
+  "source_url": "https://raw.githubusercontent.com/skratchdot/github-repo-counts.user.js/1425186d281ad42b17c0ba584043c3e21ad4eec7/github-repo-counts.user.js",
+  "source_repo": "skratchdot/github-repo-counts.user.js",
+  "raw_url": "https://raw.githubusercontent.com/skratchdot/github-repo-counts.user.js/1425186d281ad42b17c0ba584043c3e21ad4eec7/github-repo-counts.user.js",
+  "filename": "github-repo-counts.user.js",
+  "name": "GitHub: Repo Counts",
+  "version": "2.0",
+  "description": "A user script to display repo counts when browsing Github repository pages.",
+  "match": [
+    "https://github.com/*",
+    "https://github.com/*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  GitHub: Repo Counts\n// @namespace  https://github.com/skratchdot/github-repo-counts.user.js\n// @description  A user script to display repo counts when browsing Github repository pages.\n// @include  https://github.com/*\n// @match  https://github.com/*\n// @run-at  document-end\n// @grant  none\n// @icon  http://skratchdot.com/favicon.ico\n// @downloadURL  https://github.com/skratchdot/github-repo-counts.user.js/raw/master/github-repo-counts.user.js\n// @updateURL  https://github.com/skratchdot/github-repo-counts.user.js/raw/master/github-repo-counts.user.js\n// @version  2.0",
+  "sha256": "e2ccb144a4d1fa6f8af00ccb5a265acad89b4154aa049f6ea5d4c8324f2594d1",
+  "discovered_at": "2026-06-22T07:13:07.140785+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": null,
+  "good_ratings": null,
+  "bad_ratings": null,
+  "summary": {
+    "applicable_sites": [
+      "GitHub"
+    ],
+    "description": "此脚本在浏览 GitHub 仓库页面时，显示仓库数量信息，方便用户快速了解当前页面的仓库统计。无需额外操作，自动增强页面显示。",
+    "permissions": [
+      {
+        "explanation": "脚本无需特殊权限，仅在页面加载时运行。",
+        "grant": "none"
+      }
+    ],
+    "tags": [
+      "GitHub增强",
+      "页面信息显示",
+      "开发者工具",
+      "仓库统计"
+    ],
+    "usage": [
+      "安装脚本后，访问 GitHub 网站。",
+      "在仓库页面即可看到仓库数量信息自动显示。"
+    ],
+    "zh_name": "GitHub仓库数量显示"
+  }
+}

@@ -18,11 +18,11 @@
   "require": [],
   "metadata_raw": "// @name  YouTube Ads-Bypass\n// @name:ar  YouTube Ads-Bypass (تخطي وإخفاء جميع الإعلانات)\n// @name:bn  YouTube Ads-Bypass (সব বিজ্ঞাপন এড়িয়ে যান এবং লুকান)\n// @name:cs  YouTube Ads-Bypass (Přeskočit a skrýt všechny reklamy)\n// @name:de  YouTube Ads-Bypass (Anzeigen überspringen und ausblenden)\n// @name:en  YouTube Ads-Bypass (Skip and Hide All Ads)\n// @name:es  YouTube Ads-Bypass (Saltar y ocultar todos los anuncios)\n// @name:fa  YouTube Ads-Bypass (رد کردن و پنهان کردن همه تبلیغات)\n// @name:fr  YouTube Ads-Bypass (Passer et masquer toutes les publicités)\n// @name:hi  YouTube Ads-Bypass (सभी विज्ञापन छोड़ें और छुपाएं)\n// @name:id  YouTube Ads-Bypass (Lewati dan Sembunyikan Semua Iklan)\n// @name:it  YouTube Ads-Bypass (Salta e nascondi tutti gli annunci)\n// @name:ja  YouTube Ads-Bypass (すべての広告をスキップして非表示にする)\n// @name:ko  YouTube Ads-Bypass (모든 광고 건너뛰기 및 숨기기)\n// @name:nl  YouTube Ads-Bypass (Alle advertenties overslaan en verbergen)\n// @name:pl  YouTube Ads-Bypass (Pomiń i ukryj wszystkie reklamy)\n// @name:pt  YouTube Ads-Bypass (Pular e Ocultar Todos os Anúncios)\n// @name:ro  YouTube Ads-Bypass (Sari peste și ascunde toate reclamele)\n// @name:ru  YouTube Ads-Bypass (Пропуск и скрытие всей рекламы)\n// @name:th  YouTube Ads-Bypass (ข้ามและซ่อนโฆษณาทั้งหมด)\n// @name:tr  YouTube Ads-Bypass (Tüm Reklamları Atla ve Gizle)\n// @name:uk  YouTube Ads-Bypass (Пропустити та приховати всю рекламу)\n// @name:vi  YouTube Ads-Bypass (Bỏ qua và ẩn tất cả quảng cáo)\n// @name:zh-CN  YouTube Ads-Bypass (跳过并隐藏所有广告)\n// @name:zh-TW  YouTube Ads-Bypass (跳過並隱藏所有廣告)\n// @namespace  YouTube_Ad-Bypass_Fckoff\n// @version  1.28.3\n// @description:ar  سكربت خفيف وعالي الأداء لتخطي إعلانات الفيديو وإخفاء عناصر واجهة المستخدم المزعجة (اللافتات، التراكبات، والعروض الترويجية).\n// @description:bn  ভিডিও বিজ্ঞাপন এড়িয়ে যাওয়ার এবং বিরক্তিকর ইউআই উপাদান (ব্যানার, ওভারলে এবং প্রমো) লুকানোর জন্য লাইটওয়েট এবং উচ্চ-ক্ষমতাসম্পন্ন স্ক্রিপ্ট।\n// @description:cs  Lehký a vysoce výkonný skript pro přeskočení video reklam a skrytí otravných prvků rozhraní (bannery, překryvy a promo akce).\n// @description:de  Leichtes und leistungsstarkes Skript zum Überspringen von Videoanzeigen und Ausblenden aufdringlicher UI-Elemente (Banner, Overlays und Promos).\n// @description:en  Lightweight and high-performance script to skip video ads and hide intrusive UI elements (banners, overlays, and promos).\n// @description:es  Script ligero y de alto rendimiento para saltar anuncios de video y ocultar elementos molestos de la interfaz (banners, superposiciones y promos).\n// @description:fa  اسکریپت سبک و با کارایی بالا برای رد کردن تبلیغات ویدیویی و پنهان کردن عناصر مزاحم رابط کاربری (بنرها، اورلی‌ها و پروموها).\n// @description:fr  Script léger et performant pour passer les publicités vidéo et masquer les éléments d'interface intrusifs (bannières, superpositions et promos).\n// @description:hi  वीडियो विज्ञापन छोड़ने और दखल देने वाले यूआई तत्वों (बैनर, ओवरले और प्रोमो) को छिपाने के लिए हल्का और उच्च प्रदर्शन वाला स्क्रिप्ट।\n// @description:id  Skrip ringan dan berkinerja tinggi untuk melewati iklan video dan menyembunyikan elemen UI yang mengganggu (banner, overlay, dan promo).\n// @description:it  Script leggero e ad alte prestazioni per saltare gli annunci video e nascondere elementi dell'interfaccia utente invadenti (banner, sovrapposizioni e promozioni).\n// @description:ja  動画広告をスキップし、邪魔なUI要素（バナー、オーバーレイ、プロモーション）を非表示にする、軽量で高性能なスクリプト。\n// @description:ko  동영상 광고를 건너뛰고 방해되는 UI 요소(배너, 오버레이, 프로모션)를 숨기는 가볍고 고성능인 스크립트.\n// @description:nl  Lichtgewicht en krachtig script om video-advertenties over te slaan en storende UI-elementen (banners, overlays en promo's) te verbergen.\n// @description:pl  Lekki i wydajny skrypt do pomijania reklam wideo i ukrywania uciążliwych elementów interfejsu (banerów, nakładek i promocji).\n// @description:pt  Script leve e de alto desempenho para pular anúncios em vídeo e ocultar elementos intrusivos da interface (banners, sobreposições e promos).\n// @description:ro  Script ușor și performant pentru a omite reclamele video și a ascunde elementele UI intruzive (bannere, suprapuneri și promoții).\n// @description:ru  Легкий и высокопроизводительный скрипт для пропуска видеорекламы и скрытия навязчивых элементов интерфейса (баннеров, оверлеев и промо).\n// @description:th  สคริปต์น้ำหนักเบาและประสิทธิภาพสูงสำหรับข้ามโฆษณาวิดีโอและซ่อนองค์ประกอบ UI ที่น่ารำคาญ (แบนเนอร์, ป๊อปอัป, และโปรโมชัน)\n// @description:tr  Video reklamlarını atlamak ve rahatsız edici kullanıcı arayüzü öğelerini (banner'lar, katmanlar ve promosyonlar) gizlemek için hafif ve yüksek performanslı betik.\n// @description:uk  Легкий і високопродуктивний скрипт для пропуску відеореклами та приховування нав'язливих елементів інтерфейсу (банерів, оверлеїв та промо).\n// @description:vi  Script nhẹ và hiệu suất cao giúp bỏ qua quảng cáo video và ẩn các thành phần giao diện gây phiền nhiễu (banner, lớp phủ và quảng cáo).\n// @description:zh-CN  轻量且高效的脚本，用于跳过视频广告并隐藏干扰性 UI 元素（横幅、覆盖层和促销活动）。\n// @description:zh-TW  輕量且高效的腳本，用於跳過影片廣告並隱藏干擾性 UI 元素（橫幅、蓋台廣告和促銷活動）。\n// @author  WakeUpNeo\n// @match  *://www.youtube.com/*\n// @match  *://music.youtube.com/*\n// @run-at  document-start\n// @grant  none\n// @license  MIT\n// @description  Script ligero y de alto rendimiento para saltar anuncios de video y ocultar elementos molestos de la interfaz (banners, superposiciones y promos).\n// @downloadURL  https://update.greasyfork.org/scripts/575941/YouTube%20Ads-Bypass.user.js\n// @updateURL  https://update.greasyfork.org/scripts/575941/YouTube%20Ads-Bypass.meta.js",
   "sha256": "49d00d3c61b6d74320668e8564ed11114bb303aac14c719bb90eecf301075030",
-  "discovered_at": "2026-06-15T07:11:19.678821+00:00",
+  "discovered_at": "2026-06-22T07:14:04.204097+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 3733,
+  "install_count": 4814,
   "good_ratings": 7,
   "bad_ratings": 0,
   "summary": {
@@ -30,10 +30,10 @@
       "YouTube",
       "YouTube音乐"
     ],
-    "description": "本脚本可自动跳过YouTube和YouTube音乐上的视频广告，并隐藏页面上的横幅、覆盖层和促销等干扰元素，让你观看视频时更加清爽。无需手动操作，广告会自动被屏蔽。",
+    "description": "本脚本可自动跳过YouTube和YouTube音乐上的视频广告，并隐藏页面上的横幅、覆盖层和促销等干扰元素，让观看体验更清爽。无需手动操作，广告和烦人的界面元素会自动被屏蔽。",
     "permissions": [
       {
-        "explanation": "脚本不需要额外权限，仅在页面内运行。",
+        "explanation": "脚本不需要额外权限，直接在页面运行。",
         "grant": "none"
       }
     ],
@@ -47,7 +47,7 @@
     ],
     "usage": [
       "1. 安装脚本后，打开YouTube或YouTube音乐网站。",
-      "2. 视频广告会自动跳过，页面广告元素会自动隐藏。",
+      "2. 视频广告会自动跳过，页面广告元素自动隐藏。",
       "3. 无需额外设置，直接享受无广告体验。"
     ],
     "zh_name": "跳过并隐藏所有广告"

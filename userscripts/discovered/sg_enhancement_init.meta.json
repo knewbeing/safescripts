@@ -1,0 +1,46 @@
+{
+  "slug": "sg_enhancement_init",
+  "platform": "github",
+  "source_url": "https://raw.githubusercontent.com/rossengeorgiev/sg-enhancement-addon/6db1836d00336a5207ec67ca59a56275d7ae6665/sg_enhancement_init.user.js",
+  "source_repo": "rossengeorgiev/sg-enhancement-addon",
+  "raw_url": "https://raw.githubusercontent.com/rossengeorgiev/sg-enhancement-addon/6db1836d00336a5207ec67ca59a56275d7ae6665/sg_enhancement_init.user.js",
+  "filename": "sg_enhancement_init.user.js",
+  "name": "Steamgifts Enhancement Addon",
+  "version": "2.3",
+  "description": "Browse game giveaways like a pro.",
+  "match": [
+    "http://www.steamgifts.com*",
+    "https://www.steamgifts.com*"
+  ],
+  "grant": [],
+  "require": [],
+  "metadata_raw": "// @name  Steamgifts Enhancement Addon\n// @description  Browse game giveaways like a pro.\n// @version  2.3\n// @namespace  http://www.steamgifts.com/user/Zo\n// @author  Zo\n// @run-at  document-end\n// @include  http://www.steamgifts.com*\n// @include  https://www.steamgifts.com*",
+  "sha256": "b45f30ac576889a647f2ee4aba65ba96a1a08421c6af92f55451b3111e19ff68",
+  "discovered_at": "2026-06-22T07:13:17.418258+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": null,
+  "good_ratings": null,
+  "bad_ratings": null,
+  "summary": {
+    "applicable_sites": [
+      "SteamGifts"
+    ],
+    "description": "本脚本为SteamGifts网站提供增强功能，让用户浏览游戏赠品更高效。它会自动加载额外的脚本，提升网站使用体验。适合经常参与SteamGifts抽奖的用户。",
+    "permissions": [],
+    "tags": [
+      "SteamGifts",
+      "网站增强",
+      "游戏抽奖",
+      "浏览优化",
+      "福利工具"
+    ],
+    "usage": [
+      "安装脚本后，访问SteamGifts网站。",
+      "脚本会自动加载增强功能，无需额外操作。",
+      "浏览和参与游戏赠品时体验更便捷的界面。"
+    ],
+    "zh_name": "SteamGifts增强插件"
+  }
+}

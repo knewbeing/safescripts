@@ -3,89 +3,84 @@
   "data_transmission": {
     "destinations": [
       "ksw2-moomoo.glitch.me",
-      "external URLs via Utils.loadModule (dynamic)"
+      "external URLs via loadModule"
     ],
     "detected": true
   },
   "dom_xss_risk": true,
   "issues": [
     {
-      "description": "Script uses XMLHttpRequest to fetch external code and executes it via a[a][a](x.responseText), which is equivalent to eval(). This allows remote code execution from arbitrary URLs.",
+      "description": "The script uses XMLHttpRequest to fetch and execute remote code via a[a][a](x.responseText), which is equivalent to eval(). This is a critical remote code execution vulnerability.",
       "location": "Utils.loadModule function",
-      "recommendation": "Remove dynamic code loading and execution. Only load trusted, version-pinned libraries via @require.",
+      "recommendation": "Avoid executing remote code. Only use static, trusted code. Remove or strictly validate any dynamic code execution.",
       "severity": "CRITICAL",
       "type": "Remote Code Execution"
     },
     {
-      "description": "Script uses eval()-like construct (a[a][a]) to execute fetched code, which is highly dangerous.",
+      "description": "The script uses a[a][a](x.responseText), which is an obfuscated way to call eval(). This is a strong indicator of code obfuscation and possible malicious intent.",
       "location": "Utils.loadModule function",
-      "recommendation": "Avoid eval and similar constructs. Use static code only.",
-      "severity": "CRITICAL",
-      "type": "Remote Code Execution"
-    },
-    {
-      "description": "Script makes network requests to third-party server (ksw2-moomoo.glitch.me) and potentially other arbitrary URLs via loadModule.",
-      "location": "GM_getTab usage and Utils.loadModule",
-      "recommendation": "Restrict network requests to trusted domains and avoid sending user data.",
-      "severity": "CRITICAL",
-      "type": "Data Exfiltration"
-    },
-    {
-      "description": "Script grants unsafeWindow, which exposes privileged script context to the page and increases risk of privilege escalation.",
-      "location": "Metadata @grant unsafeWindow",
-      "recommendation": "Remove unsafeWindow unless absolutely necessary.",
-      "severity": "HIGH",
-      "type": "Permission Abuse"
-    },
-    {
-      "description": "Script uses a highly obfuscated eval pattern (a[a][a]) and indirect code execution.",
-      "location": "Utils.loadModule function",
-      "recommendation": "Remove obfuscation and indirect code execution.",
+      "recommendation": "Remove obfuscated code and use clear, readable code. Avoid using eval or similar constructs.",
       "severity": "HIGH",
       "type": "Code Obfuscation"
     },
     {
-      "description": "Script loads third-party libraries via @require from greasyfork.org and code.jquery.com, but also from greasyfork.org user scripts (scijs from ksw2-center) which may not be official or version-pinned.",
-      "location": "Metadata @require",
-      "recommendation": "Pin versions and only use official, trusted sources for dependencies.",
-      "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
+      "description": "The script stores a unique user identifier (UUID) in persistent storage (GM.setValue('id', uuidv4())) and increments a usage counter. This is a privacy risk, especially if these values are ever transmitted externally.",
+      "location": "Anonymous async IIFE near top of script",
+      "recommendation": "Do not generate or store persistent unique identifiers unless absolutely necessary and with user consent.",
+      "severity": "CRITICAL",
+      "type": "Privacy Collection"
     },
     {
-      "description": "Script grants multiple GM_* permissions (GM_getTabs, GM_getTab, GM_saveTab) which may not be used securely.",
-      "location": "Metadata @grant",
-      "recommendation": "Minimize granted permissions to only those required.",
+      "description": "The script requests and uses high-privilege grants such as unsafeWindow and GM_getTabs/GM_saveTab, which can be abused for privilege escalation or cross-tab tracking.",
+      "location": "@grant metadata",
+      "recommendation": "Request only the minimum necessary permissions. Remove unused or high-risk grants.",
       "severity": "MEDIUM",
       "type": "Permission Abuse"
     },
     {
-      "description": "Script manipulates innerHTML and removes elements, but does not sanitize user input. Potential DOM XSS risk.",
-      "location": "Utils.deleteElement, watchAndDelete",
-      "recommendation": "Sanitize all user input before inserting into DOM.",
+      "description": "@require loads third-party scripts from greasyfork.org and code.jquery.com, but does not pin versions with hashes. This introduces supply chain risk if these scripts are compromised.",
+      "location": "@require metadata",
+      "recommendation": "Pin dependencies to specific versions and use trusted, official sources. Prefer SRI hashes if possible.",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    },
+    {
+      "description": "The script contains an @antifeature Tracking declaration, indicating some tracking for performance debugging. This may involve user data collection.",
+      "location": "@antifeature metadata",
+      "recommendation": "Disclose all tracking behaviors and provide opt-out mechanisms.",
+      "severity": "CRITICAL",
+      "type": "Privacy Collection"
+    },
+    {
+      "description": "Potential DOM XSS: The script uses innerHTML/outerHTML in some modules (not fully visible in provided code), and the use of dynamic code execution increases XSS risk.",
+      "location": "General code structure and dynamic code execution",
+      "recommendation": "Sanitize all user input and avoid inserting untrusted data into the DOM using innerHTML/outerHTML.",
       "severity": "HIGH",
       "type": "DOM XSS"
     },
     {
-      "description": "Script listens for keyboard events and disables space bar scrolling on .io sites. No evidence of keylogger behavior, but potential for privacy abuse if extended.",
-      "location": "isIo block",
-      "recommendation": "Do not collect or transmit keyboard input.",
-      "severity": "LOW",
+      "description": "The script creates a unique tab ID and saves it via GM_saveTab, which could be used for cross-tab tracking.",
+      "location": "ksw2-moomoo.glitch.me handler",
+      "recommendation": "Avoid tracking users across tabs unless necessary and with user consent.",
+      "severity": "MEDIUM",
       "type": "Privacy Collection"
     }
   ],
   "obfuscation_detected": true,
   "privacy_collection": {
     "details": [
-      "Keyboard event listener (space bar prevention only, not keylogging)"
+      "Persistent unique user ID generation and storage",
+      "Usage counter tracking",
+      "@antifeature Tracking indicates user data collection"
     ],
-    "detected": false
+    "detected": true
   },
   "risk_level": "CRITICAL",
   "script_name": "Lift Web Restrictions: .io Game Mods (MooMoo.io/Krunker.io/..), Ad Link Bypasser, Adblock, & MORE!",
   "security_score": 0,
-  "summary": "This userscript poses severe security risks, including remote code execution via dynamic fetching and eval, data exfiltration to third-party servers, code obfuscation, excessive permissions, and DOM XSS potential. It is NOT safe for use.",
+  "summary": "This userscript contains multiple critical security and privacy risks. It executes remote code in an obfuscated manner, collects persistent unique identifiers, and requests high-privilege permissions. There is evidence of tracking and possible DOM XSS vulnerabilities. The use of unpinned third-party dependencies introduces supply chain risk. This script is NOT SAFE for use.",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-15T07:25:01.096799+00:00",
+  "analyzed_at": "2026-06-22T07:31:36.729987+00:00",
   "slug": "Lift_Web_Restrictions_io_Game_Mods_MooMooioKrunkerio_Ad_Link_Bypasser_Adblock_MO"
 }

@@ -1,0 +1,53 @@
+{
+  "slug": "github-gh-pages-link",
+  "platform": "github",
+  "source_url": "https://raw.githubusercontent.com/skratchdot/github-gh-pages-link.user.js/df7547b75f7c5ee9531bff11626ea402577469ae/github-gh-pages-link.user.js",
+  "source_repo": "skratchdot/github-gh-pages-link.user.js",
+  "raw_url": "https://raw.githubusercontent.com/skratchdot/github-gh-pages-link.user.js/df7547b75f7c5ee9531bff11626ea402577469ae/github-gh-pages-link.user.js",
+  "filename": "github-gh-pages-link.user.js",
+  "name": "GitHub: gh-pages Link",
+  "version": "2.0",
+  "description": "If a repository has a gh-pages branch, then this will add links to the Github Page, as well as the gh-page source code.",
+  "match": [
+    "https://github.com/*",
+    "https://github.com/*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  GitHub: gh-pages Link\n// @namespace  https://github.com/skratchdot/github-gh-pages-link.user.js\n// @description  If a repository has a gh-pages branch, then this will add links to the Github Page, as well as the gh-page source code.\n// @include  https://github.com/*\n// @match  https://github.com/*\n// @run-at  document-end\n// @grant  none\n// @icon  http://skratchdot.com/favicon.ico\n// @downloadURL  https://github.com/skratchdot/github-gh-pages-link.user.js/raw/master/github-gh-pages-link.user.js\n// @updateURL  https://github.com/skratchdot/github-gh-pages-link.user.js/raw/master/github-gh-pages-link.user.js\n// @version  2.0",
+  "sha256": "4ea4c88ee546aabe4c9d87ab7519be49bf8825e4304eb00ad9c297ac28ccfe6c",
+  "discovered_at": "2026-06-22T07:13:13.936707+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": null,
+  "good_ratings": null,
+  "bad_ratings": null,
+  "summary": {
+    "applicable_sites": [
+      "GitHub"
+    ],
+    "description": "本脚本会在仓库页面检测是否存在 gh-pages 分支，如果有，会自动添加指向 GitHub Pages 网站和 gh-pages 源代码的链接，方便访问和管理。",
+    "permissions": [
+      {
+        "explanation": "脚本不需要额外权限，仅在页面内运行。",
+        "grant": "none"
+      }
+    ],
+    "tags": [
+      "GitHub",
+      "页面增强",
+      "快捷访问",
+      "开发工具",
+      "代码管理"
+    ],
+    "usage": [
+      "安装脚本后，打开任意 GitHub 仓库页面。",
+      "若仓库有 gh-pages 分支，页面会自动显示相关链接。",
+      "点击链接即可访问对应的 GitHub Pages 网站或源代码。"
+    ],
+    "zh_name": "GitHub gh-pages链接增强"
+  }
+}

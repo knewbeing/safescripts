@@ -1,5 +1,5 @@
 {
-  "approved": true,
+  "approved": false,
   "data_transmission": {
     "destinations": [
       "ffscouter.com"
@@ -9,32 +9,39 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "Script uses GM_xmlhttpRequest to communicate with ffscouter.com, a third-party server. Potential for user data transmission exists, but only ffscouter.com is targeted.",
-      "location": "GM_xmlhttpRequest calls and @connect ffscouter.com",
-      "recommendation": "Review transmitted data payloads to ensure no sensitive user information is sent. Limit data sent to only what is necessary for functionality.",
+      "description": "The script uses GM_xmlhttpRequest to communicate with ffscouter.com, which is a third-party server. This may transmit user data or page context, depending on the request payloads.",
+      "location": "GM_xmlhttpRequest calls (likely in main logic, not shown in snippet)",
+      "recommendation": "Review all data sent to ffscouter.com. Ensure no sensitive user data, cookies, or authentication tokens are transmitted. Document what is sent and why.",
       "severity": "CRITICAL",
-      "type": "Data Transmission"
+      "type": "Data Exfiltration"
     },
     {
-      "description": "Script requests GM_xmlhttpRequest permission, which is high privilege and can be abused if not properly controlled.",
+      "description": "The script requests and is granted GM_xmlhttpRequest permission, but the code snippet does not show any other network request methods (fetch, XHR, WebSocket, etc.).",
       "location": "@grant GM_xmlhttpRequest",
-      "recommendation": "Ensure only necessary requests are made and no excessive privileges are requested.",
+      "recommendation": "Limit network requests to only what is necessary. Avoid sending sensitive data.",
+      "severity": "CRITICAL",
+      "type": "Data Exfiltration"
+    },
+    {
+      "description": "The script requests GM_setValue, GM_getValue, GM_listValues, and GM_deleteValue permissions, which allow persistent storage. While not inherently dangerous, these should be reviewed for privacy implications if used to store sensitive data.",
+      "location": "@grant GM_setValue, GM_getValue, GM_listValues, GM_deleteValue",
+      "recommendation": "Ensure no sensitive user data is stored insecurely. Document what is stored and why.",
       "severity": "MEDIUM",
-      "type": "Permission Usage"
+      "type": "Privacy Collection"
     },
     {
-      "description": "Script requests GM_setValue, GM_getValue, GM_listValues, GM_deleteValue, GM_registerMenuCommand, GM_addStyle. These are standard, but review for privilege minimization.",
-      "location": "@grant declarations",
-      "recommendation": "Remove unused permissions if any.",
+      "description": "The script requests GM_registerMenuCommand and GM_addStyle, which are not high risk but should be used as intended.",
+      "location": "@grant GM_registerMenuCommand, GM_addStyle",
+      "recommendation": "Ensure these are not abused for privilege escalation or UI spoofing.",
       "severity": "LOW",
       "type": "Permission Usage"
     },
     {
-      "description": "Script uses @require only for update/download URLs, not for third-party libraries. No supply chain risk detected.",
-      "location": "@downloadURL, @updateURL",
-      "recommendation": "If third-party libraries are used in the future, ensure version pinning and trusted sources.",
-      "severity": "LOW",
-      "type": "Supply Chain"
+      "description": "The script connects to ffscouter.com, a third-party server, as specified by @connect. This introduces supply chain risk if the remote server is compromised or malicious.",
+      "location": "@connect ffscouter.com",
+      "recommendation": "Ensure ffscouter.com is trustworthy and uses HTTPS. Monitor for supply chain attacks.",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
     }
   ],
   "obfuscation_detected": false,
@@ -44,10 +51,10 @@
   },
   "risk_level": "HIGH",
   "script_name": "FF Scouter V2",
-  "security_score": 67,
-  "summary": "FF Scouter V2 communicates with ffscouter.com using GM_xmlhttpRequest, which is a third-party server. No evidence of privacy collection, code obfuscation, or DOM XSS. Permissions are standard, but GM_xmlhttpRequest is a high privilege. Supply chain risk is minimal as no third-party libraries are loaded. Main risk is data transmission to external server; review payloads for sensitive data.",
-  "supply_chain_risk": false,
+  "security_score": 50,
+  "summary": "The script makes network requests to a third-party server (ffscouter.com) using GM_xmlhttpRequest, which is a critical risk if user data or sensitive information is transmitted. There is no evidence of code obfuscation, DOM XSS, or dangerous dynamic code execution in the provided snippet. The script requests several GM_* permissions, but their usage appears standard. The main risk is data exfiltration and supply chain trust in ffscouter.com. Review all network payloads and ensure no sensitive data is sent. The script is not approved for use in sensitive environments without further review of the full code and network behavior.",
+  "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-15T07:21:09.848885+00:00",
+  "analyzed_at": "2026-06-22T07:27:44.101634+00:00",
   "slug": "FF_Scouter_V2"
 }

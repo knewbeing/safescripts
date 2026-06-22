@@ -12,53 +12,25 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "@connect * 允许任意域名的网络请求，存在严重数据外传风险，可能导致用户数据被发送到未知第三方。",
-      "location": "UserScript metadata (@connect *)",
-      "recommendation": "移除 @connect *，仅允许可信域名；严格限制网络请求目标。",
+      "description": "脚本通过 @connect * 允许任意外部域名的网络请求，且实际代码中存在大量 fetch/GM_xmlhttpRequest 加载第三方资源（如 unpkg.com、cdnjs.cloudflare.com），存在数据外传和供应链风险。",
+      "location": "元数据 @connect, LOCAL_ENGINES, 资源加载相关代码",
+      "recommendation": "严格限制 @connect 域名，仅允许必要的可信域名。避免向不受信任的第三方服务器发送请求。",
       "severity": "CRITICAL",
-      "type": "Data Exfiltration"
+      "type": "数据外传"
     },
     {
-      "description": "脚本通过 GM_xmlhttpRequest、fetch 等方式加载外部 JS/WASM（如 unpkg.com、cdnjs），存在供应链风险，且未固定版本哈希。",
-      "location": "LOCAL_ENGINES 配置与 @resource stockfish.js",
-      "recommendation": "仅使用官方 CDN，固定版本和哈希，避免加载可变 URL。",
+      "description": "脚本通过 GM_xmlhttpRequest、fetch 等方式从 unpkg.com、cdnjs.cloudflare.com 等第三方 CDN 动态加载 JS/WASM 引擎文件，且未锁定具体文件哈希，存在供应链污染风险。",
+      "location": "LOCAL_ENGINES 配置, 资源加载逻辑",
+      "recommendation": "使用可信 CDN 并锁定具体版本和哈希，避免加载可变内容。",
       "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
+      "type": "供应链风险"
     },
     {
-      "description": "申请了 GM_xmlhttpRequest 高权限，但实际用途仅为加载引擎资源，未发现滥用，但权限申请过宽。",
-      "location": "UserScript metadata (@grant GM_xmlhttpRequest)",
-      "recommendation": "仅申请实际需要的权限，移除未使用的高权限。",
+      "description": "脚本申请了 @connect *、GM_xmlhttpRequest、GM_getResourceText 等高权限，但部分权限未在当前代码片段中完全使用，存在权限滥用嫌疑。",
+      "location": "元数据 @grant, @connect",
+      "recommendation": "仅申请实际需要的最小权限，移除未使用的高权限。",
       "severity": "MEDIUM",
-      "type": "Permission Abuse"
-    },
-    {
-      "description": "脚本允许加载自定义 WASM/JS URL（如 WASM_PRESETS），用户可输入任意 URL，存在远程代码执行风险。",
-      "location": "WASM_PRESETS, LOCAL_ENGINES",
-      "recommendation": "限制自定义 URL来源，仅允许官方或可信域名。",
-      "severity": "HIGH",
-      "type": "Remote Code Execution"
-    },
-    {
-      "description": "未发现明显的隐私采集行为（如读取 cookie、localStorage、剪贴板、表单、键盘监听等），但由于可加载任意 JS/WASM，理论上存在隐私采集风险。",
-      "location": "动态加载的外部资源",
-      "recommendation": "审查所有加载的外部代码，确保无隐私采集行为。",
-      "severity": "MEDIUM",
-      "type": "Privacy Collection"
-    },
-    {
-      "description": "未发现代码混淆、base64、字符串映射或高度压缩单行代码。",
-      "location": "主脚本代码",
-      "recommendation": "保持代码可读性，避免混淆。",
-      "severity": "LOW",
-      "type": "Obfuscation"
-    },
-    {
-      "description": "未发现 DOM XSS 或注入风险，未直接将用户输入插入 innerHTML/outerHTML。",
-      "location": "主脚本代码",
-      "recommendation": "继续保持安全的 DOM 操作。",
-      "severity": "LOW",
-      "type": "DOM XSS"
+      "type": "权限滥用"
     }
   ],
   "obfuscation_detected": false,
@@ -66,12 +38,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "CRITICAL",
+  "risk_level": "HIGH",
   "script_name": "BEST Cheat for Chess.com (NEW Stockfish 18.0.5 to 9.0, No Anti-Ban)",
-  "security_score": 27,
-  "summary": "该脚本存在严重安全风险，主要由于 @connect * 允许任意域名的数据外传，且支持加载任意外部 JS/WASM，存在远程代码执行和供应链污染风险。未发现明显隐私采集和代码混淆，但权限申请过宽。建议严格限制网络请求目标、外部资源来源，并移除不必要的高权限。当前安全评分为 27，风险等级为 CRITICAL，不建议在生产环境或含敏感数据的浏览器中使用。",
+  "security_score": 67,
+  "summary": "该脚本存在严重的数据外传风险（@connect * 允许任意外部域名），并通过第三方 CDN 动态加载 JS/WASM 引擎，存在供应链污染风险。未发现明显的隐私采集、远程代码执行或 DOM XSS 问题。建议严格限制网络权限、锁定依赖版本和哈希，并最小化权限申请。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-15T07:16:12.360517+00:00",
+  "analyzed_at": "2026-06-22T07:20:40.120000+00:00",
   "slug": "BEST_Cheat_for_Chesscom_NEW_Stockfish_1805_to_90_No_Anti-Ban"
 }

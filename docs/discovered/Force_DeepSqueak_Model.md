@@ -35,14 +35,14 @@ title: "强制使用 DeepSqueak 模型"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：50/100　　**分析时间**：2026-06-15
+**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-22
 
-> The script intercepts and replays XHR requests, which may expose sensitive user data and actions. All transmissions are to same-origin endpoints (character.ai), but replaying requests can have privacy and security implications. No evidence of code obfuscation, remote code execution, DOM XSS, or supply chain risk. Users should be warned about potential privacy risks when replaying requests.
+> The script intercepts and replays up to 5 recent XHR requests, modifying PATCH requests to force a model change. All network activity is restricted to the same origin (character.ai), and there is no evidence of third-party data exfiltration, privacy collection, or code execution risks. The main risk is the potential for replaying sensitive user actions, but this is under user control. Permissions are appropriate, and there is no supply chain or obfuscation risk. Overall, the script is considered low risk for the intended use case.
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：character.ai (same-origin), Any endpoint previously requested by the page (captured XHRs)） |
-| 隐私采集 | ❌ 检测到（Captures XHR request bodies and headers, which may include user data and authentication tokens.） |
+| 数据外传 | ❌ 检测到（目标：https://character.ai/*） |
+| 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -51,39 +51,24 @@ title: "强制使用 DeepSqueak 模型"
 ### 发现的问题
 
 **⛔ CRITICAL** — Data Transmission  
-> Script intercepts and replays XHR requests using GM_xmlhttpRequest, potentially sending user actions/data to endpoints previously contacted by the page. However, all requests are to character.ai (same-origin), not third-party servers.  
-> 位置：XHR interception and replay logic  
-> 建议：Ensure replayed requests do not contain sensitive user data or authentication tokens. Limit replay to trusted endpoints.
-
-**⛔ CRITICAL** — Privacy Collection  
-> Script captures request bodies and headers, which may include sensitive information (e.g., authentication tokens, user input).  
-> 位置：XHR interception (send method)  
-> 建议：Avoid capturing or storing sensitive data. Warn users about potential privacy implications.
+> The script intercepts and replays up to 5 recent XMLHttpRequests using GM_xmlhttpRequest. All requests are sent to the same origin (character.ai), and no third-party endpoints are involved. However, replaying requests could potentially leak user actions if the captured requests contain sensitive data (e.g., authentication tokens, chat content).  
+> 位置：XHR interception and replay logic (entire script)  
+> 建议：Warn users about the risks of replaying requests that may contain sensitive data. Ensure no requests are sent to third-party domains.
 
 **🟠 MEDIUM** — Permission Usage  
-> GM_xmlhttpRequest is granted and used, but only for replaying previously captured requests. No evidence of abuse or third-party transmission.  
-> 位置：GM_xmlhttpRequest usage  
-> 建议：Restrict GM_xmlhttpRequest usage to same-origin or trusted endpoints.
-
-**🟡 LOW** — Remote Code Execution  
-> No evidence of eval, new Function, setTimeout(string), or dynamic script injection.  
-> 位置：Entire script  
-> 建议：Maintain code clarity and avoid dynamic code execution.
+> The script requests GM_xmlhttpRequest permission, which is high-privilege, but only uses it for same-origin requests. No evidence of over-privileged grants, but GM_xmlhttpRequest is not strictly necessary for same-origin requests unless CORS is an issue.  
+> 位置：@grant metadata and replay logic  
+> 建议：Consider using fetch for same-origin requests if possible, or document the need for GM_xmlhttpRequest.
 
 **🟡 LOW** — Obfuscation  
-> No code obfuscation detected. Code is readable and not minified.  
+> No evidence of code obfuscation, eval, or dynamic code execution. All code is readable and not minified.  
 > 位置：Entire script  
-> 建议：Continue to publish unobfuscated code for transparency.
-
-**🟡 LOW** — DOM XSS  
-> No DOM XSS or injection risks found. User input is not inserted into the DOM.  
-> 位置：Entire script  
-> 建议：Continue to avoid unsafe DOM manipulation.
+> 建议：No action needed.
 
 **🟡 LOW** — Supply Chain  
-> No supply chain risk: No @require or external libraries loaded.  
+> No supply chain risk detected. No @require or external scripts loaded.  
 > 位置：Metadata  
-> 建议：If adding dependencies, use official sources and fixed versions.
+> 建议：No action needed.
 
 ---
 

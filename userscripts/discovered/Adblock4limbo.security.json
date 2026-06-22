@@ -5,71 +5,7 @@
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [
-    {
-      "description": "脚本未检测到任何网络请求（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource、sendBeacon），不存在数据外传行为。",
-      "location": "全局",
-      "recommendation": "保持无外部数据传输，确保用户隐私安全。",
-      "severity": "CRITICAL",
-      "type": "数据外传"
-    },
-    {
-      "description": "脚本未检测到任何隐私采集行为（如读取 cookie、localStorage、sessionStorage、IndexedDB、监听键盘输入、读取表单字段、访问指纹 API、读取剪贴板内容）。",
-      "location": "全局",
-      "recommendation": "继续避免隐私采集，保障用户数据安全。",
-      "severity": "CRITICAL",
-      "type": "隐私采集"
-    },
-    {
-      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string)、innerHTML/outerHTML 插入外部脚本、@require 或动态 script 标签加载远程 JS、document.write 插入脚本内容。",
-      "location": "全局",
-      "recommendation": "保持无远程代码执行风险。",
-      "severity": "HIGH",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "脚本未检测到任何代码混淆行为（如 base64 解码执行、字符串数组索引映射、unicode 混淆、高度压缩单行代码）。",
-      "location": "全局",
-      "recommendation": "保持代码可读性，便于安全审查。",
-      "severity": "HIGH",
-      "type": "代码混淆"
-    },
-    {
-      "description": "脚本未检测到 DOM XSS 或注入风险（未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未通过 document.write 插入不可信内容，未操作 iframe src 为 javascript: 协议）。",
-      "location": "全局",
-      "recommendation": "继续避免 DOM 注入风险。",
-      "severity": "HIGH",
-      "type": "DOM XSS / 注入"
-    },
-    {
-      "description": "脚本未申请任何高权限（@grant none），不存在权限滥用风险。",
-      "location": "元数据",
-      "recommendation": "保持最小权限原则。",
-      "severity": "MEDIUM",
-      "type": "权限滥用"
-    },
-    {
-      "description": "脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API）。",
-      "location": "全局",
-      "recommendation": "继续避免敏感 API 滥用。",
-      "severity": "MEDIUM",
-      "type": "敏感 API 调用"
-    },
-    {
-      "description": "脚本未通过 @require 加载第三方库，无供应链风险。",
-      "location": "元数据",
-      "recommendation": "如需加载第三方库，建议使用官方 CDN 并固定版本哈希。",
-      "severity": "MEDIUM",
-      "type": "供应链风险"
-    },
-    {
-      "description": "脚本未检测到修改 frame 保护策略或创建隐藏 iframe 用于数据提取。",
-      "location": "全局",
-      "recommendation": "继续避免 ClickJacking/iframe 风险。",
-      "severity": "LOW",
-      "type": "ClickJacking / iframe 风险"
-    }
-  ],
+  "issues": [],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
@@ -78,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "Adblock4limbo.[github]",
   "security_score": 100,
-  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险、ClickJacking/iframe 风险。代码结构清晰，权限申请最小（@grant none），无任何安全风险，安全评分为100分。适合公开使用。若后续功能扩展需谨慎审查新增代码。无 WebSocket 使用，无数据传输行为。",
+  "summary": "该脚本未检测到任何网络数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。代码结构清晰，未发现危险行为。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-15T07:15:52.367618+00:00",
+  "analyzed_at": "2026-06-22T07:19:07.281110+00:00",
   "slug": "Adblock4limbo"
 }

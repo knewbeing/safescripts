@@ -1,5 +1,5 @@
 {
-  "approved": true,
+  "approved": false,
   "data_transmission": {
     "destinations": [],
     "detected": false
@@ -7,40 +7,40 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script uses @grant unsafeWindow, which exposes the userscript context to the page and vice versa. This increases the risk of privilege escalation or data leakage if the page is malicious.",
-      "location": "Metadata (@grant unsafeWindow)",
-      "recommendation": "Avoid using unsafeWindow unless strictly necessary. Consider safer alternatives or restrict usage.",
-      "severity": "HIGH",
-      "type": "Privilege Escalation"
+      "description": "使用了 @grant unsafeWindow，允许脚本访问页面上下文，可能被滥用进行高权限操作，但当前代码未见明显滥用。",
+      "location": "元数据 @grant",
+      "recommendation": "仅在必要时申请 unsafeWindow 权限，并限制其使用范围。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
     },
     {
-      "description": "The script loads Babylon.js from jsdelivr CDN via @require. While jsdelivr is a reputable CDN, the version is fixed (7.15.0), reducing supply chain risk but not eliminating it.",
-      "location": "Metadata (@require https://cdn.jsdelivr.net/npm/babylonjs@7.15.0/babylon.min.js)",
-      "recommendation": "Always use official, version-pinned sources for third-party libraries. Monitor for vulnerabilities in dependencies.",
+      "description": "脚本通过 localStorage 存储和读取设置，但未见敏感信息（如 cookie、表单、密码等）被采集。",
+      "location": "localStorage 相关代码",
+      "recommendation": "确保不存储敏感信息，避免与其他脚本共享存储键。",
       "severity": "MEDIUM",
-      "type": "Supply Chain"
+      "type": "隐私采集"
     },
     {
-      "description": "The script reads and writes settings to localStorage, which is a common practice for storing user preferences. No sensitive data is stored, but localStorage is accessible by the page.",
-      "location": "localStorage access (SETTINGS_KEY)",
-      "recommendation": "Do not store sensitive information in localStorage. Consider using GM_setValue/GM_getValue for more isolation.",
+      "description": "通过 @require 加载了 babylonjs 第三方库，来源为 jsdelivr 官方 CDN，版本已锁定。",
+      "location": "@require https://cdn.jsdelivr.net/npm/babylonjs@7.15.0/babylon.min.js",
+      "recommendation": "保持使用可信 CDN 并锁定具体版本。",
       "severity": "MEDIUM",
-      "type": "Privacy Collection"
+      "type": "供应链风险"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "Reads and writes settings to localStorage"
+      "localStorage: 仅用于保存设置，无敏感信息"
     ],
-    "detected": true
+    "detected": false
   },
-  "risk_level": "MEDIUM",
+  "risk_level": "LOW",
   "script_name": "Shell Shockers Aimbot + ESP",
-  "security_score": 77,
-  "summary": "The script does not transmit data externally and does not collect sensitive user information. It uses unsafeWindow, which is a high-risk permission, and loads a third-party library from a reputable CDN with a fixed version. No code obfuscation or DOM XSS risks are detected. The main risks are privilege escalation and supply chain vulnerabilities.",
+  "security_score": 84,
+  "summary": "该脚本未检测到数据外传、远程代码执行、代码混淆、DOM XSS 或 WebSocket 使用。主要风险为申请了 unsafeWindow 权限（但未见滥用）和 localStorage 设置存储（无敏感信息），以及加载了锁定版本的第三方库。整体风险较低，但建议定期复查第三方依赖和权限申请。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-15T07:27:00.047255+00:00",
+  "analyzed_at": "2026-06-22T07:35:22.570344+00:00",
   "slug": "Shell_Shockers_Aimbot_ESP"
 }

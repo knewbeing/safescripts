@@ -2,55 +2,47 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
-      "User-configurable third-party CAPTCHA recognition API endpoints"
+      "User-configurable third-party API endpoints (for CAPTCHA recognition)"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "Script uses GM_xmlhttpRequest to send CAPTCHA images to user-configured third-party API endpoints for recognition. This may transmit sensitive page content (CAPTCHA images) to external servers.",
-      "location": "GM_xmlhttpRequest usage in CAPTCHA recognition logic",
-      "recommendation": "Warn users about privacy risks; restrict API endpoints to trusted services; avoid sending additional user data.",
+      "description": "脚本通过 GM_xmlhttpRequest 将验证码图片数据发送到用户自定义的第三方 API（如 OCR/AI 识别服务），存在数据外传风险。",
+      "location": "识别按钮点击事件处理逻辑，调用 GM_xmlhttpRequest 发送图片数据到外部 API。",
+      "recommendation": "仅允许可信 API 域名，默认关闭外传，增加用户警告和白名单机制。",
       "severity": "CRITICAL",
-      "type": "Data Transmission"
+      "type": "数据外传"
     },
     {
-      "description": "Script reads input fields (including those for CAPTCHA) and fills them automatically. If misused or extended, could be leveraged to read other sensitive form fields.",
-      "location": "Input field selection and value assignment logic",
-      "recommendation": "Restrict field access strictly to CAPTCHA fields; avoid reading password or other sensitive fields.",
-      "severity": "CRITICAL",
-      "type": "Privacy Collection"
-    },
-    {
-      "description": "Script requests GM_xmlhttpRequest permission, which is high privilege and could be abused for arbitrary network requests.",
-      "location": "@grant GM_xmlhttpRequest in metadata",
-      "recommendation": "Limit usage to only necessary API calls; review for potential abuse.",
-      "severity": "MEDIUM",
-      "type": "Permission Abuse"
-    },
-    {
-      "description": "Script uses @require to load Vue.js from unpkg.com CDN, which is a reputable source but not version-hashed. Supply chain risk if CDN is compromised or version changes.",
+      "description": "@require 加载了 Vue.js 生产环境版本，来源为 unpkg CDN，未锁定具体哈希或版本文件，存在供应链风险。",
       "location": "@require https://unpkg.com/vue@3.4.38/dist/vue.global.prod.js",
-      "recommendation": "Use version-hashed URLs or official CDN with integrity checks.",
+      "recommendation": "使用官方 CDN 并锁定具体版本文件或哈希，避免使用 latest 或可变链接。",
       "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
+      "type": "供应链风险"
+    },
+    {
+      "description": "脚本申请了 GM_xmlhttpRequest 权限，属于高权限，且部分用户场景下可能未使用。",
+      "location": "@grant GM_xmlhttpRequest",
+      "recommendation": "仅在确实需要时申请高权限，建议动态检测并最小化权限。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "Reads input fields for CAPTCHA values",
-      "Potential to read other form fields if selector is too broad"
+      "读取验证码图片（canvas/image）并发送到外部 API"
     ],
     "detected": true
   },
   "risk_level": "HIGH",
   "script_name": "AI验证码自动识别填充",
-  "security_score": 47,
-  "summary": "该脚本通过 GM_xmlhttpRequest 将验证码图片发送到用户配置的第三方 API 进行识别，存在数据外传和隐私采集风险。脚本未混淆，未检测到 DOM XSS，但存在权限滥用和供应链风险。建议限制 API 端点、严格筛选表单字段、并采用更安全的第三方库加载方式。",
+  "security_score": 67,
+  "summary": "该脚本核心功能为自动识别网页验证码并填充，需将验证码图片数据发送到用户自定义的第三方识别 API，存在数据外传和隐私采集风险。未发现代码混淆、远程代码执行或 DOM XSS 问题。@require 的 Vue.js 依赖未锁定哈希，存在一定供应链风险。总体安全风险较高，建议加强 API 白名单、用户提示和依赖锁定。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-15T07:15:40.963211+00:00",
+  "analyzed_at": "2026-06-22T07:18:57.895785+00:00",
   "slug": "AI验证码自动识别填充"
 }

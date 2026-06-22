@@ -1,0 +1,48 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [
+      "ffscouter.com"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "The script uses GM_xmlhttpRequest to communicate with ffscouter.com, a third-party server. While the code provided does not show the exact payload, the script is designed to show Fair Fight scores and faction war status, which likely involves sending some user/game data to the external server.",
+      "location": "@connect ffscouter.com and likely in code using GM_xmlhttpRequest",
+      "recommendation": "Review all data sent to ffscouter.com. Ensure no sensitive user information (such as authentication tokens, cookies, or personal data) is transmitted. Document the exact payload structure.",
+      "severity": "CRITICAL",
+      "type": "Data Exfiltration"
+    },
+    {
+      "description": "The script reads and writes to localStorage for configuration and caching purposes. No evidence of sensitive data (like cookies or passwords) being accessed, but localStorage is used.",
+      "location": "Storage class and FFConfig usage",
+      "recommendation": "Ensure only non-sensitive configuration data is stored. Do not store authentication tokens or personal information in localStorage.",
+      "severity": "CRITICAL",
+      "type": "Privacy Collection"
+    },
+    {
+      "description": "The script requests the unsafeWindow grant, which allows access to the page's JavaScript context. This increases the risk of privilege escalation or unintended data access.",
+      "location": "@grant unsafeWindow",
+      "recommendation": "Remove unsafeWindow unless strictly necessary. If required, limit its usage and audit all interactions with the page context.",
+      "severity": "HIGH",
+      "type": "Privilege Escalation Risk"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [
+      "Reads/writes localStorage for configuration and caching"
+    ],
+    "detected": true
+  },
+  "risk_level": "HIGH",
+  "script_name": "FF Scouter V2 beta",
+  "security_score": 35,
+  "summary": "The script communicates with a third-party server (ffscouter.com) and uses localStorage for configuration. It requests the unsafeWindow grant, which increases risk. No evidence of code obfuscation, DOM XSS, or supply chain risk in the provided code. The main concerns are data exfiltration, privacy collection, and privilege escalation due to unsafeWindow.",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-06-22T07:27:56.781905+00:00",
+  "slug": "FF_Scouter_V2_beta"
+}

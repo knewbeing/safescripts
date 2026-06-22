@@ -1,5 +1,5 @@
 {
-  "approved": true,
+  "approved": false,
   "data_transmission": {
     "destinations": [],
     "detected": false
@@ -7,11 +7,18 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "@require 加载了 https://greasyfork.org/scripts/456228/code/456228.js?version=1309113，存在供应链风险（未固定哈希，第三方代码可能变更）",
-      "location": "UserScript metadata (@require)",
-      "recommendation": "建议仅使用官方 CDN 且固定版本哈希，或将依赖代码本地化到脚本内",
+      "description": "脚本通过 @require 加载了 https://greasyfork.org/scripts/456228/code/456228.js?version=1309113，存在供应链风险。该外部脚本内容未知，若被篡改可能导致远程代码执行或隐私泄露。",
+      "location": "@require 元数据字段",
+      "recommendation": "仅使用可信、官方 CDN 并锁定版本哈希。定期审查外部依赖内容。",
       "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
+      "type": "supply_chain_risk"
+    },
+    {
+      "description": "脚本重写 setTimeout/setInterval 但未使用字符串参数，不存在直接远程代码执行风险，但如外部依赖中有字符串参数调用，仍有隐患。",
+      "location": "speedUp 函数",
+      "recommendation": "确保所有 setTimeout/setInterval 调用均为函数类型，避免字符串执行。",
+      "severity": "LOW",
+      "type": "potential_eval_like_usage"
     }
   ],
   "obfuscation_detected": false,
@@ -19,12 +26,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "LOW",
+  "risk_level": "MEDIUM",
   "script_name": "Bypass Pahe Links",
   "security_score": 92,
-  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用等高风险行为。唯一风险为 @require 加载第三方库，存在供应链风险。整体安全性较高，但建议关注依赖库的安全更新和来源可信度。",
+  "summary": "主脚本本身未发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。最大风险在于 @require 加载的外部脚本，若该依赖被污染，可能引入高危安全问题。建议定期审查外部依赖内容，确保来源可信。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-15T07:16:53.563760+00:00",
+  "analyzed_at": "2026-06-22T07:21:29.653781+00:00",
   "slug": "Bypass_Pahe_Links"
 }

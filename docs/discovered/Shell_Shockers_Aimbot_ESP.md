@@ -33,14 +33,14 @@ title: "蛋壳射击自动瞄准+透视"
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：77/100　　**分析时间**：2026-06-15
+**风险等级**：🟡 LOW　　**安全评分**：84/100　　**分析时间**：2026-06-22
 
-> The script does not transmit data externally and does not collect sensitive user information. It uses unsafeWindow, which is a high-risk permission, and loads a third-party library from a reputable CDN with a fixed version. No code obfuscation or DOM XSS risks are detected. The main risks are privilege escalation and supply chain vulnerabilities.
+> 该脚本未检测到数据外传、远程代码执行、代码混淆、DOM XSS 或 WebSocket 使用。主要风险为申请了 unsafeWindow 权限（但未见滥用）和 localStorage 设置存储（无敏感信息），以及加载了锁定版本的第三方库。整体风险较低，但建议定期复查第三方依赖和权限申请。
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ✅ 未检测到 |
-| 隐私采集 | ❌ 检测到（Reads and writes settings to localStorage） |
+| 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -48,20 +48,20 @@ title: "蛋壳射击自动瞄准+透视"
 
 ### 发现的问题
 
-**🔴 HIGH** — Privilege Escalation  
-> The script uses @grant unsafeWindow, which exposes the userscript context to the page and vice versa. This increases the risk of privilege escalation or data leakage if the page is malicious.  
-> 位置：Metadata (@grant unsafeWindow)  
-> 建议：Avoid using unsafeWindow unless strictly necessary. Consider safer alternatives or restrict usage.
+**🟠 MEDIUM** — 权限滥用  
+> 使用了 @grant unsafeWindow，允许脚本访问页面上下文，可能被滥用进行高权限操作，但当前代码未见明显滥用。  
+> 位置：元数据 @grant  
+> 建议：仅在必要时申请 unsafeWindow 权限，并限制其使用范围。
 
-**🟠 MEDIUM** — Supply Chain  
-> The script loads Babylon.js from jsdelivr CDN via @require. While jsdelivr is a reputable CDN, the version is fixed (7.15.0), reducing supply chain risk but not eliminating it.  
-> 位置：Metadata (@require https://cdn.jsdelivr.net/npm/babylonjs@7.15.0/babylon.min.js)  
-> 建议：Always use official, version-pinned sources for third-party libraries. Monitor for vulnerabilities in dependencies.
+**🟠 MEDIUM** — 隐私采集  
+> 脚本通过 localStorage 存储和读取设置，但未见敏感信息（如 cookie、表单、密码等）被采集。  
+> 位置：localStorage 相关代码  
+> 建议：确保不存储敏感信息，避免与其他脚本共享存储键。
 
-**🟠 MEDIUM** — Privacy Collection  
-> The script reads and writes settings to localStorage, which is a common practice for storing user preferences. No sensitive data is stored, but localStorage is accessible by the page.  
-> 位置：localStorage access (SETTINGS_KEY)  
-> 建议：Do not store sensitive information in localStorage. Consider using GM_setValue/GM_getValue for more isolation.
+**🟠 MEDIUM** — 供应链风险  
+> 通过 @require 加载了 babylonjs 第三方库，来源为 jsdelivr 官方 CDN，版本已锁定。  
+> 位置：@require https://cdn.jsdelivr.net/npm/babylonjs@7.15.0/babylon.min.js  
+> 建议：保持使用可信 CDN 并锁定具体版本。
 
 ---
 

@@ -1,0 +1,22 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "SAFE",
+  "script_name": "GOG.com enhancement tools",
+  "security_score": 100,
+  "summary": "该脚本未检测到任何安全或隐私风险。没有外部数据传输、隐私数据收集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码结构清晰，功能单一，主要用于页面内容导出和视图优化。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-06-22T07:28:47.778595+00:00",
+  "slug": "GOG_com_enhancement_tools"
+}

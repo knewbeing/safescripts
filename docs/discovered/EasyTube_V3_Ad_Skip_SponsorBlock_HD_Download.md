@@ -30,9 +30,9 @@ title: "EasyTube V3 — Ad Skip, SponsorBlock & HD Download⬇️🚀"
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：59/100　　**分析时间**：2026-06-15
+**风险等级**：🟠 MEDIUM　　**安全评分**：67/100　　**分析时间**：2026-06-22
 
-> The script transmits YouTube video IDs and possibly metadata to third-party APIs (SponsorBlock and Cobalt instances) for ad skipping and video downloading. No evidence of sensitive user data collection, remote code execution, obfuscation, or DOM XSS. Supply chain risk exists due to reliance on external Cobalt endpoints. Overall, the script is reasonably safe for its purpose, but users should be aware of third-party data transmission and supply chain risks.
+> The script is generally well-structured and does not use obfuscation, eval, or dangerous DOM injection. However, it makes cross-origin requests to third-party APIs (SponsorBlock and Cobalt downloaders), which may transmit user video viewing data. It also requests high-privilege permissions (GM_xmlhttpRequest, @connect) and stores user settings locally. There is no evidence of keylogging, clipboard access, or fingerprinting. The main risks are data exfiltration to third-party APIs and supply chain exposure via multiple Cobalt endpoints.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -45,55 +45,25 @@ title: "EasyTube V3 — Ad Skip, SponsorBlock & HD Download⬇️🚀"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Transmission  
-> Script uses GM_xmlhttpRequest to access SponsorBlock API and multiple Cobalt instances for video download. These are third-party servers and may receive YouTube video IDs and possibly other metadata.  
-> 位置：CFG.sbApi, CFG.cobaltInstances, GM_xmlhttpRequest usage  
-> 建议：Ensure only minimal, non-sensitive data is sent. Review SponsorBlock and Cobalt privacy policies.
+**⛔ CRITICAL** — Data Exfiltration  
+> The script makes network requests to third-party APIs (SponsorBlock and multiple Cobalt instances) using GM_xmlhttpRequest. These requests may include the current YouTube video ID and possibly other metadata, which could be considered user data.  
+> 位置：CFG.sbApi, CFG.cobaltInstances, usage of GM_xmlhttpRequest  
+> 建议：Clearly document what data is sent to these endpoints. Consider proxying requests or minimizing data sent. Warn users about third-party API usage.
 
-**🔴 HIGH** — Remote Code Execution  
-> No evidence of eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection. No @require of remote JS libraries.  
-> 位置：Full script code  
-> 建议：Continue to avoid remote code execution patterns.
+**🟠 MEDIUM** — Permission Usage  
+> The script requests GM_xmlhttpRequest permission, which is necessary for cross-origin API calls but is a high-privilege grant.  
+> 位置：@grant GM_xmlhttpRequest  
+> 建议：Only request this permission if strictly necessary. Limit usage to trusted domains.
 
-**🔴 HIGH** — Code Obfuscation  
-> No evidence of code obfuscation, base64 decoding, unicode escapes, or minified/obfuscated code.  
-> 位置：Full script code  
-> 建议：Maintain readable, non-obfuscated code.
+**🟠 MEDIUM** — Supply Chain  
+> The script requests @connect permissions for multiple third-party domains. This increases supply chain risk if any of these endpoints are compromised.  
+> 位置：@connect sponsor.ajay.app, @connect co.wuk.sh, @connect cobalt.api.timelessnesses.me, @connect api.cobalt.tools  
+> 建议：Limit @connect to only necessary, trusted domains. Monitor for endpoint changes.
 
-**🔴 HIGH** — DOM XSS  
-> No evidence of DOM XSS or injection. User input is not inserted into innerHTML/outerHTML, and document.write is not used.  
-> 位置：Full script code  
-> 建议：Continue to avoid unsafe DOM manipulation.
-
-**🟠 MEDIUM** — Privacy Collection  
-> Script stores and retrieves persistent state using GM_setValue and GM_getValue, including toggle settings and possibly video IDs. No evidence of sensitive user data (like cookies, passwords, or clipboard) being collected.  
-> 位置：Persistent state section (S object)  
-> 建议：Do not store sensitive information. Current usage appears safe.
-
-**🟠 MEDIUM** — Permission Abuse  
-> Script requests GM_xmlhttpRequest permission and @connect for multiple domains, but only uses these for SponsorBlock and Cobalt APIs. No evidence of excessive or unused high privileges.  
-> 位置：@grant, @connect in metadata  
-> 建议：Restrict @connect to only necessary domains. Remove unused @grant permissions if any.
-
-**🟠 MEDIUM** — Sensitive API Usage  
-> No evidence of WebSocket/EventSource usage.  
-> 位置：Full script code  
-> 建议：Avoid using WebSocket for user data transmission.
-
-**🟠 MEDIUM** — Sensitive API Usage  
-> No evidence of navigator.geolocation, RTCPeerConnection, MediaDevices, Clipboard API, or Notification API usage.  
-> 位置：Full script code  
-> 建议：Continue to avoid sensitive browser APIs.
-
-**🟠 MEDIUM** — Supply Chain Risk  
-> Cobalt instances are third-party video downloaders. Supply chain risk exists if these endpoints are compromised or change behavior.  
-> 位置：CFG.cobaltInstances, @connect  
-> 建议：Monitor Cobalt instance reputation and availability. Prefer official or well-known endpoints.
-
-**🟡 LOW** — ClickJacking / iframe Risk  
-> No evidence of clickjacking or iframe manipulation.  
-> 位置：Full script code  
-> 建议：Continue to avoid iframe risks.
+**🟡 LOW** — Privacy  
+> The script stores user toggle settings (ad skip, SponsorBlock, quality) using GM_setValue/GM_getValue. While this is local, it is persistent and could be privacy-relevant if misused.  
+> 位置：GM_setValue, GM_getValue  
+> 建议：Ensure only non-sensitive, minimal data is stored. Document what is stored.
 
 ---
 

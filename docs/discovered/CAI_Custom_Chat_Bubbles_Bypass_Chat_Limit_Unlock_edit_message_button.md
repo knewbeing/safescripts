@@ -30,9 +30,9 @@ title: "C.AI Custom Chat Bubbles + Bypass Chat Limit (Unlock edit message button
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：81/100　　**分析时间**：2026-06-15
+**风险等级**：🟡 LOW　　**安全评分**：81/100　　**分析时间**：2026-06-22
 
-> 该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要风险为权限申请与供应链依赖，均为中低风险。功能绕过行为仅影响本地页面，无敏感数据泄露。整体安全性较高，建议移除未使用的高权限申请并定期检查依赖库安全。
+> 该脚本主要用于界面美化和功能解锁，未检测到数据外传、隐私采集、远程代码执行或混淆行为。权限申请略高于实际需求，存在轻微供应链风险。整体风险较低，建议定期复查依赖和权限。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -46,24 +46,24 @@ title: "C.AI Custom Chat Bubbles + Bypass Chat Limit (Unlock edit message button
 ### 发现的问题
 
 **🟠 MEDIUM** — 权限滥用  
-> 申请了 GM_xmlhttpRequest 权限，但实际代码未使用该 API进行外部数据传输。仅 @connect translate.googleapis.com，但未见实际调用。  
-> 位置：metadata (@grant, @connect)  
-> 建议：移除未使用的高权限申请，或确保 GM_xmlhttpRequest 仅用于可信目的。
+> @grant 了 GM_xmlhttpRequest 权限，但脚本本身未直接使用，仅用于后续可能的功能扩展。  
+> 位置：元数据区  
+> 建议：如无实际用途，建议移除高权限申请。
 
-**🟠 MEDIUM** — 供应链风险  
-> 通过 @require 加载 turndown 库，来源为 unpkg.com（官方 CDN），版本号已固定（7.1.3），供应链风险较低。  
-> 位置：metadata (@require)  
-> 建议：建议定期检查依赖库安全，确保 CDN 未被污染。
+**🟠 MEDIUM** — 权限滥用  
+> @connect 了 translate.googleapis.com，但脚本本身未直接调用 GM_xmlhttpRequest 访问该域名。  
+> 位置：元数据区  
+> 建议：如无实际用途，建议移除 @connect 权限。
 
-**🟡 LOW** — 功能绕过  
-> 脚本会修改页面的 __NEXT_DATA__ JSON内容，模拟 age_data，绕过年龄验证和功能限制。此行为属于功能绕过，但未涉及敏感数据外传。  
-> 位置：代码（fakeVerifyEnabled/bypassUI）  
-> 建议：仅在用户知情情况下启用此类功能绕过，避免违反目标网站政策。
+**🟡 LOW** — 数据外传  
+> 脚本重写 fetch 和 XMLHttpRequest 以拦截特定 API，但未向第三方服务器发送数据。  
+> 位置：全局作用域  
+> 建议：确保未来不添加外传逻辑。
 
-**🟡 LOW** — 功能绕过  
-> 脚本会拦截 fetch 和 XMLHttpRequest，阻止对 neo.character.ai/feature_limits 的请求，实现 chat limit bypass。未见数据外传，仅本地拦截。  
-> 位置：代码（window.fetch, XMLHttpRequest.prototype.open）  
-> 建议：确保拦截逻辑不会影响其他正常功能或引发兼容性问题。
+**🟡 LOW** — 供应链风险  
+> @require 加载了 turndown@7.1.3，来源为 unpkg.com，版本已锁定。  
+> 位置：元数据区  
+> 建议：建议使用官方 CDN 并定期检查依赖安全性。
 
 ---
 

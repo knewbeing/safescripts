@@ -1,0 +1,48 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [
+      "Multiple third-party CDN/proxy services (e.g., gh.h233.eu.org, gh-proxy.org, ghproxy.net, wget.la, etc.)"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "The script rewrites download links to route through a large number of third-party CDN/proxy services, which may result in user-initiated downloads being sent to these external servers. This exposes user download activity and potentially the URLs of files being accessed.",
+      "location": "download_url_us, clone_url, raw_url arrays and related link rewriting logic",
+      "recommendation": "Warn users about the privacy implications and allow disabling or customizing proxy endpoints. Prefer well-known, trusted proxies and document their privacy policies.",
+      "severity": "CRITICAL",
+      "type": "Data Transmission"
+    },
+    {
+      "description": "The script does not appear to collect or transmit cookies, form data, or other sensitive user data, nor does it listen to keyboard events or access browser fingerprinting APIs. However, the download URLs may contain repository or file information, which could be considered sensitive in some contexts.",
+      "location": "General script logic",
+      "recommendation": "Document what information is sent to third-party proxies and allow users to opt out.",
+      "severity": "CRITICAL",
+      "type": "Privacy Collection"
+    },
+    {
+      "description": "The script relies on a large number of third-party CDN/proxy endpoints, many of which are not official or well-known. This introduces supply chain risk, as these endpoints could be compromised or log user activity.",
+      "location": "download_url_us, clone_url, raw_url arrays",
+      "recommendation": "Allow users to review and select proxy endpoints. Prefer official or widely trusted endpoints. Regularly audit the list for safety.",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [
+      "Download URLs (repository/file info) sent to third-party proxies"
+    ],
+    "detected": true
+  },
+  "risk_level": "HIGH",
+  "script_name": "Github Enhancement - High Speed Download",
+  "security_score": 50,
+  "summary": "The script does not contain code execution, XSS, or obfuscation risks, and does not collect cookies or sensitive browser data. However, it rewrites download links to route through a large number of third-party CDN/proxy services, which introduces significant privacy and supply chain risks. User download activity and repository/file URLs are exposed to these external services. The script should be considered HIGH risk unless all endpoints are trusted and users are made aware of the privacy implications.",
+  "supply_chain_risk": true,
+  "websocket_usage": false,
+  "analyzed_at": "2026-06-22T07:29:50.614272+00:00",
+  "slug": "GithubEnhanced-High-Speed-Download"
+}

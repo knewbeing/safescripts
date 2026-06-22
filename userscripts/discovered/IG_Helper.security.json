@@ -11,82 +11,38 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限，并声明 @connect 到 cdn.jsdelivr.net、i.instagram.com、raw.githubusercontent.com，但代码仅用于下载 Instagram 媒体资源和加载资源文件，无用户数据外传行为。",
-      "location": "元数据与主代码",
-      "recommendation": "确保 GM_xmlhttpRequest 仅用于媒体下载，不用于发送用户敏感信息。",
-      "severity": "CRITICAL",
-      "type": "数据外传"
-    },
-    {
-      "description": "脚本未监听键盘输入、未读取表单字段、未访问剪贴板、未读取 cookie/localStorage/IndexedDB，仅使用 GM_getValue/GM_setValue 存储自身配置。",
-      "location": "主代码",
-      "recommendation": "保持现有行为，避免采集用户隐私数据。",
-      "severity": "CRITICAL",
-      "type": "隐私采集"
-    },
-    {
-      "description": "未发现 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险。@require 的第三方库均为固定哈希版本。",
-      "location": "主代码与元数据",
-      "recommendation": "继续使用固定哈希版本的第三方库，避免动态加载未知代码。",
-      "severity": "HIGH",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "未发现代码混淆、base64 解码、字符串数组映射或高度压缩单行代码。代码结构清晰。",
-      "location": "主代码",
-      "recommendation": "保持代码可读性，避免混淆。",
-      "severity": "HIGH",
-      "type": "代码混淆"
-    },
-    {
-      "description": "未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未发现 document.write 注入风险。",
-      "location": "主代码",
-      "recommendation": "如需插入动态内容，务必进行转义。",
-      "severity": "HIGH",
-      "type": "DOM XSS / 注入"
-    },
-    {
-      "description": "脚本申请了 GM_openInTab 权限，但实际用于打开 Instagram 媒体资源新标签页，未滥用高权限。",
-      "location": "元数据与主代码",
-      "recommendation": "仅申请实际需要的权限，避免权限滥用。",
-      "severity": "MEDIUM",
-      "type": "权限滥用"
-    },
-    {
-      "description": "未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。",
-      "location": "主代码",
-      "recommendation": "避免调用敏感 API，除非有明确用途且需征得用户同意。",
-      "severity": "MEDIUM",
-      "type": "敏感 API 调用"
-    },
-    {
-      "description": "@require 加载 mediabunny 和 jQuery 均为官方 CDN 且固定哈希版本，无供应链污染风险。",
-      "location": "元数据",
-      "recommendation": "继续使用可信 CDN 并固定版本哈希。",
-      "severity": "MEDIUM",
-      "type": "供应链风险"
-    },
-    {
-      "description": "未修改 frame 保护策略，未创建隐藏 iframe 用于数据提取。",
-      "location": "主代码",
-      "recommendation": "如需使用 iframe，需明确用途并防范 ClickJacking。",
+      "description": "The script requests GM_xmlhttpRequest permission and @connect to cdn.jsdelivr.net, i.instagram.com, and raw.githubusercontent.com. However, all network requests are limited to Instagram's own API and trusted CDNs for resources and libraries. No evidence of user data or page content being sent to third-party servers.",
+      "location": "Metadata and code",
+      "recommendation": "Continue to monitor for any future changes that may introduce data exfiltration.",
       "severity": "LOW",
-      "type": "ClickJacking / iframe 风险"
+      "type": "Network Permissions"
+    },
+    {
+      "description": "The script requests a wide set of @grant permissions, including GM_openInTab, GM_notification, and GM_xmlhttpRequest, but not all are used in the visible code. This is a mild permission over-claim.",
+      "location": "Metadata",
+      "recommendation": "Restrict @grant to only those APIs actually used in the script.",
+      "severity": "MEDIUM",
+      "type": "Permission Over-claim"
+    },
+    {
+      "description": "The script uses @require to load third-party libraries (mediabunny and jQuery) from official CDNs with SRI hashes, which mitigates supply chain risk.",
+      "location": "Metadata",
+      "recommendation": "Continue to pin versions and hashes for all external dependencies.",
+      "severity": "LOW",
+      "type": "Supply Chain"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [
-      "仅使用 GM_getValue/GM_setValue 存储自身配置，无用户隐私采集"
-    ],
+    "details": [],
     "detected": false
   },
   "risk_level": "LOW",
   "script_name": "IG Helper",
-  "security_score": 100,
-  "summary": "IG Helper 脚本安全性较高，无数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险等关键安全问题。所有第三方依赖均为固定哈希版本，权限申请合理。建议持续关注依赖库安全和权限最小化原则。",
+  "security_score": 89,
+  "summary": "The IG Helper script is generally safe. It does not exfiltrate user data, collect sensitive information, or execute remote code unsafely. All external resources are loaded from trusted CDNs with SRI hashes. There is mild permission over-claim, but no critical or high-severity risks detected.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-15T07:24:13.672002+00:00",
+  "analyzed_at": "2026-06-22T07:30:45.740167+00:00",
   "slug": "IG_Helper"
 }

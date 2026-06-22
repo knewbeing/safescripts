@@ -35,9 +35,9 @@ title: "Chess.com高级作弊助手"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：27/100　　**分析时间**：2026-06-15
+**风险等级**：🔴 HIGH　　**安全评分**：67/100　　**分析时间**：2026-06-22
 
-> 该脚本存在严重安全风险，主要由于 @connect * 允许任意域名的数据外传，且支持加载任意外部 JS/WASM，存在远程代码执行和供应链污染风险。未发现明显隐私采集和代码混淆，但权限申请过宽。建议严格限制网络请求目标、外部资源来源，并移除不必要的高权限。当前安全评分为 27，风险等级为 CRITICAL，不建议在生产环境或含敏感数据的浏览器中使用。
+> 该脚本存在严重的数据外传风险（@connect * 允许任意外部域名），并通过第三方 CDN 动态加载 JS/WASM 引擎，存在供应链污染风险。未发现明显的隐私采集、远程代码执行或 DOM XSS 问题。建议严格限制网络权限、锁定依赖版本和哈希，并最小化权限申请。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -50,40 +50,20 @@ title: "Chess.com高级作弊助手"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Exfiltration  
-> @connect * 允许任意域名的网络请求，存在严重数据外传风险，可能导致用户数据被发送到未知第三方。  
-> 位置：UserScript metadata (@connect *)  
-> 建议：移除 @connect *，仅允许可信域名；严格限制网络请求目标。
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过 @connect * 允许任意外部域名的网络请求，且实际代码中存在大量 fetch/GM_xmlhttpRequest 加载第三方资源（如 unpkg.com、cdnjs.cloudflare.com），存在数据外传和供应链风险。  
+> 位置：元数据 @connect, LOCAL_ENGINES, 资源加载相关代码  
+> 建议：严格限制 @connect 域名，仅允许必要的可信域名。避免向不受信任的第三方服务器发送请求。
 
-**🔴 HIGH** — Remote Code Execution  
-> 脚本允许加载自定义 WASM/JS URL（如 WASM_PRESETS），用户可输入任意 URL，存在远程代码执行风险。  
-> 位置：WASM_PRESETS, LOCAL_ENGINES  
-> 建议：限制自定义 URL来源，仅允许官方或可信域名。
+**🟠 MEDIUM** — 供应链风险  
+> 脚本通过 GM_xmlhttpRequest、fetch 等方式从 unpkg.com、cdnjs.cloudflare.com 等第三方 CDN 动态加载 JS/WASM 引擎文件，且未锁定具体文件哈希，存在供应链污染风险。  
+> 位置：LOCAL_ENGINES 配置, 资源加载逻辑  
+> 建议：使用可信 CDN 并锁定具体版本和哈希，避免加载可变内容。
 
-**🟠 MEDIUM** — Supply Chain Risk  
-> 脚本通过 GM_xmlhttpRequest、fetch 等方式加载外部 JS/WASM（如 unpkg.com、cdnjs），存在供应链风险，且未固定版本哈希。  
-> 位置：LOCAL_ENGINES 配置与 @resource stockfish.js  
-> 建议：仅使用官方 CDN，固定版本和哈希，避免加载可变 URL。
-
-**🟠 MEDIUM** — Permission Abuse  
-> 申请了 GM_xmlhttpRequest 高权限，但实际用途仅为加载引擎资源，未发现滥用，但权限申请过宽。  
-> 位置：UserScript metadata (@grant GM_xmlhttpRequest)  
-> 建议：仅申请实际需要的权限，移除未使用的高权限。
-
-**🟠 MEDIUM** — Privacy Collection  
-> 未发现明显的隐私采集行为（如读取 cookie、localStorage、剪贴板、表单、键盘监听等），但由于可加载任意 JS/WASM，理论上存在隐私采集风险。  
-> 位置：动态加载的外部资源  
-> 建议：审查所有加载的外部代码，确保无隐私采集行为。
-
-**🟡 LOW** — Obfuscation  
-> 未发现代码混淆、base64、字符串映射或高度压缩单行代码。  
-> 位置：主脚本代码  
-> 建议：保持代码可读性，避免混淆。
-
-**🟡 LOW** — DOM XSS  
-> 未发现 DOM XSS 或注入风险，未直接将用户输入插入 innerHTML/outerHTML。  
-> 位置：主脚本代码  
-> 建议：继续保持安全的 DOM 操作。
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 @connect *、GM_xmlhttpRequest、GM_getResourceText 等高权限，但部分权限未在当前代码片段中完全使用，存在权限滥用嫌疑。  
+> 位置：元数据 @grant, @connect  
+> 建议：仅申请实际需要的最小权限，移除未使用的高权限。
 
 ---
 

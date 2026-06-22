@@ -1,82 +1,33 @@
 {
-  "approved": true,
+  "approved": false,
   "data_transmission": {
     "destinations": [
-      "https://fanyi.iflyrec.com/TJHZTranslationService/v2/textAutoTranslation"
+      "fanyi.iflyrec.com"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 GM_xmlhttpRequest 向 fanyi.iflyrec.com 发送翻译请求，内容包括页面文本（如简介、菜单等）。",
-      "location": "翻译引擎配置与调用 GM_xmlhttpRequest",
-      "recommendation": "明确告知用户数据会被发送至第三方翻译服务，避免发送敏感信息。",
+      "description": "脚本通过 GM_xmlhttpRequest 向 fanyi.iflyrec.com 发送翻译请求，可能传输用户选中的文本内容。",
+      "location": "TRANS_ENGINES.iflyrec / 相关翻译函数（未在片段中完全展示）",
+      "recommendation": "确保仅发送用户主动请求翻译的内容，不要自动上传页面内容或敏感信息。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "@require 加载的 locals.js 来自 raw.githubusercontent.com，属于可信官方仓库，但未固定版本哈希，仅通过 query 参数标识版本。",
-      "location": "@require https://raw.githubusercontent.com/maboloshi/github-chinese/gh-pages/locals.js?v1.9.4-2026-06-10",
-      "recommendation": "建议使用固定版本哈希或官方 CDN，避免供应链污染风险。",
+      "description": "@require 加载的第三方库（locals.js）来自 raw.githubusercontent.com，未锁定具体 commit 或哈希，存在供应链污染风险。",
+      "location": "@require https://raw.githubusercontent.com/maboloshi/github-chinese/gh-pages/locals.js?v1.9.4.4-2026-06-21",
+      "recommendation": "建议使用固定 commit 哈希的 CDN 地址，确保依赖内容不可被篡改。",
       "severity": "MEDIUM",
       "type": "供应链风险"
     },
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限，仅用于翻译接口调用，未发现权限滥用。",
-      "location": "元数据 @grant",
-      "recommendation": "如无其他用途，建议仅申请必要权限。",
+      "description": "脚本申请了 GM_xmlhttpRequest 权限，但主逻辑未见其他外联用途，建议最小化权限。",
+      "location": "@grant GM_xmlhttpRequest",
+      "recommendation": "如仅用于翻译接口，可保留；否则建议移除未使用的高权限。",
       "severity": "MEDIUM",
       "type": "权限滥用"
-    },
-    {
-      "description": "脚本未发现 eval、new Function、字符串 setTimeout/setInterval、动态 script 标签等远程代码执行风险。",
-      "location": "主代码逻辑",
-      "recommendation": "保持代码安全，避免动态执行外部代码。",
-      "severity": "HIGH",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "脚本未发现 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板读取、键盘监听等隐私采集行为。",
-      "location": "主代码逻辑",
-      "recommendation": "继续保持对用户隐私的保护。",
-      "severity": "CRITICAL",
-      "type": "隐私采集"
-    },
-    {
-      "description": "未发现代码混淆、base64 解码、字符串数组映射、unicode 混淆等特征。",
-      "location": "主代码逻辑",
-      "recommendation": "保持代码可读性。",
-      "severity": "HIGH",
-      "type": "代码混淆"
-    },
-    {
-      "description": "未发现 DOM XSS 风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML。",
-      "location": "主代码逻辑",
-      "recommendation": "继续避免 XSS 注入风险。",
-      "severity": "HIGH",
-      "type": "DOM XSS / 注入"
-    },
-    {
-      "description": "未发现敏感 API 调用（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API）。",
-      "location": "主代码逻辑",
-      "recommendation": "避免调用敏感 API，除非必要且告知用户。",
-      "severity": "MEDIUM",
-      "type": "敏感 API 调用"
-    },
-    {
-      "description": "未发现 WebSocket、EventSource、navigator.sendBeacon 等实时数据外传行为。",
-      "location": "主代码逻辑",
-      "recommendation": "继续避免实时数据外传。",
-      "severity": "CRITICAL",
-      "type": "数据外传"
-    },
-    {
-      "description": "未发现修改 frame 保护策略或创建隐藏 iframe 用于数据提取。",
-      "location": "主代码逻辑",
-      "recommendation": "继续避免 ClickJacking/iframe 风险。",
-      "severity": "LOW",
-      "type": "ClickJacking / iframe 风险"
     }
   ],
   "obfuscation_detected": false,
@@ -87,9 +38,9 @@
   "risk_level": "MEDIUM",
   "script_name": "GitHub 中文化插件",
   "security_score": 67,
-  "summary": "该脚本主要用于 GitHub 页面汉化，核心安全风险为通过 GM_xmlhttpRequest 向第三方翻译服务发送页面文本，存在数据外传风险。未发现隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 调用等高危行为。@require 的第三方库未固定哈希，存在一定供应链风险。整体安全评分为 67，建议加强数据外传告知与供应链安全。",
+  "summary": "该脚本主要功能为 GitHub 界面汉化，未发现明显的隐私采集、远程代码执行或混淆行为。存在向第三方翻译接口发送用户选中文本的外传行为，且依赖的 @require 文件未锁定哈希，存在一定供应链风险。总体风险为中等，建议关注依赖安全和最小化数据外传。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-15T07:10:31.938174+00:00",
+  "analyzed_at": "2026-06-22T07:12:35.166922+00:00",
   "slug": "main"
 }

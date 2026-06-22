@@ -1,0 +1,69 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [
+      "ffscouter.com"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "Script uses GM_xmlhttpRequest to communicate with ffscouter.com, which is a third-party server. Potential for user data or page context to be transmitted, depending on request payloads.",
+      "location": "@connect ffscouter.com, usage of GM_xmlhttpRequest (likely in code not fully shown)",
+      "recommendation": "Review all data sent to ffscouter.com; ensure no sensitive user data, authentication tokens, or cookies are transmitted. Document all transmitted fields.",
+      "severity": "CRITICAL",
+      "type": "Data Exfiltration"
+    },
+    {
+      "description": "Script reads and writes to localStorage for configuration and possibly user keys.",
+      "location": "class Storage, FFConfig.key getter/setter",
+      "recommendation": "Ensure no sensitive data (such as authentication tokens or personal information) is stored in localStorage. Document all stored keys and values.",
+      "severity": "CRITICAL",
+      "type": "Privacy Collection"
+    },
+    {
+      "description": "@grant unsafeWindow is requested, which exposes page JS context to the userscript and can be abused for privilege escalation or data exfiltration.",
+      "location": "@grant unsafeWindow in metadata",
+      "recommendation": "Remove unsafeWindow if not strictly necessary. If required, limit its usage and audit all interactions with page context.",
+      "severity": "HIGH",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "No evidence of code obfuscation or minification in the provided code segment. However, only partial code is shown.",
+      "location": "General code structure",
+      "recommendation": "Review the full script for any obfuscated or minified code, especially in sections not shown.",
+      "severity": "HIGH",
+      "type": "Code Obfuscation"
+    },
+    {
+      "description": "@require is not used, so no supply chain risk from external libraries. However, only partial code is shown.",
+      "location": "Metadata block",
+      "recommendation": "If @require is added, ensure only official, hash-pinned sources are used.",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    },
+    {
+      "description": "GM_xmlhttpRequest is granted, which is a high-privilege API. Ensure it is only used for intended API calls.",
+      "location": "@grant GM_xmlhttpRequest in metadata",
+      "recommendation": "Limit usage to necessary endpoints and validate all outgoing requests.",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [
+      "Reads/writes localStorage for configuration and user key"
+    ],
+    "detected": true
+  },
+  "risk_level": "HIGH",
+  "script_name": "FF Scouter V3",
+  "security_score": 35,
+  "summary": "The script communicates with a third-party server (ffscouter.com) and stores user configuration (including a 'key') in localStorage. It requests high-privilege APIs (GM_xmlhttpRequest, unsafeWindow). There is no evidence of code obfuscation or supply chain risk in the provided code, but only a partial script was reviewed. The main risks are potential data exfiltration, privacy collection, and privilege escalation via unsafeWindow. A full code review is recommended, especially for network request payloads and any dynamic code execution.",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-06-22T07:28:11.731586+00:00",
+  "slug": "FF_Scouter_V3"
+}

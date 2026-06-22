@@ -1,5 +1,5 @@
 {
-  "approved": true,
+  "approved": false,
   "data_transmission": {
     "destinations": [
       "greasyfork.org",
@@ -8,37 +8,30 @@
       "githubusercontent.com",
       "openuserjs.org"
     ],
-    "detected": false
+    "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本未提供完整代码，仅元数据。无法检测实际数据外传、隐私采集、远程代码执行等关键风险。",
-      "location": "全局",
-      "recommendation": "请补充完整代码以便进行全面安全审查。仅凭元数据无法确认脚本行为。",
+      "description": "脚本通过 GM_xmlhttpRequest 访问 greasyfork.org、sleazyfork.org、github.com、githubusercontent.com、openuserjs.org 等第三方站点，可能传递当前页面 URL 等信息用于查找可用的 UserScript。",
+      "location": "网络请求相关代码（推测自 @connect 域）",
+      "recommendation": "仅允许必要的域名访问，明确限制请求内容，不应传递用户敏感信息。",
       "severity": "CRITICAL",
-      "type": "代码缺失"
+      "type": "数据外传"
     },
     {
-      "description": "元数据申请了 GM_xmlhttpRequest 权限，并声明 @connect 多个第三方域名，存在潜在数据外传能力。",
-      "location": "元数据 @grant/@connect",
-      "recommendation": "审查实际代码中 GM_xmlhttpRequest 的使用，确保不外传敏感用户数据。",
-      "severity": "MEDIUM",
-      "type": "权限滥用/数据外传潜力"
-    },
-    {
-      "description": "申请了 GM_openInTab 权限，可能被滥用打开恶意页面。",
-      "location": "元数据 @grant",
-      "recommendation": "确认实际代码是否合理使用 GM_openInTab，避免钓鱼或恶意跳转。",
+      "description": "脚本申请了 GM_openInTab 权限，但未提供代码，无法确认是否被滥用。",
+      "location": "@grant 元数据",
+      "recommendation": "仅在确有需要时申请高权限，代码应限制其用途。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "未检测到 @require 第三方库，供应链风险较低。",
-      "location": "元数据",
-      "recommendation": "如后续添加 @require，请固定版本哈希并使用官方 CDN。",
-      "severity": "LOW",
-      "type": "供应链风险"
+      "description": "脚本申请了 GM_xmlhttpRequest 高权限，允许跨域请求，存在被滥用风险。",
+      "location": "@grant 元数据",
+      "recommendation": "仅在确有需要时申请高权限，代码应限制其用途。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
     }
   ],
   "obfuscation_detected": false,
@@ -46,12 +39,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "CRITICAL",
+  "risk_level": "HIGH",
   "script_name": "Magic Userscript+ : Show Site All UserJS",
-  "security_score": 25,
-  "summary": "仅提供元数据，缺失完整代码，无法评估实际安全风险。元数据显示脚本有潜在数据外传和权限滥用能力，建议补充完整代码进行详细审查。当前安全评分为 25，风险等级 CRITICAL。",
+  "security_score": 67,
+  "summary": "该脚本通过 GM_xmlhttpRequest 访问多个第三方用户脚本站点，可能会传递当前页面信息用于查找可用的 UserScript，存在一定的数据外传风险。未发现隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。脚本申请了较高权限（如 GM_openInTab、GM_xmlhttpRequest），但由于未提供完整代码，无法进一步确认是否存在滥用。建议仅在信任来源时使用，并关注后续代码更新。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-15T07:09:43.746761+00:00",
+  "analyzed_at": "2026-06-22T07:11:51.222294+00:00",
   "slug": "Magic_20Userscript_2B_20_3A_20Show_20Site_20All_20UserJS"
 }

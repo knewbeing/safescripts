@@ -37,14 +37,14 @@ title: "AI验证码自动识别填充"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：47/100　　**分析时间**：2026-06-15
+**风险等级**：🔴 HIGH　　**安全评分**：67/100　　**分析时间**：2026-06-22
 
-> 该脚本通过 GM_xmlhttpRequest 将验证码图片发送到用户配置的第三方 API 进行识别，存在数据外传和隐私采集风险。脚本未混淆，未检测到 DOM XSS，但存在权限滥用和供应链风险。建议限制 API 端点、严格筛选表单字段、并采用更安全的第三方库加载方式。
+> 该脚本核心功能为自动识别网页验证码并填充，需将验证码图片数据发送到用户自定义的第三方识别 API，存在数据外传和隐私采集风险。未发现代码混淆、远程代码执行或 DOM XSS 问题。@require 的 Vue.js 依赖未锁定哈希，存在一定供应链风险。总体安全风险较高，建议加强 API 白名单、用户提示和依赖锁定。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：User-configurable third-party CAPTCHA recognition API endpoints） |
-| 隐私采集 | ❌ 检测到（Reads input fields for CAPTCHA values, Potential to read other form fields if selector is too broad） |
+| 数据外传 | ❌ 检测到（目标：User-configurable third-party API endpoints (for CAPTCHA recognition)） |
+| 隐私采集 | ❌ 检测到（读取验证码图片（canvas/image）并发送到外部 API） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -52,25 +52,20 @@ title: "AI验证码自动识别填充"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Transmission  
-> Script uses GM_xmlhttpRequest to send CAPTCHA images to user-configured third-party API endpoints for recognition. This may transmit sensitive page content (CAPTCHA images) to external servers.  
-> 位置：GM_xmlhttpRequest usage in CAPTCHA recognition logic  
-> 建议：Warn users about privacy risks; restrict API endpoints to trusted services; avoid sending additional user data.
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过 GM_xmlhttpRequest 将验证码图片数据发送到用户自定义的第三方 API（如 OCR/AI 识别服务），存在数据外传风险。  
+> 位置：识别按钮点击事件处理逻辑，调用 GM_xmlhttpRequest 发送图片数据到外部 API。  
+> 建议：仅允许可信 API 域名，默认关闭外传，增加用户警告和白名单机制。
 
-**⛔ CRITICAL** — Privacy Collection  
-> Script reads input fields (including those for CAPTCHA) and fills them automatically. If misused or extended, could be leveraged to read other sensitive form fields.  
-> 位置：Input field selection and value assignment logic  
-> 建议：Restrict field access strictly to CAPTCHA fields; avoid reading password or other sensitive fields.
-
-**🟠 MEDIUM** — Permission Abuse  
-> Script requests GM_xmlhttpRequest permission, which is high privilege and could be abused for arbitrary network requests.  
-> 位置：@grant GM_xmlhttpRequest in metadata  
-> 建议：Limit usage to only necessary API calls; review for potential abuse.
-
-**🟠 MEDIUM** — Supply Chain Risk  
-> Script uses @require to load Vue.js from unpkg.com CDN, which is a reputable source but not version-hashed. Supply chain risk if CDN is compromised or version changes.  
+**🟠 MEDIUM** — 供应链风险  
+> @require 加载了 Vue.js 生产环境版本，来源为 unpkg CDN，未锁定具体哈希或版本文件，存在供应链风险。  
 > 位置：@require https://unpkg.com/vue@3.4.38/dist/vue.global.prod.js  
-> 建议：Use version-hashed URLs or official CDN with integrity checks.
+> 建议：使用官方 CDN 并锁定具体版本文件或哈希，避免使用 latest 或可变链接。
+
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 GM_xmlhttpRequest 权限，属于高权限，且部分用户场景下可能未使用。  
+> 位置：@grant GM_xmlhttpRequest  
+> 建议：仅在确实需要时申请高权限，建议动态检测并最小化权限。
 
 ---
 

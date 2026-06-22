@@ -1,0 +1,58 @@
+{
+  "slug": "FF_Scouter_V2_beta",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/582442-ff-scouter-v2-beta",
+  "source_repo": "582442",
+  "raw_url": "https://update.greasyfork.org/scripts/582442/FF%20Scouter%20V2%20beta.user.js",
+  "filename": "FF_Scouter_V2_beta.user.js",
+  "name": "FF Scouter V2 beta",
+  "version": "3.0-beta9",
+  "description": "Shows the expected Fair Fight score against targets and faction war status",
+  "match": [
+    "https://www.torn.com/*"
+  ],
+  "grant": [
+    "GM_xmlhttpRequest",
+    "unsafeWindow"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  FF Scouter V2 beta\n// @namespace  xentac-beta\n// @version  3.0-beta9\n// @author  xentac [3354782], MAVRI [2402357], rDacted [2670953], Weav3r [1853324], Glasnost [1844049]\n// @description  Shows the expected Fair Fight score against targets and faction war status\n// @license  GPLv3\n// @copyright  2026, xentac\n// @match  https://www.torn.com/*\n// @connect  ffscouter.com\n// @grant  GM_xmlhttpRequest\n// @grant  unsafeWindow\n// @run-at  document-start\n// @downloadURL  https://update.greasyfork.org/scripts/582442/FF%20Scouter%20V2%20beta.user.js\n// @updateURL  https://update.greasyfork.org/scripts/582442/FF%20Scouter%20V2%20beta.meta.js",
+  "sha256": "78f2e819a98a3c481b3f5c5185ea31171e781964eeb1c7cfd38f5a1e077966bf",
+  "discovered_at": "2026-06-22T07:17:25.554091+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 375,
+  "good_ratings": 0,
+  "bad_ratings": 0,
+  "summary": {
+    "applicable_sites": [
+      "Torn 城市游戏"
+    ],
+    "description": "此脚本在 Torn 游戏网站上显示目标玩家的 Fair Fight 评分和帮派战争状态，帮助玩家更好地评估战斗对手。通过外部数据查询，提升游戏策略决策。",
+    "permissions": [
+      {
+        "explanation": "允许脚本发送网络请求获取外部数据。",
+        "grant": "GM_xmlhttpRequest"
+      },
+      {
+        "explanation": "允许脚本访问和修改网页的全局对象，增强功能集成。",
+        "grant": "unsafeWindow"
+      }
+    ],
+    "tags": [
+      "游戏辅助",
+      "信息增强",
+      "战斗分析",
+      "帮派管理",
+      "Torn",
+      "评分显示"
+    ],
+    "usage": [
+      "安装脚本后，访问 Torn 游戏网站。",
+      "在玩家页面或帮派相关页面，会自动显示 Fair Fight 评分和帮派战争状态。",
+      "无需额外操作，信息会直接展示在页面上。"
+    ],
+    "zh_name": "公平战斗评分助手"
+  }
+}

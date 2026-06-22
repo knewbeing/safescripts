@@ -38,14 +38,14 @@ title: "地理猜谜助手通用版"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：22/100　　**分析时间**：2026-06-15
+**风险等级**：🔴 HIGH　　**安全评分**：42/100　　**分析时间**：2026-06-22
 
-> 该脚本存在严重的数据外传和隐私采集风险，尤其是地理位置和用户数据被发送到 discord.com 和 nominatim.openstreetmap.org。未发现远程代码执行、混淆、DOM XSS 等高危行为，但权限申请和敏感 API 调用存在中等风险。建议严格限制数据外传、优化权限申请，并加强用户告知与控制。
+> This script provides helper features for GeoGuessr-like games, including sending map pin locations to Discord and reverse geocoding via OpenStreetMap. It transmits user location data to third-party servers (discord.com and nominatim.openstreetmap.org), which is a critical privacy and data exfiltration risk. It also requests notification permissions and modifies browser APIs to bypass anti-cheat mechanisms. No code obfuscation or DOM XSS risks were detected. The script should be considered HIGH risk due to the critical data transmission and privacy issues.
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：discord.com, nominatim.openstreetmap.org） |
-| 隐私采集 | ❌ 检测到（操作 localStorage, 发送地理坐标到第三方） |
+| 隐私采集 | ❌ 检测到（Reads and stores user hotkey and feature toggle preferences via GM_setValue/GM_getValue., Sends user location (latitude/longitude) to third-party APIs.） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -53,35 +53,30 @@ title: "地理猜谜助手通用版"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本通过 GM_xmlhttpRequest 向 discord.com 发送地理位置数据（send location to discord），属于用户数据外传到第三方服务器。  
-> 位置：sendToDiscord 功能相关代码（未完整展示，但描述和 @connect 指明）  
-> 建议：仅允许用户主动触发数据发送，明确告知用户数据内容和目的，避免自动上报。建议移除或限制敏感数据外传。
+**⛔ CRITICAL** — Data Exfiltration  
+> The script sends location data to Discord via GM_xmlhttpRequest, which may include user coordinates and possibly other metadata. This is a third-party server and could be used for tracking or data exfiltration.  
+> 位置：sendToDiscord function and GM_xmlhttpRequest usage (discord.com)  
+> 建议：Clearly inform users about what data is sent and allow opt-out. Do not send sensitive or identifying information. Consider allowing users to configure the webhook endpoint.
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本通过 GM_xmlhttpRequest 向 nominatim.openstreetmap.org 查询地理位置，涉及用户坐标数据外传。  
-> 位置：_getAddress() 函数  
-> 建议：仅在用户明确操作下发送请求，避免自动批量外传。建议在隐私政策中说明用途。
+**⛔ CRITICAL** — Data Exfiltration  
+> The script sends latitude and longitude to nominatim.openstreetmap.org to reverse geocode the location. While this is a public geocoding API, it still constitutes sharing user location with a third party.  
+> 位置：_getAddress function (nominatim.openstreetmap.org)  
+> 建议：Inform users about this data sharing. Consider allowing users to disable this feature.
 
-**⛔ CRITICAL** — 隐私采集  
-> 脚本读取并操作 localStorage（Storage.prototype.setItem Proxy），可能涉及隐私数据采集。  
-> 位置：WORLDGUESSR 分支  
-> 建议：仅操作必要的存储项，避免读取或修改用户敏感数据。
+**🟠 MEDIUM** — Sensitive API Usage  
+> The script requests Notification API permission and can send browser notifications.  
+> 位置：requestNotificationPermission, sendNotification  
+> 建议：Ensure notifications are not abused. Only use with clear user consent.
 
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请 GM_xmlhttpRequest 高权限，并允许任意外部请求（@connect discord.com, nominatim.openstreetmap.org），存在权限滥用风险。  
-> 位置：元数据 @grant/@connect  
-> 建议：仅申请实际需要的权限，限制 connect 域名范围。
+**🟠 MEDIUM** — Potential Abuse of Permissions  
+> The script applies proxies to native browser APIs (e.g., fetch, setAttribute, setItem, push) to bypass anti-cheat and sandboxing mechanisms. This is a form of anti-detection/anti-tamper, but could also be abused.  
+> 位置：Multiple locations (platform-specific blocks)  
+> 建议：Minimize API monkey-patching and clearly document all such behavior for transparency.
 
-**🟠 MEDIUM** — 敏感 API 调用  
-> 脚本调用 Notification API，可能被滥用发送通知。  
-> 位置：sendNotification() 函数  
-> 建议：仅在用户允许和主动操作下发送通知。
-
-**🟡 LOW** — 一般安全建议  
-> 脚本未检测到远程代码执行、代码混淆、DOM XSS、供应链风险等高危行为。  
-> 位置：全局代码审查  
-> 建议：保持代码透明，避免动态加载和混淆。
+**🟠 MEDIUM** — Permission Usage  
+> The script requests GM_xmlhttpRequest permission, which is high-privilege and allows cross-origin requests.  
+> 位置：Metadata block (@grant GM_xmlhttpRequest)  
+> 建议：Only request this permission if strictly necessary and document its use.
 
 ---
 

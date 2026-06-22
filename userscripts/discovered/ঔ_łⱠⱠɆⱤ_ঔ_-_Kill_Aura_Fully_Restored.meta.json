@@ -1,0 +1,53 @@
+{
+  "slug": "ঔ_łⱠⱠɆⱤ_ঔ_-_Kill_Aura_Fully_Restored",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/582929-%E0%A6%94%E0%A7%A3-%C5%82%E2%B1%A1%E2%B1%A1%C9%87%C9%BD-%E0%A6%94%E0%A7%A3-kill-aura-fully-restored",
+  "source_repo": "582929",
+  "raw_url": "https://update.greasyfork.org/scripts/582929/%EA%A7%81%E0%A6%94%E0%A7%A3%E2%98%AC%E2%82%AD%C5%82%E2%B1%A0%E2%B1%A0%C9%86%E2%B1%A4%E2%98%AC%E0%A6%94%E0%A7%A3%EA%A7%82%20-%20Kill%20Aura%20Fully%20Restored.user.js",
+  "filename": "ঔ_łⱠⱠɆⱤ_ঔ_-_Kill_Aura_Fully_Restored.user.js",
+  "name": "꧁ঔৣ☬₭łⱠⱠɆⱤ☬ঔৣ꧂ - Kill Aura Fully Restored",
+  "version": "2026-06-15_v15",
+  "description": "Max-FPS Core Engine: Restored aggressive attack sweeps, team filters, and interactive hotkeys with custom minimal GUI.",
+  "match": [
+    "https://evowars.io/*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  ꧁ঔৣ☬₭łⱠⱠɆⱤ☬ঔৣ꧂ - Kill Aura Fully Restored\n// @namespace  http://tampermonkey.net/\n// @version  2026-06-15_v15\n// @description  Max-FPS Core Engine: Restored aggressive attack sweeps, team filters, and interactive hotkeys with custom minimal GUI.\n// @author  KILLER\n// @match  https://evowars.io/*\n// @grant  none\n// @downloadURL  https://update.greasyfork.org/scripts/582929/%EA%A7%81%E0%A6%94%E0%A7%A3%E2%98%AC%E2%82%AD%C5%82%E2%B1%A0%E2%B1%A0%C9%86%E2%B1%A4%E2%98%AC%E0%A6%94%E0%A7%A3%EA%A7%82%20-%20Kill%20Aura%20Fully%20Restored.user.js\n// @updateURL  https://update.greasyfork.org/scripts/582929/%EA%A7%81%E0%A6%94%E0%A7%A3%E2%98%AC%E2%82%AD%C5%82%E2%B1%A0%E2%B1%A0%C9%86%E2%B1%A4%E2%98%AC%E0%A6%94%E0%A7%A3%EA%A7%82%20-%20Kill%20Aura%20Fully%20Restored.meta.js",
+  "sha256": "b8c5014d5c1b9fb8bae68866c5096bbb6a8b9d1649f3ee00535e35e84e0ca9c6",
+  "discovered_at": "2026-06-22T07:16:59.841909+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 183,
+  "good_ratings": 0,
+  "bad_ratings": 0,
+  "summary": {
+    "applicable_sites": [
+      "Evowars.io"
+    ],
+    "description": "此脚本为 Evowars.io 游戏提供自动攻击（Kill Aura）功能，能智能识别敌人并进行攻击。它还包含团队过滤、性能优化和可自定义的快捷键，配有简洁的界面。适合希望提升游戏体验和效率的玩家。",
+    "permissions": [
+      {
+        "explanation": "脚本无需特殊权限，仅在页面内运行。",
+        "grant": "none"
+      }
+    ],
+    "tags": [
+      "游戏辅助",
+      "自动攻击",
+      "性能优化",
+      "快捷键",
+      "界面增强"
+    ],
+    "usage": [
+      "1. 安装脚本后，进入 Evowars.io 游戏页面。",
+      "2. 游戏界面左上角会出现一个简洁的设置菜单。",
+      "3. 可通过菜单调整自动攻击、团队过滤等功能。",
+      "4. 使用快捷键快速切换或调整脚本功能。"
+    ],
+    "zh_name": "自动攻击光环（Kill Aura）"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "slug": "Torn_City_Item_Finder",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/583287-torn-city-item-finder",
+  "source_repo": "583287",
+  "raw_url": "https://update.greasyfork.org/scripts/583287/Torn%20City%20Item%20Finder.user.js",
+  "filename": "Torn_City_Item_Finder.user.js",
+  "name": "Torn City Item Finder",
+  "version": "1.0",
+  "description": "Navigate Torn city items - No API key needed",
+  "match": [
+    "https://www.torn.com/city.php*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Torn City Item Finder\n// @author  freetree\n// @namespace  freetree.torn\n// @version  1.0\n// @description  Navigate Torn city items - No API key needed\n// @match  https://www.torn.com/city.php*\n// @grant  none\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/583287/Torn%20City%20Item%20Finder.user.js\n// @updateURL  https://update.greasyfork.org/scripts/583287/Torn%20City%20Item%20Finder.meta.js",
+  "sha256": "17e33b15cd427fce9a1977686bc6d0cbc5c17c18fe8e54459578ffaee764cf0b",
+  "discovered_at": "2026-06-22T07:15:34.431054+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 341,
+  "good_ratings": 0,
+  "bad_ratings": 0,
+  "summary": {
+    "applicable_sites": [
+      "Torn City"
+    ],
+    "description": "本脚本帮助玩家在 Torn City 游戏中快速定位和浏览城市地图上的物品，无需 API 密钥。它会在地图页面显示一个面板，方便切换和查看所有可拾取物品的位置。",
+    "permissions": [
+      {
+        "explanation": "脚本不需要特殊权限，仅在页面内运行。",
+        "grant": "none"
+      }
+    ],
+    "tags": [
+      "游戏辅助",
+      "地图导航",
+      "物品查找",
+      "Torn City",
+      "网页增强"
+    ],
+    "usage": [
+      "安装脚本后，进入 Torn City 的城市地图页面。",
+      "页面会出现一个物品查找面板。",
+      "使用面板上的按钮浏览和定位地图上的物品。"
+    ],
+    "zh_name": "Torn City物品查找器"
+  }
+}

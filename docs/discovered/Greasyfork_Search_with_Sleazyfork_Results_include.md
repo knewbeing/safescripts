@@ -43,14 +43,14 @@ title: "大人的Greasyfork"
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：59/100　　**分析时间**：2026-06-15
+**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-22
 
-> 脚本主要用于合并 greasyfork 和 sleazyfork 的搜索结果，未发现向第三方服务器发送敏感数据，也未发现恶意隐私采集、远程代码执行或代码混淆。存在一定的权限申请冗余和通过 innerHTML 插入外部 HTML 的风险，但内容来源可信。整体风险为中等，建议持续关注权限申请和 HTML 注入方式。
+> The script merges search results from greasyfork.org and sleazyfork.org by fetching and parsing HTML from these official domains. It does not transmit user data to third-party servers, does not collect sensitive information, and does not use dangerous code execution patterns. The only notable issue is the overprovision of GM_* permissions, which should be minimized. Overall, the script is considered low risk.
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：greasyfork.org, sleazyfork.org） |
-| 隐私采集 | ❌ 检测到（localStorage, GM_setValue, GM_getValue） |
+| 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -58,40 +58,20 @@ title: "大人的Greasyfork"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本使用 GM_xmlhttpRequest 向 greasyfork.org 和 sleazyfork.org 发起 GET 请求，目的是抓取搜索结果并合并显示。未发现向第三方域名发送用户数据或页面内容。  
-> 位置：GM_xmlhttpRequest 调用  
-> 建议：确保仅请求官方域名，避免携带敏感用户数据。
+**🟠 MEDIUM** — Permission Overprovision  
+> The script requests several GM_* permissions, including GM_notification and GM_registerMenuCommand, but not all are used in the code.  
+> 位置：UserScript metadata block  
+> 建议：Remove unused permissions to reduce the attack surface.
 
-**⛔ CRITICAL** — 隐私采集  
-> 脚本读取和写入 localStorage 以及 GM_setValue/GM_getValue，用于存储脚本配置。未发现读取 cookie、sessionStorage、IndexedDB、表单字段或剪贴板内容。  
-> 位置：storage.getItem/setItem  
-> 建议：仅存储必要的非敏感配置数据，避免存储敏感信息。
+**🟡 LOW** — Network Request  
+> The script uses GM_xmlhttpRequest to fetch search result pages from greasyfork.org and sleazyfork.org, but only for merging search results and does not transmit user data or cookies to third-party domains.  
+> 位置：GM_xmlhttpRequest usage in search result merging logic  
+> 建议：No action needed. The requests are limited to the two official domains and do not leak sensitive user data.
 
-**🔴 HIGH** — DOM XSS / 注入  
-> 脚本通过 innerHTML 插入来自 greasyfork/sleazyfork 的 HTML，但未直接插入用户输入或 URL 参数，且内容来源可信。  
-> 位置：doc.documentElement.innerHTML = result.responseText  
-> 建议：如后续插入用户输入，需严格转义。
-
-**🔴 HIGH** — 远程代码执行  
-> 脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行方式。  
-> 位置：全局代码检查  
-> 建议：保持禁止远程代码执行。
-
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_notification、GM_registerMenuCommand 等权限，但实际代码仅有限使用，未发现滥用。  
-> 位置：元数据 @grant  
-> 建议：建议只申请实际需要的权限。
-
-**🟠 MEDIUM** — 敏感 API 调用  
-> 脚本未使用 WebSocket、EventSource、navigator.sendBeacon 等实时数据传输方式。  
-> 位置：全局代码检查  
-> 建议：如需使用，需严格限制目标和数据内容。
-
-**🟠 MEDIUM** — 供应链风险  
-> 脚本未通过 @require 加载第三方库，也未动态加载外部 JS。  
-> 位置：元数据检查  
-> 建议：如需加载第三方库，建议固定版本哈希并使用官方 CDN。
+**🟡 LOW** — Storage Access  
+> The script accesses localStorage as a fallback for storing user preferences if GM storage is unavailable.  
+> 位置：storage.setItem/getItem implementation  
+> 建议：This is a standard practice and does not pose a privacy risk as no sensitive data is stored or transmitted.
 
 ---
 

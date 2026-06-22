@@ -1,0 +1,66 @@
+{
+  "slug": "GLP_Enhancement_Suite",
+  "platform": "github",
+  "source_url": "https://raw.githubusercontent.com/SysAdminDoc/Scripts/a14cf9b8321b9a143e76632d41070dc3c4387614/Userscripts/GLP%20Enhancement%20Suite.user.js",
+  "source_repo": "SysAdminDoc/Scripts",
+  "raw_url": "https://raw.githubusercontent.com/SysAdminDoc/Scripts/a14cf9b8321b9a143e76632d41070dc3c4387614/Userscripts/GLP%20Enhancement%20Suite.user.js",
+  "filename": "GLP_Enhancement_Suite.user.js",
+  "name": "GLP Enhancement Suite",
+  "version": "1.0.0",
+  "description": "Dark-themed forum enhancement for GodlikeProductions — ad nuking, nag bypass, thread/user blocking, collapsible quotes, autopager, declutter, and a premium settings UI.",
+  "match": [
+    "https://www.godlikeproductions.com/*",
+    "https://godlike.com/*"
+  ],
+  "grant": [
+    "GM_addStyle",
+    "GM_getValue",
+    "GM_setValue"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  GLP Enhancement Suite\n// @namespace  https://github.com/SysAdminDoc/GLP_Enhancement_Suite\n// @version  1.0.0\n// @description  Dark-themed forum enhancement for GodlikeProductions — ad nuking, nag bypass, thread/user blocking, collapsible quotes, autopager, declutter, and a premium settings UI.\n// @author  SysAdminDoc\n// @match  https://www.godlikeproductions.com/*\n// @match  https://godlike.com/*\n// @grant  GM_addStyle\n// @grant  GM_getValue\n// @grant  GM_setValue\n// @run-at  document-start\n// @downloadURL  https://github.com/SysAdminDoc/GLP_Enhancement_Suite/raw/refs/heads/main/GLP_Enhancement_Suite.user.js\n// @updateURL  https://github.com/SysAdminDoc/GLP_Enhancement_Suite/raw/refs/heads/main/GLP_Enhancement_Suite.user.js",
+  "sha256": "2de10f0a56193412ec7d9dcceba86c2fce29f7688b5769632e7198b13f5dd045",
+  "discovered_at": "2026-06-22T07:13:28.764708+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": null,
+  "good_ratings": null,
+  "bad_ratings": null,
+  "summary": {
+    "applicable_sites": [
+      "GodlikeProductions 论坛",
+      "godlike.com 论坛"
+    ],
+    "description": "本脚本为 GodlikeProductions 论坛提供深色主题，自动屏蔽广告和弹窗，支持屏蔽指定用户和帖子，折叠引用内容，自动翻页，并简化页面布局。用户可通过高级设置界面自定义功能。",
+    "permissions": [
+      {
+        "explanation": "允许脚本添加自定义样式，改变页面外观。",
+        "grant": "GM_addStyle"
+      },
+      {
+        "explanation": "允许脚本读取用户的设置和偏好。",
+        "grant": "GM_getValue"
+      },
+      {
+        "explanation": "允许脚本保存用户的设置和偏好。",
+        "grant": "GM_setValue"
+      }
+    ],
+    "tags": [
+      "论坛增强",
+      "广告屏蔽",
+      "深色模式",
+      "内容屏蔽",
+      "页面简化",
+      "自动翻页"
+    ],
+    "usage": [
+      "安装脚本后，访问 GodlikeProductions 论坛页面。",
+      "页面会自动应用深色主题并屏蔽广告。",
+      "在论坛界面可通过设置按钮进入高级设置，调整各项功能。",
+      "可手动屏蔽指定用户或帖子，折叠引用内容。"
+    ],
+    "zh_name": "GLP论坛增强套件"
+  }
+}

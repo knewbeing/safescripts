@@ -5,71 +5,7 @@
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [
-    {
-      "description": "脚本未检测到任何网络请求（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource），不存在数据外传风险。",
-      "location": "全局",
-      "recommendation": "保持当前实现，避免添加任何外部数据传输逻辑。",
-      "severity": "CRITICAL",
-      "type": "Data Transmission"
-    },
-    {
-      "description": "脚本未读取 cookie、localStorage、sessionStorage、IndexedDB，也未监听键盘输入或读取表单字段、剪贴板内容，未涉及隐私采集。",
-      "location": "全局",
-      "recommendation": "保持当前实现，避免添加任何隐私采集行为。",
-      "severity": "CRITICAL",
-      "type": "Privacy Collection"
-    },
-    {
-      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string)，也未通过 innerHTML/outerHTML 插入外部脚本或动态加载远程 JS。",
-      "location": "全局",
-      "recommendation": "保持当前实现，避免引入远程代码执行风险。",
-      "severity": "HIGH",
-      "type": "Remote Code Execution"
-    },
-    {
-      "description": "脚本未检测到任何代码混淆、base64 解码、字符串数组映射或高度压缩代码。",
-      "location": "全局",
-      "recommendation": "保持代码可读性，避免混淆。",
-      "severity": "HIGH",
-      "type": "Code Obfuscation"
-    },
-    {
-      "description": "脚本未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未操作 iframe src，未检测到 DOM XSS 注入风险。",
-      "location": "全局",
-      "recommendation": "如需插入用户输入，务必进行转义。",
-      "severity": "HIGH",
-      "type": "DOM XSS/Injection"
-    },
-    {
-      "description": "脚本申请的 @grant 权限与实际使用基本匹配，未申请高权限（如 GM_download、GM_openInTab），window.onurlchange 权限用于监听页面变化，未滥用。",
-      "location": "元数据",
-      "recommendation": "定期复查权限申请，避免冗余或高权限滥用。",
-      "severity": "MEDIUM",
-      "type": "Permission Abuse"
-    },
-    {
-      "description": "脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API 读取、Notification API）。仅使用 GM_setClipboard 写入剪贴板。",
-      "location": "全局",
-      "recommendation": "避免调用敏感 API，确保用户隐私安全。",
-      "severity": "MEDIUM",
-      "type": "Sensitive API Usage"
-    },
-    {
-      "description": "脚本未通过 @require 加载任何第三方库，无供应链风险。",
-      "location": "元数据",
-      "recommendation": "如需引入第三方库，建议使用官方 CDN 并固定版本哈希。",
-      "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
-    },
-    {
-      "description": "脚本未修改 frame 保护策略，也未创建隐藏 iframe 用于数据提取。",
-      "location": "全局",
-      "recommendation": "保持当前实现，避免 iframe 滥用。",
-      "severity": "LOW",
-      "type": "ClickJacking/Iframe Risk"
-    }
-  ],
+  "issues": [],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
@@ -78,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "Ping.Sx enhancement",
   "security_score": 100,
-  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 滥用行为。所有功能均在本地实现，安全性高。",
+  "summary": "该脚本未检测到任何网络数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险或权限滥用等安全风险。所有功能均在本地页面 DOM 操作和剪贴板操作范围内，未涉及敏感 API 或第三方通信。脚本结构清晰，未发现恶意或高危行为。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-15T07:26:13.514233+00:00",
+  "analyzed_at": "2026-06-22T07:34:24.754845+00:00",
   "slug": "Ping_Sx-Enhanced"
 }

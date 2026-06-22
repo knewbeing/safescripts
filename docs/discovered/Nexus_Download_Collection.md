@@ -4,15 +4,15 @@ title: "Nexus合集一键下载"
 
 # Nexus合集一键下载
 
-`批量下载`  `模组管理`  `游戏工具`  `Nexus Mods`  `效率提升`
+`模组下载`  `批量操作`  `游戏工具`  `效率提升`  `Nexus Mods`  `一键下载`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/Nexus_Download_Collection.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**0.9.10**　　发现时间：**2026-06-15**　　来源：[GreasyFork](https://greasyfork.org/scripts/483337-nexus-download-collection) <Badge type="tip" text="GreasyFork" />　　安装量：**20,291**　　评分：👍83 / 👎6
+> 版本：**0.9.10**　　发现时间：**2026-06-22**　　来源：[GreasyFork](https://greasyfork.org/scripts/483337-nexus-download-collection) <Badge type="tip" text="GreasyFork" />　　安装量：**20,729**　　评分：👍83 / 👎6
 
 ## 功能介绍
 
-该脚本可以让用户在 Nexus Mods 网站上，一键下载某个合集中的所有模组，无需逐个操作。适合需要批量下载模组的用户，提升下载效率。
+该脚本可以让用户在 Nexus Mods 网站上，一键下载某个合集中的所有模组，无需逐个点击。适合需要批量下载模组的用户，提升下载效率。
 
 ## 适用网站
 
@@ -20,31 +20,31 @@ title: "Nexus合集一键下载"
 
 ## 使用方法
 
-1. 1. 安装脚本后，访问 Nexus Mods 网站。
-2. 2. 打开你想下载的模组合集页面。
-3. 3. 页面会出现一键下载按钮，点击即可批量下载所有模组。
+1. 安装脚本后，访问 Nexus Mods 网站。
+2. 进入你想下载的模组合集页面。
+3. 页面会出现“一键下载合集”按钮，点击即可批量下载所有模组。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `GM.xmlHttpRequest` | 允许脚本通过浏览器发送网络请求，获取模组信息和下载链接。 |
-| `GM_xmlhttpRequest` | 允许脚本通过浏览器发送网络请求，获取模组信息和下载链接。 |
-| `GM_setValue` | 用于在本地存储脚本设置或下载进度。 |
-| `GM_getValue` | 用于在本地读取脚本设置或下载进度。 |
-| `GM.setValue` | 用于在本地存储脚本设置或下载进度。 |
-| `GM.getValue` | 用于在本地读取脚本设置或下载进度。 |
+| `GM.xmlHttpRequest` | 允许脚本通过浏览器发起网络请求，获取模组数据和下载链接。 |
+| `GM_xmlhttpRequest` | 允许脚本通过浏览器发起网络请求，获取模组数据和下载链接。 |
+| `GM_setValue` | 允许脚本保存用户设置或下载状态。 |
+| `GM_getValue` | 允许脚本读取用户设置或下载状态。 |
+| `GM.setValue` | 允许脚本保存用户设置或下载状态。 |
+| `GM.getValue` | 允许脚本读取用户设置或下载状态。 |
 | `GM_addStyle` | 允许脚本自定义页面样式，优化界面显示。 |
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：67/100　　**分析时间**：2026-06-15
+**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-22
 
-> 该脚本仅与 Nexus Mods 官方 API 和页面进行通信，不存在隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要风险为数据外传（仅限官方域名）、权限滥用（申请未使用的高权限）和敏感 API（cookie 传递）。整体风险为中等，建议移除未使用权限并持续关注官方 API 的安全性。
+> 该脚本仅与 nexusmods.com 官方 API 通信，无第三方数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险等高危行为。部分 @grant 权限可能未被实际使用，建议精简。整体安全风险低，适合普通用户使用。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：api-router.nexusmods.com, www.nexusmods.com） |
+| 数据外传 | ❌ 检测到（目标：nexusmods.com, api-router.nexusmods.com） |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
@@ -53,20 +53,50 @@ title: "Nexus合集一键下载"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Transmission  
-> Script uses fetch and GM_xmlhttpRequest to communicate with api-router.nexusmods.com and www.nexusmods.com. All requests are to official Nexus Mods endpoints and do not transmit user data beyond what is required for mod download functionality.  
-> 位置：fetchMods(), fetchDownloadLink()  
-> 建议：Ensure only necessary data is sent and no sensitive user information is included in requests.
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过 fetch 向 nexusmods.com 和 api-router.nexusmods.com 发送请求以获取和下载 mod 信息。所有请求均指向官方域名，无第三方数据外传。  
+> 位置：fetchMods, fetchDownloadLink, 相关 fetch 调用  
+> 建议：确认请求内容仅限于必要的 mod 信息，不包含用户敏感数据。
 
-**🟠 MEDIUM** — Permission Abuse  
-> Script requests multiple @grant permissions (GM.xmlHttpRequest, GM_xmlhttpRequest, GM_setValue, GM_getValue, GM.setValue, GM.getValue, GM_addStyle), but only uses GM_xmlhttpRequest, GM.getValue, GM.setValue, and GM_addStyle in the code.  
-> 位置：Metadata block  
-> 建议：Remove unused permissions (@grant GM.xmlHttpRequest, GM_setValue, GM_getValue) to minimize attack surface.
+**⛔ CRITICAL** — 隐私采集  
+> 脚本未检测到对 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板、表单字段、键盘事件等隐私相关 API 的访问。  
+> 位置：全局  
+> 建议：保持现状，勿添加隐私采集行为。
 
-**🟠 MEDIUM** — Sensitive API Usage  
-> Script uses fetch with credentials: 'include', which may transmit cookies to Nexus Mods endpoints.  
-> 位置：fetchMods(), fetchDownloadLink()  
-> 建议：Ensure cookies are only sent to trusted domains and not to third parties.
+**🔴 HIGH** — 远程代码执行  
+> 未检测到 eval、new Function、setTimeout(string)、setInterval(string)、动态 script 标签、@require 远程 JS、document.write 等远程代码执行风险。  
+> 位置：全局  
+> 建议：保持现状，勿引入动态代码执行。
+
+**🔴 HIGH** — 代码混淆  
+> 未检测到代码混淆、base64 解码、字符串数组映射、unicode 混淆或高度压缩单行代码。  
+> 位置：全局  
+> 建议：保持代码可读性，便于安全审查。
+
+**🔴 HIGH** — DOM XSS  
+> 未检测到 DOM XSS 风险。脚本未将用户输入或 URL 参数直接插入 innerHTML/outerHTML。  
+> 位置：全局  
+> 建议：如需插入动态内容，务必进行转义。
+
+**🟠 MEDIUM** — 权限滥用  
+> @grant 权限与实际代码使用基本匹配。部分 GM_setValue/GM_getValue 旧版 API 可能未被实际调用。  
+> 位置：元数据与全局  
+> 建议：可移除未使用的 grant 权限，减少权限面。
+
+**🟠 MEDIUM** — 敏感 API 调用  
+> 未检测到敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）调用。  
+> 位置：全局  
+> 建议：保持现状，勿添加敏感 API 调用。
+
+**🟠 MEDIUM** — 供应链风险  
+> 未检测到 @require 加载第三方库，无供应链风险。  
+> 位置：元数据  
+> 建议：如需引入第三方库，建议使用官方 CDN 并锁定版本哈希。
+
+**🟡 LOW** — ClickJacking / iframe 风险  
+> 未检测到对 frame 保护策略的修改或隐藏 iframe 的创建。  
+> 位置：全局  
+> 建议：如需使用 iframe，确保来源可信且无数据提取行为。
 
 ---
 

@@ -1,0 +1,41 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [
+      "https://chilldownloader.com",
+      "https://www.tool77.com/it/v/downloader",
+      "https://www.spotriff.com/en"
+    ],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "The script opens external URLs (chilldownloader.com, tool77.com, spotriff.com) with the current page's video URL as a parameter when the user clicks the download button. This is not automatic data exfiltration, but user-initiated navigation.",
+      "location": "openTab() function and download button click handlers",
+      "recommendation": "Clearly inform users that clicking the button will send the current page URL to a third-party service. No automatic data transmission detected.",
+      "severity": "LOW",
+      "type": "User-initiated data transmission"
+    },
+    {
+      "description": "The script requests the GM_openInTab permission, which is used to open external URLs in new tabs. This is a medium-risk permission if misused, but in this script, usage is appropriate and limited to user interaction.",
+      "location": "@grant GM_openInTab and openTab() function",
+      "recommendation": "No action needed unless the permission is used for background or automatic tab opening. Monitor for future code changes.",
+      "severity": "MEDIUM",
+      "type": "Permission usage"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "LOW",
+  "script_name": "⬇️ Download Videos from Any Site (YouTube, TikTok, Instagram, X & More)",
+  "security_score": 89,
+  "summary": "The script does not automatically transmit user data or page content to third-party servers. All external navigation occurs only when the user clicks the download button, which opens the current page's URL in a third-party downloader service. No privacy-invasive data collection, code obfuscation, or remote code execution is present. The only elevated permission is GM_openInTab, which is used appropriately. Overall, the script is low risk, but users should be aware that clicking the download button will send the current page URL to an external service.",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-06-22T07:24:33.787359+00:00",
+  "slug": "Download_Videos_from_Any_Site_YouTube_TikTok_Instagram_X_More"
+}

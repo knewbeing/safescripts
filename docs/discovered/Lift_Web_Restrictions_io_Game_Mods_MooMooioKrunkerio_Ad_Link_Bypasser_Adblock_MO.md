@@ -49,14 +49,14 @@ title: "解除网络限制：.io游戏模型 、广告链接绕过器、广告�
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：0/100　　**分析时间**：2026-06-15
+**风险等级**：⛔ CRITICAL　　**安全评分**：0/100　　**分析时间**：2026-06-22
 
-> This userscript poses severe security risks, including remote code execution via dynamic fetching and eval, data exfiltration to third-party servers, code obfuscation, excessive permissions, and DOM XSS potential. It is NOT safe for use.
+> This userscript contains multiple critical security and privacy risks. It executes remote code in an obfuscated manner, collects persistent unique identifiers, and requests high-privilege permissions. There is evidence of tracking and possible DOM XSS vulnerabilities. The use of unpinned third-party dependencies introduces supply chain risk. This script is NOT SAFE for use.
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：ksw2-moomoo.glitch.me, external URLs via Utils.loadModule (dynamic)） |
-| 隐私采集 | ✅ 未检测到 |
+| 数据外传 | ❌ 检测到（目标：ksw2-moomoo.glitch.me, external URLs via loadModule） |
+| 隐私采集 | ❌ 检测到（Persistent unique user ID generation and storage, Usage counter tracking, @antifeature Tracking indicates user data collection） |
 | 代码混淆 | ❌ 检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ❌ 存在风险 |
@@ -65,49 +65,44 @@ title: "解除网络限制：.io游戏模型 、广告链接绕过器、广告�
 ### 发现的问题
 
 **⛔ CRITICAL** — Remote Code Execution  
-> Script uses XMLHttpRequest to fetch external code and executes it via a[a][a](x.responseText), which is equivalent to eval(). This allows remote code execution from arbitrary URLs.  
+> The script uses XMLHttpRequest to fetch and execute remote code via a[a][a](x.responseText), which is equivalent to eval(). This is a critical remote code execution vulnerability.  
 > 位置：Utils.loadModule function  
-> 建议：Remove dynamic code loading and execution. Only load trusted, version-pinned libraries via @require.
+> 建议：Avoid executing remote code. Only use static, trusted code. Remove or strictly validate any dynamic code execution.
 
-**⛔ CRITICAL** — Remote Code Execution  
-> Script uses eval()-like construct (a[a][a]) to execute fetched code, which is highly dangerous.  
-> 位置：Utils.loadModule function  
-> 建议：Avoid eval and similar constructs. Use static code only.
+**⛔ CRITICAL** — Privacy Collection  
+> The script stores a unique user identifier (UUID) in persistent storage (GM.setValue('id', uuidv4())) and increments a usage counter. This is a privacy risk, especially if these values are ever transmitted externally.  
+> 位置：Anonymous async IIFE near top of script  
+> 建议：Do not generate or store persistent unique identifiers unless absolutely necessary and with user consent.
 
-**⛔ CRITICAL** — Data Exfiltration  
-> Script makes network requests to third-party server (ksw2-moomoo.glitch.me) and potentially other arbitrary URLs via loadModule.  
-> 位置：GM_getTab usage and Utils.loadModule  
-> 建议：Restrict network requests to trusted domains and avoid sending user data.
-
-**🔴 HIGH** — Permission Abuse  
-> Script grants unsafeWindow, which exposes privileged script context to the page and increases risk of privilege escalation.  
-> 位置：Metadata @grant unsafeWindow  
-> 建议：Remove unsafeWindow unless absolutely necessary.
+**⛔ CRITICAL** — Privacy Collection  
+> The script contains an @antifeature Tracking declaration, indicating some tracking for performance debugging. This may involve user data collection.  
+> 位置：@antifeature metadata  
+> 建议：Disclose all tracking behaviors and provide opt-out mechanisms.
 
 **🔴 HIGH** — Code Obfuscation  
-> Script uses a highly obfuscated eval pattern (a[a][a]) and indirect code execution.  
+> The script uses a[a][a](x.responseText), which is an obfuscated way to call eval(). This is a strong indicator of code obfuscation and possible malicious intent.  
 > 位置：Utils.loadModule function  
-> 建议：Remove obfuscation and indirect code execution.
+> 建议：Remove obfuscated code and use clear, readable code. Avoid using eval or similar constructs.
 
 **🔴 HIGH** — DOM XSS  
-> Script manipulates innerHTML and removes elements, but does not sanitize user input. Potential DOM XSS risk.  
-> 位置：Utils.deleteElement, watchAndDelete  
-> 建议：Sanitize all user input before inserting into DOM.
-
-**🟠 MEDIUM** — Supply Chain Risk  
-> Script loads third-party libraries via @require from greasyfork.org and code.jquery.com, but also from greasyfork.org user scripts (scijs from ksw2-center) which may not be official or version-pinned.  
-> 位置：Metadata @require  
-> 建议：Pin versions and only use official, trusted sources for dependencies.
+> Potential DOM XSS: The script uses innerHTML/outerHTML in some modules (not fully visible in provided code), and the use of dynamic code execution increases XSS risk.  
+> 位置：General code structure and dynamic code execution  
+> 建议：Sanitize all user input and avoid inserting untrusted data into the DOM using innerHTML/outerHTML.
 
 **🟠 MEDIUM** — Permission Abuse  
-> Script grants multiple GM_* permissions (GM_getTabs, GM_getTab, GM_saveTab) which may not be used securely.  
-> 位置：Metadata @grant  
-> 建议：Minimize granted permissions to only those required.
+> The script requests and uses high-privilege grants such as unsafeWindow and GM_getTabs/GM_saveTab, which can be abused for privilege escalation or cross-tab tracking.  
+> 位置：@grant metadata  
+> 建议：Request only the minimum necessary permissions. Remove unused or high-risk grants.
 
-**🟡 LOW** — Privacy Collection  
-> Script listens for keyboard events and disables space bar scrolling on .io sites. No evidence of keylogger behavior, but potential for privacy abuse if extended.  
-> 位置：isIo block  
-> 建议：Do not collect or transmit keyboard input.
+**🟠 MEDIUM** — Supply Chain Risk  
+> @require loads third-party scripts from greasyfork.org and code.jquery.com, but does not pin versions with hashes. This introduces supply chain risk if these scripts are compromised.  
+> 位置：@require metadata  
+> 建议：Pin dependencies to specific versions and use trusted, official sources. Prefer SRI hashes if possible.
+
+**🟠 MEDIUM** — Privacy Collection  
+> The script creates a unique tab ID and saves it via GM_saveTab, which could be used for cross-tab tracking.  
+> 位置：ksw2-moomoo.glitch.me handler  
+> 建议：Avoid tracking users across tabs unless necessary and with user consent.
 
 ---
 

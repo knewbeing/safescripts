@@ -10,105 +10,54 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "Script defines server endpoints (duolingopro.net, api.duolingopro.net) and references server-side processing for XP, gems, and other features. This strongly suggests user data or actions are transmitted to third-party servers.",
-      "location": "Global variables and feature descriptions",
-      "recommendation": "Review all network requests and ensure no sensitive user data is transmitted. Avoid sending cookies, authentication tokens, or personal information to third-party servers.",
+      "description": "The script defines server endpoints (https://www.duolingopro.net, https://api.duolingopro.net) and contains UI text referencing feedback submission, XP/gem requests, and server-side processing. This strongly suggests network requests and user data transmission to third-party servers, but the code is incomplete and does not show the actual network request implementation. The intent and endpoints are clear, so this is a critical risk.",
+      "location": "Global scope, variables and UI text",
+      "recommendation": "Remove or fully disclose all network requests and data sent. Only communicate with trusted, official endpoints. Inform users about all data transmissions.",
       "severity": "CRITICAL",
       "type": "Data Exfiltration"
     },
     {
-      "description": "Script reads document.cookie to extract language settings. While not directly exfiltrated in the visible code, this is a privacy-sensitive operation.",
+      "description": "The script reads document.cookie to extract the 'lang' value, which may include sensitive user information if other cookies are present. This is a privacy risk, especially if combined with network transmission.",
       "location": "let systemLanguage = document.cookie.split('; ').find(row => row.startsWith('lang=')).split('=')[1];",
-      "recommendation": "Do not read cookies unless strictly necessary. Ensure no sensitive cookies (e.g., session/auth tokens) are accessed or transmitted.",
+      "recommendation": "Avoid reading cookies unless absolutely necessary. Never transmit cookie values to third-party servers.",
       "severity": "CRITICAL",
       "type": "Privacy Collection"
     },
     {
-      "description": "Script references server-side processing for 'instant results powered by server-side processing' and 'auto-solved lessons', implying possible transmission of user actions or progress to external servers.",
-      "location": "systemText.en[61]",
-      "recommendation": "Clarify what data is sent to external servers. Avoid sending user progress, answers, or authentication data.",
-      "severity": "CRITICAL",
-      "type": "Data Exfiltration"
+      "description": "The script is not minified or obfuscated, but the code is incomplete. If the rest of the script contains eval, new Function, or dynamic script loading, there could be remote code execution risk. The presence of server endpoints and references to 'server-side processing' increases this risk, but cannot be confirmed with the provided code.",
+      "location": "N/A (incomplete code)",
+      "recommendation": "Review the full script for eval, new Function, or dynamic script loading. Avoid executing remote code unless integrity is verifiable.",
+      "severity": "HIGH",
+      "type": "Remote Code Execution (Potential)"
     },
     {
-      "description": "Script uses navigator.language and Intl.Locale to determine region, which is a minor fingerprinting vector.",
-      "location": "const region = new Intl.Locale(navigator.language).maximize().region;",
-      "recommendation": "Avoid collecting browser locale or fingerprinting information unless necessary.",
-      "severity": "MEDIUM",
-      "type": "Privacy Collection"
-    },
-    {
-      "description": "Script uses crypto.getRandomValues for duplicate detection marker, which is not a security issue but may be used for tracking if combined with network requests.",
-      "location": "const random16Numbers = Array.from(crypto.getRandomValues(new Uint8Array(16)), b => (b % 10)).join('');",
-      "recommendation": "Ensure random markers are not used for user tracking or sent to external servers.",
+      "description": "The script requests only GM_log permission, which is appropriate. No excessive permissions detected in metadata.",
+      "location": "// @grant GM_log",
+      "recommendation": "Continue to request only necessary permissions.",
       "severity": "LOW",
-      "type": "Privacy Collection"
+      "type": "Permission Usage"
     },
     {
-      "description": "No evidence of eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection in the visible code.",
-      "location": "Full script up to provided cutoff",
-      "recommendation": "Avoid dynamic code execution. If used elsewhere, review carefully.",
-      "severity": "HIGH",
-      "type": "Remote Code Execution"
-    },
-    {
-      "description": "No evidence of code obfuscation, base64 decoding, or unicode string mangling in the visible code.",
-      "location": "Full script up to provided cutoff",
-      "recommendation": "Keep code readable and avoid obfuscation.",
-      "severity": "HIGH",
-      "type": "Code Obfuscation"
-    },
-    {
-      "description": "No evidence of DOM XSS or unsafe innerHTML/outerHTML usage in the visible code.",
-      "location": "Full script up to provided cutoff",
-      "recommendation": "Sanitize all user input before inserting into DOM.",
-      "severity": "HIGH",
-      "type": "DOM XSS"
-    },
-    {
-      "description": "Script only requests GM_log permission, which is minimal and not abused.",
-      "location": "@grant GM_log",
-      "recommendation": "Do not request unnecessary permissions.",
-      "severity": "LOW",
-      "type": "Permission Abuse"
-    },
-    {
-      "description": "No evidence of sensitive API usage (geolocation, RTCPeerConnection, MediaDevices, Clipboard, Notification) in the visible code.",
-      "location": "Full script up to provided cutoff",
-      "recommendation": "Avoid using sensitive APIs unless strictly necessary.",
-      "severity": "MEDIUM",
-      "type": "Sensitive API Usage"
-    },
-    {
-      "description": "No @require third-party libraries or supply chain risk in metadata.",
-      "location": "Metadata block",
-      "recommendation": "If using external libraries, ensure they are from trusted sources and version-pinned.",
+      "description": "The script uses @downloadURL and @updateURL pointing to greasyfork.org, which is a trusted source. However, the main server endpoints for API and UI are custom domains (duolingopro.net), which may pose supply chain risks if those endpoints are compromised.",
+      "location": "// @downloadURL ... // @updateURL ... serverURL/apiURL variables",
+      "recommendation": "Ensure all third-party code and endpoints are trustworthy and use subresource integrity or version pinning where possible.",
       "severity": "MEDIUM",
       "type": "Supply Chain Risk"
-    },
-    {
-      "description": "No evidence of clickjacking or iframe manipulation in the visible code.",
-      "location": "Full script up to provided cutoff",
-      "recommendation": "Do not create hidden iframes or modify frame protection.",
-      "severity": "LOW",
-      "type": "ClickJacking"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "Reads document.cookie for language setting",
-      "Uses navigator.language and Intl.Locale for region detection",
-      "Uses crypto.getRandomValues for duplicate detection marker"
+      "Reads document.cookie for 'lang' value"
     ],
     "detected": true
   },
   "risk_level": "CRITICAL",
   "script_name": "Duolingo PRO",
-  "security_score": 25,
-  "summary": "Duolingo PRO script transmits data to third-party servers (duolingopro.net, api.duolingopro.net), reads cookies, and references server-side processing for user actions. These behaviors pose critical risks of data exfiltration and privacy violation. No evidence of code obfuscation, remote code execution, DOM XSS, or supply chain risk in the visible code. Permission usage is minimal. The script is NOT approved for safe use.",
-  "supply_chain_risk": false,
+  "security_score": 50,
+  "summary": "This script presents critical security and privacy risks. It defines and likely uses third-party endpoints (duolingopro.net, api.duolingopro.net) for network communication, which may transmit user data or perform actions on behalf of the user. It reads cookies, which may contain sensitive information. The script's intent to automate Duolingo actions and submit feedback implies further data collection and transmission. The code is not obfuscated, and permissions are minimal, but the supply chain risk remains due to reliance on custom endpoints. The script is NOT approved for safe use.",
+  "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-15T07:20:20.483055+00:00",
+  "analyzed_at": "2026-06-22T07:25:06.808866+00:00",
   "slug": "Duolingo_PRO"
 }

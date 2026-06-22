@@ -1,0 +1,53 @@
+{
+  "slug": "github-enhancement-suite",
+  "platform": "github",
+  "source_url": "https://raw.githubusercontent.com/collinstevens/github-enhancement-suite/9c50b2baba4628235df0b94d605db2f0989ea2f1/github-enhancement-suite.user.js",
+  "source_repo": "collinstevens/github-enhancement-suite",
+  "raw_url": "https://raw.githubusercontent.com/collinstevens/github-enhancement-suite/9c50b2baba4628235df0b94d605db2f0989ea2f1/github-enhancement-suite.user.js",
+  "filename": "github-enhancement-suite.user.js",
+  "name": "GitHub Enhancement Suite",
+  "version": "1.0",
+  "description": "enhancements for GitHub",
+  "match": [
+    "https://*.github.com/*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  GitHub Enhancement Suite\n// @namespace  http://tampermonkey.net/\n// @version  1.0\n// @description  enhancements for GitHub\n// @author  https://github.com/collinstevens\n// @match  https://*.github.com/*\n// @run-at  document-start\n// @grant  none\n// @updateURL  https://raw.githubusercontent.com/collinstevens/github-enhancement-suite/master/github-enhancement-suite.user.js\n// @downloadURL  https://raw.githubusercontent.com/collinstevens/github-enhancement-suite/master/github-enhancement-suite.user.js",
+  "sha256": "85b533f88ee2389c678a0b5eb44f339bb9564081111ad7e88c4d85acd808f66d",
+  "discovered_at": "2026-06-22T07:13:03.207526+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": null,
+  "good_ratings": null,
+  "bad_ratings": null,
+  "summary": {
+    "applicable_sites": [
+      "GitHub"
+    ],
+    "description": "本脚本为 GitHub 网站提供增强功能，主要针对拉取请求（Pull Requests）列表页面。它允许用户快速筛选草稿和非草稿的拉取请求，并记忆上次筛选状态，提升管理和浏览效率。",
+    "permissions": [
+      {
+        "explanation": "脚本无需额外权限，仅在页面内操作。",
+        "grant": "none"
+      }
+    ],
+    "tags": [
+      "GitHub",
+      "拉取请求",
+      "草稿筛选",
+      "效率提升",
+      "页面增强"
+    ],
+    "usage": [
+      "安装脚本后，访问 GitHub 的拉取请求列表页面。",
+      "页面顶部会出现筛选按钮，可选择显示全部、草稿或非草稿拉取请求。",
+      "选择后，页面会自动刷新并应用筛选条件。",
+      "脚本会记住你的筛选偏好，下次访问自动应用。"
+    ],
+    "zh_name": "GitHub增强套件"
+  }
+}

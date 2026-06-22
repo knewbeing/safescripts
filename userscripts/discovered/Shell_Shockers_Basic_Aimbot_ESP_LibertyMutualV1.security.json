@@ -7,17 +7,24 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "申请了 unsafeWindows 权限，但实际代码仅用于访问 unsafeWindow 对象，没有进一步滥用或敏感操作。",
+      "description": "@grant 申请了 unsafeWindows 权限，但实际代码仅用于访问 unsafeWindow，没有进一步高危操作。",
       "location": "元数据 @grant",
-      "recommendation": "仅申请必要权限，避免高权限滥用。",
+      "recommendation": "如无必要，建议移除 unsafeWindows 权限，或限制其使用范围。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "@require 加载了 babylonjs 和 crypto-js，均为官方 CDN 且固定版本，供应链风险较低。",
+      "description": "脚本通过 HTMLElement.prototype.appendChild 和 HTMLScriptElement.prototype.textContent 劫持，修改页面脚本内容，属于远程代码注入风险。",
+      "location": "核心逻辑（appendChild/textContent 劫持）",
+      "recommendation": "仅在完全信任的页面使用此类脚本。避免在敏感站点运行。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "@require 加载了 babylonjs 和 crypto-js，均为官方 CDN，babylonjs 版本已锁定，crypto-js 版本已锁定，供应链风险较低。",
       "location": "元数据 @require",
-      "recommendation": "持续关注第三方库安全，避免加载未知来源或未固定版本。",
-      "severity": "MEDIUM",
+      "recommendation": "持续关注依赖库安全公告，确保 CDN 未被污染。",
+      "severity": "LOW",
       "type": "供应链风险"
     }
   ],
@@ -29,9 +36,9 @@
   "risk_level": "LOW",
   "script_name": "Shell Shockers Basic Aimbot + ESP: LibertyMutualV1",
   "security_score": 89,
-  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 或 WebSocket 使用。@require 加载的第三方库来源可信且版本固定，权限申请合理但存在不必要的高权限（unsafeWindows）。整体安全风险较低，建议持续关注第三方库安全和权限申请。",
+  "summary": "该脚本未检测到数据外传、隐私采集、WebSocket 使用或代码混淆。主要风险为通过原型链劫持实现的远程代码注入（HIGH），以及申请了不常用的 unsafeWindows 权限（MEDIUM）。依赖库来源可信，未发现明显供应链风险。整体安全风险较低，但建议仅在信任环境下使用。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-15T07:27:04.188027+00:00",
+  "analyzed_at": "2026-06-22T07:35:32.877429+00:00",
   "slug": "Shell_Shockers_Basic_Aimbot_ESP_LibertyMutualV1"
 }

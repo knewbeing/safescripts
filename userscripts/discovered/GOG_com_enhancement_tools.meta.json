@@ -1,0 +1,53 @@
+{
+  "slug": "GOG_com_enhancement_tools",
+  "platform": "github",
+  "source_url": "https://raw.githubusercontent.com/mmarcincin/userscripts/c70bfec8a55f6a48f24c169d0dcd3ffec120835d/GOG.com%20enhancement%20tools.user.js",
+  "source_repo": "mmarcincin/userscripts",
+  "raw_url": "https://raw.githubusercontent.com/mmarcincin/userscripts/c70bfec8a55f6a48f24c169d0dcd3ffec120835d/GOG.com%20enhancement%20tools.user.js",
+  "filename": "GOG_com_enhancement_tools.user.js",
+  "name": "GOG.com enhancement tools",
+  "version": "0.0.1",
+  "description": "library export based on sorting + compact view",
+  "match": [
+    "https://www.gog.com/account*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  GOG.com enhancement tools\n// @description  library export based on sorting + compact view\n// @version  0.0.1\n// @author  https://github.com/mmarcincin/userscripts\n// @namespace  https://github.com/mmarcincin/userscripts\n// @include  https://www.gog.com/account*\n// @grant  none",
+  "sha256": "de6942bda054c04468f60f0a6812caae4254cb73a81e00c411d5bfe10b50fff9",
+  "discovered_at": "2026-06-22T07:13:24.965397+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": null,
+  "good_ratings": null,
+  "bad_ratings": null,
+  "summary": {
+    "applicable_sites": [
+      "GOG游戏平台"
+    ],
+    "description": "此脚本为GOG.com账户页面提供增强功能，包括根据排序导出游戏库列表，以及切换紧凑视图，方便用户管理和备份自己的游戏库。",
+    "permissions": [
+      {
+        "explanation": "脚本无需特殊权限，仅操作页面内容。",
+        "grant": "none"
+      }
+    ],
+    "tags": [
+      "游戏库管理",
+      "数据导出",
+      "页面增强",
+      "GOG",
+      "视图优化"
+    ],
+    "usage": [
+      "安装脚本后，访问GOG.com的账户页面。",
+      "页面会新增一个“Create gamelist”按钮和文本框。",
+      "点击按钮即可生成当前排序下的游戏列表，并显示在文本框中。",
+      "可复制文本框内容进行备份或分享。"
+    ],
+    "zh_name": "GOG增强工具"
+  }
+}

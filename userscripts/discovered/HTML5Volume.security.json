@@ -5,85 +5,20 @@
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [
-    {
-      "description": "申请了 GM_openInTab 权限，但仅用于打开反馈页面（github/greasyfork），无敏感数据传递。",
-      "location": "GM_openInTab 调用",
-      "recommendation": "确认无敏感数据传递，建议仅申请必要权限。",
-      "severity": "MEDIUM",
-      "type": "权限滥用"
-    },
-    {
-      "description": "脚本通过 GM_getValue/GM_setValue 和 localStorage 存储音量设置，无敏感数据采集行为。",
-      "location": "GM_getValue, GM_setValue, localStorage",
-      "recommendation": "确认仅存储音量相关数据，避免存储敏感信息。",
-      "severity": "LOW",
-      "type": "隐私采集"
-    },
-    {
-      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等动态代码执行方式。",
-      "location": "全局代码",
-      "recommendation": "保持无远程代码执行风险。",
-      "severity": "LOW",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "未检测到任何网络请求、WebSocket、fetch、GM_xmlhttpRequest 等数据外传行为。",
-      "location": "全局代码",
-      "recommendation": "保持无数据外传风险。",
-      "severity": "CRITICAL",
-      "type": "数据外传"
-    },
-    {
-      "description": "未检测到代码混淆、base64、字符串数组映射、unicode混淆等。",
-      "location": "全局代码",
-      "recommendation": "保持代码可读性。",
-      "severity": "LOW",
-      "type": "代码混淆"
-    },
-    {
-      "description": "未检测到 DOM XSS 或注入风险，未直接插入用户输入到 innerHTML/outerHTML。",
-      "location": "全局代码",
-      "recommendation": "保持安全的 DOM 操作。",
-      "severity": "LOW",
-      "type": "DOM XSS"
-    },
-    {
-      "description": "未检测到敏感 API 调用（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification 除 GM_notification）。",
-      "location": "全局代码",
-      "recommendation": "保持无敏感 API 滥用。",
-      "severity": "LOW",
-      "type": "敏感 API"
-    },
-    {
-      "description": "未检测到供应链风险，未使用 @require 加载第三方库。",
-      "location": "元数据",
-      "recommendation": "保持无供应链风险。",
-      "severity": "LOW",
-      "type": "供应链风险"
-    },
-    {
-      "description": "未检测到 ClickJacking 或 iframe 风险，未修改 frame 保护策略或创建隐藏 iframe。",
-      "location": "全局代码",
-      "recommendation": "保持无 iframe 风险。",
-      "severity": "LOW",
-      "type": "ClickJacking/iframe"
-    }
-  ],
+  "issues": [],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "localStorage: html5_xiu_currentVolume",
-      "GM_getValue/GM_setValue: menu_defaultVolume, menu_forcedToEnable"
+      "localStorage: 仅用于存储和读取当前网站音量，无敏感信息"
     ],
     "detected": false
   },
   "risk_level": "SAFE",
   "script_name": "HTML5 Video Audio Default Volume",
-  "security_score": 92,
-  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 调用、供应链风险或 iframe 风险。唯一中等风险为 GM_openInTab 权限申请，但实际用途安全。整体安全性高，适合公开使用。",
+  "security_score": 100,
+  "summary": "该脚本仅用于设置和记忆 HTML5 视频/音频的默认音量。未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用、供应链风险或 iframe 风险。所有存储操作仅限于 localStorage 和 GM_* API，且仅用于音量设置。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-15T07:23:40.294558+00:00",
+  "analyzed_at": "2026-06-22T07:30:21.579590+00:00",
   "slug": "HTML5Volume"
 }

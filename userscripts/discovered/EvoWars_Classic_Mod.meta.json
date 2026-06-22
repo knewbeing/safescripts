@@ -1,0 +1,54 @@
+{
+  "slug": "EvoWars_Classic_Mod",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/583519-evowars-classic-mod",
+  "source_repo": "583519",
+  "raw_url": "https://update.greasyfork.org/scripts/583519/EvoWars%20Classic%20Mod.user.js",
+  "filename": "EvoWars_Classic_Mod.user.js",
+  "name": "EvoWars Classic Mod",
+  "version": "2026-06-19_v25.3",
+  "description": "Advanced sandbox engine tool with unrestricted closeness thresholds, standalone bot size scaling, and distinct animation state overriding loops.",
+  "match": [
+    "https://evowars.io/*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  EvoWars Classic Mod\n// @namespace  http://tampermonkey.net/\n// @version  2026-06-19_v25.3\n// @description  Advanced sandbox engine tool with unrestricted closeness thresholds, standalone bot size scaling, and distinct animation state overriding loops.\n// @author  KILLER & Assistant\n// @match  https://evowars.io/*\n// @grant  none\n// @downloadURL  https://update.greasyfork.org/scripts/583519/EvoWars%20Classic%20Mod.user.js\n// @updateURL  https://update.greasyfork.org/scripts/583519/EvoWars%20Classic%20Mod.meta.js",
+  "sha256": "602c50707d6983ee75857aba8ceb44d76f76a36c5285f69a96880bc6b670f375",
+  "discovered_at": "2026-06-22T07:15:56.906670+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 128,
+  "good_ratings": 0,
+  "bad_ratings": 0,
+  "summary": {
+    "applicable_sites": [
+      "EvoWars.io"
+    ],
+    "description": "本脚本为 EvoWars.io 游戏提供高级沙盒工具，允许玩家调整机器人靠近距离、独立设置机器人大小，并可切换不同动画状态。通过界面面板，用户可自定义游戏体验，增强操作和视觉效果。",
+    "permissions": [
+      {
+        "explanation": "脚本不需要额外权限，仅在页面内运行。",
+        "grant": "none"
+      }
+    ],
+    "tags": [
+      "游戏辅助",
+      "EvoWars.io",
+      "沙盒工具",
+      "机器人控制",
+      "动画切换",
+      "界面增强"
+    ],
+    "usage": [
+      "安装脚本后，进入 EvoWars.io 网站。",
+      "页面左上角会出现一个可移动的控制面板。",
+      "在面板中调整机器人距离、大小和动画状态。",
+      "设置完成后，游戏体验将根据你的选择进行优化。"
+    ],
+    "zh_name": "EvoWars经典增强版"
+  }
+}
