@@ -661,5 +661,38 @@
       "ok": true
     },
     "issues": []
+  },
+  {
+    "run_id": "28353006179",
+    "run_number": 32,
+    "timestamp": "2026-06-29T07:04:09.344324+00:00",
+    "success": true,
+    "managed": {
+      "total": 13,
+      "with_security": 13,
+      "risk": {
+        "MEDIUM": 2,
+        "SAFE": 8,
+        "CRITICAL": 1,
+        "HIGH": 1,
+        "LOW": 1
+      }
+    },
+    "discovered": {
+      "total": 152,
+      "with_security": 114,
+      "risk": {
+        "LOW": 36,
+        "SAFE": 39,
+        "MEDIUM": 15,
+        "HIGH": 11,
+        "CRITICAL": 13
+      }
+    },
+    "pages": {
+      "status": 200,
+      "ok": true
+    },
+    "issues": []
   }
 ]

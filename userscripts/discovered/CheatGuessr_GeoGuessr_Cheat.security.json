@@ -1,5 +1,5 @@
 {
-  "approved": false,
+  "approved": true,
   "data_transmission": {
     "destinations": [
       "https://nominatim.openstreetmap.org"
@@ -9,54 +9,47 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script sends latitude and longitude coordinates to the public OpenStreetMap Nominatim API to reverse geocode the location. This is a third-party server and may receive user-derived location data.",
-      "location": "fetchLocationDetails() function (fetch to https://nominatim.openstreetmap.org)",
-      "recommendation": "Warn users about third-party data transmission. Consider making this feature optional or allow users to use their own API endpoint.",
+      "description": "The script sends latitude and longitude coordinates to the public OpenStreetMap Nominatim API to reverse geocode the location. This is a third-party server, but the data sent is not user-identifiable or sensitive (just coordinates).",
+      "location": "fetchLocationDetails() function",
+      "recommendation": "Warn users that their coordinates are sent to a third-party service. Consider making this optional or allowing users to use their own API endpoint.",
       "severity": "CRITICAL",
-      "type": "Data Exfiltration"
+      "type": "Data Transmission"
     },
     {
-      "description": "The script stores user settings in localStorage, which is accessible by any script running on the same domain. While not directly exfiltrated, this is a privacy consideration.",
-      "location": "loadSettings() and saveSettings() functions (localStorage usage)",
-      "recommendation": "Consider using GM_setValue/GM_getValue for more isolated storage, or clearly document the privacy model.",
+      "description": "The script reads and writes to localStorage for saving user settings.",
+      "location": "loadSettings(), saveSettings()",
+      "recommendation": "No sensitive data is stored; this is a standard practice. No action needed.",
       "severity": "MEDIUM",
       "type": "Privacy Collection"
     },
     {
-      "description": "The script requests the GM_webRequest permission, but does not use it in the code. Unused high-privilege permissions increase attack surface.",
-      "location": "@grant GM_webRequest in metadata",
-      "recommendation": "Remove unused permissions from @grant to minimize risk.",
+      "description": "The script monkey-patches XMLHttpRequest.prototype.open to intercept requests to Google Maps APIs. This is a powerful technique but does not exfiltrate data.",
+      "location": "XMLHttpRequest.prototype.open override",
+      "recommendation": "Ensure this does not break other site functionality. No data is sent externally.",
+      "severity": "MEDIUM",
+      "type": "Sensitive API Usage"
+    },
+    {
+      "description": "The script requests the GM_webRequest permission, but does not use any GM_* APIs in the code provided.",
+      "location": "@grant GM_webRequest",
+      "recommendation": "Remove unused permissions to reduce attack surface.",
       "severity": "MEDIUM",
       "type": "Permission Abuse"
-    },
-    {
-      "description": "The script monkey-patches XMLHttpRequest.prototype.open to intercept requests. While not directly dangerous here, this is a high-risk pattern that can lead to breakage or security issues if misused.",
-      "location": "XMLHttpRequest.prototype.open override",
-      "recommendation": "Limit monkey-patching to only what is necessary and document the rationale. Monitor for compatibility issues.",
-      "severity": "HIGH",
-      "type": "Remote Code Execution Risk"
-    },
-    {
-      "description": "The script dynamically creates and injects HTML for the settings modal using innerHTML. However, no user input is inserted into the DOM without escaping, so XSS risk is low in this context.",
-      "location": "toggleSettingsModal() function (modal.innerHTML assignment)",
-      "recommendation": "If user input is ever inserted, sanitize it before using innerHTML.",
-      "severity": "LOW",
-      "type": "DOM XSS Risk"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "localStorage: stores user settings"
+      "Reads/writes localStorage for settings"
     ],
     "detected": true
   },
-  "risk_level": "HIGH",
+  "risk_level": "MEDIUM",
   "script_name": "CheatGuessr | GeoGuessr Cheat",
-  "security_score": 52,
-  "summary": "This script transmits user location data to a third-party (OpenStreetMap Nominatim) for reverse geocoding, which is a critical privacy risk. It also requests an unused high-privilege permission (GM_webRequest), and monkey-patches XMLHttpRequest, which is a high-risk pattern. There is no evidence of code obfuscation or DOM XSS, but localStorage is used for settings. The overall risk is HIGH and the script is NOT approved for use in sensitive environments.",
+  "security_score": 67,
+  "summary": "The script does not contain malicious code, obfuscation, or dangerous remote code execution. It does send coordinates to a third-party API (OpenStreetMap Nominatim) for reverse geocoding, which is a privacy consideration but not a direct leak of user-identifiable data. There is no evidence of keylogging, cookie access, or supply chain risk. The script requests an unused GM_webRequest permission, which should be removed. Overall, the script is relatively safe for its intended purpose, but users should be aware of the coordinate data transmission.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-22T07:21:55.350155+00:00",
+  "analyzed_at": "2026-06-29T06:38:36.421509+00:00",
   "slug": "CheatGuessr_GeoGuessr_Cheat"
 }

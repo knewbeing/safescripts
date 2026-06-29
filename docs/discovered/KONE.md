@@ -45,14 +45,14 @@ title: "KONE增强工具"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：64/100　　**分析时间**：2026-06-22
+**风险等级**：🟠 MEDIUM　　**安全评分**：67/100　　**分析时间**：2026-06-29
 
-> KONE + 脚本整体安全性较高，未发现代码混淆、远程代码执行、DOM XSS、权限滥用、敏感 API 滥用等高危问题。主要风险在于允许向任意域名发起 GM_xmlhttpRequest 网络请求（@connect *），理论上存在数据外传隐患，但实际代码未发现敏感数据外传。建议限制 @connect 范围并定期复查网络请求逻辑。密码自动填充功能涉及用户密码存储，建议加密存储并提醒用户风险。
+> KONE + 脚本功能丰富，主要用于 kone.gg 及相关网盘的解码、产品卡片展示、链接健康检查和密码自动填充。代码结构清晰，无混淆和远程代码执行风险。主要安全隐患为 @connect * 带来的数据外传和权限滥用风险，建议收紧 @connect 域名范围。未发现 DOM XSS、代码混淆、远程代码执行等高危问题。密码等敏感信息仅本地存储，未发现外传行为。
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：dlsite.com, store.steampowered.com, kio.ac） |
-| 隐私采集 | ✅ 未检测到 |
+| 隐私采集 | ❌ 检测到（本地存储和读取用户设置和密码列表） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -61,49 +61,19 @@ title: "KONE增强工具"
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本允许向任意域名（@connect *）发起 GM_xmlhttpRequest 网络请求，理论上可外传数据，但实际代码中仅用于站点健康检测和产品卡片功能，未发现敏感数据外传。  
-> 位置：元数据 @connect, GM_xmlhttpRequest 使用  
-> 建议：限制 @connect 范围，避免 *，并定期复查请求内容。
+> 脚本通过 GM_xmlhttpRequest 访问第三方域名（如 dlsite.com、store.steampowered.com、kio.ac、kiosk.ac 及任意域名 *），用于产品卡片、链接健康检查等功能。虽然用途明确，但存在潜在的数据外传风险，尤其是 @connect * 允许任意域名。  
+> 位置：GM_xmlhttpRequest 调用及 @connect * 元数据  
+> 建议：限制 @connect 范围，避免 *，仅允许必要的可信域名。确保请求不携带敏感用户数据。
 
 **🟠 MEDIUM** — 隐私采集  
-> 脚本读取和存储用户设置、密码列表等信息到 GM_getValue/GM_setValue，未发现读取 cookie、localStorage、sessionStorage、IndexedDB、表单字段、剪贴板等敏感隐私数据。  
-> 位置：GM_getValue/GM_setValue, getPwList/savePwList  
-> 建议：确保仅存储必要信息，避免存储明文密码。
+> 脚本使用 GM_getValue/GM_setValue 存储和读取用户设置及密码列表（pwList），但未发现将这些数据外传到第三方服务器。  
+> 位置：GM_getValue/GM_setValue 相关代码  
+> 建议：确保密码等敏感信息仅本地存储，避免通过网络请求发送。
 
-**🟡 LOW** — 远程代码执行  
-> 脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等动态代码执行方式，也未通过 @require 或动态 script 标签加载远程 JS。  
-> 位置：全局  
-> 建议：保持此安全实践。
-
-**🟡 LOW** — 代码混淆  
-> 脚本未发现明显的代码混淆、base64解码执行、字符串数组混淆或高度压缩单行代码。  
-> 位置：全局  
-> 建议：保持代码可读性，便于安全审计。
-
-**🟡 LOW** — DOM XSS  
-> 脚本未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未见 document.write() 注入不可信内容。  
-> 位置：全局  
-> 建议：继续避免 DOM XSS 风险。
-
-**🟡 LOW** — 权限滥用  
-> 脚本申请了 GM_xmlhttpRequest、GM_registerMenuCommand、GM_unregisterMenuCommand、GM_getValue、GM_setValue 权限，均有实际使用，无权限滥用。  
-> 位置：元数据 @grant  
-> 建议：仅申请实际需要的权限。
-
-**🟡 LOW** — 敏感 API 调用  
-> 未发现使用 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API 等敏感 API。  
-> 位置：全局  
-> 建议：如需使用敏感 API，需明确告知用户。
-
-**🟡 LOW** — 供应链风险  
-> 未使用 @require 加载第三方库，无供应链风险。  
-> 位置：元数据 @require  
-> 建议：如需引入第三方库，建议使用可信 CDN 并锁定版本。
-
-**🟡 LOW** — ClickJacking/iframe  
-> 未发现修改 frame 保护策略或创建隐藏 iframe 用于数据提取。  
-> 位置：全局  
-> 建议：继续避免 ClickJacking/iframe 风险。
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 GM_xmlhttpRequest、GM_registerMenuCommand、GM_unregisterMenuCommand、GM_getValue、GM_setValue 权限，均有实际使用，但 @connect * 权限过宽，存在权限滥用风险。  
+> 位置：@grant/@connect 元数据  
+> 建议：收紧 @connect 权限范围，避免滥用。
 
 ---
 

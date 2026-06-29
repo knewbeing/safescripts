@@ -49,14 +49,14 @@ title: "点击助手（Bloxd.io 游戏专用）"
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：75/100　　**分析时间**：2026-06-22
+**风险等级**：🟠 MEDIUM　　**安全评分**：67/100　　**分析时间**：2026-06-29
 
-> 该脚本未检测到任何数据外传、远程代码执行、代码混淆、DOM XSS 或供应链风险。主要的隐私风险在于脚本会读取和写入 localStorage，并在某些操作下清除 localStorage 和 cookie，但未发现数据被外传。未申请任何 @grant 权限，未检测到 WebSocket、敏感 API 调用或 iframe 风险。整体风险为中等，建议关注 localStorage 和 cookie 的操作。
+> 该脚本未检测到任何数据外传、远程代码执行、代码混淆或 DOM XSS 风险。主要的隐私风险在于对 localStorage 的读写和对 cookie/localStorage 的清空操作，可能影响用户隐私和会话。未检测到权限滥用、供应链风险或 WebSocket 使用。整体安全性为中等，建议关注本地数据操作的范围和影响。
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ✅ 未检测到 |
-| 隐私采集 | ❌ 检测到（读取 localStorage 项 clickHelper-keybinds 和 clickHelper-settings, 清除 localStorage 和 cookie） |
+| 隐私采集 | ❌ 检测到（localStorage 读写（用于设置和按键绑定）） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -65,14 +65,29 @@ title: "点击助手（Bloxd.io 游戏专用）"
 ### 发现的问题
 
 **⛔ CRITICAL** — 隐私采集  
-> 脚本通过 localStorage 读取和写入用户设置和按键绑定。  
+> 脚本读取和写入 localStorage，用于保存和加载用户设置和按键绑定。  
 > 位置：StorageManager.loadBinds, StorageManager.loadSettings, StorageManager.saveBinds, StorageManager.saveSettings  
-> 建议：仅存储必要的设置，不要存储敏感信息。
+> 建议：仅保存必要的非敏感设置，避免存储敏感信息。
 
-**⛔ CRITICAL** — 隐私采集  
-> 脚本会清除所有 localStorage 和 cookie（AccountModule.clearAndReload），但未发现外传。  
+**🟠 MEDIUM** — 敏感 API 调用  
+> 脚本清除所有 document.cookie 和 localStorage 内容（AccountModule.clearAndReload），可能导致用户会话丢失。  
 > 位置：AccountModule.clearAndReload  
-> 建议：确保不会将敏感信息外传。
+> 建议：仅清除自身产生的数据，避免影响用户其他站点数据。
+
+**🟡 LOW** — 数据外传  
+> 未检测到任何网络请求、远程代码加载或数据外传行为。  
+> 位置：全局  
+> 建议：保持此状态，切勿添加外传逻辑。
+
+**🟡 LOW** — 远程代码执行/混淆  
+> 未检测到代码混淆、eval、new Function、setTimeout(string)等动态代码执行。  
+> 位置：全局  
+> 建议：保持此状态，切勿引入动态代码执行。
+
+**🟡 LOW** — DOM XSS  
+> 未检测到 DOM XSS 风险（未发现用户输入直接插入 innerHTML/outerHTML）。  
+> 位置：全局  
+> 建议：保持此状态，插入 DOM 时始终进行转义。
 
 ---
 

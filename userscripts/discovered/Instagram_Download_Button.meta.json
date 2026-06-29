@@ -1,0 +1,54 @@
+{
+  "slug": "Instagram_Download_Button",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/406535-instagram-download-button",
+  "source_repo": "406535",
+  "raw_url": "https://update.greasyfork.org/scripts/406535/Instagram%20Download%20Button.user.js",
+  "filename": "Instagram_Download_Button.user.js",
+  "name": "Instagram Download Button",
+  "version": "1.17.18",
+  "description": "Add the download button and the open button to download or open profile picture and media in the posts, stories, and highlights in Instagram",
+  "match": [
+    "https://www.instagram.com/*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Instagram Download Button\n// @name:zh-TW  Instagram 下載器\n// @name:zh-CN  Instagram 下载器\n// @name:ja  Instagram ダウンローダー\n// @name:ko  Instagram 다운로더\n// @name:es  Descargador de Instagram\n// @name:fr  Téléchargeur Instagram\n// @name:hi  इंस्टाग्राम डाउनलोडर\n// @name:ru  Загрузчик Instagram\n// @namespace  https://github.com/y252328/Instagram_Download_Button\n// @version  1.17.18\n// @compatible  chrome\n// @description  Add the download button and the open button to download or open profile picture and media in the posts, stories, and highlights in Instagram\n// @description:zh-TW  在Instagram頁面加入下載按鈕與開啟按鈕，透過這些按鈕可以下載或開啟大頭貼與貼文、限時動態、Highlight中的照片或影片\n// @description:zh-CN  在Instagram页面加入下载按钮与开启按钮，透过这些按钮可以下载或开启大头贴与贴文、限时动态、Highlight中的照片或影片\n// @description:ja  メディアをダウンロードまたは開くためのボタンを追加します\n// @description:ko  미디어를 다운로드하거나 여는 버튼을 추가합니다\n// @description:es  Agregue botones para descargar o abrir medios\n// @description:fr  Ajoutez des boutons pour télécharger ou ouvrir des médias\n// @description:hi  मीडिया को डाउनलोड या खोलने के लिए बटन जोड़ें।\n// @description:ru  Добавьте кнопки для загрузки или открытия медиа\n// @author  ZhiYu\n// @match  https://www.instagram.com/*\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=instagram.com\n// @grant  none\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/406535/Instagram%20Download%20Button.user.js\n// @updateURL  https://update.greasyfork.org/scripts/406535/Instagram%20Download%20Button.meta.js",
+  "sha256": "a868448f2f268d12286fac1c343ea8d991c30dc4784e94b40df27319f8855348",
+  "discovered_at": "2026-06-29T06:33:19.240021+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 166443,
+  "good_ratings": 253,
+  "bad_ratings": 18,
+  "summary": {
+    "applicable_sites": [
+      "Instagram"
+    ],
+    "description": "本脚本会在Instagram页面添加下载和开启按钮，用户可以通过这些按钮下载或打开大头贴、帖子、限时动态和Highlight中的照片或视频。操作简单，无需额外工具即可保存喜欢的内容。",
+    "permissions": [
+      {
+        "explanation": "脚本无需特殊权限，所有功能都在网页内实现。",
+        "grant": "none"
+      }
+    ],
+    "tags": [
+      "下载",
+      "图片视频保存",
+      "Instagram",
+      "社交媒体",
+      "增强功能",
+      "便捷操作"
+    ],
+    "usage": [
+      "安装脚本后，打开Instagram网站。",
+      "浏览帖子、限时动态或个人主页。",
+      "在图片或视频旁会出现下载和开启按钮。",
+      "点击按钮即可下载或打开对应的媒体内容。"
+    ],
+    "zh_name": "Instagram 下载器"
+  }
+}

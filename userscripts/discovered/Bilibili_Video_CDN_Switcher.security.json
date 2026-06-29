@@ -5,40 +5,18 @@
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [
-    {
-      "description": "申请了 GM_getValue、GM_setValue、unsafeWindow 权限，但仅用于存储自定义 CDN 配置和访问页面全局对象，未发现高危滥用。",
-      "location": "@grant 元数据与主逻辑",
-      "recommendation": "仅保留实际需要的权限，避免未来扩展滥用。",
-      "severity": "MEDIUM",
-      "type": "权限滥用"
-    },
-    {
-      "description": "脚本会拦截 XMLHttpRequest 和 fetch，但仅在本地修改响应内容（CDN 域名），未向第三方服务器发送数据。",
-      "location": "interceptNetResponse 函数",
-      "recommendation": "确保后续版本不添加外传逻辑。",
-      "severity": "LOW",
-      "type": "网络请求拦截"
-    },
-    {
-      "description": "未发现 @require 加载第三方库，供应链风险较低。",
-      "location": "元数据区",
-      "recommendation": "如需引入第三方库，建议使用官方 CDN 并锁定版本。",
-      "severity": "LOW",
-      "type": "供应链风险"
-    }
-  ],
+  "issues": [],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
     "detected": false
   },
-  "risk_level": "LOW",
+  "risk_level": "SAFE",
   "script_name": "Bilibili Video CDN Switcher",
-  "security_score": 89,
-  "summary": "该脚本主要通过拦截 Bilibili 播放接口的响应并本地修改 CDN 域名以加速视频加载。未发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。权限申请合理但建议精简。整体安全风险较低。",
+  "security_score": 100,
+  "summary": "该脚本主要通过拦截和修改 Bilibili 视频播放相关的 API 响应，将视频 CDN 域名替换为用户自定义或预设的 CDN，以加速视频加载。未发现任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。代码结构清晰，无安全隐患。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-22T07:21:01.703007+00:00",
+  "analyzed_at": "2026-06-29T06:37:46.173128+00:00",
   "slug": "Bilibili_Video_CDN_Switcher"
 }

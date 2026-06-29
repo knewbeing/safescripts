@@ -7,67 +7,25 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本申请了 @grant unsafeWindow 权限，但实际代码中仅用于与页面通信和全局变量注入，未发现直接滥用，但该权限风险较高。",
-      "location": "@grant unsafeWindow",
-      "recommendation": "如非必要，建议移除 unsafeWindow 权限，或限制其使用范围。",
+      "description": "脚本申请了 @grant unsafeWindow 权限，允许脚本以更高权限操作页面环境，可能被滥用。",
+      "location": "元数据 @grant",
+      "recommendation": "仅在确有必要时申请 unsafeWindow，建议最小化权限。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
       "description": "脚本会弹出 alert，可能影响用户体验，但无安全风险。",
-      "location": "alert(\"SISTEMA MATRIX CARGADO ...\");",
-      "recommendation": "可考虑改为非阻塞通知。",
+      "location": "alert 调用",
+      "recommendation": "可考虑改为更温和的通知方式。",
       "severity": "LOW",
       "type": "用户体验"
     },
     {
-      "description": "脚本通过 WebAssembly hook 方式访问游戏内存，属于高权限操作，但未发现外传行为。",
-      "location": "WebAssembly.instantiate hook",
-      "recommendation": "确保 hook 仅用于本地分析，不要外传敏感数据。",
+      "description": "脚本会劫持 WebAssembly.instantiate 和 WebAssembly.instantiateStreaming，捕获 WASM 内存，属于高权限操作，可能被滥用分析游戏内存。",
+      "location": "WebAssembly.instantiate 重写",
+      "recommendation": "仅在确有必要时使用，避免泄露敏感信息。",
       "severity": "MEDIUM",
       "type": "敏感 API 调用"
-    },
-    {
-      "description": "脚本未发现任何网络请求、数据外传、统计或追踪行为。",
-      "location": "全局",
-      "recommendation": "无。",
-      "severity": "LOW",
-      "type": "数据外传"
-    },
-    {
-      "description": "脚本未发现 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险。",
-      "location": "全局",
-      "recommendation": "无。",
-      "severity": "LOW",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "脚本未发现代码混淆、base64 解码、字符串数组映射或高度压缩单行代码。",
-      "location": "全局",
-      "recommendation": "无。",
-      "severity": "LOW",
-      "type": "代码混淆"
-    },
-    {
-      "description": "脚本未发现 DOM XSS、用户输入插入 innerHTML/outerHTML、document.write 等注入风险。",
-      "location": "全局",
-      "recommendation": "无。",
-      "severity": "LOW",
-      "type": "DOM XSS"
-    },
-    {
-      "description": "脚本未发现隐私采集行为（如读取 cookie、localStorage、剪贴板、监听键盘输入等）。",
-      "location": "全局",
-      "recommendation": "无。",
-      "severity": "LOW",
-      "type": "隐私采集"
-    },
-    {
-      "description": "脚本未通过 @require 加载第三方库，无供应链风险。",
-      "location": "元数据",
-      "recommendation": "无。",
-      "severity": "LOW",
-      "type": "供应链风险"
     }
   ],
   "obfuscation_detected": false,
@@ -75,12 +33,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "LOW",
+  "risk_level": "MEDIUM",
   "script_name": "Deadshot.io aimbot - CODIGO REAL (MATRIX RGB EDITION) - DRAGGABLE & MULTILANG",
-  "security_score": 92,
-  "summary": "该脚本主要用于 Deadshot.io 游戏的辅助功能（AIMBOT/ESP/CHAMS），未发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险等高危行为。唯一中等风险为申请了 unsafeWindow 权限和 WebAssembly hook 行为，但未被滥用。整体安全风险较低，但因功能本身涉及游戏作弊，建议仅在信任环境下使用。",
+  "security_score": 84,
+  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险等高危行为。主要风险为申请了 unsafeWindow 高权限和劫持 WebAssembly 相关 API，属于中等风险。未发现网络请求、WebSocket、敏感数据读取、第三方依赖等问题。整体安全性中等，建议关注权限最小化和高权限 API 的合理使用。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-22T07:24:13.444918+00:00",
+  "analyzed_at": "2026-06-29T06:40:36.719309+00:00",
   "slug": "Deadshotio_aimbot_-_CODIGO_REAL_MATRIX_RGB_EDITION_-_DRAGGABLE_MULTILANG"
 }

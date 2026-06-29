@@ -14,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "GLP Enhancement Suite",
   "security_score": 100,
-  "summary": "该脚本仅涉及页面样式和本地配置存储，无任何网络请求、隐私数据采集、远程代码执行、混淆、XSS、权限滥用或供应链风险。安全性极高。",
+  "summary": "该脚本主要用于界面美化和功能增强，没有检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用或供应链风险。仅使用了 GM_addStyle、GM_getValue、GM_setValue 权限，未申请高危权限。未发现任何安全隐患。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-22T07:28:43.908614+00:00",
+  "analyzed_at": "2026-06-29T06:45:05.706490+00:00",
   "slug": "GLP_Enhancement_Suite"
 }

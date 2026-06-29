@@ -5,30 +5,30 @@
       "psyyke.github.io",
       "localhost"
     ],
-    "detected": true
+    "detected": false
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "@require 加载的第三方库（LegacyGMjs.js, CommLinkjs.js, UniversalBoardDrawerjs.js）均来自 update.greasyfork.org，非官方 CDN，且未锁定具体版本哈希，存在供应链污染风险。",
-      "location": "元数据 @require 字段",
-      "recommendation": "建议使用官方 CDN 或固定版本哈希，确保依赖安全。",
-      "severity": "MEDIUM",
-      "type": "供应链风险"
+      "description": "The script uses @grant unsafeWindow, which exposes privileged script context to the page and can be abused if not handled carefully.",
+      "location": "Metadata block (@grant unsafeWindow)",
+      "recommendation": "Remove unsafeWindow unless strictly necessary. If used, ensure all interactions are strictly controlled and sanitized.",
+      "severity": "HIGH",
+      "type": "Privilege Escalation"
     },
     {
-      "description": "脚本申请了 GM_openInTab、GM_setClipboard、GM_notification、unsafeWindow 等高权限，但主代码未见实际使用，存在权限滥用风险。",
-      "location": "元数据 @grant 字段",
-      "recommendation": "仅申请实际需要的权限，移除未使用的高权限。",
+      "description": "The script requests GM_openInTab and GM.openInTab permissions, which can be abused to open arbitrary tabs.",
+      "location": "Metadata block (@grant GM_openInTab, GM.openInTab)",
+      "recommendation": "Remove these permissions if not strictly required, or ensure their use is limited to user-initiated actions.",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "Permission Overprovision"
     },
     {
-      "description": "脚本通过 GM_setValue/GM_getValue 存储和读取 currentBackendURL，可能间接影响后续网络请求目标。",
-      "location": "主代码",
-      "recommendation": "确保存储内容不可被外部恶意代码注入或污染。",
-      "severity": "LOW",
-      "type": "数据完整性风险"
+      "description": "The script uses @require to load three external scripts from update.greasyfork.org. These URLs are not version-pinned with a hash and could be replaced upstream, introducing supply chain risk.",
+      "location": "Metadata block (@require ...)",
+      "recommendation": "Pin @require URLs to a specific version or hash, and only use trusted sources.",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
     }
   ],
   "obfuscation_detected": false,
@@ -37,11 +37,11 @@
     "detected": false
   },
   "risk_level": "MEDIUM",
-  "script_name": "🏆 [#1 Chess Assistant] A.C.A.S (Advanced Chess Assistance System)",
-  "security_score": 84,
-  "summary": "该脚本主要通过 GreasyFork CDN 加载第三方依赖，并与 psyyke.github.io 或 localhost 进行数据交互。未发现明显的数据外传、隐私采集、远程代码执行或混淆行为。主要风险为供应链依赖未锁定版本和权限滥用。建议加强依赖管理和权限最小化。",
+  "script_name": "\u001f🏆 [#1 Chess Assistant] A.C.A.S (Advanced Chess Assistance System)",
+  "security_score": 77,
+  "summary": "The script does not directly transmit user data to third-party servers, nor does it collect sensitive information or use obfuscation. However, it requests high-privilege grants (unsafeWindow, GM_openInTab) and loads external dependencies without version pinning, introducing supply chain and privilege escalation risks. No DOM XSS, privacy collection, or WebSocket usage detected in the provided code. Review of the required external scripts is necessary for a complete assessment.",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-22T07:18:21.819170+00:00",
+  "analyzed_at": "2026-06-29T06:35:14.176569+00:00",
   "slug": "1_Chess_Assistant_ACAS_Advanced_Chess_Assistance_System"
 }

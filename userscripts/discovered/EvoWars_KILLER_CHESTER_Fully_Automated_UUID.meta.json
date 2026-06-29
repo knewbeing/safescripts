@@ -1,0 +1,54 @@
+{
+  "slug": "EvoWars_KILLER_CHESTER_Fully_Automated_UUID",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/583957-evowars-killer-chester-fully-automated-uuid",
+  "source_repo": "583957",
+  "raw_url": "https://update.greasyfork.org/scripts/583957/EvoWars%20KILLER%20CHESTER%20%28Fully%20Automated%20UUID%29.user.js",
+  "filename": "EvoWars_KILLER_CHESTER_Fully_Automated_UUID.user.js",
+  "name": "EvoWars KILLER CHESTER (Fully Automated UUID)",
+  "version": "3.0",
+  "description": "Automated controls with automatic behavioral simulation modeling and transparent user UUID interception.",
+  "match": [
+    "https://evowars.io/*",
+    "https://master.evo.pixelhorns.com/*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  EvoWars KILLER CHESTER (Fully Automated UUID)\n// @namespace  http://tampermonkey.net/\n// @version  3.0\n// @description  Automated controls with automatic behavioral simulation modeling and transparent user UUID interception.\n// @author  KILLER & Assistant\n// @match  https://evowars.io/*\n// @match  https://master.evo.pixelhorns.com/*\n// @grant  none\n// @downloadURL  https://update.greasyfork.org/scripts/583957/EvoWars%20KILLER%20CHESTER%20%28Fully%20Automated%20UUID%29.user.js\n// @updateURL  https://update.greasyfork.org/scripts/583957/EvoWars%20KILLER%20CHESTER%20%28Fully%20Automated%20UUID%29.meta.js",
+  "sha256": "1158436d83b30cda7704bea6798b448df977fd76cc713618a6bef4ebbf3cb815",
+  "discovered_at": "2026-06-29T06:34:26.868294+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 293,
+  "good_ratings": 0,
+  "bad_ratings": 0,
+  "summary": {
+    "applicable_sites": [
+      "EvoWars.io",
+      "EvoWars（像素角斗士）"
+    ],
+    "description": "此脚本为 EvoWars 游戏提供全自动操作，包括自动模拟玩家行为和自动获取用户UUID。安装后可自动执行游戏内的开箱、购买和进化操作，无需手动点击。",
+    "permissions": [
+      {
+        "explanation": "脚本无需额外权限，仅在网页内运行。",
+        "grant": "none"
+      }
+    ],
+    "tags": [
+      "游戏辅助",
+      "自动化",
+      "模拟操作",
+      "UUID拦截",
+      "进化升级"
+    ],
+    "usage": [
+      "安装脚本后，进入 EvoWars.io 或 master.evo.pixelhorns.com。",
+      "脚本会自动模拟玩家操作，包括开箱、购买和进化。",
+      "无需手动操作，脚本会自动获取并显示你的UUID。"
+    ],
+    "zh_name": "EvoWars全自动助手"
+  }
+}

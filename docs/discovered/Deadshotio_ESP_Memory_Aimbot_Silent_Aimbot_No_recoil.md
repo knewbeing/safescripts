@@ -30,9 +30,9 @@ title: "Deadshot.io ESP & Memory Aimbot & Silent Aimbot & No recoil"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：0/100　　**分析时间**：2026-06-22
+**风险等级**：⛔ CRITICAL　　**安全评分**：0/100　　**分析时间**：2026-06-29
 
-> This UserScript presents a critical security risk. It dynamically fetches and executes remote JavaScript code using eval(), granting the remote server full control over the user's browser context. This exposes users to arbitrary code execution, data theft, and other severe threats. The use of high-privilege permissions and unpinned remote code further increases the risk. This script should NOT be approved or used in any secure environment.
+> 该脚本存在极高安全风险：1) 动态拉取并 eval 执行第三方服务器代码，属于远程代码执行高危行为，远程代码可随时被更换为恶意内容；2) 访问非官方第三方域名，存在数据外传和供应链攻击风险；3) 申请了高权限（unsafeWindow、GM_xmlhttpRequest）。强烈不建议安装和使用本脚本。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -46,24 +46,34 @@ title: "Deadshot.io ESP & Memory Aimbot & Silent Aimbot & No recoil"
 ### 发现的问题
 
 **⛔ CRITICAL** — Remote Code Execution  
-> The script fetches and executes remote JavaScript code from https://deadshot-cheat.netlify.app/index.js at runtime using eval(). This is a critical remote code execution risk, as the remote code can be changed at any time and executed with full user privileges.  
-> 位置：fetchAndCacheCode() and patchImports() functions  
-> 建议：Avoid dynamic code execution from remote sources. Bundle all code with the script and avoid eval(). If remote code is necessary, use integrity checks and fixed versions.
+> 脚本通过 GM_xmlhttpRequest 每次加载时从 https://deadshot-cheat.netlify.app/index.js 拉取远程 JS 代码，并 eval 执行，属于远程代码执行高危行为。远程代码可随时被更换，存在极高后门、恶意代码注入、供应链攻击风险。  
+> 位置：GM_xmlhttpRequest + eval(customCode) 组合  
+> 建议：禁止从不可信第三方动态拉取并 eval 执行代码。应将所有逻辑本地化，或仅允许可信 CDN 且固定版本哈希。
 
-**🔴 HIGH** — Dynamic Code Execution  
-> The script uses eval() to execute arbitrary code loaded from a remote server. This is a high-severity security risk.  
-> 位置：patchImports() function: (0, eval)(customCode);  
-> 建议：Do not use eval() on untrusted or remote code. Refactor to avoid eval() entirely.
+**⛔ CRITICAL** — Remote Code Execution  
+> 脚本使用 eval 执行远程拉取的代码，属于远程代码执行高危行为。  
+> 位置：eval(customCode)  
+> 建议：严禁 eval 执行远程代码。
 
-**🟠 MEDIUM** — Permission Overuse  
-> The script requests GM_xmlhttpRequest and unsafeWindow permissions, which are high-privilege and can be abused if the script or remote code is compromised.  
-> 位置：UserScript metadata  
-> 建议：Minimize permissions to only those required. Avoid unsafeWindow and GM_xmlhttpRequest unless absolutely necessary.
+**⛔ CRITICAL** — Data Exfiltration  
+> 脚本通过 GM_xmlhttpRequest 主动访问第三方服务器 deadshot-cheat.netlify.app，可能外传用户信息（如 Cookie、指纹、页面信息等），且该域名非官方、无信誉保障。  
+> 位置：GM_xmlhttpRequest  
+> 建议：仅允许访问可信、官方服务器。避免向第三方域名发送任何用户相关数据。
+
+**🔴 HIGH** — Permission Abuse  
+> 脚本申请了 unsafeWindow 高权限，允许与页面 JS 互操作，增加攻击面。  
+> 位置：@grant unsafeWindow  
+> 建议：如无必要，禁止申请 unsafeWindow 权限。
+
+**🟠 MEDIUM** — Permission Abuse  
+> 脚本通过 @grant 申请了 GM_xmlhttpRequest、GM_setValue、GM_getValue 等高权限，部分权限未严格限制用途，存在滥用风险。  
+> 位置：@grant GM_xmlhttpRequest, GM_setValue, GM_getValue  
+> 建议：仅申请实际需要的最小权限。
 
 **🟠 MEDIUM** — Supply Chain Risk  
-> The script loads remote code from a non-official domain (deadshot-cheat.netlify.app) without version pinning or integrity verification, introducing supply chain risk.  
-> 位置：CUSTOM_SCRIPT_URL and fetchAndCacheCode()  
-> 建议：Only load code from trusted, official sources with version pinning and integrity checks.
+> 脚本通过 @require 未加载任何第三方库，但通过远程拉取 index.js 动态执行，存在严重供应链风险。该域名为 netlify.app，非官方、无版本锁定，极易被篡改。  
+> 位置：GM_xmlhttpRequest + eval(customCode)  
+> 建议：禁止从非官方、无版本锁定的第三方域名加载代码。
 
 ---
 

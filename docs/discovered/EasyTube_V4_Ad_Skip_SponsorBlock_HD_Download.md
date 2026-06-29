@@ -36,9 +36,9 @@ title: "EasyTube V4 — 广告跳过、SponsorBlock 和 HD 下载器（无卡顿
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：64/100　　**分析时间**：2026-06-22
+**风险等级**：🟡 LOW　　**安全评分**：67/100　　**分析时间**：2026-06-29
 
-> The script is generally safe and well-structured. It communicates with two third-party APIs (SponsorBlock and a video download service) but does not transmit sensitive user data or cookies. No evidence of privacy-invasive behavior, remote code execution, code obfuscation, or DOM XSS risk. Permissions are appropriate for the features provided. The main risks are standard for this type of functionality: third-party API trust and potential supply chain issues. Overall, the script is suitable for use by privacy-conscious users.
+> The script is generally safe and well-structured. It communicates with two third-party APIs (SponsorBlock and a video download service) but does not transmit sensitive user data or cookies. No evidence of privacy-invasive behavior, code obfuscation, DOM XSS, or remote code execution. Permissions are appropriate for the features provided. Supply chain risk is present due to reliance on external APIs. Overall, the script is low risk for most users.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -52,24 +52,24 @@ title: "EasyTube V4 — 广告跳过、SponsorBlock 和 HD 下载器（无卡顿
 ### 发现的问题
 
 **⛔ CRITICAL** — Data Transmission  
-> The script uses GM_xmlhttpRequest to communicate with sponsor.ajay.app (SponsorBlock API) and evdfrance.fr (video download). These are third-party servers. However, only video IDs and category selections are sent, not sensitive user data or cookies.  
-> 位置：SponsorBlock integration and download feature (CFG.sbApi, evdfrance.fr)  
-> 建议：Document clearly in the script description which data is sent to third-party APIs. Monitor for any future changes that may expand data scope.
+> The script uses GM_xmlhttpRequest to communicate with sponsor.ajay.app (SponsorBlock API) and evdfrance.fr (video download). These are third-party servers. However, only video IDs and segment categories are sent to SponsorBlock, and download requests are user-initiated. No evidence of sensitive user data or cookies being sent.  
+> 位置：API calls in SponsorBlock and download logic  
+> 建议：Ensure only necessary data (video IDs, categories) are sent. Do not transmit cookies or user-identifiable data.
 
-**🟠 MEDIUM** — Supply Chain Risk  
-> The script connects to two third-party domains (sponsor.ajay.app and evdfrance.fr). Both are well-known in the context of SponsorBlock and video downloading, but supply chain risk exists if these domains are compromised.  
-> 位置：@connect section  
-> 建议：Monitor the reputation and security of these third-party services.
+**⛔ CRITICAL** — Privacy Collection  
+> The script stores and retrieves user settings (ad skip, SponsorBlock, quality) using GM_setValue/GM_getValue. No evidence of sensitive data collection (cookies, form fields, clipboard, etc).  
+> 位置：Settings logic  
+> 建议：Continue to avoid collecting sensitive user data.
 
-**🟡 LOW** — Privacy Collection  
-> The script stores user settings (ad skip, SponsorBlock, quality) using GM_setValue/GM_getValue. No sensitive data is stored.  
-> 位置：GM_setValue / GM_getValue usage  
-> 建议：No action needed. Do not store sensitive information in local storage.
+**🟠 MEDIUM** — Permission Usage  
+> The script requests GM_xmlhttpRequest permission, which is necessary for SponsorBlock and download features. No evidence of unused high-privilege grants.  
+> 位置：Metadata block  
+> 建议：Limit @grant permissions to only those required.
 
-**🟡 LOW** — Permission Usage  
-> The script requests GM_xmlhttpRequest permission, which is necessary for SponsorBlock and download features, but does not request excessive permissions.  
-> 位置：@grant section  
-> 建议：Keep permissions minimal and only request what is necessary.
+**🟠 MEDIUM** — Supply Chain  
+> The script connects to two third-party domains (sponsor.ajay.app, evdfrance.fr). Both are well-known in the context of SponsorBlock and video downloading, but supply chain risk exists if these endpoints are compromised.  
+> 位置：@connect metadata  
+> 建议：Monitor the reputation and security of these endpoints.
 
 ---
 

@@ -30,14 +30,14 @@ title: "CheatGuessr | GeoGuessr Cheat"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：52/100　　**分析时间**：2026-06-22
+**风险等级**：🟠 MEDIUM　　**安全评分**：67/100　　**分析时间**：2026-06-29
 
-> This script transmits user location data to a third-party (OpenStreetMap Nominatim) for reverse geocoding, which is a critical privacy risk. It also requests an unused high-privilege permission (GM_webRequest), and monkey-patches XMLHttpRequest, which is a high-risk pattern. There is no evidence of code obfuscation or DOM XSS, but localStorage is used for settings. The overall risk is HIGH and the script is NOT approved for use in sensitive environments.
+> The script does not contain malicious code, obfuscation, or dangerous remote code execution. It does send coordinates to a third-party API (OpenStreetMap Nominatim) for reverse geocoding, which is a privacy consideration but not a direct leak of user-identifiable data. There is no evidence of keylogging, cookie access, or supply chain risk. The script requests an unused GM_webRequest permission, which should be removed. Overall, the script is relatively safe for its intended purpose, but users should be aware of the coordinate data transmission.
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：https://nominatim.openstreetmap.org） |
-| 隐私采集 | ❌ 检测到（localStorage: stores user settings） |
+| 隐私采集 | ❌ 检测到（Reads/writes localStorage for settings） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -45,30 +45,25 @@ title: "CheatGuessr | GeoGuessr Cheat"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Exfiltration  
-> The script sends latitude and longitude coordinates to the public OpenStreetMap Nominatim API to reverse geocode the location. This is a third-party server and may receive user-derived location data.  
-> 位置：fetchLocationDetails() function (fetch to https://nominatim.openstreetmap.org)  
-> 建议：Warn users about third-party data transmission. Consider making this feature optional or allow users to use their own API endpoint.
-
-**🔴 HIGH** — Remote Code Execution Risk  
-> The script monkey-patches XMLHttpRequest.prototype.open to intercept requests. While not directly dangerous here, this is a high-risk pattern that can lead to breakage or security issues if misused.  
-> 位置：XMLHttpRequest.prototype.open override  
-> 建议：Limit monkey-patching to only what is necessary and document the rationale. Monitor for compatibility issues.
+**⛔ CRITICAL** — Data Transmission  
+> The script sends latitude and longitude coordinates to the public OpenStreetMap Nominatim API to reverse geocode the location. This is a third-party server, but the data sent is not user-identifiable or sensitive (just coordinates).  
+> 位置：fetchLocationDetails() function  
+> 建议：Warn users that their coordinates are sent to a third-party service. Consider making this optional or allowing users to use their own API endpoint.
 
 **🟠 MEDIUM** — Privacy Collection  
-> The script stores user settings in localStorage, which is accessible by any script running on the same domain. While not directly exfiltrated, this is a privacy consideration.  
-> 位置：loadSettings() and saveSettings() functions (localStorage usage)  
-> 建议：Consider using GM_setValue/GM_getValue for more isolated storage, or clearly document the privacy model.
+> The script reads and writes to localStorage for saving user settings.  
+> 位置：loadSettings(), saveSettings()  
+> 建议：No sensitive data is stored; this is a standard practice. No action needed.
+
+**🟠 MEDIUM** — Sensitive API Usage  
+> The script monkey-patches XMLHttpRequest.prototype.open to intercept requests to Google Maps APIs. This is a powerful technique but does not exfiltrate data.  
+> 位置：XMLHttpRequest.prototype.open override  
+> 建议：Ensure this does not break other site functionality. No data is sent externally.
 
 **🟠 MEDIUM** — Permission Abuse  
-> The script requests the GM_webRequest permission, but does not use it in the code. Unused high-privilege permissions increase attack surface.  
-> 位置：@grant GM_webRequest in metadata  
-> 建议：Remove unused permissions from @grant to minimize risk.
-
-**🟡 LOW** — DOM XSS Risk  
-> The script dynamically creates and injects HTML for the settings modal using innerHTML. However, no user input is inserted into the DOM without escaping, so XSS risk is low in this context.  
-> 位置：toggleSettingsModal() function (modal.innerHTML assignment)  
-> 建议：If user input is ever inserted, sanitize it before using innerHTML.
+> The script requests the GM_webRequest permission, but does not use any GM_* APIs in the code provided.  
+> 位置：@grant GM_webRequest  
+> 建议：Remove unused permissions to reduce attack surface.
 
 ---
 

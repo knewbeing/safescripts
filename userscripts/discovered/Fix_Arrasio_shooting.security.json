@@ -2,18 +2,18 @@
   "approved": true,
   "data_transmission": {
     "destinations": [
-      "arras.io (original WebSocket endpoint, with modified query params)"
+      "arras.io (original WebSocket endpoint, with modified query parameters)"
     ],
     "detected": false
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script overrides the global WebSocket constructor to inject custom query parameters into the WebSocket URL. This could potentially interfere with other scripts or site functionality if not carefully scoped.",
-      "location": "Global WebSocket override",
-      "recommendation": "Limit the override to only the intended WebSocket connections if possible, and document the behavior.",
-      "severity": "LOW",
-      "type": "WebSocket override"
+      "description": "The script overrides the global WebSocket constructor to modify the connection URL by injecting custom query parameters. This could potentially interfere with the normal operation of the site or other scripts relying on WebSocket, but does not transmit user data to third-party servers.",
+      "location": "Global scope, WebSocket override",
+      "recommendation": "Ensure that the modified WebSocket URL is compatible with the target application and does not introduce unexpected behavior. Avoid overriding global objects unless necessary.",
+      "severity": "MEDIUM",
+      "type": "WebSocket override / global object modification"
     }
   ],
   "obfuscation_detected": false,
@@ -23,10 +23,10 @@
   },
   "risk_level": "LOW",
   "script_name": "Fix Arras.io shooting",
-  "security_score": 97,
-  "summary": "The script does not perform any data exfiltration, privacy-invasive actions, or remote code execution. It only modifies the WebSocket URL used by the site to include additional query parameters. There is no evidence of obfuscation, XSS, or supply chain risk. The only minor concern is the global override of the WebSocket constructor, which is a low risk.",
+  "security_score": 92,
+  "summary": "The script modifies the WebSocket constructor to change the connection URL for arras.io, adding custom query parameters. It does not collect or transmit user data, does not use dangerous APIs, and does not introduce XSS or supply chain risks. The only concern is the global override of WebSocket, which may affect other scripts or site functionality. Overall, the script is considered low risk.",
   "supply_chain_risk": false,
   "websocket_usage": true,
-  "analyzed_at": "2026-06-22T07:28:24.067381+00:00",
+  "analyzed_at": "2026-06-29T06:44:43.916546+00:00",
   "slug": "Fix_Arrasio_shooting"
 }

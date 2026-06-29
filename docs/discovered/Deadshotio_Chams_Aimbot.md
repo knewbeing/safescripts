@@ -33,9 +33,9 @@ title: "Deadshot.io 自动瞄准与高亮"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-22
+**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-06-29
 
-> 该脚本主要实现游戏辅助功能（Aimbot、Chams），未发现数据外传、隐私采集、远程代码执行、混淆、DOM XSS、供应链等高危风险。唯一中等风险为申请了 @grant unsafeWindow 权限但未实际使用，建议移除。整体安全性较高，风险等级为 LOW。
+> 该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。代码结构清晰，未发现安全隐患。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -46,52 +46,7 @@ title: "Deadshot.io 自动瞄准与高亮"
 | DOM XSS 风险 | ✅ 未检测到 |
 | 供应链风险 | ✅ 可信 |
 
-### 发现的问题
-
-**🟠 MEDIUM** — 权限滥用  
-> 申请了 @grant unsafeWindow 权限，但实际代码未见对 unsafeWindow 的直接使用。该权限为高权限，可能被滥用。  
-> 位置：// @grant unsafeWindow  
-> 建议：如无必要，建议移除 @grant unsafeWindow 权限。
-
-**🟡 LOW** — 隐私采集  
-> 脚本通过 Object.defineProperty 劫持 MouseEvent.prototype.movementX/Y，实现自动瞄准（Aimbot），但未见监听键盘输入、表单、剪贴板、Cookie、localStorage、IndexedDB 等隐私采集行为。  
-> 位置：Object.defineProperty(MouseEvent.prototype, ...)  
-> 建议：继续关注后续版本，防止引入隐私采集代码。
-
-**🟡 LOW** — 数据外传  
-> 未发现任何网络请求（fetch、GM_xmlhttpRequest、WebSocket、sendBeacon 等），无数据外传行为。  
-> 位置：全局  
-> 建议：保持此状态，勿引入外传代码。
-
-**🟡 LOW** — 远程代码执行  
-> 未发现 eval、new Function、setTimeout(string)、setInterval(string)、动态 script 标签、@require 远程 JS、document.write 等远程代码执行风险。  
-> 位置：全局  
-> 建议：保持此状态，勿引入动态代码执行。
-
-**🟡 LOW** — 代码混淆  
-> 未发现代码混淆、base64 解码、字符串数组映射、unicode 混淆或高度压缩单行代码。  
-> 位置：全局  
-> 建议：保持代码可读性，防止混淆。
-
-**🟡 LOW** — DOM XSS  
-> 未发现 DOM XSS 风险，未将用户输入或 URL 参数插入 innerHTML/outerHTML。UI 仅插入静态内容。  
-> 位置：createUI()  
-> 建议：如后续插入动态内容，需严格转义。
-
-**🟡 LOW** — 敏感 API  
-> 未发现敏感 API（地理位置、摄像头、麦克风、剪贴板读取、通知等）调用。  
-> 位置：全局  
-> 建议：如无必要，勿引入敏感 API 调用。
-
-**🟡 LOW** — 供应链风险  
-> 未发现 @require 加载第三方库，无供应链风险。  
-> 位置：元数据  
-> 建议：如需依赖第三方库，建议固定版本并使用可信 CDN。
-
-**🟡 LOW** — iframe 风险  
-> 未发现修改 frame 保护策略或创建隐藏 iframe。  
-> 位置：全局  
-> 建议：如无必要，勿操作 iframe。
+### 未发现安全问题 ✅
 
 ---
 

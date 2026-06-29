@@ -8,11 +8,11 @@ title: "Songsterr Plus 解锁补丁"
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/Songsterr_Plus_Patcher.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**1.2.2**　　发现时间：**2026-06-22**　　来源：[GreasyFork](https://greasyfork.org/scripts/500019-songsterr-plus-patcher) <Badge type="tip" text="GreasyFork" />　　安装量：**17,119**　　评分：👍14 / 👎3
+> 版本：**1.2.2**　　发现时间：**2026-06-29**　　来源：[GreasyFork](https://greasyfork.org/scripts/500019-songsterr-plus-patcher) <Badge type="tip" text="GreasyFork" />　　安装量：**17,568**　　评分：👍14 / 👎3
 
 ## 功能介绍
 
-此脚本可以让 Songsterr 网站误认为你拥有 Plus 会员，解锁原本需要付费的高级功能。无需注册或付费即可体验 Plus 会员的部分特权。
+此脚本可让用户在 Songsterr 网站上免费体验 Plus 会员功能，无需付费订阅。通过模拟会员身份，解锁高级功能和内容。
 
 ## 适用网站
 
@@ -20,15 +20,15 @@ title: "Songsterr Plus 解锁补丁"
 
 ## 使用方法
 
-1. 安装脚本后，访问 Songsterr 网站。
-2. 无需额外操作，Plus 会员功能会自动解锁。
-3. 如遇异常弹窗，按提示反馈或禁用脚本。
+1. 安装 Tampermonkey 扩展。
+2. 添加此脚本到 Tampermonkey。
+3. 访问 Songsterr 网站，自动解锁 Plus 功能。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `unsafeWindow` | 允许脚本访问和修改网站的全局变量，实现功能劫持。 |
+| `unsafeWindow` | 允许脚本访问和修改网站的全局窗口对象，以便拦截和伪造会员信息。 |
 
 ## 安全分析
 

@@ -1,75 +1,11 @@
 {
-  "approved": false,
+  "approved": true,
   "data_transmission": {
     "destinations": [],
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [
-    {
-      "description": "脚本未检测到任何网络请求（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource、sendBeacon），未发现数据外传行为。",
-      "location": "全局",
-      "recommendation": "保持此状态，勿添加任何外传代码。",
-      "severity": "CRITICAL",
-      "type": "数据外传检查通过"
-    },
-    {
-      "description": "脚本未检测到任何隐私采集行为（如读取 cookie、localStorage、sessionStorage、IndexedDB、监听键盘输入、读取表单字段、访问指纹 API、读取剪贴板等）。",
-      "location": "全局",
-      "recommendation": "保持此状态，勿添加任何隐私采集代码。",
-      "severity": "CRITICAL",
-      "type": "隐私采集检查通过"
-    },
-    {
-      "description": "脚本未检测到 eval、new Function、setTimeout(string)、setInterval(string)、动态 script 标签、@require 远程 JS、document.write 等远程代码执行风险。",
-      "location": "全局",
-      "recommendation": "保持此状态，勿添加动态代码执行相关代码。",
-      "severity": "HIGH",
-      "type": "远程代码执行检查通过"
-    },
-    {
-      "description": "脚本未检测到代码混淆（无 base64 解码、字符串数组映射、unicode 混淆、高度压缩单行代码等）。",
-      "location": "全局",
-      "recommendation": "保持代码可读性，勿使用混淆。",
-      "severity": "HIGH",
-      "type": "代码混淆检查通过"
-    },
-    {
-      "description": "脚本未检测到 DOM XSS 风险（无用户输入或 URL 参数直接插入 innerHTML/outerHTML，未使用 document.write 插入不可信内容，未操作 iframe src 为 javascript:）。",
-      "location": "全局",
-      "recommendation": "如需插入动态内容，务必进行转义。",
-      "severity": "HIGH",
-      "type": "DOM XSS 检查通过"
-    },
-    {
-      "description": "@grant 设为 none，未申请任何高权限，无权限滥用风险。",
-      "location": "元数据",
-      "recommendation": "如需申请权限，严格最小化。",
-      "severity": "MEDIUM",
-      "type": "权限滥用检查通过"
-    },
-    {
-      "description": "脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。",
-      "location": "全局",
-      "recommendation": "如需调用敏感 API，需征得用户同意。",
-      "severity": "MEDIUM",
-      "type": "敏感 API 检查通过"
-    },
-    {
-      "description": "脚本未通过 @require 加载第三方库，无供应链风险。",
-      "location": "元数据",
-      "recommendation": "如需加载第三方库，务必使用可信源并锁定版本。",
-      "severity": "MEDIUM",
-      "type": "供应链风险检查通过"
-    },
-    {
-      "description": "脚本未检测到修改 frame 保护策略或创建隐藏 iframe 用于数据提取。",
-      "location": "全局",
-      "recommendation": "如需使用 iframe，确保安全用途。",
-      "severity": "LOW",
-      "type": "iframe 风险检查通过"
-    }
-  ],
+  "issues": [],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
@@ -78,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "EvoWars Classic Mod",
   "security_score": 100,
-  "summary": "该 UserScript 代码结构清晰，无任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用、供应链风险或 iframe 风险。未检测到任何安全隐患，安全评分为 100 分。可安全使用。",
+  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。所有功能均为本地 UI 和变量控制，无网络请求、无敏感数据访问，且未申请任何 @grant 权限。代码结构清晰，无混淆和危险注入行为。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-22T07:26:20.516125+00:00",
+  "analyzed_at": "2026-06-29T06:43:25.457022+00:00",
   "slug": "EvoWars_Classic_Mod"
 }

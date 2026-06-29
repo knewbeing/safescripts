@@ -2,55 +2,76 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
-      "discord.com (via Discord Webhook)",
-      "nominatim.openstreetmap.org"
+      "nominatim.openstreetmap.org",
+      "discord.com"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 GM_xmlhttpRequest 向用户自定义的 Discord Webhook（discord.com）发送地理坐标、地址等信息，属于用户数据外传。",
-      "location": "sendToDiscord() 函数",
-      "recommendation": "仅允许本地存储或用户明确同意后外传，或移除该功能。",
-      "severity": "CRITICAL",
-      "type": "数据外传"
-    },
-    {
-      "description": "脚本通过 GM_xmlhttpRequest 向 nominatim.openstreetmap.org 发送地理坐标，获取地址信息。虽然为地图逆地理编码服务，但属于第三方数据外传。",
+      "description": "脚本通过 GM_xmlhttpRequest 发送地理坐标到 nominatim.openstreetmap.org 进行逆地理编码。",
       "location": "_getAddress() 函数",
-      "recommendation": "提示用户并获得同意后再发送，或允许用户自定义服务端点。",
+      "recommendation": "仅允许可信第三方 API，避免发送敏感/用户相关数据。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限，并实际使用于外部数据传输。",
-      "location": "@grant GM_xmlhttpRequest, sendToDiscord, _getAddress",
-      "recommendation": "仅在确有必要时申请高权限，并告知用户用途。",
+      "description": "脚本通过 GM_xmlhttpRequest 发送地理坐标、格式化地址、地图截图等信息到用户配置的 Discord Webhook（discord.com），可能导致用户地理位置外泄。",
+      "location": "sendToDiscord() 函数",
+      "recommendation": "警告用户风险，避免默认启用，限制敏感信息外传。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本读取和存储用户自定义热键、功能开关、Discord Webhook 地址等信息到本地存储（GM_setValue/GM_getValue），并允许用户输入 Discord Webhook。",
+      "location": "GM_setValue/GM_getValue 调用",
+      "recommendation": "敏感信息应加密存储，提示用户风险。",
+      "severity": "MEDIUM",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本申请了 GM_xmlhttpRequest 权限并声明 @connect discord.com，允许向 Discord 发送任意数据。",
+      "location": "@grant/@connect 元数据",
+      "recommendation": "仅申请必要权限，限制外部通信。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "脚本申请了 @connect discord.com 和 nominatim.openstreetmap.org，允许任意向这些域名发起跨域请求。",
-      "location": "@connect 元数据",
-      "recommendation": "仅在确有必要时申请，且应限制为最小权限。",
+      "description": "脚本未检测到代码混淆，但部分功能如平台适配、热键处理等代码较为复杂。",
+      "location": "全局",
+      "recommendation": "保持代码可读性，便于安全审计。",
+      "severity": "LOW",
+      "type": "代码混淆"
+    },
+    {
+      "description": "脚本未检测到 DOM XSS 或直接插入用户输入到 innerHTML/outerHTML。",
+      "location": "全局",
+      "recommendation": "继续保持安全的 DOM 操作。",
+      "severity": "LOW",
+      "type": "DOM XSS"
+    },
+    {
+      "description": "脚本未检测到通过 @require 加载第三方库，但依赖外部 API（nominatim.openstreetmap.org）。",
+      "location": "@require/@connect",
+      "recommendation": "确保外部 API 可信，避免供应链风险。",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "供应链风险"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "收集地理坐标（lat, lng）并外传"
+      "存储用户热键、功能开关、Discord Webhook 地址"
     ],
     "detected": true
   },
   "risk_level": "CRITICAL",
   "script_name": "CheatGuessr Universal (Works in GeoGuessr | OpenGuessr | WorldGuessr | FreeGuessr)",
-  "security_score": 50,
-  "summary": "该脚本存在严重的数据外传和隐私收集风险。它会将用户当前的地理坐标和逆地理编码后的地址通过 Discord Webhook 主动外传到 discord.com，并将坐标发送到 nominatim.openstreetmap.org 进行地址解析。虽然部分功能需用户主动触发，但依然属于高风险行为。未发现远程代码执行、代码混淆或 DOM XSS 风险。建议仅在完全信任脚本作者和明确知情的情况下使用。",
-  "supply_chain_risk": false,
+  "security_score": 42,
+  "summary": "该脚本存在严重的数据外传风险：会将用户当前地理坐标通过 Discord Webhook 主动外传到 discord.com，且默认启用。脚本还会访问 nominatim.openstreetmap.org 进行逆地理编码。虽然未检测到代码混淆、远程代码执行或 DOM XSS，但涉及敏感地理信息的外传，属于高危行为。建议仅在完全信任的环境下使用，并警告用户相关风险。",
+  "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-22T07:22:52.704608+00:00",
+  "analyzed_at": "2026-06-29T06:39:35.124499+00:00",
   "slug": "CheatGuessr_Universal_Works_in_GeoGuessr_OpenGuessr_WorldGuessr_FreeGuessr"
 }

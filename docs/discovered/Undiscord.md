@@ -4,11 +4,11 @@ title: "批量删除Discord消息"
 
 # 批量删除Discord消息
 
-`批量删除`  `聊天管理`  `Discord`  `消息清理`  `隐私保护`
+`批量删除`  `消息管理`  `Discord`  `聊天清理`  `自动化`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/Undiscord.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**5.2.6**　　发现时间：**2026-06-22**　　来源：[GreasyFork](https://greasyfork.org/scripts/406540-undiscord) <Badge type="tip" text="GreasyFork" />　　安装量：**565,672**　　评分：👍51 / 👎8
+> 版本：**5.2.6**　　发现时间：**2026-06-29**　　来源：[GreasyFork](https://greasyfork.org/scripts/406540-undiscord) <Badge type="tip" text="GreasyFork" />　　安装量：**566,831**　　评分：👍51 / 👎8
 
 ## 功能介绍
 
@@ -20,15 +20,15 @@ title: "批量删除Discord消息"
 
 ## 使用方法
 
-1. 安装脚本后，打开 Discord 网页版。
-2. 进入你想要清理的频道或私信页面。
-3. 页面会出现 Undiscord 工具窗口，按照提示操作即可批量删除消息。
+1. 1. 安装脚本后，打开 Discord 网站。
+2. 2. 在频道或私信页面会出现 Undiscord 工具窗口。
+3. 3. 按照提示选择要删除的消息范围，点击开始即可批量删除。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `none` | 脚本不需要任何特殊权限，仅在网页内运行。 |
+| — | 无特殊权限 |
 
 ## 安全分析
 

@@ -25,12 +25,12 @@
   "require": [],
   "metadata_raw": "// @name  FMHY Base64 Auto Decoder\n// @version  2.5\n// @author  Rust1667\n// @description  Decode base64-encoded links in some pastebins and make URLs clickable\n// @match  *://rentry.co/*\n// @match  *://rentry.org/*\n// @match  *://pastes.fmhy.net/*\n// @match  *://bin.disroot.org/?*#*\n// @match  *://privatebin.net/?*#*\n// @match  *://textbin.xyz/?*#*\n// @match  *://bin.idrix.fr/?*#*\n// @match  *://privatebin.rinuploads.org/?*#*\n// @match  *://pastebin.com/*\n// @grant  none\n// @icon  https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://fmhy.net&size=64\n// @namespace  https://greasyfork.org/users/980489\n// @downloadURL  https://update.greasyfork.org/scripts/485772/FMHY%20Base64%20Auto%20Decoder.user.js\n// @updateURL  https://update.greasyfork.org/scripts/485772/FMHY%20Base64%20Auto%20Decoder.meta.js",
   "sha256": "70eb484ee46e8054fd1cf8b493a71b66f403b5be3755d474a49f71302f635200",
-  "discovered_at": "2026-06-22T07:14:17.191729+00:00",
+  "discovered_at": "2026-06-29T06:31:29.320857+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 35441,
-  "good_ratings": 10,
+  "install_count": 36203,
+  "good_ratings": 11,
   "bad_ratings": 2,
   "summary": {
     "applicable_sites": [
@@ -38,28 +38,29 @@
       "FMHY Pastebin（pastes.fmhy.net）",
       "Disroot Pastebin（bin.disroot.org）",
       "PrivateBin（privatebin.net、privatebin.rinuploads.org）",
-      "Textbin（textbin.xyz）",
+      "TextBin（textbin.xyz）",
       "Idrix Pastebin（bin.idrix.fr）",
       "Pastebin（pastebin.com）"
     ],
-    "description": "本脚本自动识别并解码网页中的 Base64 编码链接，将其转换为可点击的真实网址。适用于多种粘贴网站，方便用户直接访问隐藏的链接，无需手动解码。",
+    "description": "本脚本会自动识别并解码网页中的Base64编码链接，将其转换为可点击的URL，方便用户直接访问。适用于多个常见的文本分享网站，无需手动解码。",
     "permissions": [
       {
-        "explanation": "脚本无需额外权限，仅操作网页内容。",
+        "explanation": "脚本不需要额外权限，仅操作网页内容。",
         "grant": "none"
       }
     ],
     "tags": [
       "链接解码",
-      "粘贴网站",
       "自动化",
+      "Pastebin工具",
       "便捷访问",
-      "信息提取"
+      "文本处理",
+      "实用脚本"
     ],
     "usage": [
-      "1. 安装脚本后，访问上述支持的网站。",
-      "2. 页面中的 Base64 编码链接会自动被解码并变为可点击网址。",
-      "3. 点击生成的链接即可直接访问目标页面。"
+      "安装脚本后，访问上述支持的网站。",
+      "遇到Base64编码的链接时，脚本会自动将其解码并显示为可点击的URL。",
+      "无需手动操作，直接点击生成的链接即可访问目标页面。"
     ],
     "zh_name": "FMHY Base64自动解码器"
   }

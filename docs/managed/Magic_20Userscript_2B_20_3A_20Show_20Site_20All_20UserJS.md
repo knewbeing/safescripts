@@ -46,13 +46,13 @@ title: "Magic Userscript+ ：显示站点所有 UserJS"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：67/100　　**分析时间**：2026-06-22
+**风险等级**：🟠 MEDIUM　　**安全评分**：67/100　　**分析时间**：2026-06-29
 
-> 该脚本通过 GM_xmlhttpRequest 访问多个第三方用户脚本站点，可能会传递当前页面信息用于查找可用的 UserScript，存在一定的数据外传风险。未发现隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。脚本申请了较高权限（如 GM_openInTab、GM_xmlhttpRequest），但由于未提供完整代码，无法进一步确认是否存在滥用。建议仅在信任来源时使用，并关注后续代码更新。
+> 仅凭元数据无法发现直接的安全威胁，但脚本声明了高权限和跨域访问能力，存在理论上的数据外传和权限滥用风险。建议补充完整代码以进行更深入的安全分析。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：greasyfork.org, sleazyfork.org, github.com） |
+| 数据外传 | ✅ 未检测到 |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
@@ -61,20 +61,15 @@ title: "Magic Userscript+ ：显示站点所有 UserJS"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本通过 GM_xmlhttpRequest 访问 greasyfork.org、sleazyfork.org、github.com、githubusercontent.com、openuserjs.org 等第三方站点，可能传递当前页面 URL 等信息用于查找可用的 UserScript。  
-> 位置：网络请求相关代码（推测自 @connect 域）  
-> 建议：仅允许必要的域名访问，明确限制请求内容，不应传递用户敏感信息。
+**⛔ CRITICAL** — 数据外传风险  
+> 脚本元数据声明了 @grant GM_xmlhttpRequest 和 @connect 多个第三方域名，理论上允许向 greasyfork.org、sleazyfork.org、github.com、githubusercontent.com、openuserjs.org 发起网络请求，但未提供实际代码，无法确认是否存在数据外传行为。  
+> 位置：元数据区  
+> 建议：请补充完整代码以进一步分析实际网络请求内容和数据流向。
 
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_openInTab 权限，但未提供代码，无法确认是否被滥用。  
-> 位置：@grant 元数据  
-> 建议：仅在确有需要时申请高权限，代码应限制其用途。
-
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_xmlhttpRequest 高权限，允许跨域请求，存在被滥用风险。  
-> 位置：@grant 元数据  
-> 建议：仅在确有需要时申请高权限，代码应限制其用途。
+**🟠 MEDIUM** — 权限滥用风险  
+> 脚本元数据声明了多个高权限 @grant（如 GM_openInTab、GM_xmlhttpRequest），但未提供实际代码，无法确认是否存在权限滥用。  
+> 位置：元数据区  
+> 建议：请补充完整代码以进一步分析权限实际使用情况。
 
 ---
 

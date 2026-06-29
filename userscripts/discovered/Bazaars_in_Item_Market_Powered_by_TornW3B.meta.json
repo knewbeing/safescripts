@@ -26,69 +26,70 @@
   "require": [],
   "metadata_raw": "// @name  Bazaars in Item Market Powered by TornW3B\n// @namespace  http://tampermonkey.net/\n// @version  3.26\n// @description  Displays bazaar listings with sorting controls\n// @author  Weav3r\n// @match  https://www.torn.com/page.php?sid=ItemMarket*\n// @match  https://www.torn.com/bazaar.php*\n// @grant  GM.xmlHttpRequest\n// @grant  GM_setValue\n// @grant  GM_getValue\n// @grant  GM_deleteValue\n// @grant  GM_listValues\n// @grant  GM.setValue\n// @grant  GM.getValue\n// @grant  GM.deleteValue\n// @grant  GM.listValues\n// @connect  weav3r.dev\n// @run-at  document-end\n// @downloadURL  https://update.greasyfork.org/scripts/527616/Bazaars%20in%20Item%20Market%20Powered%20by%20TornW3B.user.js\n// @updateURL  https://update.greasyfork.org/scripts/527616/Bazaars%20in%20Item%20Market%20Powered%20by%20TornW3B.meta.js",
   "sha256": "9085a27188ec51593d4c6ddd307aafb902e78fc8ea0b52f3245e1c0e714c0f9a",
-  "discovered_at": "2026-05-25T06:22:28.665603+00:00",
+  "discovered_at": "2026-06-29T06:34:37.292572+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 8648,
+  "install_count": 9907,
   "good_ratings": 2,
   "bad_ratings": 0,
   "summary": {
     "applicable_sites": [
       "Torn 城市游戏"
     ],
-    "description": "本脚本在 Torn 游戏的物品市场页面显示各个玩家的集市（Bazaar）商品列表，并提供排序功能，方便用户浏览和筛选商品。",
+    "description": "此脚本在 Torn 游戏的物品市场和个人商店页面显示集市商品列表，并提供排序功能，方便用户查找和比较商品价格。",
     "permissions": [
       {
         "explanation": "用于发送网络请求，获取集市商品数据。",
         "grant": "GM.xmlHttpRequest"
       },
       {
-        "explanation": "用于保存用户的设置或脚本数据。",
+        "explanation": "用于保存用户的设置或数据。",
         "grant": "GM_setValue"
       },
       {
-        "explanation": "用于读取用户的设置或脚本数据。",
+        "explanation": "用于读取用户保存的设置或数据。",
         "grant": "GM_getValue"
       },
       {
-        "explanation": "用于删除用户的设置或脚本数据。",
+        "explanation": "用于删除用户保存的设置或数据。",
         "grant": "GM_deleteValue"
       },
       {
-        "explanation": "用于列出所有已保存的脚本数据键。",
+        "explanation": "用于列出所有已保存的设置或数据。",
         "grant": "GM_listValues"
       },
       {
-        "explanation": "用于保存用户的设置或脚本数据（新版API）。",
+        "explanation": "用于保存用户的设置或数据（新版API）。",
         "grant": "GM.setValue"
       },
       {
-        "explanation": "用于读取用户的设置或脚本数据（新版API）。",
+        "explanation": "用于读取用户保存的设置或数据（新版API）。",
         "grant": "GM.getValue"
       },
       {
-        "explanation": "用于删除用户的设置或脚本数据（新版API）。",
+        "explanation": "用于删除用户保存的设置或数据（新版API）。",
         "grant": "GM.deleteValue"
       },
       {
-        "explanation": "用于列出所有已保存的脚本数据键（新版API）。",
+        "explanation": "用于列出所有已保存的设置或数据（新版API）。",
         "grant": "GM.listValues"
       }
     ],
     "tags": [
       "游戏辅助",
-      "商品浏览",
       "集市管理",
-      "数据排序",
+      "价格比较",
+      "数据展示",
       "Torn",
-      "用户体验优化"
+      "用户体验提升"
     ],
     "usage": [
-      "安装脚本后，打开 Torn 游戏的物品市场或集市页面。",
-      "页面会自动显示集市商品列表及排序按钮。",
-      "点击排序按钮，可按价格等条件筛选商品。"
+      "安装脚本后，进入 Torn 的物品市场或个人商店页面。",
+      "页面会自动显示集市商品列表和排序按钮。",
+      "点击排序按钮可按价格、数量等条件筛选商品。",
+      "无需额外操作，功能自动生效。"
     ],
-    "zh_name": "物品市场集市浏览增强"
+    "zh_name": "Torn集市商品展示与排序"
   }
 }

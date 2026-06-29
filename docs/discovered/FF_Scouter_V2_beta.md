@@ -33,15 +33,15 @@ title: "公平战斗评分助手"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：35/100　　**分析时间**：2026-06-22
+**风险等级**：⛔ CRITICAL　　**安全评分**：22/100　　**分析时间**：2026-06-29
 
-> The script communicates with a third-party server (ffscouter.com) and uses localStorage for configuration. It requests the unsafeWindow grant, which increases risk. No evidence of code obfuscation, DOM XSS, or supply chain risk in the provided code. The main concerns are data exfiltration, privacy collection, and privilege escalation due to unsafeWindow.
+> This script communicates with a third-party server (ffscouter.com) and stores user configuration in localStorage. It requests high-privilege grants (GM_xmlhttpRequest, unsafeWindow), and the code is partially obfuscated/minified, making full review difficult. There is a critical risk of data exfiltration and privacy collection, and the use of unsafeWindow increases the risk of privilege escalation. The script should not be considered safe for use without further transparency and a full audit of the network payloads and all privileged operations.
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：ffscouter.com） |
-| 隐私采集 | ❌ 检测到（Reads/writes localStorage for configuration and caching） |
-| 代码混淆 | ✅ 未检测到 |
+| 隐私采集 | ❌ 检测到（Reads/writes localStorage for configuration and possibly user keys） |
+| 代码混淆 | ❌ 检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
 | 供应链风险 | ✅ 可信 |
@@ -49,19 +49,29 @@ title: "公平战斗评分助手"
 ### 发现的问题
 
 **⛔ CRITICAL** — Data Exfiltration  
-> The script uses GM_xmlhttpRequest to communicate with ffscouter.com, a third-party server. While the code provided does not show the exact payload, the script is designed to show Fair Fight scores and faction war status, which likely involves sending some user/game data to the external server.  
-> 位置：@connect ffscouter.com and likely in code using GM_xmlhttpRequest  
-> 建议：Review all data sent to ffscouter.com. Ensure no sensitive user information (such as authentication tokens, cookies, or personal data) is transmitted. Document the exact payload structure.
+> The script uses GM_xmlhttpRequest to communicate with ffscouter.com, a third-party server. While the exact payload is not visible in the provided code fragment, the @connect directive and typical usage pattern indicate user data may be transmitted for score calculation.  
+> 位置：Metadata (@connect), likely in network logic (not fully visible in code fragment)  
+> 建议：Review all data sent to ffscouter.com. Ensure only minimal, non-sensitive data is transmitted. Document data flows and provide privacy notice to users.
 
 **⛔ CRITICAL** — Privacy Collection  
-> The script reads and writes to localStorage for configuration and caching purposes. No evidence of sensitive data (like cookies or passwords) being accessed, but localStorage is used.  
-> 位置：Storage class and FFConfig usage  
-> 建议：Ensure only non-sensitive configuration data is stored. Do not store authentication tokens or personal information in localStorage.
+> The script reads and writes to localStorage for configuration and possibly user keys. While this is not inherently malicious, it is a privacy-relevant operation.  
+> 位置：Class Storage, FFConfig  
+> 建议：Ensure no sensitive data (e.g., authentication tokens, personal information) is stored in localStorage. Document all stored keys and values.
 
-**🔴 HIGH** — Privilege Escalation Risk  
-> The script requests the unsafeWindow grant, which allows access to the page's JavaScript context. This increases the risk of privilege escalation or unintended data access.  
-> 位置：@grant unsafeWindow  
-> 建议：Remove unsafeWindow unless strictly necessary. If required, limit its usage and audit all interactions with the page context.
+**🔴 HIGH** — Remote Code Execution / Privilege Escalation  
+> The script requests the unsafeWindow grant, which allows access to the page's JS context and can be abused for privilege escalation or data exfiltration.  
+> 位置：Metadata (@grant unsafeWindow)  
+> 建议：Remove unsafeWindow if not strictly necessary. If required, audit all uses to ensure no sensitive data is accessed or leaked.
+
+**🔴 HIGH** — Code Obfuscation  
+> The script is partially minified/obfuscated (short variable names, compressed code, e.g., 'const n=new Set;const importCSS = async e=>{n.has(e)||(n.add(e),(d=>{...}))}'). This hinders manual review.  
+> 位置：Top-level code  
+> 建议：Publish and review the original, unminified source code for transparency.
+
+**🟠 MEDIUM** — Permission Abuse  
+> The script requests GM_xmlhttpRequest, a high-privilege API, but the code fragment does not show its usage. Unused high-privilege grants increase attack surface.  
+> 位置：Metadata (@grant GM_xmlhttpRequest)  
+> 建议：Remove unused grants. Only request permissions that are actually used.
 
 ---
 

@@ -41,35 +41,65 @@ title: "Github增强 - 高速下载"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：50/100　　**分析时间**：2026-06-22
+**风险等级**：🟡 LOW　　**安全评分**：97/100　　**分析时间**：2026-06-29
 
-> The script does not contain code execution, XSS, or obfuscation risks, and does not collect cookies or sensitive browser data. However, it rewrites download links to route through a large number of third-party CDN/proxy services, which introduces significant privacy and supply chain risks. User download activity and repository/file URLs are exposed to these external services. The script should be considered HIGH risk unless all endpoints are trusted and users are made aware of the privacy implications.
+> 该脚本主要通过在 GitHub 页面上提供多种加速下载节点链接，方便用户选择加速源下载文件。未发现自动外传用户数据、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用、供应链风险等安全问题。所有加速节点链接均为静态构造，未主动与第三方服务器通信。整体安全风险极低，适合日常使用。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：Multiple third-party CDN/proxy services (e.g., gh.h233.eu.org, gh-proxy.org, ghproxy.net, wget.la, etc.)） |
-| 隐私采集 | ❌ 检测到（Download URLs (repository/file info) sent to third-party proxies） |
+| 数据外传 | ✅ 未检测到 |
+| 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ⚠️ 存在风险 |
+| 供应链风险 | ✅ 可信 |
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Transmission  
-> The script rewrites download links to route through a large number of third-party CDN/proxy services, which may result in user-initiated downloads being sent to these external servers. This exposes user download activity and potentially the URLs of files being accessed.  
-> 位置：download_url_us, clone_url, raw_url arrays and related link rewriting logic  
-> 建议：Warn users about the privacy implications and allow disabling or customizing proxy endpoints. Prefer well-known, trusted proxies and document their privacy policies.
+**🟡 LOW** — Data Transmission  
+> 脚本内包含大量第三方加速节点（CDN/proxy），但未发现自动向这些节点发送用户数据或页面内容的网络请求，所有加速链接均为静态构造用于替换下载链接，未主动外传数据。  
+> 位置：全局  
+> 建议：继续保持不自动上传用户数据，避免未来引入统计/追踪行为。
 
-**⛔ CRITICAL** — Privacy Collection  
-> The script does not appear to collect or transmit cookies, form data, or other sensitive user data, nor does it listen to keyboard events or access browser fingerprinting APIs. However, the download URLs may contain repository or file information, which could be considered sensitive in some contexts.  
-> 位置：General script logic  
-> 建议：Document what information is sent to third-party proxies and allow users to opt out.
+**🟡 LOW** — Privacy Collection  
+> 未发现对 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板、表单、键盘输入等敏感信息的读取或外传。  
+> 位置：全局  
+> 建议：如后续需用到本地存储，仅存储必要配置，避免存储敏感信息。
 
-**🟠 MEDIUM** — Supply Chain Risk  
-> The script relies on a large number of third-party CDN/proxy endpoints, many of which are not official or well-known. This introduces supply chain risk, as these endpoints could be compromised or log user activity.  
-> 位置：download_url_us, clone_url, raw_url arrays  
-> 建议：Allow users to review and select proxy endpoints. Prefer official or widely trusted endpoints. Regularly audit the list for safety.
+**🟡 LOW** — Remote Code Execution  
+> 未发现 eval、new Function、setTimeout(string)、setInterval(string)、动态 script 标签、innerHTML 执行 JS、document.write 等远程代码执行风险。  
+> 位置：全局  
+> 建议：保持当前实现，避免引入动态代码执行。
+
+**🟡 LOW** — Obfuscation  
+> 未发现代码混淆、base64 解码执行、字符串数组混淆、unicode 混淆或高度压缩单行代码。  
+> 位置：全局  
+> 建议：保持代码可读性，便于社区安全审计。
+
+**🟡 LOW** — DOM XSS  
+> 未发现 DOM XSS 风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML。  
+> 位置：全局  
+> 建议：如需插入动态内容，务必进行转义。
+
+**🟡 LOW** — Permission Usage  
+> @grant 权限申请与实际代码基本匹配，未发现高权限滥用。部分权限如 GM_openInTab、GM_setClipboard 仅用于用户交互功能。  
+> 位置：元数据  
+> 建议：如未使用部分权限，建议移除以最小化权限。
+
+**🟡 LOW** — Sensitive API  
+> 未发现敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Notification、Clipboard）被调用。  
+> 位置：全局  
+> 建议：如需使用敏感 API，需明确告知用户并最小化调用。
+
+**🟡 LOW** — Supply Chain  
+> 未使用 @require 加载第三方库，无供应链风险。  
+> 位置：元数据  
+> 建议：如需引入第三方库，建议使用可信官方 CDN 并锁定版本。
+
+**🟡 LOW** — ClickJacking/Iframe  
+> 未发现脚本修改 frame 保护策略或创建隐藏 iframe。  
+> 位置：全局  
+> 建议：如需操作 iframe，需评估 ClickJacking 风险。
 
 ---
 

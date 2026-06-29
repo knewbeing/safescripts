@@ -42,65 +42,40 @@ title: "CheatGuessr 通用版｜GeoGuessr 辅助"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：35/100　　**分析时间**：2026-06-22
+**风险等级**：🔴 HIGH　　**安全评分**：35/100　　**分析时间**：2026-06-29
 
-> 该脚本存在高风险数据外传行为，允许用户将游戏坐标、昵称等信息通过 GM_xmlhttpRequest 主动发送到 Discord（第三方服务器），以及通过 nominatim.openstreetmap.org 进行地理反查。虽然未见自动化隐私采集和远程代码执行，但涉及敏感数据外传，需用户高度警惕。建议仅在用户明确知情同意下使用相关功能，并避免自动化批量外传。
+> This script transmits game data (including map coordinates and possibly user actions) to third-party services such as Discord and OpenStreetMap. It hooks into WebSocket communication, which may impact privacy and game integrity. No code obfuscation or DOM XSS risks were detected. The script requests high-privilege permissions and connects to external endpoints, introducing supply chain and data exfiltration risks. User consent and transparency are critical.
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：discord.com, nominatim.openstreetmap.org） |
-| 隐私采集 | ❌ 检测到（可能处理昵称、坐标等游戏相关信息用于 Discord 发送） |
+| 隐私采集 | ❌ 检测到（Intercepts game data via WebSocket, including player guesses and possibly usernames., May send map coordinates and game actions to Discord webhooks.） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ⚠️ 使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ✅ 可信 |
+| 供应链风险 | ⚠️ 存在风险 |
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本允许通过 GM_xmlhttpRequest 发送数据到 discord.com（如 sendToDiscord 功能），可能外传用户游戏坐标、昵称等信息。  
-> 位置：GM_xmlhttpRequest 调用（sendToDiscord 相关功能）  
-> 建议：仅允许用户主动触发发送，明确告知用户外传内容，避免自动上报敏感信息。
+**⛔ CRITICAL** — Data Exfiltration  
+> The script uses GM_xmlhttpRequest to send data to discord.com (likely via webhook) and nominatim.openstreetmap.org. This may include map coordinates, user actions, or other game-related data.  
+> 位置：GM_xmlhttpRequest usage, @connect permissions  
+> 建议：Ensure only non-sensitive, user-approved data is sent. Inform users clearly about what is transmitted.
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本允许通过 GM_xmlhttpRequest 访问 nominatim.openstreetmap.org 进行地理反查，可能外传用户游戏坐标。  
-> 位置：GM_xmlhttpRequest 调用（地理反查功能）  
-> 建议：仅在用户明确操作下请求，避免自动批量查询。
+**🔴 HIGH** — Remote Code Execution / Game Manipulation  
+> The script hooks into WebSocket.prototype.send and WebSocket.prototype.addEventListener to intercept and possibly modify game data. While it does not appear to exfiltrate user credentials, it does manipulate game communication.  
+> 位置：WebSocket.prototype.send Proxy, WebSocket.prototype.addEventListener Proxy  
+> 建议：Do not intercept or modify WebSocket traffic unless strictly necessary and with user consent.
 
-**🔴 HIGH** — WebSocket 使用  
-> 脚本通过 WebSocket 监听和发送消息，部分代码会拦截/伪造聊天消息，但未见将用户行为数据主动外传到第三方。  
-> 位置：WebSocket 相关代理代码  
-> 建议：确保不将用户敏感数据通过 WebSocket 发送到非游戏官方服务器。
+**🟠 MEDIUM** — Permission Overuse  
+> The script requests GM_xmlhttpRequest permission, which is high-privilege and can be abused for data exfiltration.  
+> 位置：@grant GM_xmlhttpRequest  
+> 建议：Limit permissions to only those required. Remove GM_xmlhttpRequest if not strictly necessary.
 
-**🔴 HIGH** — 隐私采集  
-> 脚本未见明显隐私采集（如读取 cookie、localStorage、表单、剪贴板等），但部分功能可能间接处理昵称、坐标等信息。  
-> 位置：全局变量与 sendToDiscord 相关逻辑  
-> 建议：确保所有敏感信息仅在用户知情同意下处理和外传。
-
-**🟡 LOW** — 远程代码执行  
-> 脚本未见 eval、new Function、setTimeout(string) 等远程代码执行风险。  
-> 位置：全局  
-> 建议：保持禁止动态代码执行。
-
-**🟡 LOW** — 代码混淆  
-> 脚本未见明显代码混淆、base64 解码、字符串数组混淆等。  
-> 位置：全局  
-> 建议：保持代码可读性，便于安全审计。
-
-**🟡 LOW** — DOM XSS  
-> 脚本未见 DOM XSS 风险（未直接将用户输入插入 innerHTML/outerHTML）。  
-> 位置：全局  
-> 建议：如后续涉及 DOM 操作，需严格转义。
-
-**🟡 LOW** — 权限滥用  
-> @grant 仅申请了实际用到的权限，无明显权限滥用。  
-> 位置：元数据 @grant  
-> 建议：仅申请必要权限。
-
-**🟡 LOW** — 供应链风险  
-> @require 未使用，未见供应链风险。  
-> 位置：元数据  
-> 建议：如需第三方库，建议固定版本和可信来源。
+**🟠 MEDIUM** — Supply Chain / Data Transmission Risk  
+> The script requests @connect to discord.com and nominatim.openstreetmap.org, which are third-party services. Data sent to these endpoints may be outside user control.  
+> 位置：@connect discord.com, @connect nominatim.openstreetmap.org  
+> 建议：Ensure all third-party endpoints are trusted and data sent is minimal and anonymized.
 
 ---
 

@@ -12,48 +12,40 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script makes network requests to third-party APIs (SponsorBlock and multiple Cobalt instances) using GM_xmlhttpRequest. These requests may include the current YouTube video ID and possibly other metadata, which could be considered user data.",
-      "location": "CFG.sbApi, CFG.cobaltInstances, usage of GM_xmlhttpRequest",
-      "recommendation": "Clearly document what data is sent to these endpoints. Consider proxying requests or minimizing data sent. Warn users about third-party API usage.",
+      "description": "The script sends requests to third-party APIs (SponsorBlock and Cobalt instances) to fetch skip segments and video download links. These requests include the current YouTube video ID, which may be considered user activity data.",
+      "location": "CFG.sbApi, CFG.cobaltInstances, code sections using GM_xmlhttpRequest/fetch to these endpoints",
+      "recommendation": "Clearly inform users about the data sent to third-party APIs. Limit data to only what is necessary (e.g., video ID, not full URL or user info).",
       "severity": "CRITICAL",
-      "type": "Data Exfiltration"
+      "type": "Data Transmission"
     },
     {
-      "description": "The script stores user toggle settings (ad skip, SponsorBlock, quality) using GM_setValue/GM_getValue. While this is local, it is persistent and could be privacy-relevant if misused.",
-      "location": "GM_setValue, GM_getValue",
-      "recommendation": "Ensure only non-sensitive, minimal data is stored. Document what is stored.",
-      "severity": "LOW",
-      "type": "Privacy"
-    },
-    {
-      "description": "The script requests GM_xmlhttpRequest permission, which is necessary for cross-origin API calls but is a high-privilege grant.",
-      "location": "@grant GM_xmlhttpRequest",
-      "recommendation": "Only request this permission if strictly necessary. Limit usage to trusted domains.",
+      "description": "The script uses GM_setValue and GM_getValue to store user toggle settings (ad skip, SponsorBlock, quality). While this is local, it is persistent and could be privacy-relevant if misused.",
+      "location": "Persistent state section (S object, save function)",
+      "recommendation": "Ensure only non-sensitive toggle states are stored. Do not store personal or sensitive data.",
       "severity": "MEDIUM",
-      "type": "Permission Usage"
+      "type": "Privacy Collection"
     },
     {
-      "description": "The script requests @connect permissions for multiple third-party domains. This increases supply chain risk if any of these endpoints are compromised.",
-      "location": "@connect sponsor.ajay.app, @connect co.wuk.sh, @connect cobalt.api.timelessnesses.me, @connect api.cobalt.tools",
-      "recommendation": "Limit @connect to only necessary, trusted domains. Monitor for endpoint changes.",
+      "description": "The script requests GM_xmlhttpRequest permission and @connect to multiple third-party domains. This increases the attack surface if those endpoints are compromised.",
+      "location": "@grant, @connect in metadata",
+      "recommendation": "Restrict @connect to only necessary domains. Monitor the security of third-party APIs.",
       "severity": "MEDIUM",
-      "type": "Supply Chain"
+      "type": "Supply Chain Risk"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "Saves toggle settings (ad skip, SponsorBlock, quality) locally via GM_setValue/GM_getValue.",
-      "Fetches YouTube video IDs for SponsorBlock and download APIs."
+      "Stores toggle states (ad skip, SponsorBlock, quality) in local storage via GM_setValue/GM_getValue"
     ],
     "detected": false
   },
   "risk_level": "MEDIUM",
   "script_name": "EasyTube V3 — Ad Skip, SponsorBlock & HD Download⬇️🚀",
   "security_score": 67,
-  "summary": "The script is generally well-structured and does not use obfuscation, eval, or dangerous DOM injection. However, it makes cross-origin requests to third-party APIs (SponsorBlock and Cobalt downloaders), which may transmit user video viewing data. It also requests high-privilege permissions (GM_xmlhttpRequest, @connect) and stores user settings locally. There is no evidence of keylogging, clipboard access, or fingerprinting. The main risks are data exfiltration to third-party APIs and supply chain exposure via multiple Cobalt endpoints.",
+  "summary": "The script is generally well-structured and does not use obfuscation, eval, or dynamic code execution. It does not collect sensitive user data or listen to keyboard/clipboard events. However, it does transmit YouTube video IDs to third-party APIs (SponsorBlock and Cobalt instances) to provide its core features, which is a privacy consideration. No DOM XSS or injection risks were found. The supply chain risk is moderate due to reliance on external APIs. Overall, the script is safe for most users, but those with strict privacy requirements should be aware of the data sent to third parties.",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-22T07:25:22.564041+00:00",
+  "analyzed_at": "2026-06-29T06:42:42.268385+00:00",
   "slug": "EasyTube_V3_Ad_Skip_SponsorBlock_HD_Download"
 }

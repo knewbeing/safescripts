@@ -29,73 +29,73 @@
   "require": [],
   "metadata_raw": "// @name  Greasyfork Search with Sleazyfork Results include\n// @name:zh-CN  大人的Greasyfork\n// @name:zh-TW  大人的Greasyfork\n// @name:ja  大人のGreasyfork\n// @namespace  hoothin\n// @version  1.6.6\n// @description  Merge adult results of sleazyfork into greasyfork when the script is no longer anonymously available, add rating score and version for scripts then\n// @description:zh-CN  在Greasyfork的搜索结果中添加Sleazyfork上的成人脚本，增加评分与版本号，并在访问匿名不可用脚本时跳转至Sleazyfork\n// @description:zh-TW  在Greasyfork的搜索結果中添加Sleazyfork上的成人腳本，增加評分與版本號，並在訪問匿名不可用腳本時跳轉至Sleazyfork\n// @description:ja  脚本付けるSleazyfork上の成人脚本検索結果からGreasyfork、脚本付ける採点とバージョン番号を訪問匿名利用できない脚本にジャンプからSleazyfork\n// @author  hoothin\n// @match  http*://greasyfork.org/*\n// @match  http*://www.greasyfork.org/*\n// @match  http*://sleazyfork.org/*\n// @match  http*://www.sleazyfork.org/*\n// @grant  GM_xmlhttpRequest\n// @grant  GM_setValue\n// @grant  GM_getValue\n// @grant  GM_registerMenuCommand\n// @grant  GM_notification\n// @grant  GM.xmlHttpRequest\n// @grant  GM.setValue\n// @grant  GM.getValue\n// @grant  GM.registerMenuCommand\n// @grant  GM.notification\n// @connect  greasyfork.org\n// @connect  sleazyfork.org\n// @contributionURL  https://www.buymeacoffee.com/hoothin\n// @contributionAmount  1\n// @downloadURL  https://update.greasyfork.org/scripts/23840/Greasyfork%20Search%20with%20Sleazyfork%20Results%20include.user.js\n// @updateURL  https://update.greasyfork.org/scripts/23840/Greasyfork%20Search%20with%20Sleazyfork%20Results%20include.meta.js",
   "sha256": "b4f4073d73cdb627c81fd543d5e8417a4a89ada22193ebb8cc91fc9ec0ae8820",
-  "discovered_at": "2026-06-15T07:14:29.168896+00:00",
+  "discovered_at": "2026-06-29T06:32:43.033183+00:00",
   "ai_reason": "",
   "target_roles": "",
-  "is_new": true,
-  "install_count": 906115,
-  "good_ratings": 2747,
-  "bad_ratings": 1,
+  "is_new": false,
+  "install_count": 906688,
+  "good_ratings": 2749,
+  "bad_ratings": 2,
   "summary": {
     "applicable_sites": [
       "Greasyfork",
       "Sleazyfork"
     ],
-    "description": "在Greasyfork搜索时，自动显示Sleazyfork上的成人脚本结果，并为所有脚本添加评分和版本号。如果访问匿名不可用的脚本，会自动跳转到Sleazyfork对应页面。",
+    "description": "本脚本在Greasyfork的搜索结果中自动显示Sleazyfork上的成人脚本，并为所有脚本增加评分和版本号信息。如果访问某些Greasyfork脚本时遇到匿名不可用的情况，会自动跳转到Sleazyfork对应页面。",
     "permissions": [
       {
-        "explanation": "允许脚本跨域请求数据，用于获取Sleazyfork和Greasyfork的搜索结果。",
+        "explanation": "用于跨域请求，获取Sleazyfork和Greasyfork的脚本数据。",
         "grant": "GM_xmlhttpRequest"
       },
       {
-        "explanation": "保存脚本设置或数据到本地。",
+        "explanation": "保存用户设置或脚本数据。",
         "grant": "GM_setValue"
       },
       {
-        "explanation": "读取本地保存的脚本设置或数据。",
+        "explanation": "读取用户设置或脚本数据。",
         "grant": "GM_getValue"
       },
       {
-        "explanation": "在浏览器菜单中添加自定义操作按钮。",
+        "explanation": "在脚本菜单中添加自定义功能按钮。",
         "grant": "GM_registerMenuCommand"
       },
       {
-        "explanation": "在浏览器中弹出通知提醒用户。",
+        "explanation": "在桌面弹出通知提醒用户。",
         "grant": "GM_notification"
       },
       {
-        "explanation": "允许脚本跨域请求数据（新版API）。",
+        "explanation": "用于跨域请求，获取Sleazyfork和Greasyfork的脚本数据。",
         "grant": "GM.xmlHttpRequest"
       },
       {
-        "explanation": "保存脚本设置或数据到本地（新版API）。",
+        "explanation": "保存用户设置或脚本数据。",
         "grant": "GM.setValue"
       },
       {
-        "explanation": "读取本地保存的脚本设置或数据（新版API）。",
+        "explanation": "读取用户设置或脚本数据。",
         "grant": "GM.getValue"
       },
       {
-        "explanation": "在浏览器菜单中添加自定义操作按钮（新版API）。",
+        "explanation": "在脚本菜单中添加自定义功能按钮。",
         "grant": "GM.registerMenuCommand"
       },
       {
-        "explanation": "在浏览器中弹出通知提醒用户（新版API）。",
+        "explanation": "在桌面弹出通知提醒用户。",
         "grant": "GM.notification"
       }
     ],
     "tags": [
       "脚本搜索",
       "成人内容",
-      "Greasyfork",
-      "Sleazyfork",
-      "增强功能",
-      "评分展示"
+      "脚本增强",
+      "评分显示",
+      "自动跳转",
+      "Greasyfork"
     ],
     "usage": [
       "安装脚本后，访问Greasyfork或Sleazyfork网站。",
-      "在Greasyfork搜索脚本时，自动显示Sleazyfork的成人脚本结果。",
-      "查看脚本列表时会显示评分和版本号。",
+      "在Greasyfork搜索时，结果中会自动显示Sleazyfork的成人脚本。",
+      "脚本列表会显示评分和版本号信息。",
       "访问匿名不可用脚本时会自动跳转到Sleazyfork页面。"
     ],
     "zh_name": "大人的Greasyfork"

@@ -1,0 +1,55 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [
+      "https://pixeldrain-bypass.gamedrive.org"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "脚本通过 fetch 请求 https://pixeldrain-bypass.gamedrive.org/api/proxy.json 获取代理列表，存在数据外传行为。虽然未直接上传用户数据，但访问第三方服务器有一定风险。",
+      "location": "loadProxyListCached()",
+      "recommendation": "建议明确告知用户此行为，并确保第三方服务可信。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本将代理列表缓存到 localStorage，涉及对 localStorage 的读写。",
+      "location": "loadProxyListCached()",
+      "recommendation": "仅存储必要信息，避免存储敏感数据。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本未对 @grant 权限进行最小化，仅使用了 GM_openInTab，未发现权限滥用。",
+      "location": "元数据 @grant",
+      "recommendation": "无实际问题，但建议定期复查权限。",
+      "severity": "LOW",
+      "type": "权限滥用"
+    },
+    {
+      "description": "@require 未使用，未发现供应链风险。",
+      "location": "元数据",
+      "recommendation": "无。",
+      "severity": "LOW",
+      "type": "供应链风险"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [
+      "localStorage 读写"
+    ],
+    "detected": true
+  },
+  "risk_level": "HIGH",
+  "script_name": "Pixeldrain Download Bypass Enhanced",
+  "security_score": 50,
+  "summary": "该脚本存在数据外传（fetch 第三方服务器）和 localStorage 读写（隐私采集）两项 CRITICAL 风险。未发现远程代码执行、代码混淆、DOM XSS、供应链风险等高危问题。建议用户注意第三方服务器的可信度，开发者应明确告知用户数据流向。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-06-29T06:51:20.371980+00:00",
+  "slug": "Pixeldrain_Download_Bypass_Enhanced"
+}

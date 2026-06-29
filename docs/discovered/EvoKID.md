@@ -4,15 +4,15 @@ title: "EvoKID"
 
 # EvoKID
 
-`游戏辅助`  `网页游戏`  `Evowars.io`  `增强功能`  `VIP模式`
+`游戏辅助`  `网页游戏`  `Evowars.io`  `武器增强`  `VIP功能`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/EvoKID.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**3.6.0**　　发现时间：**2026-06-22**　　来源：[GreasyFork](https://greasyfork.org/scripts/581536-evokid) <Badge type="tip" text="GreasyFork" />　　安装量：**273**　　评分：👍1 / 👎0
+> 版本：**3.6.0**　　发现时间：**2026-06-29**　　来源：[GreasyFork](https://greasyfork.org/scripts/581536-evokid) <Badge type="tip" text="GreasyFork" />　　安装量：**582**　　评分：👍1 / 👎0
 
 ## 功能介绍
 
-本脚本为 Evowars.io 游戏提供增强功能，类似 VIP 模式。它优化了武器属性，让玩家在游戏中获得更好的体验和优势。安装后，玩家可以自动享受这些增强效果，无需额外操作。
+本脚本为 Evowars.io 游戏提供 VIP 模式，增强武器属性，让玩家在游戏中拥有更强的攻击距离和角度。安装后，玩家可体验更高级的游戏功能，提升竞争力。
 
 ## 适用网站
 
@@ -21,19 +21,20 @@ title: "EvoKID"
 ## 使用方法
 
 1. 安装脚本后，打开 Evowars.io 网站。
-2. 进入游戏即可自动体验增强功能，无需手动设置。
+2. 进入游戏即可自动启用 VIP 模式，无需额外操作。
+3. 享受增强后的武器属性和更强的游戏体验。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `none` | 脚本无需特殊权限，仅在网页内运行。 |
+| `none` | 脚本无需额外权限，仅在页面内运行。 |
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-06-22
+**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-06-29
 
-> 该脚本未检测到任何网络数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码结构清晰，未使用任何危险或敏感 API，且未申请任何 @grant 权限。整体安全性高。
+> 该脚本未检测到任何网络数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码结构清晰，未发现可疑或危险行为。
 
 | 检查项 | 结果 |
 |--------|------|

@@ -30,9 +30,9 @@ title: "EasyTube V3 — Ad Skip, SponsorBlock & HD Download⬇️🚀"
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：67/100　　**分析时间**：2026-06-22
+**风险等级**：🟠 MEDIUM　　**安全评分**：67/100　　**分析时间**：2026-06-29
 
-> The script is generally well-structured and does not use obfuscation, eval, or dangerous DOM injection. However, it makes cross-origin requests to third-party APIs (SponsorBlock and Cobalt downloaders), which may transmit user video viewing data. It also requests high-privilege permissions (GM_xmlhttpRequest, @connect) and stores user settings locally. There is no evidence of keylogging, clipboard access, or fingerprinting. The main risks are data exfiltration to third-party APIs and supply chain exposure via multiple Cobalt endpoints.
+> The script is generally well-structured and does not use obfuscation, eval, or dynamic code execution. It does not collect sensitive user data or listen to keyboard/clipboard events. However, it does transmit YouTube video IDs to third-party APIs (SponsorBlock and Cobalt instances) to provide its core features, which is a privacy consideration. No DOM XSS or injection risks were found. The supply chain risk is moderate due to reliance on external APIs. Overall, the script is safe for most users, but those with strict privacy requirements should be aware of the data sent to third parties.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -45,25 +45,20 @@ title: "EasyTube V3 — Ad Skip, SponsorBlock & HD Download⬇️🚀"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Exfiltration  
-> The script makes network requests to third-party APIs (SponsorBlock and multiple Cobalt instances) using GM_xmlhttpRequest. These requests may include the current YouTube video ID and possibly other metadata, which could be considered user data.  
-> 位置：CFG.sbApi, CFG.cobaltInstances, usage of GM_xmlhttpRequest  
-> 建议：Clearly document what data is sent to these endpoints. Consider proxying requests or minimizing data sent. Warn users about third-party API usage.
+**⛔ CRITICAL** — Data Transmission  
+> The script sends requests to third-party APIs (SponsorBlock and Cobalt instances) to fetch skip segments and video download links. These requests include the current YouTube video ID, which may be considered user activity data.  
+> 位置：CFG.sbApi, CFG.cobaltInstances, code sections using GM_xmlhttpRequest/fetch to these endpoints  
+> 建议：Clearly inform users about the data sent to third-party APIs. Limit data to only what is necessary (e.g., video ID, not full URL or user info).
 
-**🟠 MEDIUM** — Permission Usage  
-> The script requests GM_xmlhttpRequest permission, which is necessary for cross-origin API calls but is a high-privilege grant.  
-> 位置：@grant GM_xmlhttpRequest  
-> 建议：Only request this permission if strictly necessary. Limit usage to trusted domains.
+**🟠 MEDIUM** — Privacy Collection  
+> The script uses GM_setValue and GM_getValue to store user toggle settings (ad skip, SponsorBlock, quality). While this is local, it is persistent and could be privacy-relevant if misused.  
+> 位置：Persistent state section (S object, save function)  
+> 建议：Ensure only non-sensitive toggle states are stored. Do not store personal or sensitive data.
 
-**🟠 MEDIUM** — Supply Chain  
-> The script requests @connect permissions for multiple third-party domains. This increases supply chain risk if any of these endpoints are compromised.  
-> 位置：@connect sponsor.ajay.app, @connect co.wuk.sh, @connect cobalt.api.timelessnesses.me, @connect api.cobalt.tools  
-> 建议：Limit @connect to only necessary, trusted domains. Monitor for endpoint changes.
-
-**🟡 LOW** — Privacy  
-> The script stores user toggle settings (ad skip, SponsorBlock, quality) using GM_setValue/GM_getValue. While this is local, it is persistent and could be privacy-relevant if misused.  
-> 位置：GM_setValue, GM_getValue  
-> 建议：Ensure only non-sensitive, minimal data is stored. Document what is stored.
+**🟠 MEDIUM** — Supply Chain Risk  
+> The script requests GM_xmlhttpRequest permission and @connect to multiple third-party domains. This increases the attack surface if those endpoints are compromised.  
+> 位置：@grant, @connect in metadata  
+> 建议：Restrict @connect to only necessary domains. Monitor the security of third-party APIs.
 
 ---
 

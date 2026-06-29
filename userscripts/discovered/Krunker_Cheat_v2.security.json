@@ -1,5 +1,5 @@
 {
-  "approved": false,
+  "approved": true,
   "data_transmission": {
     "destinations": [],
     "detected": false
@@ -7,16 +7,16 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "使用了 @grant unsafeWindow，允许脚本访问页面的 window 对象，存在高权限滥用风险。",
-      "location": "元数据 @grant unsafeWindow",
-      "recommendation": "仅在确有必要时申请 unsafeWindow，避免滥用高权限。",
+      "description": "@grant 申请了 unsafeWindow 权限，但脚本未发现对 unsafeWindow 的实际使用。",
+      "location": "metadata",
+      "recommendation": "移除未使用的高权限 @grant 申请，减少潜在攻击面。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "@require 加载了第三方库 three.js，虽然为官方 CDN，但未锁定具体文件哈希，存在供应链污染风险。",
-      "location": "@require https://unpkg.com/three@0.150.0/build/three.min.js",
-      "recommendation": "建议使用官方 CDN 并锁定具体版本和哈希，避免供应链攻击。",
+      "description": "@require 加载了 three.js，来源为 unpkg.com 官方 CDN，未锁定具体文件哈希。",
+      "location": "metadata",
+      "recommendation": "建议使用带有版本哈希的 CDN 链接，或官方 CDN，防止供应链污染。",
       "severity": "MEDIUM",
       "type": "供应链风险"
     }
@@ -29,9 +29,9 @@
   "risk_level": "LOW",
   "script_name": "Krunker Cheat v2",
   "security_score": 84,
-  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。主要风险为权限滥用（unsafeWindow）和供应链风险（@require 未锁定哈希）。整体安全风险较低，但不建议在敏感环境下使用。",
+  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 或 WebSocket 使用等高危行为。主要风险为未使用的高权限 @grant 申请和 @require 依赖未锁定哈希，属于中等风险。整体安全性较高，但建议移除未使用权限并固定依赖版本。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-22T07:31:16.729381+00:00",
+  "analyzed_at": "2026-06-29T06:49:11.564386+00:00",
   "slug": "Krunker_Cheat_v2"
 }

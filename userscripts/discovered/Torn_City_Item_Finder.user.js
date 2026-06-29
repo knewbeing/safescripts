@@ -3,7 +3,7 @@
 // @author freetree
 // @namespace    freetree.torn
 // @version      1.0
-// @description  Navigate Torn city items - No API key needed
+// @description  Find and zoom on city map items in ONE click - No API key needed
 // @match        https://www.torn.com/city.php*
 // @grant        none
 // @license MIT

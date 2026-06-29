@@ -10,47 +10,56 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script uses GM_xmlhttpRequest and @connect to discord.com and nominatim.openstreetmap.org, which can transmit user data (e.g., map pins, possibly location guesses) to third-party servers. This is a data exfiltration risk, especially for Discord webhooks.",
-      "location": "GM_xmlhttpRequest calls and @connect metadata",
-      "recommendation": "Limit data transmission to only what is necessary, and clearly inform users what data is sent. Avoid sending sensitive or identifying information.",
+      "description": "The script uses GM_xmlhttpRequest and requests to discord.com and nominatim.openstreetmap.org, which are third-party servers. The script can send map pin data or location information to Discord (as described in the metadata and code).",
+      "location": "GM_xmlhttpRequest usage, @connect discord.com, @connect nominatim.openstreetmap.org",
+      "recommendation": "Ensure no sensitive user data (such as cookies, tokens, or personal information) is sent. Only send minimal necessary data. Inform users clearly about what is sent.",
       "severity": "CRITICAL",
       "type": "Data Exfiltration"
     },
     {
-      "description": "The script uses Notification API (Notification.permission), which can be abused to send unwanted notifications to the user.",
-      "location": "state.notificationPermission and Notification API usage",
-      "recommendation": "Request notification permissions only when necessary and provide clear user controls.",
+      "description": "The script requests Notification permission and can send notifications to the user.",
+      "location": "state.notificationPermission, Notification API usage",
+      "recommendation": "Do not abuse Notification API. Only send notifications relevant to the script's function.",
       "severity": "MEDIUM",
       "type": "Sensitive API Usage"
     },
     {
-      "description": "The script disables or bypasses iframe sandboxing and anti-cheat scripts on some platforms, which may weaken security boundaries and is a form of privilege escalation.",
-      "location": "Element.prototype.setAttribute proxy and script removal logic",
-      "recommendation": "Do not weaken sandboxing or remove anti-cheat scripts unless absolutely necessary and with user consent.",
-      "severity": "HIGH",
-      "type": "DOM/Frame Policy Manipulation"
+      "description": "The script requests and uses GM_xmlhttpRequest, which is a high-privilege API, but this is justified by the script's features. No evidence of unused high-privilege grants.",
+      "location": "@grant GM_xmlhttpRequest",
+      "recommendation": "Review and minimize granted permissions. Remove any unused grants.",
+      "severity": "MEDIUM",
+      "type": "Permission Usage"
     },
     {
-      "description": "The script uses @require to load msgpack.js from update.greasyfork.org, which is a trusted CDN, but the version is not pinned by hash. This is a supply chain risk if the remote file is compromised.",
+      "description": "The script uses @require to load msgpack.js from update.greasyfork.org, which is a trusted CDN, but the version is not pinned by hash.",
       "location": "@require https://update.greasyfork.org/scripts/423602/1005014/msgpack.js",
-      "recommendation": "Pin third-party dependencies by hash or use a well-known, immutable CDN.",
+      "recommendation": "Pin the required library to a specific version or hash to prevent supply chain attacks.",
       "severity": "MEDIUM",
       "type": "Supply Chain Risk"
+    },
+    {
+      "description": "The script modifies Element.prototype.setAttribute to bypass iframe sandboxing on non-GeoGuessr platforms. This can weaken frame protection.",
+      "location": "Element.prototype.setAttribute Proxy",
+      "recommendation": "Avoid weakening browser security features unless absolutely necessary. Document the reason for this modification.",
+      "severity": "LOW",
+      "type": "ClickJacking / iframe Risk"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "Reads and writes to localStorage via GM_getValue/GM_setValue for settings, but no evidence of reading cookies, clipboard, or keylogging."
+      "Reads and writes to GM storage (hotkeys, featureToggles)",
+      "Reads Notification.permission",
+      "Reads some DOM elements (player names, map markers) for game logic"
     ],
     "detected": false
   },
   "risk_level": "HIGH",
   "script_name": "CheatGuessr Universal | GeoGuessr | OpenGuessr | WorldGuessr | FreeGuessr | GeoDuels | Geotastic",
-  "security_score": 52,
-  "summary": "This script transmits user data (such as map pins or guesses) to third-party servers (notably Discord), which is a critical privacy and data exfiltration risk. It also manipulates DOM security features (sandboxing, anti-cheat) and uses Notification API. While it does not appear to collect sensitive browser data or use obfuscation, the supply chain risk from unpinned @require remains. The overall risk is HIGH and the script is NOT approved for use in sensitive environments.",
+  "security_score": 49,
+  "summary": "This script transmits map pin/location data to third-party servers (discord.com, nominatim.openstreetmap.org), which is a critical risk if sensitive data is included. It does not appear to collect sensitive user data or credentials, nor does it use obfuscation or dangerous code execution patterns. It uses Notification API and modifies iframe sandboxing, which are medium/low risks. The supply chain risk is moderate due to unpinned @require. Overall, the script is not safe for privacy-sensitive users and should be used with caution.",
   "supply_chain_risk": true,
   "websocket_usage": true,
-  "analyzed_at": "2026-06-22T07:22:39.073922+00:00",
+  "analyzed_at": "2026-06-29T06:39:17.813403+00:00",
   "slug": "CheatGuessr_Universal_GeoGuessr_OpenGuessr_WorldGuessr_FreeGuessr_GeoDuels_Geota"
 }

@@ -32,13 +32,13 @@ title: "犯罪收益显示器"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-22
+**风险等级**：🟡 LOW　　**安全评分**：97/100　　**分析时间**：2026-06-29
 
-> 该脚本主要通过 GM.xmlHttpRequest 拉取 Google Sheets 公共数据，并在本地 localStorage 缓存数据。未检测到用户数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用等高风险行为。整体安全性较高，风险等级为 LOW。
+> 该脚本整体安全，未发现用户数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险等高危问题。仅存在对 Google Sheets 公共数据的只读访问和本地缓存，权限申请合理。安全评分 97，风险等级 LOW。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：https://docs.google.com/spreadsheets/d/13wUFhhssuPdAONI_OmRJi6l_Bs7KRZXDgVFCn7uJJNQ/gviz/tq?tqx=out:csv&gid=560321570, https://docs.google.com/spreadsheets/d/13wUFhhssuPdAONI_OmRJi6l_Bs7KRZXDgVFCn7uJJNQ/gviz/tq?tqx=out:csv&gid=1626436424） |
+| 数据外传 | ❌ 检测到（目标：https://docs.google.com/spreadsheets/d/13wUFhhssuPdAONI_OmRJi6l_Bs7KRZXDgVFCn7uJJNQ/gviz/tq） |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
@@ -47,35 +47,45 @@ title: "犯罪收益显示器"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本通过 GM.xmlHttpRequest/fetch 方式访问 Google Sheets 公共 CSV 数据，未向第三方服务器上传用户数据，仅拉取公开数据。  
-> 位置：emforusData / crackingData 变量与 GM.xmlHttpRequest 调用  
-> 建议：确认不会将用户数据、cookie、页面内容等敏感信息通过网络请求外传。
+**🟡 LOW** — 数据外传-只读  
+> 脚本通过 fetch/GM.xmlHttpRequest 方式从 Google Sheets 公开 CSV 读取数据，但未向第三方服务器上传用户数据、页面内容或 Cookie。  
+> 位置：let emforusData = `https://docs.google.com/spreadsheets/d/...`  
+> 建议：确认仅为公开数据读取，未携带用户隐私信息。
 
-**🔴 HIGH** — 远程代码执行  
-> 脚本未检测到 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险。  
+**🟡 LOW** — 隐私采集-本地存储  
+> 脚本大量读取和写入 localStorage，用于缓存数据和设置。未发现敏感信息（如 cookie、表单、密码）被读取。  
+> 位置：localStorage.getItem / setItem 多处  
+> 建议：仅存储非敏感设置和缓存数据，避免存储敏感信息。
+
+**🟡 LOW** — 权限申请  
+> 脚本申请了 GM.xmlHttpRequest 权限，但仅用于读取 Google Sheets 公共数据。  
+> 位置：@grant GM.xmlHttpRequest  
+> 建议：如无后续功能扩展，可考虑降权。
+
+**🟡 LOW** — 远程代码执行  
+> 未发现 eval、new Function、setTimeout(string)、setInterval(string) 等动态代码执行。  
 > 位置：全局  
 > 建议：保持此安全实践。
 
-**🔴 HIGH** — 代码混淆  
-> 脚本未检测到代码混淆、base64 解码、字符串数组映射或高度压缩代码。  
+**🟡 LOW** — 代码混淆  
+> 未发现代码混淆、base64 解码、字符串数组映射、unicode 混淆等。  
 > 位置：全局  
-> 建议：保持代码可读性，便于安全审计。
+> 建议：保持代码可读性。
 
-**🟠 MEDIUM** — 隐私采集  
-> 脚本大量使用 localStorage 存储和读取自身数据（如缓存、设置），但未读取 cookie、sessionStorage、IndexedDB 或表单/剪贴板/指纹信息。  
-> 位置：localStorage.getItem / setItem  
-> 建议：仅存储必要的非敏感数据，避免存储敏感信息。
+**🟡 LOW** — DOM XSS  
+> 未发现 DOM XSS 风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML。  
+> 位置：全局  
+> 建议：如后续涉及用户输入，需严格转义。
 
-**🟠 MEDIUM** — 权限滥用  
-> @grant 仅申请了 GM.xmlHttpRequest，未滥用高权限。  
-> 位置：元数据 @grant  
-> 建议：仅申请实际需要的权限。
-
-**🟠 MEDIUM** — 供应链风险  
-> @require 未使用，未检测到供应链风险。  
+**🟡 LOW** — 供应链风险  
+> @require 未使用，未发现供应链风险。  
 > 位置：元数据  
-> 建议：如需引入第三方库，建议使用可信 CDN 并锁定版本。
+> 建议：如后续引入第三方库，需锁定可信来源和版本。
+
+**🟡 LOW** — 敏感 API  
+> 未发现 WebSocket、EventSource、sendBeacon、Clipboard、Geolocation、RTCPeerConnection、MediaDevices、Notification 等敏感 API 调用。  
+> 位置：全局  
+> 建议：如后续涉及敏感 API，需最小化权限。
 
 ---
 

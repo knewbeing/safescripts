@@ -14,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "Github Enhancement - High Speed Download",
   "security_score": 100,
-  "summary": "未检测到任何脚本内容，因此未发现安全风险。元数据未显示 @require 远程依赖，未检测到数据外传、隐私采集、远程代码执行、混淆、XSS、权限滥用或供应链风险。",
+  "summary": "未检测到任何代码实现，脚本为空，仅包含元数据。不存在数据外传、隐私采集、远程代码执行、混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-22T07:11:42.231220+00:00",
+  "analyzed_at": "2026-06-29T06:28:56.441431+00:00",
   "slug": "Github_20_E5_A2_9E_E5_BC_BA_20-_20_E9_AB_98_E9_80_9F_E4_B8_8B_E8_BD_BD"
 }

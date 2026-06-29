@@ -2,75 +2,26 @@
   "approved": true,
   "data_transmission": {
     "destinations": [
-      "nexusmods.com",
-      "api-router.nexusmods.com"
+      "api-router.nexusmods.com",
+      "www.nexusmods.com"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 fetch 向 nexusmods.com 和 api-router.nexusmods.com 发送请求以获取和下载 mod 信息。所有请求均指向官方域名，无第三方数据外传。",
-      "location": "fetchMods, fetchDownloadLink, 相关 fetch 调用",
-      "recommendation": "确认请求内容仅限于必要的 mod 信息，不包含用户敏感数据。",
+      "description": "The script sends POST requests to https://api-router.nexusmods.com/graphql and https://www.nexusmods.com/Core/Libs/Common/Managers/Downloads?GenerateDownloadUrl, including cookies (credentials: include). These are first-party requests to Nexus Mods, matching the @connect domain.",
+      "location": "fetchMods(), fetchDownloadLink()",
+      "recommendation": "Ensure no sensitive user data outside of Nexus Mods context is sent. The requests are expected for the script's function.",
       "severity": "CRITICAL",
-      "type": "数据外传"
+      "type": "Data Transmission"
     },
     {
-      "description": "脚本未检测到对 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板、表单字段、键盘事件等隐私相关 API 的访问。",
-      "location": "全局",
-      "recommendation": "保持现状，勿添加隐私采集行为。",
-      "severity": "CRITICAL",
-      "type": "隐私采集"
-    },
-    {
-      "description": "未检测到 eval、new Function、setTimeout(string)、setInterval(string)、动态 script 标签、@require 远程 JS、document.write 等远程代码执行风险。",
-      "location": "全局",
-      "recommendation": "保持现状，勿引入动态代码执行。",
-      "severity": "HIGH",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "未检测到代码混淆、base64 解码、字符串数组映射、unicode 混淆或高度压缩单行代码。",
-      "location": "全局",
-      "recommendation": "保持代码可读性，便于安全审查。",
-      "severity": "HIGH",
-      "type": "代码混淆"
-    },
-    {
-      "description": "未检测到 DOM XSS 风险。脚本未将用户输入或 URL 参数直接插入 innerHTML/outerHTML。",
-      "location": "全局",
-      "recommendation": "如需插入动态内容，务必进行转义。",
-      "severity": "HIGH",
-      "type": "DOM XSS"
-    },
-    {
-      "description": "@grant 权限与实际代码使用基本匹配。部分 GM_setValue/GM_getValue 旧版 API 可能未被实际调用。",
-      "location": "元数据与全局",
-      "recommendation": "可移除未使用的 grant 权限，减少权限面。",
+      "description": "The script requests broad GM_* permissions (GM.xmlHttpRequest, GM_xmlhttpRequest, GM_setValue, GM_getValue, GM.setValue, GM.getValue, GM_addStyle), but only uses GM_addStyle and GM.getValue/GM.setValue in the provided code. GM.xmlHttpRequest is not used in the visible code.",
+      "location": "Metadata block",
+      "recommendation": "Remove unused @grant permissions to reduce attack surface.",
       "severity": "MEDIUM",
-      "type": "权限滥用"
-    },
-    {
-      "description": "未检测到敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）调用。",
-      "location": "全局",
-      "recommendation": "保持现状，勿添加敏感 API 调用。",
-      "severity": "MEDIUM",
-      "type": "敏感 API 调用"
-    },
-    {
-      "description": "未检测到 @require 加载第三方库，无供应链风险。",
-      "location": "元数据",
-      "recommendation": "如需引入第三方库，建议使用官方 CDN 并锁定版本哈希。",
-      "severity": "MEDIUM",
-      "type": "供应链风险"
-    },
-    {
-      "description": "未检测到对 frame 保护策略的修改或隐藏 iframe 的创建。",
-      "location": "全局",
-      "recommendation": "如需使用 iframe，确保来源可信且无数据提取行为。",
-      "severity": "LOW",
-      "type": "ClickJacking / iframe 风险"
+      "type": "Permission Abuse"
     }
   ],
   "obfuscation_detected": false,
@@ -80,10 +31,10 @@
   },
   "risk_level": "LOW",
   "script_name": "Nexus Download Collection",
-  "security_score": 89,
-  "summary": "该脚本仅与 nexusmods.com 官方 API 通信，无第三方数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险等高危行为。部分 @grant 权限可能未被实际使用，建议精简。整体安全风险低，适合普通用户使用。",
+  "security_score": 67,
+  "summary": "The script transmits data only to Nexus Mods' own APIs, which is expected for its functionality. No evidence of privacy-invasive data collection, remote code execution, code obfuscation, or DOM XSS was found. There is some permission over-claiming in the @grant block. No supply chain or iframe/clickjacking risks detected. Overall, the script is low risk for its intended use.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-22T07:32:01.702235+00:00",
+  "analyzed_at": "2026-06-29T06:49:58.856185+00:00",
   "slug": "Nexus_Download_Collection"
 }

@@ -11,26 +11,33 @@
     ],
     "detected": true
   },
-  "dom_xss_risk": false,
+  "dom_xss_risk": true,
   "issues": [
     {
-      "description": "脚本通过 @connect * 允许向任意域名发起网络请求，且实际代码中使用 GM_xmlhttpRequest 进行页面内容抓取（自动翻页功能），存在数据外传的可能性。",
+      "description": "脚本通过 @connect * 允许任意域名的网络请求，且实际代码中使用 GM_xmlhttpRequest 进行跨域请求，可能导致数据外传风险。",
       "location": "元数据 @connect, 代码中 GM_xmlhttpRequest 调用",
       "recommendation": "限制 @connect 域名范围，避免向不受信任的第三方服务器发送请求。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本申请了大量高权限（如 GM_openInTab、GM_setClipboard、GM_notification），但部分权限在代码中未必全部使用，存在权限滥用风险。",
+      "description": "脚本会将外部页面内容通过 innerHTML/outerHTML 方式插入当前页面，存在 DOM XSS 风险，尤其是在未对内容进行严格过滤/转义时。",
+      "location": "主逻辑（自动翻页内容插入）",
+      "recommendation": "插入 HTML 前应进行内容净化，避免执行潜在恶意脚本。",
+      "severity": "HIGH",
+      "type": "DOM XSS"
+    },
+    {
+      "description": "脚本申请了大量高权限（如 GM_openInTab、GM_setClipboard、GM_notification），部分权限在主流程中未实际使用，存在权限滥用风险。",
       "location": "元数据 @grant",
-      "recommendation": "仅申请实际需要的权限，移除未使用的高权限。",
+      "recommendation": "仅申请实际需要的权限，移除未用高权限。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "脚本允许加载 wedata.net、githubusercontent.com、ghproxy.com、ghp.ci、hoothin.github.io 等第三方内容，存在一定供应链风险，尤其是未固定版本哈希。",
+      "description": "脚本允许从多个第三方域名加载数据（如 wedata.net、ghproxy.com、githubusercontent.com），存在供应链风险，且未固定版本哈希。",
       "location": "元数据 @connect",
-      "recommendation": "仅允许可信的第三方域名，并固定依赖版本。",
+      "recommendation": "仅允许可信域名，固定第三方资源版本，避免供应链污染。",
       "severity": "MEDIUM",
       "type": "供应链风险"
     }
@@ -42,10 +49,10 @@
   },
   "risk_level": "HIGH",
   "script_name": "Pagetual",
-  "security_score": 67,
-  "summary": "Pagetual 主要功能为自动翻页，通过 GM_xmlhttpRequest 抓取下一页内容并插入当前页面。脚本本身未发现明显的隐私采集、代码混淆、远程代码执行或 DOM XSS 风险。但由于 @connect * 允许任意域名网络请求，存在较高的数据外传风险，且高权限申请和供应链风险需关注。建议限制网络请求目标、精简权限申请，并定期审查依赖来源。",
+  "security_score": 49,
+  "summary": "Pagetual 脚本实现自动翻页功能，涉及跨域网络请求和动态插入外部页面内容。存在数据外传、DOM XSS、权限滥用和供应链风险等安全隐患。建议限制网络请求目标、净化插入内容、精简权限申请，并加强对第三方依赖的管理。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-22T07:34:01.139660+00:00",
+  "analyzed_at": "2026-06-29T06:50:41.591214+00:00",
   "slug": "Pagetual"
 }

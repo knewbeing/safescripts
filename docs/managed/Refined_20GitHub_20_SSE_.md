@@ -64,14 +64,14 @@ title: 🏷️ 小鱼标签 (UTags) - 为链接添加用户标签
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：42/100　　**分析时间**：2026-06-22
+**风险等级**：⛔ CRITICAL　　**安全评分**：0/100　　**分析时间**：2026-06-29
 
-> 该脚本元数据声明存在严重安全风险，主要体现在允许向任意域名发起网络请求（@connect *），并申请了高权限的 GM_xmlhttpRequest/GM.xmlHttpRequest。实际代码缺失，无法排查更深层次的安全问题。强烈建议限制网络权限、最小化权限申请，并补充完整代码以便进一步审查。
+> 该脚本元数据存在严重安全隐患：@connect * 允许向任意域名发送数据，结合 GM_xmlhttpRequest 权限，存在极高的数据外传和隐私泄露风险。未提供完整代码，无法排查其他高危行为。强烈建议不要安装或使用该脚本，除非获得完整代码并通过严格安全审查。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：*, dav.jianguoyun.com, localhost） |
-| 隐私采集 | ❌ 检测到（GM.getValue/GM.setValue/GM.deleteValue/GM.addValueChangeListener 可能涉及用户数据存储） |
+| 数据外传 | ❌ 检测到（目标：dav.jianguoyun.com, localhost, *） |
+| 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -80,39 +80,24 @@ title: 🏷️ 小鱼标签 (UTags) - 为链接添加用户标签
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本通过 @connect * 允许向任意域名发起网络请求，存在数据外传的高风险。  
-> 位置：@connect * (元数据)  
-> 建议：限制 @connect 仅允许必要的可信域名，避免任意外部通信。
+> @connect * 允许脚本向任意域名发起网络请求，存在严重数据外传风险，可能导致用户数据被上传到未知服务器。  
+> 位置：元数据 @connect *  
+> 建议：移除 @connect *，仅允许可信的目标域名；严格限制网络请求目标。
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本申请了 GM.xmlHttpRequest 和 GM_xmlhttpRequest 高权限，允许跨域网络请求，且未限制目标域名。  
-> 位置：@grant GM.xmlHttpRequest, GM_xmlhttpRequest (元数据)  
-> 建议：仅在确有必要时申请，并配合严格的 @connect 域名白名单。
+> 脚本申请了 GM.xmlHttpRequest 和 GM_xmlhttpRequest 权限，结合 @connect *，可向任意域名发送数据，存在隐私泄露和数据外传风险。  
+> 位置：元数据 @grant GM.xmlHttpRequest, GM_xmlhttpRequest  
+> 建议：仅申请必要的网络权限，并限制请求目标。
 
-**🔴 HIGH** — 远程代码执行  
-> 脚本申请了 GM_addElement，可用于动态插入脚本或 HTML，存在远程代码执行或 XSS 风险。  
-> 位置：@grant GM_addElement (元数据)  
-> 建议：仅用于插入受信任内容，避免插入外部 JS。
-
-**🟠 MEDIUM** — 隐私采集  
-> 脚本申请了多个 GM_* 存储相关权限，可能涉及用户数据的本地存储和读取。  
-> 位置：@grant GM.getValue, GM.setValue, GM.deleteValue, GM.addValueChangeListener (元数据)  
-> 建议：确保仅存储必要的非敏感数据，并在代码中明确告知用户。
+**🔴 HIGH** — 代码完整性  
+> 脚本未提供完整代码，无法判断是否存在隐私采集、远程代码执行、DOM XSS、代码混淆等高危行为。  
+> 位置：代码缺失  
+> 建议：应提供完整代码以进行全面安全审查。
 
 **🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM.info 权限，可能访问用户脚本管理器信息。  
-> 位置：@grant GM.info (元数据)  
-> 建议：仅在确有必要时申请，避免收集用户环境信息。
-
-**🟠 MEDIUM** — 数据外传  
-> 脚本允许 @connect localhost，可能被用于本地服务通信，存在一定风险。  
-> 位置：@connect localhost (元数据)  
-> 建议：仅在开发调试时使用，发布版应移除。
-
-**🟠 MEDIUM** — 代码完整性  
-> 脚本未提供实际代码，无法进一步分析是否存在代码混淆、DOM XSS、敏感 API 调用等问题。  
-> 位置：代码缺失  
-> 建议：提供完整代码以进行全面安全审查。
+> 脚本申请了 GM.info、GM.addValueChangeListener、GM.getValue、GM.deleteValue、GM.setValue 等高权限，但未见实际代码，无法判断是否滥用。  
+> 位置：元数据 @grant  
+> 建议：仅申请实际使用的权限，避免权限滥用。
 
 ---
 

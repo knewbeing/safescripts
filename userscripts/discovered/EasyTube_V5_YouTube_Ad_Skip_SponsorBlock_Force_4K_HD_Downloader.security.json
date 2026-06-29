@@ -1,0 +1,70 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [
+      "sponsor.ajay.app",
+      "evdfrance.fr"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "The script uses GM_xmlhttpRequest to communicate with sponsor.ajay.app (SponsorBlock API) and evdfrance.fr (likely for video download functionality). These are third-party servers, but only video IDs and category data are sent, not user credentials or cookies.",
+      "location": "SponsorBlock API call and video download logic (CFG.sbApi, @connect)",
+      "recommendation": "Review the data sent to ensure no sensitive user information is transmitted. Limit data to only what is necessary for SponsorBlock and download features.",
+      "severity": "CRITICAL",
+      "type": "Data Transmission"
+    },
+    {
+      "description": "The script requests GM_xmlhttpRequest permission, which is necessary for SponsorBlock and download features, but also increases the attack surface if misused.",
+      "location": "@grant GM_xmlhttpRequest",
+      "recommendation": "Ensure all network requests are strictly limited to the declared @connect domains and do not transmit sensitive user data.",
+      "severity": "MEDIUM",
+      "type": "Permission Usage"
+    },
+    {
+      "description": "The script stores and retrieves user settings using GM_setValue and GM_getValue. No evidence of sensitive data (like cookies, passwords, or clipboard) being accessed or transmitted.",
+      "location": "GM_setValue / GM_getValue usage",
+      "recommendation": "Continue to avoid storing sensitive information. Document what is stored for transparency.",
+      "severity": "LOW",
+      "type": "Privacy Collection"
+    },
+    {
+      "description": "No code obfuscation, eval, new Function, or dynamic script loading detected. Code is readable and maintainable.",
+      "location": "Entire script",
+      "recommendation": "Maintain code transparency for user trust.",
+      "severity": "LOW",
+      "type": "Obfuscation"
+    },
+    {
+      "description": "No DOM XSS or injection risks detected. The script does not insert untrusted user input into the DOM via innerHTML/outerHTML/document.write.",
+      "location": "DOM manipulation logic",
+      "recommendation": "Continue to sanitize any future user input if DOM insertion is required.",
+      "severity": "LOW",
+      "type": "DOM XSS"
+    },
+    {
+      "description": "No supply chain risk detected. The script does not use @require to load external libraries.",
+      "location": "Metadata block",
+      "recommendation": "If adding @require in the future, use official CDNs and fixed versions.",
+      "severity": "LOW",
+      "type": "Supply Chain"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [
+      "GM_setValue/GM_getValue for settings only"
+    ],
+    "detected": false
+  },
+  "risk_level": "LOW",
+  "script_name": "EasyTube V5 — YouTube Ad Skip, SponsorBlock, Force 4K & HD Downloader",
+  "security_score": 72,
+  "summary": "The script is generally safe and transparent. It communicates with two third-party APIs (SponsorBlock and a video download service), but does not transmit sensitive user data or credentials. No evidence of privacy-invasive behavior, code obfuscation, or XSS risk. Permissions are appropriate for the stated features. Supply chain risk is low as no external libraries are loaded. Overall, the script is suitable for use with a low security risk profile.",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-06-29T06:43:16.651188+00:00",
+  "slug": "EasyTube_V5_YouTube_Ad_Skip_SponsorBlock_Force_4K_HD_Downloader"
+}

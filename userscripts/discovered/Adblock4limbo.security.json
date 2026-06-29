@@ -14,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "Adblock4limbo.[github]",
   "security_score": 100,
-  "summary": "该脚本未检测到任何网络数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。代码结构清晰，未发现危险行为。",
+  "summary": "该脚本未检测到任何安全风险。未发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码结构清晰，未使用任何高危 API，且未申请任何 @grant 权限。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-22T07:19:07.281110+00:00",
+  "analyzed_at": "2026-06-29T06:36:59.671786+00:00",
   "slug": "Adblock4limbo"
 }

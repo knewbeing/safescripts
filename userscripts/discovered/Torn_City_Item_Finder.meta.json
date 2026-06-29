@@ -7,7 +7,7 @@
   "filename": "Torn_City_Item_Finder.user.js",
   "name": "Torn City Item Finder",
   "version": "1.0",
-  "description": "Navigate Torn city items - No API key needed",
+  "description": "Find and zoom on city map items in ONE click - No API key needed",
   "match": [
     "https://www.torn.com/city.php*"
   ],
@@ -15,37 +15,37 @@
     "none"
   ],
   "require": [],
-  "metadata_raw": "// @name  Torn City Item Finder\n// @author  freetree\n// @namespace  freetree.torn\n// @version  1.0\n// @description  Navigate Torn city items - No API key needed\n// @match  https://www.torn.com/city.php*\n// @grant  none\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/583287/Torn%20City%20Item%20Finder.user.js\n// @updateURL  https://update.greasyfork.org/scripts/583287/Torn%20City%20Item%20Finder.meta.js",
-  "sha256": "17e33b15cd427fce9a1977686bc6d0cbc5c17c18fe8e54459578ffaee764cf0b",
-  "discovered_at": "2026-06-22T07:15:34.431054+00:00",
+  "metadata_raw": "// @name  Torn City Item Finder\n// @author  freetree\n// @namespace  freetree.torn\n// @version  1.0\n// @description  Find and zoom on city map items in ONE click - No API key needed\n// @match  https://www.torn.com/city.php*\n// @grant  none\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/583287/Torn%20City%20Item%20Finder.user.js\n// @updateURL  https://update.greasyfork.org/scripts/583287/Torn%20City%20Item%20Finder.meta.js",
+  "sha256": "408800b49ffd517602f4255c55359db9d8812e5c23058f59b9cf328bc4e3ba4a",
+  "discovered_at": "2026-06-29T06:33:45.868070+00:00",
   "ai_reason": "",
   "target_roles": "",
-  "is_new": true,
-  "install_count": 341,
-  "good_ratings": 0,
+  "is_new": false,
+  "install_count": 798,
+  "good_ratings": 2,
   "bad_ratings": 0,
   "summary": {
     "applicable_sites": [
       "Torn City"
     ],
-    "description": "本脚本帮助玩家在 Torn City 游戏中快速定位和浏览城市地图上的物品，无需 API 密钥。它会在地图页面显示一个面板，方便切换和查看所有可拾取物品的位置。",
+    "description": "此脚本可帮助用户在 Torn City 的城市地图上快速查找和定位物品，无需 API 密钥。只需点击一次即可自动缩放并定位到物品所在位置。",
     "permissions": [
       {
-        "explanation": "脚本不需要特殊权限，仅在页面内运行。",
+        "explanation": "脚本无需特殊权限，仅在网页内运行。",
         "grant": "none"
       }
     ],
     "tags": [
       "游戏辅助",
-      "地图导航",
+      "地图工具",
       "物品查找",
       "Torn City",
-      "网页增强"
+      "便捷操作"
     ],
     "usage": [
       "安装脚本后，进入 Torn City 的城市地图页面。",
-      "页面会出现一个物品查找面板。",
-      "使用面板上的按钮浏览和定位地图上的物品。"
+      "页面会显示一个物品查找面板。",
+      "点击面板按钮即可自动定位并缩放到地图上的物品位置。"
     ],
     "zh_name": "Torn City物品查找器"
   }

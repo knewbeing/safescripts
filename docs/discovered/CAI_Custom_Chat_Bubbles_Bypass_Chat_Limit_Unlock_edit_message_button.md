@@ -30,9 +30,9 @@ title: "C.AI Custom Chat Bubbles + Bypass Chat Limit (Unlock edit message button
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：81/100　　**分析时间**：2026-06-22
+**风险等级**：🟡 LOW　　**安全评分**：81/100　　**分析时间**：2026-06-29
 
-> 该脚本主要用于界面美化和功能解锁，未检测到数据外传、隐私采集、远程代码执行或混淆行为。权限申请略高于实际需求，存在轻微供应链风险。整体风险较低，建议定期复查依赖和权限。
+> 该脚本主要用于美化 character.ai 聊天界面和绕过聊天限制。未发现数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。存在权限过度申请（GM_xmlhttpRequest 未实际使用）、供应链风险（@require 未锁定哈希），建议收紧权限和固定依赖版本。整体风险较低，安全性良好。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -41,29 +41,24 @@ title: "C.AI Custom Chat Bubbles + Bypass Chat Limit (Unlock edit message button
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ✅ 可信 |
+| 供应链风险 | ⚠️ 存在风险 |
 
 ### 发现的问题
 
-**🟠 MEDIUM** — 权限滥用  
-> @grant 了 GM_xmlhttpRequest 权限，但脚本本身未直接使用，仅用于后续可能的功能扩展。  
-> 位置：元数据区  
-> 建议：如无实际用途，建议移除高权限申请。
+**🟠 MEDIUM** — Potential data transmission risk  
+> The script requests @connect permission for translate.googleapis.com and grants GM_xmlhttpRequest, but no actual data transmission to third-party servers is present in the provided code. If future code uses GM_xmlhttpRequest to send user data to this or other domains, it could pose a risk.  
+> 位置：Metadata block and permissions  
+> 建议：Ensure that any network requests do not transmit sensitive user data. Limit @connect and GM_xmlhttpRequest usage to only necessary and trusted endpoints.
 
-**🟠 MEDIUM** — 权限滥用  
-> @connect 了 translate.googleapis.com，但脚本本身未直接调用 GM_xmlhttpRequest 访问该域名。  
-> 位置：元数据区  
-> 建议：如无实际用途，建议移除 @connect 权限。
+**🟠 MEDIUM** — Permission overgrant  
+> The script requests GM_xmlhttpRequest permission, but the provided code does not use it. This is a higher privilege than required for the current code.  
+> 位置：Metadata block  
+> 建议：Remove unused GM_xmlhttpRequest permission to reduce attack surface.
 
-**🟡 LOW** — 数据外传  
-> 脚本重写 fetch 和 XMLHttpRequest 以拦截特定 API，但未向第三方服务器发送数据。  
-> 位置：全局作用域  
-> 建议：确保未来不添加外传逻辑。
-
-**🟡 LOW** — 供应链风险  
-> @require 加载了 turndown@7.1.3，来源为 unpkg.com，版本已锁定。  
-> 位置：元数据区  
-> 建议：建议使用官方 CDN 并定期检查依赖安全性。
+**🟠 MEDIUM** — Supply chain risk  
+> The script uses @require to load turndown from unpkg.com, a widely used CDN, but does not pin to a specific file hash. This exposes the script to supply chain risks if the CDN is compromised or the file is updated.  
+> 位置：@require https://unpkg.com/turndown@7.1.3/lib/turndown.browser.umd.js  
+> 建议：Pin to a specific file hash or use a trusted, immutable CDN to prevent supply chain attacks.
 
 ---
 

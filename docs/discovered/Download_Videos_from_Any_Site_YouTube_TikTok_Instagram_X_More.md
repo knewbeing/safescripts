@@ -46,9 +46,9 @@ title: "全站视频下载按钮"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-22
+**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-29
 
-> The script does not automatically transmit user data or page content to third-party servers. All external navigation occurs only when the user clicks the download button, which opens the current page's URL in a third-party downloader service. No privacy-invasive data collection, code obfuscation, or remote code execution is present. The only elevated permission is GM_openInTab, which is used appropriately. Overall, the script is low risk, but users should be aware that clicking the download button will send the current page URL to an external service.
+> The script does not collect or transmit user data automatically, nor does it perform network requests or use WebSockets. It adds a download button that, when clicked, opens external services with the current video URL as a parameter. No code obfuscation, DOM XSS, or supply chain risks detected. The main privacy concern is user-initiated sharing of URLs with third-party downloaders. Permissions are slightly over-provisioned but not dangerous.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -61,15 +61,15 @@ title: "全站视频下载按钮"
 
 ### 发现的问题
 
-**🟠 MEDIUM** — Permission usage  
-> The script requests the GM_openInTab permission, which is used to open external URLs in new tabs. This is a medium-risk permission if misused, but in this script, usage is appropriate and limited to user interaction.  
-> 位置：@grant GM_openInTab and openTab() function  
-> 建议：No action needed unless the permission is used for background or automatic tab opening. Monitor for future code changes.
-
-**🟡 LOW** — User-initiated data transmission  
-> The script opens external URLs (chilldownloader.com, tool77.com, spotriff.com) with the current page's video URL as a parameter when the user clicks the download button. This is not automatic data exfiltration, but user-initiated navigation.  
+**🟠 MEDIUM** — Potential privacy/data exposure  
+> The script opens external URLs (including user video URLs as parameters) in new tabs or via custom protocol handlers, potentially exposing the current page's video URL to third-party services (chilldownloader.com, tool77.com, spotriff.com).  
 > 位置：openTab() function and download button click handlers  
-> 建议：Clearly inform users that clicking the button will send the current page URL to a third-party service. No automatic data transmission detected.
+> 建议：Warn users that clicking the download button will send the video URL to external services. Consider adding user confirmation or documentation.
+
+**🟠 MEDIUM** — Permission over-provision  
+> The script requests the GM_openInTab permission, which allows opening arbitrary URLs in new tabs. This is not strictly necessary for basic DOM manipulation.  
+> 位置：@grant GM_openInTab in metadata  
+> 建议：Remove GM_openInTab if not strictly required, or document its necessity.
 
 ---
 

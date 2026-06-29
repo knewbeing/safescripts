@@ -10,23 +10,23 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script uses GM_xmlhttpRequest to fetch search result pages from greasyfork.org and sleazyfork.org, but only for merging search results and does not transmit user data or cookies to third-party domains.",
+      "description": "The script uses GM_xmlhttpRequest to fetch search result pages from greasyfork.org and sleazyfork.org. No evidence of third-party or external data transmission beyond these domains.",
       "location": "GM_xmlhttpRequest usage in search result merging logic",
-      "recommendation": "No action needed. The requests are limited to the two official domains and do not leak sensitive user data.",
+      "recommendation": "Ensure only necessary data is fetched and not user-sensitive information. No user data is sent to third-party servers.",
       "severity": "LOW",
       "type": "Network Request"
     },
     {
-      "description": "The script accesses localStorage as a fallback for storing user preferences if GM storage is unavailable.",
+      "description": "The script reads and writes to localStorage as a fallback for storing user preferences if GM storage is unavailable.",
       "location": "storage.setItem/getItem implementation",
-      "recommendation": "This is a standard practice and does not pose a privacy risk as no sensitive data is stored or transmitted.",
+      "recommendation": "No sensitive data is stored. Acceptable for this use case.",
       "severity": "LOW",
-      "type": "Storage Access"
+      "type": "Storage Usage"
     },
     {
-      "description": "The script requests several GM_* permissions, including GM_notification and GM_registerMenuCommand, but not all are used in the code.",
+      "description": "The script requests several GM_* permissions, including GM_notification, GM_registerMenuCommand, GM_setValue, GM_getValue, but not all are used in the code.",
       "location": "UserScript metadata block",
-      "recommendation": "Remove unused permissions to reduce the attack surface.",
+      "recommendation": "Remove unused @grant permissions to reduce attack surface.",
       "severity": "MEDIUM",
       "type": "Permission Overprovision"
     }
@@ -39,9 +39,9 @@
   "risk_level": "LOW",
   "script_name": "Greasyfork Search with Sleazyfork Results include",
   "security_score": 89,
-  "summary": "The script merges search results from greasyfork.org and sleazyfork.org by fetching and parsing HTML from these official domains. It does not transmit user data to third-party servers, does not collect sensitive information, and does not use dangerous code execution patterns. The only notable issue is the overprovision of GM_* permissions, which should be minimized. Overall, the script is considered low risk.",
+  "summary": "The script merges search results from greasyfork.org and sleazyfork.org, and does not transmit user data to third-party servers. It does not collect sensitive information, execute remote code, or use obfuscation. The main issue is overprovisioned permissions in the metadata block. Overall, the script is considered low risk.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-22T07:30:11.152705+00:00",
+  "analyzed_at": "2026-06-29T06:46:46.347237+00:00",
   "slug": "Greasyfork_Search_with_Sleazyfork_Results_include"
 }

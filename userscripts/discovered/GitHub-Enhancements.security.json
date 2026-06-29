@@ -14,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "GitHub Enhancements",
   "security_score": 100,
-  "summary": "该脚本未检测到任何安全或隐私风险。未发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。@require 的 jQuery 版本为官方 CDN 且为固定版本。整体安全性高。",
+  "summary": "该脚本仅对 GitHub 页面上的部分计数器和删除仓库对话框进行界面增强，没有检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用或供应链风险。@require 的 jQuery 版本为官方 CDN 且为固定版本，整体安全性高。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-22T07:29:38.399141+00:00",
+  "analyzed_at": "2026-06-29T06:46:05.005005+00:00",
   "slug": "GitHub-Enhancements"
 }

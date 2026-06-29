@@ -40,12 +40,78 @@
   ],
   "metadata_raw": "// @name  Picviewer CE+\n// @name:zh-CN  Picviewer CE+\n// @name:zh-TW  Picviewer CE+\n// @name:ja  Picviewer CE+\n// @name:pt-BR  Picviewer CE+\n// @name:ru  Picviewer CE+\n// @author  NLF && ywzhaiqi && hoothin\n// @description  Powerful picture viewing tool online, which can popup/scale/rotate/batch save pictures automatically\n// @description:zh-CN  在线看图工具，支持图片翻转、旋转、缩放、弹出大图、批量保存\n// @description:zh-TW  線上看圖工具，支援圖片翻轉、旋轉、縮放、彈出大圖、批量儲存\n// @description:ja  画像を強力に閲覧できるツール。ポップアップ表示、拡大・縮小、回転、一括保存などの機能を自動で実行できます\n// @description:pt-BR  Poderosa ferramenta de visualização de imagens on-line, que pode pop-up/dimensionar/girar/salvar em lote imagens automaticamente\n// @description:ru  Мощный онлайн-инструмент для просмотра изображений, который может автоматически отображать/масштабировать/вращать/пакетно сохранять изображения\n// @version  2026.2.6.1\n// @icon  data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAAAV1BMVEUAAAD////29vbKysoqKioiIiKysrKhoaGTk5N9fX3z8/Pv7+/r6+vk5OTb29vOzs6Ojo5UVFQzMzMZGRkREREMDAy4uLisrKylpaV4eHhkZGRPT08/Pz/IfxjQAAAAgklEQVQoz53RRw7DIBBAUb5pxr2m3/+ckfDImwyJlL9DDzQgDIUMRu1vWOxTBdeM+onApENF0qHjpkOk2VTwLVEF40Kbfj1wK8AVu2pQA1aBBYDHJ1wy9Cf4cXD5chzNAvsAnc8TjoLAhIzsBao9w1rlVTIvkOYMd9nm6xPi168t9AYkbANdajpjcwAAAABJRU5ErkJggg==\n// @namespace  https://github.com/hoothin/UserScripts\n// @homepage  https://pv.hoothin.com/\n// @supportURL  https://github.com/hoothin/UserScripts/issues\n// @connect  www.google.com\n// @connect  www.google.com.hk\n// @connect  www.google.co.jp\n// @connect  ipv4.google.com\n// @connect  image.baidu.com\n// @connect  www.tineye.com\n// @connect  hoothin.com\n// @connect  *\n// @grant  GM_getValue\n// @grant  GM_setValue\n// @grant  GM_deleteValue\n// @grant  GM_addStyle\n// @grant  GM_openInTab\n// @grant  GM_setClipboard\n// @grant  GM_xmlhttpRequest\n// @grant  GM_registerMenuCommand\n// @grant  GM_notification\n// @grant  GM_download\n// @grant  GM.getValue\n// @grant  GM.setValue\n// @grant  GM.deleteValue\n// @grant  GM.addStyle\n// @grant  GM.openInTab\n// @grant  GM.setClipboard\n// @grant  GM.xmlHttpRequest\n// @grant  GM.registerMenuCommand\n// @grant  GM.notification\n// @grant  unsafeWindow\n// @require  https://update.greasyfork.org/scripts/6158/23710/GM_config%20CN.js\n// @require  https://update.greasyfork.org/scripts/438080/1738227/pvcep_rules.js\n// @require  https://update.greasyfork.org/scripts/440698/1740314/pvcep_lang.js\n// @match  *://*/*\n// @exclude  http://www.toodledo.com/tasks/*\n// @exclude  http*://maps.google.com*/*\n// @exclude  *://www.google.*/_/chrome/newtab*\n// @exclude  *://mega.*/*\n// @exclude  *://*.mega.*/*\n// @exclude  *://onedrive.live.com/*\n// @run-at  document-end\n// @created  2011-6-15\n// @contributionURL  https://ko-fi.com/hoothin\n// @contributionAmount  1\n// @downloadURL  https://update.greasyfork.org/scripts/24204/Picviewer%20CE%2B.user.js\n// @updateURL  https://update.greasyfork.org/scripts/24204/Picviewer%20CE%2B.meta.js",
   "sha256": "d46b17a95257deffa8715f21a481dd89074e444c6c7630b79fa647521364190d",
-  "discovered_at": "2026-05-04T06:07:58.449096+00:00",
+  "discovered_at": "2026-06-29T06:33:59.897965+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 304098,
-  "good_ratings": 1370,
+  "install_count": 306117,
+  "good_ratings": 1376,
   "bad_ratings": 1,
-  "summary": {}
+  "summary": {
+    "applicable_sites": [
+      "所有网站（除特定排除项，如谷歌地图、Mega、OneDrive等）"
+    ],
+    "description": "Picviewer CE+ 是一款在线看图工具，支持图片弹出大图、缩放、旋转、翻转和批量保存。安装后，浏览网页时可快速查看和操作图片，提升图片浏览体验。适用于大多数网站。",
+    "permissions": [
+      {
+        "explanation": "用于读取用户设置和数据。",
+        "grant": "GM_getValue"
+      },
+      {
+        "explanation": "用于保存用户设置和数据。",
+        "grant": "GM_setValue"
+      },
+      {
+        "explanation": "用于删除用户设置和数据。",
+        "grant": "GM_deleteValue"
+      },
+      {
+        "explanation": "用于添加自定义样式，优化图片查看界面。",
+        "grant": "GM_addStyle"
+      },
+      {
+        "explanation": "用于在新标签页打开图片或相关链接。",
+        "grant": "GM_openInTab"
+      },
+      {
+        "explanation": "用于复制图片链接或信息到剪贴板。",
+        "grant": "GM_setClipboard"
+      },
+      {
+        "explanation": "用于发送网络请求，获取图片或相关数据。",
+        "grant": "GM_xmlhttpRequest"
+      },
+      {
+        "explanation": "用于在脚本菜单中添加功能入口。",
+        "grant": "GM_registerMenuCommand"
+      },
+      {
+        "explanation": "用于弹出通知，提示操作结果。",
+        "grant": "GM_notification"
+      },
+      {
+        "explanation": "用于批量下载图片。",
+        "grant": "GM_download"
+      },
+      {
+        "explanation": "用于访问网页的原生窗口对象，增强功能。",
+        "grant": "unsafeWindow"
+      }
+    ],
+    "tags": [
+      "图片浏览",
+      "批量下载",
+      "网页工具",
+      "图片旋转",
+      "图片弹出",
+      "效率提升"
+    ],
+    "usage": [
+      "安装脚本后，浏览网页时鼠标悬停或点击图片即可弹出大图。",
+      "弹出的图片窗口可进行缩放、旋转、翻转等操作。",
+      "可通过脚本菜单批量保存网页上的图片。",
+      "如需设置或自定义功能，可在浏览器的油猴菜单中调整脚本配置。"
+    ],
+    "zh_name": "Picviewer CE+"
+  }
 }

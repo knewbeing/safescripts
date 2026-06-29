@@ -24,30 +24,30 @@
       "sc-cdn.net",
       "pinimg.com"
     ],
-    "detected": true
+    "detected": false
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限并声明了大量 @connect 域名，允许跨域请求视频 CDN，但未见明显用户数据外传逻辑。",
-      "location": "元数据 @grant/@connect",
-      "recommendation": "确保仅用于视频资源下载，不要上传用户敏感信息。",
-      "severity": "MEDIUM",
-      "type": "数据外传权限"
-    },
-    {
-      "description": "脚本申请了 GM_download、GM_openInTab、unsafeWindow 等高权限，但代码未见实际使用逻辑（代码不完整，需完整代码确认）。",
-      "location": "元数据 @grant",
-      "recommendation": "仅申请实际需要的权限，避免权限滥用。",
+      "description": "脚本申请了 GM_openInTab、GM.openInTab、GM_download、unsafeWindow 等高权限，但代码未展示实际使用情况，存在权限滥用风险。",
+      "location": "@grant 元数据",
+      "recommendation": "仅申请实际需要的权限，移除未使用的高权限。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "脚本未见代码主体，无法确认是否存在隐私采集、远程代码执行、混淆、XSS 等高危行为。",
+      "description": "脚本未包含任何第三方库的 @require，但如后续引入应注意供应链安全。",
+      "location": "元数据",
+      "recommendation": "如需引入第三方库，建议使用官方 CDN 并锁定版本哈希。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    },
+    {
+      "description": "脚本未展示完整实现代码，无法确认是否存在数据外传、隐私采集、远程代码执行等高危行为。",
       "location": "代码主体缺失",
-      "recommendation": "需补充完整代码进行全面审查。",
+      "recommendation": "请补充完整实现代码以进行全面安全审查。",
       "severity": "CRITICAL",
-      "type": "代码完整性/未知风险"
+      "type": "代码不完整"
     }
   ],
   "obfuscation_detected": false,
@@ -57,10 +57,10 @@
   },
   "risk_level": "CRITICAL",
   "script_name": "All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)",
-  "security_score": 47,
-  "summary": "该脚本元数据声明了大量高权限和跨域访问，但缺少完整代码，无法判断是否存在隐私泄露、远程代码执行等高危行为。仅凭元数据，存在中等权限滥用和数据外传风险，且因代码缺失存在重大未知风险，安全性无法保证。",
+  "security_score": 50,
+  "summary": "脚本元数据未发现明显恶意行为，但由于缺少完整实现代码，无法排查数据外传、隐私采集、远程代码执行等关键风险。已发现权限申请过高问题。建议补充完整代码并最小化权限申请。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-22T07:19:18.951180+00:00",
+  "analyzed_at": "2026-06-29T06:37:10.595063+00:00",
   "slug": "All-in-One_Video_Downloader_HD_YouTube_TikTok_Instagram_X_More"
 }

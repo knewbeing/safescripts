@@ -30,9 +30,9 @@ title: "Gemini NanoBanana Watermark Remover"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：84/100　　**分析时间**：2026-06-22
+**风险等级**：🟡 LOW　　**安全评分**：84/100　　**分析时间**：2026-06-29
 
-> 该脚本主要用于移除 Gemini AI 生成图片的水印，未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。存在未使用的高权限申请（GM_xmlhttpRequest、unsafeWindow），建议精简权限。整体风险较低。
+> 该脚本主要用于页面内图像处理，未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险或 iframe 风险。仅存在声明了未实际使用的高权限（GM_xmlhttpRequest、unsafeWindow），建议去除以最小化权限。整体安全风险极低。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -46,14 +46,14 @@ title: "Gemini NanoBanana Watermark Remover"
 ### 发现的问题
 
 **🟠 MEDIUM** — 权限滥用  
-> 申请了 GM_xmlhttpRequest 权限，但实际代码未检测到对外部服务器的数据发送，仅用于本地资源处理。  
-> 位置：@grant 元数据  
-> 建议：如无必要可移除 GM_xmlhttpRequest 权限，减少权限面。
+> 脚本声明 @grant GM_xmlhttpRequest 但实际代码未发现任何网络请求相关调用（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource、sendBeacon 等），也未发现数据外传逻辑。  
+> 位置：元数据与主代码  
+> 建议：如无实际用途，建议移除 @grant GM_xmlhttpRequest 权限。
 
 **🟠 MEDIUM** — 权限滥用  
-> 申请了 unsafeWindow 权限，但代码未检测到对 unsafeWindow 的实际使用。  
-> 位置：@grant 元数据  
-> 建议：如无必要可移除 unsafeWindow 权限，减少权限面。
+> 脚本声明 @grant unsafeWindow，但实际代码未发现对 unsafeWindow 的访问或操作。  
+> 位置：元数据与主代码  
+> 建议：如无实际用途，建议移除 @grant unsafeWindow 权限。
 
 ---
 

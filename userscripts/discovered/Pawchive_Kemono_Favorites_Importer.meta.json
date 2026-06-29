@@ -1,0 +1,55 @@
+{
+  "slug": "Pawchive_Kemono_Favorites_Importer",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/582585-pawchive-kemono-favorites-importer",
+  "source_repo": "582585",
+  "raw_url": "https://update.greasyfork.org/scripts/582585/Pawchive%20Kemono%20Favorites%20Importer.user.js",
+  "filename": "Pawchive_Kemono_Favorites_Importer.user.js",
+  "name": "Pawchive Kemono Favorites Importer",
+  "version": "1.0.1",
+  "description": "Import Kemono favorites (creators and posts) into Pawchive",
+  "match": [
+    "https://pawchive.st/*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Pawchive Kemono Favorites Importer\n// @namespace  http://tampermonkey.net/\n// @version  1.0.1\n// @description  Import Kemono favorites (creators and posts) into Pawchive\n// @author  VerseHell\n// @match  https://pawchive.st/*\n// @grant  none\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/582585/Pawchive%20Kemono%20Favorites%20Importer.user.js\n// @updateURL  https://update.greasyfork.org/scripts/582585/Pawchive%20Kemono%20Favorites%20Importer.meta.js",
+  "sha256": "1e697226e3ab2b7c08c01d2fa90fa81db26a9dfb195b8e8a67f64b20f3f3b236",
+  "discovered_at": "2026-06-29T06:34:23.856753+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 657,
+  "good_ratings": 2,
+  "bad_ratings": 0,
+  "summary": {
+    "applicable_sites": [
+      "Pawchive"
+    ],
+    "description": "本脚本可以将 Kemono 网站收藏的创作者和帖子导入到 Pawchive 网站的收藏列表中。它在 Pawchive 收藏页面添加导入按钮，方便用户批量迁移收藏内容。",
+    "permissions": [
+      {
+        "explanation": "脚本不需要额外权限，仅在 Pawchive 网站运行。",
+        "grant": "none"
+      }
+    ],
+    "tags": [
+      "收藏管理",
+      "内容迁移",
+      "批量操作",
+      "Pawchive",
+      "Kemono",
+      "数据导入"
+    ],
+    "usage": [
+      "安装脚本后，访问 Pawchive 网站。",
+      "进入 Pawchive 的收藏页面。",
+      "页面顶部会出现“Import Kemono Favorites”按钮。",
+      "点击按钮，选择从 Kemono 导出的收藏 JSON 文件。",
+      "等待导入完成，收藏内容会自动添加到 Pawchive。"
+    ],
+    "zh_name": "Pawchive Kemono收藏导入"
+  }
+}

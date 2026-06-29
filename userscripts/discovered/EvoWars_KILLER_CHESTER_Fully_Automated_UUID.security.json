@@ -1,0 +1,33 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "The script intercepts the game's network requests to extract the user's UUID and stores it in localStorage. This is a form of local privacy collection, as it collects a unique user identifier without explicit user consent.",
+      "location": "hookNetworkEngine() and localStorage.setItem('evowars_auto_uuid', userUUID)",
+      "recommendation": "Clearly inform users about UUID interception and storage. Avoid collecting or storing unique identifiers unless necessary.",
+      "severity": "CRITICAL",
+      "type": "Privacy Collection"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [
+      "Reads and writes localStorage key 'evowars_auto_uuid' to store user UUID",
+      "Intercepts network requests to extract UUID parameter"
+    ],
+    "detected": true
+  },
+  "risk_level": "CRITICAL",
+  "script_name": "EvoWars KILLER CHESTER (Fully Automated UUID)",
+  "security_score": 75,
+  "summary": "This UserScript does not transmit data to third-party servers and does not use obfuscation or supply chain dependencies. However, it intercepts the user's UUID from network requests and stores it locally, which is a critical privacy concern. No evidence of DOM XSS, remote code execution, or permission abuse was found.",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-06-29T06:43:34.747866+00:00",
+  "slug": "EvoWars_KILLER_CHESTER_Fully_Automated_UUID"
+}

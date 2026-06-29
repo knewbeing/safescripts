@@ -17,21 +17,21 @@
   "require": [],
   "metadata_raw": "// @name  EvoKID\n// @namespace  http://tampermonkey.net/\n// @version  3.6.0\n// @description  MOD EVOWARS.IO VIP BY NLHH\n// @author  #NLHH\n// @match  https://evowars.io/*\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=evowars.io\n// @grant  none\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/581536/EvoKID.user.js\n// @updateURL  https://update.greasyfork.org/scripts/581536/EvoKID.meta.js",
   "sha256": "056f2e1d0dc47186a3fbb959596132dd525f96db6a1e3b94805115f14219db70",
-  "discovered_at": "2026-06-22T07:16:56.741657+00:00",
+  "discovered_at": "2026-06-29T06:33:42.669128+00:00",
   "ai_reason": "",
   "target_roles": "",
-  "is_new": true,
-  "install_count": 273,
+  "is_new": false,
+  "install_count": 582,
   "good_ratings": 1,
   "bad_ratings": 0,
   "summary": {
     "applicable_sites": [
       "Evowars.io"
     ],
-    "description": "本脚本为 Evowars.io 游戏提供增强功能，类似 VIP 模式。它优化了武器属性，让玩家在游戏中获得更好的体验和优势。安装后，玩家可以自动享受这些增强效果，无需额外操作。",
+    "description": "本脚本为 Evowars.io 游戏提供 VIP 模式，增强武器属性，让玩家在游戏中拥有更强的攻击距离和角度。安装后，玩家可体验更高级的游戏功能，提升竞争力。",
     "permissions": [
       {
-        "explanation": "脚本无需特殊权限，仅在网页内运行。",
+        "explanation": "脚本无需额外权限，仅在页面内运行。",
         "grant": "none"
       }
     ],
@@ -39,12 +39,13 @@
       "游戏辅助",
       "网页游戏",
       "Evowars.io",
-      "增强功能",
-      "VIP模式"
+      "武器增强",
+      "VIP功能"
     ],
     "usage": [
       "安装脚本后，打开 Evowars.io 网站。",
-      "进入游戏即可自动体验增强功能，无需手动设置。"
+      "进入游戏即可自动启用 VIP 模式，无需额外操作。",
+      "享受增强后的武器属性和更强的游戏体验。"
     ],
     "zh_name": "EvoKID"
   }

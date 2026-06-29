@@ -9,32 +9,25 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "@grant 了 GM_xmlhttpRequest 权限，但脚本本身未直接使用，仅用于后续可能的功能扩展。",
-      "location": "元数据区",
-      "recommendation": "如无实际用途，建议移除高权限申请。",
+      "description": "The script requests @connect permission for translate.googleapis.com and grants GM_xmlhttpRequest, but no actual data transmission to third-party servers is present in the provided code. If future code uses GM_xmlhttpRequest to send user data to this or other domains, it could pose a risk.",
+      "location": "Metadata block and permissions",
+      "recommendation": "Ensure that any network requests do not transmit sensitive user data. Limit @connect and GM_xmlhttpRequest usage to only necessary and trusted endpoints.",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "Potential data transmission risk"
     },
     {
-      "description": "@connect 了 translate.googleapis.com，但脚本本身未直接调用 GM_xmlhttpRequest 访问该域名。",
-      "location": "元数据区",
-      "recommendation": "如无实际用途，建议移除 @connect 权限。",
+      "description": "The script requests GM_xmlhttpRequest permission, but the provided code does not use it. This is a higher privilege than required for the current code.",
+      "location": "Metadata block",
+      "recommendation": "Remove unused GM_xmlhttpRequest permission to reduce attack surface.",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "Permission overgrant"
     },
     {
-      "description": "脚本重写 fetch 和 XMLHttpRequest 以拦截特定 API，但未向第三方服务器发送数据。",
-      "location": "全局作用域",
-      "recommendation": "确保未来不添加外传逻辑。",
-      "severity": "LOW",
-      "type": "数据外传"
-    },
-    {
-      "description": "@require 加载了 turndown@7.1.3，来源为 unpkg.com，版本已锁定。",
-      "location": "元数据区",
-      "recommendation": "建议使用官方 CDN 并定期检查依赖安全性。",
-      "severity": "LOW",
-      "type": "供应链风险"
+      "description": "The script uses @require to load turndown from unpkg.com, a widely used CDN, but does not pin to a specific file hash. This exposes the script to supply chain risks if the CDN is compromised or the file is updated.",
+      "location": "@require https://unpkg.com/turndown@7.1.3/lib/turndown.browser.umd.js",
+      "recommendation": "Pin to a specific file hash or use a trusted, immutable CDN to prevent supply chain attacks.",
+      "severity": "MEDIUM",
+      "type": "Supply chain risk"
     }
   ],
   "obfuscation_detected": false,
@@ -45,9 +38,9 @@
   "risk_level": "LOW",
   "script_name": "C.AI Custom Chat Bubbles + Bypass Chat Limit (Unlock edit message button)",
   "security_score": 81,
-  "summary": "该脚本主要用于界面美化和功能解锁，未检测到数据外传、隐私采集、远程代码执行或混淆行为。权限申请略高于实际需求，存在轻微供应链风险。整体风险较低，建议定期复查依赖和权限。",
-  "supply_chain_risk": false,
+  "summary": "该脚本主要用于美化 character.ai 聊天界面和绕过聊天限制。未发现数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。存在权限过度申请（GM_xmlhttpRequest 未实际使用）、供应链风险（@require 未锁定哈希），建议收紧权限和固定依赖版本。整体风险较低，安全性良好。",
+  "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-22T07:21:39.833606+00:00",
+  "analyzed_at": "2026-06-29T06:38:23.169015+00:00",
   "slug": "CAI_Custom_Chat_Bubbles_Bypass_Chat_Limit_Unlock_edit_message_button"
 }

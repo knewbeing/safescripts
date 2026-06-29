@@ -2,32 +2,89 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
-      "Multiple third-party CDN/proxy domains (e.g., gh.h233.eu.org, gh-proxy.org, ghproxy.it, github.boki.moe, etc.)"
+      "gh.h233.eu.org",
+      "rapidgit.jjda.de5.net",
+      "gh.ddlc.top",
+      "gh-proxy.org",
+      "cdn.gh-proxy.org",
+      "edgeone.gh-proxy.org",
+      "cors.isteed.cc",
+      "ghproxy.it",
+      "github.boki.moe",
+      "gh-proxy.net",
+      "gh.jasonzeng.dev",
+      "gh.monlor.com",
+      "fastgit.cc",
+      "github.tbedu.top",
+      "firewall.lxstd.org",
+      "github.ednovas.xyz",
+      "ghfile.geekertao.top",
+      "ghp.keleyaa.com",
+      "gh.chjina.com",
+      "ghpxy.hwinzniej.top",
+      "cdn.crashmc.com",
+      "git.yylx.win",
+      "gitproxy.mrhjx.cn",
+      "ghproxy.cxkpro.top",
+      "gh.xxooo.cf",
+      "github.limoruirui.com",
+      "gh.idayer.com",
+      "gh.llkk.cc",
+      "down.npee.cn",
+      "raw.ihtw.moe",
+      "xget.xi-xu.me",
+      "gh.nxnow.top",
+      "gh.zwy.one",
+      "ghproxy.monkeyray.net",
+      "gh.xx9527.cn",
+      "ghfast.top",
+      "wget.la"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script rewrites GitHub download links to use a large number of third-party CDN/proxy services for file acceleration. This causes user-initiated download requests (including repository ZIPs, raw files, releases, etc.) to be sent to these third-party servers, which may log or process user download activity.",
-      "location": "download_url_us array and link rewriting logic",
-      "recommendation": "Warn users about the privacy risk of using untrusted third-party proxies. Consider allowing users to opt-out or select trusted endpoints only.",
+      "description": "脚本通过生成加速下载链接，将用户的下载请求重定向到第三方公益加速节点（如 gh.h233.eu.org、gh-proxy.org 等），这些节点会收到用户请求的 Github 资源 URL。",
+      "location": "download_url_us 数组及相关逻辑",
+      "recommendation": "提醒用户这些第三方加速节点可能记录访问日志，建议仅用于公开资源下载，避免下载敏感/私有仓库内容。",
       "severity": "CRITICAL",
-      "type": "Data exfiltration risk"
+      "type": "数据外传"
     },
     {
-      "description": "The script requests a large set of @grant permissions, including GM_openInTab, GM_setClipboard, GM_notification, but not all are strictly necessary for the core download acceleration function.",
-      "location": "@grant metadata block",
-      "recommendation": "Reduce permissions to the minimum required for functionality. Remove unused high-privilege grants.",
-      "severity": "MEDIUM",
-      "type": "Permission overgrant"
+      "description": "脚本未发现直接读取 cookie、localStorage、sessionStorage、IndexedDB、表单、剪贴板、键盘输入等隐私数据的行为。",
+      "location": "全局",
+      "recommendation": "保持现状，勿添加隐私采集代码。",
+      "severity": "LOW",
+      "type": "隐私采集"
     },
     {
-      "description": "Some of the CDN/proxy endpoints are not well-known or official, increasing the risk of supply chain attacks or malicious code/data interception.",
-      "location": "download_url_us array",
-      "recommendation": "Restrict to well-known, trusted CDN endpoints. Allow users to review and select endpoints. Document the risks clearly.",
-      "severity": "MEDIUM",
-      "type": "Supply chain risk"
+      "description": "未发现 eval、new Function、setTimeout(string)、setInterval(string) 或动态 script 标签加载远程 JS。",
+      "location": "全局",
+      "recommendation": "保持现状，勿引入远程代码执行风险。",
+      "severity": "LOW",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "未发现明显的代码混淆、base64 解码、字符串数组混淆或高度压缩代码。",
+      "location": "全局",
+      "recommendation": "保持代码可读性，便于社区审计。",
+      "severity": "LOW",
+      "type": "代码混淆"
+    },
+    {
+      "description": "@grant 申请了 GM_openInTab、GM_notification、GM_setClipboard 等权限，但均有合理用途，未发现权限滥用。",
+      "location": "元数据 @grant",
+      "recommendation": "仅申请实际需要的权限，避免权限滥用。",
+      "severity": "LOW",
+      "type": "权限滥用"
+    },
+    {
+      "description": "未发现 @require 加载第三方库，供应链风险较低。",
+      "location": "元数据",
+      "recommendation": "如需引入第三方库，建议使用官方 CDN 并锁定版本。",
+      "severity": "LOW",
+      "type": "供应链风险"
     }
   ],
   "obfuscation_detected": false,
@@ -35,12 +92,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "HIGH",
+  "risk_level": "MEDIUM",
   "script_name": "Github Enhancement - High Speed Download",
-  "security_score": 42,
-  "summary": "The script does not collect user data directly or perform keylogging, but it rewrites download links to a large number of third-party CDN/proxy endpoints. This exposes users to privacy and supply chain risks, as their download activity and possibly GitHub session data could be logged or intercepted by these third parties. No code obfuscation or DOM XSS risk detected. Permissions are somewhat overbroad. The script is not recommended for use in sensitive environments.",
-  "supply_chain_risk": true,
+  "security_score": 75,
+  "summary": "该脚本通过生成第三方加速节点的下载链接，将用户的 Github 资源请求重定向到多个公益 CDN 节点。此行为会导致用户访问的资源 URL 被第三方服务器知晓，存在一定的数据外传和隐私风险（尤其是用于私有仓库时）。未发现代码混淆、远程代码执行、隐私采集、XSS、权限滥用等高危问题。建议用户仅用于公开资源下载，避免下载敏感内容。",
+  "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-22T07:30:02.191825+00:00",
+  "analyzed_at": "2026-06-29T06:46:36.634662+00:00",
   "slug": "Github_增强_-_高速下载"
 }

@@ -1,0 +1,81 @@
+{
+  "slug": "fsfb_script",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/446564-fsfb-script",
+  "source_repo": "446564",
+  "raw_url": "https://update.greasyfork.org/scripts/446564/fsfb%20script.user.js",
+  "filename": "fsfb_script.user.js",
+  "name": "fsfb script",
+  "version": "1.6.5",
+  "description": "An agma.io script, which includes fastsplit, secret bot packs, linesplit lock, and many other amazing features!",
+  "match": [
+    "*://agma.io/*"
+  ],
+  "grant": [
+    "unsafeWindow",
+    "GM_setValue",
+    "GM_getValue",
+    "GM_xmlhttpRequest",
+    "GM_registerMenuCommand",
+    "GM_unregisterMenuCommand"
+  ],
+  "require": [
+    "https://greasyfork.org/scripts/459346-fsfb-facts/code/fsfb%20facts.js?version=1145073"
+  ],
+  "metadata_raw": "// @name  fsfb script\n// @namespace  http://tampermonkey.net/\n// @homepage  https://greasyfork.org/scripts/446564/\n// @version  1.6.5\n// @description  An agma.io script, which includes fastsplit, secret bot packs, linesplit lock, and many other amazing features!\n// @author  fishy & firebone\n// @match  *://agma.io/*\n// @icon  data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIGlkPSJhIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2aWV3Qm94PSIwIDAgNTE1IDUxNSI+PGRlZnM+PHJhZGlhbEdyYWRpZW50IGlkPSJiIiBjeD0iMjg2LjgiIGN5PSIxMDYiIGZ4PSIyODYuOCIgZnk9IjEwNiIgcj0iMTEzLjI4NCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2VmNDYzMCIvPjxzdG9wIG9mZnNldD0iLjEyNSIgc3RvcC1jb2xvcj0iI2VjNGUzMSIvPjxzdG9wIG9mZnNldD0iLjI1IiBzdG9wLWNvbG9yPSIjZTk1ZDM1Ii8+PHN0b3Agb2Zmc2V0PSIuNTIxIiBzdG9wLWNvbG9yPSIjZTk4MjM2Ii8+PHN0b3Agb2Zmc2V0PSIuOSIgc3RvcC1jb2xvcj0iI2ZjYzczOSIvPjxzdG9wIG9mZnNldD0iLjk4MSIgc3RvcC1jb2xvcj0iI2YxZDIzNSIvPjwvcmFkaWFsR3JhZGllbnQ+PHJhZGlhbEdyYWRpZW50IGlkPSJjIiBjeD0iMzIxLjIiIGN5PSIxMzMuMiIgZng9IjMyMS4yIiBmeT0iMTMzLjIiIHI9IjM5LjUyNSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2U3NDQyZSIvPjxzdG9wIG9mZnNldD0iLjEyNSIgc3RvcC1jb2xvcj0iI2U1NGMyZiIvPjxzdG9wIG9mZnNldD0iLjI1IiBzdG9wLWNvbG9yPSIjZTM1YjMzIi8+PHN0b3Agb2Zmc2V0PSIuNTIxIiBzdG9wLWNvbG9yPSIjZTk4MjM2Ii8+PHN0b3Agb2Zmc2V0PSIuOSIgc3RvcC1jb2xvcj0iI2ZjYzczOSIvPjxzdG9wIG9mZnNldD0iLjk4MSIgc3RvcC1jb2xvcj0iI2ZjYzg0OSIvPjwvcmFkaWFsR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJkIiB4MT0iMTg4LjE0NiIgeTE9IjIzMi41NDYiIHgyPSIxNTMuNDc5IiB5Mj0iMjU3LjA3OSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2UzNDIyZSIvPjxzdG9wIG9mZnNldD0iLjExNyIgc3RvcC1jb2xvcj0iI2UyNGEyZiIvPjxzdG9wIG9mZnNldD0iLjI1IiBzdG9wLWNvbG9yPSIjZTI1YjMzIi8+PHN0b3Agb2Zmc2V0PSIuNTIxIiBzdG9wLWNvbG9yPSIjZTk4MjM2Ii8+PHN0b3Agb2Zmc2V0PSIuOSIgc3RvcC1jb2xvcj0iI2ZjYzczOSIvPjxzdG9wIG9mZnNldD0iLjk4MSIgc3RvcC1jb2xvcj0iI2ZjYzg0OSIvPjwvbGluZWFyR3JhZGllbnQ+PHJhZGlhbEdyYWRpZW50IGlkPSJlIiBjeD0iMTA1LjMzMyIgY3k9IjI2Ni42NjciIGZ4PSIxMDUuMzMzIiBmeT0iMjY2LjY2NyIgcj0iMjcwLjMwNCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIG9mZnNldD0iLjExIiBzdG9wLWNvbG9yPSIjZmNjODQ5Ii8+PHN0b3Agb2Zmc2V0PSIuMTE0IiBzdG9wLWNvbG9yPSIjZmNjNzQ3Ii8+PHN0b3Agb2Zmc2V0PSIuMTczIiBzdG9wLWNvbG9yPSIjZmNjNzNjIi8+PHN0b3Agb2Zmc2V0PSIuMjM2IiBzdG9wLWNvbG9yPSIjZmNjNzM5Ii8+PHN0b3Agb2Zmc2V0PSIuNjEyIiBzdG9wLWNvbG9yPSIjZTk4MjM2Ii8+PHN0b3Agb2Zmc2V0PSIuNzgzIiBzdG9wLWNvbG9yPSIjZTk1ZDM1Ii8+PHN0b3Agb2Zmc2V0PSIuODgyIiBzdG9wLWNvbG9yPSIjZWU1NzM0Ii8+PHN0b3Agb2Zmc2V0PSIuODg2IiBzdG9wLWNvbG9yPSIjZWM1NjMzIi8+PHN0b3Agb2Zmc2V0PSIuOTE2IiBzdG9wLWNvbG9yPSIjZTU1MjJmIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZTQ1MTJlIi8+PC9yYWRpYWxHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImYiIGN4PSIzNzAiIGN5PSIzMTIuMTMzIiBmeD0iMzcwIiBmeT0iMzEyLjEzMyIgcj0iMzguOTQyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZDk0MDJiIi8+PHN0b3Agb2Zmc2V0PSIuMTE3IiBzdG9wLWNvbG9yPSIjZGE0ODJkIi8+PHN0b3Agb2Zmc2V0PSIuMjUiIHN0b3AtY29sb3I9IiNkZDU5MzIiLz48c3RvcCBvZmZzZXQ9Ii41MjEiIHN0b3AtY29sb3I9IiNlOTgyMzYiLz48c3RvcCBvZmZzZXQ9Ii45IiBzdG9wLWNvbG9yPSIjZmNjNzM5Ii8+PHN0b3Agb2Zmc2V0PSIuOTgxIiBzdG9wLWNvbG9yPSIjZmNjODQ5Ii8+PC9yYWRpYWxHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImciIGN4PSIzODEuMiIgY3k9IjI1OCIgZng9IjM4MS4yIiBmeT0iMjU4IiByPSIxMTMuNjAzIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZWY0NjMwIi8+PHN0b3Agb2Zmc2V0PSIuMTI1IiBzdG9wLWNvbG9yPSIjZWM0ZTMxIi8+PHN0b3Agb2Zmc2V0PSIuMjUiIHN0b3AtY29sb3I9IiNlOTVkMzUiLz48c3RvcCBvZmZzZXQ9Ii40IiBzdG9wLWNvbG9yPSIjZTk4MjM2Ii8+PHN0b3Agb2Zmc2V0PSIuNDExIiBzdG9wLWNvbG9yPSIjZTk4NDM2Ii8+PHN0b3Agb2Zmc2V0PSIuNTM2IiBzdG9wLWNvbG9yPSIjZjFhMTM3Ii8+PHN0b3Agb2Zmc2V0PSIuNjYiIHN0b3AtY29sb3I9IiNmN2I2MzgiLz48c3RvcCBvZmZzZXQ9Ii43ODIiIHN0b3AtY29sb3I9IiNmYWMyMzgiLz48c3RvcCBvZmZzZXQ9Ii45IiBzdG9wLWNvbG9yPSIjZmNjNzM5Ii8+PHN0b3Agb2Zmc2V0PSIuOTgxIiBzdG9wLWNvbG9yPSIjZmNjODQ5Ii8+PC9yYWRpYWxHcmFkaWVudD48bGluZWFyR3JhZGllbnQgaWQ9ImgiIHgxPSIyNjkuOTQ0IiB5MT0iMjg3LjM0NSIgeDI9IjI2MC41MzciIHkyPSIyODkuMTE1IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjN2U0NzBjIi8+PHN0b3Agb2Zmc2V0PSIuOTk2IiBzdG9wLWNvbG9yPSIjNWYyZjAwIi8+PC9saW5lYXJHcmFkaWVudD48bGluZWFyR3JhZGllbnQgaWQ9ImkiIHgxPSIzMzkuNTU2IiB5MT0iMjMzLjgwMSIgeDI9IjMyMi4yMjIiIHkyPSIxNzEuNDY4IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZTlhZTM1Ii8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmVkNTczIi8+PC9saW5lYXJHcmFkaWVudD48bGluZWFyR3JhZGllbnQgaWQ9ImoiIHgxPSIyNTQuNDk3IiB5MT0iMTExLjkzNiIgeDI9IjIwMC4xNjQiIHkyPSIxODYuNjAzIiB4bGluazpocmVmPSIjaSIvPjwvZGVmcz48cmVjdCB3aWR0aD0iNTE1IiBoZWlnaHQ9IjUxNSIgcng9IjEwMCIgcnk9IjEwMCIgc3R5bGU9ImZpbGw6Izc1MmIxNjsiLz48cGF0aCBkPSJNMTUwLjYyMiw0NTkuOTU2YzAsOC41MzMsMjEyLjI2NywxMS4yLDIxMi4yNjcsMHMtMjEyLjI2Ny0xMi44LTIxMi4yNjcsMFoiIHN0eWxlPSJmaWxsOiM0ZTFmMTQ7IG9wYWNpdHk6Ljk7Ii8+PHBhdGggZD0iTTI2NS44NjcsNDYuOTMzczMzLjgwMSwxOS4zMzMsMzMuODAxLDQ1LjczM2MwLDMzLjYtMzIuMzM0LDQxLjQ2Ny01MC42MDEsNTYuNzM0LDAsMC00OS43MzMsMzkuNDY3LTM3LjczMyw5My42LDAsMC00MC4yNjctMzcuOTc5LTE1LjkxMS05MS40OSwxMi44LTM5LjY0NCw3Ni45NzgtNjMuNjQ0LDc2Ljk3OC04OC44ODksMCwwLDEuMTU2LTIuNC02LjUzMy0xNS42ODlaIiBzdHlsZT0iZmlsbDp1cmwoI2IpOyIvPjxwYXRoIGQ9Ik0zMjAuOCwxMjUuMmMxNS40LDE1LjQsMzAuMjY3LTEzLjMzMywyNy40NjctMTkuNDY3LTguNjY3LTMuMzMzLTI2LjgtNi4xMzMtMjcuNDY3LDE5LjQ2N1oiIHN0eWxlPSJmaWxsOnVybCgjYyk7Ii8+PHBhdGggZD0iTTE5Mi4zMzQsMjQ5LjczM2MtNy45MzQsMTEuODY3LTM4LjczNCwxOS4zMzMtNDYuNjAxLTguNTMzLDQuNDkxLTQuMzUsMTYuOTU3LTkuNjYxLDI3Ljg2OC05LjQxMiw5LjgyMywuMjI0LDE4LjM4NSwzLjk1MywxOC43MzMsMTcuOTQ1WiIgc3R5bGU9ImZpbGw6dXJsKCNkKTsiLz48cGF0aCBkPSJNMjI3LjcxNSwyNTMuNjhjLTEyLTczLjM3OCw1Ni4zODQtMTA2LjI1OCw5MC44MjgtMTEwLjQ4LDAsMC0zMy41MTEsMjYuNDg5LTMzLjUxMSw2My4wMjJzMzcuNiw2OC44LDM3LjYsNjguOGMwLDAsNDUuMzMzLDMzLjg2Nyw0NS4zMzMsODYuOTMzcy00Mi4zMTEsOTguMjIyLTExMS40MzMsOTguMjIyLTk2LjAzMy01MC44NDQtMTAwLjMtNjAuOTc4Yy00LjI2Ny0xMC4xMzMtMzguNzU2LTE2LTM4Ljc1Ni0xNiwwLDAsMy43MzMtMzQuMzExLDMzLjQyMi01Ni41MzMsMTcuNTExLTUwLjU1NSw1MS43MTgtNjcuOTg3LDc2LjgxNi03Mi45ODYsNi40OTktMS4yOTQsMTIuNDAyLTEuNjgsMTcuMjI4LTEuNjgsMTUuNjQ0LDMuOTExLDE4Ljg0NCw2NS44OSwxOC44NDQsNjUuODksMCwwLTMyLjcxMSwzLjc5OS00NS4zMzMtMi40MjMsOS43NzgsMTEuOTExLDQwLjg4OSwxNC43NTYsNDAuODg5LDE0Ljc1Ni0uNTMzLDIzLjExMS00MS42LDM5LjQ2Ny0zNS4yLDkzLjY4OSw2LjA0NCw5LjI0NCwzNS4wMjIsNy40NjcsMzUuMDIyLDcuNDY3LDQ0LjQ0OS03LjY1Myw0NS4zMzMtNjUuMTMzLDQuNjIyLTExMy40ODhtLTQwLjg4OS00NS4yNjdjLTUuNDQ5LDAtOS44NjcsNC40MTctOS44NjcsOS44NjdzNC40MTcsOS44NjcsOS44NjcsOS44NjcsOS44NjctNC40MTcsOS44NjctOS44NjctNC40MTctOS44NjctOS44NjctOS44NjdaIiBzdHlsZT0iZmlsbDp1cmwoI2UpOyIvPjxwYXRoIGQ9Ik0zNjUuMzMzLDMwNy4wNjdjLjEzMy0xOC44LDEzLjczMy0yNy4zMzMsMjcuNzMzLTE5LjQ2NywxLjMzMywxNi41MzMtMTguMjgxLDMyLjkzMy0yNy43MzMsMTkuNDY3WiIgc3R5bGU9ImZpbGw6dXJsKCNmKTsiLz48cGF0aCBkPSJNMzU2Ljg2NywyNzguNDY3czE2Ljk5OS04Ljg2NywxNi45OTktMjguMDY3LTE4LTM1LjItMTgtMzUuMmMwLDAtMTcuODY3LTE5LjYtMTcuODY3LTM4LjhzOC44LTMyLjgsOC44LTMyLjhjMCwwLTM5LjEyNCwxOC4wMDctMzkuODY3LDU2LjgsMCwwLTEuNiwyNS42LDE0LjUzMyw0NC4xMzMsMCwwLDI4LjEzNSwzMy45MzQsMzUuNDAxLDMzLjkzNFoiIHN0eWxlPSJmaWxsOnVybCgjZyk7Ii8+PHBhdGggZD0iTTI2My43ODgsMzE3Ljg5Yy0xLjQxNi0xNC40MDMtNC41MS01NS41NTYtMTYuNTUtNjUuMDc4LDMxLjkyOSwxMi4zNTUsMjMuMDAzLDczLjI4NCwyMy4wMDMsNzMuMjg0bC02LjQ1My04LjIwNloiIHN0eWxlPSJmaWxsOnVybCgjaCk7IG9wYWNpdHk6LjY7Ii8+PHBhdGggZD0iTTMyMi4xNjcsMzMxLjgzM2MxMi41LDI5LjgzMywxOC4zNTMsODMuODExLTM0LDEwNC44MzMsNDMuODMzLTI3Ljc3OCw0MC43NzgtODQuMjc4LDM0LTEwNC44MzNaIiBzdHlsZT0iZmlsbDojZjU4NjYzOyIvPjxwYXRoIGQ9Ik0yNzUuMjA4LDI2OS4zNjdjLTM1LjkzNC00MS4xNjYtMjQuMTExLTk1LjI3OCw0My4xNjctMTI2LjE2Ny01Ni4xNjcsMzUuNTU2LTcwLjE2Nyw2OC4zMzMtNDMuMTY3LDEyNi4xNjdaIiBzdHlsZT0iZmlsbDojZjlhMzVkOyIvPjxwYXRoIGQ9Ik0yMjQuMjA0LDQyMy44NjRsLS43MDItOC40MTlzLTM3LTE2LjY2Ny0zNy0zOGMwLDMyLjY2NywzNy43MDIsNDYuNDE5LDM3LjcwMiw0Ni40MTlaIiBzdHlsZT0iZmlsbDojZjhhYzVlOyIvPjxwYXRoIGQ9Ik0zNDMuMjIyLDIzMS42NjdjLTguNjA4LTEwLjI3Mi0zMS40NzItMzQuOTE3LTE1LjU1Ni02My40NDQtMy41ODMsMjQuOTQ0LDIuNjY3LDM5LjI3OCwxNS41NTYsNjMuNDQ0WiIgc3R5bGU9ImZpbGw6dXJsKCNpKTsiLz48cGF0aCBkPSJNMjA0LDE5MS44MzNjLTUuNS0xOC42NjcsMjYuMjUtNjIuNTgzLDQ5LjgzMy03Ny00NSw1NS41LTM5LjE2Nyw1MS4zMzMtNDkuODMzLDc3WiIgc3R5bGU9ImZpbGw6dXJsKCNqKTsiLz48L3N2Zz4=\n// @run-at  document-start\n// @require  https://greasyfork.org/scripts/459346-fsfb-facts/code/fsfb%20facts.js?version=1145073\n// @license  GPL-3.0-or-later\n// @connect  translate.google.com\n// @connect  greasyfork.org\n// @grant  unsafeWindow\n// @grant  GM_setValue\n// @grant  GM_getValue\n// @grant  GM_xmlhttpRequest\n// @grant  GM_registerMenuCommand\n// @grant  GM_unregisterMenuCommand\n// @downloadURL  https://update.greasyfork.org/scripts/446564/fsfb%20script.user.js\n// @updateURL  https://update.greasyfork.org/scripts/446564/fsfb%20script.meta.js",
+  "sha256": "e717e38a768d3b619fb0e4103c897f27b507fbf6b560f1cd136b30a987a71676",
+  "discovered_at": "2026-06-29T06:34:19.611850+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 59969,
+  "good_ratings": 5,
+  "bad_ratings": 1,
+  "summary": {
+    "applicable_sites": [
+      "Agma.io"
+    ],
+    "description": "该脚本为 Agma.io 游戏提供增强功能，包括快速分裂、秘密机器人包、线分锁定等多种实用特性，帮助玩家更高效地操作和体验游戏。安装后可通过菜单和快捷键使用这些功能。",
+    "permissions": [
+      {
+        "explanation": "允许脚本访问和修改网页的全局变量，增强与游戏的交互能力。",
+        "grant": "unsafeWindow"
+      },
+      {
+        "explanation": "用于保存用户的设置或偏好，保证功能个性化。",
+        "grant": "GM_setValue"
+      },
+      {
+        "explanation": "用于读取用户保存的设置，实现持久化配置。",
+        "grant": "GM_getValue"
+      },
+      {
+        "explanation": "允许脚本发送网络请求，如获取数据或更新信息。",
+        "grant": "GM_xmlhttpRequest"
+      },
+      {
+        "explanation": "在浏览器菜单中添加自定义命令，方便用户操作脚本功能。",
+        "grant": "GM_registerMenuCommand"
+      },
+      {
+        "explanation": "允许移除自定义菜单命令，保持菜单整洁。",
+        "grant": "GM_unregisterMenuCommand"
+      }
+    ],
+    "tags": [
+      "游戏辅助",
+      "网页游戏",
+      "自动化",
+      "快捷操作",
+      "增强功能",
+      "Agma.io"
+    ],
+    "usage": [
+      "安装脚本后，进入 Agma.io 网站。",
+      "根据提示或菜单，选择需要的增强功能。",
+      "可使用快捷键或菜单命令快速切换和操作。",
+      "如需个性化设置，可在菜单中调整相关选项。"
+    ],
+    "zh_name": "Agma.io增强脚本"
+  }
+}

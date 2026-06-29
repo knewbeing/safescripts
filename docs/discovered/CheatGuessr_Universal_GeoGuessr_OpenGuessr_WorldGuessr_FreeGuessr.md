@@ -30,13 +30,13 @@ title: "CheatGuessr Universal | GeoGuessr | OpenGuessr | WorldGuessr | FreeGuess
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：42/100　　**分析时间**：2026-06-22
+**风险等级**：🔴 HIGH　　**安全评分**：52/100　　**分析时间**：2026-06-29
 
-> This UserScript transmits user location data to third-party services (nominatim.openstreetmap.org for reverse geocoding and discord.com for Discord integration), which constitutes a critical privacy and data exfiltration risk. It does not appear to collect cookies, localStorage, or sensitive form data, nor does it use obfuscation or dynamic code execution. The script uses Proxy wrappers on native functions to bypass anti-cheat mechanisms, which increases the attack surface. Notification API and GM_xmlhttpRequest permissions are requested, which are medium risks. No DOM XSS or supply chain risks were detected. The overall risk is HIGH due to critical data transmission issues.
+> This script transmits user location data (latitude/longitude) to a third-party geocoding service (nominatim.openstreetmap.org), which is a critical data exfiltration risk. It also requests notification permissions, modifies native browser APIs via Proxy (which could be abused for evasion or obfuscation), and requests more permissions than it uses. There is no evidence of direct privacy collection (e.g., cookies, input fields), DOM XSS, or supply chain risk in the provided code. The overall risk is HIGH due to the external data transmission and advanced API manipulation. User consent and transparency are recommended. Remove unused permissions and avoid weakening browser security features.
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：nominatim.openstreetmap.org, discord.com） |
+| 数据外传 | ❌ 检测到（目标：nominatim.openstreetmap.org） |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
@@ -46,34 +46,29 @@ title: "CheatGuessr Universal | GeoGuessr | OpenGuessr | WorldGuessr | FreeGuess
 ### 发现的问题
 
 **⛔ CRITICAL** — Data Exfiltration  
-> The script sends latitude and longitude coordinates to nominatim.openstreetmap.org for reverse geocoding via GM_xmlhttpRequest. This is a third-party service and may receive user location data.  
-> 位置：_getAddress function  
-> 建议：Inform users about third-party data transmission and consider proxying requests if privacy is a concern.
+> The script sends latitude and longitude coordinates to the third-party service nominatim.openstreetmap.org via GM_xmlhttpRequest for reverse geocoding.  
+> 位置：function _getAddress(lat, lng)  
+> 建议：Ensure only non-sensitive, non-personal data is sent. Inform users of this external request. Consider proxying or limiting data exposure.
 
-**⛔ CRITICAL** — Data Exfiltration  
-> The script is designed to send map pin data to Discord (discord.com) via webhook or API, which may include user actions or location data.  
-> 位置：@connect discord.com (potential usage in sendToDiscord feature)  
-> 建议：Ensure users are aware of what data is sent to Discord and allow them to opt-in/opt-out.
-
-**🟠 MEDIUM** — Sensitive API Usage  
-> The script requests Notification API permission and can send notifications to the user.  
-> 位置：requestNotificationPermission, sendNotification functions  
-> 建议：Ensure notifications are not abused and only used for legitimate user alerts.
+**🔴 HIGH** — Obfuscation/Evasion  
+> The script applies Proxy wrappers to native functions (e.g., setAttribute, push, fetch) to bypass anti-cheat and tracking mechanisms. This is advanced behavior that could be abused for obfuscation or evasion.  
+> 位置：Multiple locations (e.g., Element.prototype.setAttribute, Array.prototype.push, unsafeWindow.fetch)  
+> 建议：Review all Proxy usage for legitimate purpose. Avoid using Proxies to hide malicious behavior.
 
 **🟠 MEDIUM** — Sensitive API Usage  
-> The script applies Proxy wrappers to native functions (e.g., setAttribute, push, fetch) to bypass anti-cheat and tracking mechanisms. While not directly malicious, this increases attack surface and may break page logic.  
-> 位置：Multiple locations (platform-specific logic)  
-> 建议：Minimize Proxy usage and ensure it does not introduce security regressions or unexpected behavior.
+> The script requests Notification API permissions and can send browser notifications.  
+> 位置：sendNotification() / requestNotificationPermission()  
+> 建议：Ensure notifications are not abused. Inform users about notification usage.
 
-**🟠 MEDIUM** — Permission Abuse  
-> The script requests GM_xmlhttpRequest permission, which allows arbitrary cross-origin requests. This is necessary for its features but increases risk if the script is compromised.  
-> 位置：@grant GM_xmlhttpRequest  
-> 建议：Limit @connect domains to only those strictly necessary and review code for misuse.
+**🟠 MEDIUM** — Permission Overuse  
+> The script requests GM_xmlhttpRequest permission and @connect for discord.com, but no code in the provided snippet sends data to discord.com. This is a potential over-privilege.  
+> 位置：@grant/@connect metadata  
+> 建议：Remove unused permissions to reduce attack surface.
 
-**🟠 MEDIUM** — Sensitive API Usage  
-> The script requests Notification API permission and can send notifications to the user.  
-> 位置：requestNotificationPermission, sendNotification functions  
-> 建议：Ensure notifications are not abused and only used for legitimate user alerts.
+**🟡 LOW** — Clickjacking/iframe Risk  
+> The script modifies frame sandboxing behavior by disabling the 'sandbox' attribute on iframes for certain platforms, which may weaken clickjacking protections.  
+> 位置：Element.prototype.setAttribute Proxy  
+> 建议：Do not remove or bypass iframe sandboxing unless absolutely necessary and safe.
 
 ---
 

@@ -1,0 +1,56 @@
+{
+  "slug": "Pixeldrain_Download_Bypass_Enhanced",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/571369-pixeldrain-download-bypass-enhanced",
+  "source_repo": "571369",
+  "raw_url": "https://update.greasyfork.org/scripts/571369/Pixeldrain%20Download%20Bypass%20Enhanced.user.js",
+  "filename": "Pixeldrain_Download_Bypass_Enhanced.user.js",
+  "name": "Pixeldrain Download Bypass Enhanced",
+  "version": "1.0.1",
+  "description": "Bypass Pixeldrain Download Limit - enhanced, gallery,Albums ZIP support",
+  "match": [
+    "https://pixeldrain.com/*",
+    "https://pixeldrain.net/*",
+    "https://pixeldrain.dev/*",
+    "https://pixeldra.in/*"
+  ],
+  "grant": [
+    "GM_openInTab"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Pixeldrain Download Bypass Enhanced\n// @description  Bypass Pixeldrain Download Limit - enhanced, gallery,Albums ZIP support\n// @version  1.0.1\n// @author  GameDrive.Org\n// @homepageURL  https://pixeldrain-bypass.gamedrive.org\n// @match  https://pixeldrain.com/*\n// @match  https://pixeldrain.net/*\n// @match  https://pixeldrain.dev/*\n// @match  https://pixeldra.in/*\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=pixeldrain.com\n// @grant  GM_openInTab\n// @license  MIT\n// @namespace  https://greasyfork.org/users/1290286\n// @downloadURL  https://update.greasyfork.org/scripts/571369/Pixeldrain%20Download%20Bypass%20Enhanced.user.js\n// @updateURL  https://update.greasyfork.org/scripts/571369/Pixeldrain%20Download%20Bypass%20Enhanced.meta.js",
+  "sha256": "68f2837d12979a878b2ff51da426eb028de174f9ba928e56598439c6265dd8ab",
+  "discovered_at": "2026-06-29T06:34:30.271759+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 1448,
+  "good_ratings": 0,
+  "bad_ratings": 0,
+  "summary": {
+    "applicable_sites": [
+      "Pixeldrain"
+    ],
+    "description": "本脚本可以绕过 Pixeldrain 网站的下载限制，支持批量下载画廊和专辑 ZIP 文件。用户无需等待或受限于官方规则，提升下载体验。增强版还自动选择代理加速下载。",
+    "permissions": [
+      {
+        "explanation": "允许脚本在新标签页打开下载链接，方便批量下载。",
+        "grant": "GM_openInTab"
+      }
+    ],
+    "tags": [
+      "下载加速",
+      "资源获取",
+      "网盘",
+      "限制绕过",
+      "批量下载",
+      "代理"
+    ],
+    "usage": [
+      "安装脚本后，访问 Pixeldrain 网站。",
+      "在文件、画廊或专辑页面，点击下载按钮。",
+      "下载将自动绕过限制并加速完成。"
+    ],
+    "zh_name": "Pixeldrain下载限制绕过增强版"
+  }
+}

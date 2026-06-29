@@ -9,40 +9,54 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script uses GM_xmlhttpRequest to communicate with ffscouter.com, a third-party server. While the code provided does not show the exact payload, the script is designed to show Fair Fight scores and faction war status, which likely involves sending some user/game data to the external server.",
-      "location": "@connect ffscouter.com and likely in code using GM_xmlhttpRequest",
-      "recommendation": "Review all data sent to ffscouter.com. Ensure no sensitive user information (such as authentication tokens, cookies, or personal data) is transmitted. Document the exact payload structure.",
+      "description": "The script uses GM_xmlhttpRequest to communicate with ffscouter.com, a third-party server. While the exact payload is not visible in the provided code fragment, the @connect directive and typical usage pattern indicate user data may be transmitted for score calculation.",
+      "location": "Metadata (@connect), likely in network logic (not fully visible in code fragment)",
+      "recommendation": "Review all data sent to ffscouter.com. Ensure only minimal, non-sensitive data is transmitted. Document data flows and provide privacy notice to users.",
       "severity": "CRITICAL",
       "type": "Data Exfiltration"
     },
     {
-      "description": "The script reads and writes to localStorage for configuration and caching purposes. No evidence of sensitive data (like cookies or passwords) being accessed, but localStorage is used.",
-      "location": "Storage class and FFConfig usage",
-      "recommendation": "Ensure only non-sensitive configuration data is stored. Do not store authentication tokens or personal information in localStorage.",
+      "description": "The script reads and writes to localStorage for configuration and possibly user keys. While this is not inherently malicious, it is a privacy-relevant operation.",
+      "location": "Class Storage, FFConfig",
+      "recommendation": "Ensure no sensitive data (e.g., authentication tokens, personal information) is stored in localStorage. Document all stored keys and values.",
       "severity": "CRITICAL",
       "type": "Privacy Collection"
     },
     {
-      "description": "The script requests the unsafeWindow grant, which allows access to the page's JavaScript context. This increases the risk of privilege escalation or unintended data access.",
-      "location": "@grant unsafeWindow",
-      "recommendation": "Remove unsafeWindow unless strictly necessary. If required, limit its usage and audit all interactions with the page context.",
+      "description": "The script requests the unsafeWindow grant, which allows access to the page's JS context and can be abused for privilege escalation or data exfiltration.",
+      "location": "Metadata (@grant unsafeWindow)",
+      "recommendation": "Remove unsafeWindow if not strictly necessary. If required, audit all uses to ensure no sensitive data is accessed or leaked.",
       "severity": "HIGH",
-      "type": "Privilege Escalation Risk"
+      "type": "Remote Code Execution / Privilege Escalation"
+    },
+    {
+      "description": "The script requests GM_xmlhttpRequest, a high-privilege API, but the code fragment does not show its usage. Unused high-privilege grants increase attack surface.",
+      "location": "Metadata (@grant GM_xmlhttpRequest)",
+      "recommendation": "Remove unused grants. Only request permissions that are actually used.",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "The script is partially minified/obfuscated (short variable names, compressed code, e.g., 'const n=new Set;const importCSS = async e=>{n.has(e)||(n.add(e),(d=>{...}))}'). This hinders manual review.",
+      "location": "Top-level code",
+      "recommendation": "Publish and review the original, unminified source code for transparency.",
+      "severity": "HIGH",
+      "type": "Code Obfuscation"
     }
   ],
-  "obfuscation_detected": false,
+  "obfuscation_detected": true,
   "privacy_collection": {
     "details": [
-      "Reads/writes localStorage for configuration and caching"
+      "Reads/writes localStorage for configuration and possibly user keys"
     ],
     "detected": true
   },
-  "risk_level": "HIGH",
+  "risk_level": "CRITICAL",
   "script_name": "FF Scouter V2 beta",
-  "security_score": 35,
-  "summary": "The script communicates with a third-party server (ffscouter.com) and uses localStorage for configuration. It requests the unsafeWindow grant, which increases risk. No evidence of code obfuscation, DOM XSS, or supply chain risk in the provided code. The main concerns are data exfiltration, privacy collection, and privilege escalation due to unsafeWindow.",
+  "security_score": 22,
+  "summary": "This script communicates with a third-party server (ffscouter.com) and stores user configuration in localStorage. It requests high-privilege grants (GM_xmlhttpRequest, unsafeWindow), and the code is partially obfuscated/minified, making full review difficult. There is a critical risk of data exfiltration and privacy collection, and the use of unsafeWindow increases the risk of privilege escalation. The script should not be considered safe for use without further transparency and a full audit of the network payloads and all privileged operations.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-22T07:27:56.781905+00:00",
+  "analyzed_at": "2026-06-29T06:44:15.764496+00:00",
   "slug": "FF_Scouter_V2_beta"
 }

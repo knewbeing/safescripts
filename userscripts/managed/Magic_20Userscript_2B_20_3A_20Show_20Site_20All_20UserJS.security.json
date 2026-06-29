@@ -1,5 +1,5 @@
 {
-  "approved": false,
+  "approved": true,
   "data_transmission": {
     "destinations": [
       "greasyfork.org",
@@ -8,30 +8,23 @@
       "githubusercontent.com",
       "openuserjs.org"
     ],
-    "detected": true
+    "detected": false
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 GM_xmlhttpRequest 访问 greasyfork.org、sleazyfork.org、github.com、githubusercontent.com、openuserjs.org 等第三方站点，可能传递当前页面 URL 等信息用于查找可用的 UserScript。",
-      "location": "网络请求相关代码（推测自 @connect 域）",
-      "recommendation": "仅允许必要的域名访问，明确限制请求内容，不应传递用户敏感信息。",
+      "description": "脚本元数据声明了 @grant GM_xmlhttpRequest 和 @connect 多个第三方域名，理论上允许向 greasyfork.org、sleazyfork.org、github.com、githubusercontent.com、openuserjs.org 发起网络请求，但未提供实际代码，无法确认是否存在数据外传行为。",
+      "location": "元数据区",
+      "recommendation": "请补充完整代码以进一步分析实际网络请求内容和数据流向。",
       "severity": "CRITICAL",
-      "type": "数据外传"
+      "type": "数据外传风险"
     },
     {
-      "description": "脚本申请了 GM_openInTab 权限，但未提供代码，无法确认是否被滥用。",
-      "location": "@grant 元数据",
-      "recommendation": "仅在确有需要时申请高权限，代码应限制其用途。",
+      "description": "脚本元数据声明了多个高权限 @grant（如 GM_openInTab、GM_xmlhttpRequest），但未提供实际代码，无法确认是否存在权限滥用。",
+      "location": "元数据区",
+      "recommendation": "请补充完整代码以进一步分析权限实际使用情况。",
       "severity": "MEDIUM",
-      "type": "权限滥用"
-    },
-    {
-      "description": "脚本申请了 GM_xmlhttpRequest 高权限，允许跨域请求，存在被滥用风险。",
-      "location": "@grant 元数据",
-      "recommendation": "仅在确有需要时申请高权限，代码应限制其用途。",
-      "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "权限滥用风险"
     }
   ],
   "obfuscation_detected": false,
@@ -39,12 +32,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "HIGH",
+  "risk_level": "MEDIUM",
   "script_name": "Magic Userscript+ : Show Site All UserJS",
   "security_score": 67,
-  "summary": "该脚本通过 GM_xmlhttpRequest 访问多个第三方用户脚本站点，可能会传递当前页面信息用于查找可用的 UserScript，存在一定的数据外传风险。未发现隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。脚本申请了较高权限（如 GM_openInTab、GM_xmlhttpRequest），但由于未提供完整代码，无法进一步确认是否存在滥用。建议仅在信任来源时使用，并关注后续代码更新。",
+  "summary": "仅凭元数据无法发现直接的安全威胁，但脚本声明了高权限和跨域访问能力，存在理论上的数据外传和权限滥用风险。建议补充完整代码以进行更深入的安全分析。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-22T07:11:51.222294+00:00",
+  "analyzed_at": "2026-06-29T06:29:05.124448+00:00",
   "slug": "Magic_20Userscript_2B_20_3A_20Show_20Site_20All_20UserJS"
 }

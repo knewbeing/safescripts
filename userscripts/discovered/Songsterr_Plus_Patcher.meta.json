@@ -17,21 +17,21 @@
   "require": [],
   "metadata_raw": "// @name  Songsterr Plus Patcher\n// @namespace  https://github.com/Strikeless\n// @version  1.2.2\n// @description  Trick Songsterr to unlock plus features.\n// @license  The Unlicense\n// @supportURL  https://github.com/Strikeless/SongsterrPlusPatcher\n// @match  http*://*.songsterr.com/*\n// @run-at  document-start\n// @grant  unsafeWindow\n// @downloadURL  https://update.greasyfork.org/scripts/500019/Songsterr%20Plus%20Patcher.user.js\n// @updateURL  https://update.greasyfork.org/scripts/500019/Songsterr%20Plus%20Patcher.meta.js",
   "sha256": "2ea320b5a9f9c7013d8bb97c6b8b64ea2a26a57fbe30fc1c34c47c9953d2cb17",
-  "discovered_at": "2026-06-22T07:16:41.799842+00:00",
+  "discovered_at": "2026-06-29T06:32:12.230473+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 17119,
+  "install_count": 17568,
   "good_ratings": 14,
   "bad_ratings": 3,
   "summary": {
     "applicable_sites": [
       "Songsterr"
     ],
-    "description": "此脚本可以让 Songsterr 网站误认为你拥有 Plus 会员，解锁原本需要付费的高级功能。无需注册或付费即可体验 Plus 会员的部分特权。",
+    "description": "此脚本可让用户在 Songsterr 网站上免费体验 Plus 会员功能，无需付费订阅。通过模拟会员身份，解锁高级功能和内容。",
     "permissions": [
       {
-        "explanation": "允许脚本访问和修改网站的全局变量，实现功能劫持。",
+        "explanation": "允许脚本访问和修改网站的全局窗口对象，以便拦截和伪造会员信息。",
         "grant": "unsafeWindow"
       }
     ],
@@ -43,9 +43,9 @@
       "免费体验"
     ],
     "usage": [
-      "安装脚本后，访问 Songsterr 网站。",
-      "无需额外操作，Plus 会员功能会自动解锁。",
-      "如遇异常弹窗，按提示反馈或禁用脚本。"
+      "安装 Tampermonkey 扩展。",
+      "添加此脚本到 Tampermonkey。",
+      "访问 Songsterr 网站，自动解锁 Plus 功能。"
     ],
     "zh_name": "Songsterr Plus 解锁补丁"
   }

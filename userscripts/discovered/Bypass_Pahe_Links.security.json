@@ -1,5 +1,5 @@
 {
-  "approved": false,
+  "approved": true,
   "data_transmission": {
     "destinations": [],
     "detected": false
@@ -7,18 +7,25 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 @require 加载了 https://greasyfork.org/scripts/456228/code/456228.js?version=1309113，存在供应链风险。该外部脚本内容未知，若被篡改可能导致远程代码执行或隐私泄露。",
+      "description": "脚本通过 @require 加载了 https://greasyfork.org/scripts/456228/code/456228.js?version=1309113，但未对其内容进行安全校验（如 SRI 哈希），存在供应链风险。",
       "location": "@require 元数据字段",
-      "recommendation": "仅使用可信、官方 CDN 并锁定版本哈希。定期审查外部依赖内容。",
+      "recommendation": "仅使用可信来源的第三方库，并固定版本哈希或进行内容校验。",
       "severity": "MEDIUM",
-      "type": "supply_chain_risk"
+      "type": "Supply Chain Risk"
     },
     {
-      "description": "脚本重写 setTimeout/setInterval 但未使用字符串参数，不存在直接远程代码执行风险，但如外部依赖中有字符串参数调用，仍有隐患。",
-      "location": "speedUp 函数",
-      "recommendation": "确保所有 setTimeout/setInterval 调用均为函数类型，避免字符串执行。",
+      "description": "脚本重写 setTimeout/setInterval 以加速页面跳转，但未发现对 eval、new Function、setTimeout(string) 等远程代码执行相关 API 的调用。",
+      "location": "main() 函数",
+      "recommendation": "保持当前实现，避免后续引入动态代码执行。",
       "severity": "LOW",
-      "type": "potential_eval_like_usage"
+      "type": "Code Execution"
+    },
+    {
+      "description": "脚本未申请任何 @grant 权限，实际代码也未使用 GM_* API，权限申请合理。",
+      "location": "@grant 元数据字段",
+      "recommendation": "保持最小权限原则。",
+      "severity": "LOW",
+      "type": "Permissions"
     }
   ],
   "obfuscation_detected": false,
@@ -26,12 +33,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "MEDIUM",
+  "risk_level": "LOW",
   "script_name": "Bypass Pahe Links",
-  "security_score": 92,
-  "summary": "主脚本本身未发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。最大风险在于 @require 加载的外部脚本，若该依赖被污染，可能引入高危安全问题。建议定期审查外部依赖内容，确保来源可信。",
+  "security_score": 89,
+  "summary": "该脚本主要通过加速定时器和注入样式来优化跳转体验，未检测到数据外传、隐私采集、远程代码执行、混淆、DOM XSS 等高危行为。唯一中等风险为 @require 加载的第三方库未做哈希校验，建议关注其供应链安全。整体风险较低，可安全使用。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-22T07:21:29.653781+00:00",
+  "analyzed_at": "2026-06-29T06:38:11.121453+00:00",
   "slug": "Bypass_Pahe_Links"
 }

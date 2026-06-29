@@ -1,18 +1,18 @@
 ---
-title: "CheatGuessr 通用版｜地理猜谜辅助"
+title: "CheatGuessr 通用版"
 ---
 
-# CheatGuessr 通用版｜地理猜谜辅助
+# CheatGuessr 通用版
 
-`地理游戏`  `辅助工具`  `作弊`  `地图标记`  `社交分享`  `Google地图`
+`地理猜谜`  `辅助工具`  `地图标记`  `游戏作弊`  `Discord集成`  `Google地图`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/CheatGuessr_Universal_GeoGuessr_OpenGuessr_WorldGuessr_FreeGuessr_GeoDuels_Geota.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**12.5**　　发现时间：**2026-06-22**　　来源：[GreasyFork](https://greasyfork.org/scripts/572651-cheatguessr-universal-geoguessr-openguessr-worldguessr-freeguessr-geoduels-geotastic) <Badge type="tip" text="GreasyFork" />　　安装量：**6,297**　　评分：👍11 / 👎6
+> 版本：**12.5**　　发现时间：**2026-06-29**　　来源：[GreasyFork](https://greasyfork.org/scripts/572651-cheatguessr-universal-geoguessr-openguessr-worldguessr-freeguessr-geoduels-geotastic) <Badge type="tip" text="GreasyFork" />　　安装量：**6,659**　　评分：👍12 / 👎6
 
 ## 功能介绍
 
-本脚本为 GeoGuessr 及类似地理猜谜游戏提供隐蔽式辅助功能。用户可通过按 Tab 键打开设置菜单，在地图上标记位置、将信息发送到 Discord、或直接在 Google 地图中查看当前位置。
+本脚本为 GeoGuessr 及类似地理猜谜网站提供隐蔽式辅助功能。用户可通过按 Tab 键打开设置菜单，在地图上标记位置、将信息发送到 Discord、并在 Google 地图中查看当前位置。
 
 ## 适用网站
 
@@ -27,25 +27,24 @@ title: "CheatGuessr 通用版｜地理猜谜辅助"
 
 ## 使用方法
 
-1. 安装脚本后，进入支持的地理猜谜游戏网站。
-2. 按 Tab 键打开脚本的设置菜单。
-3. 根据菜单提示，在地图上标记位置或发送信息到 Discord。
-4. 可一键在 Google 地图中查看当前位置。
+1. 安装脚本后，进入支持的地理猜谜网站。
+2. 按 Tab 键打开脚本设置菜单。
+3. 在地图上标记位置，或选择发送到 Discord、在 Google 地图中查看。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `GM_setValue` | 用于保存脚本的设置和数据。 |
+| `GM_setValue` | 用于保存脚本设置和用户数据。 |
 | `GM_getValue` | 用于读取脚本保存的设置和数据。 |
-| `GM_deleteValue` | 用于删除脚本保存的设置和数据。 |
+| `GM_deleteValue` | 用于删除脚本保存的数据。 |
 | `GM_xmlhttpRequest` | 用于发送网络请求，如将信息发送到 Discord。 |
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：52/100　　**分析时间**：2026-06-22
+**风险等级**：🔴 HIGH　　**安全评分**：49/100　　**分析时间**：2026-06-29
 
-> This script transmits user data (such as map pins or guesses) to third-party servers (notably Discord), which is a critical privacy and data exfiltration risk. It also manipulates DOM security features (sandboxing, anti-cheat) and uses Notification API. While it does not appear to collect sensitive browser data or use obfuscation, the supply chain risk from unpinned @require remains. The overall risk is HIGH and the script is NOT approved for use in sensitive environments.
+> This script transmits map pin/location data to third-party servers (discord.com, nominatim.openstreetmap.org), which is a critical risk if sensitive data is included. It does not appear to collect sensitive user data or credentials, nor does it use obfuscation or dangerous code execution patterns. It uses Notification API and modifies iframe sandboxing, which are medium/low risks. The supply chain risk is moderate due to unpinned @require. Overall, the script is not safe for privacy-sensitive users and should be used with caution.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -59,24 +58,29 @@ title: "CheatGuessr 通用版｜地理猜谜辅助"
 ### 发现的问题
 
 **⛔ CRITICAL** — Data Exfiltration  
-> The script uses GM_xmlhttpRequest and @connect to discord.com and nominatim.openstreetmap.org, which can transmit user data (e.g., map pins, possibly location guesses) to third-party servers. This is a data exfiltration risk, especially for Discord webhooks.  
-> 位置：GM_xmlhttpRequest calls and @connect metadata  
-> 建议：Limit data transmission to only what is necessary, and clearly inform users what data is sent. Avoid sending sensitive or identifying information.
-
-**🔴 HIGH** — DOM/Frame Policy Manipulation  
-> The script disables or bypasses iframe sandboxing and anti-cheat scripts on some platforms, which may weaken security boundaries and is a form of privilege escalation.  
-> 位置：Element.prototype.setAttribute proxy and script removal logic  
-> 建议：Do not weaken sandboxing or remove anti-cheat scripts unless absolutely necessary and with user consent.
+> The script uses GM_xmlhttpRequest and requests to discord.com and nominatim.openstreetmap.org, which are third-party servers. The script can send map pin data or location information to Discord (as described in the metadata and code).  
+> 位置：GM_xmlhttpRequest usage, @connect discord.com, @connect nominatim.openstreetmap.org  
+> 建议：Ensure no sensitive user data (such as cookies, tokens, or personal information) is sent. Only send minimal necessary data. Inform users clearly about what is sent.
 
 **🟠 MEDIUM** — Sensitive API Usage  
-> The script uses Notification API (Notification.permission), which can be abused to send unwanted notifications to the user.  
-> 位置：state.notificationPermission and Notification API usage  
-> 建议：Request notification permissions only when necessary and provide clear user controls.
+> The script requests Notification permission and can send notifications to the user.  
+> 位置：state.notificationPermission, Notification API usage  
+> 建议：Do not abuse Notification API. Only send notifications relevant to the script's function.
+
+**🟠 MEDIUM** — Permission Usage  
+> The script requests and uses GM_xmlhttpRequest, which is a high-privilege API, but this is justified by the script's features. No evidence of unused high-privilege grants.  
+> 位置：@grant GM_xmlhttpRequest  
+> 建议：Review and minimize granted permissions. Remove any unused grants.
 
 **🟠 MEDIUM** — Supply Chain Risk  
-> The script uses @require to load msgpack.js from update.greasyfork.org, which is a trusted CDN, but the version is not pinned by hash. This is a supply chain risk if the remote file is compromised.  
+> The script uses @require to load msgpack.js from update.greasyfork.org, which is a trusted CDN, but the version is not pinned by hash.  
 > 位置：@require https://update.greasyfork.org/scripts/423602/1005014/msgpack.js  
-> 建议：Pin third-party dependencies by hash or use a well-known, immutable CDN.
+> 建议：Pin the required library to a specific version or hash to prevent supply chain attacks.
+
+**🟡 LOW** — ClickJacking / iframe Risk  
+> The script modifies Element.prototype.setAttribute to bypass iframe sandboxing on non-GeoGuessr platforms. This can weaken frame protection.  
+> 位置：Element.prototype.setAttribute Proxy  
+> 建议：Avoid weakening browser security features unless absolutely necessary. Document the reason for this modification.
 
 ---
 

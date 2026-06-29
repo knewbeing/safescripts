@@ -34,13 +34,13 @@ title: "Gartic Phone自动画图机器人"
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：67/100　　**分析时间**：2026-06-22
+**风险等级**：🟡 LOW　　**安全评分**：64/100　　**分析时间**：2026-06-29
 
-> 该脚本主要通过 WebSocket 与 garticphone.com 官方服务器通信，实现自动绘图功能。未发现向第三方服务器外传用户数据或页面内容，也未检测到隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。存在未使用的 GM_xmlhttpRequest 权限和 unsafeWindow 权限，建议移除未用权限以降低风险。整体风险为中等，建议仅在信任环境下使用。
+> 该脚本主要通过 WebSocket 与 garticphone.com 官方服务器通信，仅发送游戏相关的绘图数据，无第三方数据外传或隐私采集行为。未发现代码混淆、DOM XSS、远程代码执行等高危问题。存在权限过度申请（GM_xmlhttpRequest 未使用）和对 unsafeWindow 的必要但敏感操作。整体风险较低，建议移除未用权限并关注后续更新。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：garticphone.com） |
+| 数据外传 | ❌ 检测到（目标：garticphone.com (WebSocket, per @connect)） |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ⚠️ 使用 |
@@ -49,25 +49,20 @@ title: "Gartic Phone自动画图机器人"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本通过 fetch() 和 WebSocket 发送数据到 garticphone.com，但未发现向第三方域名或外部服务器传输用户数据。  
-> 位置：requestText, requestBuffer, customWebSocket, sendPackets  
-> 建议：确保仅与受信任的官方服务器通信，避免修改为第三方域名。
+**⛔ CRITICAL** — Data Transmission  
+> The script establishes and manipulates a WebSocket connection to garticphone.com, sending drawing data and possibly user actions. All transmissions are to the first-party domain only.  
+> 位置：customWebSocket class, sendPackets function  
+> 建议：Ensure only intended game data is sent. No evidence of third-party exfiltration.
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本通过 Proxy 劫持 WebSocket 构造函数，捕获并操作与 garticphone.com 的通信。  
-> 位置：customWebSocket, sendPackets  
-> 建议：确认未将敏感用户数据发送到非预期服务器。
+**🟠 MEDIUM** — Permission Overgrant  
+> The script requests @grant GM_xmlhttpRequest but does not use it in the code, which is a higher-than-needed permission.  
+> 位置：Metadata block  
+> 建议：Remove unused GM_xmlhttpRequest grant to reduce attack surface.
 
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_xmlhttpRequest 权限，但实际代码未使用该 API。  
-> 位置：@grant GM_xmlhttpRequest  
-> 建议：移除未使用的高权限申请，减少权限滥用风险。
-
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 unsafeWindow 权限，存在一定安全隐患。  
-> 位置：@grant unsafeWindow  
-> 建议：仅在确有必要时使用 unsafeWindow，避免潜在的跨域脚本注入风险。
+**🟠 MEDIUM** — Sensitive API Exposure  
+> The script uses unsafeWindow to override the WebSocket constructor, which is necessary for its function but increases risk if the page is compromised.  
+> 位置：unsafeWindow.WebSocket assignment  
+> 建议：Limit unsafeWindow usage and ensure no exposure of sensitive functions to the page context.
 
 ---
 

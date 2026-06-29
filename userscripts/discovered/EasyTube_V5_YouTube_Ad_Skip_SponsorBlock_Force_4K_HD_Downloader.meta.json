@@ -1,0 +1,70 @@
+{
+  "slug": "EasyTube_V5_YouTube_Ad_Skip_SponsorBlock_Force_4K_HD_Downloader",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/561432-easytube-v5-youtube-ad-skip-sponsorblock-force-4k-hd-downloader",
+  "source_repo": "561432",
+  "raw_url": "https://update.greasyfork.org/scripts/561432/EasyTube%20V5%20%E2%80%94%20YouTube%20Ad%20Skip%2C%20SponsorBlock%2C%20Force%204K%20%20HD%20Downloader.user.js",
+  "filename": "EasyTube_V5_YouTube_Ad_Skip_SponsorBlock_Force_4K_HD_Downloader.user.js",
+  "name": "EasyTube V5 — YouTube Ad Skip, SponsorBlock, Force 4K & HD Downloader",
+  "version": "5.1.0",
+  "description": "Fast YouTube ad blocker and ad skipper with SponsorBlock, automatic sponsor skipping, force 4K playback, HD video download, saved settings and adblock detection bypass. Lightweight and lag-free.",
+  "match": [
+    "https://*.youtube.com/*"
+  ],
+  "grant": [
+    "GM_addStyle",
+    "GM_xmlhttpRequest",
+    "GM_setValue",
+    "GM_getValue"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  EasyTube V5 — YouTube Ad Skip, SponsorBlock, Force 4K & HD Downloader\n// @name:vi  EasyTube V5 — Chặn quảng cáo YouTube, SponsorBlock, Ép 4K & Tải video HD\n// @name:zh-CN  EasyTube V5 — YouTube 广告跳过、SponsorBlock、强制 4K 和 HD 下载\n// @name:zh-TW  EasyTube V5 — YouTube 廣告跳過、SponsorBlock、強制 4K 和 HD 下載\n// @name:ru  EasyTube V5 — Блокировка рекламы YouTube, SponsorBlock, 4K и HD загрузка\n// @name:ja  EasyTube V5 — YouTube広告スキップ、SponsorBlock、4K固定・HD動画保存\n// @name:ko  EasyTube V5 — 유튜브 광고 차단, SponsorBlock, 4K 강제 및 HD 다운로드\n// @name:es  EasyTube V5 — Bloqueador de anuncios YouTube, SponsorBlock, 4K y descarga HD\n// @name:pt-BR  EasyTube V5 — Bloqueador de anúncios YouTube, SponsorBlock, 4K e download HD\n// @name:fr  EasyTube V5 — Bloqueur de pubs YouTube, SponsorBlock, 4K et téléchargement HD\n// @name:de  EasyTube V5 — YouTube-Werbeblocker, SponsorBlock, 4K und HD-Download\n// @name:tr  EasyTube V5 — YouTube Reklam Engelleyici, SponsorBlock, 4K ve HD İndirme\n// @name:pl  EasyTube V5 — Blokowanie reklam YouTube, SponsorBlock, 4K i pobieranie HD\n// @name:id  EasyTube V5 — Blokir Iklan YouTube, SponsorBlock, Paksa 4K & Unduh HD\n// @name:th  EasyTube V5 — บล็อกโฆษณา YouTube, SponsorBlock, บังคับ 4K และดาวน์โหลด HD\n// @name:ar  EasyTube V5 — حظر إعلانات YouTube وSponsorBlock وتشغيل 4K وتنزيل HD\n// @description  Fast YouTube ad blocker and ad skipper with SponsorBlock, automatic sponsor skipping, force 4K playback, HD video download, saved settings and adblock detection bypass. Lightweight and lag-free.\n// @description:vi  Công cụ chặn và bỏ qua quảng cáo YouTube nhanh, tích hợp SponsorBlock để tự động bỏ đoạn tài trợ, ép chất lượng 4K, tải video HD, lưu cài đặt và vượt phát hiện trình chặn quảng cáo. Nhẹ, ổn định, không lag.\n// @description:zh-CN  快速的 YouTube 广告拦截与跳过工具，集成 SponsorBlock，可自动跳过赞助片段、强制播放 4K、下载 HD 视频、保存设置并绕过广告拦截检测，轻量且不卡顿。\n// @description:zh-TW  快速的 YouTube 廣告攔截與跳過工具，整合 SponsorBlock，可自動略過贊助片段、強制播放 4K、下載 HD 影片、儲存設定並繞過廣告攔截偵測，輕量且不卡頓。\n// @description:ru  Быстрая блокировка и автоматический пропуск рекламы YouTube с SponsorBlock, пропуском спонсорских сегментов, принудительным 4K, загрузкой HD-видео, сохранением настроек и обходом обнаружения блокировщика рекламы.\n// @description:ja  YouTube広告を高速でブロック・スキップ。SponsorBlockによるスポンサー部分の自動スキップ、4K画質の強制設定、HD動画ダウンロード、設定保存、広告ブロック検出回避に対応した軽量ツールです。\n// @description:ko  YouTube 광고를 빠르게 차단하고 건너뛰며 SponsorBlock으로 스폰서 구간을 자동 제거합니다. 4K 화질 강제 적용, HD 영상 다운로드, 설정 저장 및 광고 차단 감지 우회를 지원하는 가벼운 도구입니다.\n// @description:es  Bloquea y salta rápidamente los anuncios de YouTube. Incluye SponsorBlock, salto automático de segmentos patrocinados, reproducción forzada en 4K, descarga de vídeos HD, ajustes guardados y evasión de detección de bloqueadores.\n// @description:pt-BR  Bloqueia e pula rapidamente anúncios do YouTube. Inclui SponsorBlock, remoção automática de segmentos patrocinados, reprodução forçada em 4K, download de vídeos HD, configurações salvas e desvio da detecção de bloqueadores.\n// @description:fr  Bloque et ignore rapidement les publicités YouTube avec SponsorBlock, saut automatique des segments sponsorisés, lecture forcée en 4K, téléchargement de vidéos HD, sauvegarde des réglages et contournement de la détection anti-adblock.\n// @description:de  Blockiert und überspringt YouTube-Werbung schnell. Mit SponsorBlock, automatischem Überspringen gesponserter Abschnitte, erzwungener 4K-Wiedergabe, HD-Video-Download, gespeicherten Einstellungen und Umgehung der Adblock-Erkennung.\n// @description:tr  YouTube reklamlarını hızlıca engeller ve atlar. SponsorBlock, sponsorlu bölümleri otomatik atlama, zorunlu 4K oynatma, HD video indirme, ayarları kaydetme ve reklam engelleyici algılamasını aşma özelliklerini içerir.\n// @description:pl  Szybko blokuje i pomija reklamy YouTube. Zawiera SponsorBlock, automatyczne pomijanie segmentów sponsorowanych, wymuszanie jakości 4K, pobieranie filmów HD, zapisywanie ustawień i omijanie wykrywania blokady reklam.\n// @description:id  Memblokir dan melewati iklan YouTube dengan cepat. Dilengkapi SponsorBlock, lewati segmen sponsor otomatis, paksa kualitas 4K, unduh video HD, simpan pengaturan, dan lewati deteksi pemblokir iklan tanpa lag.\n// @description:th  บล็อกและข้ามโฆษณา YouTube อย่างรวดเร็ว พร้อม SponsorBlock สำหรับข้ามช่วงสปอนเซอร์อัตโนมัติ บังคับคุณภาพ 4K ดาวน์โหลดวิดีโอ HD บันทึกการตั้งค่า และหลีกเลี่ยงการตรวจจับตัวบล็อกโฆษณา\n// @description:ar  أداة سريعة لحظر إعلانات YouTube وتخطيها، مع SponsorBlock لتجاوز المقاطع الدعائية تلقائيًا، وفرض جودة 4K، وتنزيل فيديو HD، وحفظ الإعدادات، وتجاوز اكتشاف مانع الإعلانات دون بطء.\n// @namespace  https://greasyfork.org/users/1510019\n// @version  5.1.0\n// @author  2pixel\n// @license  MIT\n// @icon  https://raw.githubusercontent.com/not2pixel/TampermonkeyProjects/refs/heads/main/EasyTube.png\n// @icon64  https://raw.githubusercontent.com/not2pixel/TampermonkeyProjects/refs/heads/main/EasyTube.png\n// @match  https://*.youtube.com/*\n// @exclude  https://www.youtube.com/live_chat*\n// @exclude  https://studio.youtube.com/*\n// @grant  GM_addStyle\n// @grant  GM_xmlhttpRequest\n// @grant  GM_setValue\n// @grant  GM_getValue\n// @connect  sponsor.ajay.app\n// @connect  evdfrance.fr\n// @run-at  document-start\n// @compatible  chrome Tampermonkey 4+\n// @compatible  firefox Tampermonkey / Violentmonkey\n// @compatible  edge Tampermonkey 4+\n// @compatible  opera Tampermonkey / Violentmonkey\n// @homepageURL  https://greasyfork.org/en/scripts/561432\n// @supportURL  https://greasyfork.org/en/scripts/561432/feedback\n// @downloadURL  https://update.greasyfork.org/scripts/561432/EasyTube%20V5%20%E2%80%94%20YouTube%20Ad%20Skip%2C%20SponsorBlock%2C%20Force%204K%20%20HD%20Downloader.user.js\n// @updateURL  https://update.greasyfork.org/scripts/561432/EasyTube%20V5%20%E2%80%94%20YouTube%20Ad%20Skip%2C%20SponsorBlock%2C%20Force%204K%20%20HD%20Downloader.meta.js",
+  "sha256": "0871d7ab9a952e99bc894f135ee4a4d282d37c0679cbe49e0ed8b4046e3bf750",
+  "discovered_at": "2026-06-29T06:33:09.643627+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 7781,
+  "good_ratings": 11,
+  "bad_ratings": 3,
+  "summary": {
+    "applicable_sites": [
+      "YouTube"
+    ],
+    "description": "本脚本可自动跳过和屏蔽 YouTube 广告，集成 SponsorBlock 自动跳过视频中的赞助片段，强制播放 4K 清晰度，并支持下载高清视频。还能保存用户设置并绕过广告拦截检测，使用流畅不卡顿。",
+    "permissions": [
+      {
+        "explanation": "用于动态添加自定义样式，让界面更美观或突出功能按钮。",
+        "grant": "GM_addStyle"
+      },
+      {
+        "explanation": "用于跨域请求 SponsorBlock 和下载服务，获取跳过片段和下载链接。",
+        "grant": "GM_xmlhttpRequest"
+      },
+      {
+        "explanation": "用于保存用户的脚本设置，如偏好和功能开关。",
+        "grant": "GM_setValue"
+      },
+      {
+        "explanation": "用于读取用户保存的脚本设置，保证个性化体验。",
+        "grant": "GM_getValue"
+      }
+    ],
+    "tags": [
+      "广告拦截",
+      "视频下载",
+      "清晰度增强",
+      "SponsorBlock",
+      "YouTube优化",
+      "自动跳过"
+    ],
+    "usage": [
+      "安装脚本后，打开 YouTube 网站。",
+      "观看视频时广告会自动跳过或屏蔽。",
+      "赞助片段会自动跳过，无需手动操作。",
+      "可在视频页面找到下载按钮，下载高清视频。",
+      "脚本会自动保存你的偏好设置，无需重复配置。"
+    ],
+    "zh_name": "EasyTube V5 — YouTube 广告跳过、SponsorBlock、强制 4K 和 HD 下载"
+  }
+}

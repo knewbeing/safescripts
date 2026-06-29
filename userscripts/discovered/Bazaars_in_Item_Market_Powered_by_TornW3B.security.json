@@ -9,30 +9,30 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "Script uses GM.xmlHttpRequest to connect to weav3r.dev, which is a third-party server. The request may transmit user data depending on implementation.",
-      "location": "@connect weav3r.dev and any GM.xmlHttpRequest usage (full code not shown, but permission is present)",
-      "recommendation": "Review all requests to weav3r.dev to ensure no sensitive user data (such as cookies, authentication tokens, or personal information) is transmitted. Limit data sent to only what is necessary for functionality.",
+      "description": "Script uses GM.xmlHttpRequest to connect to weav3r.dev, which is a third-party server. However, the code provided does not show user data, cookies, or sensitive information being sent. The request destination is a custom API, which could be a privacy concern if user data is sent in other parts of the code (not visible in the snippet).",
+      "location": "@connect weav3r.dev and any GM.xmlHttpRequest usage",
+      "recommendation": "Review all requests to ensure no sensitive user data, cookies, or identifiers are sent. If possible, document the API endpoints and data schema.",
       "severity": "CRITICAL",
-      "type": "Data Exfiltration"
+      "type": "Data Transmission to Third Party"
     },
     {
-      "description": "Script reads and writes to localStorage for settings persistence and compatibility with GM_*Value APIs. No evidence of sensitive data (like cookies or passwords) being accessed or exfiltrated.",
-      "location": "GM_getValue, GM_setValue compatibility wrappers and usage",
-      "recommendation": "Ensure only non-sensitive settings are stored. Do not store authentication tokens, passwords, or personal identifiers in localStorage.",
-      "severity": "MEDIUM",
+      "description": "Script reads and writes to localStorage and GM_*Value APIs for settings persistence. No evidence of sensitive data (like cookies, passwords, or form fields) being accessed or exfiltrated. No keylogger or clipboard access detected.",
+      "location": "GM_getValue, GM_setValue, localStorage usage",
+      "recommendation": "Ensure only non-sensitive settings are stored. Do not store authentication tokens or personal data in localStorage or GM storage.",
+      "severity": "CRITICAL",
       "type": "Privacy Collection"
     },
     {
-      "description": "Script requests a broad set of GM_*Value permissions, including both legacy and modern APIs. Some permissions may not be used.",
-      "location": "@grant block in metadata",
-      "recommendation": "Remove unused permissions to reduce attack surface and follow the principle of least privilege.",
+      "description": "Multiple @grant permissions are requested (GM.xmlHttpRequest, GM_setValue, etc.), but all are used appropriately for script functionality. No evidence of permission overreach.",
+      "location": "@grant metadata block",
+      "recommendation": "Keep only the necessary permissions. Remove unused grants if possible.",
       "severity": "MEDIUM",
-      "type": "Permission Overuse"
+      "type": "Permission Usage"
     },
     {
-      "description": "@require is not used, but the script does connect to a third-party domain (weav3r.dev). If the server is compromised, it could serve malicious data.",
-      "location": "@connect weav3r.dev",
-      "recommendation": "Ensure the third-party server is trustworthy and uses HTTPS. Monitor for supply chain risks.",
+      "description": "@require is not used, and no dynamic script loading or eval is present in the provided code. No supply chain risk detected in this snippet.",
+      "location": "N/A",
+      "recommendation": "If adding @require in the future, use official CDNs and fixed versions.",
       "severity": "MEDIUM",
       "type": "Supply Chain Risk"
     }
@@ -40,16 +40,16 @@
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "localStorage used for settings persistence"
+      "localStorage and GM_*Value APIs used for settings only"
     ],
     "detected": false
   },
-  "risk_level": "MEDIUM",
+  "risk_level": "LOW",
   "script_name": "Bazaars in Item Market Powered by TornW3B",
-  "security_score": 59,
-  "summary": "The script requests data from a third-party server (weav3r.dev) and uses localStorage for settings. No evidence of sensitive data exfiltration or DOM XSS was found in the provided code. There is no code obfuscation or dynamic code execution. Permissions could be reduced. The main risk is data transmission to a third-party server and potential supply chain issues if the server is compromised. Overall, the script is moderately safe but should be reviewed for the exact data sent to weav3r.dev.",
-  "supply_chain_risk": true,
+  "security_score": 64,
+  "summary": "The script requests data from a third-party server (weav3r.dev) and uses localStorage/GM storage for settings. No evidence of sensitive data exfiltration, DOM XSS, or code obfuscation. Permissions are appropriate for the script's features. Overall, the script is low risk, but users should be aware of the third-party API connection and ensure no sensitive data is sent. Regularly review updates for changes in network behavior.",
+  "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-22T07:20:53.140753+00:00",
+  "analyzed_at": "2026-06-29T06:37:41.886025+00:00",
   "slug": "Bazaars_in_Item_Market_Powered_by_TornW3B"
 }

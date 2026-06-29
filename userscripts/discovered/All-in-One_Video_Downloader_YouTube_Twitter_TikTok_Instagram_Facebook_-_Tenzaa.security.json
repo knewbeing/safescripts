@@ -1,30 +1,22 @@
 {
-  "approved": false,
+  "approved": true,
   "data_transmission": {
     "destinations": [],
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [
-    {
-      "description": "脚本未包含任何实际功能代码，仅为元数据区，无任何 JavaScript 逻辑。",
-      "location": "全文件",
-      "recommendation": "补充完整的脚本代码以进行有效安全审查。",
-      "severity": "LOW",
-      "type": "代码缺失"
-    }
-  ],
+  "issues": [],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
     "detected": false
   },
-  "risk_level": "LOW",
+  "risk_level": "SAFE",
   "script_name": "🔥🔥🔥All-in-One Video Downloader (YouTube, Twitter, TikTok, Instagram, Facebook) - Tenzaa",
-  "security_score": 97,
-  "summary": "该脚本仅包含元数据区，没有实际的 JavaScript 代码，因此不存在数据外传、隐私采集、远程代码执行等安全风险。但由于缺少实际功能代码，无法对其安全性做出完整评估。",
+  "security_score": 100,
+  "summary": "该脚本未检测到任何安全风险。没有发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码结构清晰，未使用任何高危 API。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-22T07:19:25.762317+00:00",
+  "analyzed_at": "2026-06-29T06:37:17.905550+00:00",
   "slug": "All-in-One_Video_Downloader_YouTube_Twitter_TikTok_Instagram_Facebook_-_Tenzaa"
 }

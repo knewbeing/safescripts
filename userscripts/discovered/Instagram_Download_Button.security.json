@@ -1,0 +1,22 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "SAFE",
+  "script_name": "Instagram Download Button",
+  "security_score": 100,
+  "summary": "该脚本仅在 Instagram 页面本地插入下载/打开按钮，未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用或供应链风险。未使用任何 @grant 权限，所有操作均在本地页面环境下进行。整体安全性高，适合普通用户使用。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-06-29T06:48:33.866851+00:00",
+  "slug": "Instagram_Download_Button"
+}

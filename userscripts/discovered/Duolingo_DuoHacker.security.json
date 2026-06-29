@@ -17,44 +17,51 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限，并通过 @connect 允许多个第三方域名（包括 duohacker.io.vn、raw.githubusercontent.com、greasyfork.org 等），但完整代码未展示实际网络请求实现，存在数据外传潜在风险。",
-      "location": "元数据区及潜在主逻辑",
-      "recommendation": "仅允许必要的域名，限制敏感数据传输，代码应明确展示所有网络请求逻辑。",
+      "description": "脚本申请了 GM_xmlhttpRequest 权限，并通过 @connect 允许多个第三方域名（如 raw.githubusercontent.com、assets.duohacker.io.vn、font.duohacker.io.vn），但未见代码限制仅与 Duolingo 官方域名通信，存在数据外传风险。",
+      "location": "元数据 @grant/@connect",
+      "recommendation": "仅允许必要的官方域名通信，移除不必要的第三方域名，限制 GM_xmlhttpRequest 目标。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本读取 localStorage 以获取语言设置，未见其他隐私采集行为，但完整代码未展示，无法排除后续代码中对 cookie、表单、剪贴板等敏感信息的访问。",
-      "location": "(function() {...}) 主体开头",
-      "recommendation": "确保不读取或外传用户敏感信息，如 cookie、表单、剪贴板等。",
-      "severity": "CRITICAL",
+      "description": "脚本通过 localStorage 读取 _I18N_KEY 语言设置，未见其他隐私采集行为。",
+      "location": "main code",
+      "recommendation": "如需存储用户设置，建议明确告知用户并限制读取范围。",
+      "severity": "LOW",
       "type": "隐私采集"
     },
     {
-      "description": "脚本未见 eval、new Function、setTimeout(string) 等远程代码执行高危 API，但完整代码未展示，无法排除后续存在动态代码执行。",
-      "location": "(function() {...}) 主体",
-      "recommendation": "禁止使用 eval、new Function、setTimeout(string) 等动态执行代码方式。",
+      "description": "脚本未见 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行高危 API，但通过 @require 允许 raw.githubusercontent.com 等第三方域名，存在远程代码注入风险。",
+      "location": "元数据 @require/@connect",
+      "recommendation": "仅允许可信 CDN 且固定版本哈希，避免 raw.githubusercontent.com 这类可变内容。",
       "severity": "HIGH",
       "type": "远程代码执行"
     },
     {
-      "description": "脚本未见明显代码混淆，但完整代码未展示，无法排除后续存在混淆代码。",
-      "location": "(function() {...}) 主体",
-      "recommendation": "禁止代码混淆，保持可读性和可审计性。",
-      "severity": "HIGH",
+      "description": "脚本未见明显混淆、base64 解码、字符串数组映射或高度压缩单行代码。",
+      "location": "main code",
+      "recommendation": "无混淆风险。",
+      "severity": "LOW",
       "type": "代码混淆"
     },
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限，但未见实际使用 GM_addStyle，存在权限冗余。",
-      "location": "元数据区",
-      "recommendation": "仅申请实际需要的 @grant 权限，移除未使用的高权限。",
-      "severity": "MEDIUM",
+      "description": "脚本未见 DOM XSS 注入风险（如直接插入 innerHTML/outerHTML），但完整代码未完全展示，需关注后续更新。",
+      "location": "main code",
+      "recommendation": "确保所有用户输入均经过转义处理。",
+      "severity": "LOW",
+      "type": "DOM XSS"
+    },
+    {
+      "description": "脚本申请了 GM_addStyle 权限，但未见滥用高权限行为。",
+      "location": "元数据 @grant",
+      "recommendation": "仅申请实际需要的权限。",
+      "severity": "LOW",
       "type": "权限滥用"
     },
     {
-      "description": "脚本通过 @connect 允许多个第三方域名（如 assets.duohacker.io.vn、font.duohacker.io.vn），存在供应链风险，且未见 @require 固定版本哈希。",
-      "location": "元数据区",
-      "recommendation": "仅允许可信 CDN，固定第三方库版本，避免供应链污染。",
+      "description": "脚本通过 @connect 允许多个第三方域名（如 assets.duohacker.io.vn、font.duohacker.io.vn），存在供应链风险。",
+      "location": "元数据 @connect",
+      "recommendation": "仅允许可信、固定内容的第三方资源，避免自建 CDN 或未知域名。",
       "severity": "MEDIUM",
       "type": "供应链风险"
     }
@@ -62,16 +69,16 @@
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "读取 localStorage"
+      "localStorage 读取 _I18N_KEY"
     ],
-    "detected": true
+    "detected": false
   },
-  "risk_level": "CRITICAL",
+  "risk_level": "HIGH",
   "script_name": "Duolingo DuoHacker",
-  "security_score": 0,
-  "summary": "该脚本存在严重安全隐患。元数据区申请了高权限（GM_xmlhttpRequest）并允许多个第三方域名网络访问，存在数据外传和供应链风险。虽然主逻辑片段仅见 localStorage 读取，但完整代码未展示，无法排除后续存在隐私采集、远程代码执行、代码混淆等高危行为。建议仅在完全信任来源和代码可审计情况下使用。",
+  "security_score": 32,
+  "summary": "该脚本存在严重的数据外传和远程代码执行风险，因其允许与多个第三方域名通信（如 raw.githubusercontent.com、assets.duohacker.io.vn），且未限制仅与 Duolingo 官方域名交互。虽然未见明显隐私采集、代码混淆或 DOM XSS 行为，但供应链风险较高。建议仅允许必要的官方域名通信，移除不必要的第三方域名，严格限制远程代码加载。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-22T07:24:49.472392+00:00",
+  "analyzed_at": "2026-06-29T06:41:11.835505+00:00",
   "slug": "Duolingo_DuoHacker"
 }

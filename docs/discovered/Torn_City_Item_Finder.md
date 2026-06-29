@@ -4,15 +4,15 @@ title: "Torn City物品查找器"
 
 # Torn City物品查找器
 
-`游戏辅助`  `地图导航`  `物品查找`  `Torn City`  `网页增强`
+`游戏辅助`  `地图工具`  `物品查找`  `Torn City`  `便捷操作`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/Torn_City_Item_Finder.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**1.0**　　发现时间：**2026-06-22**　　来源：[GreasyFork](https://greasyfork.org/scripts/583287-torn-city-item-finder) <Badge type="tip" text="GreasyFork" />　　安装量：**341**　　评分：👍0 / 👎0
+> 版本：**1.0**　　发现时间：**2026-06-29**　　来源：[GreasyFork](https://greasyfork.org/scripts/583287-torn-city-item-finder) <Badge type="tip" text="GreasyFork" />　　安装量：**798**　　评分：👍2 / 👎0
 
 ## 功能介绍
 
-本脚本帮助玩家在 Torn City 游戏中快速定位和浏览城市地图上的物品，无需 API 密钥。它会在地图页面显示一个面板，方便切换和查看所有可拾取物品的位置。
+此脚本可帮助用户在 Torn City 的城市地图上快速查找和定位物品，无需 API 密钥。只需点击一次即可自动缩放并定位到物品所在位置。
 
 ## 适用网站
 
@@ -21,14 +21,14 @@ title: "Torn City物品查找器"
 ## 使用方法
 
 1. 安装脚本后，进入 Torn City 的城市地图页面。
-2. 页面会出现一个物品查找面板。
-3. 使用面板上的按钮浏览和定位地图上的物品。
+2. 页面会显示一个物品查找面板。
+3. 点击面板按钮即可自动定位并缩放到地图上的物品位置。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `none` | 脚本不需要特殊权限，仅在页面内运行。 |
+| `none` | 脚本无需特殊权限，仅在网页内运行。 |
 
 ## 安全分析
 

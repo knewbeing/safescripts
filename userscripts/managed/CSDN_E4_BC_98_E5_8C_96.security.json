@@ -10,16 +10,23 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 @require 加载了多个第三方库，均来自 jsdelivr CDN，并且指定了明确的版本号或 commit hash。",
-      "location": "元数据 @require",
-      "recommendation": "继续保持使用可信 CDN 并锁定版本，避免使用可变 URL。",
+      "description": "脚本通过 @require 加载了多个第三方库，均为官方 CDN（jsdelivr）且带有明确版本号或 commit 哈希，供应链风险较低。",
+      "location": "元数据 @require 字段",
+      "recommendation": "继续保持使用可信 CDN 并锁定版本或哈希。",
       "severity": "MEDIUM",
       "type": "供应链风险"
     },
     {
-      "description": "脚本申请了较多 GM_* 权限（如 GM_xmlhttpRequest、unsafeWindow），但实际代码未见明显滥用。",
-      "location": "元数据 @grant",
-      "recommendation": "建议仅申请实际使用的权限，减少攻击面。",
+      "description": "脚本申请了 GM_xmlhttpRequest 权限，但主代码未见实际使用，且 @connect 仅限 csdn 官方域名。",
+      "location": "元数据 @grant 字段",
+      "recommendation": "如无实际用途可移除 GM_xmlhttpRequest 权限，减少权限面。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本申请了 unsafeWindow 权限，但主代码未见实际使用。",
+      "location": "元数据 @grant 字段",
+      "recommendation": "如无实际用途可移除 unsafeWindow 权限，减少权限面。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     }
@@ -31,10 +38,10 @@
   },
   "risk_level": "LOW",
   "script_name": "CSDN优化",
-  "security_score": 84,
-  "summary": "该脚本主要用于优化 CSDN 网站体验，屏蔽广告、优化排版、允许复制等。未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。所有 @require 第三方库均锁定版本，供应链风险较低。权限申请略多但未见滥用。整体安全性较高，建议定期复查依赖库安全性。",
+  "security_score": 81,
+  "summary": "该脚本主要用于优化 CSDN 站点体验，未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。所有 @require 第三方库均为可信 CDN 且锁定版本，供应链风险较低。存在部分未使用的高权限申请（GM_xmlhttpRequest、unsafeWindow），建议精简权限。整体安全风险较低，建议定期复查依赖库更新。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-22T07:11:05.985364+00:00",
+  "analyzed_at": "2026-06-29T06:28:27.404516+00:00",
   "slug": "CSDN_E4_BC_98_E5_8C_96"
 }

@@ -9,61 +9,54 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "Script uses GM_xmlhttpRequest to communicate with ffscouter.com, which is a third-party server. Potential for user data or page context to be transmitted, depending on request payloads.",
-      "location": "@connect ffscouter.com, usage of GM_xmlhttpRequest (likely in code not fully shown)",
-      "recommendation": "Review all data sent to ffscouter.com; ensure no sensitive user data, authentication tokens, or cookies are transmitted. Document all transmitted fields.",
+      "description": "Script uses GM_xmlhttpRequest to communicate with ffscouter.com, a third-party server. The exact data sent is not fully visible in the provided code, but the use of a 'key' stored in localStorage and sent to the server is likely. Potential for user data or page context to be transmitted exists.",
+      "location": "GM_xmlhttpRequest usage (likely in code not fully shown, but @connect and @grant indicate usage)",
+      "recommendation": "Review all data sent to ffscouter.com. Only transmit non-sensitive, non-personal data. Document all transmitted fields.",
       "severity": "CRITICAL",
       "type": "Data Exfiltration"
     },
     {
-      "description": "Script reads and writes to localStorage for configuration and possibly user keys.",
-      "location": "class Storage, FFConfig.key getter/setter",
-      "recommendation": "Ensure no sensitive data (such as authentication tokens or personal information) is stored in localStorage. Document all stored keys and values.",
+      "description": "Script reads and writes to localStorage for persistent configuration and possibly for storing a user 'key'. No evidence of reading cookies, sessionStorage, or IndexedDB. No evidence of keylogging or clipboard access.",
+      "location": "Storage class and FFConfig usage",
+      "recommendation": "Ensure no sensitive user data (e.g., authentication tokens, personal info) is stored or transmitted. Document all stored fields.",
       "severity": "CRITICAL",
       "type": "Privacy Collection"
     },
     {
-      "description": "@grant unsafeWindow is requested, which exposes page JS context to the userscript and can be abused for privilege escalation or data exfiltration.",
+      "description": "Script grants unsafeWindow, which exposes the script's context to the page and vice versa. This increases the risk of privilege escalation or data leakage if the page is compromised.",
       "location": "@grant unsafeWindow in metadata",
-      "recommendation": "Remove unsafeWindow if not strictly necessary. If required, limit its usage and audit all interactions with page context.",
+      "recommendation": "Avoid using unsafeWindow unless absolutely necessary. If used, strictly control what is exposed to the page.",
       "severity": "HIGH",
-      "type": "Remote Code Execution"
+      "type": "Remote Code Execution / Privilege Escalation"
     },
     {
-      "description": "No evidence of code obfuscation or minification in the provided code segment. However, only partial code is shown.",
-      "location": "General code structure",
-      "recommendation": "Review the full script for any obfuscated or minified code, especially in sections not shown.",
+      "description": "Script uses localStorage for persistent data. No evidence of sanitizing user input before storage or use, but no direct DOM injection from user input is visible in the provided code.",
+      "location": "Storage class",
+      "recommendation": "Sanitize all user input before using it in the DOM or transmitting it to external servers.",
       "severity": "HIGH",
-      "type": "Code Obfuscation"
+      "type": "DOM Injection Risk"
     },
     {
-      "description": "@require is not used, so no supply chain risk from external libraries. However, only partial code is shown.",
-      "location": "Metadata block",
-      "recommendation": "If @require is added, ensure only official, hash-pinned sources are used.",
+      "description": "Script loads no external libraries via @require, reducing supply chain risk. However, the script is auto-updated via greasyfork.org, which is a trusted source.",
+      "location": "@require and @downloadURL",
+      "recommendation": "Continue to use only trusted sources for updates. Avoid dynamic or non-versioned @require URLs.",
       "severity": "MEDIUM",
       "type": "Supply Chain Risk"
-    },
-    {
-      "description": "GM_xmlhttpRequest is granted, which is a high-privilege API. Ensure it is only used for intended API calls.",
-      "location": "@grant GM_xmlhttpRequest in metadata",
-      "recommendation": "Limit usage to necessary endpoints and validate all outgoing requests.",
-      "severity": "MEDIUM",
-      "type": "Permission Abuse"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "Reads/writes localStorage for configuration and user key"
+      "localStorage used for storing configuration and a user 'key'"
     ],
     "detected": true
   },
   "risk_level": "HIGH",
   "script_name": "FF Scouter V3",
   "security_score": 35,
-  "summary": "The script communicates with a third-party server (ffscouter.com) and stores user configuration (including a 'key') in localStorage. It requests high-privilege APIs (GM_xmlhttpRequest, unsafeWindow). There is no evidence of code obfuscation or supply chain risk in the provided code, but only a partial script was reviewed. The main risks are potential data exfiltration, privacy collection, and privilege escalation via unsafeWindow. A full code review is recommended, especially for network request payloads and any dynamic code execution.",
+  "summary": "The script communicates with a third-party server (ffscouter.com) and stores a user 'key' in localStorage, which may be transmitted externally. It requests high-privilege grants (GM_xmlhttpRequest, unsafeWindow), increasing the attack surface. No evidence of code obfuscation, clipboard, or keylogging behavior. No direct DOM XSS found, but localStorage usage and unsafeWindow grant require caution. Supply chain risk is low due to trusted update source. Overall, the script presents a HIGH security risk and is NOT approved for use in sensitive environments.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-22T07:28:11.731586+00:00",
+  "analyzed_at": "2026-06-29T06:44:31.608028+00:00",
   "slug": "FF_Scouter_V3"
 }

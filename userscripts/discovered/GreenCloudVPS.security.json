@@ -14,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "GreenCloudVPS",
   "security_score": 100,
-  "summary": "该脚本未检测到任何安全或隐私风险。未发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码逻辑仅为自动化页面点击，无任何敏感操作。",
+  "summary": "该脚本未检测到任何安全风险。无数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码逻辑简单，仅自动化点击页面按钮，无任何敏感操作。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-22T07:30:15.923610+00:00",
+  "analyzed_at": "2026-06-29T06:46:50.276353+00:00",
   "slug": "GreenCloudVPS"
 }
