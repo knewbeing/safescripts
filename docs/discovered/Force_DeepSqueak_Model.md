@@ -35,14 +35,14 @@ title: "强制使用 DeepSqueak 模型"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-29
+**风险等级**：🔴 HIGH　　**安全评分**：60/100　　**分析时间**：2026-07-06
 
-> The script intercepts and replays up to 5 recent XMLHttpRequests made to character.ai, allowing the user to modify PATCH requests to use a specific model. It does not transmit data to third-party servers, does not collect sensitive user data, and does not use obfuscated or dynamically executed code. The main risk is the potential for unintended side effects when replaying requests, but this is clearly communicated to the user. No critical or high-severity security issues detected. Overall, the script is considered low risk for the reviewed version.
+> The script intercepts and replays XHR requests, which can potentially transmit sensitive user data externally if not properly scoped. While it appears to only target character.ai, the replay functionality is powerful and could be abused if the captured requests include sensitive information or are to third-party domains. No code obfuscation or DOM XSS risks detected. Supply chain risk is low as no @require is used. Permissions are appropriate but GM_xmlhttpRequest is a high privilege. Overall, the script is functional but carries a high risk due to its data transmission and privacy collection capabilities.
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：https://character.ai/*） |
-| 隐私采集 | ✅ 未检测到 |
+| 数据外传 | ❌ 检测到（目标：character.ai (same-origin), Any URL captured via XHR interception (potentially same-origin only)） |
+| 隐私采集 | ❌ 检测到（Captures XHR request bodies, headers, and URLs (may include sensitive data depending on original requests)） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -50,30 +50,25 @@ title: "强制使用 DeepSqueak 模型"
 
 ### 发现的问题
 
-**🟠 MEDIUM** — Permission Usage  
-> The script requests GM_xmlhttpRequest permission, which is used only for replaying requests to the same origin. No over-privilege detected, but GM_xmlhttpRequest is a high-privilege API.  
-> 位置：@grant metadata and replay logic  
-> 建议：No action needed unless script is modified to target third-party endpoints.
-
-**🟡 LOW** — Data Transmission  
-> The script intercepts and replays XMLHttpRequests using GM_xmlhttpRequest, but only to the same origin (character.ai). No evidence of exfiltration to third-party servers or data leak outside the matched domain.  
+**⛔ CRITICAL** — Data Transmission  
+> The script intercepts all XMLHttpRequests and allows replaying them using GM_xmlhttpRequest. If the captured requests are to third-party domains, user data could be transmitted externally. However, the script is scoped to character.ai and appears to only replay requests to that domain.  
 > 位置：XHR interception and replay logic  
-> 建议：Ensure users are aware that replaying requests can have side effects (already warned in the UI). No critical data exfiltration detected.
+> 建议：Ensure only same-origin requests are replayed. Add domain validation before replaying requests.
 
-**🟡 LOW** — Obfuscation  
-> No evidence of code obfuscation, eval, or dynamic code execution. All code is readable and not minified.  
+**🔴 HIGH** — Privacy Collection  
+> The script captures request bodies, headers, and URLs, which may include sensitive user data depending on the original requests. However, it does not capture cookies or localStorage/sessionStorage directly.  
+> 位置：XHR interception logic  
+> 建议：Review what data is being captured and replayed. Avoid capturing or replaying sensitive information.
+
+**🟠 MEDIUM** — Permission Abuse  
+> The script uses GM_xmlhttpRequest for replay, which is a high privilege grant. It is used as intended, but the grant is powerful and could be abused if the script logic changes.  
+> 位置：@grant GM_xmlhttpRequest  
+> 建议：Limit usage to only necessary domains and requests.
+
+**🟡 LOW** — Obfuscation/Remote Code Execution  
+> No evidence of eval, new Function, or dynamic script injection. No code obfuscation detected.  
 > 位置：Entire script  
-> 建议：None.
-
-**🟡 LOW** — Supply Chain  
-> No supply chain risk: no @require or external scripts loaded.  
-> 位置：Metadata  
-> 建议：None.
-
-**🟡 LOW** — Privacy Collection  
-> No privacy collection: script does not access cookies, localStorage, sessionStorage, IndexedDB, or fingerprinting APIs. It does not read form fields or clipboard.  
-> 位置：Entire script  
-> 建议：None.
+> 建议：Maintain code clarity and avoid obfuscation.
 
 ---
 

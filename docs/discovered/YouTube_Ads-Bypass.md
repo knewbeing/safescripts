@@ -4,15 +4,15 @@ title: "跳过并隐藏所有广告"
 
 # 跳过并隐藏所有广告
 
-`广告屏蔽`  `视频优化`  `YouTube`  `界面清理`  `自动化`  `无权限`
+`广告屏蔽`  `视频优化`  `YouTube`  `界面清理`  `自动跳过`  `无干扰`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/YouTube_Ads-Bypass.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**1.28.3**　　发现时间：**2026-06-29**　　来源：[GreasyFork](https://greasyfork.org/scripts/575941-youtube-ads-bypass) <Badge type="tip" text="GreasyFork" />　　安装量：**5,662**　　评分：👍8 / 👎0
+> 版本：**1.28.3**　　发现时间：**2026-07-06**　　来源：[GreasyFork](https://greasyfork.org/scripts/575941-youtube-ads-bypass) <Badge type="tip" text="GreasyFork" />　　安装量：**6,507**　　评分：👍8 / 👎0
 
 ## 功能介绍
 
-本脚本可自动跳过YouTube和YouTube音乐上的视频广告，并隐藏页面上的横幅、覆盖层和促销等干扰元素，让观看体验更清爽。无需手动操作，广告会自动被屏蔽。
+本脚本可自动跳过YouTube和YouTube音乐上的视频广告，并隐藏页面上的横幅、覆盖层和促销等干扰元素，让观看体验更清爽。无需手动操作，广告会被自动屏蔽。
 
 ## 适用网站
 
@@ -21,15 +21,15 @@ title: "跳过并隐藏所有广告"
 
 ## 使用方法
 
-1. 安装Tampermonkey扩展。
-2. 在Tampermonkey中添加本脚本。
-3. 打开YouTube或YouTube音乐，广告会自动跳过和隐藏。
+1. 1. 安装Tampermonkey扩展。
+2. 2. 在Tampermonkey中添加本脚本。
+3. 3. 打开YouTube或YouTube音乐，广告会自动跳过并隐藏，无需额外操作。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `none` | 脚本无需特殊权限，仅在网页内运行。 |
+| `none` | 脚本无需特殊权限，仅在页面内运行。 |
 
 ## 安全分析
 

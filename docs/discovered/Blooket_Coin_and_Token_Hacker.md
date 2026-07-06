@@ -32,9 +32,9 @@ title: "Blooket金币代币助手"
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：97/100　　**分析时间**：2026-06-29
+**风险等级**：🟢 SAFE　　**安全评分**：94/100　　**分析时间**：2026-07-06
 
-> The script does not perform any network requests, does not collect or transmit user data, and does not use dangerous APIs or obfuscation. It only modifies the page's DOM based on user input via prompt, and updates the display using textContent, which is safe. No supply chain or permission risks detected.
+> The script does not transmit data externally, collect privacy-sensitive information, or use dangerous APIs. It only manipulates the DOM locally and collects user input via prompt. No critical or high risks detected. The main risk is minimal and relates to user input handling and DOM manipulation, both of which are performed safely.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -47,10 +47,20 @@ title: "Blooket金币代币助手"
 
 ### 发现的问题
 
+**🟡 LOW** — User Input Handling  
+> Uses prompt to collect user input for coins and tokens, but does not transmit this data externally.  
+> 位置：addCoinsAndTokens function  
+> 建议：Ensure user input is validated and not used in unsafe DOM operations.
+
 **🟡 LOW** — DOM Manipulation  
-> The script uses prompt() to collect user input and updates the DOM with user-provided values. However, it does not insert untrusted input via innerHTML or similar methods, and only uses textContent, which is safe.  
+> Attempts to update the balance display by directly setting textContent, but does not use innerHTML or unsafe DOM methods.  
 > 位置：updateBalanceDisplay function  
-> 建议：Continue to use textContent for DOM updates. Avoid using innerHTML with untrusted input.
+> 建议：Continue using textContent for DOM updates to avoid XSS.
+
+**🟡 LOW** — General Security  
+> No network requests, no privacy collection, no obfuscation, no supply chain risk, and no sensitive API usage detected.  
+> 位置：Entire script  
+> 建议：Maintain current practices; avoid adding network requests or sensitive API calls.
 
 ---
 

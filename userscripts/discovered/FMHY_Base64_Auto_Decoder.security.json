@@ -14,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "FMHY Base64 Auto Decoder",
   "security_score": 100,
-  "summary": "该脚本仅在页面本地解码 Base64 字符串并将其转为可点击链接，未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用或供应链风险。代码结构清晰，未使用任何高危或敏感 API，未加载外部依赖，安全性高。",
+  "summary": "该脚本仅在页面本地解码 base64 字符串并将其转为可点击链接，没有任何数据外传、隐私采集、远程代码执行、混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码结构清晰，未申请任何高权限，未加载第三方库，未使用危险 API。整体安全性极高。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-29T06:44:37.566087+00:00",
+  "analyzed_at": "2026-07-06T06:34:30.445599+00:00",
   "slug": "FMHY_Base64_Auto_Decoder"
 }

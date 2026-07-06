@@ -9,54 +9,47 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script uses GM_xmlhttpRequest to communicate with ffscouter.com, a third-party server. While the exact payload is not visible in the provided code fragment, the @connect directive and typical usage pattern indicate user data may be transmitted for score calculation.",
-      "location": "Metadata (@connect), likely in network logic (not fully visible in code fragment)",
-      "recommendation": "Review all data sent to ffscouter.com. Ensure only minimal, non-sensitive data is transmitted. Document data flows and provide privacy notice to users.",
+      "description": "脚本使用 GM_xmlhttpRequest 向 ffscouter.com 发起网络请求，可能会携带用户数据或页面内容，存在数据外传风险。",
+      "location": "GM_xmlhttpRequest 调用（@connect ffscouter.com）",
+      "recommendation": "仅发送必要数据，避免传递敏感信息。建议明确审查请求内容及响应处理逻辑。",
       "severity": "CRITICAL",
       "type": "Data Exfiltration"
     },
     {
-      "description": "The script reads and writes to localStorage for configuration and possibly user keys. While this is not inherently malicious, it is a privacy-relevant operation.",
-      "location": "Class Storage, FFConfig",
-      "recommendation": "Ensure no sensitive data (e.g., authentication tokens, personal information) is stored in localStorage. Document all stored keys and values.",
+      "description": "脚本通过 Storage 类读写 localStorage，存储和读取配置及可能的用户数据。",
+      "location": "Storage 类（localStorage 操作）",
+      "recommendation": "确保不会将敏感信息（如 cookie、密码等）存入 localStorage，且不会将其外传。",
       "severity": "CRITICAL",
       "type": "Privacy Collection"
     },
     {
-      "description": "The script requests the unsafeWindow grant, which allows access to the page's JS context and can be abused for privilege escalation or data exfiltration.",
-      "location": "Metadata (@grant unsafeWindow)",
-      "recommendation": "Remove unsafeWindow if not strictly necessary. If required, audit all uses to ensure no sensitive data is accessed or leaked.",
+      "description": "脚本申请了 unsafeWindow 权限，允许访问页面原生 JS 环境，存在被滥用的风险。",
+      "location": "@grant unsafeWindow",
+      "recommendation": "仅在确实需要时申请 unsafeWindow，避免滥用。建议移除未使用的高权限。",
       "severity": "HIGH",
-      "type": "Remote Code Execution / Privilege Escalation"
+      "type": "Privilege Abuse"
     },
     {
-      "description": "The script requests GM_xmlhttpRequest, a high-privilege API, but the code fragment does not show its usage. Unused high-privilege grants increase attack surface.",
-      "location": "Metadata (@grant GM_xmlhttpRequest)",
-      "recommendation": "Remove unused grants. Only request permissions that are actually used.",
+      "description": "脚本未固定第三方服务器 ffscouter.com 的 API 版本，存在供应链风险。",
+      "location": "@connect ffscouter.com",
+      "recommendation": "建议对 API 版本进行校验，或采用哈希校验机制，防止远端代码或数据被篡改。",
       "severity": "MEDIUM",
-      "type": "Permission Abuse"
-    },
-    {
-      "description": "The script is partially minified/obfuscated (short variable names, compressed code, e.g., 'const n=new Set;const importCSS = async e=>{n.has(e)||(n.add(e),(d=>{...}))}'). This hinders manual review.",
-      "location": "Top-level code",
-      "recommendation": "Publish and review the original, unminified source code for transparency.",
-      "severity": "HIGH",
-      "type": "Code Obfuscation"
+      "type": "Supply Chain Risk"
     }
   ],
-  "obfuscation_detected": true,
+  "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "Reads/writes localStorage for configuration and possibly user keys"
+      "localStorage 读写"
     ],
     "detected": true
   },
   "risk_level": "CRITICAL",
   "script_name": "FF Scouter V2 beta",
-  "security_score": 22,
-  "summary": "This script communicates with a third-party server (ffscouter.com) and stores user configuration in localStorage. It requests high-privilege grants (GM_xmlhttpRequest, unsafeWindow), and the code is partially obfuscated/minified, making full review difficult. There is a critical risk of data exfiltration and privacy collection, and the use of unsafeWindow increases the risk of privilege escalation. The script should not be considered safe for use without further transparency and a full audit of the network payloads and all privileged operations.",
-  "supply_chain_risk": false,
+  "security_score": 42,
+  "summary": "该脚本存在数据外传和隐私采集风险，主要通过 GM_xmlhttpRequest 向 ffscouter.com 发起请求，并读写 localStorage。申请了 unsafeWindow 高权限，存在被滥用的可能。未发现代码混淆和 DOM XSS 注入风险。建议重点审查网络请求内容、权限申请合理性及供应链安全。",
+  "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-29T06:44:15.764496+00:00",
+  "analyzed_at": "2026-07-06T06:34:13.899635+00:00",
   "slug": "FF_Scouter_V2_beta"
 }

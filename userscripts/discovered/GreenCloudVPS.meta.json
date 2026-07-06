@@ -1,9 +1,9 @@
 {
   "slug": "GreenCloudVPS",
   "platform": "github",
-  "source_url": "https://raw.githubusercontent.com/langren1353/GM_script/75950f3060eab08874180f6ab428465e2b63afb4/GreenCloudVPS.user.js",
+  "source_url": "https://raw.githubusercontent.com/langren1353/GM_script/2d93f39fd1dd61c477a147fae583c259cbbc00fd/GreenCloudVPS.user.js",
   "source_repo": "langren1353/GM_script",
-  "raw_url": "https://raw.githubusercontent.com/langren1353/GM_script/75950f3060eab08874180f6ab428465e2b63afb4/GreenCloudVPS.user.js",
+  "raw_url": "https://raw.githubusercontent.com/langren1353/GM_script/2d93f39fd1dd61c477a147fae583c259cbbc00fd/GreenCloudVPS.user.js",
   "filename": "GreenCloudVPS.user.js",
   "name": "GreenCloudVPS",
   "version": "0.1",
@@ -17,7 +17,7 @@
   "require": [],
   "metadata_raw": "// @name  GreenCloudVPS\n// @namespace  http://tampermonkey.net/\n// @version  0.1\n// @description  try to take over the world!\n// @author  You\n// @include  https://greencloudvps.com/*\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=greencloudvps.com\n// @grant  none",
   "sha256": "bf9e479d88f8125948ae08fb54df670409555954cb5105fb521050a150726f50",
-  "discovered_at": "2026-06-15T07:10:41.236191+00:00",
+  "discovered_at": "2026-07-06T06:20:48.525176+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
@@ -28,10 +28,10 @@
     "applicable_sites": [
       "GreenCloudVPS官网"
     ],
-    "description": "本脚本自动化GreenCloudVPS官网的购物流程，包括自动点击购物车、选择支付方式和提交订单，减少用户手动操作。适用于促销活动期间快速抢购。",
+    "description": "本脚本自动化GreenCloudVPS网站的购物流程，包括自动点击继续、选择支付方式、勾选协议并提交订单。适合需要快速下单的用户。",
     "permissions": [
       {
-        "explanation": "脚本无需特殊权限，仅操作网页内容。",
+        "explanation": "脚本无需额外权限，仅操作网页内容。",
         "grant": "none"
       }
     ],
@@ -39,14 +39,14 @@
       "自动化",
       "购物助手",
       "VPS",
-      "抢购",
-      "GreenCloudVPS"
+      "下单加速",
+      "网站脚本"
     ],
     "usage": [
       "安装脚本后，访问GreenCloudVPS官网。",
-      "在促销或购物页面，脚本会自动完成购物流程。",
-      "无需手动点击按钮，脚本会自动提交订单。"
+      "在促销或购物页面，脚本会自动进行下单操作。",
+      "无需手动点击，脚本会自动完成支付方式选择和协议勾选。"
     ],
-    "zh_name": "GreenCloudVPS自动购物"
+    "zh_name": "GreenCloudVPS自动下单"
   }
 }

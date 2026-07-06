@@ -10,25 +10,25 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script uses GM_xmlhttpRequest to send requests to third-party domains (jtmate.com, mimixiaoke.com). These requests may include page context or user data, representing a data exfiltration risk.",
-      "location": "GM_xmlhttpRequest usage; @connect metadata",
-      "recommendation": "Review the payload of all outgoing requests. Limit data sent to only what is necessary for coupon queries. Disclose all data collection in the privacy policy.",
+      "description": "脚本通过 GM_xmlhttpRequest 允许向 jtmate.com 和 mimixiaoke.com 发起网络请求，可能携带用户数据或页面内容。",
+      "location": "@connect jtmate.com, @connect mimixiaoke.com, 代码中 GM_xmlhttpRequest 调用",
+      "recommendation": "限制请求内容，仅发送必要的非敏感数据，并在隐私政策中明确说明用途。",
       "severity": "CRITICAL",
-      "type": "Data Exfiltration"
+      "type": "数据外传"
     },
     {
-      "description": "The script requests high-privilege grants such as GM_openInTab, GM_download, and GM_setClipboard, but not all are clearly used in the code. Unused high-privilege grants increase attack surface.",
-      "location": "@grant metadata",
-      "recommendation": "Remove unused high-privilege grants from the metadata block.",
+      "description": "脚本申请了 GM_download、GM_openInTab 等高权限，但代码中未必全部使用，存在权限滥用风险。",
+      "location": "@grant GM_download, GM_openInTab, GM.openInTab",
+      "recommendation": "仅申请实际需要的权限，移除未使用的高权限。",
       "severity": "MEDIUM",
-      "type": "Permission Overuse"
+      "type": "权限滥用"
     },
     {
-      "description": "The script loads coupon data from external sources (jtmate.com, mimixiaoke.com) but does not use @require for third-party code. However, if the remote API responses are not validated, there is a supply chain risk if those endpoints are compromised.",
-      "location": "GM_xmlhttpRequest to external APIs",
-      "recommendation": "Validate all remote data before use. Consider using only trusted, versioned APIs.",
+      "description": "脚本未通过 @require 加载第三方库，供应链风险较低，但下载和更新 URL 未固定版本哈希，存在被篡改风险。",
+      "location": "@downloadURL, @updateURL",
+      "recommendation": "建议使用固定版本哈希或官方 CDN，避免供应链污染。",
       "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
+      "type": "供应链风险"
     }
   ],
   "obfuscation_detected": false,
@@ -39,9 +39,9 @@
   "risk_level": "HIGH",
   "script_name": "Online shopping assistant & Automatically query coupons & Save money",
   "security_score": 67,
-  "summary": "The script transmits data to third-party servers (jtmate.com, mimixiaoke.com) for coupon queries, which is a critical data exfiltration risk. There is no evidence of privacy-invasive data collection (such as reading cookies, form fields, or clipboard), nor of code obfuscation or DOM XSS. The script requests several high-privilege grants, some of which may not be necessary, and relies on external APIs, introducing supply chain risk. The overall risk is HIGH and the script is NOT approved for use in sensitive environments.",
+  "summary": "该脚本存在数据外传至第三方服务器（jtmate.com、mimixiaoke.com），并申请了高权限但未必全部使用，存在权限滥用和供应链风险。未检测到隐私采集、代码混淆、DOM XSS、WebSocket、敏感 API 调用等高风险行为。建议限制数据传输内容、精简权限申请、固定更新 URL 版本哈希。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-29T06:50:26.688646+00:00",
+  "analyzed_at": "2026-07-06T06:39:03.698490+00:00",
   "slug": "Online_shopping_assistant_Automatically_query_coupons_Save_money"
 }

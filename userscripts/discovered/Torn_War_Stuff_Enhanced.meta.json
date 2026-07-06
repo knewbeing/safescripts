@@ -6,58 +6,61 @@
   "raw_url": "https://update.greasyfork.org/scripts/529238/Torn%20War%20Stuff%20Enhanced.user.js",
   "filename": "Torn_War_Stuff_Enhanced.user.js",
   "name": "Torn War Stuff Enhanced",
-  "version": "1.16",
-  "description": "Show travel status and hospital time and sort by hospital time on war page. Fork of https://greasyfork.org/en/scripts/448681-torn-war-stuff",
+  "version": "2.0",
+  "description": "Show travel status and hospital time and sort by hospital time on war page.",
   "match": [
     "https://www.torn.com/factions.php*"
   ],
   "grant": [
     "GM_addStyle",
     "GM_registerMenuCommand",
-    "GM_xmlhttpRequest"
+    "GM_xmlhttpRequest",
+    "unsafeWindow"
   ],
   "require": [],
-  "metadata_raw": "// @name  Torn War Stuff Enhanced\n// @namespace  namespace\n// @version  1.16\n// @description  Show travel status and hospital time and sort by hospital time on war page. Fork of https://greasyfork.org/en/scripts/448681-torn-war-stuff\n// @author  xentac\n// @license  MIT\n// @match  https://www.torn.com/factions.php*\n// @grant  GM_addStyle\n// @grant  GM_registerMenuCommand\n// @grant  GM_xmlhttpRequest\n// @connect  api.torn.com\n// @downloadURL  https://update.greasyfork.org/scripts/529238/Torn%20War%20Stuff%20Enhanced.user.js\n// @updateURL  https://update.greasyfork.org/scripts/529238/Torn%20War%20Stuff%20Enhanced.meta.js",
-  "sha256": "81f616b4d99bd9f38e2231e5dee4718e7c4a495227f917b47006307fe96764cd",
-  "discovered_at": "2026-06-01T06:51:56.252622+00:00",
+  "metadata_raw": "// @name  Torn War Stuff Enhanced\n// @namespace  namespace\n// @version  2.0\n// @author  xentac\n// @description  Show travel status and hospital time and sort by hospital time on war page.\n// @license  MIT\n// @match  https://www.torn.com/factions.php*\n// @connect  api.torn.com\n// @connect  twse.dev\n// @grant  GM_addStyle\n// @grant  GM_registerMenuCommand\n// @grant  GM_xmlhttpRequest\n// @grant  unsafeWindow\n// @run-at  document-end\n// @downloadURL  https://update.greasyfork.org/scripts/529238/Torn%20War%20Stuff%20Enhanced.user.js\n// @updateURL  https://update.greasyfork.org/scripts/529238/Torn%20War%20Stuff%20Enhanced.meta.js",
+  "sha256": "f14414f0a205b5012456301b983a5cee346ad1b291ae9a1c21e5044bef88dd5e",
+  "discovered_at": "2026-07-06T06:22:56.520837+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 7182,
+  "install_count": 8655,
   "good_ratings": 1,
   "bad_ratings": 0,
   "summary": {
     "applicable_sites": [
-      "Torn 游戏派系页面"
+      "Torn 城市游戏"
     ],
-    "description": "本脚本在 Torn 游戏的派系战争页面显示成员的旅行状态和住院时间，并可按住院时间排序。它还通过颜色高亮不同状态，方便玩家快速了解敌我双方的情况。",
+    "description": "本脚本在 Torn 游戏的帮派战争页面显示玩家的旅行状态和住院时间，并支持按住院时间排序，方便管理和查看成员状态。",
     "permissions": [
       {
-        "explanation": "用于添加自定义样式，让页面显示高亮效果。",
+        "explanation": "用于添加自定义样式，让页面显示更美观。",
         "grant": "GM_addStyle"
       },
       {
-        "explanation": "允许用户通过菜单设置 API 密钥，方便获取数据。",
+        "explanation": "允许在脚本菜单中添加自定义命令，方便用户操作。",
         "grant": "GM_registerMenuCommand"
       },
       {
-        "explanation": "用于向 Torn API 请求成员状态数据。",
+        "explanation": "用于向外部接口（如 Torn API）发送网络请求，获取玩家状态信息。",
         "grant": "GM_xmlhttpRequest"
+      },
+      {
+        "explanation": "允许脚本访问和操作页面的原始窗口对象，增强功能。",
+        "grant": "unsafeWindow"
       }
     ],
     "tags": [
       "游戏辅助",
-      "信息高亮",
-      "状态显示",
-      "数据排序",
+      "信息展示",
+      "状态管理",
       "Torn",
-      "派系管理"
+      "帮派管理"
     ],
     "usage": [
-      "安装脚本后，进入 Torn 的派系页面。",
-      "首次使用时，通过菜单设置你的 Torn 公共 API 密钥。",
-      "页面会自动显示成员的旅行和住院状态，并按住院时间排序。",
-      "不同状态的成员会被高亮显示，方便识别。"
+      "安装脚本后，进入 Torn 的帮派页面。",
+      "页面会自动显示成员的旅行状态和住院时间。",
+      "可根据住院时间对成员列表进行排序，无需额外操作。"
     ],
     "zh_name": "Torn战争信息增强"
   }

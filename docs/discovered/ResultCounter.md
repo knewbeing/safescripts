@@ -4,15 +4,15 @@ title: "搜索结果自动加序号"
 
 # 搜索结果自动加序号
 
-`搜索增强`  `界面优化`  `效率提升`  `实用工具`  `多平台支持`
+`搜索引擎`  `界面优化`  `效率提升`  `百度`  `谷歌`  `必应`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/ResultCounter.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**2017.7.21**　　发现时间：**2026-06-15**　　来源：[langren1353/GM_script](https://github.com/langren1353/GM_script) <Badge type="tip" text="GitHub" />
+> 版本：**2017.7.21**　　发现时间：**2026-07-06**　　来源：[langren1353/GM_script](https://github.com/langren1353/GM_script) <Badge type="tip" text="GitHub" />
 
 ## 功能介绍
 
-本脚本会在各大搜索网站的搜索结果旁自动添加序号，方便用户快速辨认和查找结果。支持百度、谷歌、必应等主流搜索平台。
+本脚本会在各大搜索引擎和部分论坛的搜索结果旁自动添加序号，方便用户快速识别和排序结果。无需手动操作，序号会自动显示在每条结果前。
 
 ## 适用网站
 
@@ -32,8 +32,8 @@ title: "搜索结果自动加序号"
 
 ## 使用方法
 
-1. 安装脚本后，访问任意支持的搜索网站。
-2. 进行搜索后，搜索结果旁会自动显示序号。
+1. 安装脚本后，访问百度、谷歌、必应等支持的网站。
+2. 进行搜索后，搜索结果前会自动显示序号。
 3. 无需额外操作，序号自动添加。
 
 ## 权限说明
@@ -44,9 +44,9 @@ title: "搜索结果自动加序号"
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-06-22
+**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-07-06
 
-> 该脚本仅在搜索结果页面为每个结果项添加序号，不涉及任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用或供应链风险。代码结构清晰，无可疑行为，安全性高。
+> 该脚本仅在搜索结果页面为每条结果添加序号，不涉及任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码结构清晰，无安全隐患。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -61,4 +61,4 @@ title: "搜索结果自动加序号"
 
 ---
 
-*由 SafeScripts 自动发现 · [查看原始来源](https://raw.githubusercontent.com/langren1353/GM_script/75950f3060eab08874180f6ab428465e2b63afb4/ResultCounter.user.js)*
+*由 SafeScripts 自动发现 · [查看原始来源](https://raw.githubusercontent.com/langren1353/GM_script/2d93f39fd1dd61c477a147fae583c259cbbc00fd/ResultCounter.user.js)*

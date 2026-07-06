@@ -2,26 +2,19 @@
   "approved": true,
   "data_transmission": {
     "destinations": [
-      "api-router.nexusmods.com",
-      "www.nexusmods.com"
+      "https://api-router.nexusmods.com/graphql",
+      "https://www.nexusmods.com/Core/Libs/Common/Managers/Downloads?GenerateDownloadUrl"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script sends POST requests to https://api-router.nexusmods.com/graphql and https://www.nexusmods.com/Core/Libs/Common/Managers/Downloads?GenerateDownloadUrl, including cookies (credentials: include). These are first-party requests to Nexus Mods, matching the @connect domain.",
-      "location": "fetchMods(), fetchDownloadLink()",
-      "recommendation": "Ensure no sensitive user data outside of Nexus Mods context is sent. The requests are expected for the script's function.",
+      "description": "脚本通过 fetch 向 https://api-router.nexusmods.com/graphql 和 https://www.nexusmods.com/Core/Libs/Common/Managers/Downloads?GenerateDownloadUrl 发起网络请求，目标均为官方域名，未携带敏感用户数据，仅用于功能实现。",
+      "location": "NDC.fetchMods() 方法",
+      "recommendation": "确认请求内容仅为功能所需，避免携带用户敏感信息。",
       "severity": "CRITICAL",
-      "type": "Data Transmission"
-    },
-    {
-      "description": "The script requests broad GM_* permissions (GM.xmlHttpRequest, GM_xmlhttpRequest, GM_setValue, GM_getValue, GM.setValue, GM.getValue, GM_addStyle), but only uses GM_addStyle and GM.getValue/GM.setValue in the provided code. GM.xmlHttpRequest is not used in the visible code.",
-      "location": "Metadata block",
-      "recommendation": "Remove unused @grant permissions to reduce attack surface.",
-      "severity": "MEDIUM",
-      "type": "Permission Abuse"
+      "type": "数据外传"
     }
   ],
   "obfuscation_detected": false,
@@ -30,11 +23,11 @@
     "detected": false
   },
   "risk_level": "LOW",
-  "script_name": "Nexus Download Collection",
-  "security_score": 67,
-  "summary": "The script transmits data only to Nexus Mods' own APIs, which is expected for its functionality. No evidence of privacy-invasive data collection, remote code execution, code obfuscation, or DOM XSS was found. There is some permission over-claiming in the @grant block. No supply chain or iframe/clickjacking risks detected. Overall, the script is low risk for its intended use.",
+  "script_name": "Nexus Download Collection++",
+  "security_score": 75,
+  "summary": "脚本主要用于批量下载 Nexus Mods 集合中的 mod，未检测到隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险等问题。唯一风险为功能性的数据外传，目标均为官方域名，风险较低。整体安全性较高。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-29T06:49:58.856185+00:00",
+  "analyzed_at": "2026-07-06T06:38:35.238780+00:00",
   "slug": "Nexus_Download_Collection"
 }

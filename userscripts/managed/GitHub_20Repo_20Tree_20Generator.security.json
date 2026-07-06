@@ -7,53 +7,67 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本未检测到任何网络请求（如 fetch、GM_xmlhttpRequest、XMLHttpRequest、WebSocket、EventSource、sendBeacon）用于数据外传。",
+      "description": "脚本未检测到任何网络请求（GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource、sendBeacon），无数据外传行为。",
       "location": "全局",
-      "recommendation": "保持当前实现，勿添加外传逻辑。",
+      "recommendation": "保持无外传设计，勿添加任何第三方数据上报。",
       "severity": "CRITICAL",
-      "type": "数据外传"
+      "type": "Data Transmission"
     },
     {
-      "description": "脚本未检测到任何隐私采集行为（如读取 cookie、localStorage、sessionStorage、IndexedDB、监听键盘输入、读取表单字段、访问指纹 API、读取剪贴板内容）。",
+      "description": "脚本未检测到任何隐私采集行为（未读取 cookie、localStorage、sessionStorage、IndexedDB、剪贴板、表单、键盘输入、指纹 API）。",
       "location": "全局",
-      "recommendation": "保持当前实现，勿添加隐私采集逻辑。",
+      "recommendation": "勿添加任何隐私采集代码。",
       "severity": "CRITICAL",
-      "type": "隐私采集"
+      "type": "Privacy Collection"
     },
     {
-      "description": "脚本未检测到 eval、new Function、setTimeout(string)、setInterval(string)、动态 script 标签、document.write、@require 加载非官方库等远程代码执行风险。",
+      "description": "脚本未检测到 eval、new Function、setTimeout(string)、setInterval(string)、innerHTML/outerHTML 执行 JS、document.write、动态 script 标签等远程代码执行风险。",
       "location": "全局",
-      "recommendation": "保持当前实现，勿引入动态代码执行。",
+      "recommendation": "继续避免使用动态代码执行。",
       "severity": "HIGH",
-      "type": "远程代码执行"
+      "type": "Remote Code Execution"
     },
     {
-      "description": "脚本未检测到代码混淆（无 base64 解码、字符串数组映射、unicode 混淆、压缩单行代码等）。",
+      "description": "脚本未检测到代码混淆（无 base64 解码、字符串数组映射、unicode 混淆、高度压缩单行代码）。",
       "location": "全局",
-      "recommendation": "保持代码可读性，避免混淆。",
+      "recommendation": "保持代码可读性，勿混淆。",
       "severity": "HIGH",
-      "type": "代码混淆"
+      "type": "Obfuscation"
     },
     {
-      "description": "脚本未检测到 DOM XSS 风险（未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML、document.write、iframe src 为 javascript: 等）。",
+      "description": "脚本未检测到 DOM XSS 风险（未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未 document.write 不可信内容，未操作 iframe src 为 javascript:）。",
       "location": "全局",
-      "recommendation": "如后续处理用户输入，需严格转义。",
+      "recommendation": "如需插入用户输入，务必转义。",
       "severity": "HIGH",
       "type": "DOM XSS"
     },
     {
-      "description": "@grant 权限申请与实际代码使用相符，无权限滥用。",
-      "location": "元数据",
-      "recommendation": "仅申请实际需要的权限。",
+      "description": "脚本申请了 GM_download 权限，但实际代码未使用该权限。",
+      "location": "元数据 @grant",
+      "recommendation": "移除未使用的高权限申请，减少攻击面。",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "Permission Abuse"
     },
     {
-      "description": "@require 加载的第三方库均为官方 CDN，且指定了明确版本，无供应链风险。",
-      "location": "元数据",
-      "recommendation": "继续使用可信 CDN 并锁定版本。",
+      "description": "脚本通过 @require 加载 html2canvas 和 qrcodejs，均来自官方 CDN，版本号固定，无供应链风险。",
+      "location": "元数据 @require",
+      "recommendation": "继续使用可信 CDN 并固定版本。",
       "severity": "MEDIUM",
-      "type": "供应链风险"
+      "type": "Supply Chain"
+    },
+    {
+      "description": "脚本未检测到敏感 API 调用（geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API）。",
+      "location": "全局",
+      "recommendation": "勿滥用敏感 API。",
+      "severity": "MEDIUM",
+      "type": "Sensitive API"
+    },
+    {
+      "description": "脚本未检测到修改 frame 保护策略或创建隐藏 iframe 用于数据提取。",
+      "location": "全局",
+      "recommendation": "如需使用 iframe，勿用于隐蔽数据提取。",
+      "severity": "LOW",
+      "type": "ClickJacking/Iframe"
     }
   ],
   "obfuscation_detected": false,
@@ -63,10 +77,10 @@
   },
   "risk_level": "SAFE",
   "script_name": "GitHub Repo Tree Generator",
-  "security_score": 100,
-  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、供应链风险等安全问题。所有 @require 第三方库均为官方 CDN 且锁定版本，@grant 权限与实际使用相符。整体安全性高，适合公开分发。",
+  "security_score": 92,
+  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 滥用、供应链风险或 iframe 风险。唯一中等风险为申请了未使用的 GM_download 权限，建议移除。整体安全性高，适合公开使用。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-29T06:28:48.864634+00:00",
+  "analyzed_at": "2026-07-06T06:18:54.143721+00:00",
   "slug": "GitHub_20Repo_20Tree_20Generator"
 }

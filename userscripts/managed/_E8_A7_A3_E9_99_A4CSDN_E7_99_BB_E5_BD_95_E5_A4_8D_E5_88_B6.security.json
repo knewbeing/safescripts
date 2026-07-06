@@ -14,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "解除CSDN登录复制",
   "security_score": 100,
-  "summary": "该脚本未检测到任何安全风险。没有外部数据传输、隐私收集、远程代码执行、混淆、XSS、权限滥用或供应链风险。代码结构简单，仅用于解除 CSDN 登录复制限制。",
+  "summary": "该脚本未检测到任何安全风险：无数据外传、无隐私采集、无远程代码执行、无代码混淆、无 DOM XSS、无权限滥用、无敏感 API 调用、无供应链风险、无 iframe 风险。代码仅解除页面复制限制，未涉及任何危险操作。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-29T06:29:45.215117+00:00",
+  "analyzed_at": "2026-07-06T06:20:30.268634+00:00",
   "slug": "_E8_A7_A3_E9_99_A4CSDN_E7_99_BB_E5_BD_95_E5_A4_8D_E5_88_B6"
 }

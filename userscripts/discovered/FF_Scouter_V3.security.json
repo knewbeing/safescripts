@@ -9,37 +9,37 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "Script uses GM_xmlhttpRequest to communicate with ffscouter.com, a third-party server. The exact data sent is not fully visible in the provided code, but the use of a 'key' stored in localStorage and sent to the server is likely. Potential for user data or page context to be transmitted exists.",
-      "location": "GM_xmlhttpRequest usage (likely in code not fully shown, but @connect and @grant indicate usage)",
-      "recommendation": "Review all data sent to ffscouter.com. Only transmit non-sensitive, non-personal data. Document all transmitted fields.",
+      "description": "Script uses GM_xmlhttpRequest to connect to ffscouter.com, which is a third-party server. Potential for user/page data transmission.",
+      "location": "Metadata (@connect ffscouter.com), code (GM_xmlhttpRequest usage, though full implementation not visible)",
+      "recommendation": "Review all transmitted data. Ensure only minimal, non-sensitive information is sent. Document transmitted fields.",
       "severity": "CRITICAL",
-      "type": "Data Exfiltration"
+      "type": "Data Transmission"
     },
     {
-      "description": "Script reads and writes to localStorage for persistent configuration and possibly for storing a user 'key'. No evidence of reading cookies, sessionStorage, or IndexedDB. No evidence of keylogging or clipboard access.",
-      "location": "Storage class and FFConfig usage",
-      "recommendation": "Ensure no sensitive user data (e.g., authentication tokens, personal info) is stored or transmitted. Document all stored fields.",
+      "description": "Script reads and writes to localStorage for configuration and possibly user data.",
+      "location": "class Storage, FFConfig",
+      "recommendation": "Ensure no sensitive information (e.g., authentication tokens, personal data) is stored or transmitted from localStorage.",
       "severity": "CRITICAL",
       "type": "Privacy Collection"
     },
     {
-      "description": "Script grants unsafeWindow, which exposes the script's context to the page and vice versa. This increases the risk of privilege escalation or data leakage if the page is compromised.",
-      "location": "@grant unsafeWindow in metadata",
-      "recommendation": "Avoid using unsafeWindow unless absolutely necessary. If used, strictly control what is exposed to the page.",
+      "description": "Script requests unsafeWindow grant, which allows access to the page context and can be abused for privilege escalation.",
+      "location": "Metadata (@grant unsafeWindow)",
+      "recommendation": "Remove unsafeWindow grant if not strictly necessary. Limit usage and audit for privilege escalation.",
       "severity": "HIGH",
-      "type": "Remote Code Execution / Privilege Escalation"
+      "type": "Permission Abuse"
     },
     {
-      "description": "Script uses localStorage for persistent data. No evidence of sanitizing user input before storage or use, but no direct DOM injection from user input is visible in the provided code.",
-      "location": "Storage class",
-      "recommendation": "Sanitize all user input before using it in the DOM or transmitting it to external servers.",
+      "description": "Script requests GM_xmlhttpRequest grant, which is a high privilege and can be abused for cross-origin requests.",
+      "location": "Metadata (@grant GM_xmlhttpRequest)",
+      "recommendation": "Limit usage to only required domains. Audit all outgoing requests.",
       "severity": "HIGH",
-      "type": "DOM Injection Risk"
+      "type": "Permission Abuse"
     },
     {
-      "description": "Script loads no external libraries via @require, reducing supply chain risk. However, the script is auto-updated via greasyfork.org, which is a trusted source.",
-      "location": "@require and @downloadURL",
-      "recommendation": "Continue to use only trusted sources for updates. Avoid dynamic or non-versioned @require URLs.",
+      "description": "Script loads code from update.greasyfork.org via @downloadURL and @updateURL, which is a trusted source but should be version-pinned.",
+      "location": "Metadata (@downloadURL, @updateURL)",
+      "recommendation": "Ensure version pinning and integrity checks for updates.",
       "severity": "MEDIUM",
       "type": "Supply Chain Risk"
     }
@@ -47,16 +47,16 @@
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "localStorage used for storing configuration and a user 'key'"
+      "localStorage usage for configuration and possibly user data"
     ],
     "detected": true
   },
-  "risk_level": "HIGH",
+  "risk_level": "CRITICAL",
   "script_name": "FF Scouter V3",
-  "security_score": 35,
-  "summary": "The script communicates with a third-party server (ffscouter.com) and stores a user 'key' in localStorage, which may be transmitted externally. It requests high-privilege grants (GM_xmlhttpRequest, unsafeWindow), increasing the attack surface. No evidence of code obfuscation, clipboard, or keylogging behavior. No direct DOM XSS found, but localStorage usage and unsafeWindow grant require caution. Supply chain risk is low due to trusted update source. Overall, the script presents a HIGH security risk and is NOT approved for use in sensitive environments.",
+  "security_score": 42,
+  "summary": "FF Scouter V3 requests high privileges (GM_xmlhttpRequest, unsafeWindow), connects to a third-party server (ffscouter.com), and uses localStorage for configuration. There is potential for user/page data transmission and privacy collection. No code obfuscation or DOM XSS detected. Supply chain risk is mitigated by using GreasyFork, but version pinning should be enforced. Overall, the script presents CRITICAL risk due to data transmission and privacy collection concerns.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-29T06:44:31.608028+00:00",
+  "analyzed_at": "2026-07-06T06:34:24.860841+00:00",
   "slug": "FF_Scouter_V3"
 }

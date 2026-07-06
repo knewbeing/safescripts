@@ -33,9 +33,9 @@ title: "Deadshot.io 辅助脚本"
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：84/100　　**分析时间**：2026-06-29
+**风险等级**：🟡 LOW　　**安全评分**：82/100　　**分析时间**：2026-07-06
 
-> 该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险等高危行为。主要风险为申请了 unsafeWindow 高权限和劫持 WebAssembly 相关 API，属于中等风险。未发现网络请求、WebSocket、敏感数据读取、第三方依赖等问题。整体安全性中等，建议关注权限最小化和高权限 API 的合理使用。
+> 该脚本主要用于 Deadshot.io 游戏的辅助功能，未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 调用、供应链风险或 iframe 风险。唯一高风险项为 unsafeWindow 权限申请，建议仅在必要时使用。整体安全风险较低，但不建议在含敏感信息页面使用。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -48,20 +48,55 @@ title: "Deadshot.io 辅助脚本"
 
 ### 发现的问题
 
+**⛔ CRITICAL** — 数据外传  
+> 脚本未发现任何网络请求（如 GM_xmlhttpRequest、fetch、WebSocket 等），未检测到数据外传行为。  
+> 位置：全局代码  
+> 建议：保持无数据外传，勿添加任何第三方数据上报。
+
+**⛔ CRITICAL** — 隐私采集  
+> 脚本未发现任何隐私采集行为（如读取 cookie、localStorage、sessionStorage、IndexedDB、剪贴板、监听键盘输入等）。  
+> 位置：全局代码  
+> 建议：保持无隐私采集，勿添加任何用户敏感数据读取。
+
+**🔴 HIGH** — 权限滥用  
+> 脚本申请了 unsafeWindow 权限，允许脚本访问和修改页面的全局对象，存在高风险。  
+> 位置：@grant unsafeWindow  
+> 建议：仅在必要时申请 unsafeWindow，避免滥用。
+
+**🔴 HIGH** — 远程代码执行  
+> 脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等动态代码执行方式。  
+> 位置：全局代码  
+> 建议：继续避免远程代码执行风险。
+
+**🔴 HIGH** — 代码混淆  
+> 脚本未发现代码混淆（如 base64 解码、字符串数组映射、unicode 混淆、高度压缩单行代码等）。  
+> 位置：全局代码  
+> 建议：保持代码可读性，避免混淆。
+
+**🔴 HIGH** — DOM XSS  
+> 脚本未发现 DOM XSS 或注入风险（如未转义用户输入插入 innerHTML/outerHTML、document.write、iframe src=javascript: 等）。  
+> 位置：全局代码  
+> 建议：继续避免 DOM 注入风险。
+
 **🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 @grant unsafeWindow 权限，允许脚本以更高权限操作页面环境，可能被滥用。  
-> 位置：元数据 @grant  
-> 建议：仅在确有必要时申请 unsafeWindow，建议最小化权限。
+> 脚本未申请或使用 GM_openInTab、GM_download 等高权限 API。  
+> 位置：@grant  
+> 建议：仅申请实际需要的权限。
 
 **🟠 MEDIUM** — 敏感 API 调用  
-> 脚本会劫持 WebAssembly.instantiate 和 WebAssembly.instantiateStreaming，捕获 WASM 内存，属于高权限操作，可能被滥用分析游戏内存。  
-> 位置：WebAssembly.instantiate 重写  
-> 建议：仅在确有必要时使用，避免泄露敏感信息。
+> 脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。  
+> 位置：全局代码  
+> 建议：避免调用敏感 API，保护用户隐私。
 
-**🟡 LOW** — 用户体验  
-> 脚本会弹出 alert，可能影响用户体验，但无安全风险。  
-> 位置：alert 调用  
-> 建议：可考虑改为更温和的通知方式。
+**🟠 MEDIUM** — 供应链风险  
+> 脚本未通过 @require 加载第三方库，无供应链风险。  
+> 位置：元数据  
+> 建议：如需加载第三方库，建议固定版本哈希并使用官方 CDN。
+
+**🟡 LOW** — ClickJacking / iframe 风险  
+> 脚本未修改 frame 保护策略，也未创建隐藏 iframe。  
+> 位置：全局代码  
+> 建议：避免 iframe 风险，保护页面安全。
 
 ---
 

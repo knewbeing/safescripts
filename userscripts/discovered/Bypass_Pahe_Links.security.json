@@ -7,25 +7,11 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 @require 加载了 https://greasyfork.org/scripts/456228/code/456228.js?version=1309113，但未对其内容进行安全校验（如 SRI 哈希），存在供应链风险。",
-      "location": "@require 元数据字段",
-      "recommendation": "仅使用可信来源的第三方库，并固定版本哈希或进行内容校验。",
+      "description": "@require 加载了 https://greasyfork.org/scripts/456228/code/456228.js?version=1309113，存在供应链风险（未固定哈希，依赖外部代码）",
+      "location": "UserScript metadata",
+      "recommendation": "建议仅使用官方可信 CDN，或固定版本哈希，避免依赖可变 URL 的第三方代码。",
       "severity": "MEDIUM",
       "type": "Supply Chain Risk"
-    },
-    {
-      "description": "脚本重写 setTimeout/setInterval 以加速页面跳转，但未发现对 eval、new Function、setTimeout(string) 等远程代码执行相关 API 的调用。",
-      "location": "main() 函数",
-      "recommendation": "保持当前实现，避免后续引入动态代码执行。",
-      "severity": "LOW",
-      "type": "Code Execution"
-    },
-    {
-      "description": "脚本未申请任何 @grant 权限，实际代码也未使用 GM_* API，权限申请合理。",
-      "location": "@grant 元数据字段",
-      "recommendation": "保持最小权限原则。",
-      "severity": "LOW",
-      "type": "Permissions"
     }
   ],
   "obfuscation_detected": false,
@@ -35,10 +21,10 @@
   },
   "risk_level": "LOW",
   "script_name": "Bypass Pahe Links",
-  "security_score": 89,
-  "summary": "该脚本主要通过加速定时器和注入样式来优化跳转体验，未检测到数据外传、隐私采集、远程代码执行、混淆、DOM XSS 等高危行为。唯一中等风险为 @require 加载的第三方库未做哈希校验，建议关注其供应链安全。整体风险较低，可安全使用。",
+  "security_score": 92,
+  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、WebSocket 使用等高风险行为。唯一风险为 @require 加载第三方脚本，存在供应链风险。整体安全性较高，但建议关注依赖库的来源和版本固定。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-29T06:38:11.121453+00:00",
+  "analyzed_at": "2026-07-06T06:27:44.885532+00:00",
   "slug": "Bypass_Pahe_Links"
 }

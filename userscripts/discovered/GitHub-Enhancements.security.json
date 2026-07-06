@@ -5,18 +5,26 @@
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [],
+  "issues": [
+    {
+      "description": "@require 加载的 jQuery 版本未固定哈希，存在供应链风险。",
+      "location": "@require https://code.jquery.com/jquery-3.1.1.js",
+      "recommendation": "建议使用官方 CDN 并固定版本哈希，或将库本地化。",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    }
+  ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
     "detected": false
   },
-  "risk_level": "SAFE",
+  "risk_level": "LOW",
   "script_name": "GitHub Enhancements",
-  "security_score": 100,
-  "summary": "该脚本仅对 GitHub 页面上的部分计数器和删除仓库对话框进行界面增强，没有检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用或供应链风险。@require 的 jQuery 版本为官方 CDN 且为固定版本，整体安全性高。",
-  "supply_chain_risk": false,
+  "security_score": 92,
+  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用或敏感 API 调用。唯一风险为 @require 加载的 jQuery 版本未固定哈希，存在一定供应链风险。整体安全性较高，建议关注第三方库的供应链安全。",
+  "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-29T06:46:05.005005+00:00",
+  "analyzed_at": "2026-07-06T06:35:47.761804+00:00",
   "slug": "GitHub-Enhancements"
 }

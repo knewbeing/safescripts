@@ -15,7 +15,7 @@
 // @name:sv        🎸 Songsterr Ultimat (Premium Upplåst)
 // @name:da        🎸 Songsterr Ultimativ (Premium Låst Op)
 // @namespace    http://tampermonkey.net/
-// @version      5.0.0
+// @version      5.1.1
 // @description                    Unlocks all Plus features (Speed, Loop, Solo, Mute, no pauses) + Native Export (.gp & .midi). (Tested on Zen Browser)
 // @description:fr                 Débloque toutes les fonctionnalités Plus (Vitesse, Loop, Solo, Mute, sans pauses) + Téléchargement natif (.gp & .midi). (Testé sur Zen Browser)
 // @description:es                 Desbloquea todas las funciones Plus (Velocidad, Bucle, Solo, Mute, sin pausas) + Descarga nativa (.gp y .midi). (Probado en Zen Browser)
@@ -76,7 +76,11 @@
     !function () {
       const targetDiv = document.querySelector(".Gl5687");
       if (!targetDiv || document.getElementById("sgd-log-toggle")) return;
-      targetDiv.style.cssText = "display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;height:100%!important;";
+      targetDiv.style.setProperty("display", "flex", "important");
+      targetDiv.style.setProperty("align-items", "center", "important");
+      targetDiv.style.setProperty("justify-content", "center", "important");
+      targetDiv.style.setProperty("width", "100%", "important");
+      targetDiv.style.setProperty("height", "100%", "important");
       const btn = document.createElement("button");
       btn.id = "sgd-log-toggle", btn.className = "sgd-log-toggle-btn", btn.addEventListener("click", window.toggleSgdLogging),
         targetDiv.appendChild(btn), updateLogToggleUI();
@@ -84,7 +88,7 @@
   }).observe(document.documentElement, {
     childList: !0,
     subtree: !0
-  }), console.log("🎸 Songsterr Ultimate — Active v5.0.0", loggingEnabled ? "(Debug logging ON)" : ""),
+  }), console.log("🎸 Songsterr Ultimate — Active v5.1.1", loggingEnabled ? "(Debug logging ON)" : ""),
     function () {
       // ==================================================
       // 2. YOUTUBE AUDIO-ONLY MODE
@@ -187,7 +191,6 @@
   // 4. PREMIUM FEATURES UNLOCK (STATE SPOOFING)
   // Bypasses the paywall by faking a 'Plus' user profile and hooking window.fetch.
   // ==================================================
-  const PLUS_DATA_IDS = ["Speed", "Loop", "Solo", "Print"];
   try {
     localStorage.removeItem("persist:root");
   } catch (e) { }
@@ -256,27 +259,45 @@
   } catch (e) {
     sgdLog("error", "SGD", "Failed to install protected fetch hook:", e), targetWindow.fetch = fetchHooked;
   }
-  new MutationObserver(() => {
+  const stateObserver = new MutationObserver(() => {
     const el = document.getElementById("state");
     if (el) try {
       const text = el.textContent.trim();
       if (!text) return;
       const data = JSON.parse(text);
+      if (data.user?.hasPlus && (!data.player || !data.player.locks || data.player.locks.length === 0)) {
+        // Already patched! Disconnect to prevent infinite React re-renders.
+        stateObserver.disconnect();
+        return;
+      }
       data.user || (data.user = {}), data.user.hasPlus = !0, data.user.isLoggedIn = !0,
         data.user.profile = MAGIC_PROFILE, data.consent = {
           loading: !1,
           suite: "tcf",
           view: "none"
         };
+      if (data.player) {
+        data.player.locks = [];
+        data.player.constraints = null;
+      }
       const patched = JSON.stringify(data);
-      el.textContent !== patched && (el.textContent = patched);
+      if (el.textContent !== patched) {
+        el.textContent = patched;
+        // CRITICAL FIX: Disconnect immediately after patching!
+        // Leaving a document-wide MutationObserver running causes it to fire on every
+        // playback cursor movement, rewriting state and forcing React to hide the cursor.
+        stateObserver.disconnect();
+        sgdLog("log", "SGD", "State patched successfully, observer disconnected.");
+      }
     } catch (e) {
       sgdLog("warn", "SGD", "Failed to parse state JSON:", e.message);
     }
-  }).observe(document.documentElement, {
+  });
+  stateObserver.observe(document.documentElement, {
     childList: !0,
     subtree: !0
-  }), new MutationObserver(() => {
+  });
+  new MutationObserver(() => {
     const apptab = document.getElementById("apptab");
     if (apptab && "yes" === apptab.getAttribute("data-has-showroom")) {
       const showroom = document.getElementById("showroom"), tablature = document.getElementById("tablature");
@@ -292,28 +313,35 @@
     // 6. CUSTOM CSS INJECTION
     // Styles the injected download buttons and hides ads.
     // ==================================================
-    GM_addStyle('\n    /* ── Hide unwanted elements ────────────────────────────────────── */\n    section[data-consent="summary"],\n    div[class*="Consent"],\n    #onetrust-banner-sdk,\n    [id*="ad-"],\n    [class*="ad-"],\n    div[id^="div-gpt-ad"],\n    div[class*="Error"]\n    { display: none !important; visibility: hidden !important; }\n\n    /* ── IMPORTANT: Do NOT override body/html overflow - handled by Autoscroll Fix ── */\n    /* NOTE: Commented to not interfere with the showroom */\n    /* #apptab    { opacity: 1 !important; visibility: visible !important; } */\n\n    /* ── YouTube Audio-Only visually hidden elements ────────────────── */\n    .songsterr-yt-hidden-iframe {\n      opacity: 0 !important;\n      width: 0px !important;\n      height: 0px !important;\n      pointer-events: none !important;\n      position: absolute !important;\n      z-index: -9999 !important;\n      border: none !important;\n    }\n    .songsterr-yt-hidden-wrapper {\n      opacity: 0 !important;\n      width: 0px !important;\n      height: 0px !important;\n      min-width: 0px !important;\n      min-height: 0px !important;\n      margin: 0 !important;\n      padding: 0 !important;\n      border: none !important;\n      overflow: hidden !important;\n      background: transparent !important;\n      position: absolute !important;\n      pointer-events: none !important;\n      z-index: -9999 !important;\n    }\n\n    /* ── Our button wrapper ─────────────────────────────────────────── */\n    #sgd-wrapper {\n      display      : inline-flex;\n      align-items  : center;\n      gap          : 12px;\n    }\n\n    /* ── GP7 & MIDI buttons — styled to match Songsterr native dark UI ───── */\n    .sgd-btn {\n      display         : inline-flex;\n      align-items     : center;\n      justify-content : center;\n      gap             : 6px;\n      padding         : 0 12px;\n      height          : 36px;\n      border          : 1px solid #3a3a3a;\n      border-radius   : 6px;\n      font-size       : 13px;\n      font-weight     : 500;\n      cursor          : pointer;\n      white-space     : nowrap;\n      transition      : all 0.15s ease;\n      font-family     : -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif;\n      line-height     : 1;\n      letter-spacing  : -0.01em;\n      background      : #2a2a2a;\n      color           : #e5e5e5;\n    }\n    .sgd-btn:hover {\n      background : #3a3a3a;\n      border-color: #4a4a4a;\n    }\n    .sgd-btn:active {\n      background : #1a1a1a;\n    }\n    .sgd-btn:disabled {\n      opacity    : 0.4;\n      cursor     : not-allowed;\n    }\n    /* Primary action buttons (GP7) - blue accent matching Songsterr */\n    .sgd-btn-gp {\n      background : #2563eb;\n      color      : #fff;\n      border-color: #3b82f6;\n    }\n    .sgd-btn-gp:hover {\n      background : #1d4ed8;\n      border-color: #2563eb;\n    }\n    /* Secondary action buttons (MIDI) - neutral dark */\n    .sgd-btn-midi {\n      background : #404040;\n      color      : #e5e5e5;\n      border-color: #525252;\n    }\n    .sgd-btn-midi:hover {\n      background : #525252;\n      border-color: #626262;\n    }\n\n    /* ── YouTube toggle button — styled to match Songsterr dark UI ────────── */\n    #yt-toggle-btn {\n      display         : inline-flex;\n      align-items     : center;\n      justify-content : center;\n      width           : 36px;\n      height          : 36px;\n      border-radius   : 6px;\n      border          : 1px solid #3a3a3a;\n      background      : #2a2a2a;\n      color           : #a5a5a5;\n      cursor          : pointer;\n      font-size       : 16px;\n      transition      : all 0.15s ease;\n    }\n    #yt-toggle-btn:hover {\n      background : #3a3a3a;\n      color      : #e5e5e5;\n    }\n    #yt-toggle-btn.audio-only {\n      background : #16a34a;\n      color      : #fff;\n      border-color: #22c55e;\n    }\n    #yt-toggle-btn.audio-only:hover {\n      background : #15803d;\n      border-color: #16a34a;\n    }\n\n    /* ── Logging toggle button — styled to match Songsterr dark UI ────────── */\n    #sgd-log-toggle {\n      display: inline-flex;\n      align-items: center;\n      justify-content: center;\n      gap: 8px;\n      padding: 8px 16px;\n      border-radius: 6px;\n      font-size: 14px;\n      font-weight: 500;\n      font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif;\n      cursor: pointer;\n      transition: all 0.15s ease;\n      min-width: 120px;\n      height: 36px;\n    }\n    #sgd-log-toggle.active {\n      background: #166534;\n      border: 1px solid #16a34a;\n      color: #fff;\n    }\n    #sgd-log-toggle.active:hover {\n      background: #15803d;\n    }\n    #sgd-log-toggle:not(.active) {\n      background: #7f1d1d;\n      border: 1px solid #dc2626;\n      color: #fff;\n    }\n    #sgd-log-toggle:not(.active):hover {\n      background: #991b1b;\n    }\n\n    /* ── Status toast ────────────────────────────────────────────────── */\n    #sgd-status {\n      bottom       : 20px;\n      left         : 50%;\n      transform    : translateX(-50%);\n      background   : rgba(15,23,42,.90);\n      color        : #e2e8f0;\n      font-size    : 12px;\n      font-weight  : 500;\n      padding      : 6px 16px;\n      border-radius: 20px;\n      z-index      : 99999;\n      pointer-events: none;\n      opacity      : 0;\n      transition   : opacity .25s;\n      font-family  : -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif;\n      white-space  : nowrap;\n    }\n    #sgd-status.visible { opacity: 1; }\n    #sgd-status.ok  { color: #86efac; }\n    #sgd-status.err { color: #fca5a5; }\n  '),
+    GM_addStyle('\n    /* ── Hide unwanted elements ────────────────────────────────────── */\n    section[data-consent="summary"],\n    #onetrust-banner-sdk,\n    /* Keep ad blocking scoped: Songsterr cursor symbols use ids like cursor-playhead-0-0, which contain "ad-". */\n    ins.adsbygoogle,\n    iframe[id*="google_ads"],\n    div[id^="google_ads"],\n    div[id^="div-gpt-ad"]\n    { display: none !important; visibility: hidden !important; }\n\n    /* ── IMPORTANT: Do NOT override body/html overflow - handled by Autoscroll Fix ── */\n    /* NOTE: Commented to not interfere with the showroom */\n    /* #apptab    { opacity: 1 !important; visibility: visible !important; } */\n\n    /* ── YouTube Audio-Only visually hidden elements ────────────────── */\n    .songsterr-yt-hidden-iframe {\n      opacity: 0 !important;\n      width: 0px !important;\n      height: 0px !important;\n      pointer-events: none !important;\n      position: absolute !important;\n      z-index: -9999 !important;\n      border: none !important;\n    }\n    .songsterr-yt-hidden-wrapper {\n      opacity: 0 !important;\n      width: 0px !important;\n      height: 0px !important;\n      min-width: 0px !important;\n      min-height: 0px !important;\n      margin: 0 !important;\n      padding: 0 !important;\n      border: none !important;\n      overflow: hidden !important;\n      background: transparent !important;\n      position: absolute !important;\n      pointer-events: none !important;\n      z-index: -9999 !important;\n    }\n\n    /* ── Our button wrapper ─────────────────────────────────────────── */\n    #sgd-wrapper {\n      display      : inline-flex;\n      align-items  : center;\n      gap          : 12px;\n    }\n\n    /* ── GP7 & MIDI buttons — styled to match Songsterr native dark UI ───── */\n    .sgd-btn {\n      display         : inline-flex;\n      align-items     : center;\n      justify-content : center;\n      gap             : 6px;\n      padding         : 0 12px;\n      height          : 36px;\n      border          : 1px solid #3a3a3a;\n      border-radius   : 6px;\n      font-size       : 13px;\n      font-weight     : 500;\n      cursor          : pointer;\n      white-space     : nowrap;\n      transition      : all 0.15s ease;\n      font-family     : -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif;\n      line-height     : 1;\n      letter-spacing  : -0.01em;\n      background      : #2a2a2a;\n      color           : #e5e5e5;\n    }\n    .sgd-btn:hover {\n      background : #3a3a3a;\n      border-color: #4a4a4a;\n    }\n    .sgd-btn:active {\n      background : #1a1a1a;\n    }\n    .sgd-btn:disabled {\n      opacity    : 0.4;\n      cursor     : not-allowed;\n    }\n    /* Primary action buttons (GP7) - blue accent matching Songsterr */\n    .sgd-btn-gp {\n      background : #2563eb;\n      color      : #fff;\n      border-color: #3b82f6;\n    }\n    .sgd-btn-gp:hover {\n      background : #1d4ed8;\n      border-color: #2563eb;\n    }\n    /* Secondary action buttons (MIDI) - neutral dark */\n    .sgd-btn-midi {\n      background : #404040;\n      color      : #e5e5e5;\n      border-color: #525252;\n    }\n    .sgd-btn-midi:hover {\n      background : #525252;\n      border-color: #626262;\n    }\n\n    /* ── YouTube toggle button — styled to match Songsterr dark UI ────────── */\n    #yt-toggle-btn {\n      display         : inline-flex;\n      align-items     : center;\n      justify-content : center;\n      width           : 36px;\n      height          : 36px;\n      border-radius   : 6px;\n      border          : 1px solid #3a3a3a;\n      background      : #2a2a2a;\n      color           : #a5a5a5;\n      cursor          : pointer;\n      font-size       : 16px;\n      transition      : all 0.15s ease;\n    }\n    #yt-toggle-btn:hover {\n      background : #3a3a3a;\n      color      : #e5e5e5;\n    }\n    #yt-toggle-btn.audio-only {\n      background : #16a34a;\n      color      : #fff;\n      border-color: #22c55e;\n    }\n    #yt-toggle-btn.audio-only:hover {\n      background : #15803d;\n      border-color: #16a34a;\n    }\n\n    /* ── Logging toggle button — styled to match Songsterr dark UI ────────── */\n    #sgd-log-toggle {\n      display: inline-flex;\n      align-items: center;\n      justify-content: center;\n      gap: 8px;\n      padding: 8px 16px;\n      border-radius: 6px;\n      font-size: 14px;\n      font-weight: 500;\n      font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif;\n      cursor: pointer;\n      transition: all 0.15s ease;\n      min-width: 120px;\n      height: 36px;\n    }\n    #sgd-log-toggle.active {\n      background: #166534;\n      border: 1px solid #16a34a;\n      color: #fff;\n    }\n    #sgd-log-toggle.active:hover {\n      background: #15803d;\n    }\n    #sgd-log-toggle:not(.active) {\n      background: #7f1d1d;\n      border: 1px solid #dc2626;\n      color: #fff;\n    }\n    #sgd-log-toggle:not(.active):hover {\n      background: #991b1b;\n    }\n\n    /* ── Status toast ────────────────────────────────────────────────── */\n    #sgd-status {\n      bottom       : 20px;\n      left         : 50%;\n      transform    : translateX(-50%);\n      background   : rgba(15,23,42,.90);\n      color        : #e2e8f0;\n      font-size    : 12px;\n      font-weight  : 500;\n      padding      : 6px 16px;\n      border-radius: 20px;\n      z-index      : 99999;\n      pointer-events: none;\n      opacity      : 0;\n      transition   : opacity .25s;\n      font-family  : -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif;\n      white-space  : nowrap;\n    }\n    #sgd-status.visible { opacity: 1; }\n    #sgd-status.ok  { color: #86efac; }\n    #sgd-status.err { color: #fca5a5; }\n  '),
     // ==================================================
     // 7. INTERVAL PREMIUM UNLOCKER
     // Continuously removes the 'disabled' attribute from premium buttons in the UI.
     // ==================================================
     setInterval(() => {
       const printEl = document.querySelector('[data-id^="Print--"]');
-      printEl && printEl.setAttribute("data-id", "Print--plus"), document.querySelectorAll('svg use[href*="lock"]').forEach(use => {
-        const svg = use.closest("svg"), parent = svg?.closest("button");
-        svg && svg.remove(), parent && (parent.removeAttribute("disabled"), parent.classList.remove("Cny223"),
-          parent.style.pointerEvents = "auto");
-      }), PLUS_DATA_IDS.forEach(id => {
-        const el = document.querySelector(`[data-id*="${id}"]`);
-        el && el.hasAttribute("disabled") && (el.removeAttribute("disabled"), el.classList.remove("Cny223"),
-          el.style.pointerEvents = "auto");
+      printEl && printEl.setAttribute("data-id", "Print--plus");
+      // Remove lock icons from premium control buttons and unlock them.
+      // Songsterr uses direct element IDs (not data-id) for these buttons.
+      // NOTE: Only touch SVG icons inside known premium buttons.
+      // The score renderer also relies on SVG <use> elements for the playback cursor.
+      const premiumBtnIds = ["control-speed", "control-pitchshift", "control-loop",
+        "control-voice-practice", "control-solo", "control-mute", "control-metronome", "control-export"];
+      // Unlock premium buttons by element ID (Songsterr's current UI pattern).
+      premiumBtnIds.forEach(eid => {
+        const el = document.getElementById(eid);
+        if (!el) return;
+        el.querySelectorAll('svg use[href*="lock"], svg use[*|href*="lock"]').forEach(use => {
+          const svg = use.closest("svg");
+          svg && svg.style.setProperty("display", "none", "important");
+        });
+        el.hasAttribute("disabled") && (el.removeAttribute("disabled"),
+          el.classList.remove("Cny223"), el.style.pointerEvents = "auto");
       });
+      // Fallback: unlock auto-scroll if it ever appears with a data-id attribute.
       const autoscrollEl = document.querySelector('[data-id*="Auto-Scroll"]');
       autoscrollEl && autoscrollEl.hasAttribute("disabled") && (autoscrollEl.removeAttribute("disabled"),
-        autoscrollEl.classList.remove("Cny223"), autoscrollEl.style.pointerEvents = "auto"),
-        document.querySelectorAll("button.Cny223").forEach(btn => {
-          btn.removeAttribute("disabled"), btn.classList.remove("Cny223"), btn.style.pointerEvents = "auto";
-        });
+        autoscrollEl.classList.remove("Cny223"), autoscrollEl.style.pointerEvents = "auto");
     }, 1e3);
   const consoleErrorOrig = console.error, CONSOLE_FILTERS = ["AudioContext", "source-map", "unreachable", "buffer", "Secure-YEC", "Aborted", "401"];
   console.error = function (...args) {
@@ -413,10 +441,36 @@
   function isDrumTrackByName(name) {
     return !!name && /drum|percussion|drums|kit|dm|perc\b/i.test(name);
   }
-  const DRUM_NOTE_REMAP = {
-    92: 42
-  };
-  let _percMap = null;
+  let _defaultPercussionArticulations = null, _defaultPercussionArticulationMap = null;
+  function getDefaultPercussionArticulations() {
+    if (!_defaultPercussionArticulations) {
+      const score = new alphaTab.model.Score, mb = new alphaTab.model.MasterBar;
+      score.addMasterBar(mb);
+      const track = new alphaTab.model.Track;
+      track.playbackInfo.primaryChannel = 9, track.playbackInfo.secondaryChannel = 9;
+      const staff = new alphaTab.model.Staff;
+      staff.isPercussion = !0, track.addStaff(staff);
+      const bar = new alphaTab.model.Bar, voice = new alphaTab.model.Voice, beat = new alphaTab.model.Beat;
+      beat.isEmpty = !0, voice.addBeat(beat), bar.addVoice(voice), staff.addBar(bar),
+        score.addTrack(track);
+      const settings = new alphaTab.Settings;
+      score.finish(settings);
+      const data = (new alphaTab.exporter.Gp7Exporter).export(score, settings), reimported = alphaTab.importer.ScoreLoader.loadScoreFromBytes(data, settings);
+      _defaultPercussionArticulations = reimported.tracks[0].percussionArticulations || [];
+      _defaultPercussionArticulationMap = new Map;
+      _defaultPercussionArticulations.forEach((a, i) => {
+        _defaultPercussionArticulationMap.has(a.id) || _defaultPercussionArticulationMap.set(a.id, i);
+      });
+    }
+    return _defaultPercussionArticulations;
+  }
+  function mapPercussionArticulation(midiNote) {
+    getDefaultPercussionArticulations();
+    const idx = _defaultPercussionArticulationMap.get(midiNote);
+    if (void 0 !== idx) return idx;
+    sgdLog("warn", "SGD", `Unknown perc MIDI note: ${midiNote}, remapping to Closed Hi-Hat (42)`);
+    return _defaultPercussionArticulationMap.get(42) ?? 0;
+  }
   const VELOCITY_MAP = {
     ppp: alphaTab.model.DynamicValue.PPP,
     pp: alphaTab.model.DynamicValue.PP,
@@ -437,28 +491,7 @@
   function mapNote(nd, isPerc, numStrings, beatPalmMute) {
     const note = new alphaTab.model.Note;
     if (note.string = isPerc ? -1 : numStrings - (nd.string ?? 0), note.fret = nd.fret ?? 0,
-      isPerc && (note.percussionArticulation = function (midiNote) {
-        _percMap || (_percMap = function () {
-          const score = new alphaTab.model.Score, mb = new alphaTab.model.MasterBar;
-          score.addMasterBar(mb);
-          const track = new alphaTab.model.Track;
-          track.playbackInfo.primaryChannel = 9, track.playbackInfo.secondaryChannel = 9;
-          const staff = new alphaTab.model.Staff;
-          staff.isPercussion = !0, track.addStaff(staff);
-          const bar = new alphaTab.model.Bar, voice = new alphaTab.model.Voice, beat = new alphaTab.model.Beat;
-          beat.isEmpty = !0, voice.addBeat(beat), bar.addVoice(voice), staff.addBar(bar),
-            score.addTrack(track);
-          const settings = new alphaTab.Settings;
-          score.finish(settings);
-          const data = (new alphaTab.exporter.Gp7Exporter).export(score, settings), reimported = alphaTab.importer.ScoreLoader.loadScoreFromBytes(data, settings), map = new Map;
-          return reimported.tracks[0].percussionArticulations.forEach((a, i) => {
-            map.has(a.id) || map.set(a.id, i);
-          }), map;
-        }());
-        const remapped = DRUM_NOTE_REMAP[midiNote] ?? midiNote, idx = _percMap.get(remapped);
-        return void 0 !== idx ? idx : (sgdLog("warn", "SGD", `Unknown perc MIDI note: ${midiNote}, remapping to Closed Hi-Hat (42)`),
-          _percMap.get(42) ?? 0);
-      }(nd.fret ?? 0)), nd.tie && (note.isTieDestination = !0), nd.dead && (note.isDead = !0),
+      isPerc && (note.percussionArticulation = mapPercussionArticulation(nd.fret ?? 0)), nd.tie && (note.isTieDestination = !0), nd.dead && (note.isDead = !0),
       nd.ghost && (note.isGhost = !0), nd.hp && (note.isHammerPullOrigin = !0), nd.staccato && (note.isStaccato = !0),
       beatPalmMute && (note.isPalmMute = !0), nd.accentuated && (note.accentuated = alphaTab.model.AccentuationType.Normal),
       nd.wideVibrato ? note.vibrato = alphaTab.model.VibratoType.Wide : nd.vibrato && (note.vibrato = alphaTab.model.VibratoType.Slight),
@@ -516,11 +549,16 @@
       rest.isEmpty = !0, rest.duration = dur.duration, rest.dots = dur.dots, voice.addBeat(rest);
     }
   }
+  function isPercussionEntry(entry) {
+    const { trackMeta: trackMeta, revision: revision } = entry, playback = mapInstrument(trackMeta.instrumentId ?? revision.instrumentId);
+    return playback.isPercussion || !!trackMeta.isDrums || !!revision.isDrums || isDrumTrackByName(trackMeta.title) || isDrumTrackByName(trackMeta.name) || isDrumTrackByName(revision.name);
+  }
   function buildTrack(score, entry, masterBarCount, channel) {
-    const { trackMeta: trackMeta, revision: revision } = entry, playback = mapInstrument(trackMeta.instrumentId ?? revision.instrumentId), isPerc = playback.isPercussion || !!trackMeta.isDrums || !!revision.isDrums || isDrumTrackByName(trackMeta.title) || isDrumTrackByName(trackMeta.name) || isDrumTrackByName(revision.name), trackBarCount = Math.max(masterBarCount, revision.measures?.length || 0), track = new alphaTab.model.Track;
+    const { trackMeta: trackMeta, revision: revision } = entry, playback = mapInstrument(trackMeta.instrumentId ?? revision.instrumentId), isPerc = isPercussionEntry(entry), trackBarCount = Math.max(masterBarCount, revision.measures?.length || 0), track = new alphaTab.model.Track;
     track.name = trackMeta.title || trackMeta.name || revision.name || "Track", track.shortName = track.name.slice(0, 20),
       track.playbackInfo.program = isPerc ? 0 : playback.program, track.playbackInfo.primaryChannel = channel,
       track.playbackInfo.secondaryChannel = channel;
+    isPerc && (track.percussionArticulations = getDefaultPercussionArticulations());
     const staff = new alphaTab.model.Staff;
     staff.isPercussion = isPerc;
     const tuning = revision.tuning || trackMeta.tuning;
@@ -561,7 +599,7 @@
   }
   function buildScore(meta, revisions) {
     const score = new alphaTab.model.Score;
-    score.title = meta.title, score.artist = meta.artist, score.tab = "Songsterr Ultimate v5.0.0";
+    score.title = meta.title, score.artist = meta.artist, score.tab = "Songsterr Ultimate v5.1.1";
     const masterRev = revisions.reduce((best, cur) => (cur.revision?.measures?.length || 0) > (best.revision?.measures?.length || 0) ? cur : best).revision, masterBarCount = Math.max(1, revisions.reduce((m, e) => Math.max(m, e.revision?.measures?.length || 0), 0));
     !function (score, masterRev, count) {
       let sigNum = 4, sigDen = 4;
@@ -585,11 +623,16 @@
         mb.tempoAutomations.push(alphaTab.model.Automation.buildTempoAutomation(!1, ratio, pt.bpm, 2, !0));
       }
     }(score, masterRev, masterBarCount);
+    const melodyChannels = [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15];
     let nextChannel = 0;
-    for (const entry of revisions) {
+    const orderedRevisions = revisions.map((entry, index) => ({
+      entry: entry,
+      index: index,
+      isPercussion: isPercussionEntry(entry)
+    })).sort((a, b) => Number(b.isPercussion) - Number(a.isPercussion) || a.index - b.index).map(x => x.entry);
+    for (const entry of orderedRevisions) {
       let channel;
-      mapInstrument(entry.trackMeta.instrumentId ?? entry.revision.instrumentId).isPercussion || entry.trackMeta.isDrums || entry.revision.isDrums || isDrumTrackByName(entry.trackMeta.title) || isDrumTrackByName(entry.trackMeta.name) || isDrumTrackByName(entry.revision.name) ? channel = 9 : (9 === nextChannel && nextChannel++,
-        channel = nextChannel++), buildTrack(score, entry, masterBarCount, channel);
+      isPercussionEntry(entry) ? channel = 9 : channel = melodyChannels[nextChannel++ % melodyChannels.length], buildTrack(score, entry, masterBarCount, channel);
     }
     const settings = new alphaTab.Settings;
     return score.finish(settings), {
@@ -795,20 +838,32 @@
   // 11. UI INJECTION OBSERVER
   // Debounces UI injection to wait for Songsterr React app to be ready.
   // ==================================================
+  function mountExportButtons(target, sourceLabel) {
+    if (!target) return !1;
+    const wrapper = target.id === "c-export" ? target : target.closest("#c-export");
+    if (wrapper && wrapper.childElementCount === 1) {
+      wrapper.style.setProperty("display", "none", "important");
+      wrapper.insertAdjacentElement("afterend", createOurButtons()), sgdLog("log", "SGD", `✅ Injected (${sourceLabel})`);
+      return !0;
+    }
+    if (target.matches?.('button#control-export, button[title="Download tab"]')) {
+      target.style.setProperty("display", "none", "important");
+      target.insertAdjacentElement("afterend", createOurButtons()), sgdLog("log", "SGD", `✅ Injected (${sourceLabel} button)`);
+      return !0;
+    }
+    return !1;
+  }
   function debouncedInjection() {
     _injectionTimeout && clearTimeout(_injectionTimeout), _injectionTimeout = setTimeout(() => {
       !function () {
         if (!/\/a\/wsa\/.+/.test(location.pathname)) return !1;
         if (document.getElementById("sgd-wrapper")?.isConnected) return !0;
         const cExport = document.getElementById("c-export");
-        if (cExport) return cExport.replaceWith(createOurButtons()), sgdLog("log", "SGD", "✅ Injected (#c-export)"),
-          !0;
+        if (mountExportButtons(cExport, "#c-export")) return !0;
         const ctrlExport = document.getElementById("control-export");
-        if (ctrlExport) return (ctrlExport.closest("div") || ctrlExport.parentElement).replaceWith(createOurButtons()),
-          sgdLog("log", "SGD", "✅ Injected (#control-export parent)"), !0;
-        const nativeBtn = document.querySelector('[data-id*="Download"], [data-id*="Export"], [title*="Download tab"]');
-        nativeBtn && ((nativeBtn.closest("div") || nativeBtn.parentElement).replaceWith(createOurButtons()),
-          sgdLog("log", "SGD", "✅ Injected (fallback title/data-id)"));
+        if (mountExportButtons(ctrlExport, "#control-export")) return !0;
+        const nativeBtn = document.querySelector('button[title="Download tab"], button[data-id="Download"], button[data-id="Export"]');
+        mountExportButtons(nativeBtn, "fallback title/data-id");
       }(), _injectionTimeout = null;
     }, 100);
   }

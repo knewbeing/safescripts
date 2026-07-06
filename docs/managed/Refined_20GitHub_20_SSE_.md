@@ -64,9 +64,9 @@ title: 🏷️ 小鱼标签 (UTags) - 为链接添加用户标签
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：0/100　　**分析时间**：2026-06-29
+**风险等级**：⛔ CRITICAL　　**安全评分**：37/100　　**分析时间**：2026-07-06
 
-> 该脚本元数据存在严重安全隐患：@connect * 允许向任意域名发送数据，结合 GM_xmlhttpRequest 权限，存在极高的数据外传和隐私泄露风险。未提供完整代码，无法排查其他高危行为。强烈建议不要安装或使用该脚本，除非获得完整代码并通过严格安全审查。
+> 该脚本元数据申请了极高的网络权限（@connect *），允许向任意域名发起请求，存在严重的数据外传风险。未提供完整代码，无法进一步审查隐私采集、远程代码执行等风险。建议限制网络权限、补充完整代码后再进行详细安全审查。当前不建议在生产环境使用。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -79,25 +79,35 @@ title: 🏷️ 小鱼标签 (UTags) - 为链接添加用户标签
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> @connect * 允许脚本向任意域名发起网络请求，存在严重数据外传风险，可能导致用户数据被上传到未知服务器。  
-> 位置：元数据 @connect *  
-> 建议：移除 @connect *，仅允许可信的目标域名；严格限制网络请求目标。
+**⛔ CRITICAL** — Data Exfiltration  
+> @connect * 允许脚本向任意域名发起网络请求，存在严重数据外传风险。  
+> 位置：metadata (@connect *)  
+> 建议：限制 @connect 域名范围，仅允许必要的可信域名。
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本申请了 GM.xmlHttpRequest 和 GM_xmlhttpRequest 权限，结合 @connect *，可向任意域名发送数据，存在隐私泄露和数据外传风险。  
-> 位置：元数据 @grant GM.xmlHttpRequest, GM_xmlhttpRequest  
-> 建议：仅申请必要的网络权限，并限制请求目标。
+**⛔ CRITICAL** — Data Exfiltration  
+> 申请了 GM.xmlHttpRequest 和 GM_xmlhttpRequest 权限，结合 @connect *，可向任意第三方服务器发送数据。  
+> 位置：metadata (@grant GM.xmlHttpRequest, GM_xmlhttpRequest)  
+> 建议：移除不必要的高权限，限制网络请求目标。
 
-**🔴 HIGH** — 代码完整性  
-> 脚本未提供完整代码，无法判断是否存在隐私采集、远程代码执行、DOM XSS、代码混淆等高危行为。  
-> 位置：代码缺失  
-> 建议：应提供完整代码以进行全面安全审查。
+**🔴 HIGH** — Data Exfiltration  
+> 脚本可访问本地服务器 (localhost)，存在本地服务数据泄露风险。  
+> 位置：metadata (@connect localhost)  
+> 建议：移除对 localhost 的连接权限，除非确有必要且用户知情。
 
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM.info、GM.addValueChangeListener、GM.getValue、GM.deleteValue、GM.setValue 等高权限，但未见实际代码，无法判断是否滥用。  
-> 位置：元数据 @grant  
-> 建议：仅申请实际使用的权限，避免权限滥用。
+**🔴 HIGH** — Code Transparency  
+> 脚本未提供代码，无法验证是否存在隐私采集、远程代码执行、DOM XSS、代码混淆等风险。  
+> 位置：code (empty)  
+> 建议：补充完整代码，进行详细安全审查。
+
+**🟠 MEDIUM** — Permission Usage  
+> 申请了 GM.addValueChangeListener、GM.getValue、GM.setValue、GM.deleteValue 等权限，可能用于存储和同步用户数据。  
+> 位置：metadata (@grant GM.addValueChangeListener, GM.getValue, GM.setValue, GM.deleteValue)  
+> 建议：确保用户数据仅在本地存储，不外传。
+
+**🟡 LOW** — Permission Usage  
+> 申请了 GM_addElement、GM.registerMenuCommand 等权限，属于常规功能，但需确保不滥用。  
+> 位置：metadata (@grant GM_addElement, GM.registerMenuCommand)  
+> 建议：仅用于用户交互，避免滥用。
 
 ---
 

@@ -7,16 +7,30 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本申请了 @connect eemm.me 权限，但代码中未发现实际的数据外传或 GM_xmlhttpRequest/fetch/其他网络请求到该域名的实现。",
-      "location": "元数据 @connect",
-      "recommendation": "如无实际用途，建议移除 @connect 权限，减少潜在攻击面。",
+      "description": "脚本申请了 GM_xmlhttpRequest 权限，并声明 @connect eemm.me，但实际代码未发现任何网络请求或数据外传行为。",
+      "location": "元数据与代码",
+      "recommendation": "如无实际用途，建议移除 GM_xmlhttpRequest 和 @connect 权限，减少攻击面。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限，但代码中未发现实际使用。",
-      "location": "元数据 @grant",
-      "recommendation": "如无实际用途，建议移除 GM_xmlhttpRequest 权限。",
+      "description": "脚本申请了 GM_setClipboard 权限，但实际代码未发现剪贴板操作。",
+      "location": "元数据与代码",
+      "recommendation": "如无实际用途，建议移除 GM_setClipboard 权限。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本申请了 GM_deleteValue 权限，但实际代码未发现删除存储操作。",
+      "location": "元数据与代码",
+      "recommendation": "如无实际用途，建议移除 GM_deleteValue 权限。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本申请了 GM_addStyle 权限，但实际代码未发现使用 GM_addStyle。",
+      "location": "元数据与代码",
+      "recommendation": "如无实际用途，建议移除 GM_addStyle 权限。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     }
@@ -28,10 +42,10 @@
   },
   "risk_level": "LOW",
   "script_name": "网页限制解除(改)",
-  "security_score": 84,
-  "summary": "该脚本主要用于解除网页上的复制、剪切、选择文本、右键菜单等限制。未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险等高危行为。存在申请未使用的高权限（@connect、GM_xmlhttpRequest），建议精简权限以提升安全性。整体风险较低。",
+  "security_score": 85,
+  "summary": "该脚本主要用于解除网页复制、剪切、选择文本、右键菜单等限制。代码未发现任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 调用、供应链风险或 iframe 风险。唯一问题为申请了未使用的高权限（GM_xmlhttpRequest、GM_setClipboard、GM_deleteValue、GM_addStyle），建议移除未用权限以提升安全性。整体风险极低，安全性较高。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-22T07:34:54.006224+00:00",
+  "analyzed_at": "2026-07-06T06:41:41.495657+00:00",
   "slug": "Remove_web_limits_modified"
 }

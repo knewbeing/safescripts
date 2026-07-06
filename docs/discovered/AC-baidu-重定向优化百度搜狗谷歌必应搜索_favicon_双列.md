@@ -55,9 +55,9 @@ title: "AC-百度搜索重定向优化"
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：68/100　　**分析时间**：2026-06-29
+**风险等级**：🔴 HIGH　　**安全评分**：47/100　　**分析时间**：2026-07-06
 
-> 该脚本主要功能为优化搜索引擎结果页面，去除重定向、广告、添加样式等。未发现明显的数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要安全隐患为权限滥用（如 @connect *、unsafeWindow）、供应链风险（部分资源和依赖未锁定哈希且来源非官方 CDN）。建议收紧权限、锁定依赖版本、使用可信资源，进一步提升安全性。
+> 脚本未发现直接的数据外传、隐私采集、远程代码执行或 DOM XSS，但存在严重的网络权限配置（@connect *），大量高权限申请，第三方库和资源供应链风险。建议收紧网络权限、精简 @grant 权限、固定第三方依赖版本和来源。当前风险等级为 HIGH，安全评分为 47。未批准上线。未发现代码混淆、WebSocket、敏感 API 调用、ClickJacking/iframe 风险。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -70,30 +70,25 @@ title: "AC-百度搜索重定向优化"
 
 ### 发现的问题
 
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 @connect * 权限，允许向任意域名发起跨域请求，存在被滥用的风险。  
-> 位置：元数据 @connect  
-> 建议：仅申请实际需要的 @connect 域名，移除 @connect *。
+**⛔ CRITICAL** — Data Transmission  
+> @connect * 允许任意域名的网络请求，存在数据外传的潜在风险，尤其如果脚本后续代码中有 GM_xmlhttpRequest/fetch/等网络请求。  
+> 位置：UserScript metadata (@connect *)  
+> 建议：移除 @connect *，仅保留实际需要的域名，避免任意外部通信。
 
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_xmlhttpRequest 权限，但代码片段未见实际外传敏感数据行为。若后续代码有外传行为，需重点关注。  
-> 位置：元数据 @grant  
-> 建议：确保 GM_xmlhttpRequest 仅用于必要的功能，且目标域名受控。
+**🟠 MEDIUM** — Permission Abuse  
+> 大量 @grant 权限申请，包括 GM_xmlhttpRequest、unsafeWindow、GM_addValueChangeListener 等高权限，部分未在已审代码中看到实际使用，存在权限滥用风险。  
+> 位置：UserScript metadata (@grant)  
+> 建议：仅申请实际需要的权限，移除未用高权限，尤其 unsafeWindow 和 GM_xmlhttpRequest。
 
-**🟠 MEDIUM** — 供应链风险  
-> 脚本通过 @require 加载了 less.js 和 vue.runtime.global.prod.js，来源为 registry.npmmirror.com，属于可信的官方镜像，但未锁定具体文件哈希。  
-> 位置：元数据 @require  
-> 建议：建议使用带有内容哈希的 CDN 地址，防止供应链污染。
+**🟠 MEDIUM** — Supply Chain Risk  
+> @require 加载第三方库 less.min.js 和 vue.runtime.global.prod.js，来源为 registry.npmmirror.com，虽然为知名镜像，但未固定哈希，存在供应链风险。  
+> 位置：UserScript metadata (@require)  
+> 建议：使用官方 CDN 并固定版本哈希，避免供应链污染。
 
-**🟠 MEDIUM** — 供应链风险  
-> 脚本通过 @resource 加载了多个 .less 和 .css 文件，部分来源为 ibaidu.tujidu.com 和 gitcode.net，非主流官方 CDN，存在一定供应链风险。  
-> 位置：元数据 @resource  
-> 建议：建议资源文件使用可信官方 CDN 并锁定版本，或对资源内容进行校验。
-
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 unsafeWindow 权限，可能导致与页面 JS 互操作，存在一定安全隐患。  
-> 位置：元数据 @grant  
-> 建议：仅在确有必要时使用 unsafeWindow，并注意隔离敏感操作。
+**🟠 MEDIUM** — Supply Chain Risk  
+> @resource 加载大量 CSS/LESS 文件，部分来源为 ibaidu.tujidu.com 和 gitcode.net，非官方 CDN，存在供应链风险。  
+> 位置：UserScript metadata (@resource)  
+> 建议：建议使用可信 CDN 并固定版本，避免加载可变内容。
 
 ---
 

@@ -5,7 +5,71 @@
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [],
+  "issues": [
+    {
+      "description": "脚本未检测到任何网络请求（如 fetch、GM_xmlhttpRequest、XMLHttpRequest、WebSocket、EventSource），不会将用户数据或页面内容发送到第三方服务器。",
+      "location": "全局",
+      "recommendation": "保持当前实现，避免添加任何数据外传逻辑。",
+      "severity": "CRITICAL",
+      "type": "数据外传检查"
+    },
+    {
+      "description": "脚本未读取 cookie、localStorage、sessionStorage、IndexedDB，也未监听键盘输入、表单字段或访问指纹/剪贴板 API。",
+      "location": "全局",
+      "recommendation": "保持当前实现，避免添加任何隐私采集逻辑。",
+      "severity": "CRITICAL",
+      "type": "隐私采集检查"
+    },
+    {
+      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string)，也未通过 innerHTML/outerHTML 插入外部脚本或动态加载远程 JS。",
+      "location": "全局",
+      "recommendation": "保持当前实现，避免引入远程代码执行风险。",
+      "severity": "HIGH",
+      "type": "远程代码执行检查"
+    },
+    {
+      "description": "脚本未检测到任何代码混淆、base64 解码、字符串数组映射或高度压缩单行代码。",
+      "location": "全局",
+      "recommendation": "保持代码可读性，避免混淆。",
+      "severity": "HIGH",
+      "type": "代码混淆检查"
+    },
+    {
+      "description": "脚本未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，所有插入内容均为静态字符串。",
+      "location": "全局",
+      "recommendation": "如需插入动态内容，务必进行转义。",
+      "severity": "HIGH",
+      "type": "DOM XSS/注入检查"
+    },
+    {
+      "description": "脚本未申请任何 GM_* 权限，@grant 为 none，权限申请合理。",
+      "location": "元数据",
+      "recommendation": "如需使用 GM API，申请最小必要权限。",
+      "severity": "MEDIUM",
+      "type": "权限滥用检查"
+    },
+    {
+      "description": "脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。",
+      "location": "全局",
+      "recommendation": "保持当前实现，避免调用敏感 API。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用检查"
+    },
+    {
+      "description": "脚本未通过 @require 加载任何第三方库，无供应链风险。",
+      "location": "元数据",
+      "recommendation": "如需加载第三方库，建议使用官方 CDN 并固定版本哈希。",
+      "severity": "MEDIUM",
+      "type": "供应链风险检查"
+    },
+    {
+      "description": "脚本未修改 frame 保护策略，也未创建隐藏 iframe 用于数据提取。",
+      "location": "全局",
+      "recommendation": "如需使用 iframe，避免用于数据提取或 clickjacking。",
+      "severity": "LOW",
+      "type": "ClickJacking/iframe 风险检查"
+    }
+  ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
@@ -14,9 +78,9 @@
   "risk_level": "SAFE",
   "script_name": "GitHub AI 代码分析助手",
   "security_score": 100,
-  "summary": "该脚本仅在 GitHub 仓库页面插入本地按钮和下拉菜单，未检测到任何网络请求、数据外传、隐私采集、远程代码执行、混淆、XSS、权限滥用或供应链风险。按钮仅跳转到 zread.ai 和 deepwiki.com 的主页，无参数传递或数据上传。整体安全性高。",
+  "summary": "该脚本仅在 GitHub 仓库页面插入 AI 分析按钮和下拉菜单，所有内容均为静态字符串，无任何数据外传、隐私采集、远程代码执行、混淆、XSS、权限滥用、敏感 API 调用、供应链或 iframe 风险。安全评分为 100，风险等级 SAFE。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-29T06:28:32.412356+00:00",
+  "analyzed_at": "2026-07-06T06:18:41.227678+00:00",
   "slug": "GitHub_20AI_20_E4_BB_A3_E7_A0_81_E5_88_86_E6_9E_90_E5_8A_A9_E6_89_8B"
 }

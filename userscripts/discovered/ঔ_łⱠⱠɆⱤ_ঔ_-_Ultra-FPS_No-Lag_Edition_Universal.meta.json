@@ -1,0 +1,54 @@
+{
+  "slug": "ঔ_łⱠⱠɆⱤ_ঔ_-_Ultra-FPS_No-Lag_Edition_Universal",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/585745-%E0%A6%94%E0%A7%A3-%C5%82%E2%B1%A1%E2%B1%A1%C9%87%C9%BD-%E0%A6%94%E0%A7%A3-ultra-fps-no-lag-edition-universal",
+  "source_repo": "585745",
+  "raw_url": "https://update.greasyfork.org/scripts/585745/%EA%A7%81%E0%A6%94%E0%A7%A3%E2%98%AC%E2%82%AD%C5%82%E2%B1%A0%E2%B1%A0%C9%86%E2%B1%A4%E2%98%AC%E0%A6%94%E0%A7%A3%EA%A7%82%20-%20Ultra-FPS%20No-Lag%20Edition%20%28Universal%29.user.js",
+  "filename": "ঔ_łⱠⱠɆⱤ_ঔ_-_Ultra-FPS_No-Lag_Edition_Universal.user.js",
+  "name": "꧁ঔৣ☬₭łⱠⱠɆⱤ☬ঔৣ꧂ - Ultra-FPS No-Lag Edition (Universal)",
+  "version": "2026-06-30_v31",
+  "description": "Real-time enemy tracking, aggressive visual object pruning, local targeting overlay mechanics, and ultra-high frequency attack pipelines for all users with Global Unally control (Manual Spacebar).",
+  "match": [
+    "https://evowars.io/*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  ꧁ঔৣ☬₭łⱠⱠɆⱤ☬ঔৣ꧂ - Ultra-FPS No-Lag Edition (Universal)\n// @namespace  http://tampermonkey.net/\n// @version  2026-06-30_v31\n// @description  Real-time enemy tracking, aggressive visual object pruning, local targeting overlay mechanics, and ultra-high frequency attack pipelines for all users with Global Unally control (Manual Spacebar).\n// @author  KILLER / Universal Mod\n// @match  https://evowars.io/*\n// @grant  none\n// @downloadURL  https://update.greasyfork.org/scripts/585745/%EA%A7%81%E0%A6%94%E0%A7%A3%E2%98%AC%E2%82%AD%C5%82%E2%B1%A0%E2%B1%A0%C9%86%E2%B1%A4%E2%98%AC%E0%A6%94%E0%A7%A3%EA%A7%82%20-%20Ultra-FPS%20No-Lag%20Edition%20%28Universal%29.user.js\n// @updateURL  https://update.greasyfork.org/scripts/585745/%EA%A7%81%E0%A6%94%E0%A7%A3%E2%98%AC%E2%82%AD%C5%82%E2%B1%A0%E2%B1%A0%C9%86%E2%B1%A4%E2%98%AC%E0%A6%94%E0%A7%A3%EA%A7%82%20-%20Ultra-FPS%20No-Lag%20Edition%20%28Universal%29.meta.js",
+  "sha256": "f393c49449187ae71169937456f03ce8317da34130cf8dd03ec55ada9701fc2f",
+  "discovered_at": "2026-07-06T06:23:41.943880+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 47,
+  "good_ratings": 0,
+  "bad_ratings": 0,
+  "summary": {
+    "applicable_sites": [
+      "Evowars.io"
+    ],
+    "description": "本脚本为 Evowars.io 游戏提供实时敌人追踪、视觉对象优化、目标叠加显示和高频攻击功能。通过优化画面和操作，提升游戏流畅度并增强玩家战斗体验。支持手动控制敌友识别，减少卡顿。",
+    "permissions": [
+      {
+        "explanation": "脚本不需要额外权限，仅操作页面本身。",
+        "grant": "none"
+      }
+    ],
+    "tags": [
+      "游戏辅助",
+      "FPS优化",
+      "自动攻击",
+      "敌人追踪",
+      "界面增强",
+      "Evowars.io"
+    ],
+    "usage": [
+      "安装脚本后，进入 Evowars.io 游戏页面。",
+      "游戏界面会自动显示增强菜单和功能。",
+      "按空格键可手动切换敌友识别。",
+      "根据菜单选项调整视觉和攻击设置。"
+    ],
+    "zh_name": "Ultra-FPS无卡顿版"
+  }
+}

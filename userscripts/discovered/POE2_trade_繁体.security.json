@@ -14,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "POE2 trade 繁体",
   "security_score": 100,
-  "summary": "该脚本仅包含大量的中英文物品名称映射（翻译表），未检测到任何网络请求、数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码结构清晰，无安全隐患。",
+  "summary": "该脚本仅包含繁体翻译映射表，没有任何网络请求、隐私采集、远程代码执行、混淆、XSS、权限滥用或供应链风险。安全性极高。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-29T06:50:30.752662+00:00",
+  "analyzed_at": "2026-07-06T06:39:08.119688+00:00",
   "slug": "POE2_trade_繁体"
 }

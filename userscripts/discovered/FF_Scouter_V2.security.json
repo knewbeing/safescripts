@@ -1,5 +1,5 @@
 {
-  "approved": true,
+  "approved": false,
   "data_transmission": {
     "destinations": [
       "ffscouter.com"
@@ -9,67 +9,67 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 GM_xmlhttpRequest 向 ffscouter.com 发送请求以获取/同步数据。虽然目标为官方 API，但属于第三方服务器，存在一定数据外传风险。",
-      "location": "多处 GM_xmlhttpRequest 调用",
-      "recommendation": "仅允许必要的数据传输，明确告知用户传输内容，避免发送敏感信息。",
+      "description": "脚本通过 GM_xmlhttpRequest 向 ffscouter.com 发起网络请求，可能携带用户数据或页面内容，存在数据外传风险。",
+      "location": "GM_xmlhttpRequest 调用，@connect ffscouter.com",
+      "recommendation": "明确请求内容，避免发送敏感用户数据。建议仅发送必要的非敏感信息，并在文档中说明用途。",
       "severity": "CRITICAL",
-      "type": "数据外传"
+      "type": "Data Transmission"
     },
     {
-      "description": "脚本申请了 GM_setValue、GM_getValue、GM_listValues、GM_deleteValue 等存储权限，但未发现读取 cookie、localStorage、sessionStorage、IndexedDB、表单、剪贴板、键盘输入等隐私采集行为。",
-      "location": "全局",
-      "recommendation": "继续保持，不要采集用户隐私数据。",
-      "severity": "CRITICAL",
-      "type": "隐私采集"
+      "description": "脚本申请了 GM_xmlhttpRequest 和 unsafeWindow 权限，GM_xmlhttpRequest 用于跨域请求，unsafeWindow 可访问页面上下文，存在权限滥用风险。",
+      "location": "@grant GM_xmlhttpRequest, @grant unsafeWindow",
+      "recommendation": "仅申请实际需要的权限，避免滥用 unsafeWindow，限制其访问范围。",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
     },
     {
-      "description": "脚本未发现 eval、new Function、setTimeout(string)、setInterval(string) 等动态代码执行，也未动态加载远程 JS。",
-      "location": "全局",
-      "recommendation": "继续保持，避免远程代码执行风险。",
-      "severity": "HIGH",
-      "type": "远程代码执行"
+      "description": "未检测到远程代码执行、eval、动态 script 加载等高风险行为。",
+      "location": "全局代码审查",
+      "recommendation": "保持代码透明，避免动态加载和执行外部代码。",
+      "severity": "LOW",
+      "type": "Remote Code Execution"
     },
     {
-      "description": "脚本未发现明显的代码混淆、base64 解码、字符串数组混淆或高度压缩代码。",
-      "location": "全局",
-      "recommendation": "继续保持代码可读性。",
-      "severity": "HIGH",
-      "type": "代码混淆"
+      "description": "未检测到隐私采集行为，如读取 cookie、localStorage、表单、剪贴板等。",
+      "location": "全局代码审查",
+      "recommendation": "继续保持不采集用户隐私数据。",
+      "severity": "LOW",
+      "type": "Privacy Collection"
     },
     {
-      "description": "脚本未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未见 DOM XSS 风险。",
-      "location": "全局",
-      "recommendation": "如需插入动态内容，务必进行转义。",
-      "severity": "HIGH",
+      "description": "未检测到代码混淆、base64 解码、字符串映射、unicode 混淆等行为。",
+      "location": "全局代码审查",
+      "recommendation": "保持代码可读性，避免混淆。",
+      "severity": "LOW",
+      "type": "Obfuscation"
+    },
+    {
+      "description": "未检测到 DOM XSS 或注入风险，未直接插入用户输入到 innerHTML。",
+      "location": "全局代码审查",
+      "recommendation": "继续保持安全的 DOM 操作。",
+      "severity": "LOW",
       "type": "DOM XSS"
     },
     {
-      "description": "脚本申请了 GM_registerMenuCommand、GM_addStyle 等权限，均有实际使用，未见权限滥用。",
-      "location": "元数据与全局",
-      "recommendation": "仅申请实际需要的权限。",
-      "severity": "MEDIUM",
-      "type": "权限滥用"
-    },
-    {
-      "description": "脚本未调用 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification 等敏感 API。",
-      "location": "全局",
-      "recommendation": "如需使用敏感 API，需征得用户同意。",
-      "severity": "MEDIUM",
-      "type": "敏感 API 调用"
-    },
-    {
-      "description": "脚本未通过 @require 加载第三方库，无供应链风险。",
-      "location": "元数据",
-      "recommendation": "如需加载第三方库，建议使用可信 CDN 并锁定版本。",
-      "severity": "MEDIUM",
-      "type": "供应链风险"
-    },
-    {
-      "description": "脚本未见修改 frame 保护策略或创建隐藏 iframe。",
-      "location": "全局",
-      "recommendation": "如需使用 iframe，需确保安全性。",
+      "description": "未检测到敏感 API 调用，如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification。",
+      "location": "全局代码审查",
+      "recommendation": "避免调用敏感 API，除非有明确用途。",
       "severity": "LOW",
-      "type": "iframe 风险"
+      "type": "Sensitive API"
+    },
+    {
+      "description": "未检测到供应链风险，未使用 @require 加载第三方库。",
+      "location": "元数据区",
+      "recommendation": "如需加载第三方库，建议使用官方 CDN 并固定版本。",
+      "severity": "LOW",
+      "type": "Supply Chain"
+    },
+    {
+      "description": "未检测到 ClickJacking 或 iframe 风险，未修改 frame 保护策略或创建隐藏 iframe。",
+      "location": "全局代码审查",
+      "recommendation": "继续保持安全的 iframe 使用。",
+      "severity": "LOW",
+      "type": "ClickJacking"
     }
   ],
   "obfuscation_detected": false,
@@ -77,12 +77,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "MEDIUM",
+  "risk_level": "CRITICAL",
   "script_name": "FF Scouter V2",
   "security_score": 75,
-  "summary": "FF Scouter V2 主要通过 GM_xmlhttpRequest 与 ffscouter.com 通信，未发现隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用、供应链或 iframe 风险。主要风险为数据外传（与第三方服务器通信），建议明确告知用户传输内容并限制敏感数据传输。整体安全性较高，建议定期复查。",
+  "summary": "脚本存在数据外传风险，主要通过 GM_xmlhttpRequest 向 ffscouter.com 发起请求，可能涉及用户数据。未检测到隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 调用、供应链风险等其他高风险行为。建议明确请求内容，避免发送敏感信息，并限制权限申请。整体安全评分为 75，风险等级为 CRITICAL。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-29T06:43:59.358871+00:00",
+  "analyzed_at": "2026-07-06T06:34:05.018526+00:00",
   "slug": "FF_Scouter_V2"
 }

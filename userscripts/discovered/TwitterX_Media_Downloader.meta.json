@@ -21,11 +21,11 @@
   "require": [],
   "metadata_raw": "// @name  Twitter/X Media Downloader\n// @name:ja  Twitter/X メディアダウンローダー\n// @name:zh-CN  Twitter/X 媒体下载器\n// @name:zh-TW  Twitter/X 媒體下載器\n// @description  One-click download of images/videos from Twitter/X, with custom filenames and history.\n// @description:ja  Twitter/Xの画像や動画をワンクリックでダウンロード。カスタムファイル名や履歴に対応。\n// @description:zh-CN  一键下载 Twitter/X 图片和视频，支持自定义文件名和下载历史记录。\n// @description:zh-TW  一鍵下載 Twitter/X 圖片和影片，支援自訂檔名與下載歷史紀錄。\n// @author  ShanksSU\n// @namespace  https://github.com/ShanksSU/twitter-media-downloader\n// @version  0.3.1\n// @match  https://twitter.com/*\n// @match  https://x.com/*\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=x.com\n// @grant  GM_setValue\n// @grant  GM_getValue\n// @grant  GM_download\n// @grant  GM_addStyle\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/571423/TwitterX%20Media%20Downloader.user.js\n// @updateURL  https://update.greasyfork.org/scripts/571423/TwitterX%20Media%20Downloader.meta.js",
   "sha256": "6c8445da99e0a6ea2e52cde7dbf60953e3c5fd6b310db7274e9dba5e5a8e220c",
-  "discovered_at": "2026-06-29T06:34:33.980610+00:00",
+  "discovered_at": "2026-07-06T06:23:29.573085+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 2631,
+  "install_count": 2947,
   "good_ratings": 14,
   "bad_ratings": 0,
   "summary": {
@@ -33,14 +33,14 @@
       "Twitter",
       "X"
     ],
-    "description": "本脚本可让用户在 Twitter 或 X 网站上一键下载图片和视频，支持自定义文件名和保存下载历史记录。操作简单，方便管理和查找已下载的媒体内容。",
+    "description": "本脚本可让用户在 Twitter 或 X 网站上一键下载图片和视频，支持自定义文件名，并记录下载历史。操作简单，方便保存和管理社交媒体上的多媒体内容。",
     "permissions": [
       {
-        "explanation": "用于保存脚本设置和下载历史。",
+        "explanation": "用于保存用户设置和下载历史。",
         "grant": "GM_setValue"
       },
       {
-        "explanation": "用于读取脚本设置和下载历史。",
+        "explanation": "用于读取用户设置和下载历史。",
         "grant": "GM_getValue"
       },
       {
@@ -48,22 +48,23 @@
         "grant": "GM_download"
       },
       {
-        "explanation": "用于美化和调整界面样式。",
+        "explanation": "用于美化和调整脚本界面样式。",
         "grant": "GM_addStyle"
       }
     ],
     "tags": [
-      "下载工具",
+      "下载",
       "社交媒体",
       "图片视频",
       "Twitter",
       "X",
-      "文件管理"
+      "历史记录"
     ],
     "usage": [
       "安装脚本后，访问 Twitter 或 X 网站。",
-      "在推文下方会出现下载按钮，点击即可下载图片或视频。",
-      "可在设置中自定义文件名格式和查看下载历史。"
+      "在推文的图片或视频旁会出现下载按钮。",
+      "点击下载按钮即可保存媒体文件。",
+      "可在设置中自定义文件名和查看下载历史。"
     ],
     "zh_name": "Twitter/X 媒体下载器"
   }

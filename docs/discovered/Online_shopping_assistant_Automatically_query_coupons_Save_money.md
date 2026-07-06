@@ -4,15 +4,15 @@ title: "网购助手自动查券省钱"
 
 # 网购助手自动查券省钱
 
-`购物助手`  `自动优惠券`  `省钱`  `电商网站`  `旅行平台`  `用户脚本`
+`购物助手`  `自动优惠券`  `省钱`  `电商平台`  `价格比较`  `跨境购物`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/Online_shopping_assistant_Automatically_query_coupons_Save_money.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**1.1.14**　　发现时间：**2026-06-29**　　来源：[GreasyFork](https://greasyfork.org/scripts/512700-online-shopping-assistant-automatically-query-coupons-save-money) <Badge type="tip" text="GreasyFork" />　　安装量：**71,581**　　评分：👍12 / 👎1
+> 版本：**1.1.14**　　发现时间：**2026-07-06**　　来源：[GreasyFork](https://greasyfork.org/scripts/512700-online-shopping-assistant-automatically-query-coupons-save-money) <Badge type="tip" text="GreasyFork" />　　安装量：**72,320**　　评分：👍12 / 👎1
 
 ## 功能介绍
 
-此脚本可在主流购物网站自动搜索优惠券，帮助你购买商品时获得更低价格。无需手动查找优惠码，购物时自动推荐可用优惠。支持多家电商和旅行平台，省钱更轻松。
+本脚本会自动在各大购物网站查询优惠券，帮助你在购物时找到最划算的价格，无需手动搜索优惠信息。支持速卖通、亚马逊、eBay、Lazada、Shopee等众多平台。让你轻松省钱，避免多花冤枉钱。
 
 ## 适用网站
 
@@ -38,7 +38,7 @@ title: "网购助手自动查券省钱"
 - 三星（Samsung）
 - Daraz
 - Wildberries
-- Walmart
+- 沃尔玛（Walmart）
 - Temu
 - Noon
 - Ozon
@@ -47,9 +47,9 @@ title: "网购助手自动查券省钱"
 - Zalando
 - Shein
 - Expedia
-- Booking.com
+- Booking
 - Agoda
-- Hotels.com
+- Hotels
 - Hoteis
 - Hoteles
 - Tripadvisor
@@ -65,7 +65,6 @@ title: "网购助手自动查券省钱"
 - Stayz
 - MercadoLibre
 - MagazineLuiza
-- Advertiser
 - Namshi
 - Sivvi
 - Vrbo
@@ -73,34 +72,35 @@ title: "网购助手自动查券省钱"
 - Ajio
 - Flipkart
 - Myntra
+- Jtmate
 
 ## 使用方法
 
-1. 安装脚本后，访问支持的购物或旅行网站。
-2. 浏览商品页面时，脚本会自动查找并显示可用优惠券。
-3. 点击推荐的优惠码即可复制或使用。
-4. 如需更多功能，可在脚本菜单中操作。
+1. 安装脚本后，访问支持的购物网站。
+2. 浏览商品页面时，脚本会自动查询并显示可用优惠券。
+3. 根据提示选择并使用优惠券，享受更低价格。
+4. 如需手动操作或设置，可通过脚本菜单命令进行。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `GM_registerMenuCommand` | 在脚本菜单中添加自定义命令，方便用户操作。 |
-| `GM_openInTab` | 在新标签页打开指定网址，便于查看优惠信息。 |
-| `GM.openInTab` | 在新标签页打开指定网址，便于查看优惠信息（新版API）。 |
-| `GM_addStyle` | 为网页添加自定义样式，让优惠信息更醒目。 |
-| `GM_setValue` | 保存用户设置或优惠券信息，方便下次使用。 |
-| `GM_getValue` | 读取保存的用户设置或优惠券信息。 |
-| `GM_deleteValue` | 删除保存的用户设置或优惠券信息。 |
-| `GM_xmlhttpRequest` | 进行跨域网络请求，自动查询优惠券和价格。 |
-| `GM_download` | 下载文件，如优惠券列表或相关数据。 |
-| `GM_setClipboard` | 复制优惠码到剪贴板，方便用户粘贴使用。 |
+| `GM_registerMenuCommand` | 添加自定义菜单命令，方便用户操作脚本功能。 |
+| `GM_openInTab` | 在新标签页打开链接，便于查看优惠信息。 |
+| `GM.openInTab` | 在新标签页打开链接，便于查看优惠信息（新版API）。 |
+| `GM_addStyle` | 为网页添加自定义样式，优化显示效果。 |
+| `GM_setValue` | 保存用户设置或数据，方便个性化使用。 |
+| `GM_getValue` | 读取用户设置或数据，恢复个性化配置。 |
+| `GM_deleteValue` | 删除保存的数据，清理不需要的信息。 |
+| `GM_xmlhttpRequest` | 进行跨域网络请求，获取优惠券和相关信息。 |
+| `GM_download` | 下载文件或数据，方便保存优惠信息。 |
+| `GM_setClipboard` | 复制内容到剪贴板，便于快速使用优惠码。 |
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：67/100　　**分析时间**：2026-06-29
+**风险等级**：🔴 HIGH　　**安全评分**：67/100　　**分析时间**：2026-07-06
 
-> The script transmits data to third-party servers (jtmate.com, mimixiaoke.com) for coupon queries, which is a critical data exfiltration risk. There is no evidence of privacy-invasive data collection (such as reading cookies, form fields, or clipboard), nor of code obfuscation or DOM XSS. The script requests several high-privilege grants, some of which may not be necessary, and relies on external APIs, introducing supply chain risk. The overall risk is HIGH and the script is NOT approved for use in sensitive environments.
+> 该脚本存在数据外传至第三方服务器（jtmate.com、mimixiaoke.com），并申请了高权限但未必全部使用，存在权限滥用和供应链风险。未检测到隐私采集、代码混淆、DOM XSS、WebSocket、敏感 API 调用等高风险行为。建议限制数据传输内容、精简权限申请、固定更新 URL 版本哈希。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -113,20 +113,20 @@ title: "网购助手自动查券省钱"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Exfiltration  
-> The script uses GM_xmlhttpRequest to send requests to third-party domains (jtmate.com, mimixiaoke.com). These requests may include page context or user data, representing a data exfiltration risk.  
-> 位置：GM_xmlhttpRequest usage; @connect metadata  
-> 建议：Review the payload of all outgoing requests. Limit data sent to only what is necessary for coupon queries. Disclose all data collection in the privacy policy.
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过 GM_xmlhttpRequest 允许向 jtmate.com 和 mimixiaoke.com 发起网络请求，可能携带用户数据或页面内容。  
+> 位置：@connect jtmate.com, @connect mimixiaoke.com, 代码中 GM_xmlhttpRequest 调用  
+> 建议：限制请求内容，仅发送必要的非敏感数据，并在隐私政策中明确说明用途。
 
-**🟠 MEDIUM** — Permission Overuse  
-> The script requests high-privilege grants such as GM_openInTab, GM_download, and GM_setClipboard, but not all are clearly used in the code. Unused high-privilege grants increase attack surface.  
-> 位置：@grant metadata  
-> 建议：Remove unused high-privilege grants from the metadata block.
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 GM_download、GM_openInTab 等高权限，但代码中未必全部使用，存在权限滥用风险。  
+> 位置：@grant GM_download, GM_openInTab, GM.openInTab  
+> 建议：仅申请实际需要的权限，移除未使用的高权限。
 
-**🟠 MEDIUM** — Supply Chain Risk  
-> The script loads coupon data from external sources (jtmate.com, mimixiaoke.com) but does not use @require for third-party code. However, if the remote API responses are not validated, there is a supply chain risk if those endpoints are compromised.  
-> 位置：GM_xmlhttpRequest to external APIs  
-> 建议：Validate all remote data before use. Consider using only trusted, versioned APIs.
+**🟠 MEDIUM** — 供应链风险  
+> 脚本未通过 @require 加载第三方库，供应链风险较低，但下载和更新 URL 未固定版本哈希，存在被篡改风险。  
+> 位置：@downloadURL, @updateURL  
+> 建议：建议使用固定版本哈希或官方 CDN，避免供应链污染。
 
 ---
 

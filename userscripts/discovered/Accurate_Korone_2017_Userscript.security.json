@@ -14,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "Accurate Korone 2017 Userscript",
   "security_score": 100,
-  "summary": "该脚本未检测到任何安全或隐私风险。无数据外传、无隐私采集、无远程代码执行、无混淆、无 XSS、无权限滥用、无敏感 API 调用、无供应链风险。代码结构清晰，所有 DOM 操作均为本地页面内容替换，无用户数据收集或外发行为。",
+  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码结构清晰，仅对页面内容进行本地修改，无安全隐患。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-29T06:36:55.262373+00:00",
+  "analyzed_at": "2026-07-06T06:25:24.896003+00:00",
   "slug": "Accurate_Korone_2017_Userscript"
 }

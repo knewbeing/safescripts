@@ -8,11 +8,11 @@ title: "多合一视频下载器【2026最新】"
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/2026_All-in-One_Video_Downloader_YouTube_TikTok_X_Twitter_Instagram_Facebook.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**2026.05.14**　　发现时间：**2026-06-29**　　来源：[GreasyFork](https://greasyfork.org/scripts/574417-2026-all-in-one-video-downloader-youtube-tiktok-x-twitter-instagram-facebook) <Badge type="tip" text="GreasyFork" />　　安装量：**10,572**　　评分：👍11 / 👎1
+> 版本：**2026.05.14**　　发现时间：**2026-07-06**　　来源：[GreasyFork](https://greasyfork.org/scripts/574417-2026-all-in-one-video-downloader-youtube-tiktok-x-twitter-instagram-facebook) <Badge type="tip" text="GreasyFork" />　　安装量：**11,607**　　评分：👍11 / 👎1
 
 ## 功能介绍
 
-多合一视频下载器，支持在YouTube、TikTok、X（Twitter）、Instagram、Facebook等网站一键下载视频。可选择4K、1080P、MP3、MP4等格式，无水印，下载速度快且免费。
+本脚本可在YouTube、TikTok、X（Twitter）、Instagram、Facebook等主流平台，一键下载任意视频。支持4K、1080P、MP3、MP4格式，无水印，下载速度快且免费。
 
 ## 适用网站
 
@@ -24,22 +24,21 @@ title: "多合一视频下载器【2026最新】"
 
 ## 使用方法
 
-1. 安装脚本后，访问YouTube、TikTok、X（Twitter）、Instagram或Facebook。
-2. 在视频页面会出现下载按钮。
-3. 点击按钮选择需要的视频格式（如4K、MP3等）。
-4. 确认后即可快速下载视频到本地。
+1. 安装Tampermonkey扩展并添加本脚本。
+2. 访问YouTube、TikTok、X（Twitter）、Instagram或Facebook。
+3. 在视频页面会出现下载按钮，点击即可选择格式并下载。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `none` | 脚本无需额外权限即可运行，安全性高。 |
+| `none` | 脚本无需额外权限，直接在网页上运行。 |
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-06-29
+**风险等级**：🟢 SAFE　　**安全评分**：97/100　　**分析时间**：2026-07-06
 
-> 该 UserScript 仅包含元数据区，无任何实际 JavaScript 代码实现功能。未检测到任何安全风险。
+> 当前脚本仅包含元数据，无任何实际功能代码，因此不存在安全风险。若后续补充完整代码，需重新审查。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -52,10 +51,10 @@ title: "多合一视频下载器【2026最新】"
 
 ### 发现的问题
 
-**🟡 LOW** — 无功能实现  
-> 脚本未包含任何实际代码，仅为元数据区，无功能实现。未检测到任何网络请求、数据外传、隐私采集、远程代码执行、混淆、XSS、权限滥用或供应链风险。  
+**🟡 LOW** — 代码缺失  
+> 脚本未包含任何实际代码，仅有元数据部分。未检测到任何网络请求、数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 操作。  
 > 位置：全局  
-> 建议：如后续添加功能代码，需重新进行安全审查。
+> 建议：补充完整代码后再进行详细安全审查。当前元数据无安全风险。
 
 ---
 

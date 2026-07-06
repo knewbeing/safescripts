@@ -1,26 +1,24 @@
 {
   "approved": false,
   "data_transmission": {
-    "destinations": [
-      "quillbot.com"
-    ],
+    "destinations": [],
     "detected": false
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 @require 加载了第三方库 ajaxHooker.js，虽然来源于 greasyfork.org，但未锁定具体哈希版本，存在供应链污染风险。",
+      "description": "@require 加载了 ajaxHooker.js，来源为 greasyfork.org，未固定哈希，仅通过 version 参数指定版本，存在一定供应链风险。",
       "location": "@require https://greasyfork.org/scripts/455943-ajaxhooker/code/ajaxHooker.js?version=1124435",
-      "recommendation": "建议使用可信 CDN 并锁定具体版本或哈希，定期审查依赖库安全性。",
+      "recommendation": "建议使用官方 CDN 并固定版本哈希，或自行托管并校验完整性。",
       "severity": "MEDIUM",
       "type": "Supply Chain Risk"
     },
     {
-      "description": "脚本拦截并修改与 quillbot.com 后端的 API 通信，伪造 premium 相关字段，属于功能解锁类脚本，可能违反目标网站服务条款。",
-      "location": "ajaxHooker hook 回调",
-      "recommendation": "仅在合法合规场景下使用，注意潜在法律和账号安全风险。",
-      "severity": "LOW",
-      "type": "Legal/Ethical Risk"
+      "description": "申请了 GM_setValue 和 GM_getValue 权限，但代码中未实际使用，属于权限滥用。",
+      "location": "UserScript metadata (@grant)",
+      "recommendation": "移除未使用的高权限申请，最小化权限。",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
     }
   ],
   "obfuscation_detected": false,
@@ -28,12 +26,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "LOW",
+  "risk_level": "MEDIUM",
   "script_name": "Quillbot Premium Unlocker",
-  "security_score": 89,
-  "summary": "该脚本主要通过拦截和篡改 quillbot.com 的 API 响应来解锁 Premium 功能。未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 或权限滥用等高危行为。主要风险为供应链依赖未锁定版本，理论上存在被污染的可能。整体安全风险较低，但涉及功能解锁，存在合规性争议。",
+  "security_score": 84,
+  "summary": "该脚本主要通过拦截和修改 Quillbot API 响应实现 premium 功能解锁，没有发现数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。存在供应链风险（@require 第三方库未固定哈希）和权限滥用（申请未用 GM_setValue/GM_getValue），总体安全风险为中等。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-22T07:34:45.708858+00:00",
+  "analyzed_at": "2026-07-06T06:41:33.231421+00:00",
   "slug": "Quillbot_Premium_Unlocker"
 }

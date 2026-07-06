@@ -13,18 +13,18 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本元数据声明了 @grant GM_xmlhttpRequest 和 @connect 多个第三方域名，理论上允许向 greasyfork.org、sleazyfork.org、github.com、githubusercontent.com、openuserjs.org 发起网络请求，但未提供实际代码，无法确认是否存在数据外传行为。",
-      "location": "元数据区",
-      "recommendation": "请补充完整代码以进一步分析实际网络请求内容和数据流向。",
-      "severity": "CRITICAL",
-      "type": "数据外传风险"
+      "description": "脚本未包含任何实际代码，仅有元数据。未检测到任何安全风险。",
+      "location": "N/A",
+      "recommendation": "无代码无需安全加固。若后续添加代码，请重新审查。",
+      "severity": "LOW",
+      "type": "No Code"
     },
     {
-      "description": "脚本元数据声明了多个高权限 @grant（如 GM_openInTab、GM_xmlhttpRequest），但未提供实际代码，无法确认是否存在权限滥用。",
-      "location": "元数据区",
-      "recommendation": "请补充完整代码以进一步分析权限实际使用情况。",
+      "description": "申请了高权限（如 GM_openInTab、GM_xmlhttpRequest），但实际未使用。存在权限滥用风险。",
+      "location": "元数据 @grant",
+      "recommendation": "仅申请实际需要的权限，移除未使用的高权限。",
       "severity": "MEDIUM",
-      "type": "权限滥用风险"
+      "type": "Permission Abuse"
     }
   ],
   "obfuscation_detected": false,
@@ -32,12 +32,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "MEDIUM",
+  "risk_level": "SAFE",
   "script_name": "Magic Userscript+ : Show Site All UserJS",
-  "security_score": 67,
-  "summary": "仅凭元数据无法发现直接的安全威胁，但脚本声明了高权限和跨域访问能力，存在理论上的数据外传和权限滥用风险。建议补充完整代码以进行更深入的安全分析。",
+  "security_score": 89,
+  "summary": "该用户脚本当前仅包含元数据，无实际代码执行，因此不存在数据外传、隐私采集、远程代码执行等风险。唯一风险为申请了未使用的高权限，建议精简权限申请。整体安全性高。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-29T06:29:05.124448+00:00",
+  "analyzed_at": "2026-07-06T06:19:09.409678+00:00",
   "slug": "Magic_20Userscript_2B_20_3A_20Show_20Site_20All_20UserJS"
 }

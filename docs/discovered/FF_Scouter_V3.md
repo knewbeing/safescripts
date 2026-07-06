@@ -33,14 +33,14 @@ title: "公平战斗评分助手"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：35/100　　**分析时间**：2026-06-29
+**风险等级**：⛔ CRITICAL　　**安全评分**：42/100　　**分析时间**：2026-07-06
 
-> The script communicates with a third-party server (ffscouter.com) and stores a user 'key' in localStorage, which may be transmitted externally. It requests high-privilege grants (GM_xmlhttpRequest, unsafeWindow), increasing the attack surface. No evidence of code obfuscation, clipboard, or keylogging behavior. No direct DOM XSS found, but localStorage usage and unsafeWindow grant require caution. Supply chain risk is low due to trusted update source. Overall, the script presents a HIGH security risk and is NOT approved for use in sensitive environments.
+> FF Scouter V3 requests high privileges (GM_xmlhttpRequest, unsafeWindow), connects to a third-party server (ffscouter.com), and uses localStorage for configuration. There is potential for user/page data transmission and privacy collection. No code obfuscation or DOM XSS detected. Supply chain risk is mitigated by using GreasyFork, but version pinning should be enforced. Overall, the script presents CRITICAL risk due to data transmission and privacy collection concerns.
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：ffscouter.com） |
-| 隐私采集 | ❌ 检测到（localStorage used for storing configuration and a user 'key'） |
+| 隐私采集 | ❌ 检测到（localStorage usage for configuration and possibly user data） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -48,30 +48,30 @@ title: "公平战斗评分助手"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Exfiltration  
-> Script uses GM_xmlhttpRequest to communicate with ffscouter.com, a third-party server. The exact data sent is not fully visible in the provided code, but the use of a 'key' stored in localStorage and sent to the server is likely. Potential for user data or page context to be transmitted exists.  
-> 位置：GM_xmlhttpRequest usage (likely in code not fully shown, but @connect and @grant indicate usage)  
-> 建议：Review all data sent to ffscouter.com. Only transmit non-sensitive, non-personal data. Document all transmitted fields.
+**⛔ CRITICAL** — Data Transmission  
+> Script uses GM_xmlhttpRequest to connect to ffscouter.com, which is a third-party server. Potential for user/page data transmission.  
+> 位置：Metadata (@connect ffscouter.com), code (GM_xmlhttpRequest usage, though full implementation not visible)  
+> 建议：Review all transmitted data. Ensure only minimal, non-sensitive information is sent. Document transmitted fields.
 
 **⛔ CRITICAL** — Privacy Collection  
-> Script reads and writes to localStorage for persistent configuration and possibly for storing a user 'key'. No evidence of reading cookies, sessionStorage, or IndexedDB. No evidence of keylogging or clipboard access.  
-> 位置：Storage class and FFConfig usage  
-> 建议：Ensure no sensitive user data (e.g., authentication tokens, personal info) is stored or transmitted. Document all stored fields.
+> Script reads and writes to localStorage for configuration and possibly user data.  
+> 位置：class Storage, FFConfig  
+> 建议：Ensure no sensitive information (e.g., authentication tokens, personal data) is stored or transmitted from localStorage.
 
-**🔴 HIGH** — Remote Code Execution / Privilege Escalation  
-> Script grants unsafeWindow, which exposes the script's context to the page and vice versa. This increases the risk of privilege escalation or data leakage if the page is compromised.  
-> 位置：@grant unsafeWindow in metadata  
-> 建议：Avoid using unsafeWindow unless absolutely necessary. If used, strictly control what is exposed to the page.
+**🔴 HIGH** — Permission Abuse  
+> Script requests unsafeWindow grant, which allows access to the page context and can be abused for privilege escalation.  
+> 位置：Metadata (@grant unsafeWindow)  
+> 建议：Remove unsafeWindow grant if not strictly necessary. Limit usage and audit for privilege escalation.
 
-**🔴 HIGH** — DOM Injection Risk  
-> Script uses localStorage for persistent data. No evidence of sanitizing user input before storage or use, but no direct DOM injection from user input is visible in the provided code.  
-> 位置：Storage class  
-> 建议：Sanitize all user input before using it in the DOM or transmitting it to external servers.
+**🔴 HIGH** — Permission Abuse  
+> Script requests GM_xmlhttpRequest grant, which is a high privilege and can be abused for cross-origin requests.  
+> 位置：Metadata (@grant GM_xmlhttpRequest)  
+> 建议：Limit usage to only required domains. Audit all outgoing requests.
 
 **🟠 MEDIUM** — Supply Chain Risk  
-> Script loads no external libraries via @require, reducing supply chain risk. However, the script is auto-updated via greasyfork.org, which is a trusted source.  
-> 位置：@require and @downloadURL  
-> 建议：Continue to use only trusted sources for updates. Avoid dynamic or non-versioned @require URLs.
+> Script loads code from update.greasyfork.org via @downloadURL and @updateURL, which is a trusted source but should be version-pinned.  
+> 位置：Metadata (@downloadURL, @updateURL)  
+> 建议：Ensure version pinning and integrity checks for updates.
 
 ---
 

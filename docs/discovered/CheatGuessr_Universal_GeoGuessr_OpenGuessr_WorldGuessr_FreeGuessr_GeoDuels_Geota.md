@@ -42,14 +42,14 @@ title: "CheatGuessr 通用版"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：49/100　　**分析时间**：2026-06-29
+**风险等级**：⛔ CRITICAL　　**安全评分**：34/100　　**分析时间**：2026-07-06
 
-> This script transmits map pin/location data to third-party servers (discord.com, nominatim.openstreetmap.org), which is a critical risk if sensitive data is included. It does not appear to collect sensitive user data or credentials, nor does it use obfuscation or dangerous code execution patterns. It uses Notification API and modifies iframe sandboxing, which are medium/low risks. The supply chain risk is moderate due to unpinned @require. Overall, the script is not safe for privacy-sensitive users and should be used with caution.
+> 该脚本存在严重的数据外传风险，主要通过 GM_xmlhttpRequest 向 discord.com 和 nominatim.openstreetmap.org 发送用户游戏数据和位置信息。虽然未检测到代码混淆和 DOM XSS，但存在隐私采集（如 WebSocket 拦截、存储操作）、敏感 API 调用（通知）、iframe 保护弱化，以及供应链风险（未哈希固定的第三方依赖）。建议严格限制外传数据、加强依赖管理，并避免干扰站点安全机制。
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：discord.com, nominatim.openstreetmap.org） |
-| 隐私采集 | ✅ 未检测到 |
+| 隐私采集 | ❌ 检测到（Hotkey event listeners, LocalStorage/sessionStorage for feature toggles, WebSocket interception for game data） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ⚠️ 使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -58,29 +58,49 @@ title: "CheatGuessr 通用版"
 ### 发现的问题
 
 **⛔ CRITICAL** — Data Exfiltration  
-> The script uses GM_xmlhttpRequest and requests to discord.com and nominatim.openstreetmap.org, which are third-party servers. The script can send map pin data or location information to Discord (as described in the metadata and code).  
-> 位置：GM_xmlhttpRequest usage, @connect discord.com, @connect nominatim.openstreetmap.org  
-> 建议：Ensure no sensitive user data (such as cookies, tokens, or personal information) is sent. Only send minimal necessary data. Inform users clearly about what is sent.
+> Script uses GM_xmlhttpRequest to send data to discord.com, likely for sharing map pins or game data. This constitutes data exfiltration to a third-party server.  
+> 位置：GM_xmlhttpRequest calls (not fully shown, but @connect discord.com and description indicate usage)  
+> 建议：Limit data sent to Discord, ensure no sensitive user information or authentication tokens are transmitted.
+
+**⛔ CRITICAL** — Data Exfiltration  
+> Script uses GM_xmlhttpRequest to access nominatim.openstreetmap.org, likely for geocoding. While this is a public API, user location data may be transmitted.  
+> 位置：GM_xmlhttpRequest calls (not fully shown, but @connect nominatim.openstreetmap.org and description indicate usage)  
+> 建议：Ensure only necessary location data is sent, avoid transmitting user identifiers.
+
+**🟠 MEDIUM** — Privacy Collection  
+> Script listens to keyboard events (Tab, Q, G, X, V, T) for feature toggles, but does not appear to log or transmit keystrokes.  
+> 位置：Hotkey handling (DEFAULT_HOTKEYS, event listeners)  
+> 建议：Ensure no keylogger behavior is introduced; do not transmit input data.
+
+**🟠 MEDIUM** — Privacy Collection  
+> Script accesses localStorage and sessionStorage, but only for feature toggles and state. No sensitive data collection detected.  
+> 位置：GM_getValue, GM_setValue, Storage.prototype.setItem proxy  
+> 建议：Do not store or transmit sensitive user data.
 
 **🟠 MEDIUM** — Sensitive API Usage  
-> The script requests Notification permission and can send notifications to the user.  
-> 位置：state.notificationPermission, Notification API usage  
-> 建议：Do not abuse Notification API. Only send notifications relevant to the script's function.
+> Script uses Notification API to display notifications to the user.  
+> 位置：state.notificationPermission, notify feature  
+> 建议：Do not abuse Notification API for spam or phishing.
 
-**🟠 MEDIUM** — Permission Usage  
-> The script requests and uses GM_xmlhttpRequest, which is a high-privilege API, but this is justified by the script's features. No evidence of unused high-privilege grants.  
-> 位置：@grant GM_xmlhttpRequest  
-> 建议：Review and minimize granted permissions. Remove any unused grants.
+**🟠 MEDIUM** — Privacy Collection  
+> Script uses WebSocket interception to read game data and opponent guesses, but does not transmit this data externally.  
+> 位置：WebSocket.prototype.addEventListener proxy  
+> 建议：Ensure intercepted data is not sent to third parties.
 
 **🟠 MEDIUM** — Supply Chain Risk  
-> The script uses @require to load msgpack.js from update.greasyfork.org, which is a trusted CDN, but the version is not pinned by hash.  
+> Script requires msgpack.js from greasyfork update CDN, which is a trusted source but not version-hashed.  
 > 位置：@require https://update.greasyfork.org/scripts/423602/1005014/msgpack.js  
-> 建议：Pin the required library to a specific version or hash to prevent supply chain attacks.
+> 建议：Pin third-party dependencies to a specific version hash.
 
 **🟡 LOW** — ClickJacking / iframe Risk  
-> The script modifies Element.prototype.setAttribute to bypass iframe sandboxing on non-GeoGuessr platforms. This can weaken frame protection.  
-> 位置：Element.prototype.setAttribute Proxy  
-> 建议：Avoid weakening browser security features unless absolutely necessary. Document the reason for this modification.
+> Script modifies iframe sandbox attributes and frame protection, potentially weakening clickjacking protections.  
+> 位置：Element.prototype.setAttribute proxy  
+> 建议：Avoid weakening frame protections unless necessary.
+
+**🟡 LOW** — Site Integrity  
+> Script disables cheat detection scripts and modifies Array.prototype.push, which may interfere with site integrity.  
+> 位置：Array.prototype.push proxy, script removal  
+> 建议：Avoid interfering with site security mechanisms.
 
 ---
 

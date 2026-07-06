@@ -32,14 +32,14 @@ title: "犯罪收益显示器"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：97/100　　**分析时间**：2026-06-29
+**风险等级**：🟡 LOW　　**安全评分**：69/100　　**分析时间**：2026-07-06
 
-> 该脚本整体安全，未发现用户数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险等高危问题。仅存在对 Google Sheets 公共数据的只读访问和本地缓存，权限申请合理。安全评分 97，风险等级 LOW。
+> 该脚本主要通过 GM.xmlHttpRequest 获取 Google Sheets 的公开数据，并在本地缓存。未检测到用户数据外传、远程代码执行、代码混淆、DOM XSS、敏感 API 调用等高风险行为。唯一的 CRITICAL 风险为第三方数据请求，但未携带用户敏感信息。整体安全风险较低，建议持续关注数据请求内容及权限申请。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：https://docs.google.com/spreadsheets/d/13wUFhhssuPdAONI_OmRJi6l_Bs7KRZXDgVFCn7uJJNQ/gviz/tq） |
-| 隐私采集 | ✅ 未检测到 |
+| 数据外传 | ❌ 检测到（目标：https://docs.google.com/spreadsheets/d/13wUFhhssuPdAONI_OmRJi6l_Bs7KRZXDgVFCn7uJJNQ/gviz/tq?tqx=out:csv&gid=560321570, https://docs.google.com/spreadsheets/d/13wUFhhssuPdAONI_OmRJi6l_Bs7KRZXDgVFCn7uJJNQ/gviz/tq?tqx=out:csv&gid=1626436424） |
+| 隐私采集 | ❌ 检测到（localStorage 读取/写入） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -47,45 +47,50 @@ title: "犯罪收益显示器"
 
 ### 发现的问题
 
-**🟡 LOW** — 数据外传-只读  
-> 脚本通过 fetch/GM.xmlHttpRequest 方式从 Google Sheets 公开 CSV 读取数据，但未向第三方服务器上传用户数据、页面内容或 Cookie。  
-> 位置：let emforusData = `https://docs.google.com/spreadsheets/d/...`  
-> 建议：确认仅为公开数据读取，未携带用户隐私信息。
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过 GM.xmlHttpRequest 请求 Google Sheets CSV 数据，属于第三方数据源，但未携带用户数据、cookie 或页面内容。  
+> 位置：emforusData / crackingData URLs  
+> 建议：确认请求内容仅为公开数据，避免发送任何用户敏感信息。
 
-**🟡 LOW** — 隐私采集-本地存储  
-> 脚本大量读取和写入 localStorage，用于缓存数据和设置。未发现敏感信息（如 cookie、表单、密码）被读取。  
-> 位置：localStorage.getItem / setItem 多处  
-> 建议：仅存储非敏感设置和缓存数据，避免存储敏感信息。
-
-**🟡 LOW** — 权限申请  
-> 脚本申请了 GM.xmlHttpRequest 权限，但仅用于读取 Google Sheets 公共数据。  
-> 位置：@grant GM.xmlHttpRequest  
-> 建议：如无后续功能扩展，可考虑降权。
+**🟠 MEDIUM** — 隐私采集  
+> 脚本读取和写入 localStorage 以缓存数据和设置。未涉及敏感信息，仅用于脚本功能。  
+> 位置：localStorage 相关代码  
+> 建议：确保 localStorage 不存储用户敏感信息。
 
 **🟡 LOW** — 远程代码执行  
-> 未发现 eval、new Function、setTimeout(string)、setInterval(string) 等动态代码执行。  
-> 位置：全局  
-> 建议：保持此安全实践。
+> 脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等动态执行代码方式。  
+> 位置：全局代码审查  
+> 建议：保持当前安全实践。
 
 **🟡 LOW** — 代码混淆  
-> 未发现代码混淆、base64 解码、字符串数组映射、unicode 混淆等。  
-> 位置：全局  
+> 脚本未检测到代码混淆、base64 解码、字符串数组映射或高度压缩代码。  
+> 位置：全局代码审查  
 > 建议：保持代码可读性。
 
 **🟡 LOW** — DOM XSS  
-> 未发现 DOM XSS 风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML。  
-> 位置：全局  
-> 建议：如后续涉及用户输入，需严格转义。
+> 脚本未检测到 DOM XSS 风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML。  
+> 位置：DOM 操作部分  
+> 建议：继续避免直接插入不可信内容。
+
+**🟡 LOW** — 权限滥用  
+> 脚本申请 GM.xmlHttpRequest 权限，实际用于获取第三方公开数据，未滥用高权限。  
+> 位置：@grant 元数据  
+> 建议：仅申请必要权限。
+
+**🟡 LOW** — 敏感 API 调用  
+> 脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。  
+> 位置：全局代码审查  
+> 建议：继续避免敏感 API 滥用。
 
 **🟡 LOW** — 供应链风险  
-> @require 未使用，未发现供应链风险。  
-> 位置：元数据  
-> 建议：如后续引入第三方库，需锁定可信来源和版本。
+> 脚本通过 @require 未加载任何第三方库，仅通过 GM.xmlHttpRequest 获取 Google Sheets 数据。  
+> 位置：@require 元数据  
+> 建议：如需加载第三方库，建议固定版本哈希并使用官方 CDN。
 
-**🟡 LOW** — 敏感 API  
-> 未发现 WebSocket、EventSource、sendBeacon、Clipboard、Geolocation、RTCPeerConnection、MediaDevices、Notification 等敏感 API 调用。  
-> 位置：全局  
-> 建议：如后续涉及敏感 API，需最小化权限。
+**🟡 LOW** — ClickJacking / iframe  
+> 脚本未修改 frame 保护策略，也未创建隐藏 iframe。  
+> 位置：全局代码审查  
+> 建议：继续避免 iframe 风险。
 
 ---
 

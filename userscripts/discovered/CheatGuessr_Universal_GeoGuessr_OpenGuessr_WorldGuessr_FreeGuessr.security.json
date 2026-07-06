@@ -2,6 +2,7 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
+      "discord.com",
       "nominatim.openstreetmap.org"
     ],
     "detected": true
@@ -9,52 +10,55 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script sends latitude and longitude coordinates to the third-party service nominatim.openstreetmap.org via GM_xmlhttpRequest for reverse geocoding.",
-      "location": "function _getAddress(lat, lng)",
-      "recommendation": "Ensure only non-sensitive, non-personal data is sent. Inform users of this external request. Consider proxying or limiting data exposure.",
+      "description": "Script sends game coordinates and address data to Discord via GM_xmlhttpRequest. This is a third-party server and may expose user/game data.",
+      "location": "sendToDiscord function (not fully shown, but referenced in hotkeys/features and GM_xmlhttpRequest usage)",
+      "recommendation": "Limit data sent to Discord, inform users, and allow opt-out. Avoid sending sensitive or identifying information.",
       "severity": "CRITICAL",
       "type": "Data Exfiltration"
     },
     {
-      "description": "The script requests Notification API permissions and can send browser notifications.",
-      "location": "sendNotification() / requestNotificationPermission()",
-      "recommendation": "Ensure notifications are not abused. Inform users about notification usage.",
+      "description": "Script sends latitude/longitude to nominatim.openstreetmap.org for reverse geocoding. While this is a public API, it may expose user/game location data.",
+      "location": "_getAddress function",
+      "recommendation": "Minimize data sent, inform users, and consider local geocoding if privacy is a concern.",
+      "severity": "CRITICAL",
+      "type": "Data Exfiltration"
+    },
+    {
+      "description": "Script requests Notification API permission and sends notifications. This is a sensitive API and may be abused.",
+      "location": "requestNotificationPermission, sendNotification functions",
+      "recommendation": "Use Notification API responsibly, ensure user consent, and avoid spam.",
       "severity": "MEDIUM",
       "type": "Sensitive API Usage"
     },
     {
-      "description": "The script applies Proxy wrappers to native functions (e.g., setAttribute, push, fetch) to bypass anti-cheat and tracking mechanisms. This is advanced behavior that could be abused for obfuscation or evasion.",
-      "location": "Multiple locations (e.g., Element.prototype.setAttribute, Array.prototype.push, unsafeWindow.fetch)",
-      "recommendation": "Review all Proxy usage for legitimate purpose. Avoid using Proxies to hide malicious behavior.",
-      "severity": "HIGH",
-      "type": "Obfuscation/Evasion"
-    },
-    {
-      "description": "The script requests GM_xmlhttpRequest permission and @connect for discord.com, but no code in the provided snippet sends data to discord.com. This is a potential over-privilege.",
-      "location": "@grant/@connect metadata",
-      "recommendation": "Remove unused permissions to reduce attack surface.",
+      "description": "Script grants GM_xmlhttpRequest, which is used for cross-origin requests. This is a high privilege and must be justified.",
+      "location": "@grant GM_xmlhttpRequest in metadata",
+      "recommendation": "Ensure GM_xmlhttpRequest is only used for necessary, user-initiated actions.",
       "severity": "MEDIUM",
-      "type": "Permission Overuse"
+      "type": "Permission Usage"
     },
     {
-      "description": "The script modifies frame sandboxing behavior by disabling the 'sandbox' attribute on iframes for certain platforms, which may weaken clickjacking protections.",
+      "description": "Script modifies Element.prototype.setAttribute to block sandbox attribute on iframes for certain platforms. This may weaken frame protection and expose to clickjacking.",
       "location": "Element.prototype.setAttribute Proxy",
-      "recommendation": "Do not remove or bypass iframe sandboxing unless absolutely necessary and safe.",
+      "recommendation": "Avoid weakening iframe sandboxing unless absolutely necessary.",
       "severity": "LOW",
-      "type": "Clickjacking/iframe Risk"
+      "type": "ClickJacking Risk"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [],
-    "detected": false
+    "details": [
+      "Collects latitude/longitude coordinates",
+      "Collects address data via reverse geocoding"
+    ],
+    "detected": true
   },
-  "risk_level": "HIGH",
+  "risk_level": "CRITICAL",
   "script_name": "CheatGuessr Universal | GeoGuessr | OpenGuessr | WorldGuessr | FreeGuessr",
-  "security_score": 52,
-  "summary": "This script transmits user location data (latitude/longitude) to a third-party geocoding service (nominatim.openstreetmap.org), which is a critical data exfiltration risk. It also requests notification permissions, modifies native browser APIs via Proxy (which could be abused for evasion or obfuscation), and requests more permissions than it uses. There is no evidence of direct privacy collection (e.g., cookies, input fields), DOM XSS, or supply chain risk in the provided code. The overall risk is HIGH due to the external data transmission and advanced API manipulation. User consent and transparency are recommended. Remove unused permissions and avoid weakening browser security features.",
+  "security_score": 50,
+  "summary": "This script transmits game coordinates and address data to third-party servers (Discord and OpenStreetMap Nominatim), which constitutes critical data exfiltration and privacy risks. It also requests Notification API permission and modifies iframe sandboxing, introducing additional medium and low risks. No code obfuscation or DOM XSS detected. Supply chain risk is low as no @require external libraries are used. Overall, the script is not safe for privacy-sensitive users.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-29T06:38:47.563055+00:00",
+  "analyzed_at": "2026-07-06T06:28:26.467636+00:00",
   "slug": "CheatGuessr_Universal_GeoGuessr_OpenGuessr_WorldGuessr_FreeGuessr"
 }

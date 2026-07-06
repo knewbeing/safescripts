@@ -1,0 +1,54 @@
+{
+  "slug": "EraBOT",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/585219-erabot",
+  "source_repo": "585219",
+  "raw_url": "https://update.greasyfork.org/scripts/585219/%E2%9A%94%EF%B8%8FEraBOT%F0%9F%95%BA.user.js",
+  "filename": "EraBOT.user.js",
+  "name": "⚔️EraBOT🕺",
+  "version": "19.1.0",
+  "description": "SCRIPT EVOWARS.IO ERABOTVN VIP - AUTO MENU",
+  "match": [
+    "https://evowars.io/*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  ⚔️EraBOT🕺\n// @namespace  http://tampermonkey.net/\n// @version  19.1.0\n// @description  SCRIPT EVOWARS.IO ERABOTVN VIP - AUTO MENU\n// @author  #NLHH\n// @match  https://evowars.io/*\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=evowars.io\n// @grant  none\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/585219/%E2%9A%94%EF%B8%8FEraBOT%F0%9F%95%BA.user.js\n// @updateURL  https://update.greasyfork.org/scripts/585219/%E2%9A%94%EF%B8%8FEraBOT%F0%9F%95%BA.meta.js",
+  "sha256": "57e7a9db7976c4ebc9b9d00df7f19e7df5058760b8335fa9f25c5c1f607292f7",
+  "discovered_at": "2026-07-06T06:23:32.716650+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 226,
+  "good_ratings": 0,
+  "bad_ratings": 1,
+  "summary": {
+    "applicable_sites": [
+      "evowars.io"
+    ],
+    "description": "本脚本为 evowars.io 游戏提供自动化辅助功能，包括自动攻击、自动收集食物、自动逃避危险、自动重连和自动决斗等。安装后会自动弹出菜单，方便用户设置和启用各种功能。适合希望提升游戏效率和体验的玩家。",
+    "permissions": [
+      {
+        "explanation": "脚本不需要额外权限，仅在网页内运行。",
+        "grant": "none"
+      }
+    ],
+    "tags": [
+      "游戏辅助",
+      "自动化",
+      "evowars.io",
+      "自动攻击",
+      "自动收集",
+      "自动逃避"
+    ],
+    "usage": [
+      "1. 安装脚本后，打开 evowars.io 网站。",
+      "2. 进入游戏时，菜单会自动弹出。",
+      "3. 根据需要在菜单中开启或关闭自动功能。",
+      "4. 开始游戏，脚本会自动执行相应操作。"
+    ],
+    "zh_name": "EraBOT自动菜单"
+  }
+}

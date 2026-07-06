@@ -49,14 +49,14 @@ title: "解除网络限制：.io游戏模型 、广告链接绕过器、广告�
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：0/100　　**分析时间**：2026-06-29
+**风险等级**：⛔ CRITICAL　　**安全评分**：0/100　　**分析时间**：2026-07-06
 
-> This script presents multiple critical security risks, including remote code execution via eval, code obfuscation, data exfiltration, privacy-invasive tracking, and broad permissions. It should NOT be approved for use in its current form.
+> This userscript poses severe security risks: it executes remote code from arbitrary URLs, collects persistent identifiers, transmits data to third-party servers, uses obfuscated code, and requests excessive privileges. It is not safe for use and should be avoided or heavily refactored before deployment.
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：ksw2-moomoo.glitch.me, Any URL via Utils.loadModule()） |
-| 隐私采集 | ❌ 检测到（Persistent unique user identifier (UUID) stored in GM storage） |
+| 数据外传 | ❌ 检测到（目标：ksw2-moomoo.glitch.me, external URLs via Utils.loadModule (dynamic)） |
+| 隐私采集 | ❌ 检测到（UUID generation and persistent storage, Counter tracking across sessions） |
 | 代码混淆 | ❌ 检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ❌ 存在风险 |
@@ -65,44 +65,49 @@ title: "解除网络限制：.io游戏模型 、广告链接绕过器、广告�
 ### 发现的问题
 
 **⛔ CRITICAL** — Remote Code Execution  
-> The script uses XMLHttpRequest to fetch and execute remote code via a[a][a](x.responseText), which is equivalent to eval(). The URL is arbitrary (passed to loadModule), allowing remote code execution.  
+> The script uses XMLHttpRequest to fetch external code and executes it via a[a][a](x.responseText), which is equivalent to eval(). This allows remote code execution from arbitrary URLs.  
 > 位置：Utils.loadModule function  
-> 建议：Remove dynamic code execution and only use static, trusted code. Never eval or execute fetched code from arbitrary URLs.
-
-**⛔ CRITICAL** — Data Exfiltration  
-> The script requests and executes code from arbitrary URLs via loadModule, which can be used to exfiltrate data or execute malicious code.  
-> 位置：Utils.loadModule function  
-> 建议：Restrict network requests to trusted domains and avoid executing fetched code.
+> 建议：Remove dynamic code loading and execution. Only load trusted, versioned libraries via @require.
 
 **⛔ CRITICAL** — Privacy Collection  
-> The script stores a unique user identifier (UUID) in persistent storage (GM.setValue('id', uuidv4())), which can be used for tracking.  
-> 位置：Anonymous async IIFE near top of script  
-> 建议：Do not generate or store persistent unique identifiers unless absolutely necessary and with user consent.
+> The script stores and retrieves a UUID and a counter in GM storage, which may be used for tracking users across sessions.  
+> 位置：uuidv4 and GM.getValue/GM.setValue usage  
+> 建议：Clarify purpose and minimize persistent identifiers. Avoid unnecessary tracking.
+
+**⛔ CRITICAL** — Data Transmission  
+> The script connects to ksw2-moomoo.glitch.me and uses GM_getTab/GM_saveTab to store tab data, which may be used for cross-tab tracking or communication.  
+> 位置：Controller page logic  
+> 建议：Limit cross-tab communication and avoid sending user-identifiable data to third-party servers.
 
 **🔴 HIGH** — Code Obfuscation  
 > The script uses a[a][a](x.responseText), which is a highly obfuscated way to call eval().  
 > 位置：Utils.loadModule function  
-> 建议：Avoid obfuscation and use clear, maintainable code. Remove any use of eval or similar constructs.
+> 建议：Avoid obfuscation and use clear, auditable code.
 
-**🔴 HIGH** — DOM XSS Risk  
-> The script uses innerHTML/outerHTML in some utility functions (not fully visible in the snippet), and the use of eval-like constructs increases XSS risk.  
-> 位置：Utils.loadModule and possible other dynamic code paths  
-> 建议：Sanitize all user input and avoid inserting untrusted content into the DOM.
+**🔴 HIGH** — Permission Abuse  
+> The script grants unsafeWindow, which allows full access to the page context and can be abused.  
+> 位置：@grant unsafeWindow  
+> 建议：Only use unsafeWindow if absolutely necessary and document its usage.
 
-**🟠 MEDIUM** — Permission Abuse  
-> The script applies to a wide range of high-value targets (Discord, Facebook, Google, Baidu, etc.), increasing the risk of privilege abuse and data exposure.  
-> 位置：@match metadata  
-> 建议：Limit script scope to only necessary domains.
-
-**🟠 MEDIUM** — Permission Abuse  
-> The script requests high-privilege grants (unsafeWindow, GM_getTabs, GM_saveTab, etc.), but not all are used in the visible code.  
-> 位置：@grant metadata  
-> 建议：Only request the minimum necessary permissions.
+**🔴 HIGH** — DOM XSS  
+> The script uses innerHTML and may manipulate DOM elements based on user input or external data, which can lead to DOM XSS.  
+> 位置：General DOM manipulation (not fully shown in snippet)  
+> 建议：Sanitize all user input and external data before inserting into the DOM.
 
 **🟠 MEDIUM** — Supply Chain Risk  
-> The script uses @require to load third-party libraries from GreasyFork and jQuery from code.jquery.com, but does not pin versions with hashes.  
-> 位置：@require metadata  
-> 建议：Pin all third-party dependencies to specific versions and use trusted CDNs.
+> The script loads third-party libraries from greasyfork.org and code.jquery.com via @require, but does not pin versions with hashes.  
+> 位置：@require statements  
+> 建议：Pin library versions and use official, trusted CDNs. Avoid loading from unknown sources.
+
+**🟠 MEDIUM** — Permission Abuse  
+> The script requests multiple high privileges (GM_getTabs, GM_saveTab, unsafeWindow) but does not use all of them in the shown code.  
+> 位置：@grant statements  
+> 建议：Reduce granted permissions to only those required.
+
+**🟡 LOW** — ClickJacking / iframe Risk  
+> The script may manipulate iframe contexts and frame protection, potentially exposing clickjacking risks.  
+> 位置：isIFrame logic and recaptcha module  
+> 建议：Avoid unnecessary iframe manipulation and ensure frame protection is not weakened.
 
 ---
 

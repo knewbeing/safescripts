@@ -42,40 +42,75 @@ title: "CheatGuessr 通用版｜GeoGuessr 辅助"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：35/100　　**分析时间**：2026-06-29
+**风险等级**：⛔ CRITICAL　　**安全评分**：22/100　　**分析时间**：2026-07-06
 
-> This script transmits game data (including map coordinates and possibly user actions) to third-party services such as Discord and OpenStreetMap. It hooks into WebSocket communication, which may impact privacy and game integrity. No code obfuscation or DOM XSS risks were detected. The script requests high-privilege permissions and connects to external endpoints, introducing supply chain and data exfiltration risks. User consent and transparency are critical.
+> 该脚本存在严重的数据外传和隐私采集风险，尤其是向 discord.com 和 nominatim.openstreetmap.org 发送用户坐标、游戏信息等敏感数据。脚本还通过 WebSocket 代理注入消息，存在远程代码执行和通信干扰风险。虽然未发现代码混淆和 DOM XSS，但部分 iframe 保护被绕过，存在低级别 ClickJacking 风险。总体安全评分较低，不建议在包含敏感信息的环境中使用。
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：discord.com, nominatim.openstreetmap.org） |
-| 隐私采集 | ❌ 检测到（Intercepts game data via WebSocket, including player guesses and possibly usernames., May send map coordinates and game actions to Discord webhooks.） |
+| 隐私采集 | ❌ 检测到（监听键盘事件, 读取并发送地图坐标、游戏信息到 Discord） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ⚠️ 使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ⚠️ 存在风险 |
+| 供应链风险 | ✅ 可信 |
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Exfiltration  
-> The script uses GM_xmlhttpRequest to send data to discord.com (likely via webhook) and nominatim.openstreetmap.org. This may include map coordinates, user actions, or other game-related data.  
-> 位置：GM_xmlhttpRequest usage, @connect permissions  
-> 建议：Ensure only non-sensitive, user-approved data is sent. Inform users clearly about what is transmitted.
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过 GM_xmlhttpRequest 向 discord.com 发送数据（如地图坐标、游戏信息），存在用户数据外传风险。  
+> 位置：GM_xmlhttpRequest 调用，@connect discord.com  
+> 建议：仅允许用户主动触发发送，避免自动上报敏感信息；明确提示用户数据外传行为。
 
-**🔴 HIGH** — Remote Code Execution / Game Manipulation  
-> The script hooks into WebSocket.prototype.send and WebSocket.prototype.addEventListener to intercept and possibly modify game data. While it does not appear to exfiltrate user credentials, it does manipulate game communication.  
-> 位置：WebSocket.prototype.send Proxy, WebSocket.prototype.addEventListener Proxy  
-> 建议：Do not intercept or modify WebSocket traffic unless strictly necessary and with user consent.
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过 GM_xmlhttpRequest 向 nominatim.openstreetmap.org 查询地理位置，可能携带用户坐标等信息。  
+> 位置：GM_xmlhttpRequest 调用，@connect nominatim.openstreetmap.org  
+> 建议：避免发送过多精确坐标，限制请求频率，明确告知用户。
 
-**🟠 MEDIUM** — Permission Overuse  
-> The script requests GM_xmlhttpRequest permission, which is high-privilege and can be abused for data exfiltration.  
-> 位置：@grant GM_xmlhttpRequest  
-> 建议：Limit permissions to only those required. Remove GM_xmlhttpRequest if not strictly necessary.
+**⛔ CRITICAL** — 隐私采集  
+> 脚本监听键盘事件（如 Tab、Q、G、X、V、T），并可将地图坐标等信息发送到 Discord，存在隐私采集与外传组合风险。  
+> 位置：热键监听、sendToDiscord 功能  
+> 建议：仅允许用户主动触发，禁止自动采集和外传敏感数据。
 
-**🟠 MEDIUM** — Supply Chain / Data Transmission Risk  
-> The script requests @connect to discord.com and nominatim.openstreetmap.org, which are third-party services. Data sent to these endpoints may be outside user control.  
-> 位置：@connect discord.com, @connect nominatim.openstreetmap.org  
-> 建议：Ensure all third-party endpoints are trusted and data sent is minimal and anonymized.
+**🔴 HIGH** — 远程代码执行  
+> 脚本通过 WebSocket 代理和拦截，修改/注入消息，存在远程代码执行和游戏通信干扰风险。  
+> 位置：WebSocket.prototype.send Proxy、WebSocket.prototype.addEventListener Proxy  
+> 建议：避免修改 WebSocket 消息内容，禁止注入恶意 payload。
+
+**🔴 HIGH** — 远程代码执行  
+> 脚本未使用 eval、new Function、setTimeout(string) 等危险执行方式，远程代码执行风险主要来自 WebSocket 注入。  
+> 位置：全局代码  
+> 建议：禁止动态执行字符串代码。
+
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请 GM_xmlhttpRequest 高权限，但未申请 GM_download、GM_openInTab 等，权限申请基本合理。  
+> 位置：@grant 元数据  
+> 建议：定期审查权限申请，避免滥用。
+
+**🟠 MEDIUM** — 敏感 API 调用  
+> 脚本未使用敏感 API（如 geolocation、MediaDevices、Clipboard API），但使用 Notification API 申请通知权限。  
+> 位置：state.notificationPermission  
+> 建议：仅在用户主动同意时使用通知。
+
+**🟡 LOW** — 代码混淆  
+> 脚本未发现明显代码混淆、base64 解码、字符串数组映射等混淆特征。  
+> 位置：全局代码  
+> 建议：保持代码可读性，禁止混淆。
+
+**🟡 LOW** — DOM XSS  
+> 脚本未发现 DOM XSS 注入风险，未直接将用户输入插入 innerHTML/outerHTML。  
+> 位置：全局代码  
+> 建议：继续避免不可信内容插入 DOM。
+
+**🟡 LOW** — 供应链风险  
+> 脚本未通过 @require 加载第三方库，无供应链风险。  
+> 位置：@require 元数据为空  
+> 建议：如需加载第三方库，务必固定版本哈希。
+
+**🟡 LOW** — ClickJacking / iframe 风险  
+> 脚本在部分平台修改 iframe sandbox 属性，可能降低 frame 保护，存在 ClickJacking 风险。  
+> 位置：Element.prototype.setAttribute Proxy  
+> 建议：禁止移除 iframe sandbox 属性，保持页面安全策略。
 
 ---
 

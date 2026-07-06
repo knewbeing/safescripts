@@ -2,59 +2,55 @@
   "approved": true,
   "data_transmission": {
     "destinations": [
-      "https://character.ai/*"
+      "character.ai (same-origin)",
+      "Any URL captured via XHR interception (potentially same-origin only)"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script intercepts and replays XMLHttpRequests using GM_xmlhttpRequest, but only to the same origin (character.ai). No evidence of exfiltration to third-party servers or data leak outside the matched domain.",
+      "description": "The script intercepts all XMLHttpRequests and allows replaying them using GM_xmlhttpRequest. If the captured requests are to third-party domains, user data could be transmitted externally. However, the script is scoped to character.ai and appears to only replay requests to that domain.",
       "location": "XHR interception and replay logic",
-      "recommendation": "Ensure users are aware that replaying requests can have side effects (already warned in the UI). No critical data exfiltration detected.",
-      "severity": "LOW",
+      "recommendation": "Ensure only same-origin requests are replayed. Add domain validation before replaying requests.",
+      "severity": "CRITICAL",
       "type": "Data Transmission"
     },
     {
-      "description": "The script requests GM_xmlhttpRequest permission, which is used only for replaying requests to the same origin. No over-privilege detected, but GM_xmlhttpRequest is a high-privilege API.",
-      "location": "@grant metadata and replay logic",
-      "recommendation": "No action needed unless script is modified to target third-party endpoints.",
-      "severity": "MEDIUM",
-      "type": "Permission Usage"
-    },
-    {
-      "description": "No evidence of code obfuscation, eval, or dynamic code execution. All code is readable and not minified.",
-      "location": "Entire script",
-      "recommendation": "None.",
-      "severity": "LOW",
-      "type": "Obfuscation"
-    },
-    {
-      "description": "No supply chain risk: no @require or external scripts loaded.",
-      "location": "Metadata",
-      "recommendation": "None.",
-      "severity": "LOW",
-      "type": "Supply Chain"
-    },
-    {
-      "description": "No privacy collection: script does not access cookies, localStorage, sessionStorage, IndexedDB, or fingerprinting APIs. It does not read form fields or clipboard.",
-      "location": "Entire script",
-      "recommendation": "None.",
-      "severity": "LOW",
+      "description": "The script captures request bodies, headers, and URLs, which may include sensitive user data depending on the original requests. However, it does not capture cookies or localStorage/sessionStorage directly.",
+      "location": "XHR interception logic",
+      "recommendation": "Review what data is being captured and replayed. Avoid capturing or replaying sensitive information.",
+      "severity": "HIGH",
       "type": "Privacy Collection"
+    },
+    {
+      "description": "The script uses GM_xmlhttpRequest for replay, which is a high privilege grant. It is used as intended, but the grant is powerful and could be abused if the script logic changes.",
+      "location": "@grant GM_xmlhttpRequest",
+      "recommendation": "Limit usage to only necessary domains and requests.",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "No evidence of eval, new Function, or dynamic script injection. No code obfuscation detected.",
+      "location": "Entire script",
+      "recommendation": "Maintain code clarity and avoid obfuscation.",
+      "severity": "LOW",
+      "type": "Obfuscation/Remote Code Execution"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [],
-    "detected": false
+    "details": [
+      "Captures XHR request bodies, headers, and URLs (may include sensitive data depending on original requests)"
+    ],
+    "detected": true
   },
-  "risk_level": "LOW",
+  "risk_level": "HIGH",
   "script_name": "Force DeepSqueak Model",
-  "security_score": 89,
-  "summary": "The script intercepts and replays up to 5 recent XMLHttpRequests made to character.ai, allowing the user to modify PATCH requests to use a specific model. It does not transmit data to third-party servers, does not collect sensitive user data, and does not use obfuscated or dynamically executed code. The main risk is the potential for unintended side effects when replaying requests, but this is clearly communicated to the user. No critical or high-severity security issues detected. Overall, the script is considered low risk for the reviewed version.",
+  "security_score": 60,
+  "summary": "The script intercepts and replays XHR requests, which can potentially transmit sensitive user data externally if not properly scoped. While it appears to only target character.ai, the replay functionality is powerful and could be abused if the captured requests include sensitive information or are to third-party domains. No code obfuscation or DOM XSS risks detected. Supply chain risk is low as no @require is used. Permissions are appropriate but GM_xmlhttpRequest is a high privilege. Overall, the script is functional but carries a high risk due to its data transmission and privacy collection capabilities.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-29T06:45:00.476060+00:00",
+  "analyzed_at": "2026-07-06T06:34:51.035400+00:00",
   "slug": "Force_DeepSqueak_Model"
 }

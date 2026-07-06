@@ -5,18 +5,26 @@
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [],
+  "issues": [
+    {
+      "description": "申请了 unsafeWindow 权限，但实际代码未使用 unsafeWindow。此权限可导致脚本与页面 JS 相互访问，增加安全风险。",
+      "location": "元数据 @grant unsafeWindow",
+      "recommendation": "移除 @grant unsafeWindow，除非确实需要与页面脚本交互。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    }
+  ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
     "detected": false
   },
-  "risk_level": "SAFE",
+  "risk_level": "LOW",
   "script_name": "Deadshot.io Chams & Aimbot",
-  "security_score": 100,
-  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。代码结构清晰，未发现安全隐患。",
+  "security_score": 92,
+  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险、敏感 API 调用或 iframe 风险。唯一问题是申请了未使用的 unsafeWindow 高权限，建议移除。整体安全风险较低。未发现关键安全隐患。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-29T06:40:09.923005+00:00",
+  "analyzed_at": "2026-07-06T06:30:00.743075+00:00",
   "slug": "Deadshotio_Chams_Aimbot"
 }

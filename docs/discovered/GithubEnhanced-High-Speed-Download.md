@@ -41,13 +41,13 @@ title: "Github增强 - 高速下载"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：97/100　　**分析时间**：2026-06-29
+**风险等级**：🔴 HIGH　　**安全评分**：60/100　　**分析时间**：2026-07-06
 
-> 该脚本主要通过在 GitHub 页面上提供多种加速下载节点链接，方便用户选择加速源下载文件。未发现自动外传用户数据、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用、供应链风险等安全问题。所有加速节点链接均为静态构造，未主动与第三方服务器通信。整体安全风险极低，适合日常使用。
+> 该脚本主要风险在于将 Github 文件下载请求重定向到大量第三方加速代理服务器，存在数据外传风险，尤其对私有或敏感仓库内容。未检测到隐私采集、远程代码执行、混淆、DOM XSS、供应链等其他高风险行为。建议用户仅用于公开项目，下载敏感内容需谨慎。整体安全评分为 60，风险等级为 HIGH。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ✅ 未检测到 |
+| 数据外传 | ❌ 检测到（目标：gh.h233.eu.org, rapidgit.jjda.de5.net, gh.ddlc.top） |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
@@ -56,50 +56,50 @@ title: "Github增强 - 高速下载"
 
 ### 发现的问题
 
-**🟡 LOW** — Data Transmission  
-> 脚本内包含大量第三方加速节点（CDN/proxy），但未发现自动向这些节点发送用户数据或页面内容的网络请求，所有加速链接均为静态构造用于替换下载链接，未主动外传数据。  
-> 位置：全局  
-> 建议：继续保持不自动上传用户数据，避免未来引入统计/追踪行为。
+**⛔ CRITICAL** — 数据外传  
+> 脚本将 Github 文件下载请求重定向到第三方加速代理服务器，涉及大量外部域名。  
+> 位置：download_url_us, clone_url, raw_url 等数组及相关下载逻辑  
+> 建议：警告用户这些加速节点为第三方，下载敏感内容需谨慎。建议仅用于公开项目。
 
-**🟡 LOW** — Privacy Collection  
-> 未发现对 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板、表单、键盘输入等敏感信息的读取或外传。  
-> 位置：全局  
-> 建议：如后续需用到本地存储，仅存储必要配置，避免存储敏感信息。
+**⛔ CRITICAL** — 隐私采集  
+> 脚本未检测到隐私采集行为，如读取 cookie、localStorage、sessionStorage、IndexedDB、剪贴板或监听键盘输入。  
+> 位置：全局代码  
+> 建议：保持现有状态，勿添加隐私采集代码。
 
-**🟡 LOW** — Remote Code Execution  
-> 未发现 eval、new Function、setTimeout(string)、setInterval(string)、动态 script 标签、innerHTML 执行 JS、document.write 等远程代码执行风险。  
-> 位置：全局  
-> 建议：保持当前实现，避免引入动态代码执行。
+**🔴 HIGH** — 远程代码执行  
+> 脚本未检测到远程代码执行风险，如 eval、new Function、setTimeout(string)、setInterval(string)、动态 script 标签加载。  
+> 位置：全局代码  
+> 建议：保持现有状态，勿添加动态代码执行逻辑。
 
-**🟡 LOW** — Obfuscation  
-> 未发现代码混淆、base64 解码执行、字符串数组混淆、unicode 混淆或高度压缩单行代码。  
-> 位置：全局  
-> 建议：保持代码可读性，便于社区安全审计。
+**🔴 HIGH** — 代码混淆  
+> 脚本未检测到代码混淆行为，代码结构清晰，无 base64、unicode、字符串数组映射等混淆特征。  
+> 位置：全局代码  
+> 建议：保持现有状态，勿使用混淆器。
 
-**🟡 LOW** — DOM XSS  
-> 未发现 DOM XSS 风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML。  
-> 位置：全局  
-> 建议：如需插入动态内容，务必进行转义。
+**🔴 HIGH** — DOM XSS / 注入  
+> 脚本未检测到 DOM XSS 或注入风险，无用户输入直接插入 innerHTML/outerHTML，未操作 iframe src 为 javascript:。  
+> 位置：全局代码  
+> 建议：保持现有状态，插入内容需严格转义。
 
-**🟡 LOW** — Permission Usage  
-> @grant 权限申请与实际代码基本匹配，未发现高权限滥用。部分权限如 GM_openInTab、GM_setClipboard 仅用于用户交互功能。  
-> 位置：元数据  
-> 建议：如未使用部分权限，建议移除以最小化权限。
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 GM_openInTab、GM_notification、GM_setClipboard 等权限，均有实际用途，无权限滥用。  
+> 位置：元数据 @grant  
+> 建议：仅申请实际需要的权限。
 
-**🟡 LOW** — Sensitive API  
-> 未发现敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Notification、Clipboard）被调用。  
-> 位置：全局  
-> 建议：如需使用敏感 API，需明确告知用户并最小化调用。
+**🟠 MEDIUM** — 敏感 API 调用  
+> 脚本未调用敏感 API，如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API（读取）、Notification API（仅用于通知）。  
+> 位置：全局代码  
+> 建议：保持现有状态，勿调用敏感 API。
 
-**🟡 LOW** — Supply Chain  
-> 未使用 @require 加载第三方库，无供应链风险。  
-> 位置：元数据  
-> 建议：如需引入第三方库，建议使用可信官方 CDN 并锁定版本。
+**🟠 MEDIUM** — 供应链风险  
+> 脚本未通过 @require 加载第三方库，无供应链风险。  
+> 位置：元数据 @require  
+> 建议：如需加载第三方库，建议固定版本哈希并使用官方 CDN。
 
-**🟡 LOW** — ClickJacking/Iframe  
-> 未发现脚本修改 frame 保护策略或创建隐藏 iframe。  
-> 位置：全局  
-> 建议：如需操作 iframe，需评估 ClickJacking 风险。
+**🟡 LOW** — ClickJacking / iframe 风险  
+> 脚本未检测到 ClickJacking 或 iframe 风险，无 frame 保护策略修改或隐藏 iframe 创建。  
+> 位置：全局代码  
+> 建议：保持现有状态，勿创建隐藏 iframe。
 
 ---
 

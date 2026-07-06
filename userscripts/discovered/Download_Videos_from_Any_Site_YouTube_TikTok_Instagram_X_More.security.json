@@ -1,42 +1,93 @@
 {
-  "approved": true,
+  "approved": false,
   "data_transmission": {
     "destinations": [
-      "chilldownloader:// (custom protocol)",
+      "chilldownloader://download?url=",
       "https://chilldownloader.com",
-      "https://www.tool77.com/it/v/downloader",
-      "https://www.spotriff.com/en"
+      "https://www.tool77.com/it/v/downloader?url={url}",
+      "https://www.spotriff.com/en?url={raw}"
     ],
-    "detected": false
+    "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script opens external URLs (including user video URLs as parameters) in new tabs or via custom protocol handlers, potentially exposing the current page's video URL to third-party services (chilldownloader.com, tool77.com, spotriff.com).",
-      "location": "openTab() function and download button click handlers",
-      "recommendation": "Warn users that clicking the download button will send the video URL to external services. Consider adding user confirmation or documentation.",
-      "severity": "MEDIUM",
-      "type": "Potential privacy/data exposure"
+      "description": "脚本通过 chilldownloader://download?url=、https://chilldownloader.com、https://www.tool77.com/it/v/downloader?url={url}、https://www.spotriff.com/en?url={raw} 等第三方服务传递当前页面视频/音频 URL，存在用户数据外传风险。",
+      "location": "代码常量 APP_PROTOCOL, APP_SITE_URL, WEB_DOWNLOADER, SPOTIFY_DOWNLOADER 及相关点击事件",
+      "recommendation": "明确告知用户数据传递行为，避免传递敏感信息，建议仅在用户主动操作时触发。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
     },
     {
-      "description": "The script requests the GM_openInTab permission, which allows opening arbitrary URLs in new tabs. This is not strictly necessary for basic DOM manipulation.",
-      "location": "@grant GM_openInTab in metadata",
-      "recommendation": "Remove GM_openInTab if not strictly required, or document its necessity.",
+      "description": "脚本未直接读取 cookie、localStorage、sessionStorage、IndexedDB、剪贴板或表单字段，但通过传递视频/音频 URL，可能间接泄露用户访问内容。",
+      "location": "下载按钮点击事件，URL 拼接",
+      "recommendation": "限制传递内容，仅传递必要的公开资源链接，避免敏感参数。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string)、innerHTML 执行 JS，也未动态加载远程 JS。",
+      "location": "全局代码",
+      "recommendation": "保持当前实现，避免引入远程代码执行风险。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本未发现明显代码混淆、base64 解码、字符串映射或高度压缩单行代码。",
+      "location": "全局代码",
+      "recommendation": "保持代码可读性，避免混淆。",
+      "severity": "HIGH",
+      "type": "代码混淆"
+    },
+    {
+      "description": "脚本未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未发现 DOM XSS 注入风险。",
+      "location": "全局代码",
+      "recommendation": "继续避免直接插入不可信内容。",
+      "severity": "HIGH",
+      "type": "DOM XSS / 注入"
+    },
+    {
+      "description": "脚本申请了 GM_openInTab 权限，但实际代码未使用该权限，存在权限滥用风险。",
+      "location": "元数据 @grant",
+      "recommendation": "移除未使用的高权限申请。",
       "severity": "MEDIUM",
-      "type": "Permission over-provision"
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。",
+      "location": "全局代码",
+      "recommendation": "保持当前实现，避免敏感 API 滥用。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "脚本未通过 @require 加载第三方库，无供应链风险。",
+      "location": "元数据",
+      "recommendation": "如需引入第三方库，建议固定版本哈希并使用可信 CDN。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    },
+    {
+      "description": "脚本未修改 frame 保护策略，也未创建隐藏 iframe 用于数据提取。",
+      "location": "全局代码",
+      "recommendation": "继续避免 iframe 风险。",
+      "severity": "LOW",
+      "type": "ClickJacking / iframe 风险"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [],
-    "detected": false
+    "details": [
+      "传递当前页面视频/音频 URL 到第三方服务，可能间接泄露用户访问内容"
+    ],
+    "detected": true
   },
-  "risk_level": "LOW",
+  "risk_level": "CRITICAL",
   "script_name": "⬇️ Download Videos from Any Site (YouTube, TikTok, Instagram, X & More)",
-  "security_score": 89,
-  "summary": "The script does not collect or transmit user data automatically, nor does it perform network requests or use WebSockets. It adds a download button that, when clicked, opens external services with the current video URL as a parameter. No code obfuscation, DOM XSS, or supply chain risks detected. The main privacy concern is user-initiated sharing of URLs with third-party downloaders. Permissions are slightly over-provisioned but not dangerous.",
+  "security_score": 50,
+  "summary": "该脚本存在严重的数据外传和隐私采集风险，因其会将当前页面的视频/音频 URL 发送到第三方服务（包括 chilldownloader.com、tool77.com、spotriff.com 等），可能泄露用户访问内容。未发现远程代码执行、代码混淆、DOM XSS、敏感 API 调用、供应链风险等问题。建议移除未使用的 GM_openInTab 权限，并明确告知用户数据传递行为。整体安全评分为 50，风险等级为 CRITICAL。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-29T06:40:56.991118+00:00",
+  "analyzed_at": "2026-07-06T06:30:46.073806+00:00",
   "slug": "Download_Videos_from_Any_Site_YouTube_TikTok_Instagram_X_More"
 }

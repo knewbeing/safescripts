@@ -10,25 +10,25 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 @require 加载了多个第三方库，均为官方 CDN（jsdelivr）且带有明确版本号或 commit 哈希，供应链风险较低。",
-      "location": "元数据 @require 字段",
-      "recommendation": "继续保持使用可信 CDN 并锁定版本或哈希。",
+      "description": "@require 加载的第三方库未全部固定版本哈希，部分为 npm 包，存在供应链风险。",
+      "location": "元数据 @require",
+      "recommendation": "建议全部使用官方 CDN 并固定版本哈希，避免使用可变 URL。",
       "severity": "MEDIUM",
-      "type": "供应链风险"
+      "type": "Supply Chain Risk"
     },
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限，但主代码未见实际使用，且 @connect 仅限 csdn 官方域名。",
-      "location": "元数据 @grant 字段",
-      "recommendation": "如无实际用途可移除 GM_xmlhttpRequest 权限，减少权限面。",
+      "description": "申请了 GM_xmlhttpRequest 权限，但代码未发现实际使用，可能存在权限滥用风险。",
+      "location": "元数据 @grant",
+      "recommendation": "建议仅申请实际需要的权限，移除未使用的高权限。",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "Permission Abuse"
     },
     {
-      "description": "脚本申请了 unsafeWindow 权限，但主代码未见实际使用。",
-      "location": "元数据 @grant 字段",
-      "recommendation": "如无实际用途可移除 unsafeWindow 权限，减少权限面。",
+      "description": "申请了 unsafeWindow 权限，但代码未发现实际使用，可能存在权限滥用风险。",
+      "location": "元数据 @grant",
+      "recommendation": "建议仅申请实际需要的权限，移除未使用的高权限。",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "Permission Abuse"
     }
   ],
   "obfuscation_detected": false,
@@ -39,9 +39,9 @@
   "risk_level": "LOW",
   "script_name": "CSDN优化",
   "security_score": 81,
-  "summary": "该脚本主要用于优化 CSDN 站点体验，未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。所有 @require 第三方库均为可信 CDN 且锁定版本，供应链风险较低。存在部分未使用的高权限申请（GM_xmlhttpRequest、unsafeWindow），建议精简权限。整体安全风险较低，建议定期复查依赖库更新。",
-  "supply_chain_risk": false,
+  "summary": "该脚本主要用于优化 CSDN 网页体验，屏蔽广告、自动展开内容等。未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。存在部分供应链风险和权限滥用风险，建议优化依赖来源和权限申请。整体安全风险较低。未发现 WebSocket 使用。",
+  "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-29T06:28:27.404516+00:00",
+  "analyzed_at": "2026-07-06T06:18:31.416676+00:00",
   "slug": "CSDN_E4_BC_98_E5_8C_96"
 }

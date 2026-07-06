@@ -2,7 +2,7 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
-      "* (wildcard, any domain)",
+      "*",
       "www.google.com",
       "www.google.com.hk",
       "www.google.co.jp",
@@ -11,37 +11,30 @@
       "www.tineye.com",
       "hoothin.com"
     ],
-    "detected": true
+    "detected": false
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "@connect * 允许脚本通过 GM_xmlhttpRequest 等 API 访问任意外部服务器，存在数据外传风险。",
-      "location": "元数据 @connect",
-      "recommendation": "将 @connect 范围限制为实际需要的域名，避免使用通配符 *。",
+      "description": "@connect * 允许任意域名的网络请求，存在数据外传风险，虽然当前代码未检测到实际数据外传，但后续更新或依赖库可能引入风险。",
+      "location": "元数据 @connect *",
+      "recommendation": "限制 @connect 域名范围，仅允许必要的目标，避免泛域名。",
       "severity": "CRITICAL",
-      "type": "数据外传"
+      "type": "Data Transmission"
     },
     {
-      "description": "脚本申请了 GM_xmlhttpRequest/GM.xmlHttpRequest 权限，并结合 @connect *，理论上可外传任意数据。",
+      "description": "申请了大量高权限（如 GM_download、GM_openInTab、unsafeWindow），部分权限在当前代码未被使用，存在权限滥用风险。",
       "location": "元数据 @grant",
-      "recommendation": "仅申请实际需要的权限，并限制 @connect 域名。",
-      "severity": "CRITICAL",
-      "type": "数据外传"
-    },
-    {
-      "description": "脚本申请了 GM_download、GM_openInTab、GM_notification、unsafeWindow 等高权限，但部分权限在当前代码片段未见实际使用，存在权限滥用风险。",
-      "location": "元数据 @grant",
-      "recommendation": "仅申请实际使用的权限，移除未用高权限。",
+      "recommendation": "仅申请实际需要的权限，移除未使用的高权限。",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "Permission Abuse"
     },
     {
-      "description": "@require 加载的第三方库（pvcep_rules.js、pvcep_lang.js）未锁定版本哈希，存在供应链风险。",
+      "description": "@require 加载的第三方库未固定版本哈希，存在供应链污染风险。",
       "location": "元数据 @require",
-      "recommendation": "使用可信源并锁定具体版本或哈希。",
+      "recommendation": "使用官方 CDN 并固定版本哈希，避免加载可变内容。",
       "severity": "MEDIUM",
-      "type": "供应链风险"
+      "type": "Supply Chain Risk"
     }
   ],
   "obfuscation_detected": false,
@@ -52,9 +45,9 @@
   "risk_level": "HIGH",
   "script_name": "Picviewer CE+",
   "security_score": 52,
-  "summary": "Picviewer CE+ 申请了广泛的网络访问权限（@connect *），并使用 GM_xmlhttpRequest 等高权限 API，理论上可外传任意数据，属于严重安全隐患。部分高权限未见实际使用，存在权限滥用和供应链风险。未发现明显隐私采集、远程代码执行、代码混淆或 DOM XSS 问题。建议收紧 @connect 域名范围、精简权限、锁定依赖版本。",
+  "summary": "Picviewer CE+ 用户脚本未检测到实际数据外传和隐私采集行为，但元数据存在严重安全隐患：@connect * 允许任意域名网络请求，权限申请过多，且依赖库未固定版本哈希，存在供应链风险。建议收紧网络权限、精简权限申请、固定依赖库版本。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-29T06:51:05.601676+00:00",
+  "analyzed_at": "2026-07-06T06:39:40.587075+00:00",
   "slug": "Picviewer_CE"
 }

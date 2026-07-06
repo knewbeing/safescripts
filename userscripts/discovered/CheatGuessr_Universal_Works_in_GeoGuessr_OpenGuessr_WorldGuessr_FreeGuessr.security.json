@@ -2,76 +2,106 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
-      "nominatim.openstreetmap.org",
-      "discord.com"
+      "discord.com",
+      "nominatim.openstreetmap.org"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 GM_xmlhttpRequest 发送地理坐标到 nominatim.openstreetmap.org 进行逆地理编码。",
-      "location": "_getAddress() 函数",
-      "recommendation": "仅允许可信第三方 API，避免发送敏感/用户相关数据。",
+      "description": "脚本通过 GM_xmlhttpRequest 将用户地理坐标和地址信息发送到 Discord Webhook（第三方服务器），存在数据外传风险。",
+      "location": "sendToDiscord(embed) 函数",
+      "recommendation": "仅允许用户明确同意后发送数据，并警告用户敏感信息可能被泄露。建议限制 webhook 域名为受信任范围。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本通过 GM_xmlhttpRequest 发送地理坐标、格式化地址、地图截图等信息到用户配置的 Discord Webhook（discord.com），可能导致用户地理位置外泄。",
-      "location": "sendToDiscord() 函数",
-      "recommendation": "警告用户风险，避免默认启用，限制敏感信息外传。",
+      "description": "脚本通过 GM_xmlhttpRequest 向 nominatim.openstreetmap.org 查询地理反向地址，传递用户坐标信息。",
+      "location": "_getAddress(lat, lng) 函数",
+      "recommendation": "告知用户地理位置将被发送到第三方服务，避免自动化批量请求。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本读取和存储用户自定义热键、功能开关、Discord Webhook 地址等信息到本地存储（GM_setValue/GM_getValue），并允许用户输入 Discord Webhook。",
-      "location": "GM_setValue/GM_getValue 调用",
-      "recommendation": "敏感信息应加密存储，提示用户风险。",
+      "description": "脚本读取并存储用户设置（hotkeys、featureToggles、discordWebhookUrl），但未涉及 cookie、localStorage、sessionStorage、IndexedDB 或表单字段。",
+      "location": "GM_getValue / GM_setValue 用法",
+      "recommendation": "确保不存储敏感信息（如密码、token）。",
       "severity": "MEDIUM",
       "type": "隐私采集"
     },
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限并声明 @connect discord.com，允许向 Discord 发送任意数据。",
-      "location": "@grant/@connect 元数据",
-      "recommendation": "仅申请必要权限，限制外部通信。",
-      "severity": "MEDIUM",
+      "description": "脚本申请 GM_xmlhttpRequest 权限并实际使用，未申请过多高权限，但 @grant GM_setValue/GM_getValue/GM_xmlhttpRequest 均被用到。",
+      "location": "元数据 @grant",
+      "recommendation": "无多余高权限申请，合理。",
+      "severity": "LOW",
       "type": "权限滥用"
     },
     {
-      "description": "脚本未检测到代码混淆，但部分功能如平台适配、热键处理等代码较为复杂。",
-      "location": "全局",
-      "recommendation": "保持代码可读性，便于安全审计。",
+      "description": "脚本通过 Notification API 发送通知，需用户授权。",
+      "location": "sendNotification() 函数",
+      "recommendation": "仅在用户同意后使用通知功能。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行方式，也未动态加载外部 JS。",
+      "location": "全局代码审查",
+      "recommendation": "保持无远程代码执行风险。",
+      "severity": "LOW",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本未检测到代码混淆、base64 解码、字符串数组映射或高度压缩代码。",
+      "location": "全局代码审查",
+      "recommendation": "保持代码可读性。",
       "severity": "LOW",
       "type": "代码混淆"
     },
     {
-      "description": "脚本未检测到 DOM XSS 或直接插入用户输入到 innerHTML/outerHTML。",
-      "location": "全局",
-      "recommendation": "继续保持安全的 DOM 操作。",
+      "description": "脚本未检测到 DOM XSS 或注入风险，未将用户输入直接插入 innerHTML/outerHTML。",
+      "location": "全局代码审查",
+      "recommendation": "继续避免直接插入用户输入。",
       "severity": "LOW",
-      "type": "DOM XSS"
+      "type": "DOM XSS / 注入"
     },
     {
-      "description": "脚本未检测到通过 @require 加载第三方库，但依赖外部 API（nominatim.openstreetmap.org）。",
-      "location": "@require/@connect",
-      "recommendation": "确保外部 API 可信，避免供应链风险。",
-      "severity": "MEDIUM",
+      "description": "脚本未检测到供应链风险，未通过 @require 加载第三方库。",
+      "location": "元数据 @require",
+      "recommendation": "如需加载第三方库，建议固定版本哈希并使用官方 CDN。",
+      "severity": "LOW",
       "type": "供应链风险"
+    },
+    {
+      "description": "脚本未检测到 WebSocket、EventSource、fetch、navigator.sendBeacon 等其他网络请求方式。",
+      "location": "全局代码审查",
+      "recommendation": "如需使用，需严格审查数据流向。",
+      "severity": "LOW",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本未检测到 iframe 隐藏、frame 保护策略修改或 clickjacking 风险。",
+      "location": "Element.prototype.setAttribute 重写",
+      "recommendation": "继续避免 iframe 滥用。",
+      "severity": "LOW",
+      "type": "ClickJacking / iframe 风险"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "存储用户热键、功能开关、Discord Webhook 地址"
+      "存储用户设置（hotkeys、featureToggles、discordWebhookUrl）",
+      "未读取 cookie/localStorage/sessionStorage/IndexedDB",
+      "未监听键盘输入或表单字段"
     ],
-    "detected": true
+    "detected": false
   },
   "risk_level": "CRITICAL",
   "script_name": "CheatGuessr Universal (Works in GeoGuessr | OpenGuessr | WorldGuessr | FreeGuessr)",
-  "security_score": 42,
-  "summary": "该脚本存在严重的数据外传风险：会将用户当前地理坐标通过 Discord Webhook 主动外传到 discord.com，且默认启用。脚本还会访问 nominatim.openstreetmap.org 进行逆地理编码。虽然未检测到代码混淆、远程代码执行或 DOM XSS，但涉及敏感地理信息的外传，属于高危行为。建议仅在完全信任的环境下使用，并警告用户相关风险。",
-  "supply_chain_risk": true,
+  "security_score": 50,
+  "summary": "该脚本存在严重的数据外传风险：会将用户地理坐标和地址信息发送到 Discord Webhook（第三方服务器），并向 nominatim.openstreetmap.org 查询地理反向地址。未检测到远程代码执行、代码混淆、DOM XSS、供应链风险等问题。隐私采集行为有限，仅存储用户设置。总体安全评分为 50，风险等级为 CRITICAL。",
+  "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-29T06:39:35.124499+00:00",
+  "analyzed_at": "2026-07-06T06:29:18.783232+00:00",
   "slug": "CheatGuessr_Universal_Works_in_GeoGuessr_OpenGuessr_WorldGuessr_FreeGuessr"
 }

@@ -6,7 +6,7 @@
   "raw_url": "https://update.greasyfork.org/scripts/564818/%F0%9F%8E%B8%20Songsterr%20Ultimate%20%28Premium%20Unlocked%29.user.js",
   "filename": "Songsterr_Ultimate_Premium_Unlocked.user.js",
   "name": "🎸 Songsterr Ultimate (Premium Unlocked)",
-  "version": "5.0.0",
+  "version": "5.1.1",
   "description": "Unlocks all Plus features (Speed, Loop, Solo, Mute, no pauses) + Native Export (.gp & .midi). (Tested on Zen Browser)",
   "match": [
     "*://www.songsterr.com/*"
@@ -19,47 +19,47 @@
   "require": [
     "https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.1/dist/alphaTab.min.js"
   ],
-  "metadata_raw": "// @name  🎸 Songsterr Ultimate (Premium Unlocked)\n// @name:en  🎸 Songsterr Ultimate (Premium Unlocked)\n// @name:fr  🎸 Songsterr Ultime (Premium Débloqué)\n// @name:es  🎸 Songsterr Definitivo (Premium Desbloqueado)\n// @name:de  🎸 Songsterr Ultimativ (Premium Freigeschaltet)\n// @name:it  🎸 Songsterr Definitivo (Premium Sbloccato)\n// @name:pt  🎸 Songsterr Supremo (Premium Desbloqueado)\n// @name:pt-BR  🎸 Songsterr Supremo (Full Premium)\n// @name:nl  🎸 Songsterr Ultiem (Premium Ontgrendeld)\n// @name:pl  🎸 Songsterr Ostateczny (Premium Odblokowany)\n// @name:ru  🎸 Songsterr Абсолютный (Премиум Разблокирован)\n// @name:ja  🎸 Songsterr 究極 (プレミアム解除)\n// @name:ko  🎸 Songsterr 궁극 (프리미엄 언락)\n// @name:sv  🎸 Songsterr Ultimat (Premium Upplåst)\n// @name:da  🎸 Songsterr Ultimativ (Premium Låst Op)\n// @namespace  http://tampermonkey.net/\n// @version  5.0.0\n// @description  Unlocks all Plus features (Speed, Loop, Solo, Mute, no pauses) + Native Export (.gp & .midi). (Tested on Zen Browser)\n// @description:fr  Débloque toutes les fonctionnalités Plus (Vitesse, Loop, Solo, Mute, sans pauses) + Téléchargement natif (.gp & .midi). (Testé sur Zen Browser)\n// @description:es  Desbloquea todas las funciones Plus (Velocidad, Bucle, Solo, Mute, sin pausas) + Descarga nativa (.gp y .midi). (Probado en Zen Browser)\n// @description:de  Schaltet alle Plus-Features frei (Geschwindigkeit, Loop, Solo, Mute, ohne Pausen) + Nativer Download (.gp & .midi). (Getestet auf Zen Browser)\n// @description:it  Sblocca tutte le funzioni Plus (Velocità, Loop, Solo, Mute, senza pause) + Download nativo (.gp e .midi). (Testato su Zen Browser)\n// @description:pt  Desbloqueia todos os recursos Plus (Velocidade, Loop, Solo, Mute, sem pausas) + Download nativo (.gp e .midi). (Testado no Zen Browser)\n// @description:pt-BR  Desbloqueia tudo do Plus (Velocidade, Loop, Solo, Mute, sem pausas) + Export nativo (.gp & .midi). (Testado no Zen Browser)\n// @description:nl  Ontgrendelt alle Plus-functies (Snelheid, Loop, Solo, Mute, geen pauzes) + Native download (.gp & .midi). (Getest op Zen Browser)\n// @description:pl  Odblokowuje wszystkie funkcje Plus (Prędkość, Pętla, Solo, Mute, bez przerw) + Natywny eksport (.gp i .midi). (Testowane na Zen Browser)\n// @description:ru  Разблокирует все функции Plus (Скорость, Петля, Соло, Mute, без пауз) + Нативный экспорт (.gp и .midi). (Протестировано в Zen Browser)\n// @description:ja  Plusの全機能（速度、ループ、ソロ、ミュート、無停止）を解除 + ネイティブダウンロード（.gp & .midi）。(Zen Browserでテスト済み)\n// @description:ko  모든 Plus 기능 해제 (속도, 루프, 솔로, 뮤트, 멈춤 없음) + 네이티브 다운로드 (.gp & .midi). (Zen Browser에서 테스트됨)\n// @description:sv  Låser upp alla Plus-funktioner (Hastighet, Loop, Solo, Mute, inga pauser) + Naturlig export (.gp & .midi). (Testat på Zen Browser)\n// @description:da  Låser alle Plus-funktioner op (Hastighed, Loop, Solo, Mute, ingen pauser) + Naturlig download (.gp & .midi). (Testet på Zen Browser)\n// @author  Goulagman\n// @match  *://www.songsterr.com/*\n// @require  https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.1/dist/alphaTab.min.js\n// @connect  dqsljvtekg760.cloudfront.net\n// @connect  d3d3l6a6rcgkaf.cloudfront.net\n// @grant  unsafeWindow\n// @grant  GM_xmlhttpRequest\n// @grant  GM_addStyle\n// @run-at  document-start\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/564818/%F0%9F%8E%B8%20Songsterr%20Ultimate%20%28Premium%20Unlocked%29.user.js\n// @updateURL  https://update.greasyfork.org/scripts/564818/%F0%9F%8E%B8%20Songsterr%20Ultimate%20%28Premium%20Unlocked%29.meta.js",
-  "sha256": "c7124680400a0c02ab7a19ff00930110e9996d5e360ff1b86d3698a057e1f26c",
-  "discovered_at": "2026-06-01T06:53:27.421164+00:00",
+  "metadata_raw": "// @name  🎸 Songsterr Ultimate (Premium Unlocked)\n// @name:en  🎸 Songsterr Ultimate (Premium Unlocked)\n// @name:fr  🎸 Songsterr Ultime (Premium Débloqué)\n// @name:es  🎸 Songsterr Definitivo (Premium Desbloqueado)\n// @name:de  🎸 Songsterr Ultimativ (Premium Freigeschaltet)\n// @name:it  🎸 Songsterr Definitivo (Premium Sbloccato)\n// @name:pt  🎸 Songsterr Supremo (Premium Desbloqueado)\n// @name:pt-BR  🎸 Songsterr Supremo (Full Premium)\n// @name:nl  🎸 Songsterr Ultiem (Premium Ontgrendeld)\n// @name:pl  🎸 Songsterr Ostateczny (Premium Odblokowany)\n// @name:ru  🎸 Songsterr Абсолютный (Премиум Разблокирован)\n// @name:ja  🎸 Songsterr 究極 (プレミアム解除)\n// @name:ko  🎸 Songsterr 궁극 (프리미엄 언락)\n// @name:sv  🎸 Songsterr Ultimat (Premium Upplåst)\n// @name:da  🎸 Songsterr Ultimativ (Premium Låst Op)\n// @namespace  http://tampermonkey.net/\n// @version  5.1.1\n// @description  Unlocks all Plus features (Speed, Loop, Solo, Mute, no pauses) + Native Export (.gp & .midi). (Tested on Zen Browser)\n// @description:fr  Débloque toutes les fonctionnalités Plus (Vitesse, Loop, Solo, Mute, sans pauses) + Téléchargement natif (.gp & .midi). (Testé sur Zen Browser)\n// @description:es  Desbloquea todas las funciones Plus (Velocidad, Bucle, Solo, Mute, sin pausas) + Descarga nativa (.gp y .midi). (Probado en Zen Browser)\n// @description:de  Schaltet alle Plus-Features frei (Geschwindigkeit, Loop, Solo, Mute, ohne Pausen) + Nativer Download (.gp & .midi). (Getestet auf Zen Browser)\n// @description:it  Sblocca tutte le funzioni Plus (Velocità, Loop, Solo, Mute, senza pause) + Download nativo (.gp e .midi). (Testato su Zen Browser)\n// @description:pt  Desbloqueia todos os recursos Plus (Velocidade, Loop, Solo, Mute, sem pausas) + Download nativo (.gp e .midi). (Testado no Zen Browser)\n// @description:pt-BR  Desbloqueia tudo do Plus (Velocidade, Loop, Solo, Mute, sem pausas) + Export nativo (.gp & .midi). (Testado no Zen Browser)\n// @description:nl  Ontgrendelt alle Plus-functies (Snelheid, Loop, Solo, Mute, geen pauzes) + Native download (.gp & .midi). (Getest op Zen Browser)\n// @description:pl  Odblokowuje wszystkie funkcje Plus (Prędkość, Pętla, Solo, Mute, bez przerw) + Natywny eksport (.gp i .midi). (Testowane na Zen Browser)\n// @description:ru  Разблокирует все функции Plus (Скорость, Петля, Соло, Mute, без пауз) + Нативный экспорт (.gp и .midi). (Протестировано в Zen Browser)\n// @description:ja  Plusの全機能（速度、ループ、ソロ、ミュート、無停止）を解除 + ネイティブダウンロード（.gp & .midi）。(Zen Browserでテスト済み)\n// @description:ko  모든 Plus 기능 해제 (속도, 루프, 솔로, 뮤트, 멈춤 없음) + 네이티브 다운로드 (.gp & .midi). (Zen Browser에서 테스트됨)\n// @description:sv  Låser upp alla Plus-funktioner (Hastighet, Loop, Solo, Mute, inga pauser) + Naturlig export (.gp & .midi). (Testat på Zen Browser)\n// @description:da  Låser alle Plus-funktioner op (Hastighed, Loop, Solo, Mute, ingen pauser) + Naturlig download (.gp & .midi). (Testet på Zen Browser)\n// @author  Goulagman\n// @match  *://www.songsterr.com/*\n// @require  https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.1/dist/alphaTab.min.js\n// @connect  dqsljvtekg760.cloudfront.net\n// @connect  d3d3l6a6rcgkaf.cloudfront.net\n// @grant  unsafeWindow\n// @grant  GM_xmlhttpRequest\n// @grant  GM_addStyle\n// @run-at  document-start\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/564818/%F0%9F%8E%B8%20Songsterr%20Ultimate%20%28Premium%20Unlocked%29.user.js\n// @updateURL  https://update.greasyfork.org/scripts/564818/%F0%9F%8E%B8%20Songsterr%20Ultimate%20%28Premium%20Unlocked%29.meta.js",
+  "sha256": "a36e6ce0f86d0627ed00e61a0df2f29bb7e5942ef09c2497478e4bd381f8d704",
+  "discovered_at": "2026-07-06T06:22:43.820294+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 3184,
-  "good_ratings": 3,
+  "install_count": 4480,
+  "good_ratings": 5,
   "bad_ratings": 1,
   "summary": {
     "applicable_sites": [
       "Songsterr"
     ],
-    "description": "此脚本可在 Songsterr 网站上解锁所有 Plus（高级）功能，包括速度调节、循环播放、独奏、静音和无暂停，并支持原生导出乐谱为 .gp 和 .midi 文件。用户无需付费即可体验高级功能。",
+    "description": "此脚本可在 Songsterr 网站上解锁所有 Plus（高级）功能，包括速度调节、循环播放、独奏、静音和无暂停，还支持原生导出吉他谱（.gp 和 .midi 文件）。用户无需付费即可体验高级功能。",
     "permissions": [
       {
-        "explanation": "允许脚本访问和修改网页的全局对象，便于解锁功能。",
+        "explanation": "允许脚本访问和修改网页中的全局变量，便于功能解锁。",
         "grant": "unsafeWindow"
       },
       {
-        "explanation": "用于发送网络请求，下载乐谱等资源。",
+        "explanation": "用于跨域请求下载或导出吉他谱文件。",
         "grant": "GM_xmlhttpRequest"
       },
       {
-        "explanation": "用于添加自定义样式，优化界面显示。",
+        "explanation": "允许脚本动态添加自定义样式，优化界面显示。",
         "grant": "GM_addStyle"
       }
     ],
     "tags": [
       "音乐",
-      "乐谱",
-      "网站增强",
-      "高级功能解锁",
-      "导出工具",
-      "Songsterr"
+      "吉他谱",
+      "功能解锁",
+      "下载导出",
+      "Songsterr",
+      "高级功能"
     ],
     "usage": [
-      "安装 Tampermonkey 插件。",
-      "在 Tampermonkey 中添加此脚本。",
-      "打开 Songsterr 网站，自动解锁高级功能。",
-      "在乐谱页面使用速度、循环、独奏、静音等功能，并可导出 .gp/.midi 文件。"
+      "1. 安装脚本后，打开 Songsterr 网站。",
+      "2. 选择你喜欢的乐谱，所有高级功能会自动解锁。",
+      "3. 可直接调整速度、循环、独奏、静音等设置。",
+      "4. 点击导出按钮即可下载 .gp 或 .midi 格式的乐谱。"
     ],
     "zh_name": "Songsterr高级功能解锁"
   }

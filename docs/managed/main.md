@@ -4,52 +4,51 @@ title: "GitHub 中文化插件"
 
 # GitHub 中文化插件
 
-`GitHub`  `界面翻译`  `中文化`  `开发者工具`  `提升体验`
+`界面翻译`  `GitHub增强`  `中文化`  `开发者工具`  `多站点支持`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/managed/main.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**1.9.4.4-2026-06-21**　　最后更新：**2026-06-29**
+> 版本：**1.9.4.4-2026-07-01**　　最后更新：**2026-07-06**
 
 ## 功能介绍
 
-本脚本将 GitHub 网站的部分菜单和内容翻译为中文，提升中文用户的使用体验。支持多种 GitHub 相关子站点，部分内容可自动调用翻译服务。
+本脚本将 GitHub 网站的部分菜单和内容翻译为中文，提升中文用户的使用体验。支持多个 GitHub 相关站点，自动翻译界面文本。
 
 ## 适用网站
 
 - GitHub
 - GitHub Skills
-- GitHub Gist
+- Gist
 - GitHub Education
 - GitHub Status
 
 ## 使用方法
 
-1. 安装 Tampermonkey 插件。
-2. 在 Tampermonkey 中添加此脚本。
-3. 访问 GitHub 及相关子站点，界面会自动显示中文菜单和内容。
-4. 如需手动操作或设置，可通过浏览器的用户脚本菜单进行调整。
+1. 安装脚本后，访问 GitHub 及相关网站。
+2. 界面部分菜单和内容会自动显示为中文。
+3. 如需调整设置，可通过油猴菜单进行操作。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `GM_addStyle` | 允许脚本添加自定义样式，优化界面显示。 |
-| `GM_xmlhttpRequest` | 用于发送网络请求，获取翻译结果等功能。 |
-| `GM_getValue` | 用于保存和读取用户设置或翻译缓存。 |
-| `GM_setValue` | 用于保存用户设置或翻译缓存。 |
-| `GM_registerMenuCommand` | 允许脚本在浏览器菜单中添加自定义命令，方便操作。 |
-| `GM_unregisterMenuCommand` | 允许脚本移除自定义菜单命令。 |
-| `GM_notification` | 用于弹出通知，提醒用户操作或翻译结果。 |
+| `GM_addStyle` | 用于添加自定义样式，让翻译内容显示更美观。 |
+| `GM_xmlhttpRequest` | 用于发送网络请求，获取翻译结果。 |
+| `GM_getValue` | 用于读取用户设置，如语言选择等。 |
+| `GM_setValue` | 用于保存用户设置，记住偏好。 |
+| `GM_registerMenuCommand` | 用于在油猴菜单中添加自定义命令，方便用户操作。 |
+| `GM_unregisterMenuCommand` | 用于移除油猴菜单中的命令。 |
+| `GM_notification` | 用于显示桌面通知，提醒用户翻译状态等信息。 |
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：67/100　　**分析时间**：2026-06-29
+**风险等级**：🔴 HIGH　　**安全评分**：67/100　　**分析时间**：2026-07-06
 
-> 该脚本主要功能为本地化 GitHub 页面，未发现隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要安全问题为将页面内容通过 GM_xmlhttpRequest 发送到第三方翻译服务（https://fanyi.iflyrec.com），存在数据外传风险。@require 加载的 locals.js 依赖未固定版本哈希，存在一定供应链风险。总体风险等级为 HIGH，不建议在敏感环境下使用。
+> 该脚本主要用于 GitHub 页面汉化，核心功能涉及页面文本翻译。存在数据外传风险（翻译请求可能包含页面内容），且 @require 的第三方库未固定版本哈希，存在一定供应链风险。未发现隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。整体安全评分为 67，建议关注数据外传和供应链风险。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：https://fanyi.iflyrec.com） |
+| 数据外传 | ❌ 检测到（目标：https://fanyi.iflyrec.com/TJHZTranslationService/v2/textAutoTranslation） |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
@@ -59,19 +58,19 @@ title: "GitHub 中文化插件"
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本通过 GM_xmlhttpRequest 向第三方翻译服务 https://fanyi.iflyrec.com 发送用户页面内容（如简介、菜单文本等）以实现翻译功能。  
-> 位置：CONFIG.TRANS_ENGINES.iflyrec.url_api 及相关翻译函数  
-> 建议：仅允许用户主动触发翻译时发送内容，明确告知用户数据将被发送到第三方服务器。
+> 脚本通过 GM_xmlhttpRequest 向 fanyi.iflyrec.com 发送翻译请求，可能包含页面内容（如菜单、描述等文本）。虽然未直接发送敏感数据，但存在数据外传行为。  
+> 位置：TRANS_ENGINES.iflyrec 配置及后续翻译请求  
+> 建议：限制请求内容仅为非敏感文本，避免发送用户输入或敏感信息。建议增加用户提示并允许用户关闭翻译功能。
 
 **🟠 MEDIUM** — 供应链风险  
-> @require 加载的第三方库 https://raw.githubusercontent.com/maboloshi/github-chinese/gh-pages/locals.js?v1.9.4.4-2026-06-21 来源为 GitHub Pages，非官方 CDN，且未固定版本哈希，存在供应链污染风险。  
-> 位置：@require 元数据  
-> 建议：建议使用官方 CDN 或固定 commit hash 的 URL，确保依赖不可被篡改。
+> @require 加载的 locals.js 文件来自 raw.githubusercontent.com，虽然为官方仓库，但未固定版本哈希，存在供应链风险。  
+> 位置：@require https://raw.githubusercontent.com/maboloshi/github-chinese/gh-pages/locals.js?v1.9.4.4-2026-07-01  
+> 建议：建议使用固定版本哈希或官方 CDN，避免供应链污染。
 
 **🟡 LOW** — 权限滥用  
-> 脚本申请了 GM_xmlhttpRequest 权限，但仅用于翻译功能，未发现其他高权限滥用。  
-> 位置：@grant 元数据  
-> 建议：定期复查权限申请，确保无冗余高权限。
+> 脚本申请了 GM_xmlhttpRequest 权限，仅用于翻译请求，未发现滥用。其他权限如 GM_notification、GM_registerMenuCommand 等均有实际用途。  
+> 位置：元数据 @grant  
+> 建议：无明显权限滥用，建议定期复查。
 
 ---
 

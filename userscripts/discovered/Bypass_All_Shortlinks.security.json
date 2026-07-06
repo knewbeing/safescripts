@@ -2,45 +2,64 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
-      "https://update.greasyfork.org/scripts/528923/1588272/MonkeyConfig%20Mod.js"
+      "Shortlink service domains (varies per site)",
+      "GreasyFork CDN (for @require)",
+      "Potentially other domains via GM_xmlhttpRequest"
     ],
     "detected": true
   },
-  "dom_xss_risk": false,
+  "dom_xss_risk": true,
   "issues": [
     {
-      "description": "脚本通过 @require 加载了 https://update.greasyfork.org/scripts/528923/1588272/MonkeyConfig%20Mod.js，存在供应链风险，且未锁定版本哈希。",
-      "location": "@require 元数据",
-      "recommendation": "建议仅使用可信官方 CDN 并锁定具体版本或哈希，避免供应链污染。",
-      "severity": "MEDIUM",
-      "type": "supply_chain_risk"
-    },
-    {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限，但完整代码未展示实际用途，存在潜在的数据外传风险。",
-      "location": "@grant 元数据",
-      "recommendation": "请检查完整代码，确认 GM_xmlhttpRequest 是否用于向第三方服务器发送数据，避免外传用户隐私信息。",
+      "description": "The script uses GM_xmlhttpRequest, which can send requests to arbitrary domains. Without full code, it's unclear if user data or cookies are transmitted, but the risk is present.",
+      "location": "GM_xmlhttpRequest usage (metadata and likely in main code)",
+      "recommendation": "Review all GM_xmlhttpRequest calls to ensure no sensitive user data is sent to third-party domains.",
       "severity": "CRITICAL",
-      "type": "data_exfiltration"
+      "type": "Data Exfiltration"
     },
     {
-      "description": "脚本申请了 GM_openInTab、GM_setClipboard 等高权限，但未见实际用途，存在权限滥用风险。",
-      "location": "@grant 元数据",
-      "recommendation": "仅申请实际需要的权限，避免权限滥用。",
+      "description": "The script matches all URLs (*://*/*), increasing the risk of privacy collection and data exfiltration across all visited sites.",
+      "location": "@match *://*/*",
+      "recommendation": "Restrict match patterns to only shortlink domains or add domain-specific logic.",
+      "severity": "HIGH",
+      "type": "Privacy Collection"
+    },
+    {
+      "description": "The script grants GM_openInTab, GM_setClipboard, and GM_xmlhttpRequest, which are high-privilege APIs. Not all may be necessary for bypassing shortlinks.",
+      "location": "@grant section",
+      "recommendation": "Remove unused or unnecessary grants to minimize attack surface.",
       "severity": "MEDIUM",
-      "type": "permission_abuse"
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "The script loads a third-party library via @require from GreasyFork CDN. While GreasyFork is generally trusted, the version is not pinned with a hash, so supply chain risk exists.",
+      "location": "@require https://update.greasyfork.org/scripts/528923/1588272/MonkeyConfig%20Mod.js",
+      "recommendation": "Pin @require to a specific version or hash, and periodically review the library for malicious changes.",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    },
+    {
+      "description": "Potential DOM XSS risk due to the script's purpose (bypassing shortlinks, manipulating DOM, skipping ads/popups). Without full code, it's likely user input or URL parameters are inserted into the DOM.",
+      "location": "Main script logic (not fully provided)",
+      "recommendation": "Sanitize all user input and URL parameters before inserting into DOM via innerHTML/outerHTML/document.write.",
+      "severity": "HIGH",
+      "type": "DOM XSS"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [],
-    "detected": false
+    "details": [
+      "Script runs on all sites, can access DOM, cookies, localStorage, sessionStorage.",
+      "Potential to read form fields, clipboard, or other sensitive data."
+    ],
+    "detected": true
   },
-  "risk_level": "CRITICAL",
+  "risk_level": "HIGH",
   "script_name": "Bypass All Shortlinks",
-  "security_score": 42,
-  "summary": "该脚本存在严重安全隐患。主要问题为申请了 GM_xmlhttpRequest 等高危权限，可能导致数据外传（CRITICAL），并通过 @require 加载了外部脚本 MonkeyConfig Mod.js，存在供应链风险（MEDIUM）。此外，申请了多项高权限但未见实际用途，存在权限滥用风险（MEDIUM）。未发现明显代码混淆、DOM XSS、隐私采集等问题。建议仅在完全信任来源和代码的情况下使用，并仔细审查所有外部依赖和权限申请。",
+  "security_score": 34,
+  "summary": "The script presents significant security risks due to broad URL matching, high-privilege grants, supply chain risk from @require, and likely DOM manipulation. Data exfiltration is possible via GM_xmlhttpRequest. Without full code, the risk of privacy collection and DOM XSS is high. Not recommended for use without further review and restriction.",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-29T06:38:02.467343+00:00",
+  "analyzed_at": "2026-07-06T06:27:39.542060+00:00",
   "slug": "Bypass_All_Shortlinks"
 }

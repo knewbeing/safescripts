@@ -5,7 +5,71 @@
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [],
+  "issues": [
+    {
+      "description": "脚本未检测到任何网络请求（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource），不存在数据外传风险。",
+      "location": "全局",
+      "recommendation": "保持无外部数据传输，确保用户数据安全。",
+      "severity": "CRITICAL",
+      "type": "Data Transmission"
+    },
+    {
+      "description": "脚本未访问 document.cookie、localStorage、sessionStorage、IndexedDB，也未监听键盘输入或读取表单字段，未采集隐私数据。",
+      "location": "全局",
+      "recommendation": "继续避免隐私数据采集。",
+      "severity": "CRITICAL",
+      "type": "Privacy Collection"
+    },
+    {
+      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string)，也未通过 innerHTML/outerHTML 插入外部脚本或动态加载远程 JS。",
+      "location": "全局",
+      "recommendation": "保持无远程代码执行风险。",
+      "severity": "HIGH",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "脚本未检测到代码混淆（无 base64 解码、字符串数组映射、unicode 混淆、高度压缩单行代码）。",
+      "location": "全局",
+      "recommendation": "保持代码可读性，便于安全审查。",
+      "severity": "HIGH",
+      "type": "Code Obfuscation"
+    },
+    {
+      "description": "脚本未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未检测到 DOM XSS 风险。",
+      "location": "全局",
+      "recommendation": "继续避免直接插入不可信内容。",
+      "severity": "HIGH",
+      "type": "DOM XSS/Injection"
+    },
+    {
+      "description": "脚本未申请任何 @grant 权限（@grant none），不存在权限滥用风险。",
+      "location": "元数据",
+      "recommendation": "仅申请必要权限，避免权限滥用。",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API）。",
+      "location": "全局",
+      "recommendation": "继续避免敏感 API 调用。",
+      "severity": "MEDIUM",
+      "type": "Sensitive API Usage"
+    },
+    {
+      "description": "脚本未通过 @require 加载第三方库，无供应链风险。",
+      "location": "元数据",
+      "recommendation": "如需加载第三方库，建议固定版本哈希并使用官方 CDN。",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    },
+    {
+      "description": "脚本未修改 frame 保护策略，也未创建隐藏 iframe 用于数据提取。",
+      "location": "全局",
+      "recommendation": "继续避免 iframe 风险。",
+      "severity": "LOW",
+      "type": "ClickJacking / iframe Risk"
+    }
+  ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
@@ -14,9 +78,9 @@
   "risk_level": "SAFE",
   "script_name": "GOG.com enhancement tools",
   "security_score": 100,
-  "summary": "该脚本未检测到任何安全或隐私风险。未发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码结构清晰，未使用任何危险 API。",
+  "summary": "该脚本未检测到任何安全风险：无数据外传、无隐私采集、无远程代码执行、无代码混淆、无 DOM XSS、无权限滥用、无敏感 API 调用、无供应链风险、无 iframe 风险。代码结构清晰，权限申请合理，安全评分为 100。适合公开使用。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-29T06:45:13.450913+00:00",
+  "analyzed_at": "2026-07-06T06:35:05.056062+00:00",
   "slug": "GOG_com_enhancement_tools"
 }

@@ -37,13 +37,13 @@ title: "EasyTube V5 — YouTube 广告跳过、SponsorBlock、强制 4K 和 HD �
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：72/100　　**分析时间**：2026-06-29
+**风险等级**：🟡 LOW　　**安全评分**：67/100　　**分析时间**：2026-07-06
 
-> The script is generally safe and transparent. It communicates with two third-party APIs (SponsorBlock and a video download service), but does not transmit sensitive user data or credentials. No evidence of privacy-invasive behavior, code obfuscation, or XSS risk. Permissions are appropriate for the stated features. Supply chain risk is low as no external libraries are loaded. Overall, the script is suitable for use with a low security risk profile.
+> 脚本主要通过 SponsorBlock API 和视频下载服务进行数据请求，未发现用户敏感数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 调用、供应链风险或 iframe 风险。整体安全性较高，建议持续关注外部 API 的数据用途和未来权限变更。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：sponsor.ajay.app, evdfrance.fr） |
+| 数据外传 | ❌ 检测到（目标：https://sponsor.ajay.app/api/skipSegments, https://evdfrance.fr） |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
@@ -52,35 +52,50 @@ title: "EasyTube V5 — YouTube 广告跳过、SponsorBlock、强制 4K 和 HD �
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Transmission  
-> The script uses GM_xmlhttpRequest to communicate with sponsor.ajay.app (SponsorBlock API) and evdfrance.fr (likely for video download functionality). These are third-party servers, but only video IDs and category data are sent, not user credentials or cookies.  
-> 位置：SponsorBlock API call and video download logic (CFG.sbApi, @connect)  
-> 建议：Review the data sent to ensure no sensitive user information is transmitted. Limit data to only what is necessary for SponsorBlock and download features.
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过 GM_xmlhttpRequest 向 sponsor.ajay.app 和 evdfrance.fr 发起网络请求，获取 SponsorBlock 数据和视频下载服务。请求内容主要为视频 ID，未发现用户敏感数据或 Cookie 外传。  
+> 位置：SponsorBlock API 调用、evdfrance.fr 下载接口  
+> 建议：确保请求内容仅包含必要的视频信息，不包含用户敏感数据。建议明确说明数据用途。
 
-**🟠 MEDIUM** — Permission Usage  
-> The script requests GM_xmlhttpRequest permission, which is necessary for SponsorBlock and download features, but also increases the attack surface if misused.  
-> 位置：@grant GM_xmlhttpRequest  
-> 建议：Ensure all network requests are strictly limited to the declared @connect domains and do not transmit sensitive user data.
+**⛔ CRITICAL** — 隐私采集  
+> 脚本未监听键盘输入、未读取表单字段、未访问 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板等隐私相关 API。  
+> 位置：主代码逻辑  
+> 建议：保持隐私安全，避免未来引入隐私采集行为。
 
-**🟡 LOW** — Privacy Collection  
-> The script stores and retrieves user settings using GM_setValue and GM_getValue. No evidence of sensitive data (like cookies, passwords, or clipboard) being accessed or transmitted.  
-> 位置：GM_setValue / GM_getValue usage  
-> 建议：Continue to avoid storing sensitive information. Document what is stored for transparency.
+**🔴 HIGH** — 远程代码执行  
+> 脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等动态代码执行方式，也未通过 innerHTML/outerHTML 插入外部脚本。  
+> 位置：主代码逻辑  
+> 建议：保持代码执行安全，避免未来引入远程代码执行风险。
 
-**🟡 LOW** — Obfuscation  
-> No code obfuscation, eval, new Function, or dynamic script loading detected. Code is readable and maintainable.  
-> 位置：Entire script  
-> 建议：Maintain code transparency for user trust.
+**🔴 HIGH** — 代码混淆  
+> 脚本未使用混淆技术，无 base64 解码、字符串数组映射、unicode 混淆或高度压缩单行代码。  
+> 位置：主代码逻辑  
+> 建议：保持代码可读性，便于社区审查。
 
-**🟡 LOW** — DOM XSS  
-> No DOM XSS or injection risks detected. The script does not insert untrusted user input into the DOM via innerHTML/outerHTML/document.write.  
-> 位置：DOM manipulation logic  
-> 建议：Continue to sanitize any future user input if DOM insertion is required.
+**🔴 HIGH** — DOM XSS / 注入  
+> 脚本未通过 innerHTML/outerHTML 插入用户输入或 URL 参数，未发现 DOM XSS 风险。  
+> 位置：主代码逻辑  
+> 建议：保持安全插入方式，避免未来引入注入风险。
 
-**🟡 LOW** — Supply Chain  
-> No supply chain risk detected. The script does not use @require to load external libraries.  
-> 位置：Metadata block  
-> 建议：If adding @require in the future, use official CDNs and fixed versions.
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请 GM_xmlhttpRequest 权限用于 SponsorBlock 和下载服务，未申请高权限如 GM_download、GM_openInTab，权限申请与实际用途基本匹配。  
+> 位置：元数据 @grant  
+> 建议：定期复查权限申请，避免未来版本滥用。
+
+**🟠 MEDIUM** — 敏感 API 调用  
+> 脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Notification、Clipboard）。  
+> 位置：主代码逻辑  
+> 建议：避免未来引入敏感 API 调用。
+
+**🟠 MEDIUM** — 供应链风险  
+> 脚本未通过 @require 加载第三方库，所有依赖均为本地实现，无供应链风险。  
+> 位置：元数据 @require  
+> 建议：如未来引入第三方库，需固定版本哈希并使用可信 CDN。
+
+**🟡 LOW** — ClickJacking / iframe 风险  
+> 脚本未修改 frame 保护策略，未创建隐藏 iframe 用于数据提取。  
+> 位置：主代码逻辑  
+> 建议：保持 iframe 安全，避免未来引入 clickjacking 风险。
 
 ---
 

@@ -32,9 +32,9 @@ title: "GeoGuessr 地点解析助手"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-06-29
+**风险等级**：🟡 LOW　　**安全评分**：81/100　　**分析时间**：2026-07-06
 
-> The script does not transmit any user data or page content to third-party servers, nor does it collect sensitive information. It intercepts Google Maps API responses locally to extract coordinates and automates gameplay actions. No code obfuscation, remote code execution, or DOM XSS risks were found. The only notable issue is the unnecessary GM_webRequest permission, which should be removed for best security practice.
+> The script does not transmit data externally, does not collect sensitive user information, and avoids dynamic code execution and obfuscation. The only notable issue is the unnecessary GM_webRequest permission, which should be removed. Overall, the script is safe with a low risk profile.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -47,20 +47,50 @@ title: "GeoGuessr 地点解析助手"
 
 ### 发现的问题
 
-**🟠 MEDIUM** — Permission misuse  
-> The script requests the GM_webRequest permission, but does not use any GM_* APIs in the code.  
-> 位置：@grant GM_webRequest in metadata  
-> 建议：Remove unnecessary permissions to reduce attack surface.
-
-**🟡 LOW** — Network interception  
-> The script overrides XMLHttpRequest.prototype.open to intercept requests to Google Maps API and parses the response for coordinates. However, it does not transmit this data to any third-party server.  
+**⛔ CRITICAL** — Data Transmission  
+> Script intercepts Google Maps API responses via XMLHttpRequest, but does not transmit data externally. No evidence of data exfiltration or external network requests.  
 > 位置：XMLHttpRequest.prototype.open override  
-> 建议：Monitor for future updates that may add data transmission. Current implementation is safe.
+> 建议：Continue to monitor for any future changes that may introduce external requests.
 
-**🟡 LOW** — Keyboard event handling  
-> The script listens for keydown events globally to trigger its features, but does not log or transmit key input.  
-> 位置：document.addEventListener('keydown', ...)  
-> 建议：Ensure no future code changes combine key logging with network requests.
+**⛔ CRITICAL** — Privacy Collection  
+> Script listens for keydown events but does not transmit input data or collect sensitive information.  
+> 位置：document.addEventListener("keydown", onKeyDown)  
+> 建议：Ensure no future code changes combine input collection with network requests.
+
+**🔴 HIGH** — Remote Code Execution  
+> No use of eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection detected.  
+> 位置：Full script scan  
+> 建议：Maintain avoidance of dynamic code execution.
+
+**🔴 HIGH** — Code Obfuscation  
+> No code obfuscation detected; script is readable and not minified or encoded.  
+> 位置：Full script scan  
+> 建议：Maintain transparency for security review.
+
+**🔴 HIGH** — DOM XSS/Injection  
+> No DOM XSS or injection risk detected; user input is not inserted into the DOM via innerHTML/outerHTML.  
+> 位置：Full script scan  
+> 建议：Continue to avoid unsafe DOM manipulation.
+
+**🟠 MEDIUM** — Permission Abuse  
+> Script requests GM_webRequest permission but does not use it in the code.  
+> 位置：@grant GM_webRequest in metadata  
+> 建议：Remove unused permission to minimize attack surface.
+
+**🟠 MEDIUM** — Sensitive API Usage  
+> No sensitive browser APIs (geolocation, RTCPeerConnection, MediaDevices, Clipboard, Notification) are used.  
+> 位置：Full script scan  
+> 建议：Maintain avoidance of sensitive APIs.
+
+**🟠 MEDIUM** — Supply Chain Risk  
+> No @require third-party libraries or supply chain risk detected.  
+> 位置：Metadata block  
+> 建议：If adding dependencies, use official sources and fixed versions.
+
+**🟡 LOW** — ClickJacking/Iframe Risk  
+> No iframe manipulation or clickjacking risk detected.  
+> 位置：Full script scan  
+> 建议：Continue to avoid iframe manipulation.
 
 ---
 

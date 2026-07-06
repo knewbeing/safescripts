@@ -19,42 +19,42 @@
   "require": [],
   "metadata_raw": "// @name  Duolingo DuoHacker\n// @name:vi  Duolingo DuoHacker\n// @name:zh-CN  多邻国 DuoHacker\n// @name:zh-TW  多鄰國 DuoHacker\n// @name:ja  Duolingo DuoHacker\n// @name:ko  듀오링고 DuoHacker\n// @name:fr  Duolingo DuoHacker\n// @name:de  Duolingo DuoHacker\n// @name:es  Duolingo DuoHacker\n// @name:pt-BR  Duolingo DuoHacker\n// @name:pt-PT  Duolingo DuoHacker\n// @name:ru  Дуолинго DuoHacker\n// @name:ar  Duolingo DuoHacker دوهاكر\n// @name:tr  Duolingo DuoHacker\n// @name:id  Duolingo DuoHacker\n// @name:th  Duolingo DuoHacker\n// @name:pl  Duolingo DuoHacker\n// @name:nl  Duolingo DuoHacker\n// @name:it  Duolingo DuoHacker\n// @name:sv  Duolingo DuoHacker\n// @name:da  Duolingo DuoHacker\n// @name:fi  Duolingo DuoHacker\n// @name:nb  Duolingo DuoHacker\n// @name:cs  Duolingo DuoHacker\n// @name:hu  Duolingo DuoHacker\n// @name:ro  Duolingo DuoHacker\n// @name:uk  Дуолінго DuoHacker\n// @name:hi  Duolingo DuoHacker\n// @name:bn  Duolingo DuoHacker\n// @name:fa  Duolingo DuoHacker دوهاکر\n// @name:he  Duolingo DuoHacker\n// @name:ms  Duolingo DuoHacker\n// @name:fil  Duolingo DuoHacker\n// @name:el  Duolingo DuoHacker\n// @name:hr  Duolingo DuoHacker\n// @name:sk  Duolingo DuoHacker\n// @name:bg  Дуолинго DuoHacker\n// @name:sr  Дуолинго DuoHacker\n// @name:lt  Duolingo DuoHacker\n// @name:lv  Duolingo DuoHacker\n// @name:et  Duolingo DuoHacker\n// @name:sl  Duolingo DuoHacker\n// @name:ca  Duolingo DuoHacker\n// @name:af  Duolingo DuoHacker\n// @name:sw  Duolingo DuoHacker\n// @name:zu  Duolingo DuoHacker\n// @name:mn  Duolingo DuoHacker\n// @name:my  Duolingo DuoHacker\n// @name:km  Duolingo DuoHacker\n// @name:lo  Duolingo DuoHacker\n// @name:ur  Duolingo DuoHacker\n// @namespace  https://github.com/DuoHacker/DuoHacker\n// @version  2026.06.21\n// @description  The #1 Duolingo hack - Farm XP, Gems, Streaks and unlock Duolingo Max for free.\n// @description:vi  Công cụ hack Duolingo #1 - Farm XP, Gems, Streaks và mở khóa Duolingo Max miễn phí.\n// @description:zh-CN  最强 Duolingo 辅助工具 - 自动刷 XP、宝石、连胜，免费解锁 Duolingo Max。\n// @description:zh-TW  最強 Duolingo 輔助工具 - 自動刷 XP、寶石、連勝，免費解鎖 Duolingo Max。\n// @description:ja  Duolingo最強ハックツール - XP・ジェム・連続記録を自動取得、Duolingo Maxを無料解放。\n// @description:ko  최고의 Duolingo 핵 툴 - XP, 젬, 스트릭 자동 획득 및 Duolingo Max 무료 해제.\n// @description:fr  Le hack Duolingo #1 - Farmez XP, Gemmes, Séries et débloquez Duolingo Max gratuitement.\n// @description:de  Der #1 Duolingo-Hack - XP, Gems, Serien farmen und Duolingo Max kostenlos freischalten.\n// @description:es  El hack #1 de Duolingo - Farmea XP, Gemas, Rachas y desbloquea Duolingo Max gratis.\n// @description:pt-BR  O hack #1 do Duolingo - Farme XP, Gemas, Sequências e desbloqueie o Duolingo Max de graça.\n// @description:pt-PT  O hack #1 do Duolingo - Faça farm de XP, Gemas, Sequências e desbloqueie o Duolingo Max gratuitamente.\n// @description:ru  Лучший хак для Duolingo - Фармите XP, Гемы, Серии и разблокируйте Duolingo Max бесплатно.\n// @description:ar  أفضل هاك لـ Duolingo - اجمع XP والجواهر والسلاسل وافتح Duolingo Max مجاناً.\n// @description:tr  Duolingo için #1 hack - XP, Gem, Seri farm'la ve Duolingo Max'ı ücretsiz aç.\n// @description:id  Hack Duolingo #1 - Farm XP, Gems, Streak dan buka kunci Duolingo Max gratis.\n// @description:th  แฮก Duolingo อันดับ 1 - ฟาร์ม XP, เพชร, สตรีคและปลดล็อก Duolingo Max ฟรี.\n// @description:pl  Najlepszy hack na Duolingo - Farmuj XP, Klejnoty, Serie i odblokuj Duolingo Max za darmo.\n// @description:nl  De #1 Duolingo-hack - Farm XP, Edelstenen, Reeksen en ontgrendel Duolingo Max gratis.\n// @description:it  Il miglior hack per Duolingo - Fai farm di XP, Gemme, Streak e sblocca Duolingo Max gratis.\n// @description:sv  Bästa Duolingo-hacket - Farma XP, Ädelstenar, Streaks och lås upp Duolingo Max gratis.\n// @description:da  Den bedste Duolingo-hack - Farm XP, Ædelstene, Striber og lås Duolingo Max op gratis.\n// @description:fi  Paras Duolingo-hakki - Farmmaa XP, Jalokivet, Putket ja avaa Duolingo Max ilmaiseksi.\n// @description:nb  Den beste Duolingo-hacken - Farm XP, Edelstener, Rekker og lås opp Duolingo Max gratis.\n// @description:cs  Nejlepší hack na Duolingo - Farmujte XP, Drahokamy, Série a odemkněte Duolingo Max zdarma.\n// @description:hu  A legjobb Duolingo-hack - Farmolj XP-t, Drágaköveket, Sorozatokat és oldd fel a Duolingo Maxot ingyen.\n// @description:ro  Cel mai bun hack pentru Duolingo - Farmează XP, Pietre, Serii și deblochează Duolingo Max gratuit.\n// @description:uk  Найкращий хак для Duolingo - Фармте XP, Самоцвіти, Серії та розблокуйте Duolingo Max безкоштовно.\n// @description:hi  Duolingo का #1 हैक - XP, Gems, Streaks फार्म करें और Duolingo Max मुफ्त में अनलॉक करें।\n// @description:bn  সেরা Duolingo হ্যাক - XP, Gems, Streaks ফার্ম করুন এবং বিনামূল্যে Duolingo Max আনলক করুন।\n// @description:fa  بهترین هک Duolingo - XP، جواهر و رکورد را فارم کنید و Duolingo Max را رایگان باز کنید.\n// @description:he  ההאק הטוב ביותר ל-Duolingo - צבור XP, אבנים יקרות, רצפים ופתח את Duolingo Max בחינם.\n// @description:ms  Hack Duolingo terbaik - Farm XP, Permata, Streak dan buka kunci Duolingo Max secara percuma.\n// @description:fil  Ang pinakamahusay na Duolingo hack - Mag-farm ng XP, Gems, Streaks at i-unlock ang Duolingo Max nang libre.\n// @description:el  Το καλύτερο hack για το Duolingo - Κάντε farm XP, Πετράδια, Σειρές και ξεκλειδώστε το Duolingo Max δωρεάν.\n// @description:hr  Najbolji Duolingo hack - Farmajte XP, Dragulje, Nizove i otključajte Duolingo Max besplatno.\n// @description:sk  Najlepší hack na Duolingo - Farmujte XP, Drahokamy, Série a odomknite Duolingo Max zadarmo.\n// @description:bg  Най-добрият хак за Duolingo - Фармете XP, Скъпоценни камъни, Серии и отключете Duolingo Max безплатно.\n// @description:sr  Najbolji Duolingo hak - Farmujte XP, Dragulje, Serije i otključajte Duolingo Max besplatno.\n// @description:lt  Geriausias Duolingo įsilaužimas - Farminkite XP, Brangakmenius, Serijas ir atrakinkite Duolingo Max nemokamai.\n// @description:lv  Labākais Duolingo hack - Farmējiet XP, Dārgakmeņus, Sērijas un atbloķējiet Duolingo Max bez maksas.\n// @description:et  Parim Duolingo häkk - Farmige XP, Kalliskive, Seeriad ja avage Duolingo Max tasuta.\n// @description:sl  Najboljši Duolingo hack - Farmajte XP, Dragulji, Serije in odklenite Duolingo Max brezplačno.\n// @description:ca  El millor hack per a Duolingo - Fes farm de XP, Gemmes, Ratxes i desbloqueja Duolingo Max gratis.\n// @description:af  Die beste Duolingo-hack - Boer XP, Edelstene, Reekse en ontsluit Duolingo Max gratis.\n// @description:sw  Hack bora ya Duolingo - Fanya farm ya XP, Vito, Mifululizo na fungua Duolingo Max bila malipo.\n// @description:zu  I-hack engcono kakhulu ye-Duolingo - Fama i-XP, Amagugu, Izindawo futhi vula i-Duolingo Max mahhala.\n// @description:mn  Duolingo-н хамгийн шилдэг хак - XP, Эрдэнийн чулуу, Цуваа фарм хийж Duolingo Max-ийг үнэгүй нээ.\n// @description:my  Duolingo hack အကောင်းဆုံး - XP, Gems, Streaks farm လုပ်ပြီး Duolingo Max ကို အခမဲ့ ဖွင့်ပါ။\n// @description:km  ហេគ Duolingo ល្អបំផុត - ដាំ XP, Gems, Streaks និងដោះសោ Duolingo Max ដោយឥតគិតថ្លៃ។\n// @description:lo  ແຮັກ Duolingo ອັນດັບໜຶ່ງ - ຟາມ XP, ເພັດ, ສາຍຕໍ່ເນື່ອງ ແລະ ປົດລັອກ Duolingo Max ຟຣີ.\n// @description:ur  Duolingo کا بہترین ہیک - XP، Gems، Streaks فارم کریں اور Duolingo Max مفت میں انلاک کریں۔\n// @author  DuoHacker\n// @match  https://*.duolingo.com/*\n// @match  https://*.duolingo.cn/*\n// @icon  https://raw.githubusercontent.com/DuoHacker/DuoHacker/refs/heads/main/images/DuoHacker_Logo_NoBG_PNG.png\n// @run-at  document-end\n// @grant  GM_xmlhttpRequest\n// @grant  GM_addStyle\n// @connect  duolingo.com\n// @connect  stories.duolingo.com\n// @connect  goals-api.duolingo.com\n// @connect  duolingo-leaderboards-prod.duolingo.com\n// @connect  raw.githubusercontent.com\n// @connect  avatars.githubusercontent.com\n// @connect  greasyfork.org\n// @connect  assets.duohacker.io.vn\n// @connect  font.duohacker.io.vn\n// @compatible  chrome   Tested on Chrome 120+ with Tampermonkey\n// @compatible  firefox  Tested on Firefox 120+ with Tampermonkey / Violentmonkey\n// @compatible  edge     Tested on Edge 120+ with Tampermonkey\n// @compatible  opera    Supported via Tampermonkey / Violentmonkey\n// @compatible  safari   Supported via Userscripts app\n// @compatible  brave    Supported via Tampermonkey\n// @homepageURL  https://duohacker.io.vn\n// @supportURL  https://duohacker.io.vn/discord\n// @copyright  2026, DuoHacker (https://github.com/DuoHacker)\n// @license  BY-NC-ND 4.0\n// @downloadURL  https://update.greasyfork.org/scripts/561041/Duolingo%20DuoHacker.user.js\n// @updateURL  https://update.greasyfork.org/scripts/561041/Duolingo%20DuoHacker.meta.js",
   "sha256": "2a2edcbbdaa7b29a7880260ddec0e34ac0bc9d4b98a859658e4db8d06d4e2726",
-  "discovered_at": "2026-06-29T06:32:30.789836+00:00",
+  "discovered_at": "2026-07-06T06:24:18.505298+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 4426,
+  "install_count": 4708,
   "good_ratings": 117,
   "bad_ratings": 47,
   "summary": {
     "applicable_sites": [
-      "多邻国（duolingo.com）",
-      "多邻国中国版（duolingo.cn）"
+      "多邻国官网",
+      "多邻国中国站"
     ],
-    "description": "多邻国 DuoHacker 是一款辅助工具，能自动刷取 XP、宝石和连胜，帮助用户免费解锁 Duolingo Max。安装后可提升学习进度，获得更多奖励和高级功能。适合希望快速提升和解锁全部功能的多邻国用户。",
+    "description": "本脚本是多邻国的辅助工具，支持自动刷经验值（XP）、宝石和连胜，还能免费解锁 Duolingo Max 高级功能。让用户更轻松提升等级和获取奖励，无需付费即可体验高级内容。",
     "permissions": [
       {
         "explanation": "允许脚本发送网络请求，获取或提交数据。",
         "grant": "GM_xmlhttpRequest"
       },
       {
-        "explanation": "允许脚本添加自定义样式，优化界面显示。",
+        "explanation": "允许脚本自定义和添加页面样式。",
         "grant": "GM_addStyle"
       }
     ],
     "tags": [
       "多邻国",
       "学习辅助",
-      "自动化",
-      "刷分",
-      "解锁功能",
-      "脚本工具"
+      "自动刷分",
+      "解锁高级",
+      "免费工具",
+      "语言学习"
     ],
     "usage": [
-      "1. 安装 Tampermonkey 插件并添加本脚本。",
-      "2. 打开多邻国官网或中国版网站。",
-      "3. 按页面提示操作，自动获得 XP、宝石和连胜。",
-      "4. 可在页面上体验免费解锁 Duolingo Max 等高级功能。"
+      "安装 Tampermonkey 插件。",
+      "在 Tampermonkey 中添加本脚本。",
+      "打开多邻国网站，脚本自动运行。",
+      "根据页面提示选择需要的辅助功能。"
     ],
     "zh_name": "多邻国 DuoHacker"
   }

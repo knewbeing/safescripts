@@ -41,14 +41,14 @@ title: "Torn集市商品展示与排序"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：64/100　　**分析时间**：2026-06-29
+**风险等级**：🟠 MEDIUM　　**安全评分**：59/100　　**分析时间**：2026-07-06
 
-> The script requests data from a third-party server (weav3r.dev) and uses localStorage/GM storage for settings. No evidence of sensitive data exfiltration, DOM XSS, or code obfuscation. Permissions are appropriate for the script's features. Overall, the script is low risk, but users should be aware of the third-party API connection and ensure no sensitive data is sent. Regularly review updates for changes in network behavior.
+> 脚本主要风险为通过 GM.xmlHttpRequest 向 weav3r.dev 发起网络请求，可能存在数据外传。未发现远程代码执行、代码混淆、DOM XSS 等高危行为。localStorage 读写仅限脚本自身，未涉及敏感隐私采集。整体安全性中等，建议关注外部服务器的可信度和数据传输内容。
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：weav3r.dev） |
-| 隐私采集 | ✅ 未检测到 |
+| 隐私采集 | ❌ 检测到（localStorage 读写） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -56,25 +56,45 @@ title: "Torn集市商品展示与排序"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Transmission to Third Party  
-> Script uses GM.xmlHttpRequest to connect to weav3r.dev, which is a third-party server. However, the code provided does not show user data, cookies, or sensitive information being sent. The request destination is a custom API, which could be a privacy concern if user data is sent in other parts of the code (not visible in the snippet).  
-> 位置：@connect weav3r.dev and any GM.xmlHttpRequest usage  
-> 建议：Review all requests to ensure no sensitive user data, cookies, or identifiers are sent. If possible, document the API endpoints and data schema.
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过 GM.xmlHttpRequest 向 weav3r.dev 发起网络请求，可能携带用户数据。  
+> 位置：GM.xmlHttpRequest 调用及 @connect weav3r.dev  
+> 建议：确保请求内容不包含敏感信息，且目标服务器可信。
 
-**⛔ CRITICAL** — Privacy Collection  
-> Script reads and writes to localStorage and GM_*Value APIs for settings persistence. No evidence of sensitive data (like cookies, passwords, or form fields) being accessed or exfiltrated. No keylogger or clipboard access detected.  
-> 位置：GM_getValue, GM_setValue, localStorage usage  
-> 建议：Ensure only non-sensitive settings are stored. Do not store authentication tokens or personal data in localStorage or GM storage.
+**🟠 MEDIUM** — 隐私采集  
+> 脚本读取和写入 localStorage 作为 GM_setValue/GM_getValue 的兼容实现。  
+> 位置：GM_getValue、GM_setValue、GM_deleteValue、GM_listValues 兼容函数  
+> 建议：localStorage 数据仅限脚本自身使用，避免存储敏感信息。
 
-**🟠 MEDIUM** — Permission Usage  
-> Multiple @grant permissions are requested (GM.xmlHttpRequest, GM_setValue, etc.), but all are used appropriately for script functionality. No evidence of permission overreach.  
-> 位置：@grant metadata block  
-> 建议：Keep only the necessary permissions. Remove unused grants if possible.
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 GM.xmlHttpRequest、GM_setValue 等高权限，但实际代码中未滥用。  
+> 位置：@grant 元数据  
+> 建议：仅申请实际需要的权限。
 
-**🟠 MEDIUM** — Supply Chain Risk  
-> @require is not used, and no dynamic script loading or eval is present in the provided code. No supply chain risk detected in this snippet.  
-> 位置：N/A  
-> 建议：If adding @require in the future, use official CDNs and fixed versions.
+**🟡 LOW** — 远程代码执行  
+> 未发现远程代码执行、eval、动态 script 标签加载、代码混淆等高风险行为。  
+> 位置：全局代码审查  
+> 建议：保持代码透明，避免动态执行外部代码。
+
+**🟡 LOW** — DOM XSS  
+> 未发现 DOM XSS、用户输入直接插入 innerHTML/outerHTML 的风险。  
+> 位置：全局代码审查  
+> 建议：继续保持安全的 DOM 操作。
+
+**🟡 LOW** — 敏感 API 调用  
+> 未发现敏感 API 调用（如 geolocation、摄像头、剪贴板等）。  
+> 位置：全局代码审查  
+> 建议：如需调用敏感 API，需征得用户同意。
+
+**🟡 LOW** — 供应链风险  
+> 未发现供应链风险，未使用 @require 加载第三方库。  
+> 位置：元数据 @require  
+> 建议：如需加载第三方库，建议固定版本并使用官方 CDN。
+
+**🟡 LOW** — ClickJacking/iframe  
+> 未发现 clickjacking 或 iframe 风险。  
+> 位置：全局代码审查  
+> 建议：如需操作 iframe，需明确用途并防范数据泄露。
 
 ---
 

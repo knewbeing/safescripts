@@ -35,9 +35,9 @@ title: "Chess.com高级作弊助手"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：34/100　　**分析时间**：2026-06-29
+**风险等级**：⛔ CRITICAL　　**安全评分**：42/100　　**分析时间**：2026-07-06
 
-> 该脚本存在严重安全隐患，主要体现在：1) 允许任意域名的数据外传（@connect *），2) 动态加载外部 JS/WASM 资源，存在供应链和远程代码执行风险，3) 权限申请过高。未发现明显隐私采集、WebSocket、DOM XSS 或代码混淆，但外部依赖仍需警惕。强烈建议仅在完全信任环境下使用，并严格限制网络权限。
+> 该脚本存在严重的数据外传风险（@connect *），允许向任意域名发送网络请求，极易被滥用进行用户数据泄露。未发现隐私采集、代码混淆、DOM XSS 或远程代码执行行为。部分第三方资源加载存在供应链风险，建议固定版本哈希。总体安全风险极高，不建议使用。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -50,35 +50,25 @@ title: "Chess.com高级作弊助手"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> @connect * 允许脚本向任意域名发起网络请求，存在极高的数据外传风险。  
+**⛔ CRITICAL** — Data Exfiltration  
+> @connect * 允许任意域名的网络请求，存在严重数据外传风险。脚本可向任何第三方服务器发送数据。  
 > 位置：metadata (@connect *)  
 > 建议：移除 @connect *，仅允许必要的可信域名。
 
-**🔴 HIGH** — 远程代码执行  
-> 脚本动态加载外部 JS（Stockfish 引擎），如被 CDN 污染可能导致远程代码执行。  
-> 位置：LOCAL_ENGINES.jsUrl, @resource  
-> 建议：固定版本，校验哈希，避免可变 URL。
+**🟠 MEDIUM** — Supply Chain Risk  
+> 脚本通过 GM_xmlhttpRequest 加载外部 JS/WASM，部分 URL（如 unpkg.com）未固定版本哈希，存在供应链污染风险。  
+> 位置：LOCAL_ENGINES.jsUrl/wasmUrl  
+> 建议：使用官方 CDN 并固定版本哈希，避免加载可变内容。
 
-**🟠 MEDIUM** — 供应链风险  
-> 脚本通过 GM_xmlhttpRequest、fetch、XHR 加载外部 JS/WASM 引擎，部分来源为 unpkg.com/cdnjs.cloudflare.com，存在供应链风险。  
-> 位置：LOCAL_ENGINES 配置、@resource、动态加载  
-> 建议：仅允许官方 CDN，固定版本号和哈希，避免可变 URL。
+**🟠 MEDIUM** — Permission Abuse  
+> 申请了 GM_xmlhttpRequest 高权限，但实际用途仅为加载资源，未发现滥用。  
+> 位置：metadata (@grant GM_xmlhttpRequest)  
+> 建议：仅申请实际需要的权限，避免权限滥用。
 
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_xmlhttpRequest 高权限，但未限制目标域名，结合 @connect * 存在滥用风险。  
-> 位置：metadata (@grant GM_xmlhttpRequest, @connect *)  
-> 建议：限制 @connect 域名范围，最小化权限申请。
-
-**🟠 MEDIUM** — 代码混淆  
-> 脚本未检测到明显的代码混淆，但部分资源为外部加载，无法保证其未被混淆。  
-> 位置：外部资源  
-> 建议：审查所有外部依赖代码。
-
-**🟡 LOW** — DOM XSS/注入  
-> 脚本未检测到明显的 DOM XSS 注入风险，但需关注后续版本变更。  
-> 位置：主逻辑  
-> 建议：持续关注用户输入与 DOM 操作。
+**🟠 MEDIUM** — Supply Chain Risk  
+> 脚本通过 GM_getResourceText 加载外部 JS，资源来源为 unpkg.com，部分资源未固定版本哈希。  
+> 位置：metadata (@resource stockfish.js)  
+> 建议：确保资源来源可信且版本固定。
 
 ---
 

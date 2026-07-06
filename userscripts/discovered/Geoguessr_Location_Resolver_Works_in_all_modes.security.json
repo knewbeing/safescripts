@@ -7,25 +7,67 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script overrides XMLHttpRequest.prototype.open to intercept requests to Google Maps API and parses the response for coordinates. However, it does not transmit this data to any third-party server.",
+      "description": "Script intercepts Google Maps API responses via XMLHttpRequest, but does not transmit data externally. No evidence of data exfiltration or external network requests.",
       "location": "XMLHttpRequest.prototype.open override",
-      "recommendation": "Monitor for future updates that may add data transmission. Current implementation is safe.",
-      "severity": "LOW",
-      "type": "Network interception"
+      "recommendation": "Continue to monitor for any future changes that may introduce external requests.",
+      "severity": "CRITICAL",
+      "type": "Data Transmission"
     },
     {
-      "description": "The script listens for keydown events globally to trigger its features, but does not log or transmit key input.",
-      "location": "document.addEventListener('keydown', ...)",
-      "recommendation": "Ensure no future code changes combine key logging with network requests.",
-      "severity": "LOW",
-      "type": "Keyboard event handling"
+      "description": "Script listens for keydown events but does not transmit input data or collect sensitive information.",
+      "location": "document.addEventListener(\"keydown\", onKeyDown)",
+      "recommendation": "Ensure no future code changes combine input collection with network requests.",
+      "severity": "CRITICAL",
+      "type": "Privacy Collection"
     },
     {
-      "description": "The script requests the GM_webRequest permission, but does not use any GM_* APIs in the code.",
+      "description": "No use of eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection detected.",
+      "location": "Full script scan",
+      "recommendation": "Maintain avoidance of dynamic code execution.",
+      "severity": "HIGH",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "No code obfuscation detected; script is readable and not minified or encoded.",
+      "location": "Full script scan",
+      "recommendation": "Maintain transparency for security review.",
+      "severity": "HIGH",
+      "type": "Code Obfuscation"
+    },
+    {
+      "description": "No DOM XSS or injection risk detected; user input is not inserted into the DOM via innerHTML/outerHTML.",
+      "location": "Full script scan",
+      "recommendation": "Continue to avoid unsafe DOM manipulation.",
+      "severity": "HIGH",
+      "type": "DOM XSS/Injection"
+    },
+    {
+      "description": "Script requests GM_webRequest permission but does not use it in the code.",
       "location": "@grant GM_webRequest in metadata",
-      "recommendation": "Remove unnecessary permissions to reduce attack surface.",
+      "recommendation": "Remove unused permission to minimize attack surface.",
       "severity": "MEDIUM",
-      "type": "Permission misuse"
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "No sensitive browser APIs (geolocation, RTCPeerConnection, MediaDevices, Clipboard, Notification) are used.",
+      "location": "Full script scan",
+      "recommendation": "Maintain avoidance of sensitive APIs.",
+      "severity": "MEDIUM",
+      "type": "Sensitive API Usage"
+    },
+    {
+      "description": "No @require third-party libraries or supply chain risk detected.",
+      "location": "Metadata block",
+      "recommendation": "If adding dependencies, use official sources and fixed versions.",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    },
+    {
+      "description": "No iframe manipulation or clickjacking risk detected.",
+      "location": "Full script scan",
+      "recommendation": "Continue to avoid iframe manipulation.",
+      "severity": "LOW",
+      "type": "ClickJacking/Iframe Risk"
     }
   ],
   "obfuscation_detected": false,
@@ -35,10 +77,10 @@
   },
   "risk_level": "LOW",
   "script_name": "Geoguessr Location Resolver (Works in all modes)",
-  "security_score": 89,
-  "summary": "The script does not transmit any user data or page content to third-party servers, nor does it collect sensitive information. It intercepts Google Maps API responses locally to extract coordinates and automates gameplay actions. No code obfuscation, remote code execution, or DOM XSS risks were found. The only notable issue is the unnecessary GM_webRequest permission, which should be removed for best security practice.",
+  "security_score": 81,
+  "summary": "The script does not transmit data externally, does not collect sensitive user information, and avoids dynamic code execution and obfuscation. The only notable issue is the unnecessary GM_webRequest permission, which should be removed. Overall, the script is safe with a low risk profile.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-29T06:45:59.117272+00:00",
+  "analyzed_at": "2026-07-06T06:35:42.955033+00:00",
   "slug": "Geoguessr_Location_Resolver_Works_in_all_modes"
 }

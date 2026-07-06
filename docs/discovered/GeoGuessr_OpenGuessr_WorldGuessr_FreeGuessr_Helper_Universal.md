@@ -38,9 +38,9 @@ title: "地理猜谜助手通用版"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：35/100　　**分析时间**：2026-06-29
+**风险等级**：⛔ CRITICAL　　**安全评分**：50/100　　**分析时间**：2026-07-06
 
-> 该脚本存在高风险，主要因其将地理坐标等用户数据通过 GM_xmlhttpRequest 发送到第三方（nominatim.openstreetmap.org）和 Discord（可能为 Webhook），属于严重的数据外传和隐私泄露风险。脚本未检测到代码混淆、远程代码执行、DOM XSS 等问题，但存在对原生方法的 Proxy 劫持，可能影响页面安全性。建议仅在信任环境下使用，并确保 Discord Webhook 仅为个人控制。
+> 该脚本存在严重的数据外传风险，尤其是向 discord.com 和 nominatim.openstreetmap.org 发送地理位置数据，可能涉及用户隐私。未检测到代码混淆、远程代码执行、DOM XSS、供应链风险等问题。建议加强用户告知和权限控制，避免自动外传敏感信息。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -54,54 +54,49 @@ title: "地理猜谜助手通用版"
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本通过 GM_xmlhttpRequest 发送地理坐标到 nominatim.openstreetmap.org 进行逆地理编码。  
-> 位置：_getAddress() 函数  
-> 建议：仅允许可信第三方 API，避免发送敏感信息。
+> 脚本通过 GM_xmlhttpRequest 向 discord.com 发送地理位置数据（sendToDiscord 功能），可能包含用户行为、坐标等敏感信息。  
+> 位置：sendToDiscord 相关功能（未展示完整代码，但元数据和描述已明确）  
+> 建议：仅允许用户主动发送，明确告知用户数据外传风险，并避免发送敏感信息。
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本元数据声明 @connect discord.com，且描述中有“send location to discord”，暗示可能将地理位置通过 Webhook 发送到 Discord。  
-> 位置：元数据与功能描述  
-> 建议：用户需确认 Discord Webhook 仅为个人使用，避免敏感信息泄露。
-
-**🔴 HIGH** — 远程代码执行/页面劫持  
-> 脚本通过 Proxy 劫持 Element.prototype.setAttribute、Array.prototype.push、Storage.prototype.setItem、String.prototype.startsWith、fetch 等原生方法，可能影响页面行为。  
-> 位置：多处平台适配代码  
-> 建议：仅在必要范围内使用 Proxy，防止副作用。
+> 脚本通过 GM_xmlhttpRequest 向 nominatim.openstreetmap.org 查询地理位置，可能包含用户当前坐标。  
+> 位置：_getAddress() 函数  
+> 建议：仅在用户主动操作时发送请求，避免自动采集和外传用户位置。
 
 **🟠 MEDIUM** — 权限滥用  
-> 脚本申请 GM_xmlhttpRequest 权限，并实际用于外部 API 通信。  
-> 位置：元数据与代码  
-> 建议：最小化权限申请，确保仅用于必要功能。
+> 脚本申请 GM_xmlhttpRequest 权限并实际使用，符合最小权限原则，但 @connect 申请了 discord.com，存在高风险。  
+> 位置：元数据 @grant/@connect  
+> 建议：如非必要，移除 discord.com 连接权限。
 
 **🟠 MEDIUM** — 敏感 API 调用  
-> 脚本使用 Notification API 发送通知。  
+> 脚本调用 Notification API，可能被滥用发送通知。  
 > 位置：sendNotification() 函数  
-> 建议：确保通知内容不包含敏感信息，防止骚扰。
-
-**🟡 LOW** — 权限使用  
-> 脚本申请 GM_setValue/GM_getValue 权限，实际用于热键和功能开关存储，未见滥用。  
-> 位置：元数据与代码  
-> 建议：无明显风险，但建议定期复查存储内容。
+> 建议：仅在用户允许并主动操作时调用。
 
 **🟡 LOW** — 远程代码执行  
-> 脚本未检测到 eval、new Function、setTimeout(string) 等直接远程代码执行风险。  
-> 位置：全局  
-> 建议：保持此安全实践。
-
-**🟡 LOW** — 代码混淆  
-> 未检测到代码混淆、base64 解码、字符串数组映射等混淆特征。  
-> 位置：全局  
-> 建议：保持代码可读性。
+> 脚本未检测到代码混淆、eval、动态 script 加载等远程代码执行风险。  
+> 位置：全局代码审查  
+> 建议：保持代码透明，避免混淆和动态执行。
 
 **🟡 LOW** — DOM XSS  
-> 未检测到 DOM XSS 或用户输入直接插入 innerHTML/outerHTML。  
-> 位置：全局  
-> 建议：保持此安全实践。
+> 脚本未检测到 DOM XSS、用户输入注入等风险。  
+> 位置：全局代码审查  
+> 建议：继续保持安全的 DOM 操作。
 
 **🟡 LOW** — 供应链风险  
-> 未检测到 @require 加载第三方库，无供应链风险。  
-> 位置：元数据  
-> 建议：如需第三方库，建议固定版本和来源。
+> 脚本未检测到供应链风险（未使用 @require 加载第三方库）。  
+> 位置：元数据 @require  
+> 建议：如需加载第三方库，建议固定版本哈希并使用官方 CDN。
+
+**🟡 LOW** — 隐私采集  
+> 脚本未检测到 WebSocket、EventSource、剪贴板读取、键盘监听等隐私采集行为。  
+> 位置：全局代码审查  
+> 建议：继续避免隐私采集。
+
+**🟡 LOW** — ClickJacking  
+> 脚本未检测到 iframe 隐藏、frame 保护策略修改等 ClickJacking 风险。  
+> 位置：全局代码审查  
+> 建议：继续避免相关风险。
 
 ---
 

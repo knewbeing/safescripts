@@ -5,18 +5,33 @@
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [],
+  "issues": [
+    {
+      "description": "无法审查脚本主体代码，无法判断是否存在数据外传、隐私采集、远程代码执行等风险。",
+      "location": "脚本主体代码缺失",
+      "recommendation": "请提供完整的 UserScript 代码以便进行全面安全审查。",
+      "severity": "CRITICAL",
+      "type": "代码缺失"
+    },
+    {
+      "description": "脚本元数据未申请过多高权限，仅申请了常用 GM_* API，未见敏感权限滥用。",
+      "location": "元数据 @grant",
+      "recommendation": "建议仅申请实际需要的权限，避免权限滥用。",
+      "severity": "LOW",
+      "type": "权限申请"
+    }
+  ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
     "detected": false
   },
-  "risk_level": "SAFE",
+  "risk_level": "CRITICAL",
   "script_name": "Github Enhancement - High Speed Download",
-  "security_score": 100,
-  "summary": "未检测到任何代码实现（脚本为空），因此不存在数据外传、隐私采集、远程代码执行、混淆、XSS、权限滥用、敏感 API 调用或供应链风险。元数据中申请的权限未被实际使用。当前脚本安全。",
+  "security_score": 75,
+  "summary": "由于缺失脚本主体代码，无法进行有效安全审查。仅根据元数据分析，未见明显权限滥用，但无法排除数据外传、隐私采集、远程代码执行等高危风险。请补充完整代码以获得准确安全评估。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-29T06:28:52.382676+00:00",
+  "analyzed_at": "2026-07-06T06:18:59.878457+00:00",
   "slug": "GithubEnhanced-High-Speed-Download"
 }

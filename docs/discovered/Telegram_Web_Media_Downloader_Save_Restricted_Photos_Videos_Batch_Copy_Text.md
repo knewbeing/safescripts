@@ -4,15 +4,15 @@ title: "Telegram网页版媒体下载器"
 
 # Telegram网页版媒体下载器
 
-`Telegram`  `下载`  `图片视频`  `批量操作`  `受限聊天`  `文本复制`
+`Telegram`  `下载`  `批量操作`  `受限内容`  `复制文本`  `网页增强`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/Telegram_Web_Media_Downloader_Save_Restricted_Photos_Videos_Batch_Copy_Text.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**1.0**　　发现时间：**2026-06-29**　　来源：[GreasyFork](https://greasyfork.org/scripts/477900-telegram-web-media-downloader-save-restricted-photos-videos-batch-copy-text) <Badge type="tip" text="GreasyFork" />　　安装量：**24,241**　　评分：👍33 / 👎2
+> 版本：**1.0**　　发现时间：**2026-07-06**　　来源：[GreasyFork](https://greasyfork.org/scripts/477900-telegram-web-media-downloader-save-restricted-photos-videos-batch-copy-text) <Badge type="tip" text="GreasyFork" />　　安装量：**24,680**　　评分：👍33 / 👎2
 
 ## 功能介绍
 
-本脚本可以在Telegram网页版下载图片和视频，支持单个或批量保存，即使在禁止转发的受限聊天中也能使用。同时恢复复制受保护消息中的文字功能。
+本脚本可在Telegram网页版下载图片和视频，支持单个或批量保存，即使在禁止转发的受限聊天中也能使用。同时恢复复制受保护消息中的文字功能。
 
 ## 适用网站
 
@@ -21,8 +21,8 @@ title: "Telegram网页版媒体下载器"
 ## 使用方法
 
 1. 安装脚本后，打开Telegram网页版。
-2. 在聊天中选择图片或视频，即可看到下载按钮，支持单个或批量下载。
-3. 在受保护消息中，可以直接复制文字。
+2. 在聊天中选择图片或视频，可单个或批量下载。
+3. 在受保护消息中，可直接复制文字。
 
 ## 权限说明
 
