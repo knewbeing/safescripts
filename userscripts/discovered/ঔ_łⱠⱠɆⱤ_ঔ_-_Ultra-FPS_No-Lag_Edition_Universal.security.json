@@ -1,0 +1,24 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [
+      "Reads/writes localStorage for hitbox profiles"
+    ],
+    "detected": false
+  },
+  "risk_level": "SAFE",
+  "script_name": "꧁ঔৣ☬₭łⱠⱠɆⱤ☬ঔৣ꧂ - Ultra-FPS No-Lag Edition (Universal)",
+  "security_score": 100,
+  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。仅本地存储少量配置数据，未与外部服务器通信。整体安全性高。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-07-13T05:58:55.058722+00:00",
+  "slug": "ঔ_łⱠⱠɆⱤ_ঔ_-_Ultra-FPS_No-Lag_Edition_Universal"
+}

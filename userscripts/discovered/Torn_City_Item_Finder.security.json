@@ -1,0 +1,24 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [
+      "Reads and writes panel position to localStorage under key 'tornItemFinderPos'"
+    ],
+    "detected": false
+  },
+  "risk_level": "SAFE",
+  "script_name": "Torn City Item Finder",
+  "security_score": 100,
+  "summary": "该脚本未检测到任何网络数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用或供应链风险。仅在本地 localStorage 存储面板位置，未访问敏感信息或外部服务器。整体安全性高。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-07-13T05:48:47.324320+00:00",
+  "slug": "Torn_City_Item_Finder"
+}

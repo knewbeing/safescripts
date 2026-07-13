@@ -1,5 +1,5 @@
 {
-  "approved": true,
+  "approved": false,
   "data_transmission": {
     "destinations": [],
     "detected": false
@@ -7,40 +7,34 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本读取和写入 localStorage，用于保存和加载用户设置与按键绑定。",
-      "location": "StorageManager.loadBinds(), StorageManager.loadSettings(), StorageManager.saveBinds(), StorageManager.saveSettings()",
-      "recommendation": "确保保存的数据不包含敏感信息，且仅用于本地配置用途。",
-      "severity": "MEDIUM",
+      "description": "脚本读取和写入 localStorage，用于保存和加载用户设置和按键绑定。",
+      "location": "StorageManager.loadBinds, StorageManager.loadSettings, StorageManager.saveBinds, StorageManager.saveSettings",
+      "recommendation": "仅保存必要的非敏感设置，避免存储敏感信息。",
+      "severity": "CRITICAL",
       "type": "隐私采集"
     },
     {
-      "description": "脚本清除所有 cookie 和 localStorage 数据，用于账号生成/切换。",
-      "location": "AccountModule.clearAndReload()",
-      "recommendation": "此行为会影响用户登录状态，建议用户知晓风险。未发现外传行为。",
-      "severity": "MEDIUM",
-      "type": "敏感 API 调用"
-    },
-    {
-      "description": "脚本通过 setTimeout(string) 用于 debounce 保存设置。",
-      "location": "StorageManager.debouncedSave",
-      "recommendation": "建议使用 setTimeout(function) 以避免潜在远程代码执行风险。当前未发现动态字符串执行。",
-      "severity": "HIGH",
-      "type": "远程代码执行"
+      "description": "脚本读取和清除 document.cookie，尤其在 AccountModule.clearAndReload 中清除所有 cookie。",
+      "location": "AccountModule.clearAndReload",
+      "recommendation": "避免操作敏感 cookie，确保不会误删安全相关 cookie。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "localStorage 读取/写入用户配置"
+      "读取和写入 localStorage",
+      "读取和清除 document.cookie"
     ],
     "detected": true
   },
-  "risk_level": "MEDIUM",
+  "risk_level": "HIGH",
   "script_name": "Click Helper [bloxd io/bloxd/bloxd.io]",
-  "security_score": 69,
-  "summary": "该脚本未检测到数据外传、追踪或第三方服务器通信，也未监听键盘输入或表单数据。主要涉及 localStorage/cookie 操作用于本地配置和账号切换。存在 setTimeout(string) 的远程代码执行风险，但未发现实际动态字符串执行。未检测到代码混淆、DOM XSS、供应链风险或权限滥用。整体安全风险为中等，建议关注本地敏感数据处理和 setTimeout 用法。",
+  "security_score": 50,
+  "summary": "该脚本未检测到数据外传、远程代码执行、代码混淆、DOM XSS、WebSocket 使用、供应链风险等高危行为。但存在对 localStorage 和 document.cookie 的读取和清除，属于高危隐私采集行为。未发现网络请求或外部数据传输。整体风险为 HIGH，建议仅在信任环境下使用。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-06T06:29:26.499771+00:00",
+  "analyzed_at": "2026-07-13T05:31:39.892909+00:00",
   "slug": "Click_Helper_bloxd_iobloxdbloxdio"
 }

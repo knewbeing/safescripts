@@ -36,9 +36,9 @@ title: "EasyTube V4 — 广告跳过、SponsorBlock 和 HD 下载器（无卡顿
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：67/100　　**分析时间**：2026-07-06
+**风险等级**：🟡 LOW　　**安全评分**：72/100　　**分析时间**：2026-07-13
 
-> EasyTube V4 is generally safe and transparent. It communicates with SponsorBlock and evdfrance.fr for segment skipping and HD downloads, but does not transmit sensitive user data or credentials. No privacy collection, remote code execution, obfuscation, or DOM XSS risks are present. Permissions are appropriate and supply chain risk is minimal. The main risk is third-party API communication, which should be monitored for privacy and security. Overall, the script is suitable for use with moderate caution regarding external API privacy.
+> The script is generally safe and well-structured. It communicates with two third-party APIs (SponsorBlock and evdfrance.fr) to provide its features, but does not transmit sensitive user data or cookies. No code obfuscation, DOM XSS, or dangerous dynamic code execution is present. Permissions are appropriate for the functionality. Users should be aware of the third-party API usage for transparency.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -52,49 +52,19 @@ title: "EasyTube V4 — 广告跳过、SponsorBlock 和 HD 下载器（无卡顿
 ### 发现的问题
 
 **⛔ CRITICAL** — Data Transmission  
-> Script uses GM_xmlhttpRequest to send requests to sponsor.ajay.app (SponsorBlock API) and evdfrance.fr (HD download). These are third-party servers. However, only video IDs and segment categories are sent, not user credentials or cookies.  
-> 位置：CFG.sbApi and download logic (not fully shown, but inferred from metadata and config)  
-> 建议：Ensure only minimal, non-sensitive data is sent. Document privacy policy for SponsorBlock and evdfrance.fr.
+> The script uses GM_xmlhttpRequest to communicate with sponsor.ajay.app (SponsorBlock API) and evdfrance.fr (video download). These are third-party servers. However, only video IDs and category data are sent, not sensitive user data or cookies.  
+> 位置：SponsorBlock and download logic (CFG.sbApi, evdfrance.fr)  
+> 建议：Review the endpoints' privacy policies and ensure only minimal, non-sensitive data is sent. Consider warning users about third-party API usage.
 
-**⛔ CRITICAL** — Privacy Collection  
-> Script uses GM_getValue and GM_setValue to store user settings locally. No evidence of privacy collection (cookies, localStorage, sessionStorage, clipboard, form fields, or browser fingerprinting).  
-> 位置：STATE and save() function  
-> 建议：Continue to avoid collecting sensitive user data.
+**🟠 MEDIUM** — Permission Usage  
+> The script requests GM_xmlhttpRequest permission, which allows arbitrary cross-origin requests. However, usage is limited to the two whitelisted domains.  
+> 位置：Metadata block (@grant GM_xmlhttpRequest, @connect)  
+> 建议：Limit @connect domains strictly and document all external requests in user documentation.
 
-**🔴 HIGH** — Remote Code Execution  
-> No eval, new Function, setTimeout(string), setInterval(string), or dynamic script loading detected. No @require of remote JS. No innerHTML/outerHTML/script injection.  
-> 位置：Entire script  
-> 建议：Maintain strict avoidance of remote code execution patterns.
-
-**🔴 HIGH** — Code Obfuscation  
-> No code obfuscation detected. Code is readable, not minified or obfuscated.  
-> 位置：Entire script  
-> 建议：Keep code transparent for user review.
-
-**🔴 HIGH** — DOM XSS  
-> No DOM XSS risk detected. No user input or URL parameters are inserted into innerHTML/outerHTML. No document.write usage.  
-> 位置：Entire script  
-> 建议：Continue to sanitize any future user input.
-
-**🟠 MEDIUM** — Permission Abuse  
-> Script requests GM_xmlhttpRequest, GM_addStyle, GM_setValue, GM_getValue. All are used. No excessive permissions.  
-> 位置：Metadata @grant section  
-> 建议：Avoid requesting unused high privileges.
-
-**🟠 MEDIUM** — Sensitive API Usage  
-> No sensitive browser APIs (geolocation, RTCPeerConnection, MediaDevices, clipboard, notifications) are used.  
-> 位置：Entire script  
-> 建议：Continue to avoid sensitive APIs unless strictly necessary.
-
-**🟠 MEDIUM** — Supply Chain Risk  
-> No @require of third-party libraries. All code is inline. No supply chain risk.  
-> 位置：Metadata and code  
-> 建议：If using libraries in the future, pin versions and use trusted CDNs.
-
-**🟡 LOW** — ClickJacking / iframe Risk  
-> No iframe manipulation or clickjacking detected.  
-> 位置：Entire script  
-> 建议：Avoid hidden iframes or frame policy changes.
+**🟡 LOW** — Privacy  
+> The script stores and retrieves user settings using GM_setValue and GM_getValue. No sensitive data is stored, only feature toggles.  
+> 位置：Settings logic (S, save(), GM_setValue/GM_getValue)  
+> 建议：Ensure no sensitive or personal data is stored or transmitted.
 
 ---
 

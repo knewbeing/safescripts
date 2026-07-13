@@ -34,40 +34,30 @@ title: "Gartic Phone自动绘图机器人"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：47/100　　**分析时间**：2026-07-06
+**风险等级**：🟡 LOW　　**安全评分**：72/100　　**分析时间**：2026-07-13
 
-> 该脚本主要通过 WebSocket 与 garticphone.com 服务器通信，自动发送绘图数据。未发现隐私采集、代码混淆或 DOM XSS 风险，但存在数据外传（用户行为数据）、远程代码执行（WebSocket 劫持）、权限滥用（未使用 GM_xmlhttpRequest）、供应链风险（未固定版本哈希）。建议移除未用权限、限制 WebSocket 修改、确保数据结构安全。整体风险较高，不建议在敏感环境下使用。
+> 该脚本主要通过 WebSocket 与 garticphone.com 服务器通信，未发现向第三方服务器或外部域名发送数据，也未收集用户隐私信息。未检测到远程代码执行、代码混淆、DOM XSS 或供应链风险。存在未使用的 GM_xmlhttpRequest 权限申请，建议移除。整体风险较低，适合在信任环境下使用。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：garticphone.com (via WebSocket)） |
+| 数据外传 | ❌ 检测到（目标：garticphone.com） |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ⚠️ 使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ⚠️ 存在风险 |
+| 供应链风险 | ✅ 可信 |
 
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本通过 WebSocket 向 garticphone.com 服务器发送大量绘图数据（用户行为数据），并可访问当前游戏回合信息。  
-> 位置：customWebSocket class, sendPackets function  
-> 建议：确保仅发送游戏相关数据，不携带敏感用户信息。建议明确数据结构，避免扩展为追踪用途。
-
-**🔴 HIGH** — 远程代码执行  
-> 脚本可访问并修改 WebSocket 行为，理论上可用于数据注入或劫持通信。  
-> 位置：unsafeWindow.WebSocket = customWebSocket  
-> 建议：限制 WebSocket 修改范围，避免滥用。仅允许与游戏服务器通信。
+> 脚本通过 WebSocket 发送数据包到 garticphone.com 服务器（sendPackets 函数），但仅限于游戏协议数据，无用户敏感信息或页面内容外传。  
+> 位置：sendPackets, customWebSocket, draw  
+> 建议：确认仅发送游戏协议数据，不要拼接或发送用户敏感信息。
 
 **🟠 MEDIUM** — 权限滥用  
-> 脚本申请 GM_xmlhttpRequest 权限，但实际未使用，仅用 fetch 进行请求。  
-> 位置：元数据 @grant GM_xmlhttpRequest  
+> 脚本申请了 GM_xmlhttpRequest 权限，但实际代码未使用该 API。  
+> 位置：@grant 元数据  
 > 建议：移除未使用的高权限申请，减少权限滥用风险。
-
-**🟠 MEDIUM** — 供应链风险  
-> 脚本未固定 @require 版本哈希，虽然未实际使用 @require，但 downloadURL/updateURL 指向 GreasyFork CDN，理论上存在供应链风险。  
-> 位置：元数据 @downloadURL, @updateURL  
-> 建议：确保所有远程加载代码来源可信且版本固定。
 
 ---
 

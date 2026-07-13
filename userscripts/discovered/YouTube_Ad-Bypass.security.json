@@ -1,0 +1,22 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "SAFE",
+  "script_name": "YouTube Ad-Bypass",
+  "security_score": 100,
+  "summary": "该脚本仅通过 DOM 操作和样式注入隐藏/跳过 YouTube 广告，没有检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。脚本结构清晰，未申请任何 @grant 权限，未加载外部依赖，安全性高。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-07-13T05:51:10.901481+00:00",
+  "slug": "YouTube_Ad-Bypass"
+}

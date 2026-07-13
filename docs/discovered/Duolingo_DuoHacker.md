@@ -35,65 +35,45 @@ title: "多邻国 DuoHacker"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：47/100　　**分析时间**：2026-07-06
+**风险等级**：🔴 HIGH　　**安全评分**：34/100　　**分析时间**：2026-07-13
 
-> Duolingo DuoHacker 用户脚本存在严重的数据外传风险，允许连接多个第三方域名（如 assets.duohacker.io.vn），可能导致用户数据泄露。未检测到隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 调用等高风险行为。建议移除非官方域名连接，仅允许 Duolingo 官方域名，提升安全性。当前安全评分为 47，风险等级为 CRITICAL。
+> The script requests high-risk permissions (GM_xmlhttpRequest) and connects to multiple third-party domains, including non-official ones. This introduces critical risks of data exfiltration and supply chain attacks. There is no evidence of code obfuscation or DOM XSS, and privacy collection is limited to language preference. However, the broad network permissions and supply chain risks make this script unsafe for general use without further code review and restriction of external connections.
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：duolingo.com, stories.duolingo.com, goals-api.duolingo.com） |
-| 隐私采集 | ✅ 未检测到 |
+| 隐私采集 | ❌ 检测到（Reads language preference from localStorage） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ✅ 可信 |
+| 供应链风险 | ⚠️ 存在风险 |
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本申请了 GM_xmlhttpRequest 权限，并允许连接多个第三方域名，包括 assets.duohacker.io.vn 和 font.duohacker.io.vn。这些非官方 Duolingo 域名可能用于数据外传或统计行为，存在数据泄露风险。  
-> 位置：元数据 @grant GM_xmlhttpRequest, @connect assets.duohacker.io.vn, @connect font.duohacker.io.vn  
-> 建议：限制连接目标，仅允许 Duolingo 官方域名，移除非必要的第三方连接。
+**⛔ CRITICAL** — Data Exfiltration / Supply Chain  
+> The script requests GM_xmlhttpRequest permission and @connect to multiple third-party domains, including raw.githubusercontent.com, greasyfork.org, and assets/font.duohacker.io.vn. These are not official Duolingo domains and may be used to fetch remote resources or code.  
+> 位置：Metadata block (@grant, @connect)  
+> 建议：Restrict @connect to only necessary and trusted domains. Avoid loading code or resources from non-official or unverifiable sources.
 
-**🟠 MEDIUM** — 隐私采集  
-> 脚本读取 localStorage（_lang = localStorage.getItem(_I18N_KEY)），但未发现读取 cookie、sessionStorage、IndexedDB、表单字段或剪贴板内容。未检测到隐私采集行为。  
-> 位置：代码行：var _lang = localStorage.getItem(_I18N_KEY) || 'vi';  
-> 建议：确保后续代码不涉及敏感隐私数据读取与外传。
+**⛔ CRITICAL** — Data Exfiltration  
+> The script requests GM_xmlhttpRequest, which allows arbitrary cross-origin requests. This can be abused for data exfiltration or remote code loading.  
+> 位置：Metadata block (@grant)  
+> 建议：Limit the use of GM_xmlhttpRequest and ensure all requests are strictly validated and only target trusted endpoints.
 
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_addStyle 权限，但未发现滥用高权限行为。GM_xmlhttpRequest 权限与实际代码用途相符。  
-> 位置：元数据 @grant GM_addStyle  
-> 建议：仅申请实际需要的权限，避免权限滥用。
+**🟠 MEDIUM** — Privacy Collection  
+> The script requests access to localStorage for language preference. While this is not sensitive, it is a privacy-related API.  
+> 位置：Code: var _lang = localStorage.getItem(_I18N_KEY) || 'vi';  
+> 建议：Ensure no sensitive user data is stored or read from localStorage.
 
-**🟡 LOW** — 远程代码执行  
-> 脚本未使用 eval、new Function、setTimeout(string)、setInterval(string)，也未动态加载远程 JS（如 @require 或 script 标签）。  
-> 位置：完整代码（已审查）  
-> 建议：保持代码执行安全，避免远程代码注入。
+**🟠 MEDIUM** — Permission Abuse  
+> The script requests GM_addStyle, which is not a high-risk permission but should be justified.  
+> 位置：Metadata block (@grant)  
+> 建议：Remove unused permissions if not required.
 
-**🟡 LOW** — 代码混淆  
-> 未发现代码混淆、base64 解码、字符串数组映射或高度压缩单行代码。  
-> 位置：完整代码（已审查）  
-> 建议：保持代码可读性，防止混淆隐藏恶意行为。
-
-**🟡 LOW** — DOM XSS / 注入  
-> 未发现 DOM XSS 风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML。  
-> 位置：完整代码（已审查）  
-> 建议：继续保持安全的 DOM 操作，避免注入风险。
-
-**🟡 LOW** — 敏感 API 调用  
-> 未检测到敏感 API 调用（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。  
-> 位置：完整代码（已审查）  
-> 建议：避免调用敏感 API，保护用户隐私。
-
-**🟡 LOW** — 供应链风险  
-> 脚本未使用 @require 加载第三方库，未发现供应链风险。  
-> 位置：元数据（无 @require）  
-> 建议：如需加载第三方库，建议固定版本哈希并使用官方 CDN。
-
-**🟡 LOW** — ClickJacking / iframe 风险  
-> 未发现修改 frame 保护策略或创建隐藏 iframe 用于数据提取。  
-> 位置：完整代码（已审查）  
-> 建议：避免 iframe 滥用，防止 ClickJacking。
+**🟠 MEDIUM** — Supply Chain Risk  
+> The script allows @require and @connect to raw.githubusercontent.com and greasyfork.org, which can be a supply chain risk if not pinned to a specific commit or version.  
+> 位置：Metadata block (@require, @connect)  
+> 建议：Pin all external resources to a specific version or hash to prevent supply chain attacks.
 
 ---
 

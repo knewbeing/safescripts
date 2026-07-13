@@ -48,14 +48,14 @@ title: "全站视频下载按钮"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：50/100　　**分析时间**：2026-07-06
+**风险等级**：🔴 HIGH　　**安全评分**：67/100　　**分析时间**：2026-07-13
 
-> 该脚本存在严重的数据外传和隐私采集风险，因其会将当前页面的视频/音频 URL 发送到第三方服务（包括 chilldownloader.com、tool77.com、spotriff.com 等），可能泄露用户访问内容。未发现远程代码执行、代码混淆、DOM XSS、敏感 API 调用、供应链风险等问题。建议移除未使用的 GM_openInTab 权限，并明确告知用户数据传递行为。整体安全评分为 50，风险等级为 CRITICAL。
+> The script adds a download button to supported video/music sites. When clicked, it opens a third-party downloader site/app with the current video/track URL as a parameter. This results in user data (the video/track URL) being sent to external servers. No evidence of keylogging, clipboard access, or DOM XSS was found. The script does not appear obfuscated or minified. The use of GM_openInTab is a medium risk due to its potential for abuse. No supply chain or sensitive API risks detected.
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：chilldownloader://download?url=, https://chilldownloader.com, https://www.tool77.com/it/v/downloader?url={url}） |
-| 隐私采集 | ❌ 检测到（传递当前页面视频/音频 URL 到第三方服务，可能间接泄露用户访问内容） |
+| 数据外传 | ❌ 检测到（目标：https://chilldownloader.com, https://www.tool77.com, https://www.spotriff.com） |
+| 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -63,50 +63,15 @@ title: "全站视频下载按钮"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本通过 chilldownloader://download?url=、https://chilldownloader.com、https://www.tool77.com/it/v/downloader?url={url}、https://www.spotriff.com/en?url={raw} 等第三方服务传递当前页面视频/音频 URL，存在用户数据外传风险。  
-> 位置：代码常量 APP_PROTOCOL, APP_SITE_URL, WEB_DOWNLOADER, SPOTIFY_DOWNLOADER 及相关点击事件  
-> 建议：明确告知用户数据传递行为，避免传递敏感信息，建议仅在用户主动操作时触发。
+**⛔ CRITICAL** — Data Exfiltration  
+> The script opens external URLs (chilldownloader.com, tool77.com, spotriff.com) with the current video/track URL as a parameter when the user clicks the download button. This constitutes data transmission to third-party servers.  
+> 位置：Main script logic (button click handler)  
+> 建议：Warn users that their video/track URL will be sent to third-party services. Consider adding a confirmation dialog or privacy notice.
 
-**⛔ CRITICAL** — 隐私采集  
-> 脚本未直接读取 cookie、localStorage、sessionStorage、IndexedDB、剪贴板或表单字段，但通过传递视频/音频 URL，可能间接泄露用户访问内容。  
-> 位置：下载按钮点击事件，URL 拼接  
-> 建议：限制传递内容，仅传递必要的公开资源链接，避免敏感参数。
-
-**🔴 HIGH** — 远程代码执行  
-> 脚本未使用 eval、new Function、setTimeout(string)、setInterval(string)、innerHTML 执行 JS，也未动态加载远程 JS。  
-> 位置：全局代码  
-> 建议：保持当前实现，避免引入远程代码执行风险。
-
-**🔴 HIGH** — 代码混淆  
-> 脚本未发现明显代码混淆、base64 解码、字符串映射或高度压缩单行代码。  
-> 位置：全局代码  
-> 建议：保持代码可读性，避免混淆。
-
-**🔴 HIGH** — DOM XSS / 注入  
-> 脚本未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未发现 DOM XSS 注入风险。  
-> 位置：全局代码  
-> 建议：继续避免直接插入不可信内容。
-
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_openInTab 权限，但实际代码未使用该权限，存在权限滥用风险。  
-> 位置：元数据 @grant  
-> 建议：移除未使用的高权限申请。
-
-**🟠 MEDIUM** — 敏感 API 调用  
-> 脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。  
-> 位置：全局代码  
-> 建议：保持当前实现，避免敏感 API 滥用。
-
-**🟠 MEDIUM** — 供应链风险  
-> 脚本未通过 @require 加载第三方库，无供应链风险。  
-> 位置：元数据  
-> 建议：如需引入第三方库，建议固定版本哈希并使用可信 CDN。
-
-**🟡 LOW** — ClickJacking / iframe 风险  
-> 脚本未修改 frame 保护策略，也未创建隐藏 iframe 用于数据提取。  
-> 位置：全局代码  
-> 建议：继续避免 iframe 风险。
+**🟠 MEDIUM** — Permission Overuse  
+> The script requests GM_openInTab permission, which allows opening arbitrary URLs in new tabs. This is a high-privilege API and could be abused if the script is modified.  
+> 位置：Metadata block (@grant GM_openInTab)  
+> 建议：Only request GM_openInTab if strictly necessary. Review code to ensure it is not used for malicious redirects.
 
 ---
 

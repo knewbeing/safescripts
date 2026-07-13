@@ -30,14 +30,14 @@ title: "Github Enhancement - High Speed Download"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：50/100　　**分析时间**：2026-07-06
+**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-07-13
 
-> 该脚本通过第三方加速节点实现 Github 文件高速下载，存在数据外传和间接隐私泄露风险。未检测到代码混淆、远程代码执行、DOM XSS、敏感 API 调用或供应链风险。建议用户仅用于公开内容下载，避免下载敏感或私有仓库。整体安全性中等，主要风险在于第三方节点可能记录用户行为。
+> 该脚本主要为 Github 提供加速下载节点的静态配置，未检测到实际的数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。存在未使用的 GM_openInTab 权限，建议根据实际需求精简权限。整体风险较低，但需关注后续代码实现中是否有数据外传行为。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：https://gh.h233.eu.org/https://github.com, https://rapidgit.jjda.de5.net/https://github.com, https://gh.ddlc.top/https://github.com） |
-| 隐私采集 | ❌ 检测到（通过加速节点间接暴露用户下载行为和目标仓库信息） |
+| 数据外传 | ✅ 未检测到 |
+| 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -45,50 +45,15 @@ title: "Github Enhancement - High Speed Download"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本通过构造下载链接，将用户请求重定向到第三方加速代理服务器（如 gh.h233.eu.org、gh-proxy.org 等），这些服务器可能会记录用户下载行为和请求内容。  
-> 位置：download_url_us 数组及相关下载逻辑  
-> 建议：警告用户这些加速节点为第三方，下载时注意隐私风险。建议只用于公开内容下载，避免下载敏感或私有仓库。
+**🟠 MEDIUM** — Permission overgrant  
+> 脚本申请了 GM_openInTab 权限，但在当前代码片段未见实际使用。  
+> 位置：@grant 元数据  
+> 建议：如无实际需求，建议移除未使用的高权限申请，减少权限滥用风险。
 
-**⛔ CRITICAL** — 隐私采集  
-> 脚本未检测到主动采集用户隐私数据（如 cookie、表单、剪贴板等），但通过下载加速节点间接暴露用户的下载行为和目标仓库信息。  
-> 位置：下载链接生成与跳转  
-> 建议：提醒用户加速节点可能记录访问日志，避免下载敏感内容。
-
-**🔴 HIGH** — 远程代码执行  
-> 脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等动态代码执行方式，也未通过 innerHTML/outerHTML 插入外部脚本。  
-> 位置：主逻辑  
-> 建议：保持当前安全实践，避免未来引入动态代码执行。
-
-**🔴 HIGH** — 代码混淆  
-> 脚本未检测到代码混淆、base64 解码、字符串映射或高度压缩代码。  
-> 位置：主逻辑  
-> 建议：保持代码可读性，便于社区审查。
-
-**🔴 HIGH** — DOM XSS / 注入  
-> 脚本未检测到 DOM XSS 风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML。  
-> 位置：主逻辑  
-> 建议：继续避免直接插入用户输入到 DOM。
-
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_openInTab、GM_notification、GM_setClipboard 等权限，但实际使用与功能相符，无权限滥用。  
-> 位置：元数据 @grant  
-> 建议：定期复查权限申请，避免冗余高权限。
-
-**🟠 MEDIUM** — 敏感 API 调用  
-> 脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API 读取、Notification API 滥用）。  
-> 位置：主逻辑  
-> 建议：继续避免敏感 API 滥用。
-
-**🟠 MEDIUM** — 供应链风险  
-> 脚本未通过 @require 加载第三方库，未检测到供应链风险。  
-> 位置：元数据  
-> 建议：如需引入第三方库，建议固定版本哈希并使用官方 CDN。
-
-**🟡 LOW** — ClickJacking / iframe 风险  
-> 脚本未检测到修改 frame 保护策略或创建隐藏 iframe 用于数据提取。  
-> 位置：主逻辑  
-> 建议：继续避免 iframe 风险。
+**🟡 LOW** — Potential data transmission risk  
+> 脚本包含大量第三方加速下载节点的 URL，但未检测到实际的数据外传代码（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket 等），仅为静态链接配置。  
+> 位置：download_url_us 数组与相关配置  
+> 建议：确保后续代码实现中不将用户敏感信息或 Cookie 通过这些加速节点外传。
 
 ---
 

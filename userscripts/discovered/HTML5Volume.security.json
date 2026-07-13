@@ -5,20 +5,35 @@
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [],
+  "issues": [
+    {
+      "description": "脚本申请了 GM_openInTab 权限，并在菜单中用于打开反馈页面，但未被滥用。",
+      "location": "@grant 元数据与 registerMenuCommand 函数",
+      "recommendation": "确认仅用于用户主动操作时打开可信页面，避免自动化或恶意跳转。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本申请了 GM_notification 权限，但在代码中未发现实际使用。",
+      "location": "@grant 元数据",
+      "recommendation": "移除未使用的高权限申请，减少潜在攻击面。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    }
+  ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "Uses localStorage to store per-site volume (key: 'html5_xiu_currentVolume'), but does not collect or transmit sensitive data."
+      "使用 localStorage 记录当前网站音量（键名：html5_xiu_currentVolume），仅存储音量百分比，无敏感信息"
     ],
     "detected": false
   },
-  "risk_level": "SAFE",
+  "risk_level": "LOW",
   "script_name": "HTML5 Video Audio Default Volume",
-  "security_score": 100,
-  "summary": "该脚本仅用于设置 HTML5 视频/音频的默认音量，并在本地存储每个网站的音量设置。未检测到任何数据外传、隐私采集、远程代码执行、混淆、XSS、权限滥用或供应链风险。所有存储均为本地，未与外部服务器通信。",
+  "security_score": 89,
+  "summary": "该脚本主要用于设置 HTML5 视频/音频的默认音量，并记忆每个网站的音量设置。未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 或供应链风险。仅存在权限申请略高于实际使用（GM_notification 未用），以及 GM_openInTab 仅用于用户菜单跳转。整体安全性高，风险极低。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-29T06:46:55.376387+00:00",
+  "analyzed_at": "2026-07-13T05:39:41.086714+00:00",
   "slug": "HTML5Volume"
 }

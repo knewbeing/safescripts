@@ -33,9 +33,9 @@ title: "蛋壳射击自动瞄准+透视"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：84/100　　**分析时间**：2026-06-22
+**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-07-13
 
-> 该脚本未检测到数据外传、远程代码执行、代码混淆、DOM XSS 或 WebSocket 使用。主要风险为申请了 unsafeWindow 权限（但未见滥用）和 localStorage 设置存储（无敏感信息），以及加载了锁定版本的第三方库。整体风险较低，但建议定期复查第三方依赖和权限申请。
+> 该脚本未检测到数据外传、远程代码执行、代码混淆、DOM XSS 或 WebSocket 使用。主要风险为申请了 unsafeWindow 权限（中等风险），但当前用途有限。localStorage 仅用于存储设置，无敏感信息。@require 的第三方库来源可信且锁定版本。整体安全风险较低，但建议定期复查权限申请和依赖库。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -49,19 +49,19 @@ title: "蛋壳射击自动瞄准+透视"
 ### 发现的问题
 
 **🟠 MEDIUM** — 权限滥用  
-> 使用了 @grant unsafeWindow，允许脚本访问页面上下文，可能被滥用进行高权限操作，但当前代码未见明显滥用。  
-> 位置：元数据 @grant  
-> 建议：仅在必要时申请 unsafeWindow 权限，并限制其使用范围。
+> 使用了 @grant unsafeWindow，允许脚本访问页面上下文，可能被滥用，但当前代码仅用于设置标志位。  
+> 位置：元数据 @grant unsafeWindow 及 saveSettings()、初始化部分  
+> 建议：仅在必要时申请 unsafeWindow，避免滥用，定期复查其用途。
 
-**🟠 MEDIUM** — 隐私采集  
-> 脚本通过 localStorage 存储和读取设置，但未见敏感信息（如 cookie、表单、密码等）被采集。  
-> 位置：localStorage 相关代码  
-> 建议：确保不存储敏感信息，避免与其他脚本共享存储键。
+**🟡 LOW** — 隐私采集  
+> 通过 localStorage 存储和读取设置，但未发现敏感信息（如账号、密码、cookie）被存储。  
+> 位置：localStorage 相关代码（SETTINGS_KEY、saveSettings、初始化）  
+> 建议：确保不存储敏感信息，避免与其他脚本共享存储空间。
 
-**🟠 MEDIUM** — 供应链风险  
-> 通过 @require 加载了 babylonjs 第三方库，来源为 jsdelivr 官方 CDN，版本已锁定。  
+**🟡 LOW** — 供应链风险  
+> @require 加载了 babylonjs，来源为 jsdelivr 官方 CDN，且指定了明确版本。  
 > 位置：@require https://cdn.jsdelivr.net/npm/babylonjs@7.15.0/babylon.min.js  
-> 建议：保持使用可信 CDN 并锁定具体版本。
+> 建议：继续使用可信 CDN 并锁定版本，避免使用未知来源。
 
 ---
 

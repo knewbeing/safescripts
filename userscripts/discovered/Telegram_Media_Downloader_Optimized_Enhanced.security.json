@@ -5,15 +5,7 @@
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [
-    {
-      "description": "脚本未包含任何实际功能代码，仅有元数据部分。未检测到任何网络请求、数据外传、隐私采集、远程代码执行、代码混淆、DOM 注入、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。",
-      "location": "整个脚本",
-      "recommendation": "补充完整功能代码后再进行安全审查。当前仅元数据无安全风险。",
-      "severity": "LOW",
-      "type": "无功能代码"
-    }
-  ],
+  "issues": [],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
@@ -21,10 +13,10 @@
   },
   "risk_level": "SAFE",
   "script_name": "Telegram Media Downloader (Optimized & Enhanced)",
-  "security_score": 97,
-  "summary": "该脚本仅包含元数据部分，无任何功能代码，因此不存在安全风险。未检测到任何数据外传、隐私采集、远程代码执行、混淆、XSS、权限滥用、敏感 API、供应链或 iframe 风险。安全评分高。",
+  "security_score": 100,
+  "summary": "该脚本未检测到任何安全风险。未发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用、供应链风险或 iframe 风险。代码结构清晰，未申请任何 @grant 权限，且无外部依赖。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-15T07:29:07.354631+00:00",
+  "analyzed_at": "2026-07-13T05:48:15.639494+00:00",
   "slug": "Telegram_Media_Downloader_Optimized_Enhanced"
 }

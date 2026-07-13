@@ -42,9 +42,9 @@ title: "IG小助手"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：92/100　　**分析时间**：2026-07-06
+**风险等级**：🟡 LOW　　**安全评分**：84/100　　**分析时间**：2026-07-13
 
-> IG Helper 用户脚本整体安全性较高，未发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危风险。依赖库均为官方 CDN 且固定哈希，供应链风险低。部分权限（GM_openInTab、GM_xmlhttpRequest）存在冗余或需持续关注，建议定期审查代码更新。整体风险等级为 LOW，安全评分 92。适合公开使用。后续如有功能扩展，需重点关注权限申请与数据处理逻辑。无隐私采集行为，无外部数据上报。
+> 该脚本主要功能为一键下载 Instagram 媒体资源，未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。依赖的第三方库均为可信 CDN 且固定哈希，供应链风险较低。存在部分权限冗余（如 GM_openInTab），建议最小化权限。整体安全风险较低，适合一般用户使用。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -57,55 +57,20 @@ title: "IG小助手"
 
 ### 发现的问题
 
-**🟠 MEDIUM** — 权限滥用  
-> 申请了 GM_xmlhttpRequest 权限，并声明 @connect 到 cdn.jsdelivr.net、i.instagram.com、raw.githubusercontent.com，但代码未发现将用户数据、cookie、敏感信息发送到第三方服务器，仅用于资源获取。  
-> 位置：元数据与部分代码  
-> 建议：持续监控后续代码更新，确保 GM_xmlhttpRequest 仅用于公开资源下载，不涉及用户隐私数据。
+**🟠 MEDIUM** — 权限申请  
+> 申请了 GM_xmlhttpRequest 权限，并允许连接 cdn.jsdelivr.net、i.instagram.com、raw.githubusercontent.com，但代码中仅用于加载资源和 Instagram API，无发现用户数据外传或统计追踪行为。  
+> 位置：元数据 @grant/@connect 及主代码  
+> 建议：继续关注后续版本，确保无新增外传逻辑。
 
-**🟠 MEDIUM** — 权限滥用  
-> 申请了 GM_openInTab 权限，但代码未发现实际使用，可能存在权限冗余。  
-> 位置：元数据  
-> 建议：建议移除未使用的高权限申请，减少攻击面。
+**🟠 MEDIUM** — 供应链依赖  
+> 通过 @require 加载 mediabunny 和 jQuery，均为知名 CDN 并固定了 sha256 哈希，供应链风险较低。  
+> 位置：元数据 @require  
+> 建议：定期检查依赖哈希，防止 CDN 污染。
 
-**🟠 MEDIUM** — 供应链风险  
-> @require 加载 mediabunny 和 jQuery 均为官方 CDN，并固定了 sha256 哈希，供应链风险较低。  
-> 位置：元数据  
-> 建议：保持依赖哈希锁定，避免加载可变版本。
-
-**🟡 LOW** — 远程代码执行  
-> 未发现 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险。  
-> 位置：完整代码  
-> 建议：继续保持，避免动态执行字符串代码。
-
-**🟡 LOW** — 代码混淆  
-> 未发现代码混淆、base64 解码、字符串映射、unicode 混淆等特征，代码结构清晰。  
-> 位置：完整代码  
-> 建议：保持代码可读性，便于社区审查。
-
-**🟡 LOW** — DOM XSS  
-> 未发现 DOM XSS 风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML。  
-> 位置：完整代码  
-> 建议：继续保持安全的 DOM 操作。
-
-**🟡 LOW** — 敏感 API 调用  
-> 未发现敏感 API 调用（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API）。  
-> 位置：完整代码  
-> 建议：避免调用敏感 API，除非有明确用途且告知用户。
-
-**🟡 LOW** — 隐私采集  
-> 未发现隐私采集行为，如读取 cookie、localStorage、sessionStorage、IndexedDB、监听键盘输入、读取表单字段、访问指纹 API、读取剪贴板。  
-> 位置：完整代码  
-> 建议：继续保持不采集用户隐私数据。
-
-**🟡 LOW** — 数据外传  
-> 未发现 WebSocket、EventSource、navigator.sendBeacon 等外传行为。  
-> 位置：完整代码  
-> 建议：避免使用实时数据外传接口。
-
-**🟡 LOW** — ClickJacking / iframe 风险  
-> 未发现修改 frame 保护策略或创建隐藏 iframe 用于数据提取。  
-> 位置：完整代码  
-> 建议：继续保持安全的 iframe 使用。
+**🟠 MEDIUM** — 权限冗余  
+> 申请了 GM_openInTab 权限，但主代码片段未见明显使用，存在一定权限冗余。  
+> 位置：元数据 @grant  
+> 建议：如未使用 GM_openInTab，建议移除。
 
 ---
 

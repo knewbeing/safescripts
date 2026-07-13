@@ -38,9 +38,50 @@ title: "Youtube 工具 多合一本地下載 MP4、MP3"
 
 ## 安全分析
 
-::: info 等待分析
-安全分析将在下次流水线运行时自动更新。
-:::
+**风险等级**：🔴 HIGH　　**安全评分**：50/100　　**分析时间**：2026-07-13
+
+> 该脚本存在较高安全风险，主要体现在与多个第三方 API 通信，可能外传用户行为数据（如视频 ID、页面 URL），并申请了 unsafeWindow 高权限。未发现明显的代码混淆、远程代码执行或 DOM XSS 风险。建议仅在信任脚本作者和 API 服务的前提下使用，并注意个人隐私保护。
+
+| 检查项 | 结果 |
+|--------|------|
+| 数据外传 | ❌ 检测到（目标：https://returnyoutubedislikeapi.com, https://translate.googleapis.com, https://p.savenow.to） |
+| 隐私采集 | ❌ 检测到（API 请求可能包含视频 ID、页面 URL 等用户行为数据） |
+| 代码混淆 | ✅ 未检测到 |
+| WebSocket/SSE | ✅ 未使用 |
+| DOM XSS 风险 | ✅ 未检测到 |
+| 供应链风险 | ✅ 可信 |
+
+### 发现的问题
+
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过 fetch/GM_xmlhttpRequest 等方式与多个第三方 API 通信，包括 returnyoutubedislikeapi.com、translate.googleapis.com、p.savenow.to、p.lbserver.xyz、dubs.io，可能传递视频 ID、页面信息等数据。  
+> 位置：全局常量定义及后续 API 调用  
+> 建议：仅允许必要的 API 通信，明确告知用户数据用途，避免传递敏感信息。
+
+**⛔ CRITICAL** — 数据外传  
+> 脚本未发现明显的隐私采集（如读取 cookie、localStorage、监听键盘输入等），但部分 API 请求可能间接传递用户行为数据（如视频 ID、页面 URL）。  
+> 位置：API 调用参数构造处  
+> 建议：确保不上传用户敏感信息，API 请求参数应最小化。
+
+**🔴 HIGH** — 远程代码执行  
+> 脚本未发现 eval、new Function、setTimeout(string) 等远程代码执行风险。  
+> 位置：全局  
+> 建议：保持此安全实践。
+
+**🔴 HIGH** — 代码混淆  
+> 脚本未发现明显的代码混淆、base64 解码、字符串数组混淆等。  
+> 位置：全局  
+> 建议：保持代码可读性，便于安全审计。
+
+**🟠 MEDIUM** — 供应链风险  
+> @require 加载了第三方库 iziToast，来源为 jsdelivr 官方 CDN，版本已锁定。  
+> 位置：元数据 @require  
+> 建议：建议定期检查依赖安全性。
+
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 unsafeWindow 权限，存在一定安全隐患（可访问页面全局作用域，增加攻击面）。  
+> 位置：元数据 @grant  
+> 建议：如非必要，建议移除 unsafeWindow 权限。
 
 ---
 

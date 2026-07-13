@@ -40,45 +40,35 @@ title: "旁路全部短链接"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：34/100　　**分析时间**：2026-07-06
+**风险等级**：🔴 HIGH　　**安全评分**：67/100　　**分析时间**：2026-07-13
 
-> The script presents significant security risks due to broad URL matching, high-privilege grants, supply chain risk from @require, and likely DOM manipulation. Data exfiltration is possible via GM_xmlhttpRequest. Without full code, the risk of privacy collection and DOM XSS is high. Not recommended for use without further review and restriction.
+> The script metadata requests several high-privilege permissions (GM_xmlhttpRequest, GM_openInTab, GM_setClipboard) and loads a remote library without a fixed version, introducing supply chain risk. The actual script code is missing, so a full review is not possible. Based on the metadata, there is a high risk of data exfiltration and permission abuse if the script or its dependencies are compromised. No evidence of privacy collection, obfuscation, or DOM XSS is present in the metadata.
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：Shortlink service domains (varies per site), GreasyFork CDN (for @require), Potentially other domains via GM_xmlhttpRequest） |
-| 隐私采集 | ❌ 检测到（Script runs on all sites, can access DOM, cookies, localStorage, sessionStorage., Potential to read form fields, clipboard, or other sensitive data.） |
+| 数据外传 | ❌ 检测到（目标：Third-party shortlink services (varies, based on GM_xmlhttpRequest usage), https://update.greasyfork.org/scripts/528923/1588272/MonkeyConfig%20Mod.js (via @require)） |
+| 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
-| DOM XSS 风险 | ❌ 存在风险 |
+| DOM XSS 风险 | ✅ 未检测到 |
 | 供应链风险 | ⚠️ 存在风险 |
 
 ### 发现的问题
 
 **⛔ CRITICAL** — Data Exfiltration  
-> The script uses GM_xmlhttpRequest, which can send requests to arbitrary domains. Without full code, it's unclear if user data or cookies are transmitted, but the risk is present.  
-> 位置：GM_xmlhttpRequest usage (metadata and likely in main code)  
-> 建议：Review all GM_xmlhttpRequest calls to ensure no sensitive user data is sent to third-party domains.
-
-**🔴 HIGH** — Privacy Collection  
-> The script matches all URLs (*://*/*), increasing the risk of privacy collection and data exfiltration across all visited sites.  
-> 位置：@match *://*/*  
-> 建议：Restrict match patterns to only shortlink domains or add domain-specific logic.
-
-**🔴 HIGH** — DOM XSS  
-> Potential DOM XSS risk due to the script's purpose (bypassing shortlinks, manipulating DOM, skipping ads/popups). Without full code, it's likely user input or URL parameters are inserted into the DOM.  
-> 位置：Main script logic (not fully provided)  
-> 建议：Sanitize all user input and URL parameters before inserting into DOM via innerHTML/outerHTML/document.write.
-
-**🟠 MEDIUM** — Permission Abuse  
-> The script grants GM_openInTab, GM_setClipboard, and GM_xmlhttpRequest, which are high-privilege APIs. Not all may be necessary for bypassing shortlinks.  
-> 位置：@grant section  
-> 建议：Remove unused or unnecessary grants to minimize attack surface.
+> The script requests GM_xmlhttpRequest permission, which allows arbitrary cross-origin requests. The actual script code is missing, but the permission itself is high risk if misused.  
+> 位置：Metadata block (@grant GM_xmlhttpRequest)  
+> 建议：Review the script code for actual usage. Limit requests to trusted domains only.
 
 **🟠 MEDIUM** — Supply Chain Risk  
-> The script loads a third-party library via @require from GreasyFork CDN. While GreasyFork is generally trusted, the version is not pinned with a hash, so supply chain risk exists.  
-> 位置：@require https://update.greasyfork.org/scripts/528923/1588272/MonkeyConfig%20Mod.js  
-> 建议：Pin @require to a specific version or hash, and periodically review the library for malicious changes.
+> The script uses @require to load a remote library (MonkeyConfig Mod.js) from update.greasyfork.org without a version hash. This introduces supply chain risk if the remote file is compromised.  
+> 位置：Metadata block (@require)  
+> 建议：Pin the @require to a specific version or hash, and only use trusted sources.
+
+**🟠 MEDIUM** — Permission Abuse  
+> The script requests high-privilege grants such as GM_openInTab and GM_setClipboard, which can be abused if the script is malicious or compromised.  
+> 位置：Metadata block (@grant GM_openInTab, GM_setClipboard)  
+> 建议：Only request permissions that are strictly necessary for script functionality.
 
 ---
 

@@ -1,0 +1,86 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "脚本未检测到任何网络请求（如 fetch、GM_xmlhttpRequest、XMLHttpRequest、WebSocket、sendBeacon 等）用于数据外传。",
+      "location": "全局",
+      "recommendation": "保持现状，勿添加任何外传逻辑。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本未检测到任何隐私数据采集行为（如读取 cookie、localStorage、sessionStorage、IndexedDB、监听键盘输入、读取表单字段、访问指纹 API、读取剪贴板等）。",
+      "location": "全局",
+      "recommendation": "保持现状，勿添加任何隐私采集逻辑。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本未检测到 eval、new Function、setTimeout(string)、setInterval(string)、动态 script 标签、@require 远程 JS、document.write 等远程代码执行风险。",
+      "location": "全局",
+      "recommendation": "保持现状，勿引入动态执行代码。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本未检测到代码混淆、base64 解码、字符串数组混淆、unicode 混淆或高度压缩单行代码。",
+      "location": "全局",
+      "recommendation": "保持代码可读性，避免混淆。",
+      "severity": "HIGH",
+      "type": "代码混淆"
+    },
+    {
+      "description": "脚本未检测到 DOM XSS 风险（如用户输入或 URL 参数直接插入 innerHTML/outerHTML、document.write 注入、iframe src 操作等）。",
+      "location": "全局",
+      "recommendation": "如后续涉及动态内容插入，需严格转义。",
+      "severity": "HIGH",
+      "type": "DOM XSS / 注入"
+    },
+    {
+      "description": "脚本申请了部分 GM_* 权限（如 GM_openInTab、GM_notification、GM_setClipboard），但均有实际用途，未发现权限滥用。",
+      "location": "元数据 @grant",
+      "recommendation": "仅申请实际需要的权限。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本未检测到敏感 API 调用（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API 读取、Notification 滥用等）。",
+      "location": "全局",
+      "recommendation": "如需使用敏感 API，需征得用户同意。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "脚本未检测到 @require 加载第三方库，无供应链风险。",
+      "location": "元数据 @require",
+      "recommendation": "如需引入第三方库，建议使用官方 CDN 并锁定版本。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    },
+    {
+      "description": "脚本未检测到对 frame 保护策略的修改，也未创建隐藏 iframe 用于数据提取。",
+      "location": "全局",
+      "recommendation": "保持现状，勿引入相关风险。",
+      "severity": "LOW",
+      "type": "ClickJacking / iframe 风险"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "SAFE",
+  "script_name": "Github Enhancement",
+  "security_score": 100,
+  "summary": "该脚本主要用于在 Github 页面上增强下载体验，未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险或权限滥用等安全问题。所有 @grant 权限均有实际用途。整体安全性高，适合公开分发。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-07-13T05:56:52.329098+00:00",
+  "slug": "github-enhancement"
+}

@@ -1,0 +1,22 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "SAFE",
+  "script_name": "元素屏蔽/追踪器 (V26.39.10 - 拦截程序化点击和 PostMessage)",
+  "security_score": 100,
+  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。所有本地存储操作仅限于 localStorage，且未与外部服务器通信。脚本主要功能为拦截程序化点击、postMessage 及 iframe 沙箱管理，未发现安全隐患。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-07-13T05:56:21.439975+00:00",
+  "slug": "elementBlocker"
+}

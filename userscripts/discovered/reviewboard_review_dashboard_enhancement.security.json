@@ -1,0 +1,39 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [
+      "https://review.mydomain.com/dashboard"
+    ],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "使用 $.ajax 请求本域 /dashboard 页面以获取导航栏内容，但未向第三方服务器发送数据，也未携带敏感信息。",
+      "location": "updateDashboard()",
+      "recommendation": "确认不会将用户数据发送到第三方服务器，且请求内容为公开页面。",
+      "severity": "LOW",
+      "type": "本地数据请求"
+    },
+    {
+      "description": "通过 runInDocument() 动态插入 <script> 并执行 main()，属于远程代码执行风险点（虽然代码为本地定义，但此模式可被滥用）。",
+      "location": "runInDocument()",
+      "recommendation": "建议直接在 userscript 沙箱中运行，无需注入 script 标签。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "LOW",
+  "script_name": "Reviewboard Dashboard Enhancement",
+  "security_score": 85,
+  "summary": "该脚本主要用于增强 Reviewboard 仪表盘导航栏功能。未检测到数据外传、隐私采集、代码混淆、DOM XSS 或供应链风险。唯一的高风险项为通过 <script> 注入执行自身代码，理论上存在远程代码执行的滥用空间，但当前实现未加载外部代码。整体风险较低。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-07-13T05:58:18.966494+00:00",
+  "slug": "reviewboard_review_dashboard_enhancement"
+}

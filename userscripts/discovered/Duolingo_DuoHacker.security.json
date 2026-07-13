@@ -17,82 +17,54 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限，并允许连接多个第三方域名，包括 assets.duohacker.io.vn 和 font.duohacker.io.vn。这些非官方 Duolingo 域名可能用于数据外传或统计行为，存在数据泄露风险。",
-      "location": "元数据 @grant GM_xmlhttpRequest, @connect assets.duohacker.io.vn, @connect font.duohacker.io.vn",
-      "recommendation": "限制连接目标，仅允许 Duolingo 官方域名，移除非必要的第三方连接。",
+      "description": "The script requests GM_xmlhttpRequest permission and @connect to multiple third-party domains, including raw.githubusercontent.com, greasyfork.org, and assets/font.duohacker.io.vn. These are not official Duolingo domains and may be used to fetch remote resources or code.",
+      "location": "Metadata block (@grant, @connect)",
+      "recommendation": "Restrict @connect to only necessary and trusted domains. Avoid loading code or resources from non-official or unverifiable sources.",
       "severity": "CRITICAL",
-      "type": "数据外传"
+      "type": "Data Exfiltration / Supply Chain"
     },
     {
-      "description": "脚本读取 localStorage（_lang = localStorage.getItem(_I18N_KEY)），但未发现读取 cookie、sessionStorage、IndexedDB、表单字段或剪贴板内容。未检测到隐私采集行为。",
-      "location": "代码行：var _lang = localStorage.getItem(_I18N_KEY) || 'vi';",
-      "recommendation": "确保后续代码不涉及敏感隐私数据读取与外传。",
+      "description": "The script requests GM_xmlhttpRequest, which allows arbitrary cross-origin requests. This can be abused for data exfiltration or remote code loading.",
+      "location": "Metadata block (@grant)",
+      "recommendation": "Limit the use of GM_xmlhttpRequest and ensure all requests are strictly validated and only target trusted endpoints.",
+      "severity": "CRITICAL",
+      "type": "Data Exfiltration"
+    },
+    {
+      "description": "The script requests access to localStorage for language preference. While this is not sensitive, it is a privacy-related API.",
+      "location": "Code: var _lang = localStorage.getItem(_I18N_KEY) || 'vi';",
+      "recommendation": "Ensure no sensitive user data is stored or read from localStorage.",
       "severity": "MEDIUM",
-      "type": "隐私采集"
+      "type": "Privacy Collection"
     },
     {
-      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string)，也未动态加载远程 JS（如 @require 或 script 标签）。",
-      "location": "完整代码（已审查）",
-      "recommendation": "保持代码执行安全，避免远程代码注入。",
-      "severity": "LOW",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "未发现代码混淆、base64 解码、字符串数组映射或高度压缩单行代码。",
-      "location": "完整代码（已审查）",
-      "recommendation": "保持代码可读性，防止混淆隐藏恶意行为。",
-      "severity": "LOW",
-      "type": "代码混淆"
-    },
-    {
-      "description": "未发现 DOM XSS 风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML。",
-      "location": "完整代码（已审查）",
-      "recommendation": "继续保持安全的 DOM 操作，避免注入风险。",
-      "severity": "LOW",
-      "type": "DOM XSS / 注入"
-    },
-    {
-      "description": "脚本申请了 GM_addStyle 权限，但未发现滥用高权限行为。GM_xmlhttpRequest 权限与实际代码用途相符。",
-      "location": "元数据 @grant GM_addStyle",
-      "recommendation": "仅申请实际需要的权限，避免权限滥用。",
+      "description": "The script requests GM_addStyle, which is not a high-risk permission but should be justified.",
+      "location": "Metadata block (@grant)",
+      "recommendation": "Remove unused permissions if not required.",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "Permission Abuse"
     },
     {
-      "description": "未检测到敏感 API 调用（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。",
-      "location": "完整代码（已审查）",
-      "recommendation": "避免调用敏感 API，保护用户隐私。",
-      "severity": "LOW",
-      "type": "敏感 API 调用"
-    },
-    {
-      "description": "脚本未使用 @require 加载第三方库，未发现供应链风险。",
-      "location": "元数据（无 @require）",
-      "recommendation": "如需加载第三方库，建议固定版本哈希并使用官方 CDN。",
-      "severity": "LOW",
-      "type": "供应链风险"
-    },
-    {
-      "description": "未发现修改 frame 保护策略或创建隐藏 iframe 用于数据提取。",
-      "location": "完整代码（已审查）",
-      "recommendation": "避免 iframe 滥用，防止 ClickJacking。",
-      "severity": "LOW",
-      "type": "ClickJacking / iframe 风险"
+      "description": "The script allows @require and @connect to raw.githubusercontent.com and greasyfork.org, which can be a supply chain risk if not pinned to a specific commit or version.",
+      "location": "Metadata block (@require, @connect)",
+      "recommendation": "Pin all external resources to a specific version or hash to prevent supply chain attacks.",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "localStorage 读取（_lang）"
+      "Reads language preference from localStorage"
     ],
-    "detected": false
+    "detected": true
   },
-  "risk_level": "CRITICAL",
+  "risk_level": "HIGH",
   "script_name": "Duolingo DuoHacker",
-  "security_score": 47,
-  "summary": "Duolingo DuoHacker 用户脚本存在严重的数据外传风险，允许连接多个第三方域名（如 assets.duohacker.io.vn），可能导致用户数据泄露。未检测到隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 调用等高风险行为。建议移除非官方域名连接，仅允许 Duolingo 官方域名，提升安全性。当前安全评分为 47，风险等级为 CRITICAL。",
-  "supply_chain_risk": false,
+  "security_score": 34,
+  "summary": "The script requests high-risk permissions (GM_xmlhttpRequest) and connects to multiple third-party domains, including non-official ones. This introduces critical risks of data exfiltration and supply chain attacks. There is no evidence of code obfuscation or DOM XSS, and privacy collection is limited to language preference. However, the broad network permissions and supply chain risks make this script unsafe for general use without further code review and restriction of external connections.",
+  "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-06T06:31:01.701052+00:00",
+  "analyzed_at": "2026-07-13T05:34:30.178778+00:00",
   "slug": "Duolingo_DuoHacker"
 }

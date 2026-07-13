@@ -10,25 +10,18 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "@require 加载的第三方库未全部固定版本哈希，部分为 npm 包，存在供应链风险。",
-      "location": "元数据 @require",
-      "recommendation": "建议全部使用官方 CDN 并固定版本哈希，避免使用可变 URL。",
+      "description": "@grant 申请了较多 GM_* 权限，但部分如 GM_getResourceText, GM_setValues, GM_unregisterMenuCommand 在脚本中未见实际使用，存在权限冗余。",
+      "location": "元数据 @grant 字段",
+      "recommendation": "仅申请实际需要的权限，减少潜在攻击面。",
       "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
+      "type": "权限滥用"
     },
     {
-      "description": "申请了 GM_xmlhttpRequest 权限，但代码未发现实际使用，可能存在权限滥用风险。",
-      "location": "元数据 @grant",
-      "recommendation": "建议仅申请实际需要的权限，移除未使用的高权限。",
-      "severity": "MEDIUM",
-      "type": "Permission Abuse"
-    },
-    {
-      "description": "申请了 unsafeWindow 权限，但代码未发现实际使用，可能存在权限滥用风险。",
-      "location": "元数据 @grant",
-      "recommendation": "建议仅申请实际需要的权限，移除未使用的高权限。",
-      "severity": "MEDIUM",
-      "type": "Permission Abuse"
+      "description": "脚本通过 @require 加载了多个第三方库，均来自 fastly.jsdelivr.net，且均为固定版本（含哈希/版本号），来源可信。",
+      "location": "元数据 @require 字段",
+      "recommendation": "保持依赖锁定版本，定期安全复查依赖库。",
+      "severity": "LOW",
+      "type": "供应链风险"
     }
   ],
   "obfuscation_detected": false,
@@ -38,10 +31,10 @@
   },
   "risk_level": "LOW",
   "script_name": "CSDN优化",
-  "security_score": 81,
-  "summary": "该脚本主要用于优化 CSDN 网页体验，屏蔽广告、自动展开内容等。未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。存在部分供应链风险和权限滥用风险，建议优化依赖来源和权限申请。整体安全风险较低。未发现 WebSocket 使用。",
-  "supply_chain_risk": true,
+  "security_score": 89,
+  "summary": "该脚本主要用于优化 CSDN 站点体验，屏蔽广告、优化排版等。未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。所有网络请求目标均为 CSDN 官方域名，且未见敏感数据外传。存在部分未使用的 GM_* 权限申请，建议精简。依赖库均为锁定版本，供应链风险低。整体安全风险较低，建议定期复查依赖库安全性。",
+  "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-06T06:18:31.416676+00:00",
+  "analyzed_at": "2026-07-13T05:25:47.841121+00:00",
   "slug": "CSDN_E4_BC_98_E5_8C_96"
 }

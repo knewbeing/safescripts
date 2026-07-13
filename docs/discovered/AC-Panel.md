@@ -32,9 +32,9 @@ title: "啊猫-操作面板"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：92/100　　**分析时间**：2026-07-06
+**风险等级**：🟡 LOW　　**安全评分**：84/100　　**分析时间**：2026-07-13
 
-> 该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用等高风险行为。唯一风险为 @require 加载第三方库时未固定版本哈希，存在一定供应链风险。整体安全性较高，建议关注依赖库的来源与版本固定。
+> 该脚本主要用于页面 UI 操作，无数据外传、隐私采集、远程代码执行、混淆或 XSS 风险。主要风险为供应链依赖未锁定版本和权限过度申请，整体安全性较高。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -48,9 +48,14 @@ title: "啊猫-操作面板"
 ### 发现的问题
 
 **🟠 MEDIUM** — Supply Chain Risk  
-> @require 加载第三方库 VueEntry.js，来源为 greasyfork.org 的 update CDN，未固定版本哈希，存在供应链风险。  
-> 位置：@require https://update.greasyfork.org/scripts/503097/1424938/VueEntry.js  
-> 建议：建议使用官方 CDN 并固定版本哈希，避免 update CDN 可能的供应链污染。
+> 脚本通过 @require 加载了 https://update.greasyfork.org/scripts/503097/1424938/VueEntry.js，虽然来源为 GreasyFork，但未锁定具体版本哈希，存在一定供应链风险。  
+> 位置：@require 元数据  
+> 建议：建议使用带有哈希校验的 CDN 或官方源，并定期检查依赖安全性。
+
+**🟠 MEDIUM** — Permission Overgrant  
+> 脚本申请了 GM_setClipboard 权限，但在代码中未实际使用。  
+> 位置：@grant 元数据  
+> 建议：建议移除未使用的高权限申请，最小化权限暴露。
 
 ---
 

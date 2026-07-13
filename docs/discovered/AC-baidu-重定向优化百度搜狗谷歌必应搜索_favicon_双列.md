@@ -55,9 +55,9 @@ title: "AC-百度搜索重定向优化"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：47/100　　**分析时间**：2026-07-06
+**风险等级**：🔴 HIGH　　**安全评分**：49/100　　**分析时间**：2026-07-13
 
-> 脚本未发现直接的数据外传、隐私采集、远程代码执行或 DOM XSS，但存在严重的网络权限配置（@connect *），大量高权限申请，第三方库和资源供应链风险。建议收紧网络权限、精简 @grant 权限、固定第三方依赖版本和来源。当前风险等级为 HIGH，安全评分为 47。未批准上线。未发现代码混淆、WebSocket、敏感 API 调用、ClickJacking/iframe 风险。
+> 该脚本未发现明显的数据外传、隐私采集、远程代码执行、DOM XSS 或代码混淆行为。但存在严重的权限滥用（@connect *），以及中等程度的供应链风险（第三方库和样式资源来源非官方）。建议移除 @connect * 并精简权限，核查所有外部依赖安全性。整体风险等级为 HIGH，不建议在敏感环境下使用。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -70,25 +70,25 @@ title: "AC-百度搜索重定向优化"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Transmission  
-> @connect * 允许任意域名的网络请求，存在数据外传的潜在风险，尤其如果脚本后续代码中有 GM_xmlhttpRequest/fetch/等网络请求。  
-> 位置：UserScript metadata (@connect *)  
-> 建议：移除 @connect *，仅保留实际需要的域名，避免任意外部通信。
+**⛔ CRITICAL** — 权限滥用  
+> @connect * 存在，允许任意域名的跨域请求，权限过高，存在潜在数据外传风险。  
+> 位置：元数据 @connect  
+> 建议：移除 @connect *，仅保留实际需要的域名。
 
-**🟠 MEDIUM** — Permission Abuse  
-> 大量 @grant 权限申请，包括 GM_xmlhttpRequest、unsafeWindow、GM_addValueChangeListener 等高权限，部分未在已审代码中看到实际使用，存在权限滥用风险。  
-> 位置：UserScript metadata (@grant)  
-> 建议：仅申请实际需要的权限，移除未用高权限，尤其 unsafeWindow 和 GM_xmlhttpRequest。
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了大量 GM_* 权限（如 GM_xmlhttpRequest、unsafeWindow），部分权限未在片段代码中实际使用，存在权限滥用嫌疑。  
+> 位置：元数据 @grant  
+> 建议：仅申请实际需要的权限，移除未使用的高权限。
 
-**🟠 MEDIUM** — Supply Chain Risk  
-> @require 加载第三方库 less.min.js 和 vue.runtime.global.prod.js，来源为 registry.npmmirror.com，虽然为知名镜像，但未固定哈希，存在供应链风险。  
-> 位置：UserScript metadata (@require)  
-> 建议：使用官方 CDN 并固定版本哈希，避免供应链污染。
+**🟠 MEDIUM** — 供应链风险  
+> 通过 @require 加载第三方库 less.js 和 vue.js，来源为 npmmirror.com，虽然为知名镜像，但并非官方 CDN，存在一定供应链风险。  
+> 位置：元数据 @require  
+> 建议：建议使用官方 CDN 并固定版本哈希，定期核查依赖安全性。
 
-**🟠 MEDIUM** — Supply Chain Risk  
-> @resource 加载大量 CSS/LESS 文件，部分来源为 ibaidu.tujidu.com 和 gitcode.net，非官方 CDN，存在供应链风险。  
-> 位置：UserScript metadata (@resource)  
-> 建议：建议使用可信 CDN 并固定版本，避免加载可变内容。
+**🟠 MEDIUM** — 供应链风险  
+> 通过 @resource 加载大量 less/css 资源，部分来源为 ibaidu.tujidu.com 和 gitcode.net，非官方域名，存在一定供应链风险。  
+> 位置：元数据 @resource  
+> 建议：建议核查资源内容安全性，优先使用可信官方源。
 
 ---
 

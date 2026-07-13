@@ -1,0 +1,73 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [
+      "api.livecounts.io",
+      "livecounts.io",
+      "cnv.cx",
+      "mp3yt.is",
+      "returnyoutubedislikeapi.com",
+      "translate.googleapis.com",
+      "ldpccocxlrdsyejfhrvc.supabase.co",
+      "raw.githubusercontent.com",
+      "cdn.jsdelivr.net",
+      "greasyfork.org",
+      "update.greasyfork.org",
+      "youtube.com",
+      "www.youtube.com",
+      "m.youtube.com",
+      "googlevideo.com",
+      "i.ytimg.com",
+      "ytimg.com",
+      "yt3.ggpht.com",
+      "yt3.googleusercontent.com",
+      "fonts.googleapis.com",
+      "www.gstatic.com"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "脚本通过 @grant 申请了 GM_xmlhttpRequest 权限，并通过 @connect 允许向多个第三方域名发起网络请求，包括 mp3yt.is、cnv.cx、ldpccocxlrdsyejfhrvc.supabase.co 等，存在数据外传风险。",
+      "location": "元数据 @grant/@connect",
+      "recommendation": "限制 @connect 仅允许必要的官方/可信域名，避免向未知第三方服务器发送用户数据。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本申请了 unsafeWindow 权限，可能导致主页面与脚本间的任意代码互操作，增加远程代码执行和隐私泄露风险。",
+      "location": "元数据 @grant",
+      "recommendation": "仅在绝对必要时使用 unsafeWindow，避免通过其注入或执行不可信代码。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本通过 @require 加载多个第三方库，虽然均为 jsdelivr 官方 CDN 且带有明确版本号，但依赖链较多，存在一定供应链风险。",
+      "location": "元数据 @require",
+      "recommendation": "定期审查依赖库安全性，优先使用官方 CDN 并固定版本。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    },
+    {
+      "description": "脚本申请了 GM_addElement、GM_addStyle、GM_addValueChangeListener 等高权限，但部分权限在当前代码片段中未见实际使用，存在权限滥用嫌疑。",
+      "location": "元数据 @grant",
+      "recommendation": "仅申请实际需要的权限，移除未使用的高权限声明。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "HIGH",
+  "script_name": "YouTube +",
+  "security_score": 52,
+  "summary": "该脚本功能丰富，依赖多个第三方库，并允许向大量外部域名发起网络请求，部分为非官方/未知服务器，存在数据外传和供应链风险。未发现明显隐私采集、代码混淆或 DOM XSS 问题，但申请了部分高权限（如 unsafeWindow、GM_xmlhttpRequest），建议严格限制权限和外联域名。整体安全性为 HIGH，建议谨慎使用。",
+  "supply_chain_risk": true,
+  "websocket_usage": false,
+  "analyzed_at": "2026-07-13T05:51:05.395170+00:00",
+  "slug": "YouTube"
+}

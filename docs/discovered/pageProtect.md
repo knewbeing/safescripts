@@ -32,9 +32,20 @@ title: "页面保护模式（双重验证+持久锁定）"
 
 ## 安全分析
 
-::: info 等待分析
-安全分析将在下次流水线运行时自动更新。
-:::
+**风险等级**：🟡 LOW　　**安全评分**：97/100　　**分析时间**：2026-07-13
+
+> 该脚本实现了本地页面锁定和双重验证功能，所有敏感数据（如密码）均存储于 localStorage，未发现任何外部数据传输、远程代码执行、代码混淆或 DOM XSS 风险。仅涉及本地密码输入和状态管理，未申请任何 GM_* 权限。整体安全性高，隐私风险极低。
+
+| 检查项 | 结果 |
+|--------|------|
+| 数据外传 | ✅ 未检测到 |
+| 隐私采集 | ❌ 检测到（Reads and writes password and lock status to localStorage (keys: privateProtect, nsfw_status, is_locked), Reads input values from password fields for local authentication） |
+| 代码混淆 | ✅ 未检测到 |
+| WebSocket/SSE | ✅ 未使用 |
+| DOM XSS 风险 | ✅ 未检测到 |
+| 供应链风险 | ✅ 可信 |
+
+### 未发现安全问题 ✅
 
 ---
 

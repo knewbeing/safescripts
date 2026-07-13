@@ -49,14 +49,14 @@ title: "解除网络限制：.io游戏模型 、广告链接绕过器、广告�
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：0/100　　**分析时间**：2026-07-06
+**风险等级**：⛔ CRITICAL　　**安全评分**：0/100　　**分析时间**：2026-07-13
 
-> This userscript poses severe security risks: it executes remote code from arbitrary URLs, collects persistent identifiers, transmits data to third-party servers, uses obfuscated code, and requests excessive privileges. It is not safe for use and should be avoided or heavily refactored before deployment.
+> This userscript presents critical security risks, including remote code execution via dynamic script loading and eval-like constructs, code obfuscation, supply chain risks, excessive permissions, privacy tracking, and DOM XSS risk. It should NOT be considered safe for use.
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：ksw2-moomoo.glitch.me, external URLs via Utils.loadModule (dynamic)） |
-| 隐私采集 | ❌ 检测到（UUID generation and persistent storage, Counter tracking across sessions） |
+| 数据外传 | ❌ 检测到（目标：ksw2-moomoo.glitch.me, External URLs via Utils.loadModule） |
+| 隐私采集 | ❌ 检测到（Persistent UUID stored in GM storage, Usage counter stored in GM storage, Explicit tracking via @antifeature） |
 | 代码混淆 | ❌ 检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ❌ 存在风险 |
@@ -65,49 +65,39 @@ title: "解除网络限制：.io游戏模型 、广告链接绕过器、广告�
 ### 发现的问题
 
 **⛔ CRITICAL** — Remote Code Execution  
-> The script uses XMLHttpRequest to fetch external code and executes it via a[a][a](x.responseText), which is equivalent to eval(). This allows remote code execution from arbitrary URLs.  
+> The script uses XMLHttpRequest to fetch external scripts and executes them via a[a][a](x.responseText), which is equivalent to eval(). This allows remote code execution from arbitrary URLs.  
 > 位置：Utils.loadModule function  
-> 建议：Remove dynamic code loading and execution. Only load trusted, versioned libraries via @require.
-
-**⛔ CRITICAL** — Privacy Collection  
-> The script stores and retrieves a UUID and a counter in GM storage, which may be used for tracking users across sessions.  
-> 位置：uuidv4 and GM.getValue/GM.setValue usage  
-> 建议：Clarify purpose and minimize persistent identifiers. Avoid unnecessary tracking.
-
-**⛔ CRITICAL** — Data Transmission  
-> The script connects to ksw2-moomoo.glitch.me and uses GM_getTab/GM_saveTab to store tab data, which may be used for cross-tab tracking or communication.  
-> 位置：Controller page logic  
-> 建议：Limit cross-tab communication and avoid sending user-identifiable data to third-party servers.
+> 建议：Remove dynamic code execution and only use static, trusted code. Avoid eval or similar constructs.
 
 **🔴 HIGH** — Code Obfuscation  
-> The script uses a[a][a](x.responseText), which is a highly obfuscated way to call eval().  
+> The script executes code using a[a][a](x.responseText), which is an obfuscated way to call the Function constructor (i.e., window['constructor']['constructor'] = Function). This is a strong sign of code obfuscation.  
 > 位置：Utils.loadModule function  
-> 建议：Avoid obfuscation and use clear, auditable code.
+> 建议：Avoid obfuscation and use clear, readable code. Remove dynamic code execution.
 
-**🔴 HIGH** — Permission Abuse  
-> The script grants unsafeWindow, which allows full access to the page context and can be abused.  
-> 位置：@grant unsafeWindow  
-> 建议：Only use unsafeWindow if absolutely necessary and document its usage.
-
-**🔴 HIGH** — DOM XSS  
-> The script uses innerHTML and may manipulate DOM elements based on user input or external data, which can lead to DOM XSS.  
-> 位置：General DOM manipulation (not fully shown in snippet)  
-> 建议：Sanitize all user input and external data before inserting into the DOM.
+**🔴 HIGH** — DOM XSS Risk  
+> The script manipulates innerHTML/outerHTML and document structure in various places (e.g., deleteElement, watchAndDelete), and the code is designed to run on hundreds of sites, increasing the risk of DOM-based XSS if user input is ever inserted.  
+> 位置：Utils.deleteElement, watchAndDelete, and general script structure  
+> 建议：Sanitize all user input and avoid inserting untrusted data into the DOM.
 
 **🟠 MEDIUM** — Supply Chain Risk  
-> The script loads third-party libraries from greasyfork.org and code.jquery.com via @require, but does not pin versions with hashes.  
-> 位置：@require statements  
-> 建议：Pin library versions and use official, trusted CDNs. Avoid loading from unknown sources.
+> The script loads third-party libraries via @require from GreasyFork and CDN (jQuery). The GreasyFork scripts are not version-pinned with hashes, and the CDN could be updated or compromised.  
+> 位置：@require metadata  
+> 建议：Pin dependencies to specific versions and use trusted, official sources. Prefer SRI hashes if possible.
 
 **🟠 MEDIUM** — Permission Abuse  
-> The script requests multiple high privileges (GM_getTabs, GM_saveTab, unsafeWindow) but does not use all of them in the shown code.  
-> 位置：@grant statements  
-> 建议：Reduce granted permissions to only those required.
+> The script requests a large set of @grant permissions, including unsafeWindow and GM_getTabs/GM_saveTab, which are not all used in the visible code. This increases the attack surface.  
+> 位置：@grant metadata  
+> 建议：Request only the minimum permissions required for functionality.
 
-**🟡 LOW** — ClickJacking / iframe Risk  
-> The script may manipulate iframe contexts and frame protection, potentially exposing clickjacking risks.  
-> 位置：isIFrame logic and recaptcha module  
-> 建议：Avoid unnecessary iframe manipulation and ensure frame protection is not weakened.
+**🟠 MEDIUM** — Privacy Collection  
+> The script stores a unique user identifier (UUID) in GM storage and increments a counter. While not directly exfiltrated, this is a form of persistent user tracking.  
+> 位置：uuidv4, GM.setValue('id'), GM.setValue('count')  
+> 建议：Disclose tracking clearly and avoid persistent identifiers unless necessary.
+
+**🟠 MEDIUM** — Privacy Collection  
+> The script's @antifeature explicitly states 'Tracking, for performance debugging', indicating intentional user tracking.  
+> 位置：@antifeature metadata  
+> 建议：Make tracking opt-in and provide clear privacy disclosures.
 
 ---
 

@@ -1,0 +1,37 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "脚本未包含完整实现代码，仅为元数据区和部分注释/头部，无法评估实际功能实现。",
+      "location": "全局",
+      "recommendation": "请提供完整的脚本实现部分以进行全面安全审查。",
+      "severity": "LOW",
+      "type": "代码不完整"
+    },
+    {
+      "description": "脚本申请了高权限（如 GM_xmlhttpRequest、GM_download、GM_openInTab），但在已提供代码中未见实际使用。",
+      "location": "@grant 元数据",
+      "recommendation": "仅申请实际需要的权限，避免权限滥用。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "LOW",
+  "script_name": "XEnhancer",
+  "security_score": 89,
+  "summary": "该脚本仅包含元数据区和部分注释/头部，缺少实际实现代码，无法对数据外传、隐私采集、远程代码执行等关键安全项进行有效审查。元数据区申请了较高权限，但未见实际使用，存在权限滥用的中等风险。未发现混淆、XSS、供应链等其他风险。建议仅申请实际需要的权限，并补充完整代码以便进一步审查。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-07-13T05:50:50.402998+00:00",
+  "slug": "XEnhancer"
+}

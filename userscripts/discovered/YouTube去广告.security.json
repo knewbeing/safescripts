@@ -1,0 +1,22 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "SAFE",
+  "script_name": "youtube-adb",
+  "security_score": 100,
+  "summary": "该脚本专注于通过 CSS 和 DOM 操作移除 YouTube 广告，没有检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用或供应链风险。代码结构清晰，未申请任何 @grant 权限，未加载远程脚本，未与第三方服务器通信。整体安全性极高。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-07-13T05:54:19.820852+00:00",
+  "slug": "YouTube去广告"
+}

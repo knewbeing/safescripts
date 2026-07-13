@@ -1,0 +1,72 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "申请了 @grant unsafeWindow 权限，但仅用于访问页面上下文对象，没有发现滥用。",
+      "location": "@grant 元数据及脚本顶部",
+      "recommendation": "如无必要可移除 unsafeWindow 权限，降低潜在风险。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本通过 @require 加载第三方库（jszip、jszip-utils、FileSaver.js），但均来自官方 CDNJS，且指定了具体版本。",
+      "location": "@require 元数据",
+      "recommendation": "继续保持使用可信 CDN 并锁定版本，防止供应链污染。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    },
+    {
+      "description": "脚本未检测到任何外部数据传输、统计、追踪或 WebSocket 行为。",
+      "location": "全局",
+      "recommendation": "无。",
+      "severity": "LOW",
+      "type": "数据外传"
+    },
+    {
+      "description": "未检测到 eval、new Function、setTimeout(string) 等远程代码执行风险。",
+      "location": "全局",
+      "recommendation": "无。",
+      "severity": "LOW",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "未检测到代码混淆、base64 解码、字符串数组映射或高度压缩代码。",
+      "location": "全局",
+      "recommendation": "无。",
+      "severity": "LOW",
+      "type": "代码混淆"
+    },
+    {
+      "description": "未检测到 DOM XSS 风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML。",
+      "location": "全局",
+      "recommendation": "无。",
+      "severity": "LOW",
+      "type": "DOM XSS"
+    },
+    {
+      "description": "未检测到隐私采集行为（如读取 cookie、localStorage、表单、剪贴板、指纹等）。",
+      "location": "全局",
+      "recommendation": "无。",
+      "severity": "LOW",
+      "type": "隐私采集"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "LOW",
+  "script_name": "sketchfab",
+  "security_score": 84,
+  "summary": "该脚本主要功能为在 sketchfab.com 页面添加下载按钮，导出 3D 模型数据为 zip 文件。未检测到数据外传、隐私采集、远程代码执行、混淆、DOM XSS 等高危行为。仅存在申请了 unsafeWindow 权限（实际用途有限）和加载第三方库的供应链风险，但均为可信来源并锁定版本。整体安全风险较低。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-07-13T05:58:45.562726+00:00",
+  "slug": "sketchfab"
+}

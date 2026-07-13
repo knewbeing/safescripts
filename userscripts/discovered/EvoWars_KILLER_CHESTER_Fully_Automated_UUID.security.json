@@ -7,40 +7,34 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本自动拦截并读取游戏网络请求中的 UUID，将其存储到 localStorage。这属于隐私采集行为，尤其是 UUID 可能与用户身份相关。",
-      "location": "hookNetworkEngine() 函数，localStorage.setItem('evowars_auto_uuid', userUUID)",
-      "recommendation": "如非必要，避免采集用户 UUID。若需采集，需明确告知用户用途并保障安全。",
+      "description": "The script intercepts and stores the user's UUID from network requests by hooking into the game's network engine and saving the UUID to localStorage. This is a form of privacy-sensitive data interception.",
+      "location": "hookNetworkEngine() and localStorage.setItem('evowars_auto_uuid', userUUID)",
+      "recommendation": "Clearly inform users about UUID interception and storage. Avoid storing sensitive identifiers unless necessary and with user consent.",
       "severity": "CRITICAL",
-      "type": "隐私采集"
+      "type": "Privacy Collection"
     },
     {
-      "description": "脚本通过 hook 游戏内部网络请求（doRequest），拦截数据包内容。这属于远程代码执行风险，因为 hook 机制可能被滥用，且未做安全校验。",
-      "location": "hookNetworkEngine() 函数，instance.doRequest = function(...) {...}",
-      "recommendation": "限制 hook 逻辑，仅用于必要场景，并增加安全校验，防止被恶意利用。",
-      "severity": "HIGH",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "脚本读取和写入 localStorage，存储 UUID 信息。虽然未外传，但涉及用户身份数据。",
-      "location": "userUUID = localStorage.getItem('evowars_auto_uuid')",
-      "recommendation": "如需存储敏感信息，建议加密处理，并限制访问范围。",
-      "severity": "MEDIUM",
-      "type": "敏感 API 调用"
+      "description": "The script reads from localStorage to retrieve the previously captured UUID.",
+      "location": "let userUUID = localStorage.getItem('evowars_auto_uuid')",
+      "recommendation": "Limit access to localStorage to only what is necessary. Ensure no sensitive data is stored or exposed.",
+      "severity": "CRITICAL",
+      "type": "Privacy Collection"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "自动拦截并存储用户 UUID 到 localStorage"
+      "Intercepts and stores user UUID from network traffic",
+      "Reads and writes to localStorage for UUID persistence"
     ],
     "detected": true
   },
   "risk_level": "CRITICAL",
   "script_name": "EvoWars KILLER CHESTER (Fully Automated UUID)",
-  "security_score": 67,
-  "summary": "该脚本存在严重隐私采集风险，自动拦截并存储用户 UUID。虽然未检测到数据外传、代码混淆或 DOM XSS，但 hook 游戏网络请求存在远程代码执行风险。建议谨慎使用，并加强隐私保护与安全校验。",
+  "security_score": 50,
+  "summary": "This UserScript does not transmit data to third-party servers and does not perform network exfiltration. However, it actively intercepts the user's UUID from in-game network traffic and stores it in localStorage, which is a critical privacy concern. No code obfuscation, remote code execution, DOM XSS, or supply chain risks were detected. The script does not request elevated permissions and does not use sensitive browser APIs beyond localStorage. The main risk is the interception and storage of a unique user identifier without explicit user consent.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-06T06:33:46.925761+00:00",
+  "analyzed_at": "2026-07-13T05:36:07.591206+00:00",
   "slug": "EvoWars_KILLER_CHESTER_Fully_Automated_UUID"
 }

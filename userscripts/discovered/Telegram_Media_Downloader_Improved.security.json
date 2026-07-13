@@ -5,71 +5,7 @@
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [
-    {
-      "description": "未检测到任何网络请求（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource）向第三方服务器发送数据，也未发现数据上报、统计、追踪或推送行为。",
-      "location": "全局代码",
-      "recommendation": "保持现有状态，避免添加任何外部数据传输逻辑。",
-      "severity": "CRITICAL",
-      "type": "数据外传"
-    },
-    {
-      "description": "脚本未读取 document.cookie、localStorage、sessionStorage、IndexedDB，也未监听键盘输入或读取表单字段、剪贴板内容，未访问浏览器指纹相关 API。",
-      "location": "全局代码",
-      "recommendation": "继续避免任何隐私数据采集行为。",
-      "severity": "CRITICAL",
-      "type": "隐私采集"
-    },
-    {
-      "description": "未使用 eval、new Function、setTimeout(string)、setInterval(string)，也未通过 innerHTML/outerHTML 插入外部脚本或动态加载远程 JS。",
-      "location": "全局代码",
-      "recommendation": "保持现有安全实践，避免远程代码执行风险。",
-      "severity": "HIGH",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "代码未混淆，无 base64 解码、字符串数组映射、unicode 混淆或高度压缩单行代码。",
-      "location": "全局代码",
-      "recommendation": "保持代码可读性，便于社区审查。",
-      "severity": "HIGH",
-      "type": "代码混淆"
-    },
-    {
-      "description": "未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未操作 iframe src 为 javascript: 协议，也未通过 document.write() 插入不可信内容。",
-      "location": "全局代码",
-      "recommendation": "继续避免 DOM XSS 和注入风险。",
-      "severity": "HIGH",
-      "type": "DOM XSS / 注入"
-    },
-    {
-      "description": "脚本未申请任何 @grant 权限，也未使用 GM_openInTab、GM_download 等高权限 API。",
-      "location": "元数据",
-      "recommendation": "仅申请必要权限，避免权限滥用。",
-      "severity": "MEDIUM",
-      "type": "权限滥用"
-    },
-    {
-      "description": "未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。",
-      "location": "全局代码",
-      "recommendation": "继续避免敏感 API 滥用。",
-      "severity": "MEDIUM",
-      "type": "敏感 API 调用"
-    },
-    {
-      "description": "未通过 @require 加载第三方库，无供应链风险。",
-      "location": "元数据",
-      "recommendation": "如需引入第三方库，建议使用官方 CDN 并固定版本哈希。",
-      "severity": "MEDIUM",
-      "type": "供应链风险"
-    },
-    {
-      "description": "未修改 frame 保护策略，也未创建隐藏 iframe 用于数据提取。",
-      "location": "全局代码",
-      "recommendation": "继续避免 ClickJacking 和 iframe 风险。",
-      "severity": "LOW",
-      "type": "ClickJacking / iframe 风险"
-    }
-  ],
+  "issues": [],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
@@ -78,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "Telegram Media Downloader (Improved)",
   "security_score": 100,
-  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码结构清晰，未申请任何高权限，未加载第三方库，整体安全性极高。建议继续保持现有安全实践。若后续更新涉及网络请求或敏感数据操作，需重新审查。当前安全评分为100分。",
+  "summary": "该脚本专注于在 Telegram Web 客户端页面上为媒体内容添加下载功能。代码未检测到任何数据外传、隐私采集、远程代码执行、混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。所有网络请求均为页面内资源获取，无第三方服务器通信。未发现高危行为，整体安全性高。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-15T07:29:03.687390+00:00",
+  "analyzed_at": "2026-07-13T05:48:09.689051+00:00",
   "slug": "Telegram_Media_Downloader_Improved"
 }

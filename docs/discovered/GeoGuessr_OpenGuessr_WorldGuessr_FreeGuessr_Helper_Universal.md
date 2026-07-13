@@ -38,14 +38,14 @@ title: "地理猜谜助手通用版"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：50/100　　**分析时间**：2026-07-06
+**风险等级**：⛔ CRITICAL　　**安全评分**：50/100　　**分析时间**：2026-07-13
 
-> 该脚本存在严重的数据外传风险，尤其是向 discord.com 和 nominatim.openstreetmap.org 发送地理位置数据，可能涉及用户隐私。未检测到代码混淆、远程代码执行、DOM XSS、供应链风险等问题。建议加强用户告知和权限控制，避免自动外传敏感信息。
+> This script transmits user location data to third-party servers (discord.com and nominatim.openstreetmap.org) via GM_xmlhttpRequest, which is a critical privacy and data exfiltration risk. It also requests Notification API permissions and modifies iframe protections, but does not appear to contain code obfuscation, DOM XSS, or supply chain risks. The main concern is the transmission of sensitive user data to external servers, which may be used for tracking or logging without explicit user consent.
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：discord.com, nominatim.openstreetmap.org） |
-| 隐私采集 | ✅ 未检测到 |
+| 隐私采集 | ❌ 检测到（Reads and stores user hotkeys and feature toggles via GM_setValue/GM_getValue., Sends user-selected map coordinates to third-party APIs.） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -53,50 +53,25 @@ title: "地理猜谜助手通用版"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本通过 GM_xmlhttpRequest 向 discord.com 发送地理位置数据（sendToDiscord 功能），可能包含用户行为、坐标等敏感信息。  
-> 位置：sendToDiscord 相关功能（未展示完整代码，但元数据和描述已明确）  
-> 建议：仅允许用户主动发送，明确告知用户数据外传风险，并避免发送敏感信息。
+**⛔ CRITICAL** — Data Exfiltration  
+> The script sends location data to Discord via GM_xmlhttpRequest, which may include user-coordinated map pins or game data. This is a third-party server and may be used for tracking or data collection.  
+> 位置：sendToDiscord function (implied by description and GM_xmlhttpRequest usage)  
+> 建议：Warn users and make data transmission opt-in. Allow users to review and edit data before sending. Document exactly what is sent.
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本通过 GM_xmlhttpRequest 向 nominatim.openstreetmap.org 查询地理位置，可能包含用户当前坐标。  
-> 位置：_getAddress() 函数  
-> 建议：仅在用户主动操作时发送请求，避免自动采集和外传用户位置。
+**⛔ CRITICAL** — Data Exfiltration  
+> The script sends latitude and longitude to nominatim.openstreetmap.org for reverse geocoding. While this is a public geocoding API, it still transmits user location data to a third party.  
+> 位置：_getAddress function  
+> 建议：Inform users about this data transmission. Consider caching or minimizing requests.
 
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请 GM_xmlhttpRequest 权限并实际使用，符合最小权限原则，但 @connect 申请了 discord.com，存在高风险。  
-> 位置：元数据 @grant/@connect  
-> 建议：如非必要，移除 discord.com 连接权限。
+**🟠 MEDIUM** — Sensitive API Usage  
+> The script requests Notification API permission and can send notifications to the user.  
+> 位置：requestNotificationPermission, sendNotification  
+> 建议：Ensure notifications are not abused. Only use for legitimate user actions.
 
-**🟠 MEDIUM** — 敏感 API 调用  
-> 脚本调用 Notification API，可能被滥用发送通知。  
-> 位置：sendNotification() 函数  
-> 建议：仅在用户允许并主动操作时调用。
-
-**🟡 LOW** — 远程代码执行  
-> 脚本未检测到代码混淆、eval、动态 script 加载等远程代码执行风险。  
-> 位置：全局代码审查  
-> 建议：保持代码透明，避免混淆和动态执行。
-
-**🟡 LOW** — DOM XSS  
-> 脚本未检测到 DOM XSS、用户输入注入等风险。  
-> 位置：全局代码审查  
-> 建议：继续保持安全的 DOM 操作。
-
-**🟡 LOW** — 供应链风险  
-> 脚本未检测到供应链风险（未使用 @require 加载第三方库）。  
-> 位置：元数据 @require  
-> 建议：如需加载第三方库，建议固定版本哈希并使用官方 CDN。
-
-**🟡 LOW** — 隐私采集  
-> 脚本未检测到 WebSocket、EventSource、剪贴板读取、键盘监听等隐私采集行为。  
-> 位置：全局代码审查  
-> 建议：继续避免隐私采集。
-
-**🟡 LOW** — ClickJacking  
-> 脚本未检测到 iframe 隐藏、frame 保护策略修改等 ClickJacking 风险。  
-> 位置：全局代码审查  
-> 建议：继续避免相关风险。
+**🟡 LOW** — ClickJacking / iframe Risk  
+> The script modifies iframe sandbox attributes and disables anti-cheat scripts, which may weaken frame protections.  
+> 位置：Element.prototype.setAttribute proxy, script removal  
+> 建议：Avoid interfering with security features unless strictly necessary.
 
 ---
 

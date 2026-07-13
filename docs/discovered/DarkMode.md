@@ -38,9 +38,9 @@ title: "护眼模式"
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-07-06
+**风险等级**：🟡 LOW　　**安全评分**：84/100　　**分析时间**：2026-07-13
 
-> 该脚本仅用于页面样式调整和菜单交互，无任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险或 iframe 风险。权限申请合理，整体安全性极高。
+> 该脚本主要用于全网暗黑模式切换，未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、WebSocket 使用等高危行为。权限申请略有冗余，但整体风险较低。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -53,50 +53,15 @@ title: "护眼模式"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本未检测到任何网络请求（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource），不存在数据外传行为。  
-> 位置：全局  
-> 建议：保持现有状态，避免添加任何外部数据传输逻辑。
-
-**⛔ CRITICAL** — 隐私采集  
-> 脚本未访问 document.cookie、localStorage、sessionStorage、IndexedDB，也未监听键盘输入或读取表单字段，未涉及隐私采集。  
-> 位置：全局  
-> 建议：保持现有状态，避免添加任何隐私采集逻辑。
-
-**🔴 HIGH** — 远程代码执行  
-> 脚本未使用 eval、new Function、setTimeout(string)、setInterval(string)，也未通过 innerHTML/outerHTML 插入外部脚本或动态加载远程 JS。  
-> 位置：全局  
-> 建议：保持现有状态，避免引入远程代码执行风险。
-
-**🔴 HIGH** — 代码混淆  
-> 脚本未检测到任何代码混淆（如 base64 解码、字符串数组映射、unicode 混淆、高度压缩单行代码）。  
-> 位置：全局  
-> 建议：保持代码可读性，避免混淆。
-
-**🔴 HIGH** — DOM XSS / 注入  
-> 脚本未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未检测到 DOM XSS 或注入风险。  
-> 位置：全局  
-> 建议：保持现有状态，避免插入不可信内容。
+**🟠 MEDIUM** — 权限滥用  
+> 申请了 GM_openInTab 权限，但仅用于打开反馈页面，未见其他敏感用途。  
+> 位置：@grant 元数据及 window.GM_openInTab 调用  
+> 建议：确认 GM_openInTab 仅用于用户主动操作，避免自动化滥用。
 
 **🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_openInTab、GM_notification 等权限，但实际仅用于菜单功能和通知，无滥用行为。  
-> 位置：元数据 @grant  
-> 建议：如无必要可减少高权限申请，当前用途合理。
-
-**🟠 MEDIUM** — 敏感 API 调用  
-> 脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API），仅使用 GM_notification 发送通知。  
-> 位置：全局  
-> 建议：保持现有状态，避免调用敏感 API。
-
-**🟠 MEDIUM** — 供应链风险  
-> 脚本未通过 @require 加载任何第三方库，无供应链风险。  
-> 位置：元数据 @require  
-> 建议：保持现有状态，避免引入不可信第三方库。
-
-**🟡 LOW** — ClickJacking / iframe 风险  
-> 脚本未修改 frame 保护策略，也未创建隐藏 iframe 用于数据提取。  
-> 位置：全局  
-> 建议：保持现有状态，避免 iframe 风险。
+> 申请了 GM_notification 权限，但在当前代码片段未见实际使用。  
+> 位置：@grant 元数据  
+> 建议：如未使用 GM_notification，建议移除该权限。
 
 ---
 

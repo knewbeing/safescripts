@@ -34,13 +34,13 @@ title: "Nexus模组集合批量下载"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：75/100　　**分析时间**：2026-07-06
+**风险等级**：🟡 LOW　　**安全评分**：75/100　　**分析时间**：2026-07-13
 
-> 脚本主要用于批量下载 Nexus Mods 集合中的 mod，未检测到隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险等问题。唯一风险为功能性的数据外传，目标均为官方域名，风险较低。整体安全性较高。
+> 该脚本主要与 nexusmods 官方 API 通信以获取集合 mod 列表，未检测到隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链或 iframe 风险。数据传输仅限官方域名，未发现敏感用户数据外传。整体安全风险较低，建议保持当前实现并持续关注后续更新。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：https://api-router.nexusmods.com/graphql, https://www.nexusmods.com/Core/Libs/Common/Managers/Downloads?GenerateDownloadUrl） |
+| 数据外传 | ❌ 检测到（目标：https://api-router.nexusmods.com/graphql） |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
@@ -50,9 +50,44 @@ title: "Nexus模组集合批量下载"
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本通过 fetch 向 https://api-router.nexusmods.com/graphql 和 https://www.nexusmods.com/Core/Libs/Common/Managers/Downloads?GenerateDownloadUrl 发起网络请求，目标均为官方域名，未携带敏感用户数据，仅用于功能实现。  
-> 位置：NDC.fetchMods() 方法  
-> 建议：确认请求内容仅为功能所需，避免携带用户敏感信息。
+> 脚本通过 fetch 向 https://api-router.nexusmods.com/graphql 发送请求以获取集合 mod 列表。该请求为官方 API，未发现敏感用户数据外传。  
+> 位置：NDC.fetchMods()  
+> 建议：仅与官方域名通信，风险可接受。
+
+**🔴 HIGH** — 远程代码执行  
+> 脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等动态代码执行方式。  
+> 位置：全局  
+> 建议：保持当前实现，避免远程代码执行风险。
+
+**🔴 HIGH** — 代码混淆  
+> 未检测到代码混淆、base64 解码、字符串数组映射或高度压缩代码。  
+> 位置：全局  
+> 建议：保持代码可读性，便于安全审查。
+
+**🔴 HIGH** — DOM XSS  
+> 未检测到 DOM XSS 风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML。  
+> 位置：全局  
+> 建议：如后续涉及用户输入，需严格转义。
+
+**🟠 MEDIUM** — 权限滥用  
+> 仅申请了 GM.setValue、GM.getValue、GM_addStyle 权限，未发现权限滥用。  
+> 位置：元数据 @grant  
+> 建议：仅申请实际需要的权限。
+
+**🟠 MEDIUM** — 敏感 API 调用  
+> 未检测到敏感 API（如 geolocation、WebRTC、剪贴板读取、通知等）调用。  
+> 位置：全局  
+> 建议：如需使用敏感 API，需明确告知用户。
+
+**🟠 MEDIUM** — 供应链风险  
+> 未检测到 @require 加载第三方库，无供应链风险。  
+> 位置：元数据  
+> 建议：如需引入第三方库，建议使用官方 CDN 并锁定版本。
+
+**🟡 LOW** — ClickJacking/iframe 风险  
+> 未检测到脚本修改 frame 保护策略或创建隐藏 iframe。  
+> 位置：全局  
+> 建议：如需操作 iframe，需评估 ClickJacking 风险。
 
 ---
 

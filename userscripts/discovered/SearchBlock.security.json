@@ -2,39 +2,46 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
-      "xbaidu.ntaow.com"
+      "http://xbaidu.ntaow.com/newcss/sogoukey.php"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 GM_xmlhttpRequest 发送 GET 请求到第三方服务器 xbaidu.ntaow.com，获取内容并赋值给变量 SoGouKey。",
+      "description": "脚本通过 GM_xmlhttpRequest 主动向第三方服务器 xbaidu.ntaow.com 发起网络请求，获取数据。虽然当前未携带用户数据，但存在外部通信行为。",
       "location": "GM_xmlhttpRequest 调用",
-      "recommendation": "仅在可信环境下使用，避免传递敏感用户数据。建议明确说明用途并限制为必要的 API 域名。",
+      "recommendation": "仅允许可信服务器通信，避免发送敏感信息。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "@grant 仅申请了 GM_xmlhttpRequest，未发现权限滥用。",
-      "location": "元数据 @grant",
-      "recommendation": "无实际问题。",
-      "severity": "LOW",
-      "type": "权限滥用"
+      "description": "脚本申请了 GM_xmlhttpRequest 权限，并实际使用。未发现权限滥用。",
+      "location": "@grant 元数据与实际代码",
+      "recommendation": "仅申请必要权限。",
+      "severity": "MEDIUM",
+      "type": "权限申请"
     },
     {
-      "description": "@connect 仅允许 xbaidu.ntaow.com，未发现多余高权限。",
-      "location": "元数据 @connect",
-      "recommendation": "无实际问题。",
-      "severity": "LOW",
-      "type": "权限滥用"
-    },
-    {
-      "description": "未发现代码混淆、eval、远程代码执行、DOM XSS、隐私采集、供应链风险等其他高危行为。",
+      "description": "未发现 eval、new Function、setTimeout(string) 等远程代码执行风险。",
       "location": "全局",
-      "recommendation": "保持代码简洁透明，避免后续引入高危操作。",
+      "recommendation": "保持当前实现，避免动态执行字符串代码。",
       "severity": "LOW",
-      "type": "代码安全"
+      "type": "远程代码执行"
+    },
+    {
+      "description": "未发现代码混淆、base64 解码、字符串数组混淆等特征。",
+      "location": "全局",
+      "recommendation": "保持代码可读性，便于安全审计。",
+      "severity": "LOW",
+      "type": "代码混淆"
+    },
+    {
+      "description": "@require 未使用，未发现供应链风险。",
+      "location": "元数据",
+      "recommendation": "如需加载第三方库，建议使用官方 CDN 并锁定版本。",
+      "severity": "LOW",
+      "type": "供应链风险"
     }
   ],
   "obfuscation_detected": false,
@@ -42,12 +49,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "CRITICAL",
+  "risk_level": "MEDIUM",
   "script_name": "AC-有道取词+翻译-库文件",
-  "security_score": 75,
-  "summary": "该脚本作为库文件，核心行为是通过 GM_xmlhttpRequest 请求第三方服务器 xbaidu.ntaow.com 获取 key 并赋值给变量。未发现隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。主要风险在于数据外传，因其请求第三方服务器，存在潜在的数据泄露风险。建议仅在可信环境下使用，并确保第三方服务器安全可信。",
+  "security_score": 67,
+  "summary": "该脚本作为库文件，主要通过 GM_xmlhttpRequest 向第三方服务器 xbaidu.ntaow.com 获取 SoGouKey。未发现用户数据、页面内容或隐私信息被采集和外传，也未发现远程代码执行、代码混淆、DOM XSS 等高危行为。主要风险在于主动与第三方服务器通信，存在一定的数据外传风险。建议仅在可信环境下使用，并关注第三方服务器的安全性。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-22T07:35:10.652175+00:00",
+  "analyzed_at": "2026-07-13T05:46:36.676359+00:00",
   "slug": "SearchBlock"
 }

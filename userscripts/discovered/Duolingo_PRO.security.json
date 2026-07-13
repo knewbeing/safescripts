@@ -7,92 +7,57 @@
     ],
     "detected": true
   },
-  "dom_xss_risk": true,
+  "dom_xss_risk": false,
   "issues": [
     {
-      "description": "Script defines external server endpoints (duolingopro.net, api.duolingopro.net) and references server-side processing for XP, gems, and other features. This strongly suggests user data or actions are transmitted to third-party servers.",
-      "location": "Global variables and feature descriptions",
-      "recommendation": "Review all network requests and ensure no sensitive user data is transmitted. Avoid sending cookies, authentication tokens, or personal information to third-party servers.",
+      "description": "The script defines server endpoints (https://www.duolingopro.net, https://api.duolingopro.net) and contains UI text referencing feedback submission, XP/gem redemption, and server-side processing. This strongly indicates network requests and user data transmission to third-party servers, even though the code is incomplete and the actual request logic is not shown in the snippet.",
+      "location": "Global scope, variables 'serverURL', 'apiURL', UI text, and feedback logic",
+      "recommendation": "Do not use scripts that transmit user data or interact with third-party APIs unless you fully trust the source. Review the full code for explicit network request functions (fetch, GM_xmlhttpRequest, etc.) and block or remove them if privacy is a concern.",
       "severity": "CRITICAL",
-      "type": "Data Exfiltration"
+      "type": "Data Exfiltration / Third-party Communication"
     },
     {
-      "description": "Script reads document.cookie to extract language settings. This is a privacy-sensitive operation and may expose session or authentication data if transmitted externally.",
+      "description": "The script reads document.cookie to extract the 'lang' value, which may include session or authentication information depending on the site's implementation.",
       "location": "let systemLanguage = document.cookie.split('; ').find(row => row.startsWith('lang=')).split('=')[1];",
-      "recommendation": "Do not transmit cookie values to external servers. Limit cookie access to only non-sensitive data.",
+      "recommendation": "Avoid reading cookies unless absolutely necessary. Ensure no sensitive information is read or transmitted. Review for further cookie or storage access in the full code.",
       "severity": "CRITICAL",
       "type": "Privacy Collection"
     },
     {
-      "description": "Script references server-side processing for 'instant results' and 'auto-solved lessons', implying possible transmission of user actions or progress to external servers.",
-      "location": "Feature descriptions and variable usage",
-      "recommendation": "Ensure only minimal, non-sensitive data is sent. Provide transparency to users about what is transmitted.",
-      "severity": "CRITICAL",
-      "type": "Data Exfiltration"
-    },
-    {
-      "description": "Script inserts HTML strings containing user-facing messages, including dynamic content (e.g., XP amounts, time messages) into the DOM. If these values are derived from user input or URL parameters, there is a risk of DOM XSS.",
-      "location": "systemText object and HTML insertion",
-      "recommendation": "Sanitize all dynamic content before inserting into the DOM. Avoid using innerHTML with untrusted data.",
+      "description": "The script is not minified or obfuscated, but the code is incomplete. No eval, Function constructor, or dynamic script loading is visible in the provided snippet.",
+      "location": "N/A (based on provided code)",
+      "recommendation": "Review the full code for any use of eval, new Function, setTimeout(string), or dynamic script injection. Avoid such patterns.",
       "severity": "HIGH",
-      "type": "DOM XSS"
+      "type": "Remote Code Execution Risk"
     },
     {
-      "description": "Script reads document.cookie directly, which is a privacy-sensitive operation.",
-      "location": "let systemLanguage = document.cookie.split('; ').find(row => row.startsWith('lang=')).split('=')[1];",
-      "recommendation": "Limit cookie access and avoid transmitting cookie values externally.",
-      "severity": "HIGH",
-      "type": "Privacy Collection"
-    },
-    {
-      "description": "Script defines external endpoints for server communication, but does not show explicit fetch/XMLHttpRequest code in the provided snippet. However, the feature descriptions and variable names strongly imply network requests.",
-      "location": "serverURL, apiURL variables",
-      "recommendation": "Explicitly review all network request code for data leakage.",
-      "severity": "HIGH",
-      "type": "Data Transmission"
-    },
-    {
-      "description": "No evidence of code obfuscation, eval, or dynamic script loading in the provided snippet.",
-      "location": "General code structure",
-      "recommendation": "Continue to avoid obfuscation and dynamic code execution.",
-      "severity": "LOW",
-      "type": "Obfuscation"
-    },
-    {
-      "description": "No evidence of supply chain risk (@require not used for third-party libraries).",
-      "location": "Metadata block",
-      "recommendation": "If adding external libraries, use official CDNs and fixed versions.",
-      "severity": "LOW",
-      "type": "Supply Chain"
-    },
-    {
-      "description": "No evidence of WebSocket usage, clipboard access, geolocation, or other sensitive APIs in the provided snippet.",
-      "location": "General code structure",
-      "recommendation": "Avoid using sensitive APIs unless strictly necessary.",
-      "severity": "LOW",
-      "type": "Sensitive API"
-    },
-    {
-      "description": "Script only requests GM_log permission, which is not high risk.",
-      "location": "Metadata block",
-      "recommendation": "Do not request unnecessary permissions.",
-      "severity": "LOW",
+      "description": "The script requests only GM_log permission, which is not dangerous. No excessive or unused permissions are declared.",
+      "location": "@grant GM_log",
+      "recommendation": "Keep permissions minimal. No action needed unless further permissions are added in the full code.",
+      "severity": "MEDIUM",
       "type": "Permission Usage"
+    },
+    {
+      "description": "The script references external resources (icon, download/update URLs) from duolingopro.net, which is not an official Duolingo domain. This presents a supply chain risk if the domain is compromised or malicious.",
+      "location": "@icon, @downloadURL, @updateURL",
+      "recommendation": "Only use scripts and resources from trusted and official sources. Avoid third-party script loaders unless you can verify their integrity.",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "Reads document.cookie for language setting"
+      "Reads document.cookie for 'lang' value"
     ],
     "detected": true
   },
   "risk_level": "CRITICAL",
   "script_name": "Duolingo PRO",
-  "security_score": 25,
-  "summary": "This script presents CRITICAL risks due to likely transmission of user data and actions to third-party servers (duolingopro.net, api.duolingopro.net), direct access to document.cookie, and possible DOM XSS vulnerabilities. The script's features (XP farming, gems, server-side processing) imply extensive interaction with external endpoints, raising privacy and data exfiltration concerns. No evidence of code obfuscation or supply chain risk, but the overall risk is CRITICAL and the script is NOT APPROVED for safe use.",
-  "supply_chain_risk": false,
+  "security_score": 50,
+  "summary": "This script is HIGH RISK. It references and likely communicates with third-party servers (duolingopro.net, api.duolingopro.net), reads cookies, and contains UI for feedback and server-side actions. These behaviors present critical privacy and data exfiltration risks. The script is not obfuscated and does not request dangerous permissions, but the use of non-official domains for updates and icons increases supply chain risk. Do NOT use this script unless you fully trust the author and infrastructure. The security score is 50 due to multiple CRITICAL and MEDIUM issues. Full code review is recommended to identify further risks.",
+  "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-06T06:31:16.187341+00:00",
+  "analyzed_at": "2026-07-13T05:34:46.221917+00:00",
   "slug": "Duolingo_PRO"
 }

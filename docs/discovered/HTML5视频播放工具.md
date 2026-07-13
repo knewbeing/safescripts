@@ -62,9 +62,9 @@ title: "HTML5视频播放工具"
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-07-06
+**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-07-13
 
-> 该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、敏感API调用、供应链风险或iframe风险。@require第三方库来源可信且版本固定。唯一建议是移除未使用的window.onurlchange权限。整体安全性极高，适合公开使用。
+> 该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用、供应链或 iframe 风险。@require 的第三方库来源可信且锁定版本。整体安全性高，适合普通用户使用。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -78,49 +78,49 @@ title: "HTML5视频播放工具"
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本未检测到任何网络请求（GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource、sendBeacon），不存在数据外传行为。  
+> 脚本未检测到任何外部数据传输、统计或追踪行为。未发现 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource 等网络请求。  
 > 位置：全局代码  
-> 建议：保持无外部数据传输，确保用户隐私安全。
+> 建议：保持现状，勿添加外传代码。
 
 **⛔ CRITICAL** — 隐私采集  
-> 脚本未检测到任何隐私采集行为（如读取cookie、localStorage、sessionStorage、IndexedDB、剪贴板、表单字段、键盘监听并外传、指纹API调用）。  
+> 脚本未检测到对 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板、表单字段、键盘输入的监听与外传。  
 > 位置：全局代码  
-> 建议：继续避免隐私采集，保障用户数据安全。
+> 建议：保持现状，勿采集用户隐私数据。
 
 **🔴 HIGH** — 远程代码执行  
-> 脚本未检测到远程代码执行风险（未使用eval、new Function、setTimeout(string)、setInterval(string)、innerHTML插入脚本、动态加载未固定版本的JS等）。  
+> 未检测到 eval、new Function、setTimeout(string)、setInterval(string)、document.write、动态 script 标签加载远程 JS 等远程代码执行风险。  
 > 位置：全局代码  
-> 建议：继续避免动态执行不可信代码。
+> 建议：保持现状，避免引入动态执行代码。
 
 **🔴 HIGH** — 代码混淆  
-> 脚本未检测到代码混淆（无base64解码执行、字符串数组映射、unicode混淆、高度压缩单行代码等）。  
+> 未检测到代码混淆、base64 解码执行、字符串数组混淆、unicode 混淆或高度压缩单行代码。  
 > 位置：全局代码  
-> 建议：保持代码可读性，便于安全审查。
+> 建议：保持代码可读性，避免混淆。
 
-**🔴 HIGH** — DOM XSS/注入  
-> 脚本未检测到DOM XSS/注入风险（未将用户输入或URL参数直接插入innerHTML/outerHTML、document.write插入不可信内容、iframe src为javascript:协议等）。  
+**🔴 HIGH** — DOM XSS / 注入  
+> 未检测到 DOM XSS 风险。未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未见 document.write 注入不可信内容。  
 > 位置：全局代码  
-> 建议：继续避免DOM注入风险。
+> 建议：如需插入动态内容，务必进行转义。
 
 **🟠 MEDIUM** — 权限滥用  
-> 脚本申请的@grant权限与实际代码使用基本匹配，无滥用高权限行为。GM_addStyle、GM_registerMenuCommand、GM_setValue、GM_getValue、unsafeWindow均为合理用途。window.onurlchange未被实际使用，属于冗余权限。  
+> 脚本申请了 GM_addStyle、window.onurlchange、unsafeWindow、GM_registerMenuCommand、GM_setValue、GM_getValue 权限，均有实际用途，未见权限滥用。  
 > 位置：元数据 @grant  
-> 建议：建议移除未使用的window.onurlchange权限。
+> 建议：仅申请实际需要的权限。
 
 **🟠 MEDIUM** — 敏感 API 调用  
-> 脚本未调用敏感API（如geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API等）。  
+> 脚本未检测到敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API）调用。  
 > 位置：全局代码  
-> 建议：继续避免敏感API调用。
+> 建议：如需调用敏感 API，需征得用户同意。
 
 **🟠 MEDIUM** — 供应链风险  
-> @require加载的第三方库（Vue和jQuery）均来自官方CDN（jsdelivr），且版本号固定，供应链风险较低。  
+> @require 加载的第三方库（Vue 2.7.16、jQuery 3.6.4）均来自官方 CDN（jsdelivr），且指定了明确版本，无供应链污染风险。  
 > 位置：元数据 @require  
-> 建议：保持固定版本，避免供应链污染。
+> 建议：继续使用可信 CDN 并锁定版本。
 
 **🟡 LOW** — ClickJacking / iframe 风险  
-> 脚本未检测到ClickJacking或iframe风险（未修改frame保护策略，未创建隐藏iframe用于数据提取）。  
+> 未检测到脚本修改 frame 保护策略或创建隐藏 iframe 用于数据提取。  
 > 位置：全局代码  
-> 建议：继续避免iframe相关风险。
+> 建议：如需操作 iframe，需确保安全。
 
 ---
 

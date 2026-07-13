@@ -34,9 +34,25 @@ title: "自动跳过 YouTube 广告"
 
 ## 安全分析
 
-::: info 等待分析
-安全分析将在下次流水线运行时自动更新。
-:::
+**风险等级**：🟡 LOW　　**安全评分**：85/100　　**分析时间**：2026-07-13
+
+> The script does not transmit data externally, does not collect privacy-sensitive information, and does not use dangerous APIs or obfuscation. It uses innerHTML for a static popup, which is a minor risk but not exploitable in this context. No supply chain or permission abuse detected.
+
+| 检查项 | 结果 |
+|--------|------|
+| 数据外传 | ✅ 未检测到 |
+| 隐私采集 | ✅ 未检测到 |
+| 代码混淆 | ✅ 未检测到 |
+| WebSocket/SSE | ✅ 未使用 |
+| DOM XSS 风险 | ✅ 未检测到 |
+| 供应链风险 | ✅ 可信 |
+
+### 发现的问题
+
+**🔴 HIGH** — DOM XSS  
+> The script creates a popup using innerHTML, but the content is static and not influenced by user input or URL parameters. There is no evidence of DOM XSS.  
+> 位置：showDarkShadowPopup() function  
+> 建议：Keep innerHTML usage limited to static, trusted content. Do not insert user-controlled data.
 
 ---
 

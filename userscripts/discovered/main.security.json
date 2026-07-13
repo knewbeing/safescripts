@@ -1,70 +1,46 @@
 {
-  "approved": true,
+  "approved": false,
   "data_transmission": {
     "destinations": [
-      "https://fanyi.iflyrec.com/text-translate",
-      "https://fanyi.iflyrec.com/TJHZTranslationService/v2/textAutoTranslation"
+      "fanyi.iflyrec.com"
     ],
     "detected": true
   },
+  "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本使用 GM_xmlhttpRequest 向第三方翻译服务 fanyi.iflyrec.com 发送用户文本内容进行翻译，存在数据外传风险。",
-      "location": "代码中 CONFIG.TRANS_ENGINES.iflyrec 配置及相关请求调用",
-      "recommendation": "确认用户知情并同意，避免发送敏感或隐私信息，或提供关闭翻译功能选项。",
+      "description": "脚本通过 GM_xmlhttpRequest 访问第三方翻译接口 https://fanyi.iflyrec.com，可能传递页面内容（如简介、描述等）进行翻译。",
+      "location": "CONFIG.TRANS_ENGINES.iflyrec.url_api 及相关翻译函数（未完整展示，但配置已明确）",
+      "recommendation": "仅允许用户主动触发翻译请求，明确告知用户数据将发送至第三方服务器。避免自动传递敏感内容。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本未读取 document.cookie、localStorage、sessionStorage，也未监听键盘输入事件或读取表单字段值，未发现隐私采集行为。",
-      "location": "整体代码审查",
-      "recommendation": "无",
-      "severity": "CRITICAL",
-      "type": "隐私采集"
-    },
-    {
-      "description": "脚本未使用 eval、new Function、setTimeout(string)、innerHTML 执行远程代码，也未通过 @require 或动态 script 标签加载远程 JS（@require 指向可信 GitHub raw 内容）。",
-      "location": "整体代码审查",
-      "recommendation": "无",
-      "severity": "HIGH",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "脚本申请了 GM_xmlhttpRequest、GM_getValue、GM_setValue、GM_registerMenuCommand、GM_unregisterMenuCommand、GM_notification 权限，代码中均有合理使用，无权限滥用。",
-      "location": "元数据及代码中权限使用情况",
-      "recommendation": "无",
-      "severity": "HIGH",
-      "type": "权限滥用"
-    },
-    {
-      "description": "未发现使用敏感 API，如 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等。",
-      "location": "整体代码审查",
-      "recommendation": "无",
+      "description": "@require 加载的第三方库 https://raw.githubusercontent.com/maboloshi/github-chinese/gh-pages/locals.js?v1.9.4.4-2026-06-21 来源为 GitHub Pages，非官方 CDN，且未固定哈希，存在供应链污染风险。",
+      "location": "@require 元数据",
+      "recommendation": "建议使用可信 CDN 并固定版本哈希，或对加载内容进行完整性校验。",
       "severity": "MEDIUM",
-      "type": "敏感 API 调用"
+      "type": "供应链风险"
     },
     {
-      "description": "代码未见明显混淆、base64 解码执行或字符串拼接执行特征，代码结构清晰。",
-      "location": "整体代码审查",
-      "recommendation": "无",
-      "severity": "MEDIUM",
-      "type": "代码混淆"
-    },
-    {
-      "description": "@require 加载的第三方库来源于 GitHub raw 内容，可信且固定了版本号（v1.9.3-2026-04-12），无供应链污染风险。",
-      "location": "元数据 @require 字段",
-      "recommendation": "无",
+      "description": "脚本申请了 GM_xmlhttpRequest 权限，但仅用于翻译接口调用，未发现其他高权限滥用。",
+      "location": "@grant 元数据",
+      "recommendation": "定期复查权限申请，确保无冗余高权限。",
       "severity": "LOW",
-      "type": "外部依赖"
+      "type": "权限滥用"
     }
   ],
+  "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
     "detected": false
   },
-  "risk_level": "MEDIUM",
+  "risk_level": "HIGH",
   "script_name": "GitHub 中文化插件",
-  "summary": "该脚本主要功能为中文化 GitHub 界面，使用了第三方翻译服务进行文本翻译，存在用户文本数据外传风险。未发现隐私采集、远程代码执行及权限滥用等安全问题。整体代码清晰，外部依赖可信。建议用户知情并谨慎使用翻译功能。",
-  "analyzed_at": "2026-04-15T20:43:01.853099+00:00",
+  "security_score": 67,
+  "summary": "该脚本主要功能为本地化 GitHub 界面，未发现隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要安全问题为：1）通过 GM_xmlhttpRequest 将页面内容发送至第三方翻译服务，存在数据外传风险；2）@require 加载的 locals.js 词库文件来源为 GitHub Pages，未固定哈希，存在一定供应链风险。建议加强用户告知、限制自动数据传输，并固定依赖库版本。",
+  "supply_chain_risk": true,
+  "websocket_usage": false,
+  "analyzed_at": "2026-07-13T05:57:31.671953+00:00",
   "slug": "main"
 }

@@ -30,9 +30,9 @@ title: "Krunker Cheat v2"
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：81/100　　**分析时间**：2026-07-06
+**风险等级**：🟠 MEDIUM　　**安全评分**：84/100　　**分析时间**：2026-07-13
 
-> 该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要安全问题为权限滥用（unsafeWindow）、供应链风险（未固定版本哈希的第三方库加载）以及道德/法律风险。整体安全风险为中等，建议加强权限和依赖管理。
+> 该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要安全问题为申请了高权限（unsafeWindow）和依赖未锁定哈希的第三方库（three.js），存在一定的权限滥用和供应链风险。建议仅在必要时申请高权限，并固定依赖库版本以降低风险。整体安全风险为中等（MEDIUM），不建议在高安全要求环境下使用。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -46,19 +46,14 @@ title: "Krunker Cheat v2"
 ### 发现的问题
 
 **🟠 MEDIUM** — 权限滥用  
-> 申请了 unsafeWindow 权限，允许脚本访问和修改页面全局对象，可能被滥用或引发安全风险。  
-> 位置：UserScript metadata (@grant unsafeWindow)  
-> 建议：仅在确实需要时申请 unsafeWindow，避免滥用。若无必要，移除该权限。
+> 使用了 @grant unsafeWindow，允许脚本访问页面原始 window 对象，存在高权限滥用风险。  
+> 位置：元数据 @grant unsafeWindow  
+> 建议：仅在确有必要时申请 unsafeWindow 权限，避免滥用高权限。
 
 **🟠 MEDIUM** — 供应链风险  
-> 通过 @require 加载了第三方库 three.js，虽然使用官方 CDN，但未固定版本哈希，存在供应链污染风险。  
-> 位置：UserScript metadata (@require https://unpkg.com/three@0.150.0/build/three.min.js)  
-> 建议：建议使用官方 CDN 并固定版本哈希，避免加载可变内容。
-
-**🟡 LOW** — 道德/法律风险  
-> 脚本功能涉及游戏作弊（Aimbot、ESP、Wallhack），可能违反目标网站的使用条款，存在法律和道德风险。  
-> 位置：脚本整体功能  
-> 建议：仅在合法、允许的环境下使用此类脚本，避免违反网站政策。
+> 通过 @require 加载了 three.js 库，虽然来源为 unpkg 官方 CDN，但未锁定具体文件哈希，存在供应链污染风险。  
+> 位置：@require https://unpkg.com/three@0.150.0/build/three.min.js  
+> 建议：建议使用带有内容哈希的 CDN 地址或官方 CDN 并固定版本，确保依赖安全。
 
 ---
 

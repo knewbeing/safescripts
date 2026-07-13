@@ -46,9 +46,9 @@ title: "Bilibili CDN切换"
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-07-06
+**风险等级**：🟡 LOW　　**安全评分**：92/100　　**分析时间**：2026-07-13
 
-> 该脚本仅拦截并修改 Bilibili 视频播放 API 的 CDN 域名，未向第三方服务器发送数据、未采集用户隐私、未使用危险代码执行方式、未混淆、无供应链风险、无权限滥用。整体安全性极高，适合个人使用。
+> 该脚本主要通过拦截 XMLHttpRequest 和 fetch 请求，修改 Bilibili 视频播放时的 CDN 域名，以加速视频加载。未发现有数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险等高危行为。仅存在申请了未充分利用的高权限（unsafeWindow），建议最小化权限。整体安全风险较低。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -61,50 +61,10 @@ title: "Bilibili CDN切换"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传检查  
-> 脚本拦截并修改 Bilibili 视频播放相关的 API 响应，未向第三方服务器发送任何数据。  
-> 位置：interceptNetResponse、playInfoTransformer  
-> 建议：保持现有行为，无需修改。
-
-**⛔ CRITICAL** — 隐私采集检查  
-> 脚本未监听键盘输入、未读取表单字段、未访问剪贴板、未收集指纹信息，仅读取和设置 GM 存储。  
-> 位置：GM_getValue、GM_setValue  
-> 建议：保持现有行为，无需修改。
-
-**🔴 HIGH** — 远程代码执行检查  
-> 脚本未使用 eval、new Function、setTimeout(string)、setInterval(string)，未动态加载远程脚本。  
-> 位置：全局代码  
-> 建议：保持现有行为，无需修改。
-
-**🔴 HIGH** — 代码混淆检查  
-> 脚本未混淆，代码结构清晰，无 base64/unicode/字符串数组混淆特征。  
-> 位置：全局代码  
-> 建议：保持现有行为，无需修改。
-
-**🔴 HIGH** — DOM XSS/注入检查  
-> 脚本未将用户输入或 URL 参数插入 innerHTML/outerHTML，fromHTML 函数仅用于内部解析，未存在 DOM XSS 风险。  
-> 位置：fromHTML  
-> 建议：保持现有行为，无需修改。
-
-**🟠 MEDIUM** — 权限滥用检查  
-> @grant 申请了 GM_getValue、GM_setValue、unsafeWindow，均被实际使用，无权限滥用。  
+**🟠 MEDIUM** — 权限滥用  
+> 申请了 GM_getValue, GM_setValue, unsafeWindow 权限，但仅用于本地存储和脚本注入，没有发现高危滥用。  
 > 位置：元数据 @grant  
-> 建议：保持现有行为，无需修改。
-
-**🟠 MEDIUM** — 敏感 API 调用检查  
-> 脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。  
-> 位置：全局代码  
-> 建议：保持现有行为，无需修改。
-
-**🟠 MEDIUM** — 供应链风险检查  
-> 脚本未通过 @require 加载第三方库，无供应链风险。  
-> 位置：元数据 @require  
-> 建议：保持现有行为，无需修改。
-
-**🟡 LOW** — ClickJacking/iframe 风险检查  
-> 脚本未修改 frame 保护策略，未创建隐藏 iframe。  
-> 位置：全局代码  
-> 建议：保持现有行为，无需修改。
+> 建议：仅保留实际使用的权限，避免不必要的高权限申请。
 
 ---
 

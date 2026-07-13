@@ -1,0 +1,26 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [
+      "https://www.google.com/search",
+      "https://limbopro.com/search.html",
+      "https://limbopro.com/btsearch.html"
+    ],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "SAFE",
+  "script_name": "Limbopro 网页划词搜索神器（a 标签优化版）",
+  "security_score": 100,
+  "summary": "该脚本未检测到任何安全或隐私风险。它不会外传数据、采集隐私信息、执行远程代码或使用高危 API。所有网络跳转均为用户主动点击 a 标签后进行，且无自动数据上报行为。代码无混淆，无 XSS 风险，无权限滥用。整体安全性高，适合日常使用。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-07-13T05:57:07.132208+00:00",
+  "slug": "huacisousuo"
+}

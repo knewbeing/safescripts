@@ -2,63 +2,95 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
-      "discord.com",
-      "nominatim.openstreetmap.org"
+      "nominatim.openstreetmap.org",
+      "discord.com"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "Script sends game coordinates and address data to Discord via GM_xmlhttpRequest. This is a third-party server and may expose user/game data.",
-      "location": "sendToDiscord function (not fully shown, but referenced in hotkeys/features and GM_xmlhttpRequest usage)",
-      "recommendation": "Limit data sent to Discord, inform users, and allow opt-out. Avoid sending sensitive or identifying information.",
+      "description": "脚本通过 GM_xmlhttpRequest 发送地理坐标到 nominatim.openstreetmap.org 进行逆地理编码。",
+      "location": "_getAddress() 函数",
+      "recommendation": "仅允许可信的第三方 API，明确告知用户数据用途。",
       "severity": "CRITICAL",
-      "type": "Data Exfiltration"
+      "type": "数据外传"
     },
     {
-      "description": "Script sends latitude/longitude to nominatim.openstreetmap.org for reverse geocoding. While this is a public API, it may expose user/game location data.",
-      "location": "_getAddress function",
-      "recommendation": "Minimize data sent, inform users, and consider local geocoding if privacy is a concern.",
+      "description": "脚本通过 GM_xmlhttpRequest 允许连接 discord.com，结合描述“send to discord”功能，可能将用户操作或地理信息发送到 Discord 服务器。",
+      "location": "@connect discord.com 及相关功能代码（未完全展示）",
+      "recommendation": "确保用户明确知情并同意外发数据，避免敏感信息泄露。",
       "severity": "CRITICAL",
-      "type": "Data Exfiltration"
+      "type": "数据外传"
     },
     {
-      "description": "Script requests Notification API permission and sends notifications. This is a sensitive API and may be abused.",
-      "location": "requestNotificationPermission, sendNotification functions",
-      "recommendation": "Use Notification API responsibly, ensure user consent, and avoid spam.",
-      "severity": "MEDIUM",
-      "type": "Sensitive API Usage"
-    },
-    {
-      "description": "Script grants GM_xmlhttpRequest, which is used for cross-origin requests. This is a high privilege and must be justified.",
-      "location": "@grant GM_xmlhttpRequest in metadata",
-      "recommendation": "Ensure GM_xmlhttpRequest is only used for necessary, user-initiated actions.",
-      "severity": "MEDIUM",
-      "type": "Permission Usage"
-    },
-    {
-      "description": "Script modifies Element.prototype.setAttribute to block sandbox attribute on iframes for certain platforms. This may weaken frame protection and expose to clickjacking.",
-      "location": "Element.prototype.setAttribute Proxy",
-      "recommendation": "Avoid weakening iframe sandboxing unless absolutely necessary.",
+      "description": "脚本未发现明显的隐私采集（如读取 cookie、localStorage、监听键盘输入、读取表单/剪贴板等）。",
+      "location": "全局",
+      "recommendation": "继续关注后续代码更新，防止新增隐私采集行为。",
       "severity": "LOW",
-      "type": "ClickJacking Risk"
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本未发现 eval、new Function、setTimeout(string) 等远程代码执行风险。",
+      "location": "全局",
+      "recommendation": "保持禁止动态代码执行的良好实践。",
+      "severity": "LOW",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本未发现明显的代码混淆、base64 解码、字符串数组混淆或高度压缩代码。",
+      "location": "全局",
+      "recommendation": "保持代码可读性，便于安全审计。",
+      "severity": "LOW",
+      "type": "代码混淆"
+    },
+    {
+      "description": "脚本未发现 DOM XSS 或将用户输入直接插入 innerHTML/outerHTML。",
+      "location": "全局",
+      "recommendation": "如后续涉及 DOM 操作，需严格转义用户输入。",
+      "severity": "LOW",
+      "type": "DOM XSS"
+    },
+    {
+      "description": "脚本申请了 GM_xmlhttpRequest 权限并实际使用，未发现权限滥用。",
+      "location": "@grant",
+      "recommendation": "仅申请实际需要的权限。",
+      "severity": "LOW",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本使用 Notification API 发送通知，需防止滥用骚扰用户。",
+      "location": "sendNotification() 函数",
+      "recommendation": "确保通知行为可控，用户可关闭。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "脚本通过 @require 未加载第三方库，无供应链风险。",
+      "location": "元数据",
+      "recommendation": "如需加载第三方库，建议使用官方 CDN 并锁定版本。",
+      "severity": "LOW",
+      "type": "供应链风险"
+    },
+    {
+      "description": "脚本在部分平台通过 Proxy 修改 Element.prototype.setAttribute，可能影响 iframe sandbox 属性，存在一定 ClickJacking/iframe 风险。",
+      "location": "Element.prototype.setAttribute Proxy",
+      "recommendation": "避免破坏页面安全策略，防止潜在安全隐患。",
+      "severity": "LOW",
+      "type": "ClickJacking/iframe 风险"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [
-      "Collects latitude/longitude coordinates",
-      "Collects address data via reverse geocoding"
-    ],
-    "detected": true
+    "details": [],
+    "detected": false
   },
-  "risk_level": "CRITICAL",
+  "risk_level": "HIGH",
   "script_name": "CheatGuessr Universal | GeoGuessr | OpenGuessr | WorldGuessr | FreeGuessr",
   "security_score": 50,
-  "summary": "This script transmits game coordinates and address data to third-party servers (Discord and OpenStreetMap Nominatim), which constitutes critical data exfiltration and privacy risks. It also requests Notification API permission and modifies iframe sandboxing, introducing additional medium and low risks. No code obfuscation or DOM XSS detected. Supply chain risk is low as no @require external libraries are used. Overall, the script is not safe for privacy-sensitive users.",
+  "summary": "该脚本存在严重的数据外传风险，主要体现在将地理坐标等信息发送到第三方服务器（nominatim.openstreetmap.org、discord.com），可能导致用户隐私泄露。未发现明显的隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。部分敏感 API（通知）和 iframe 安全策略被修改，存在中低风险。整体安全评级为 HIGH，不建议在敏感环境下使用。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-06T06:28:26.467636+00:00",
+  "analyzed_at": "2026-07-13T05:30:43.436441+00:00",
   "slug": "CheatGuessr_Universal_GeoGuessr_OpenGuessr_WorldGuessr_FreeGuessr"
 }

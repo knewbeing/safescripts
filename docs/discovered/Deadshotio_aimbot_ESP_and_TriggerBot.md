@@ -32,40 +32,25 @@ title: "Deadshot.io 辅助脚本"
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：69/100　　**分析时间**：2026-07-06
+**风险等级**：🟡 LOW　　**安全评分**：92/100　　**分析时间**：2026-07-13
 
-> 该脚本主要用于游戏作弊（aimbot、ESP、triggerbot），未发现数据外传、隐私采集或远程代码执行行为。存在部分代码混淆和敏感 API 调用，申请了 unsafeWindow 权限。整体风险为中等，建议持续关注后续更新，警惕数据外传和隐私采集。当前版本未发现严重安全问题，但不建议在含敏感信息的环境中使用。
+> 该脚本主要通过 hook WebAssembly、canvas 事件和页面内存结构实现游戏辅助功能。未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 或供应链风险。唯一的中等风险为申请了 unsafeWindow 权限，建议评估其必要性。整体安全性较高，但因权限申请扣分。
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ✅ 未检测到 |
 | 隐私采集 | ✅ 未检测到 |
-| 代码混淆 | ❌ 检测到 |
+| 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
 | 供应链风险 | ✅ 可信 |
 
 ### 发现的问题
 
-**🔴 HIGH** — 代码混淆  
-> 脚本存在部分字符串混淆（如 SIGKEY、ENCODED_SIGS），但整体未高度混淆或压缩。混淆用于绕过检测，但未发现恶意行为。  
-> 位置：_SIGKEY, _ENCODED_SIGS, _decodeSig  
-> 建议：避免过度混淆，便于安全审查。若后续代码高度混淆，需警惕隐藏恶意行为。
-
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 unsafeWindow 权限，允许脚本访问和修改页面的全局对象。这可能被滥用，导致潜在的安全风险，尤其是在与其他脚本或页面代码交互时。  
-> 位置：元数据 @grant unsafeWindow  
-> 建议：仅在确实需要时申请 unsafeWindow，避免滥用。建议审查脚本实际用途，若无必要可移除。
-
-**🟠 MEDIUM** — 敏感 API 调用  
-> 脚本通过 WebAssembly 钩子和内存捕获，访问游戏 WASM 内存和数据结构。这属于高级行为，可能被用于作弊或数据采集，但未发现外传行为。  
-> 位置：WebAssembly.instantiate 重写与 window._wxWasmMemory 捕获  
-> 建议：确保仅用于本地分析，不要将敏感数据外传。警惕后续代码更新可能引入数据外传。
-
-**🟠 MEDIUM** — 敏感 API 调用  
-> 脚本监听并模拟鼠标事件，可能用于自动化操作（如 aimbot、triggerbot）。虽然未发现键盘监听或表单数据读取，但此行为属于自动化风险。  
-> 位置：window.ipcRenderer.send 与 MouseEvent('mousemove')  
-> 建议：确保不采集用户隐私数据，仅用于游戏自动化。警惕后续代码更新可能引入隐私采集。
+**🟠 MEDIUM** — Permission Abuse  
+> The script requests @grant unsafeWindow, which gives access to the page's JavaScript context and can be abused for privilege escalation or to bypass sandboxing.  
+> 位置：Metadata block (@grant unsafeWindow)  
+> 建议：Only request unsafeWindow if absolutely necessary. Review if the script can function without it.
 
 ---
 

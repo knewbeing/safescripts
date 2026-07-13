@@ -1,0 +1,22 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "SAFE",
+  "script_name": "꧁ঔৣ☬₭łⱠⱠɆⱤ☬ঔৣ꧂ - Kill Aura Fully Restored",
+  "security_score": 100,
+  "summary": "该脚本未检测到任何网络数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。所有功能均为本地页面增强和 UI 交互，未涉及安全敏感操作。整体安全性高，适合使用。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-07-13T05:58:50.505317+00:00",
+  "slug": "ঔ_łⱠⱠɆⱤ_ঔ_-_Kill_Aura_Fully_Restored"
+}

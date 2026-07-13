@@ -1,0 +1,60 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [
+      "Multiple third-party domains as per @connect (including wildcard '*')"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "@connect * 允许脚本向任意域名发起网络请求，存在严重的数据外传风险。",
+      "location": "元数据 @connect",
+      "recommendation": "移除 @connect *，仅保留实际需要的可信域名。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本申请了 GM_xmlhttpRequest/GM.xmlHttpRequest 权限，结合 @connect *，可向任意第三方服务器发送数据。",
+      "location": "元数据 @grant, @connect",
+      "recommendation": "限制 @connect 域名范围，代码中应严格校验目标域名。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本申请了 unsafeWindow 权限，可能导致与页面脚本的直接交互，增加 XSS 和隐私泄露风险。",
+      "location": "元数据 @grant",
+      "recommendation": "如非必要，移除 unsafeWindow 权限。",
+      "severity": "HIGH",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本申请了 GM_setValue/GM_getValue/GM_deleteValue 等存储权限，若配合网络请求可造成隐私数据外传。",
+      "location": "元数据 @grant",
+      "recommendation": "仅在确有需求时申请，代码中应避免存储敏感信息。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本通过 @require 加载多个第三方库，虽然均为官方 CDN 并带有哈希校验，但依赖较多，存在一定供应链风险。",
+      "location": "元数据 @require",
+      "recommendation": "定期核查依赖库来源及哈希，避免依赖被污染。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "CRITICAL",
+  "script_name": "小说下载器",
+  "security_score": 50,
+  "summary": "该脚本存在严重的数据外传风险，主要由于 @connect * 允许向任意域名发起网络请求，且申请了 GM_xmlhttpRequest/GM.xmlHttpRequest 权限。脚本还申请了 unsafeWindow 权限，增加了潜在的 XSS 和隐私泄露风险。虽然依赖的第三方库均为官方 CDN 并带有哈希校验，但依赖数量较多，存在一定供应链风险。建议移除 @connect *，限制网络请求目标域名，并移除不必要的高权限申请。",
+  "supply_chain_risk": true,
+  "websocket_usage": false,
+  "analyzed_at": "2026-07-13T05:59:07.707738+00:00",
+  "slug": "小说下载器"
+}

@@ -14,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "Twitter/X Media Downloader",
   "security_score": 100,
-  "summary": "该脚本仅在 Twitter/X 页面上运行，主要功能为一键下载图片和视频，支持自定义文件名和下载历史记录。未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。所有 @grant 权限均为下载和本地存储相关，未发现滥用。代码结构清晰，无安全隐患。",
+  "summary": "该脚本仅在 Twitter/X 页面上运行，主要功能为一键下载图片和视频。未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。所有 @grant 权限均为本地存储、样式注入和下载，未发现滥用。代码结构清晰，无混淆和压缩。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-08T06:49:01.762269+00:00",
+  "analyzed_at": "2026-07-13T05:49:20.614039+00:00",
   "slug": "TwitterX_Media_Downloader"
 }

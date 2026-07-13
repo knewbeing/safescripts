@@ -7,87 +7,38 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本申请了 unsafeWindow 权限，允许脚本访问和修改页面的全局对象，存在高风险。",
-      "location": "@grant unsafeWindow",
-      "recommendation": "仅在必要时申请 unsafeWindow，避免滥用。",
-      "severity": "HIGH",
-      "type": "权限滥用"
-    },
-    {
-      "description": "脚本未发现任何网络请求（如 GM_xmlhttpRequest、fetch、WebSocket 等），未检测到数据外传行为。",
-      "location": "全局代码",
-      "recommendation": "保持无数据外传，勿添加任何第三方数据上报。",
-      "severity": "CRITICAL",
-      "type": "数据外传"
-    },
-    {
-      "description": "脚本未发现任何隐私采集行为（如读取 cookie、localStorage、sessionStorage、IndexedDB、剪贴板、监听键盘输入等）。",
-      "location": "全局代码",
-      "recommendation": "保持无隐私采集，勿添加任何用户敏感数据读取。",
-      "severity": "CRITICAL",
-      "type": "隐私采集"
-    },
-    {
-      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等动态代码执行方式。",
-      "location": "全局代码",
-      "recommendation": "继续避免远程代码执行风险。",
-      "severity": "HIGH",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "脚本未发现代码混淆（如 base64 解码、字符串数组映射、unicode 混淆、高度压缩单行代码等）。",
-      "location": "全局代码",
-      "recommendation": "保持代码可读性，避免混淆。",
-      "severity": "HIGH",
-      "type": "代码混淆"
-    },
-    {
-      "description": "脚本未发现 DOM XSS 或注入风险（如未转义用户输入插入 innerHTML/outerHTML、document.write、iframe src=javascript: 等）。",
-      "location": "全局代码",
-      "recommendation": "继续避免 DOM 注入风险。",
-      "severity": "HIGH",
-      "type": "DOM XSS"
-    },
-    {
-      "description": "脚本未申请或使用 GM_openInTab、GM_download 等高权限 API。",
-      "location": "@grant",
-      "recommendation": "仅申请实际需要的权限。",
+      "description": "脚本申请了 @grant unsafeWindow 权限，但实际代码仅用于与页面通信和全局变量注入，没有发现明显滥用，但该权限本身风险较高。",
+      "location": "元数据 @grant unsafeWindow",
+      "recommendation": "如非必要，建议移除 unsafeWindow 权限，或限制其使用范围。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。",
-      "location": "全局代码",
-      "recommendation": "避免调用敏感 API，保护用户隐私。",
-      "severity": "MEDIUM",
+      "description": "脚本通过 WebAssembly hook、canvas、shader、骨骼数据等方式分析游戏内存和渲染数据，属于高权限操作，可能被用于作弊或绕过安全机制。",
+      "location": "核心逻辑（WebAssembly、canvas、shader hook）",
+      "recommendation": "警惕此类脚本可能违反游戏服务条款，且存在被恶意利用的风险。",
+      "severity": "HIGH",
       "type": "敏感 API 调用"
     },
     {
-      "description": "脚本未通过 @require 加载第三方库，无供应链风险。",
-      "location": "元数据",
-      "recommendation": "如需加载第三方库，建议固定版本哈希并使用官方 CDN。",
-      "severity": "MEDIUM",
-      "type": "供应链风险"
-    },
-    {
-      "description": "脚本未修改 frame 保护策略，也未创建隐藏 iframe。",
-      "location": "全局代码",
-      "recommendation": "避免 iframe 风险，保护页面安全。",
-      "severity": "LOW",
-      "type": "ClickJacking / iframe 风险"
+      "description": "脚本包含部分字符串异或混淆（_SIGKEY, _ENCODED_SIGS, _decodeSig），但整体未见严重混淆或压缩。",
+      "location": "_SIGKEY, _ENCODED_SIGS, _decodeSig",
+      "recommendation": "避免使用混淆技术，提升代码可审计性。",
+      "severity": "HIGH",
+      "type": "代码混淆"
     }
   ],
-  "obfuscation_detected": false,
+  "obfuscation_detected": true,
   "privacy_collection": {
     "details": [],
     "detected": false
   },
-  "risk_level": "LOW",
+  "risk_level": "MEDIUM",
   "script_name": "Deadshot.io aimbot - CODIGO REAL (MATRIX RGB EDITION) - DRAGGABLE & MULTILANG",
-  "security_score": 82,
-  "summary": "该脚本主要用于 Deadshot.io 游戏的辅助功能，未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 调用、供应链风险或 iframe 风险。唯一高风险项为 unsafeWindow 权限申请，建议仅在必要时使用。整体安全风险较低，但不建议在含敏感信息页面使用。",
+  "security_score": 69,
+  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行或 DOM XSS 风险。存在部分代码混淆和高权限申请（unsafeWindow），以及对 WebAssembly/canvas/shader 的敏感操作，具有一定安全和合规风险。未发现供应链风险或 WebSocket/网络请求。整体安全性中等，但不建议在敏感环境下使用。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-06T06:30:21.604280+00:00",
+  "analyzed_at": "2026-07-13T05:32:51.090788+00:00",
   "slug": "Deadshotio_aimbot_-_CODIGO_REAL_MATRIX_RGB_EDITION_-_DRAGGABLE_MULTILANG"
 }

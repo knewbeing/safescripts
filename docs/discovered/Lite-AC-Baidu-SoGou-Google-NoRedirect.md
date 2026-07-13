@@ -36,13 +36,13 @@ title: "优化搜索结果重定向"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：97/100　　**分析时间**：2026-07-06
+**风险等级**：🟡 LOW　　**安全评分**：75/100　　**分析时间**：2026-07-13
 
-> 该脚本主要用于绕过搜索引擎重定向，直接访问真实目标链接。仅向 baidu.com 和 sogou.com 发起 GET 请求解析目标地址，不涉及用户敏感数据或隐私采集。未发现远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。整体安全性较高，建议持续保持代码可读性和权限最小化原则。
+> 该脚本主要用于去除百度、搜狗等搜索结果的重定向，提升用户体验。仅使用 GM_xmlhttpRequest 向 www.baidu.com 发起 GET 请求以解析真实链接，未发现向第三方服务器或作者服务器上报数据，也未采集用户隐私信息。无远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链或 iframe 风险。整体安全性较高，风险等级为 LOW。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：www.baidu.com, baidu.com, sogou.com） |
+| 数据外传 | ❌ 检测到（目标：www.baidu.com） |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
@@ -52,49 +52,49 @@ title: "优化搜索结果重定向"
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本使用 GM_xmlhttpRequest 发起 GET 请求到 baidu.com 和 sogou.com，用于解析真实目标链接。请求内容为重定向链接本身，不包含用户敏感数据或 cookie。未发现数据外传到非搜索引擎域名。  
-> 位置：resetURL() 和 GM_xmlhttpRequest 调用  
-> 建议：确保请求仅用于解析重定向，避免携带用户敏感信息。若未来扩展功能，需严格限制目标域名。
+> 脚本使用 GM_xmlhttpRequest 仅向 www.baidu.com 发起 GET 请求以解析真实目标链接，未发现向第三方服务器或作者服务器发送用户数据。  
+> 位置：resetURL > GM_xmlhttpRequest  
+> 建议：确认请求内容仅为公开页面链接，避免携带敏感信息。
 
 **⛔ CRITICAL** — 隐私采集  
-> 脚本未读取 cookie、localStorage、sessionStorage、IndexedDB，也未监听键盘输入或表单字段，未访问指纹 API，未读取剪贴板内容。  
-> 位置：全局代码审查  
-> 建议：保持现有行为，勿添加隐私采集功能。
+> 脚本未读取 cookie、localStorage、sessionStorage、IndexedDB、表单字段、剪贴板等隐私数据。  
+> 位置：全局  
+> 建议：无。
 
 **🔴 HIGH** — 远程代码执行  
-> 未发现 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险。未动态加载外部脚本。  
-> 位置：全局代码审查  
-> 建议：继续避免动态执行字符串代码。
+> 未发现 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险。  
+> 位置：全局  
+> 建议：无。
 
 **🔴 HIGH** — 代码混淆  
-> 代码未混淆，无 base64 解码、字符串数组映射、unicode 混淆或高度压缩单行代码。  
-> 位置：全局代码审查  
-> 建议：保持代码可读性，便于社区审查。
+> 未发现代码混淆、base64 解码、字符串数组混淆、unicode 混淆或高度压缩单行代码。  
+> 位置：全局  
+> 建议：无。
 
-**🔴 HIGH** — DOM XSS / 注入  
-> 未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未使用 document.write() 插入不可信内容，未操作 iframe src 为 javascript: 协议。  
-> 位置：全局代码审查  
-> 建议：继续避免 DOM 注入风险。
+**🔴 HIGH** — DOM XSS/注入  
+> 未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未发现 document.write 或 iframe src 注入。  
+> 位置：全局  
+> 建议：无。
 
 **🟠 MEDIUM** — 权限滥用  
-> 仅申请 GM_xmlhttpRequest 权限，实际代码中有使用，未发现权限滥用或未使用高权限申请。  
+> @grant 仅申请 GM_xmlhttpRequest，且实际使用 GM_xmlhttpRequest，无权限滥用。  
 > 位置：元数据与代码对比  
-> 建议：仅申请必要权限。
+> 建议：无。
 
 **🟠 MEDIUM** — 敏感 API 调用  
-> 未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。  
-> 位置：全局代码审查  
-> 建议：避免添加敏感 API 调用。
+> 未调用 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification 等敏感 API。  
+> 位置：全局  
+> 建议：无。
 
 **🟠 MEDIUM** — 供应链风险  
 > 未使用 @require 加载第三方库，无供应链风险。  
 > 位置：元数据  
-> 建议：如需引入第三方库，建议固定版本哈希并使用官方 CDN。
+> 建议：无。
 
-**🟡 LOW** — ClickJacking / iframe 风险  
-> 未修改 frame 保护策略，未创建隐藏 iframe 用于数据提取。  
-> 位置：全局代码审查  
-> 建议：继续避免 iframe 风险。
+**🟡 LOW** — ClickJacking/iframe 风险  
+> 未发现修改 frame 保护策略或创建隐藏 iframe。  
+> 位置：全局  
+> 建议：无。
 
 ---
 

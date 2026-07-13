@@ -1,5 +1,5 @@
 {
-  "approved": true,
+  "approved": false,
   "data_transmission": {
     "destinations": [
       "dqsljvtekg760.cloudfront.net",
@@ -10,47 +10,54 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "Script requests @require for alphaTab library from jsdelivr CDN. The CDN is reputable, but version is fixed to 1.8.1, reducing supply chain risk.",
-      "location": "@require https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.1/dist/alphaTab.min.js",
-      "recommendation": "Monitor for upstream vulnerabilities in alphaTab. Prefer integrity hashes if possible.",
+      "description": "@grant 申请了 GM_xmlhttpRequest 权限，但主代码未检测到实际使用。若后续代码有使用，需关注数据外传风险。",
+      "location": "元数据 @grant",
+      "recommendation": "仅申请实际需要的权限，避免权限滥用。",
       "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
+      "type": "权限滥用"
     },
     {
-      "description": "Script requests GM_xmlhttpRequest and @connect permissions for two CloudFront endpoints, but no actual network requests are present in the visible code.",
-      "location": "Metadata block (@grant GM_xmlhttpRequest, @connect ...)",
-      "recommendation": "Remove unused permissions if not required. Monitor for future code changes that may use these endpoints.",
+      "description": "@grant 申请了 unsafeWindow 权限，可能导致脚本可访问页面全局对象，增加潜在攻击面。",
+      "location": "元数据 @grant",
+      "recommendation": "仅在确有必要时申请 unsafeWindow，并确保代码安全。",
       "severity": "MEDIUM",
-      "type": "Permission Overgrant"
+      "type": "权限滥用"
     },
     {
-      "description": "Script uses localStorage to store logging and YouTube audio-only mode preferences. No sensitive data is stored.",
-      "location": "window.toggleSgdLogging, window.toggleYtAudioOnly",
-      "recommendation": "Ensure only non-sensitive preferences are stored.",
+      "description": "@require 加载了第三方库 alphaTab，来源为 jsdelivr 官方 CDN，且指定了明确版本号，供应链风险较低。",
+      "location": "元数据 @require",
+      "recommendation": "建议定期检查依赖库安全性，确保 CDN 未被污染。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    },
+    {
+      "description": "脚本通过 localStorage 记录日志开关和 YouTube 音频模式，但未检测到敏感信息采集。",
+      "location": "main code",
+      "recommendation": "确保不采集用户敏感信息。",
       "severity": "LOW",
-      "type": "Privacy Collection"
+      "type": "隐私采集"
     },
     {
-      "description": "Script uses unsafeWindow grant, which can expose privileged script context to the page. No evidence of abuse in current code.",
-      "location": "@grant unsafeWindow",
-      "recommendation": "Avoid unsafeWindow unless strictly necessary. Monitor for future code changes.",
-      "severity": "MEDIUM",
-      "type": "Permission Overgrant"
+      "description": "脚本未检测到任何网络请求、数据外传、WebSocket、EventSource、键盘监听、表单读取、eval、new Function、字符串混淆、DOM XSS、敏感 API 调用等高危行为。",
+      "location": "main code",
+      "recommendation": "继续保持代码简洁透明。",
+      "severity": "LOW",
+      "type": "安全性良好"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "localStorage: loggingEnabled, ytAudioOnlyMode"
+      "localStorage 仅用于日志和模式开关"
     ],
     "detected": false
   },
   "risk_level": "LOW",
   "script_name": "🎸 Songsterr Ultimate (Premium Unlocked)",
-  "security_score": 81,
-  "summary": "The script does not transmit user data externally, does not collect sensitive information, and does not execute remote code or use obfuscation. Supply chain risk is mitigated by fixed library version. Permissions are slightly overgranted but not abused. Overall, the script is safe with minor improvements recommended.",
+  "security_score": 84,
+  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。主要风险为申请了 GM_xmlhttpRequest 和 unsafeWindow 权限，但主代码未实际使用 GM_xmlhttpRequest，且 @require 的第三方库来源可信。整体安全风险较低，但建议最小化权限申请。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-15T07:27:28.736266+00:00",
+  "analyzed_at": "2026-07-13T05:47:22.580116+00:00",
   "slug": "Songsterr_Ultimate_Premium_Unlocked"
 }

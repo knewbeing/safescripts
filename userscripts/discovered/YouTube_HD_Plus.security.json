@@ -1,0 +1,22 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "SAFE",
+  "script_name": "YouTube HD Plus",
+  "security_score": 100,
+  "summary": "该脚本仅操作 YouTube 播放器相关 DOM 和设置，未检测到任何数据外传、隐私采集、远程代码执行、混淆、XSS 或供应链风险。仅申请了 GM.getValue / GM.setValue 权限，未滥用高权限。整体安全性高。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-07-13T05:51:26.114859+00:00",
+  "slug": "YouTube_HD_Plus"
+}

@@ -32,14 +32,14 @@ title: "Pixeldrain下载限制绕过增强版"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：50/100　　**分析时间**：2026-07-06
+**风险等级**：🟡 LOW　　**安全评分**：67/100　　**分析时间**：2026-07-13
 
-> 该脚本存在数据外传（fetch 第三方服务器）和隐私采集（localStorage 缓存代理列表）风险，未涉及远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API、供应链风险或 iframe 风险。总体安全评分为 50，风险等级为 CRITICAL。
+> The script fetches a proxy list from a third-party server and uses it to construct bypass URLs for Pixeldrain downloads. No user data, cookies, or sensitive information are transmitted. There is no evidence of code obfuscation, remote code execution, DOM XSS, or excessive permissions. The main risk is reliance on a third-party API for proxy lists, but no user data is sent. Overall, the script is low risk.
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：https://pixeldrain-bypass.gamedrive.org/api/proxy.json） |
-| 隐私采集 | ❌ 检测到（localStorage 读写代理列表和时间戳） |
+| 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -47,50 +47,25 @@ title: "Pixeldrain下载限制绕过增强版"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本通过 fetch 请求 https://pixeldrain-bypass.gamedrive.org/api/proxy.json 获取代理列表，存在数据外传行为。虽然请求内容不包含用户敏感数据，但目标为第三方服务器，存在一定风险。  
-> 位置：loadProxyListCached() -> fetch(PROXY_JSON_URL)  
-> 建议：建议明确说明用途，并确保第三方服务器可信。避免携带用户敏感信息。
+**⛔ CRITICAL** — Data Transmission  
+> The script fetches a proxy list from https://pixeldrain-bypass.gamedrive.org/api/proxy.json and caches it in localStorage. This is a third-party server, but only the proxy list is fetched; no user data or cookies are sent.  
+> 位置：loadProxyListCached() function, fetch(PROXY_JSON_URL)  
+> 建议：Verify the trustworthiness of the third-party API. Ensure no sensitive user data is sent in requests.
 
-**⛔ CRITICAL** — 隐私采集  
-> 脚本读取 localStorage 以缓存代理列表和时间戳，属于隐私采集范畴，但未涉及敏感用户数据。  
-> 位置：loadProxyListCached() -> localStorage.getItem/setItem  
-> 建议：仅用于缓存代理列表，风险较低。建议避免存储用户敏感信息。
+**🟠 MEDIUM** — Privacy Collection  
+> The script uses localStorage to cache proxy lists and timestamps. No sensitive user data is stored.  
+> 位置：localStorage.setItem/getItem for PROXY_LIST_KEY and PROXY_TS_KEY  
+> 建议：Ensure only non-sensitive data is stored. No action needed if only proxy list is cached.
 
-**🔴 HIGH** — 远程代码执行  
-> 脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行相关 API。  
-> 位置：全局代码审查  
-> 建议：无风险，无需改进。
+**🟠 MEDIUM** — Permission Usage  
+> The script requests the GM_openInTab permission, which is used to open URLs in new tabs. This is appropriate for the script's function.  
+> 位置：@grant GM_openInTab in metadata and openInNewTab() function  
+> 建议：No action needed unless unused or abused.
 
-**🔴 HIGH** — 代码混淆  
-> 脚本未发现代码混淆、base64 解码、字符串映射或高度压缩代码。  
-> 位置：全局代码审查  
-> 建议：无风险，无需改进。
-
-**🔴 HIGH** — DOM XSS / 注入  
-> 脚本未发现 DOM XSS 或注入风险，未将用户输入直接插入 innerHTML/outerHTML。  
-> 位置：全局代码审查  
-> 建议：无风险，无需改进。
-
-**🟠 MEDIUM** — 权限滥用  
-> 脚本仅申请 GM_openInTab 权限，实际代码中有使用，未发现权限滥用。  
-> 位置：元数据与 openInNewTab()  
-> 建议：无风险，无需改进。
-
-**🟠 MEDIUM** — 敏感 API 调用  
-> 脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。  
-> 位置：全局代码审查  
-> 建议：无风险，无需改进。
-
-**🟠 MEDIUM** — 供应链风险  
-> 脚本未通过 @require 加载第三方库，无供应链风险。  
-> 位置：元数据  
-> 建议：无风险，无需改进。
-
-**🟡 LOW** — ClickJacking / iframe 风险  
-> 脚本未修改 frame 保护策略，也未创建隐藏 iframe。  
-> 位置：全局代码审查  
-> 建议：无风险，无需改进。
+**🟡 LOW** — Supply Chain  
+> The script uses fetch to retrieve a remote JSON file. No dynamic code execution, eval, or script injection is present.  
+> 位置：fetch(PROXY_JSON_URL)  
+> 建议：No action needed.
 
 ---
 

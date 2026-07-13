@@ -1,0 +1,90 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [
+      "https://sponsor.ajay.app"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "脚本通过 fetch 访问 SponsorBlock API（https://sponsor.ajay.app）以获取 sponsor 段信息。虽然 SponsorBlock 是知名项目，但属于第三方服务器，且可能传递当前视频 ID 等信息。",
+      "location": "SB_fetchSegments 函数（未完全展示，但根据 SponsorBlock 集成描述和常见实现方式推断）",
+      "recommendation": "仅允许访问可信第三方 API，明确告知用户数据用途。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本未展示完整实现，但 SponsorBlock 集成通常会将当前视频 ID 发送到 SponsorBlock 服务器。视频 ID 可视为用户行为数据（观看内容）。",
+      "location": "SB_fetchSegments 函数及 SponsorBlock 相关逻辑",
+      "recommendation": "最小化外传数据，仅发送必要信息，并在文档中披露。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本未发现 eval、new Function、setTimeout(string) 等远程代码执行高危 API。",
+      "location": "全局",
+      "recommendation": "保持此安全实践。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本未发现混淆、base64 解码、字符串数组映射等混淆特征。",
+      "location": "全局",
+      "recommendation": "保持代码可读性。",
+      "severity": "HIGH",
+      "type": "代码混淆"
+    },
+    {
+      "description": "脚本未发现 DOM XSS 风险（如直接插入 innerHTML/outerHTML）。",
+      "location": "全局",
+      "recommendation": "继续避免不安全的 DOM 操作。",
+      "severity": "HIGH",
+      "type": "DOM XSS"
+    },
+    {
+      "description": "仅申请了 GM_addStyle 权限，未发现权限滥用。",
+      "location": "元数据 @grant",
+      "recommendation": "仅申请实际需要的权限。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "未发现敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API）调用。",
+      "location": "全局",
+      "recommendation": "继续避免敏感 API 滥用。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "未使用 @require 加载第三方库，无供应链风险。",
+      "location": "元数据",
+      "recommendation": "如需加载第三方库，建议使用官方 CDN 并锁定版本。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    },
+    {
+      "description": "未发现 ClickJacking 或 iframe 风险。",
+      "location": "全局",
+      "recommendation": "继续避免相关风险。",
+      "severity": "LOW",
+      "type": "ClickJacking/iframe"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [
+      "发送当前视频 ID 到 SponsorBlock 服务器"
+    ],
+    "detected": true
+  },
+  "risk_level": "HIGH",
+  "script_name": "YouTube® Ultimate Downloader v13.1 👑🌍 — Shorts, Videos & Music 🔥 | Ad-Free + SponsorBlock 🚀🛡️",
+  "security_score": 50,
+  "summary": "该脚本集成 SponsorBlock 功能，会将当前 YouTube 视频 ID 发送到 SponsorBlock 官方服务器（https://sponsor.ajay.app），属于第三方数据外传和隐私采集。未发现远程代码执行、混淆、DOM XSS、权限滥用、敏感 API 滥用、供应链或 iframe 风险。SponsorBlock 为知名项目，但用户需知晓其行为数据会被外传。总体安全风险为 HIGH，建议用户权衡隐私风险后使用。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-07-13T05:52:40.032581+00:00",
+  "slug": "YouTube_Ultimate_Downloader_v131_Shorts_Videos_Music_Ad-Free_SponsorBlock"
+}

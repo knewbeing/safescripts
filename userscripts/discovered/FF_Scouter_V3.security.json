@@ -9,54 +9,68 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "Script uses GM_xmlhttpRequest to connect to ffscouter.com, which is a third-party server. Potential for user/page data transmission.",
-      "location": "Metadata (@connect ffscouter.com), code (GM_xmlhttpRequest usage, though full implementation not visible)",
-      "recommendation": "Review all transmitted data. Ensure only minimal, non-sensitive information is sent. Document transmitted fields.",
+      "description": "Script uses GM_xmlhttpRequest to connect to ffscouter.com, which is a third-party server. The exact data sent is not visible in the provided code fragment, but the permission is declared.",
+      "location": "Metadata block and possible network logic",
+      "recommendation": "Review all GM_xmlhttpRequest usages to ensure no sensitive user data (such as cookies, tokens, or personal information) is transmitted. Document all data flows.",
       "severity": "CRITICAL",
-      "type": "Data Transmission"
+      "type": "Data Exfiltration"
     },
     {
       "description": "Script reads and writes to localStorage for configuration and possibly user data.",
-      "location": "class Storage, FFConfig",
-      "recommendation": "Ensure no sensitive information (e.g., authentication tokens, personal data) is stored or transmitted from localStorage.",
+      "location": "Storage class and FFConfig class",
+      "recommendation": "Ensure only non-sensitive configuration data is stored. Do not store authentication tokens or sensitive information in localStorage.",
       "severity": "CRITICAL",
       "type": "Privacy Collection"
     },
     {
-      "description": "Script requests unsafeWindow grant, which allows access to the page context and can be abused for privilege escalation.",
-      "location": "Metadata (@grant unsafeWindow)",
-      "recommendation": "Remove unsafeWindow grant if not strictly necessary. Limit usage and audit for privilege escalation.",
+      "description": "Script requests the 'unsafeWindow' grant, which allows the script to interact with the page's JS context and can be abused for privilege escalation or data exfiltration.",
+      "location": "Metadata block",
+      "recommendation": "Remove 'unsafeWindow' if not strictly necessary. If required, audit all usages for security risks.",
       "severity": "HIGH",
-      "type": "Permission Abuse"
+      "type": "Privilege Escalation"
     },
     {
-      "description": "Script requests GM_xmlhttpRequest grant, which is a high privilege and can be abused for cross-origin requests.",
-      "location": "Metadata (@grant GM_xmlhttpRequest)",
-      "recommendation": "Limit usage to only required domains. Audit all outgoing requests.",
+      "description": "No evidence of eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection in the provided code fragment.",
+      "location": "General code",
+      "recommendation": "Continue to avoid dynamic code execution. Review any future updates for such patterns.",
       "severity": "HIGH",
-      "type": "Permission Abuse"
+      "type": "Remote Code Execution"
     },
     {
-      "description": "Script loads code from update.greasyfork.org via @downloadURL and @updateURL, which is a trusted source but should be version-pinned.",
-      "location": "Metadata (@downloadURL, @updateURL)",
-      "recommendation": "Ensure version pinning and integrity checks for updates.",
-      "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
+      "description": "No code obfuscation detected. Code is readable and not minified or encoded.",
+      "location": "General code",
+      "recommendation": "Maintain code transparency for auditability.",
+      "severity": "LOW",
+      "type": "Code Obfuscation"
+    },
+    {
+      "description": "No DOM XSS or direct insertion of untrusted input into innerHTML/outerHTML detected in the provided code fragment.",
+      "location": "General code",
+      "recommendation": "Continue to sanitize any user input before DOM insertion.",
+      "severity": "LOW",
+      "type": "DOM XSS"
+    },
+    {
+      "description": "No evidence of supply chain risk (@require) in the metadata block.",
+      "location": "Metadata block",
+      "recommendation": "If adding @require in the future, use official CDNs and fixed versions.",
+      "severity": "LOW",
+      "type": "Supply Chain"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "localStorage usage for configuration and possibly user data"
+      "Reads and writes to localStorage for configuration and possibly user data"
     ],
     "detected": true
   },
-  "risk_level": "CRITICAL",
+  "risk_level": "HIGH",
   "script_name": "FF Scouter V3",
-  "security_score": 42,
-  "summary": "FF Scouter V3 requests high privileges (GM_xmlhttpRequest, unsafeWindow), connects to a third-party server (ffscouter.com), and uses localStorage for configuration. There is potential for user/page data transmission and privacy collection. No code obfuscation or DOM XSS detected. Supply chain risk is mitigated by using GreasyFork, but version pinning should be enforced. Overall, the script presents CRITICAL risk due to data transmission and privacy collection concerns.",
+  "security_score": 35,
+  "summary": "The script requests network access to a third-party server (ffscouter.com) and stores data in localStorage. It also requests the powerful 'unsafeWindow' grant. While no direct evidence of sensitive data exfiltration or code execution vulnerabilities is present in the provided code fragment, the combination of these permissions and storage practices presents a high risk. A full review of the complete script is recommended to ensure no sensitive data is transmitted or exposed.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-06T06:34:24.860841+00:00",
+  "analyzed_at": "2026-07-13T05:36:56.033054+00:00",
   "slug": "FF_Scouter_V3"
 }

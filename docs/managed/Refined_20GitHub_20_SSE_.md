@@ -64,9 +64,9 @@ title: 🏷️ 小鱼标签 (UTags) - 为链接添加用户标签
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：37/100　　**分析时间**：2026-07-06
+**风险等级**：⛔ CRITICAL　　**安全评分**：50/100　　**分析时间**：2026-07-13
 
-> 该脚本元数据申请了极高的网络权限（@connect *），允许向任意域名发起请求，存在严重的数据外传风险。未提供完整代码，无法进一步审查隐私采集、远程代码执行等风险。建议限制网络权限、补充完整代码后再进行详细安全审查。当前不建议在生产环境使用。
+> 该脚本元数据存在严重的安全隐患，主要体现在允许向任意域名发起跨域请求（@connect *）并声明了高权限 GM_xmlhttpRequest/GM.xmlHttpRequest，存在数据外传和隐私泄露的高风险。未发现代码混淆、DOM XSS、隐私采集等问题，但由于未提供完整代码，无法排除其他风险。建议严格限制 @connect 域名范围，仅保留必要的可信域名，并移除未使用的高权限申请。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -79,35 +79,30 @@ title: 🏷️ 小鱼标签 (UTags) - 为链接添加用户标签
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Exfiltration  
-> @connect * 允许脚本向任意域名发起网络请求，存在严重数据外传风险。  
-> 位置：metadata (@connect *)  
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过 @connect * 允许向任意域名发起网络请求，存在数据外传风险。  
+> 位置：元数据 @connect  
 > 建议：限制 @connect 域名范围，仅允许必要的可信域名。
 
-**⛔ CRITICAL** — Data Exfiltration  
-> 申请了 GM.xmlHttpRequest 和 GM_xmlhttpRequest 权限，结合 @connect *，可向任意第三方服务器发送数据。  
-> 位置：metadata (@grant GM.xmlHttpRequest, GM_xmlhttpRequest)  
-> 建议：移除不必要的高权限，限制网络请求目标。
+**⛔ CRITICAL** — 数据外传  
+> 脚本声明了 GM.xmlHttpRequest 和 GM_xmlhttpRequest 权限，允许跨域网络请求，结合 @connect * 存在外传风险。  
+> 位置：元数据 @grant  
+> 建议：仅申请实际需要的权限，并限制 @connect 范围。
 
-**🔴 HIGH** — Data Exfiltration  
-> 脚本可访问本地服务器 (localhost)，存在本地服务数据泄露风险。  
-> 位置：metadata (@connect localhost)  
-> 建议：移除对 localhost 的连接权限，除非确有必要且用户知情。
+**🟠 MEDIUM** — 权限滥用  
+> 脚本声明了 GM.info 权限，但未见实际用途，存在权限滥用嫌疑。  
+> 位置：元数据 @grant  
+> 建议：移除未使用的高权限申请。
 
-**🔴 HIGH** — Code Transparency  
-> 脚本未提供代码，无法验证是否存在隐私采集、远程代码执行、DOM XSS、代码混淆等风险。  
-> 位置：code (empty)  
-> 建议：补充完整代码，进行详细安全审查。
+**🟠 MEDIUM** — 数据外传  
+> 脚本允许连接 localhost，可能被用于本地服务交互，存在一定风险。  
+> 位置：元数据 @connect  
+> 建议：仅在确有必要时允许连接 localhost。
 
-**🟠 MEDIUM** — Permission Usage  
-> 申请了 GM.addValueChangeListener、GM.getValue、GM.setValue、GM.deleteValue 等权限，可能用于存储和同步用户数据。  
-> 位置：metadata (@grant GM.addValueChangeListener, GM.getValue, GM.setValue, GM.deleteValue)  
-> 建议：确保用户数据仅在本地存储，不外传。
-
-**🟡 LOW** — Permission Usage  
-> 申请了 GM_addElement、GM.registerMenuCommand 等权限，属于常规功能，但需确保不滥用。  
-> 位置：metadata (@grant GM_addElement, GM.registerMenuCommand)  
-> 建议：仅用于用户交互，避免滥用。
+**🟡 LOW** — 供应链风险  
+> 脚本未锁定 @require 依赖（如有），但当前未见 @require 字段。  
+> 位置：元数据  
+> 建议：如需第三方依赖，应锁定版本并使用可信 CDN。
 
 ---
 

@@ -1,0 +1,91 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [
+      "y2mate.stream",
+      "africabazaar.co.za",
+      "saveanyyoutube.com",
+      "scoozy.ca"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "The script constructs download URLs using third-party services (y2mate.stream, africabazaar.co.za, saveanyyoutube.com, scoozy.ca) and opens them with the current YouTube video ID. This may leak user activity (video IDs, possibly referrer) to external servers.",
+      "location": "MultiURL array and button click handler (not fully shown, but implied by code structure)",
+      "recommendation": "Warn users about privacy risks. Only use trusted download services. Avoid sending sensitive data to third parties.",
+      "severity": "CRITICAL",
+      "type": "Data Exfiltration"
+    },
+    {
+      "description": "The script does not appear to collect cookies, localStorage, or other sensitive browser data, nor does it listen to keyboard or clipboard events.",
+      "location": "Global scope and main logic",
+      "recommendation": "No action needed.",
+      "severity": "LOW",
+      "type": "Privacy Collection"
+    },
+    {
+      "description": "No use of eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection detected in the visible code.",
+      "location": "Global scope and main logic",
+      "recommendation": "No action needed.",
+      "severity": "LOW",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "No code obfuscation detected in the visible code. Code is readable and not minified/obfuscated.",
+      "location": "Global scope and main logic",
+      "recommendation": "No action needed.",
+      "severity": "LOW",
+      "type": "Obfuscation"
+    },
+    {
+      "description": "No DOM XSS or injection risk detected in the visible code. No user input is inserted into the DOM via innerHTML/outerHTML/document.write.",
+      "location": "Global scope and main logic",
+      "recommendation": "No action needed.",
+      "severity": "LOW",
+      "type": "DOM XSS"
+    },
+    {
+      "description": "The script only requests GM_addStyle, which is appropriate for its functionality. No excessive permissions requested.",
+      "location": "@grant metadata",
+      "recommendation": "No action needed.",
+      "severity": "LOW",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "No use of sensitive APIs (geolocation, WebRTC, MediaDevices, Clipboard, Notification) detected.",
+      "location": "Global scope and main logic",
+      "recommendation": "No action needed.",
+      "severity": "LOW",
+      "type": "Sensitive API"
+    },
+    {
+      "description": "No @require or dynamic loading of third-party libraries detected. All code is inline.",
+      "location": "Metadata and code",
+      "recommendation": "No action needed.",
+      "severity": "LOW",
+      "type": "Supply Chain Risk"
+    },
+    {
+      "description": "No iframe manipulation or frame protection bypass detected.",
+      "location": "Global scope and main logic",
+      "recommendation": "No action needed.",
+      "severity": "LOW",
+      "type": "ClickJacking/iframe"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "HIGH",
+  "script_name": "YouTube™ Ultimate Downloader v12.7 👑🌍 — Desktop & Mobile | Shorts, Videos & Music 🔥 - AdBlock 🛡️🚫",
+  "security_score": 75,
+  "summary": "This script adds a floating download button to YouTube, which sends the current video ID to several third-party download services. This constitutes a privacy risk, as user activity (video IDs, possibly referrer) is leaked to external servers. No other critical or high-risk behaviors (such as code execution, obfuscation, or sensitive data collection) were detected. The script requests minimal permissions and does not use dangerous APIs. The main risk is data exfiltration to untrusted third-party sites.",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-07-13T05:51:55.405310+00:00",
+  "slug": "YouTube_Ultimate_Downloader_v127_Desktop_Mobile_Shorts_Videos_Music_-_AdBlock"
+}

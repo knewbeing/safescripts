@@ -10,84 +10,62 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "Script uses GM_xmlhttpRequest to send data to discord.com, likely for sharing map pins or game data. This constitutes data exfiltration to a third-party server.",
-      "location": "GM_xmlhttpRequest calls (not fully shown, but @connect discord.com and description indicate usage)",
-      "recommendation": "Limit data sent to Discord, ensure no sensitive user information or authentication tokens are transmitted.",
+      "description": "The script uses GM_xmlhttpRequest to send data to discord.com (likely via webhook) and nominatim.openstreetmap.org. This can be used to exfiltrate user data, game state, or location information.",
+      "location": "GM_xmlhttpRequest usage, @connect metadata",
+      "recommendation": "Limit data sent to third-party services, ensure no sensitive or user-identifiable information is transmitted, and inform users of any data sharing.",
       "severity": "CRITICAL",
       "type": "Data Exfiltration"
     },
     {
-      "description": "Script uses GM_xmlhttpRequest to access nominatim.openstreetmap.org, likely for geocoding. While this is a public API, user location data may be transmitted.",
-      "location": "GM_xmlhttpRequest calls (not fully shown, but @connect nominatim.openstreetmap.org and description indicate usage)",
-      "recommendation": "Ensure only necessary location data is sent, avoid transmitting user identifiers.",
-      "severity": "CRITICAL",
-      "type": "Data Exfiltration"
-    },
-    {
-      "description": "Script listens to keyboard events (Tab, Q, G, X, V, T) for feature toggles, but does not appear to log or transmit keystrokes.",
-      "location": "Hotkey handling (DEFAULT_HOTKEYS, event listeners)",
-      "recommendation": "Ensure no keylogger behavior is introduced; do not transmit input data.",
+      "description": "The script reads and writes to localStorage via Storage.prototype.setItem proxying, and uses GM_setValue/GM_getValue for persistent storage. There is no evidence of exfiltration of this data, but local storage access is present.",
+      "location": "Storage.prototype.setItem, GM_setValue/GM_getValue",
+      "recommendation": "Ensure no sensitive user data is stored or transmitted. Do not store credentials or personal information.",
       "severity": "MEDIUM",
       "type": "Privacy Collection"
     },
     {
-      "description": "Script accesses localStorage and sessionStorage, but only for feature toggles and state. No sensitive data collection detected.",
-      "location": "GM_getValue, GM_setValue, Storage.prototype.setItem proxy",
-      "recommendation": "Do not store or transmit sensitive user data.",
-      "severity": "MEDIUM",
-      "type": "Privacy Collection"
-    },
-    {
-      "description": "Script uses Notification API to display notifications to the user.",
-      "location": "state.notificationPermission, notify feature",
-      "recommendation": "Do not abuse Notification API for spam or phishing.",
+      "description": "The script requests Notification API permission and may use Notification API to send notifications to the user.",
+      "location": "state.notificationPermission, Notification.permission",
+      "recommendation": "Do not abuse Notification API for spam or misleading notifications.",
       "severity": "MEDIUM",
       "type": "Sensitive API Usage"
     },
     {
-      "description": "Script uses WebSocket interception to read game data and opponent guesses, but does not transmit this data externally.",
-      "location": "WebSocket.prototype.addEventListener proxy",
-      "recommendation": "Ensure intercepted data is not sent to third parties.",
-      "severity": "MEDIUM",
-      "type": "Privacy Collection"
-    },
-    {
-      "description": "Script modifies iframe sandbox attributes and frame protection, potentially weakening clickjacking protections.",
-      "location": "Element.prototype.setAttribute proxy",
-      "recommendation": "Avoid weakening frame protections unless necessary.",
-      "severity": "LOW",
-      "type": "ClickJacking / iframe Risk"
-    },
-    {
-      "description": "Script disables cheat detection scripts and modifies Array.prototype.push, which may interfere with site integrity.",
-      "location": "Array.prototype.push proxy, script removal",
-      "recommendation": "Avoid interfering with site security mechanisms.",
-      "severity": "LOW",
-      "type": "Site Integrity"
-    },
-    {
-      "description": "Script requires msgpack.js from greasyfork update CDN, which is a trusted source but not version-hashed.",
+      "description": "The script uses @require to load msgpack.js from update.greasyfork.org, which is a trusted CDN, but the version is not pinned by hash.",
       "location": "@require https://update.greasyfork.org/scripts/423602/1005014/msgpack.js",
-      "recommendation": "Pin third-party dependencies to a specific version hash.",
+      "recommendation": "Pin third-party dependencies by version and hash to prevent supply chain attacks.",
       "severity": "MEDIUM",
       "type": "Supply Chain Risk"
+    },
+    {
+      "description": "The script requests GM_xmlhttpRequest permission, which is used and justified, but also requests GM_setValue, GM_getValue, and GM_deleteValue. All are used, but the script does not request unnecessary high-risk permissions.",
+      "location": "@grant metadata",
+      "recommendation": "Only request permissions that are strictly necessary.",
+      "severity": "LOW",
+      "type": "Permission Usage"
+    },
+    {
+      "description": "The script modifies Element.prototype.setAttribute and Storage.prototype.setItem via Proxy, which can have side effects and may break page functionality or introduce compatibility issues.",
+      "location": "Element.prototype.setAttribute, Storage.prototype.setItem",
+      "recommendation": "Avoid monkey-patching built-in prototypes unless absolutely necessary.",
+      "severity": "LOW",
+      "type": "DOM/Prototype Modification"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "Hotkey event listeners",
-      "LocalStorage/sessionStorage for feature toggles",
-      "WebSocket interception for game data"
+      "localStorage access via Storage.prototype.setItem",
+      "GM_setValue/GM_getValue usage"
     ],
     "detected": true
   },
-  "risk_level": "CRITICAL",
+  "risk_level": "HIGH",
   "script_name": "CheatGuessr Universal | GeoGuessr | OpenGuessr | WorldGuessr | FreeGuessr | GeoDuels | Geotastic",
-  "security_score": 34,
-  "summary": "该脚本存在严重的数据外传风险，主要通过 GM_xmlhttpRequest 向 discord.com 和 nominatim.openstreetmap.org 发送用户游戏数据和位置信息。虽然未检测到代码混淆和 DOM XSS，但存在隐私采集（如 WebSocket 拦截、存储操作）、敏感 API 调用（通知）、iframe 保护弱化，以及供应链风险（未哈希固定的第三方依赖）。建议严格限制外传数据、加强依赖管理，并避免干扰站点安全机制。",
+  "security_score": 49,
+  "summary": "This script transmits data to third-party services (discord.com and nominatim.openstreetmap.org), which may include game state or location information. It accesses localStorage and uses persistent storage APIs, but does not appear to collect sensitive user data such as cookies, passwords, or clipboard contents. There is no evidence of code obfuscation, DOM XSS, or remote code execution. The script loads a third-party library from a trusted source, but the version is not pinned by hash. Notification API is used, but not abused. Overall, the script poses a HIGH risk due to data exfiltration to third-party services.",
   "supply_chain_risk": true,
   "websocket_usage": true,
-  "analyzed_at": "2026-07-06T06:29:03.995088+00:00",
+  "analyzed_at": "2026-07-13T05:31:17.502025+00:00",
   "slug": "CheatGuessr_Universal_GeoGuessr_OpenGuessr_WorldGuessr_FreeGuessr_GeoDuels_Geota"
 }

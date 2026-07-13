@@ -11,74 +11,25 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "申请了 GM_xmlhttpRequest 权限，并声明 @connect 到 cdn.jsdelivr.net、i.instagram.com、raw.githubusercontent.com，但代码未发现将用户数据、cookie、敏感信息发送到第三方服务器，仅用于资源获取。",
-      "location": "元数据与部分代码",
-      "recommendation": "持续监控后续代码更新，确保 GM_xmlhttpRequest 仅用于公开资源下载，不涉及用户隐私数据。",
+      "description": "申请了 GM_xmlhttpRequest 权限，并允许连接 cdn.jsdelivr.net、i.instagram.com、raw.githubusercontent.com，但代码中仅用于加载资源和 Instagram API，无发现用户数据外传或统计追踪行为。",
+      "location": "元数据 @grant/@connect 及主代码",
+      "recommendation": "继续关注后续版本，确保无新增外传逻辑。",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "权限申请"
     },
     {
-      "description": "申请了 GM_openInTab 权限，但代码未发现实际使用，可能存在权限冗余。",
-      "location": "元数据",
-      "recommendation": "建议移除未使用的高权限申请，减少攻击面。",
+      "description": "通过 @require 加载 mediabunny 和 jQuery，均为知名 CDN 并固定了 sha256 哈希，供应链风险较低。",
+      "location": "元数据 @require",
+      "recommendation": "定期检查依赖哈希，防止 CDN 污染。",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "供应链依赖"
     },
     {
-      "description": "@require 加载 mediabunny 和 jQuery 均为官方 CDN，并固定了 sha256 哈希，供应链风险较低。",
-      "location": "元数据",
-      "recommendation": "保持依赖哈希锁定，避免加载可变版本。",
+      "description": "申请了 GM_openInTab 权限，但主代码片段未见明显使用，存在一定权限冗余。",
+      "location": "元数据 @grant",
+      "recommendation": "如未使用 GM_openInTab，建议移除。",
       "severity": "MEDIUM",
-      "type": "供应链风险"
-    },
-    {
-      "description": "未发现 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险。",
-      "location": "完整代码",
-      "recommendation": "继续保持，避免动态执行字符串代码。",
-      "severity": "LOW",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "未发现代码混淆、base64 解码、字符串映射、unicode 混淆等特征，代码结构清晰。",
-      "location": "完整代码",
-      "recommendation": "保持代码可读性，便于社区审查。",
-      "severity": "LOW",
-      "type": "代码混淆"
-    },
-    {
-      "description": "未发现 DOM XSS 风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML。",
-      "location": "完整代码",
-      "recommendation": "继续保持安全的 DOM 操作。",
-      "severity": "LOW",
-      "type": "DOM XSS"
-    },
-    {
-      "description": "未发现敏感 API 调用（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API）。",
-      "location": "完整代码",
-      "recommendation": "避免调用敏感 API，除非有明确用途且告知用户。",
-      "severity": "LOW",
-      "type": "敏感 API 调用"
-    },
-    {
-      "description": "未发现隐私采集行为，如读取 cookie、localStorage、sessionStorage、IndexedDB、监听键盘输入、读取表单字段、访问指纹 API、读取剪贴板。",
-      "location": "完整代码",
-      "recommendation": "继续保持不采集用户隐私数据。",
-      "severity": "LOW",
-      "type": "隐私采集"
-    },
-    {
-      "description": "未发现 WebSocket、EventSource、navigator.sendBeacon 等外传行为。",
-      "location": "完整代码",
-      "recommendation": "避免使用实时数据外传接口。",
-      "severity": "LOW",
-      "type": "数据外传"
-    },
-    {
-      "description": "未发现修改 frame 保护策略或创建隐藏 iframe 用于数据提取。",
-      "location": "完整代码",
-      "recommendation": "继续保持安全的 iframe 使用。",
-      "severity": "LOW",
-      "type": "ClickJacking / iframe 风险"
+      "type": "权限冗余"
     }
   ],
   "obfuscation_detected": false,
@@ -88,10 +39,10 @@
   },
   "risk_level": "LOW",
   "script_name": "IG Helper",
-  "security_score": 92,
-  "summary": "IG Helper 用户脚本整体安全性较高，未发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危风险。依赖库均为官方 CDN 且固定哈希，供应链风险低。部分权限（GM_openInTab、GM_xmlhttpRequest）存在冗余或需持续关注，建议定期审查代码更新。整体风险等级为 LOW，安全评分 92。适合公开使用。后续如有功能扩展，需重点关注权限申请与数据处理逻辑。无隐私采集行为，无外部数据上报。",
+  "security_score": 84,
+  "summary": "该脚本主要功能为一键下载 Instagram 媒体资源，未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。依赖的第三方库均为可信 CDN 且固定哈希，供应链风险较低。存在部分权限冗余（如 GM_openInTab），建议最小化权限。整体安全风险较低，适合一般用户使用。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-06T06:37:26.472483+00:00",
+  "analyzed_at": "2026-07-13T05:40:16.981065+00:00",
   "slug": "IG_Helper"
 }

@@ -1,48 +1,64 @@
 {
-  "approved": true,
+  "approved": false,
   "data_transmission": {
     "destinations": [
-      "api.torn.com"
+      "api.torn.com",
+      "twse.dev"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script uses GM_xmlhttpRequest to communicate with api.torn.com, which is a third-party API, and sends a user-provided API key (stored in localStorage).",
-      "location": "GM_xmlhttpRequest usage (implied by @grant and @connect, though not shown in the truncated code)",
-      "recommendation": "Ensure only the minimum required data is sent and the API key is not reused elsewhere. Warn users not to use sensitive/private API keys.",
+      "description": "Script uses GM_xmlhttpRequest to communicate with api.torn.com and twse.dev. User's Torn API key is collected via prompt and stored in localStorage, and may be sent to these endpoints for API calls.",
+      "location": "GM_xmlhttpRequest usage, Config class, KeyManagerFeature",
+      "recommendation": "Ensure only necessary data is sent, and endpoints are trusted. Warn users about API key usage and storage.",
       "severity": "CRITICAL",
-      "type": "Data Transmission"
+      "type": "Data Exfiltration"
     },
     {
-      "description": "The script stores and retrieves the API key from localStorage, which is accessible to any script running on the page.",
-      "location": "localStorage.getItem/setItem for API key",
-      "recommendation": "Warn users that the API key is stored in localStorage and may be accessible to other scripts. Consider using a more secure storage method if possible.",
-      "severity": "HIGH",
+      "description": "Script stores and retrieves the Torn API key and other settings in localStorage, which is accessible to any script running on the same domain/context.",
+      "location": "Config class, Storage class",
+      "recommendation": "Minimize sensitive data storage in localStorage. Consider using more secure storage if possible.",
+      "severity": "CRITICAL",
       "type": "Privacy Collection"
     },
     {
-      "description": "The script requests GM_xmlhttpRequest permission, which is a high-privilege API, but only uses it for api.torn.com as declared in @connect.",
-      "location": "@grant GM_xmlhttpRequest, @connect api.torn.com",
-      "recommendation": "Limit @connect to only required domains and ensure GM_xmlhttpRequest is not used for other destinations.",
+      "description": "@grant unsafeWindow is requested, but not used in the provided code. This is a high-privilege grant and can be abused if used carelessly.",
+      "location": "Metadata block (@grant)",
+      "recommendation": "Remove unused high-privilege grants to reduce attack surface.",
       "severity": "MEDIUM",
-      "type": "Permission Usage"
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "@require is not used, but @grant GM_xmlhttpRequest is present. Ensure only necessary permissions are requested.",
+      "location": "Metadata block (@grant)",
+      "recommendation": "Review and minimize granted permissions.",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "Script loads and injects CSS via <style> tags, but does not use innerHTML/outerHTML with untrusted input. No DOM XSS found.",
+      "location": "importCSS function",
+      "recommendation": "Continue to avoid inserting untrusted content into the DOM.",
+      "severity": "LOW",
+      "type": "DOM Manipulation"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "Reads and writes API key to localStorage"
+      "Torn API key is collected and stored in localStorage via prompt",
+      "Other user preferences stored in localStorage"
     ],
     "detected": true
   },
-  "risk_level": "MEDIUM",
+  "risk_level": "HIGH",
   "script_name": "Torn War Stuff Enhanced",
-  "security_score": 67,
-  "summary": "The script is generally safe for use, with its main risk being the storage and transmission of a user-provided API key to a third-party API (api.torn.com). There is no evidence of code obfuscation, DOM XSS, or supply chain risk. Users should be aware that their API key is stored in localStorage and only use a public key as recommended by the script author.",
+  "security_score": 42,
+  "summary": "The script collects and stores the user's Torn API key in localStorage, and transmits it to api.torn.com and twse.dev via GM_xmlhttpRequest. This is a critical privacy and data exfiltration risk. The script also requests high-privilege grants (unsafeWindow) that are not used, increasing the attack surface. No code obfuscation or DOM XSS was detected. Supply chain risk is low as no @require is used. The script should warn users about API key handling, minimize permissions, and avoid storing sensitive data in localStorage.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-08T06:48:57.549910+00:00",
+  "analyzed_at": "2026-07-13T05:49:16.245241+00:00",
   "slug": "Torn_War_Stuff_Enhanced"
 }

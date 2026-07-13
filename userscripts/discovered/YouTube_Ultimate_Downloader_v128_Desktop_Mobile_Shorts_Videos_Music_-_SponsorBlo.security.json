@@ -1,0 +1,93 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [
+      "y2mate.stream",
+      "giggity.co.za",
+      "saveanyyoutube.com",
+      "scoozy.ca"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "The script constructs download URLs using third-party services (y2mate.stream, giggity.co.za, saveanyyoutube.com, scoozy.ca) and opens them with the current YouTube video ID. This may leak the user's currently watched video and potentially other data if the third-party site collects more information.",
+      "location": "MultiURL array and button click handler (code section where download URLs are constructed and opened)",
+      "recommendation": "Warn users about privacy risks when sending video IDs to third-party downloaders. Consider using only trusted services and review their privacy policies.",
+      "severity": "CRITICAL",
+      "type": "Data Exfiltration"
+    },
+    {
+      "description": "The script does not appear to collect cookies, localStorage, or other sensitive browser data, nor does it listen to keyboard or clipboard events. However, the act of sending the current video ID to third-party sites is a privacy risk.",
+      "location": "MultiURL usage and window.open calls",
+      "recommendation": "Minimize data sent to third-party services and inform users of privacy implications.",
+      "severity": "CRITICAL",
+      "type": "Privacy Collection"
+    },
+    {
+      "description": "The script does not use eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection. No remote code execution risk detected.",
+      "location": "N/A",
+      "recommendation": "No action needed.",
+      "severity": "HIGH",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "No code obfuscation detected. The code is readable and not minified or encoded.",
+      "location": "N/A",
+      "recommendation": "No action needed.",
+      "severity": "HIGH",
+      "type": "Code Obfuscation"
+    },
+    {
+      "description": "No DOM XSS or injection risk detected. The script does not insert untrusted user input into the DOM via innerHTML or similar methods.",
+      "location": "N/A",
+      "recommendation": "No action needed.",
+      "severity": "HIGH",
+      "type": "DOM XSS"
+    },
+    {
+      "description": "The script only requests the GM_addStyle permission, which is appropriate for its functionality. No permission abuse detected.",
+      "location": "@grant metadata",
+      "recommendation": "No action needed.",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "No sensitive browser APIs (geolocation, WebRTC, MediaDevices, Clipboard, Notification) are used.",
+      "location": "N/A",
+      "recommendation": "No action needed.",
+      "severity": "MEDIUM",
+      "type": "Sensitive API"
+    },
+    {
+      "description": "No @require directives or dynamic loading of third-party libraries detected. No supply chain risk from external JS libraries.",
+      "location": "Metadata block",
+      "recommendation": "No action needed.",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    },
+    {
+      "description": "No iframe manipulation or frame protection bypass detected.",
+      "location": "N/A",
+      "recommendation": "No action needed.",
+      "severity": "LOW",
+      "type": "ClickJacking/iframe"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [
+      "Current YouTube video ID is sent to third-party download services when user clicks download button."
+    ],
+    "detected": true
+  },
+  "risk_level": "CRITICAL",
+  "script_name": "YouTube™ Ultimate Downloader v12.8 👑🌍 — Desktop & Mobile | Shorts, Videos & Music - SponsorBlock 🛡️🚫",
+  "security_score": 50,
+  "summary": "This script exposes the user's currently watched YouTube video ID to multiple third-party download services when the download button is used. While it does not collect cookies, localStorage, or other sensitive browser data, and does not use dangerous APIs or code execution techniques, the privacy risk of sending video IDs to untrusted third-party sites is significant. No code obfuscation, supply chain, or XSS risks detected. The script is not recommended for privacy-sensitive users.",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-07-13T05:52:11.049379+00:00",
+  "slug": "YouTube_Ultimate_Downloader_v128_Desktop_Mobile_Shorts_Videos_Music_-_SponsorBlo"
+}

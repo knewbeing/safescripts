@@ -10,18 +10,18 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "@require 加载的第三方库（LegacyGMjs.js, CommLinkjs.js, UniversalBoardDrawerjs.js）均来自 update.greasyfork.org，未固定版本哈希，存在供应链风险。",
-      "location": "UserScript metadata (@require)",
-      "recommendation": "建议使用官方 CDN 并固定版本哈希，避免供应链污染。",
+      "description": "The script requests a large set of @grant permissions, including GM_openInTab, GM_setClipboard, GM_notification, and unsafeWindow, but not all are used in the visible code. This may be considered permission over-claiming.",
+      "location": "Metadata block (@grant)",
+      "recommendation": "Reduce @grant permissions to only those actually used in the script.",
       "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
+      "type": "Permission Over-claim"
     },
     {
-      "description": "申请了 GM_openInTab、GM_setClipboard、GM_notification、unsafeWindow 等高权限，但代码中未见实际使用，存在权限滥用风险。",
-      "location": "UserScript metadata (@grant)",
-      "recommendation": "仅申请实际需要的权限，移除未使用的高权限。",
+      "description": "The script uses @require to load three external scripts from update.greasyfork.org. These are not fixed to a specific version hash, only a query parameter (?acasv=2), which does not guarantee immutability.",
+      "location": "Metadata block (@require)",
+      "recommendation": "Pin @require URLs to a specific version or hash to prevent supply chain attacks.",
       "severity": "MEDIUM",
-      "type": "Permission Abuse"
+      "type": "Supply Chain Risk"
     }
   ],
   "obfuscation_detected": false,
@@ -30,11 +30,11 @@
     "detected": false
   },
   "risk_level": "MEDIUM",
-  "script_name": "🏆 [#1 Chess Assistant] A.C.A.S (Advanced Chess Assistance System)",
+  "script_name": "\u001f🏆 [#1 Chess Assistant] A.C.A.S (Advanced Chess Assistance System)",
   "security_score": 84,
-  "summary": "脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要风险为供应链风险（@require 未固定版本哈希）和权限滥用（申请高权限但未实际使用）。建议加强第三方库管理和权限最小化原则。",
+  "summary": "The script does not directly transmit data to third-party servers, collect privacy-sensitive information, or use obfuscation or dangerous code execution patterns in the visible code. However, it requests more permissions than necessary and loads external dependencies without strict version pinning, introducing medium-level supply chain and permission risks. The actual behavior of the required scripts is not auditable from this code alone, so further review of those dependencies is recommended.",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-06T06:24:48.837811+00:00",
+  "analyzed_at": "2026-07-13T05:27:32.541827+00:00",
   "slug": "1_Chess_Assistant_ACAS_Advanced_Chess_Assistance_System"
 }

@@ -43,14 +43,14 @@ title: "大人的Greasyfork"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：49/100　　**分析时间**：2026-07-06
+**风险等级**：🟡 LOW　　**安全评分**：64/100　　**分析时间**：2026-07-13
 
-> 脚本功能明确，仅请求 greasyfork.org 和 sleazyfork.org 合并搜索结果，未发现敏感数据外传、隐私采集、远程代码执行、混淆、XSS、供应链风险等高危行为。主要风险为权限申请过多，建议精简 @grant。整体安全性较高，适合公开使用。
+> 该脚本主要通过 GM_xmlhttpRequest 获取 greasyfork.org 和 sleazyfork.org 的搜索结果并合并显示，未发现向第三方服务器外传用户数据或敏感信息。存在部分权限冗余和 localStorage 访问，整体风险较低。未检测到代码混淆、远程代码执行或高危 DOM XSS。建议精简 @grant 权限，持续关注 HTML 注入风险。
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：greasyfork.org, sleazyfork.org） |
-| 隐私采集 | ✅ 未检测到 |
+| 隐私采集 | ❌ 检测到（localStorage 作为存储后备） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -59,49 +59,34 @@ title: "大人的Greasyfork"
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本通过 GM_xmlhttpRequest 请求 greasyfork.org 和 sleazyfork.org，获取页面内容并合并搜索结果。未发现向第三方服务器发送用户数据或页面内容，仅用于功能实现。  
-> 位置：GM_xmlhttpRequest 调用  
-> 建议：确保仅请求官方域名，避免未来代码变更导致数据外传。
+> 脚本通过 GM_xmlhttpRequest 访问 greasyfork.org 和 sleazyfork.org，获取搜索结果页面的 HTML 内容并插入当前页面。未发现向第三方域名发送用户数据或敏感信息。  
+> 位置：_GM_xmlhttpRequest 调用  
+> 建议：仅允许与目标站点通信，避免向不受信任的第三方发送数据。
 
 **⛔ CRITICAL** — 隐私采集  
-> 脚本读取和写入 localStorage、GM_setValue/GM_getValue，用于存储脚本配置。未发现敏感数据采集（如 cookie、表单、剪贴板、指纹等）。  
-> 位置：storage.setItem/getItem  
-> 建议：避免存储敏感信息，当前实现安全。
+> 脚本会读取和写入 localStorage 作为存储后备方案，但未发现读取 cookie、sessionStorage、IndexedDB、表单字段、剪贴板或监听键盘输入。  
+> 位置：storage.getItem/setItem  
+> 建议：如无必要，避免访问 localStorage，尤其是存储敏感信息时。
+
+**🔴 HIGH** — DOM XSS  
+> 脚本通过 innerHTML 方式插入由 greasyfork.org/sleazyfork.org 返回的 HTML，但未直接插入用户输入或 URL 参数。由于目标为可信站点，风险较低。  
+> 位置：doc.documentElement.innerHTML = result.responseText  
+> 建议：如未来插入不可信内容，需进行严格转义。
 
 **🔴 HIGH** — 远程代码执行  
-> 脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等动态执行代码，也未通过 innerHTML 插入外部脚本。  
-> 位置：全局代码审查  
-> 建议：保持当前安全实践，避免未来引入远程代码执行风险。
-
-**🔴 HIGH** — 代码混淆  
-> 脚本未发现代码混淆、base64 解码、字符串数组映射或高度压缩单行代码。  
-> 位置：全局代码审查  
-> 建议：保持代码可读性，便于安全审查。
-
-**🔴 HIGH** — DOM XSS / 注入  
-> 脚本未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未发现 DOM XSS 风险。  
-> 位置：全局代码审查  
-> 建议：继续避免不可信内容插入 DOM。
+> 脚本未使用 eval、new Function、setTimeout(string)、setInterval(string)、document.write、动态 script 标签等远程代码执行方式。  
+> 位置：全局  
+> 建议：保持当前实现，避免引入远程代码执行风险。
 
 **🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_notification、GM_registerMenuCommand 等权限，但实际代码仅使用 GM_xmlhttpRequest、GM_setValue、GM_getValue。存在未使用的高权限申请。  
+> @grant 权限申请较多（GM_setValue, GM_getValue, GM_registerMenuCommand, GM_notification），但部分未在代码中实际使用，存在权限冗余。  
 > 位置：元数据 @grant  
-> 建议：移除未使用的权限，减少攻击面。
-
-**🟠 MEDIUM** — 敏感 API 调用  
-> 脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。  
-> 位置：全局代码审查  
-> 建议：保持当前安全实践。
+> 建议：仅申请实际使用的权限，减少潜在攻击面。
 
 **🟠 MEDIUM** — 供应链风险  
-> 未使用 @require 加载第三方库，无供应链风险。  
-> 位置：元数据 @require  
-> 建议：如需引入第三方库，建议固定版本哈希并使用官方 CDN。
-
-**🟡 LOW** — ClickJacking / iframe 风险  
-> 脚本未修改 frame 保护策略，也未创建隐藏 iframe 用于数据提取。  
-> 位置：全局代码审查  
-> 建议：继续避免 iframe 风险。
+> @require 未使用，未发现供应链风险。  
+> 位置：元数据  
+> 建议：如需引入第三方库，建议使用官方 CDN 并锁定版本哈希。
 
 ---
 

@@ -1,0 +1,58 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [
+      "cdn.jsdmirror.com",
+      "fastly.jsdelivr.net",
+      "hub.glowp.xyz",
+      "g.blfrp.cn",
+      "gh.catmak.name",
+      "gh-proxy.org",
+      "hk.gh-proxy.org",
+      "userscript.h233.eu.org",
+      "userscript.xiu2.xyz",
+      "bitbucket.org",
+      "jsd.onmicrosoft.cn",
+      "wget.la",
+      "ghfast.top"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "脚本通过 GM_xmlhttpRequest 等方式向多个第三方服务器（如 jsdmirror.com、glowp.xyz、xiu2.xyz 等）请求 rules.json 规则文件。此行为涉及数据外传，且目标为第三方服务器。",
+      "location": "urlArr, urlArr2 变量及相关 GM_xmlhttpRequest 调用",
+      "recommendation": "建议仅连接可信、官方 CDN，减少第三方依赖，并明确告知用户外联行为。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本申请了 GM_openInTab、unsafeWindow 等高权限，但主逻辑中未见明显使用，存在权限滥用风险。",
+      "location": "@grant 元数据",
+      "recommendation": "仅申请实际需要的权限，移除未使用的高权限。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本通过多个第三方代理和镜像（如 hub.glowp.xyz、g.blfrp.cn、gh.catmak.name 等）加载规则文件，存在供应链污染和中间人攻击风险。",
+      "location": "urlArr, urlArr2 变量",
+      "recommendation": "建议仅使用官方 CDN 并固定版本或哈希，避免使用不明代理。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "MEDIUM",
+  "script_name": "AutoPager",
+  "security_score": 67,
+  "summary": "AutoPager 脚本主要安全风险为：1）通过 GM_xmlhttpRequest 等方式频繁访问多个第三方服务器获取规则文件，存在数据外传和供应链风险；2）申请了部分高权限但未见实际使用，存在权限滥用嫌疑。未发现隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。建议优化外联目标、权限申请和供应链安全。",
+  "supply_chain_risk": true,
+  "websocket_usage": false,
+  "analyzed_at": "2026-07-13T05:59:47.465617+00:00",
+  "slug": "自动无缝翻页"
+}

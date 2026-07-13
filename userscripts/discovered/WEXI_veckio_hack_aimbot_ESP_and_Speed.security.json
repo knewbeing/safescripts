@@ -2,69 +2,54 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
-      "https://wexi.qzz.io/key",
-      "Remote URL via loadscript(url) (dynamic, user-controlled)"
+      "https://wexi.qzz.io/key"
     ],
-    "detected": true
+    "detected": false
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script dynamically loads and executes remote JavaScript code using fetch and new Function, allowing arbitrary code execution from any URL passed to loadscript().",
+      "description": "The script dynamically loads and executes remote JavaScript code using fetch() and new Function(). The URL is not hardcoded in the provided code, but the loadscript function can be called with arbitrary URLs, which is a remote code execution risk.",
       "location": "loadscript(url) function",
-      "recommendation": "Avoid dynamic code execution from remote sources. Only load trusted, versioned scripts and validate URLs.",
-      "severity": "CRITICAL",
+      "recommendation": "Avoid dynamic code execution via new Function() and only use trusted, version-pinned @require resources.",
+      "severity": "HIGH",
       "type": "Remote Code Execution"
     },
     {
-      "description": "The script references an external key retrieval page (https://wexi.qzz.io/key) and encourages users to visit it, potentially exposing users to phishing or malicious content.",
-      "location": "wxKeyGate overlay (Get Daily Key link)",
-      "recommendation": "Ensure the external key page is trustworthy and does not collect sensitive information.",
-      "severity": "CRITICAL",
-      "type": "Data Transmission"
-    },
-    {
-      "description": "The script stores the user-provided access key in localStorage, which is accessible to any script running on the same domain.",
-      "location": "localStorage.setItem('wx_user_key', input)",
-      "recommendation": "Consider encrypting sensitive keys or using more secure storage mechanisms.",
-      "severity": "HIGH",
+      "description": "The script stores and reads a user key in localStorage for authentication. While not directly exfiltrating data, this is a form of local privacy-sensitive data storage.",
+      "location": "localStorage.getItem('wx_user_key') and localStorage.setItem('wx_user_key', input)",
+      "recommendation": "Minimize storage of sensitive data in localStorage; consider session-based memory storage if possible.",
+      "severity": "MEDIUM",
       "type": "Privacy Collection"
     },
     {
-      "description": "The script uses new Function to execute fetched code, which is equivalent to eval and poses a high security risk.",
-      "location": "loadscript(url) function",
-      "recommendation": "Avoid using new Function or eval for executing remote code.",
-      "severity": "HIGH",
-      "type": "Remote Code Execution"
-    },
-    {
-      "description": "The script deletes the IndexedDB database 'UnityCache', which may disrupt normal game operation or cause loss of cached data.",
+      "description": "The script deletes the IndexedDB database 'UnityCache', which may impact user data persistence for the site.",
       "location": "indexedDB.deleteDatabase(\"UnityCache\")",
-      "recommendation": "Warn users before deleting browser storage and ensure it is necessary.",
+      "recommendation": "Warn users before deleting site data; only clear caches if necessary.",
       "severity": "MEDIUM",
       "type": "Sensitive API Usage"
     },
     {
-      "description": "The script requests no @grant permissions, but uses localStorage and indexedDB, which are accessible in the page context.",
-      "location": "@grant none",
-      "recommendation": "Review permission usage and minimize access to sensitive APIs.",
-      "severity": "LOW",
-      "type": "Permission Usage"
+      "description": "The script creates an overlay that prompts the user to visit an external site (https://wexi.qzz.io/key) to obtain a daily key. This is a potential supply chain risk if the external site is compromised.",
+      "location": "Overlay HTML and link to https://wexi.qzz.io/key",
+      "recommendation": "Ensure the external key provider is trustworthy and uses HTTPS. Consider providing keys in a more secure, verifiable manner.",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "Stores user access key in localStorage"
+      "localStorage used to store user key"
     ],
     "detected": true
   },
-  "risk_level": "CRITICAL",
+  "risk_level": "HIGH",
   "script_name": "WEXI veck.io hack aimbot, ESP and Speed",
-  "security_score": 35,
-  "summary": "This script poses critical security risks due to dynamic remote code execution, external data transmission, and storage of sensitive keys in localStorage. It allows arbitrary code to be fetched and executed, which can compromise user privacy and security. Use with extreme caution.",
+  "security_score": 62,
+  "summary": "This UserScript introduces significant security risks, primarily due to its ability to dynamically load and execute remote code, which could be exploited for remote code execution. It also stores sensitive user keys in localStorage and deletes IndexedDB data, which may impact user privacy and data persistence. The script prompts users to visit an external site for key retrieval, introducing supply chain risk. No direct data exfiltration or obfuscation was detected, and there is no evidence of DOM XSS. The script should not be considered safe for general use.",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-25T06:38:57.988908+00:00",
+  "analyzed_at": "2026-07-13T05:50:27.939690+00:00",
   "slug": "WEXI_veckio_hack_aimbot_ESP_and_Speed"
 }

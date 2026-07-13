@@ -98,9 +98,9 @@ title: "网购助手自动查券省钱"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：67/100　　**分析时间**：2026-07-06
+**风险等级**：🔴 HIGH　　**安全评分**：59/100　　**分析时间**：2026-07-13
 
-> 该脚本存在数据外传至第三方服务器（jtmate.com、mimixiaoke.com），并申请了高权限但未必全部使用，存在权限滥用和供应链风险。未检测到隐私采集、代码混淆、DOM XSS、WebSocket、敏感 API 调用等高风险行为。建议限制数据传输内容、精简权限申请、固定更新 URL 版本哈希。
+> 该脚本存在向第三方服务器（jtmate.com、mimixiaoke.com）外传数据的行为，且申请了较高权限（如 GM_download、GM_openInTab），存在一定的权限滥用和供应链风险。未发现明显的隐私采集、代码混淆或 DOM XSS 问题。建议限制网络请求范围、精简权限申请，并加强对外传数据的用户提示和隐私保护。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -114,19 +114,24 @@ title: "网购助手自动查券省钱"
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本通过 GM_xmlhttpRequest 允许向 jtmate.com 和 mimixiaoke.com 发起网络请求，可能携带用户数据或页面内容。  
-> 位置：@connect jtmate.com, @connect mimixiaoke.com, 代码中 GM_xmlhttpRequest 调用  
-> 建议：限制请求内容，仅发送必要的非敏感数据，并在隐私政策中明确说明用途。
+> 脚本通过 GM_xmlhttpRequest 向 jtmate.com 和 mimixiaoke.com 发送网络请求，可能外传用户数据或页面内容。  
+> 位置：多处 GM_xmlhttpRequest 调用  
+> 建议：仅允许必要的 API 请求，明确限制请求内容，增加用户提示和隐私说明。
 
 **🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_download、GM_openInTab 等高权限，但代码中未必全部使用，存在权限滥用风险。  
-> 位置：@grant GM_download, GM_openInTab, GM.openInTab  
+> 脚本申请了 GM_download、GM_openInTab 等高权限，但实际代码中使用有限，存在权限滥用风险。  
+> 位置：元数据 @grant  
 > 建议：仅申请实际需要的权限，移除未使用的高权限。
 
 **🟠 MEDIUM** — 供应链风险  
-> 脚本未通过 @require 加载第三方库，供应链风险较低，但下载和更新 URL 未固定版本哈希，存在被篡改风险。  
-> 位置：@downloadURL, @updateURL  
-> 建议：建议使用固定版本哈希或官方 CDN，避免供应链污染。
+> 脚本通过 @connect 允许任意对 mimixiaoke.com 和 jtmate.com 的网络访问，存在供应链和数据外传风险。  
+> 位置：元数据 @connect  
+> 建议：限制 @connect 域名范围，避免泛用，确保后端可信。
+
+**🟡 LOW** — 代码安全  
+> 脚本未发现明显的代码混淆、eval、动态 script 加载等远程代码执行高危行为。  
+> 位置：全局  
+> 建议：保持代码可读性，避免后续引入混淆或远程代码执行。
 
 ---
 

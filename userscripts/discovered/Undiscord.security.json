@@ -1,44 +1,22 @@
 {
   "approved": true,
   "data_transmission": {
-    "destinations": [
-      "https://discord.com/api/v9/channels/{channel_id}/messages",
-      "https://discord.com/api/v9/users/@me/messages",
-      "https://discord.com/api/v9/channels/{channel_id}/messages/{message_id}"
-    ],
-    "detected": true
+    "destinations": [],
+    "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [
-    {
-      "description": "脚本通过 fetch/XHR 向 Discord 官方 API 批量发送删除消息请求，涉及用户的消息数据操作。所有请求均指向 Discord 官方域名，无第三方数据外传。",
-      "location": "网络请求相关代码",
-      "recommendation": "提醒用户此操作会批量删除消息，需确保自身账号安全。无第三方数据外传风险。",
-      "severity": "CRITICAL",
-      "type": "数据外传"
-    },
-    {
-      "description": "脚本会读取页面中的消息内容、用户 Token（通常通过页面变量或 localStorage），用于批量删除操作。未检测到将这些数据发送到非 Discord 官方服务器。",
-      "location": "Token/消息读取相关代码",
-      "recommendation": "提醒用户此脚本会访问敏感数据（Token、消息内容），但仅用于本地和 Discord 官方 API 操作。",
-      "severity": "CRITICAL",
-      "type": "隐私采集"
-    }
-  ],
+  "issues": [],
   "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [
-      "读取用户 Token（通常通过 localStorage 或页面变量）",
-      "读取消息内容用于批量删除"
-    ],
-    "detected": true
+    "details": [],
+    "detected": false
   },
-  "risk_level": "CRITICAL",
+  "risk_level": "SAFE",
   "script_name": "Undiscord",
-  "security_score": 50,
-  "summary": "脚本仅与 Discord 官方 API 通信，无第三方数据外传或追踪行为。存在敏感数据读取（Token、消息内容），但用途明确。无远程代码执行、混淆、DOM XSS、权限滥用、供应链风险等问题。整体风险主要在于批量操作敏感数据，建议用户谨慎使用。",
+  "security_score": 100,
+  "summary": "该脚本未检测到任何安全或隐私风险。代码未包含任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。所有网络请求均由 Discord 官方页面自身发起，脚本未主动向第三方服务器发送数据。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-05-25T06:38:27.960279+00:00",
+  "analyzed_at": "2026-07-13T05:49:42.297097+00:00",
   "slug": "Undiscord"
 }

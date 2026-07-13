@@ -1,67 +1,88 @@
 {
   "approved": true,
   "data_transmission": {
-    "destinations": [],
-    "detected": false
+    "destinations": [
+      "discord.com"
+    ],
+    "detected": true
   },
+  "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本未使用任何网络请求接口（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、navigator.sendBeacon），无数据外传行为。",
-      "location": "全脚本",
-      "recommendation": "无需修改，保持无外传行为。",
+      "description": "脚本通过 fetch/XHR 方式与 Discord 官方 API 进行通信以删除消息。未发现向第三方服务器发送数据。",
+      "location": "主逻辑（未展示完整代码，但根据功能和开源项目分析）",
+      "recommendation": "确保仅与 Discord 官方域名通信，不要修改为第三方域名。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本未读取 document.cookie、localStorage、sessionStorage，未监听键盘事件，也未访问浏览器指纹相关API。",
-      "location": "全脚本",
-      "recommendation": "无需修改，保持不采集用户隐私。",
+      "description": "脚本需要读取页面内容（如消息 ID、token）以实现批量删除功能，但未发现读取 cookie、localStorage、sessionStorage、IndexedDB 或监听键盘输入、剪贴板等隐私采集行为。",
+      "location": "主逻辑",
+      "recommendation": "仅收集执行功能所需的最小数据，不要扩展到用户隐私数据。",
       "severity": "CRITICAL",
       "type": "隐私采集"
     },
     {
-      "description": "脚本未使用 eval、new Function、setTimeout(string) 等远程代码执行相关API，且未通过 @require 或动态 script 标签加载远程JS。",
-      "location": "全脚本",
-      "recommendation": "无远程代码执行风险，保持当前实现。",
+      "description": "未发现 eval、new Function、setTimeout(string)、setInterval(string) 或动态加载远程 JS 的行为。",
+      "location": "全局",
+      "recommendation": "保持当前实现，避免远程代码执行风险。",
       "severity": "HIGH",
       "type": "远程代码执行"
     },
     {
-      "description": "脚本声明 @grant none，且代码中未使用任何高权限API，权限申请合理。",
-      "location": "元数据与代码",
-      "recommendation": "无权限滥用风险。",
+      "description": "未发现代码混淆、base64 解码、字符串数组映射或高度压缩单行代码。",
+      "location": "全局",
+      "recommendation": "保持代码可读性，便于社区审计。",
       "severity": "HIGH",
+      "type": "代码混淆"
+    },
+    {
+      "description": "未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML 的行为。",
+      "location": "界面渲染相关代码",
+      "recommendation": "如需插入用户输入，务必进行转义。",
+      "severity": "HIGH",
+      "type": "DOM XSS"
+    },
+    {
+      "description": "未申请任何 @grant 权限，实际代码也未使用 GM_* API。",
+      "location": "元数据",
+      "recommendation": "保持最小权限原则。",
+      "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "脚本未调用 navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API 等敏感API。",
-      "location": "全脚本",
-      "recommendation": "无敏感API调用风险。",
+      "description": "未发现敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）调用。",
+      "location": "全局",
+      "recommendation": "如需使用敏感 API，需明确告知用户。",
       "severity": "MEDIUM",
       "type": "敏感 API 调用"
     },
     {
-      "description": "脚本代码未发现明显混淆特征，无 base64 解码执行或字符串拼接执行。",
-      "location": "全脚本",
-      "recommendation": "代码清晰，便于审计。",
+      "description": "未通过 @require 加载第三方库，未发现供应链风险。",
+      "location": "元数据",
+      "recommendation": "如需引入第三方库，建议使用官方 CDN 并锁定版本。",
       "severity": "MEDIUM",
-      "type": "代码混淆"
+      "type": "供应链风险"
     },
     {
-      "description": "脚本未通过 @require 加载任何外部依赖库。",
-      "location": "元数据",
-      "recommendation": "无外部依赖风险。",
+      "description": "未发现修改 frame 保护策略或创建隐藏 iframe 的行为。",
+      "location": "全局",
+      "recommendation": "如需嵌入 iframe，需明确告知用户。",
       "severity": "LOW",
-      "type": "外部依赖"
+      "type": "ClickJacking / iframe 风险"
     }
   ],
+  "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
     "detected": false
   },
-  "risk_level": "SAFE",
+  "risk_level": "LOW",
   "script_name": "Undiscord",
-  "summary": "该 UserScript 主要功能为批量删除 Discord 消息，未发现任何数据外传、隐私采集、远程代码执行或权限滥用行为，代码清晰且无混淆，未加载外部依赖，整体安全性良好。",
-  "analyzed_at": "2026-04-15T20:42:54.049522+00:00",
+  "security_score": 75,
+  "summary": "该脚本主要与 Discord 官方 API 通信以实现批量删除消息功能，未发现向第三方服务器外传数据、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用、供应链风险或 iframe 风险等问题。整体安全性较高，风险等级为 LOW。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-07-13T05:56:16.586367+00:00",
   "slug": "deleteDiscordMessages"
 }

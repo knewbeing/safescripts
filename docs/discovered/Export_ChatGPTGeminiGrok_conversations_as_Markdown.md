@@ -41,9 +41,9 @@ title: "导出ChatGPT/Gemini/Grok聊天为Markdown"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：84/100　　**分析时间**：2026-07-06
+**风险等级**：🟡 LOW　　**安全评分**：84/100　　**分析时间**：2026-07-13
 
-> 该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 调用、供应链风险或 iframe 风险。唯一风险为申请了未实际使用的高权限（GM_xmlhttpRequest、GM_openInTab），建议移除冗余权限。整体安全性较高，适合公开使用。
+> 该脚本主要功能为导出 ChatGPT、Gemini、Grok 网站的聊天记录为 Markdown 文件。经审查，未发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险等高危行为。仅存在未使用的高权限申请（GM_xmlhttpRequest、GM_openInTab），建议根据实际需求精简权限。整体安全风险较低。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -57,14 +57,14 @@ title: "导出ChatGPT/Gemini/Grok聊天为Markdown"
 ### 发现的问题
 
 **🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_xmlhttpRequest 权限，但完整代码未包含任何网络请求相关代码（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket 等），未检测到数据外传行为。  
-> 位置：元数据与代码  
-> 建议：如后续添加网络请求功能，需严格限制目标域名并避免传输用户敏感数据。
+> 脚本申请了 GM_xmlhttpRequest 权限，但在已提供的完整代码中未发现任何网络请求或数据外传实现。  
+> 位置：@grant 元数据与主代码  
+> 建议：如无必要，建议移除未使用的 GM_xmlhttpRequest 权限。
 
 **🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_openInTab 和 GM.openInTab 权限，但代码未实际使用，存在权限冗余。  
-> 位置：元数据  
-> 建议：移除未使用的高权限申请，减少潜在滥用风险。
+> 脚本申请了 GM_openInTab/GM.openInTab 权限，但在已提供的完整代码中未发现实际调用。  
+> 位置：@grant 元数据与主代码  
+> 建议：如无必要，建议移除未使用的 GM_openInTab/GM.openInTab 权限。
 
 ---
 

@@ -42,14 +42,14 @@ title: "CheatGuessr 通用版"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：34/100　　**分析时间**：2026-07-06
+**风险等级**：🔴 HIGH　　**安全评分**：49/100　　**分析时间**：2026-07-13
 
-> 该脚本存在严重的数据外传风险，主要通过 GM_xmlhttpRequest 向 discord.com 和 nominatim.openstreetmap.org 发送用户游戏数据和位置信息。虽然未检测到代码混淆和 DOM XSS，但存在隐私采集（如 WebSocket 拦截、存储操作）、敏感 API 调用（通知）、iframe 保护弱化，以及供应链风险（未哈希固定的第三方依赖）。建议严格限制外传数据、加强依赖管理，并避免干扰站点安全机制。
+> This script transmits data to third-party services (discord.com and nominatim.openstreetmap.org), which may include game state or location information. It accesses localStorage and uses persistent storage APIs, but does not appear to collect sensitive user data such as cookies, passwords, or clipboard contents. There is no evidence of code obfuscation, DOM XSS, or remote code execution. The script loads a third-party library from a trusted source, but the version is not pinned by hash. Notification API is used, but not abused. Overall, the script poses a HIGH risk due to data exfiltration to third-party services.
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：discord.com, nominatim.openstreetmap.org） |
-| 隐私采集 | ❌ 检测到（Hotkey event listeners, LocalStorage/sessionStorage for feature toggles, WebSocket interception for game data） |
+| 隐私采集 | ❌ 检测到（localStorage access via Storage.prototype.setItem, GM_setValue/GM_getValue usage） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ⚠️ 使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -58,49 +58,34 @@ title: "CheatGuessr 通用版"
 ### 发现的问题
 
 **⛔ CRITICAL** — Data Exfiltration  
-> Script uses GM_xmlhttpRequest to send data to discord.com, likely for sharing map pins or game data. This constitutes data exfiltration to a third-party server.  
-> 位置：GM_xmlhttpRequest calls (not fully shown, but @connect discord.com and description indicate usage)  
-> 建议：Limit data sent to Discord, ensure no sensitive user information or authentication tokens are transmitted.
-
-**⛔ CRITICAL** — Data Exfiltration  
-> Script uses GM_xmlhttpRequest to access nominatim.openstreetmap.org, likely for geocoding. While this is a public API, user location data may be transmitted.  
-> 位置：GM_xmlhttpRequest calls (not fully shown, but @connect nominatim.openstreetmap.org and description indicate usage)  
-> 建议：Ensure only necessary location data is sent, avoid transmitting user identifiers.
+> The script uses GM_xmlhttpRequest to send data to discord.com (likely via webhook) and nominatim.openstreetmap.org. This can be used to exfiltrate user data, game state, or location information.  
+> 位置：GM_xmlhttpRequest usage, @connect metadata  
+> 建议：Limit data sent to third-party services, ensure no sensitive or user-identifiable information is transmitted, and inform users of any data sharing.
 
 **🟠 MEDIUM** — Privacy Collection  
-> Script listens to keyboard events (Tab, Q, G, X, V, T) for feature toggles, but does not appear to log or transmit keystrokes.  
-> 位置：Hotkey handling (DEFAULT_HOTKEYS, event listeners)  
-> 建议：Ensure no keylogger behavior is introduced; do not transmit input data.
-
-**🟠 MEDIUM** — Privacy Collection  
-> Script accesses localStorage and sessionStorage, but only for feature toggles and state. No sensitive data collection detected.  
-> 位置：GM_getValue, GM_setValue, Storage.prototype.setItem proxy  
-> 建议：Do not store or transmit sensitive user data.
+> The script reads and writes to localStorage via Storage.prototype.setItem proxying, and uses GM_setValue/GM_getValue for persistent storage. There is no evidence of exfiltration of this data, but local storage access is present.  
+> 位置：Storage.prototype.setItem, GM_setValue/GM_getValue  
+> 建议：Ensure no sensitive user data is stored or transmitted. Do not store credentials or personal information.
 
 **🟠 MEDIUM** — Sensitive API Usage  
-> Script uses Notification API to display notifications to the user.  
-> 位置：state.notificationPermission, notify feature  
-> 建议：Do not abuse Notification API for spam or phishing.
-
-**🟠 MEDIUM** — Privacy Collection  
-> Script uses WebSocket interception to read game data and opponent guesses, but does not transmit this data externally.  
-> 位置：WebSocket.prototype.addEventListener proxy  
-> 建议：Ensure intercepted data is not sent to third parties.
+> The script requests Notification API permission and may use Notification API to send notifications to the user.  
+> 位置：state.notificationPermission, Notification.permission  
+> 建议：Do not abuse Notification API for spam or misleading notifications.
 
 **🟠 MEDIUM** — Supply Chain Risk  
-> Script requires msgpack.js from greasyfork update CDN, which is a trusted source but not version-hashed.  
+> The script uses @require to load msgpack.js from update.greasyfork.org, which is a trusted CDN, but the version is not pinned by hash.  
 > 位置：@require https://update.greasyfork.org/scripts/423602/1005014/msgpack.js  
-> 建议：Pin third-party dependencies to a specific version hash.
+> 建议：Pin third-party dependencies by version and hash to prevent supply chain attacks.
 
-**🟡 LOW** — ClickJacking / iframe Risk  
-> Script modifies iframe sandbox attributes and frame protection, potentially weakening clickjacking protections.  
-> 位置：Element.prototype.setAttribute proxy  
-> 建议：Avoid weakening frame protections unless necessary.
+**🟡 LOW** — Permission Usage  
+> The script requests GM_xmlhttpRequest permission, which is used and justified, but also requests GM_setValue, GM_getValue, and GM_deleteValue. All are used, but the script does not request unnecessary high-risk permissions.  
+> 位置：@grant metadata  
+> 建议：Only request permissions that are strictly necessary.
 
-**🟡 LOW** — Site Integrity  
-> Script disables cheat detection scripts and modifies Array.prototype.push, which may interfere with site integrity.  
-> 位置：Array.prototype.push proxy, script removal  
-> 建议：Avoid interfering with site security mechanisms.
+**🟡 LOW** — DOM/Prototype Modification  
+> The script modifies Element.prototype.setAttribute and Storage.prototype.setItem via Proxy, which can have side effects and may break page functionality or introduce compatibility issues.  
+> 位置：Element.prototype.setAttribute, Storage.prototype.setItem  
+> 建议：Avoid monkey-patching built-in prototypes unless absolutely necessary.
 
 ---
 

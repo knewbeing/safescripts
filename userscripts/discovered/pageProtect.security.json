@@ -1,0 +1,25 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [
+      "Reads and writes password and lock status to localStorage (keys: privateProtect, nsfw_status, is_locked)",
+      "Reads input values from password fields for local authentication"
+    ],
+    "detected": true
+  },
+  "risk_level": "LOW",
+  "script_name": "🔒 页面保护模式 (双重验证+持久锁定)",
+  "security_score": 97,
+  "summary": "该脚本实现了本地页面锁定和双重验证功能，所有敏感数据（如密码）均存储于 localStorage，未发现任何外部数据传输、远程代码执行、代码混淆或 DOM XSS 风险。仅涉及本地密码输入和状态管理，未申请任何 GM_* 权限。整体安全性高，隐私风险极低。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-07-13T05:58:10.368273+00:00",
+  "slug": "pageProtect"
+}

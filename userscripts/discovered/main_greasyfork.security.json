@@ -4,34 +4,34 @@
     "destinations": [],
     "detected": false
   },
+  "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限，但代码中未发现任何网络请求调用，存在权限滥用风险。",
-      "location": "元数据和主脚本",
-      "recommendation": "移除未使用的 GM_xmlhttpRequest 权限申请，减少权限暴露。",
-      "severity": "HIGH",
+      "description": "脚本声明了 @grant GM_xmlhttpRequest 权限和 @connect www.iflyrec.com，但主代码未检测到任何网络请求或数据外传行为。",
+      "location": "元数据区",
+      "recommendation": "如无实际用途，建议移除未使用的 GM_xmlhttpRequest 权限和 @connect 声明，减少权限滥用风险。",
+      "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "脚本元数据中声明了 @connect www.iflyrec.com，但代码中未发现任何向该域名发起请求的行为，存在权限滥用风险。",
-      "location": "元数据",
-      "recommendation": "确认是否需要访问该域名，若无必要应移除 @connect 声明。",
-      "severity": "HIGH",
-      "type": "权限滥用"
+      "description": "脚本通过 @require 加载了 GreasyFork 上的第三方中文词库规则脚本，来源可信，但未锁定具体版本哈希。",
+      "location": "元数据区",
+      "recommendation": "建议使用带有版本哈希的 @require URL，防止供应链污染。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
     }
   ],
+  "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [
-      "未发现读取 document.cookie、localStorage、sessionStorage 的代码。",
-      "未监听键盘输入事件（keydown/keyup/input）。",
-      "未读取表单字段值。",
-      "未访问浏览器指纹相关 API。"
-    ],
+    "details": [],
     "detected": false
   },
   "risk_level": "LOW",
   "script_name": "GitHub 中文化插件",
-  "summary": "该脚本主要用于翻译 GitHub 页面内容，无网络请求行为，不采集用户隐私数据。存在权限滥用问题，申请了未使用的 GM_xmlhttpRequest 权限及无实际请求的 @connect 域名声明。代码未发现远程代码执行、敏感 API 调用及明显混淆。@require 来源为 GreasyFork，可信且固定版本。总体风险较低，但建议清理无用权限。",
-  "analyzed_at": "2026-04-15T20:43:07.116223+00:00",
+  "security_score": 84,
+  "summary": "该脚本主要用于 GitHub 界面汉化，未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。存在未使用的高权限申请和供应链版本未锁定的中等风险，建议优化权限和依赖管理。整体风险较低，适合普通用户使用。",
+  "supply_chain_risk": true,
+  "websocket_usage": false,
+  "analyzed_at": "2026-07-13T05:57:41.730822+00:00",
   "slug": "main_greasyfork"
 }

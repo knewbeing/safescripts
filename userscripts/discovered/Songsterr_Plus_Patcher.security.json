@@ -7,18 +7,11 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "Uses @grant unsafeWindow, which exposes privileged script context to the page and may increase attack surface if the page is compromised.",
-      "location": "UserScript metadata (@grant unsafeWindow)",
-      "recommendation": "Avoid using unsafeWindow unless strictly necessary. Consider using safer alternatives or limiting exposure.",
+      "description": "The script uses the @grant unsafeWindow permission, which exposes the script to the page context and can increase the risk of privilege escalation or interference between page and script.",
+      "location": "Metadata block (@grant unsafeWindow)",
+      "recommendation": "Only use unsafeWindow if strictly necessary. Monitor for any future code that may leverage this for malicious purposes.",
       "severity": "MEDIUM",
-      "type": "Permission Abuse"
-    },
-    {
-      "description": "Modifies DOM element innerHTML with JSON data from the page, but does not insert untrusted user input. Risk is low, but should be monitored if future changes allow user-controlled data.",
-      "location": "window.addEventListener('DOMContentLoaded') -> stateElement.innerHTML",
-      "recommendation": "Ensure only trusted data is inserted into innerHTML. If user input is ever used, sanitize appropriately.",
-      "severity": "LOW",
-      "type": "DOM Manipulation"
+      "type": "Permission Usage"
     }
   ],
   "obfuscation_detected": false,
@@ -28,10 +21,10 @@
   },
   "risk_level": "LOW",
   "script_name": "Songsterr Plus Patcher",
-  "security_score": 89,
-  "summary": "The script does not transmit data externally, does not collect privacy-sensitive information, and does not execute remote code or use obfuscation. The main risk is the use of @grant unsafeWindow, which is a medium-level concern. No critical or high risks detected. Overall, the script is safe for use, but users should be aware of the increased attack surface due to unsafeWindow.",
+  "security_score": 92,
+  "summary": "The script does not transmit data to third-party servers, does not collect sensitive user data, and does not execute remote or obfuscated code. It only intercepts fetch requests to the site's own /auth/profile endpoint to modify the user's plan status locally and manipulates the DOM to unlock features. The only notable risk is the use of @grant unsafeWindow, which is necessary for its function but should be monitored. No critical or high-severity issues were found.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-06-15T07:27:22.111582+00:00",
+  "analyzed_at": "2026-07-13T05:47:10.764105+00:00",
   "slug": "Songsterr_Plus_Patcher"
 }

@@ -1,0 +1,37 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "脚本申请了较多 GM_* 权限，包括 GM_openInTab、GM_setClipboard、GM_addValueChangeListener 等，但实际代码中未发现对部分高权限 API 的使用。",
+      "location": "元数据 @grant 列表",
+      "recommendation": "仅申请实际需要的权限，移除未使用的高权限申请，降低潜在攻击面。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本通过 @grant unsafeWindow 申请了对页面全局对象的访问权限，理论上可能被滥用，但未发现危险用法。",
+      "location": "元数据 @grant unsafeWindow",
+      "recommendation": "如无特殊需求，建议移除 unsafeWindow 权限，或确保其使用安全。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "LOW",
+  "script_name": "音视频增强脚本：无极调速|倍速快学|快乐刷剧|视频下载|画面截图等「适用大部分网站」",
+  "security_score": 84,
+  "summary": "该脚本主要实现音视频播放增强功能，未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、WebSocket、供应链风险等高危行为。仅存在部分未使用的高权限申请，建议精简权限。整体安全风险较低。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-07-13T05:59:55.890149+00:00",
+  "slug": "音视频增强脚本_无极调速_倍速快学_快乐刷剧_视频下载_画面截图等_适用大部分网站"
+}

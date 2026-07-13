@@ -1,0 +1,39 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [
+      "https://limbopro.com/Adguard/contentFarm/contentFarm.js"
+    ],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "脚本通过动态创建 <script> 标签加载远程 JavaScript 代码（https://limbopro.com/Adguard/contentFarm/contentFarm.js），存在远程代码执行风险。该远程脚本内容可被更改，可能导致任意代码执行。",
+      "location": "document.body.appendChild(javaScript);",
+      "recommendation": "避免动态加载远程 JS，或使用 @require 并固定版本哈希，确保代码可审计和不可被篡改。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "未使用 @require 固定版本哈希，直接加载第三方 JS，存在供应链污染风险。",
+      "location": "javaScript.src = 'https://limbopro.com/Adguard/contentFarm/contentFarm.js';",
+      "recommendation": "使用可信 CDN 并固定版本哈希，或将 JS 代码本地化。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "HIGH",
+  "script_name": "屏蔽内容农场（with 油猴脚本）",
+  "security_score": 77,
+  "summary": "该脚本主要通过动态插入远程 JS 实现功能，存在远程代码执行和供应链风险。未检测到数据外传、隐私采集、代码混淆或 DOM XSS 风险。建议将远程 JS 本地化或使用受信任的 CDN 并固定版本哈希，以降低安全风险。",
+  "supply_chain_risk": true,
+  "websocket_usage": false,
+  "analyzed_at": "2026-07-13T05:56:00.034615+00:00",
+  "slug": "contentFarm"
+}

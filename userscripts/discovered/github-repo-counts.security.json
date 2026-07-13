@@ -1,0 +1,22 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "SAFE",
+  "script_name": "GitHub: Repo Counts",
+  "security_score": 100,
+  "summary": "该脚本仅包含一个简单的 console.log 语句，不包含任何数据外传、隐私采集、远程代码执行、混淆、XSS、权限滥用或供应链风险。未检测到任何安全问题。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-07-13T05:57:01.052708+00:00",
+  "slug": "github-repo-counts"
+}

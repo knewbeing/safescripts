@@ -30,65 +30,50 @@ title: "EasyTube V3 — Ad Skip, SponsorBlock & HD Download⬇️🚀"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：52/100　　**分析时间**：2026-07-06
+**风险等级**：🟠 MEDIUM　　**安全评分**：67/100　　**分析时间**：2026-07-13
 
-> The script transmits YouTube video IDs and possibly metadata to third-party endpoints (SponsorBlock and Cobalt instances) for ad skipping and video downloading. No evidence of sensitive data collection, remote code execution, code obfuscation, or DOM XSS. Permissions are appropriate and no sensitive browser APIs are used. Supply chain risk exists due to reliance on non-official Cobalt instances. Overall, the script is functional but carries high risk due to third-party data transmission.
+> The script is generally well-structured and does not use obfuscation, dynamic code execution, or introduce DOM XSS. The main security concern is the transmission of YouTube video IDs and possibly other metadata to third-party APIs (SponsorBlock and Cobalt instances) for ad skipping and video downloading. No evidence of sensitive privacy data collection or supply chain risk. Permissions are appropriate for the functionality. Users should be aware of the privacy implications of using third-party APIs for SponsorBlock and video download.
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：https://sponsor.ajay.app/api/skipSegments, https://co.wuk.sh, https://cobalt.api.timelessnesses.me） |
+| 数据外传 | ❌ 检测到（目标：sponsor.ajay.app, co.wuk.sh, cobalt.api.timelessnesses.me） |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ⚠️ 存在风险 |
+| 供应链风险 | ✅ 可信 |
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Transmission  
-> Script uses GM_xmlhttpRequest to access SponsorBlock API and multiple Cobalt instances for video download. These are third-party servers and may receive YouTube video IDs and possibly other metadata.  
-> 位置：CFG.sbApi, CFG.cobaltInstances, GM_xmlhttpRequest usage  
-> 建议：Review transmitted data, ensure only minimal and non-sensitive information is sent. Document privacy policy for SponsorBlock and Cobalt endpoints.
-
-**🔴 HIGH** — Remote Code Execution  
-> No evidence of eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection. No @require of remote JS.  
-> 位置：Full script review  
-> 建议：Maintain strict avoidance of remote code execution patterns.
-
-**🔴 HIGH** — Code Obfuscation  
-> No code obfuscation detected. Code is readable, not minified or encoded.  
-> 位置：Full script review  
-> 建议：Maintain transparency and readability.
-
-**🔴 HIGH** — DOM XSS/Injection  
-> No evidence of DOM XSS or injection. User input is not inserted into innerHTML/outerHTML.  
-> 位置：Full script review  
-> 建议：Continue to avoid unsafe DOM manipulation.
+**⛔ CRITICAL** — Data Exfiltration  
+> The script uses GM_xmlhttpRequest to communicate with third-party APIs (SponsorBlock and multiple Cobalt instances) for segment skipping and video downloading. These requests may include YouTube video IDs and possibly other metadata, which could be considered user data.  
+> 位置：CFG.sbApi, CFG.cobaltInstances, and related logic (network requests to sponsor.ajay.app, co.wuk.sh, cobalt.api.timelessnesses.me, api.cobalt.tools)  
+> 建议：Document all data sent to third-party APIs. Consider proxying requests or informing users about privacy implications. Limit data to only what is strictly necessary.
 
 **🟠 MEDIUM** — Privacy Collection  
-> Script stores toggle settings and state using GM_setValue/GM_getValue, but does not appear to collect or transmit user credentials, cookies, or sensitive input.  
-> 位置：Persistent State (GM_setValue/getValue)  
+> The script stores and retrieves user toggle settings (ad skip, SponsorBlock, quality) using GM_setValue/GM_getValue. While this is local, it does not appear to collect sensitive data. No evidence of reading cookies, clipboard, or keylogging.  
+> 位置：Persistent state section (GM_setValue/GM_getValue)  
 > 建议：Ensure no sensitive user data is stored or transmitted. Document what is stored for transparency.
 
-**🟠 MEDIUM** — Permission Abuse  
-> Script requests GM_xmlhttpRequest, GM_setValue, GM_getValue, GM_addStyle. All are used in code. No excessive or unused permissions.  
-> 位置：Metadata block (@grant)  
-> 建议：Keep permissions minimal and only as needed.
+**🟠 MEDIUM** — Permission Usage  
+> The script requests GM_xmlhttpRequest permission, which is necessary for cross-origin API calls, but does not request other high-risk permissions. No evidence of unused high-privilege grants.  
+> 位置：@grant section in metadata  
+> 建议：Keep permissions minimal and only request those strictly necessary.
 
-**🟠 MEDIUM** — Sensitive API Usage  
-> No sensitive browser APIs (geolocation, RTCPeerConnection, MediaDevices, Clipboard API, Notification API) are used.  
-> 位置：Full script review  
-> 建议：Continue to avoid sensitive browser APIs.
+**🟡 LOW** — Remote Code Execution  
+> No evidence of eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection. No obfuscation or minified code detected.  
+> 位置：Full script body  
+> 建议：Maintain code clarity and avoid introducing dynamic code execution.
 
-**🟠 MEDIUM** — Supply Chain Risk  
-> Third-party endpoints (SponsorBlock, Cobalt) are used for data transmission. These are well-known but not official YouTube APIs. No @require of third-party JS libraries.  
-> 位置：CFG.sbApi, CFG.cobaltInstances, @connect  
-> 建议：Monitor supply chain risk for Cobalt instances. Prefer official or well-audited endpoints.
+**🟡 LOW** — DOM XSS  
+> The script does not appear to introduce DOM XSS or inject untrusted user input into the DOM. No use of innerHTML/outerHTML with untrusted data.  
+> 位置：UI and toast functions  
+> 建议：Continue to avoid inserting untrusted data into the DOM without sanitization.
 
-**🟡 LOW** — ClickJacking/Iframe Risk  
-> No evidence of clickjacking or iframe manipulation.  
-> 位置：Full script review  
-> 建议：Continue to avoid iframe risks.
+**🟡 LOW** — Supply Chain Risk  
+> @require is not used; all code is local. No supply chain risk from external libraries.  
+> 位置：Metadata block  
+> 建议：If adding @require in the future, use only official, version-pinned sources.
 
 ---
 

@@ -42,9 +42,40 @@ title: "YouTube增强+"
 
 ## 安全分析
 
-::: info 等待分析
-安全分析将在下次流水线运行时自动更新。
-:::
+**风险等级**：🔴 HIGH　　**安全评分**：52/100　　**分析时间**：2026-07-13
+
+> 该脚本功能丰富，依赖多个第三方库，并允许向大量外部域名发起网络请求，部分为非官方/未知服务器，存在数据外传和供应链风险。未发现明显隐私采集、代码混淆或 DOM XSS 问题，但申请了部分高权限（如 unsafeWindow、GM_xmlhttpRequest），建议严格限制权限和外联域名。整体安全性为 HIGH，建议谨慎使用。
+
+| 检查项 | 结果 |
+|--------|------|
+| 数据外传 | ❌ 检测到（目标：api.livecounts.io, livecounts.io, cnv.cx） |
+| 隐私采集 | ✅ 未检测到 |
+| 代码混淆 | ✅ 未检测到 |
+| WebSocket/SSE | ✅ 未使用 |
+| DOM XSS 风险 | ✅ 未检测到 |
+| 供应链风险 | ⚠️ 存在风险 |
+
+### 发现的问题
+
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过 @grant 申请了 GM_xmlhttpRequest 权限，并通过 @connect 允许向多个第三方域名发起网络请求，包括 mp3yt.is、cnv.cx、ldpccocxlrdsyejfhrvc.supabase.co 等，存在数据外传风险。  
+> 位置：元数据 @grant/@connect  
+> 建议：限制 @connect 仅允许必要的官方/可信域名，避免向未知第三方服务器发送用户数据。
+
+**🔴 HIGH** — 远程代码执行  
+> 脚本申请了 unsafeWindow 权限，可能导致主页面与脚本间的任意代码互操作，增加远程代码执行和隐私泄露风险。  
+> 位置：元数据 @grant  
+> 建议：仅在绝对必要时使用 unsafeWindow，避免通过其注入或执行不可信代码。
+
+**🟠 MEDIUM** — 供应链风险  
+> 脚本通过 @require 加载多个第三方库，虽然均为 jsdelivr 官方 CDN 且带有明确版本号，但依赖链较多，存在一定供应链风险。  
+> 位置：元数据 @require  
+> 建议：定期审查依赖库安全性，优先使用官方 CDN 并固定版本。
+
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 GM_addElement、GM_addStyle、GM_addValueChangeListener 等高权限，但部分权限在当前代码片段中未见实际使用，存在权限滥用嫌疑。  
+> 位置：元数据 @grant  
+> 建议：仅申请实际需要的权限，移除未使用的高权限声明。
 
 ---
 

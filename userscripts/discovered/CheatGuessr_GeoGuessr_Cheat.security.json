@@ -2,97 +2,61 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
-      "https://nominatim.openstreetmap.org/reverse"
+      "https://nominatim.openstreetmap.org"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 fetch 向 https://nominatim.openstreetmap.org/reverse 发起网络请求，传递用户当前游戏坐标（lat/lng），存在数据外传风险。",
+      "description": "脚本通过 fetch 向 https://nominatim.openstreetmap.org 发送经纬度数据以获取地理信息。虽然这是公开 API，且未携带用户敏感信息，但属于数据外传行为。",
       "location": "fetchLocationDetails()",
-      "recommendation": "仅在用户明确操作时发送请求，并在文档中告知用户数据用途。避免自动外传敏感坐标信息。",
+      "recommendation": "明确告知用户数据用途，避免发送敏感信息。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本读取并存储用户设置到 localStorage，未涉及敏感信息，但存在隐私采集行为。",
-      "location": "loadSettings()/saveSettings()",
-      "recommendation": "确保存储内容仅为非敏感配置，避免存储用户账号、密码等敏感信息。",
+      "description": "脚本读取和写入 localStorage 用于保存设置。虽然内容为脚本自身配置，但涉及本地存储访问。",
+      "location": "loadSettings(), saveSettings()",
+      "recommendation": "仅存储必要的非敏感信息，避免存储用户隐私数据。",
       "severity": "CRITICAL",
       "type": "隐私采集"
     },
     {
-      "description": "脚本拦截 XMLHttpRequest，解析响应内容以提取坐标信息，未将数据外传，但存在对页面数据的深度访问。",
+      "description": "脚本重写 XMLHttpRequest.prototype.open 以拦截 Google Maps API 的响应内容，提取经纬度信息。此行为属于页面内容监控，但未发现外传。",
       "location": "XMLHttpRequest.prototype.open",
-      "recommendation": "确保仅处理必要数据，避免扩展为更广泛的隐私采集。",
-      "severity": "HIGH",
-      "type": "隐私采集"
+      "recommendation": "确保不将拦截到的数据外传。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
     },
     {
-      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行方式。",
+      "description": "未发现代码混淆、eval、Function 构造器、动态 script 标签、document.write 等远程代码执行高危行为。",
       "location": "全局",
-      "recommendation": "保持当前安全实践，避免未来引入动态执行代码。",
+      "recommendation": "保持代码可读性，避免混淆和动态执行。",
       "severity": "LOW",
       "type": "远程代码执行"
     },
     {
-      "description": "脚本未检测到代码混淆、base64 解码、字符串数组映射或高度压缩代码。",
-      "location": "全局",
-      "recommendation": "保持代码可读性，便于社区审查。",
-      "severity": "LOW",
-      "type": "代码混淆"
-    },
-    {
-      "description": "脚本未检测到 DOM XSS 或注入风险，未将用户输入直接插入 innerHTML/outerHTML。",
-      "location": "toggleSettingsModal()",
-      "recommendation": "如未来引入用户输入，需严格转义。",
-      "severity": "LOW",
-      "type": "DOM XSS"
-    },
-    {
-      "description": "脚本申请了 GM_webRequest 权限，但实际代码未使用该 API，存在权限滥用风险。",
+      "description": "@grant 仅申请了 GM_webRequest，但脚本未实际使用该 API，存在权限冗余。",
       "location": "元数据 @grant",
-      "recommendation": "移除未使用的高权限申请，减少攻击面。",
+      "recommendation": "移除未使用的高权限申请，最小化权限。",
       "severity": "MEDIUM",
       "type": "权限滥用"
-    },
-    {
-      "description": "脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API）。",
-      "location": "全局",
-      "recommendation": "保持当前安全实践。",
-      "severity": "LOW",
-      "type": "敏感 API 调用"
-    },
-    {
-      "description": "脚本未通过 @require 加载第三方库，无供应链风险。",
-      "location": "元数据",
-      "recommendation": "如未来引入第三方库，需固定版本哈希并使用官方 CDN。",
-      "severity": "LOW",
-      "type": "供应链风险"
-    },
-    {
-      "description": "脚本未修改 frame 保护策略，也未创建隐藏 iframe 用于数据提取。",
-      "location": "全局",
-      "recommendation": "保持当前安全实践。",
-      "severity": "LOW",
-      "type": "ClickJacking / iframe 风险"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "localStorage: 存储用户设置",
-      "拦截 XMLHttpRequest 响应，解析页面坐标"
+      "访问 localStorage 以保存/读取脚本设置"
     ],
     "detected": true
   },
-  "risk_level": "CRITICAL",
+  "risk_level": "HIGH",
   "script_name": "CheatGuessr | GeoGuessr Cheat",
-  "security_score": 22,
-  "summary": "该脚本存在数据外传（向第三方服务器发送游戏坐标）和隐私采集（localStorage 存储配置、拦截页面数据）等严重安全风险。未检测到远程代码执行、代码混淆、DOM XSS、供应链风险等问题。建议移除未使用的高权限申请，并限制数据外传行为。整体安全评分较低，不建议在敏感环境下使用。",
+  "security_score": 42,
+  "summary": "该脚本存在数据外传（向第三方 API 发送经纬度）、本地存储访问、权限冗余等安全隐患。未发现远程代码执行、代码混淆或 DOM XSS 风险。建议移除未使用的权限，明确告知用户数据用途，并持续关注第三方 API 的安全性。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-06T06:28:12.535089+00:00",
+  "analyzed_at": "2026-07-13T05:30:24.020664+00:00",
   "slug": "CheatGuessr_GeoGuessr_Cheat"
 }

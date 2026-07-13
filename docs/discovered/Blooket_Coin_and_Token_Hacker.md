@@ -32,9 +32,9 @@ title: "Blooket金币代币助手"
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：94/100　　**分析时间**：2026-07-06
+**风险等级**：🟢 SAFE　　**安全评分**：97/100　　**分析时间**：2026-07-13
 
-> The script does not transmit data externally, collect privacy-sensitive information, or use dangerous APIs. It only manipulates the DOM locally and collects user input via prompt. No critical or high risks detected. The main risk is minimal and relates to user input handling and DOM manipulation, both of which are performed safely.
+> This UserScript does not perform any network requests, does not collect or transmit user data, and does not use dangerous APIs such as eval or dynamic script loading. It only prompts the user for input and updates the page display. There is no evidence of obfuscation, supply chain risk, or permission abuse. The only minor issue is updating the DOM with user input, but it does not use innerHTML or similar methods that would introduce XSS risk.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -47,20 +47,10 @@ title: "Blooket金币代币助手"
 
 ### 发现的问题
 
-**🟡 LOW** — User Input Handling  
-> Uses prompt to collect user input for coins and tokens, but does not transmit this data externally.  
-> 位置：addCoinsAndTokens function  
-> 建议：Ensure user input is validated and not used in unsafe DOM operations.
-
-**🟡 LOW** — DOM Manipulation  
-> Attempts to update the balance display by directly setting textContent, but does not use innerHTML or unsafe DOM methods.  
-> 位置：updateBalanceDisplay function  
-> 建议：Continue using textContent for DOM updates to avoid XSS.
-
-**🟡 LOW** — General Security  
-> No network requests, no privacy collection, no obfuscation, no supply chain risk, and no sensitive API usage detected.  
-> 位置：Entire script  
-> 建议：Maintain current practices; avoid adding network requests or sensitive API calls.
+**🟡 LOW** — Potential DOM manipulation with user input  
+> The script uses prompt() to collect user input and updates the DOM with user-provided values. However, it does not insert untrusted input via innerHTML or similar methods, reducing XSS risk.  
+> 位置：addCoinsAndTokens() and updateBalanceDisplay()  
+> 建议：If updating HTML, always sanitize user input before inserting into the DOM, especially if using innerHTML.
 
 ---
 

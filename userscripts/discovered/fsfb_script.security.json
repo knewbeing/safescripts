@@ -1,0 +1,47 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [
+      "translate.google.com",
+      "greasyfork.org"
+    ],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "@grant 申请了 GM_xmlhttpRequest 权限，但主脚本未发现实际使用。",
+      "location": "元数据头部",
+      "recommendation": "如无实际用途，建议移除未使用的高权限申请，减少权限滥用风险。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "@grant 申请了 unsafeWindow 权限，但主脚本未发现实际使用。",
+      "location": "元数据头部",
+      "recommendation": "如无实际用途，建议移除未使用的高权限申请，减少权限滥用风险。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "@require 加载了 https://greasyfork.org/scripts/459346-fsfb-facts/code/fsfb%20facts.js?version=1145073，来源为 greasyfork.org，且固定了版本号。",
+      "location": "元数据头部",
+      "recommendation": "已固定版本，来源可信，无需调整。",
+      "severity": "LOW",
+      "type": "供应链风险"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "LOW",
+  "script_name": "fsfb script",
+  "security_score": 81,
+  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。仅存在未使用的高权限申请（GM_xmlhttpRequest、unsafeWindow），建议移除以降低权限滥用风险。@require 的第三方库来源可信且已锁定版本。整体安全风险较低。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-07-13T05:56:29.367560+00:00",
+  "slug": "fsfb_script"
+}

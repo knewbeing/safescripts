@@ -1,0 +1,46 @@
+{
+  "approved": false,
+  "data_transmission": {
+    "destinations": [
+      "http://rossengeorgiev.github.com/sg-enhancement-addon/sg_enhancement_addon_base.js"
+    ],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "The script dynamically loads and executes a remote JavaScript file from an external server (GitHub Pages) using a script tag. The loaded code is not version-pinned or hash-locked, and its contents are not visible in this review.",
+      "location": "Line: script.src assignment and appendChild",
+      "recommendation": "Pin the external script to a specific version or hash, and audit the remote script for security. Avoid loading remote scripts dynamically unless absolutely necessary.",
+      "severity": "CRITICAL",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "The script uses document.createElement('script') and sets the src to an external URL, which can lead to remote code execution if the external resource is compromised.",
+      "location": "Line: script.src assignment and appendChild",
+      "recommendation": "Bundle and audit all code locally within the user script, or use a trusted CDN with version pinning.",
+      "severity": "HIGH",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "The @require directive is not used, but the script loads code from a variable URL (GitHub Pages), which is not a canonical CDN and can change at any time.",
+      "location": "Metadata and script.src",
+      "recommendation": "Use official, versioned CDNs for third-party libraries and avoid loading from personal GitHub Pages.",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "CRITICAL",
+  "script_name": "Steamgifts Enhancement Addon",
+  "security_score": 60,
+  "summary": "This user script dynamically loads and executes a remote JavaScript file from an external server (GitHub Pages) without version pinning or integrity checks. This introduces a critical remote code execution and supply chain risk, as the contents of the loaded script can change at any time and are not auditable from this code. No direct data exfiltration or privacy collection is present in the visible code, but the remote script could perform such actions. The script does not use obfuscation, nor does it directly manipulate user data or the DOM in a risky way. However, the dynamic remote code loading is a critical security concern.",
+  "supply_chain_risk": true,
+  "websocket_usage": false,
+  "analyzed_at": "2026-07-13T05:58:31.654408+00:00",
+  "slug": "sg_enhancement_init"
+}

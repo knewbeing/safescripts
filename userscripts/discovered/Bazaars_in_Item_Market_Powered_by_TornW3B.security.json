@@ -9,75 +9,40 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 GM.xmlHttpRequest 向 weav3r.dev 发起网络请求，可能携带用户数据。",
-      "location": "GM.xmlHttpRequest 调用及 @connect weav3r.dev",
-      "recommendation": "确保请求内容不包含敏感信息，且目标服务器可信。",
+      "description": "脚本通过 GM.xmlHttpRequest 访问 weav3r.dev 以获取数据。虽然该域名为作者自有域名，但属于第三方服务器，存在数据外传风险。",
+      "location": "@connect weav3r.dev 及相关 GM.xmlHttpRequest 调用",
+      "recommendation": "建议明确说明传输内容，避免发送用户敏感信息。建议在隐私政策中披露此行为。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本读取和写入 localStorage 作为 GM_setValue/GM_getValue 的兼容实现。",
-      "location": "GM_getValue、GM_setValue、GM_deleteValue、GM_listValues 兼容函数",
-      "recommendation": "localStorage 数据仅限脚本自身使用，避免存储敏感信息。",
+      "description": "脚本在兼容实现中访问 localStorage 进行数据存储，未发现读取 cookie、表单、剪贴板、指纹等隐私数据。",
+      "location": "GM_getValue/GM_setValue 兼容实现",
+      "recommendation": "仅存储必要的脚本设置，避免存储敏感信息。",
       "severity": "MEDIUM",
       "type": "隐私采集"
     },
     {
-      "description": "脚本申请了 GM.xmlHttpRequest、GM_setValue 等高权限，但实际代码中未滥用。",
-      "location": "@grant 元数据",
-      "recommendation": "仅申请实际需要的权限。",
+      "description": "脚本申请了 GM_setValue、GM_getValue、GM_deleteValue、GM_listValues 及其 GM.* 变体，部分权限未在代码中实际使用，存在权限冗余。",
+      "location": "元数据 @grant",
+      "recommendation": "仅申请实际使用的权限，减少攻击面。",
       "severity": "MEDIUM",
       "type": "权限滥用"
-    },
-    {
-      "description": "未发现远程代码执行、eval、动态 script 标签加载、代码混淆等高风险行为。",
-      "location": "全局代码审查",
-      "recommendation": "保持代码透明，避免动态执行外部代码。",
-      "severity": "LOW",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "未发现 DOM XSS、用户输入直接插入 innerHTML/outerHTML 的风险。",
-      "location": "全局代码审查",
-      "recommendation": "继续保持安全的 DOM 操作。",
-      "severity": "LOW",
-      "type": "DOM XSS"
-    },
-    {
-      "description": "未发现敏感 API 调用（如 geolocation、摄像头、剪贴板等）。",
-      "location": "全局代码审查",
-      "recommendation": "如需调用敏感 API，需征得用户同意。",
-      "severity": "LOW",
-      "type": "敏感 API 调用"
-    },
-    {
-      "description": "未发现供应链风险，未使用 @require 加载第三方库。",
-      "location": "元数据 @require",
-      "recommendation": "如需加载第三方库，建议固定版本并使用官方 CDN。",
-      "severity": "LOW",
-      "type": "供应链风险"
-    },
-    {
-      "description": "未发现 clickjacking 或 iframe 风险。",
-      "location": "全局代码审查",
-      "recommendation": "如需操作 iframe，需明确用途并防范数据泄露。",
-      "severity": "LOW",
-      "type": "ClickJacking/iframe"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "localStorage 读写"
+      "使用 localStorage 存储脚本设置"
     ],
-    "detected": true
+    "detected": false
   },
   "risk_level": "MEDIUM",
   "script_name": "Bazaars in Item Market Powered by TornW3B",
-  "security_score": 59,
-  "summary": "脚本主要风险为通过 GM.xmlHttpRequest 向 weav3r.dev 发起网络请求，可能存在数据外传。未发现远程代码执行、代码混淆、DOM XSS 等高危行为。localStorage 读写仅限脚本自身，未涉及敏感隐私采集。整体安全性中等，建议关注外部服务器的可信度和数据传输内容。",
+  "security_score": 67,
+  "summary": "该脚本主要功能为在 Torn 游戏市场页面展示和排序集市商品信息。脚本通过 GM.xmlHttpRequest 访问 weav3r.dev 获取数据，存在数据外传风险，但未发现敏感隐私数据采集、远程代码执行、代码混淆或 DOM XSS 风险。部分权限存在冗余，建议精简。整体安全风险为中等，建议用户关注数据传输内容。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-06T06:27:10.673740+00:00",
+  "analyzed_at": "2026-07-13T05:29:23.308537+00:00",
   "slug": "Bazaars_in_Item_Market_Powered_by_TornW3B"
 }

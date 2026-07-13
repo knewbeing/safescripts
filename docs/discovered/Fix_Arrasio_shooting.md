@@ -31,9 +31,9 @@ title: "修复Arras.io射击"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-07-06
+**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-07-13
 
-> The script modifies the WebSocket constructor to change the connection URL for arras.io, adding custom parameters. It does not transmit user data, collect privacy-sensitive information, or use dangerous APIs. There is no code obfuscation or DOM XSS risk. The only concern is the global WebSocket override, which is a medium risk if other scripts rely on standard WebSocket behavior. Overall, the script is safe with minor caution.
+> 该脚本通过重写 WebSocket 构造函数，修改连接参数以修复 Arras.io 的射击问题。未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用或供应链风险。整体实现简单，未引入安全隐患。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -44,12 +44,7 @@ title: "修复Arras.io射击"
 | DOM XSS 风险 | ✅ 未检测到 |
 | 供应链风险 | ✅ 可信 |
 
-### 发现的问题
-
-**🟠 MEDIUM** — WebSocket manipulation  
-> The script overrides the global WebSocket constructor to modify the connection URL by appending custom query parameters. This could potentially affect all WebSocket connections on the page.  
-> 位置：WebSocket class override  
-> 建议：Limit WebSocket override scope if possible; ensure no sensitive data is appended or intercepted.
+### 未发现安全问题 ✅
 
 ---
 

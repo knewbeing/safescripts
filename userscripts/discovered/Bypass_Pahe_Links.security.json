@@ -1,5 +1,5 @@
 {
-  "approved": true,
+  "approved": false,
   "data_transmission": {
     "destinations": [],
     "detected": false
@@ -7,11 +7,11 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "@require 加载了 https://greasyfork.org/scripts/456228/code/456228.js?version=1309113，存在供应链风险（未固定哈希，依赖外部代码）",
-      "location": "UserScript metadata",
-      "recommendation": "建议仅使用官方可信 CDN，或固定版本哈希，避免依赖可变 URL 的第三方代码。",
-      "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
+      "description": "@require 加载了外部脚本 https://greasyfork.org/scripts/456228/code/456228.js?version=1309113，未锁定哈希且内容未知，存在供应链风险和远程代码执行风险。",
+      "location": "元数据 @require",
+      "recommendation": "仅使用可信来源的第三方库，并锁定具体版本或哈希，定期审查依赖内容。",
+      "severity": "HIGH",
+      "type": "supply_chain/remote_code"
     }
   ],
   "obfuscation_detected": false,
@@ -19,12 +19,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "LOW",
+  "risk_level": "HIGH",
   "script_name": "Bypass Pahe Links",
-  "security_score": 92,
-  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、WebSocket 使用等高风险行为。唯一风险为 @require 加载第三方脚本，存在供应链风险。整体安全性较高，但建议关注依赖库的来源和版本固定。",
+  "security_score": 85,
+  "summary": "脚本本体未检测到数据外传、隐私采集、代码混淆、DOM XSS 或权限滥用等高危行为。主要风险在于 @require 加载的外部脚本（https://greasyfork.org/scripts/456228/code/456228.js?version=1309113），其内容未知，存在供应链和远程代码执行风险。建议仅在信任该依赖的情况下使用，并定期复查依赖内容。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-06T06:27:44.885532+00:00",
+  "analyzed_at": "2026-07-13T05:29:59.515797+00:00",
   "slug": "Bypass_Pahe_Links"
 }

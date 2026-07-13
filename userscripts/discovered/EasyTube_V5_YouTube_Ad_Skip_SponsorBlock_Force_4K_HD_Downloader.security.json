@@ -10,67 +10,25 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 GM_xmlhttpRequest 向 sponsor.ajay.app 和 evdfrance.fr 发起网络请求，获取 SponsorBlock 数据和视频下载服务。请求内容主要为视频 ID，未发现用户敏感数据或 Cookie 外传。",
-      "location": "SponsorBlock API 调用、evdfrance.fr 下载接口",
-      "recommendation": "确保请求内容仅包含必要的视频信息，不包含用户敏感数据。建议明确说明数据用途。",
+      "description": "The script uses GM_xmlhttpRequest to communicate with sponsor.ajay.app (SponsorBlock API) and evdfrance.fr (likely for video download functionality). These are third-party servers, but only video IDs and segment categories are sent, not user credentials or cookies.",
+      "location": "CFG.sbApi, @connect evdfrance.fr, GM_xmlhttpRequest usage (likely in full code)",
+      "recommendation": "Review the exact payload sent to these endpoints. Ensure no sensitive user data (e.g., cookies, tokens, personal info) is transmitted. Document all data flows.",
       "severity": "CRITICAL",
-      "type": "数据外传"
+      "type": "Data Transmission"
     },
     {
-      "description": "脚本申请 GM_xmlhttpRequest 权限用于 SponsorBlock 和下载服务，未申请高权限如 GM_download、GM_openInTab，权限申请与实际用途基本匹配。",
-      "location": "元数据 @grant",
-      "recommendation": "定期复查权限申请，避免未来版本滥用。",
+      "description": "The script requests GM_xmlhttpRequest permission, which is high privilege and can be abused if not strictly limited to trusted endpoints.",
+      "location": "@grant GM_xmlhttpRequest",
+      "recommendation": "Restrict network requests to only the necessary endpoints and validate all URLs. Avoid dynamic or user-controlled endpoints.",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "Permission Usage"
     },
     {
-      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等动态代码执行方式，也未通过 innerHTML/outerHTML 插入外部脚本。",
-      "location": "主代码逻辑",
-      "recommendation": "保持代码执行安全，避免未来引入远程代码执行风险。",
-      "severity": "HIGH",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "脚本未监听键盘输入、未读取表单字段、未访问 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板等隐私相关 API。",
-      "location": "主代码逻辑",
-      "recommendation": "保持隐私安全，避免未来引入隐私采集行为。",
-      "severity": "CRITICAL",
-      "type": "隐私采集"
-    },
-    {
-      "description": "脚本未使用混淆技术，无 base64 解码、字符串数组映射、unicode 混淆或高度压缩单行代码。",
-      "location": "主代码逻辑",
-      "recommendation": "保持代码可读性，便于社区审查。",
-      "severity": "HIGH",
-      "type": "代码混淆"
-    },
-    {
-      "description": "脚本未通过 innerHTML/outerHTML 插入用户输入或 URL 参数，未发现 DOM XSS 风险。",
-      "location": "主代码逻辑",
-      "recommendation": "保持安全插入方式，避免未来引入注入风险。",
-      "severity": "HIGH",
-      "type": "DOM XSS / 注入"
-    },
-    {
-      "description": "脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Notification、Clipboard）。",
-      "location": "主代码逻辑",
-      "recommendation": "避免未来引入敏感 API 调用。",
-      "severity": "MEDIUM",
-      "type": "敏感 API 调用"
-    },
-    {
-      "description": "脚本未通过 @require 加载第三方库，所有依赖均为本地实现，无供应链风险。",
-      "location": "元数据 @require",
-      "recommendation": "如未来引入第三方库，需固定版本哈希并使用可信 CDN。",
-      "severity": "MEDIUM",
-      "type": "供应链风险"
-    },
-    {
-      "description": "脚本未修改 frame 保护策略，未创建隐藏 iframe 用于数据提取。",
-      "location": "主代码逻辑",
-      "recommendation": "保持 iframe 安全，避免未来引入 clickjacking 风险。",
+      "description": "The script requests GM_setValue and GM_getValue, which are used for storing user settings. No evidence of sensitive data storage or exfiltration, but these APIs should be used carefully.",
+      "location": "@grant GM_setValue, GM_getValue",
+      "recommendation": "Ensure only non-sensitive settings are stored. Do not store credentials or personal data.",
       "severity": "LOW",
-      "type": "ClickJacking / iframe 风险"
+      "type": "Permission Usage"
     }
   ],
   "obfuscation_detected": false,
@@ -78,12 +36,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "LOW",
+  "risk_level": "MEDIUM",
   "script_name": "EasyTube V5 — YouTube Ad Skip, SponsorBlock, Force 4K & HD Downloader",
   "security_score": 67,
-  "summary": "脚本主要通过 SponsorBlock API 和视频下载服务进行数据请求，未发现用户敏感数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 调用、供应链风险或 iframe 风险。整体安全性较高，建议持续关注外部 API 的数据用途和未来权限变更。",
+  "summary": "The script is generally well-structured and does not appear to collect or exfiltrate sensitive user data. It communicates with the SponsorBlock API and a video download endpoint, but only for the stated functionality. No evidence of privacy-invasive behavior, code obfuscation, or DOM XSS. Permissions are appropriate for the features, but network requests to third-party servers always carry some risk. Review payloads and endpoints regularly.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-06T06:32:07.934076+00:00",
+  "analyzed_at": "2026-07-13T05:35:43.182344+00:00",
   "slug": "EasyTube_V5_YouTube_Ad_Skip_SponsorBlock_Force_4K_HD_Downloader"
 }

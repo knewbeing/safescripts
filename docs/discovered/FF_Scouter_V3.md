@@ -33,14 +33,14 @@ title: "公平战斗评分助手"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：42/100　　**分析时间**：2026-07-06
+**风险等级**：🔴 HIGH　　**安全评分**：35/100　　**分析时间**：2026-07-13
 
-> FF Scouter V3 requests high privileges (GM_xmlhttpRequest, unsafeWindow), connects to a third-party server (ffscouter.com), and uses localStorage for configuration. There is potential for user/page data transmission and privacy collection. No code obfuscation or DOM XSS detected. Supply chain risk is mitigated by using GreasyFork, but version pinning should be enforced. Overall, the script presents CRITICAL risk due to data transmission and privacy collection concerns.
+> The script requests network access to a third-party server (ffscouter.com) and stores data in localStorage. It also requests the powerful 'unsafeWindow' grant. While no direct evidence of sensitive data exfiltration or code execution vulnerabilities is present in the provided code fragment, the combination of these permissions and storage practices presents a high risk. A full review of the complete script is recommended to ensure no sensitive data is transmitted or exposed.
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：ffscouter.com） |
-| 隐私采集 | ❌ 检测到（localStorage usage for configuration and possibly user data） |
+| 隐私采集 | ❌ 检测到（Reads and writes to localStorage for configuration and possibly user data） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -48,30 +48,40 @@ title: "公平战斗评分助手"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Transmission  
-> Script uses GM_xmlhttpRequest to connect to ffscouter.com, which is a third-party server. Potential for user/page data transmission.  
-> 位置：Metadata (@connect ffscouter.com), code (GM_xmlhttpRequest usage, though full implementation not visible)  
-> 建议：Review all transmitted data. Ensure only minimal, non-sensitive information is sent. Document transmitted fields.
+**⛔ CRITICAL** — Data Exfiltration  
+> Script uses GM_xmlhttpRequest to connect to ffscouter.com, which is a third-party server. The exact data sent is not visible in the provided code fragment, but the permission is declared.  
+> 位置：Metadata block and possible network logic  
+> 建议：Review all GM_xmlhttpRequest usages to ensure no sensitive user data (such as cookies, tokens, or personal information) is transmitted. Document all data flows.
 
 **⛔ CRITICAL** — Privacy Collection  
 > Script reads and writes to localStorage for configuration and possibly user data.  
-> 位置：class Storage, FFConfig  
-> 建议：Ensure no sensitive information (e.g., authentication tokens, personal data) is stored or transmitted from localStorage.
+> 位置：Storage class and FFConfig class  
+> 建议：Ensure only non-sensitive configuration data is stored. Do not store authentication tokens or sensitive information in localStorage.
 
-**🔴 HIGH** — Permission Abuse  
-> Script requests unsafeWindow grant, which allows access to the page context and can be abused for privilege escalation.  
-> 位置：Metadata (@grant unsafeWindow)  
-> 建议：Remove unsafeWindow grant if not strictly necessary. Limit usage and audit for privilege escalation.
+**🔴 HIGH** — Privilege Escalation  
+> Script requests the 'unsafeWindow' grant, which allows the script to interact with the page's JS context and can be abused for privilege escalation or data exfiltration.  
+> 位置：Metadata block  
+> 建议：Remove 'unsafeWindow' if not strictly necessary. If required, audit all usages for security risks.
 
-**🔴 HIGH** — Permission Abuse  
-> Script requests GM_xmlhttpRequest grant, which is a high privilege and can be abused for cross-origin requests.  
-> 位置：Metadata (@grant GM_xmlhttpRequest)  
-> 建议：Limit usage to only required domains. Audit all outgoing requests.
+**🔴 HIGH** — Remote Code Execution  
+> No evidence of eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection in the provided code fragment.  
+> 位置：General code  
+> 建议：Continue to avoid dynamic code execution. Review any future updates for such patterns.
 
-**🟠 MEDIUM** — Supply Chain Risk  
-> Script loads code from update.greasyfork.org via @downloadURL and @updateURL, which is a trusted source but should be version-pinned.  
-> 位置：Metadata (@downloadURL, @updateURL)  
-> 建议：Ensure version pinning and integrity checks for updates.
+**🟡 LOW** — Code Obfuscation  
+> No code obfuscation detected. Code is readable and not minified or encoded.  
+> 位置：General code  
+> 建议：Maintain code transparency for auditability.
+
+**🟡 LOW** — DOM XSS  
+> No DOM XSS or direct insertion of untrusted input into innerHTML/outerHTML detected in the provided code fragment.  
+> 位置：General code  
+> 建议：Continue to sanitize any user input before DOM insertion.
+
+**🟡 LOW** — Supply Chain  
+> No evidence of supply chain risk (@require) in the metadata block.  
+> 位置：Metadata block  
+> 建议：If adding @require in the future, use official CDNs and fixed versions.
 
 ---
 

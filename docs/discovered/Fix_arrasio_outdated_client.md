@@ -31,9 +31,9 @@ title: "修复 arras.io 客户端过期问题"
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：97/100　　**分析时间**：2026-07-06
+**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-07-13
 
-> The script is safe: it only modifies the WebSocket URL parameter to fix connection issues, does not collect or transmit user data, does not use dangerous APIs, and does not introduce supply chain or XSS risks.
+> 该脚本仅重写了 WebSocket 构造函数以修正 arras.io 客户端的时间戳参数，未引入任何数据外传、隐私采集、远程代码执行、混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。未检测到任何安全问题，安全性极高。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -44,12 +44,7 @@ title: "修复 arras.io 客户端过期问题"
 | DOM XSS 风险 | ✅ 未检测到 |
 | 供应链风险 | ✅ 可信 |
 
-### 发现的问题
-
-**🟡 LOW** — WebSocket manipulation  
-> The script overrides the global WebSocket constructor to modify the connection URL parameter (&t=...), but does not transmit any additional data or intercept messages.  
-> 位置：WebSocket override  
-> 建议：Ensure that only the intended URL parameter is modified and no user data is injected.
+### 未发现安全问题 ✅
 
 ---
 

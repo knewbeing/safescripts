@@ -39,9 +39,9 @@ title: "Ping.Sx 增强"
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-07-06
+**风险等级**：🟡 LOW　　**安全评分**：92/100　　**分析时间**：2026-07-13
 
-> 该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。所有功能均在本地执行，权限申请合理，代码结构清晰。安全评分为 100，风险等级 SAFE。
+> 该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险或 WebSocket 使用。仅存在权限申请略高于实际需求（window.onurlchange），属于低风险。整体安全性高，建议移除未使用的 grant 权限以进一步提升安全性。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -54,50 +54,10 @@ title: "Ping.Sx 增强"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Transmission  
-> 脚本未检测到任何网络请求（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource），不存在数据外传行为。  
-> 位置：全局  
-> 建议：保持现有状态，避免添加任何外部数据传输功能。
-
-**⛔ CRITICAL** — Privacy Collection  
-> 脚本未读取 cookie、localStorage、sessionStorage、IndexedDB，也未监听键盘输入或读取表单字段、剪贴板内容，未涉及隐私采集。  
-> 位置：全局  
-> 建议：保持现有状态，避免添加任何隐私采集功能。
-
-**🔴 HIGH** — Remote Code Execution  
-> 脚本未使用 eval、new Function、setTimeout(string)、setInterval(string)，也未通过 innerHTML/outerHTML 插入外部脚本或动态加载远程 JS。  
-> 位置：全局  
-> 建议：避免引入远程代码执行相关功能。
-
-**🔴 HIGH** — Code Obfuscation  
-> 代码未混淆，无 base64 解码、字符串数组映射、unicode 混淆或高度压缩单行代码。  
-> 位置：全局  
-> 建议：保持代码可读性，避免混淆。
-
-**🔴 HIGH** — DOM XSS/Injection  
-> 脚本未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，也未通过 document.write() 插入不可信内容，未操作 iframe src。  
-> 位置：全局  
-> 建议：保持现有状态，避免 DOM XSS 风险。
-
-**🟠 MEDIUM** — Permission Abuse  
-> 脚本申请的 @grant 权限与实际使用相符，无高权限滥用。未申请 GM_download、GM_openInTab 等高风险权限。  
-> 位置：元数据与实际代码  
-> 建议：仅申请必要权限，避免权限滥用。
-
-**🟠 MEDIUM** — Sensitive API Usage  
-> 脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API 读取、Notification API）。  
-> 位置：全局  
-> 建议：避免调用敏感 API。
-
-**🟠 MEDIUM** — Supply Chain Risk  
-> 脚本未通过 @require 加载第三方库，无供应链风险。  
-> 位置：元数据  
-> 建议：如需引入第三方库，建议固定版本哈希并使用官方 CDN。
-
-**🟡 LOW** — ClickJacking / iframe Risk  
-> 脚本未修改 frame 保护策略，也未创建隐藏 iframe 用于数据提取。  
-> 位置：全局  
-> 建议：避免 iframe 风险和 ClickJacking。
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 GM_registerMenuCommand、GM_unregisterMenuCommand、GM_getValue、GM_setValue、window.onurlchange 权限，但未使用 window.onurlchange（仅监听了 window 的 urlchange 事件，未用 grant 权限特性）。  
+> 位置：元数据 @grant  
+> 建议：移除未使用的高权限申请，最小化权限集。
 
 ---
 

@@ -33,9 +33,9 @@ title: "FF评分侦查器V2"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：75/100　　**分析时间**：2026-07-06
+**风险等级**：🔴 HIGH　　**安全评分**：60/100　　**分析时间**：2026-07-13
 
-> 脚本存在数据外传风险，主要通过 GM_xmlhttpRequest 向 ffscouter.com 发起请求，可能涉及用户数据。未检测到隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 调用、供应链风险等其他高风险行为。建议明确请求内容，避免发送敏感信息，并限制权限申请。整体安全评分为 75，风险等级为 CRITICAL。
+> The script transmits data to a third-party server (ffscouter.com) using GM_xmlhttpRequest, which is a critical risk if sensitive user data is sent. It also requests unsafeWindow, increasing the risk of privilege escalation. No evidence of privacy-invasive data collection, code obfuscation, or DOM XSS was found in the provided code. Permissions are mostly appropriate, but should be reviewed. Supply chain risk is low as no @require is used. Overall, the script poses a HIGH risk due to data transmission and privilege escalation potential.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -48,50 +48,25 @@ title: "FF评分侦查器V2"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Transmission  
-> 脚本通过 GM_xmlhttpRequest 向 ffscouter.com 发起网络请求，可能携带用户数据或页面内容，存在数据外传风险。  
-> 位置：GM_xmlhttpRequest 调用，@connect ffscouter.com  
-> 建议：明确请求内容，避免发送敏感用户数据。建议仅发送必要的非敏感信息，并在文档中说明用途。
+**⛔ CRITICAL** — Data Exfiltration  
+> The script uses GM_xmlhttpRequest to communicate with ffscouter.com, which is a third-party server. This may transmit user data or page context, depending on request payloads.  
+> 位置：Network requests to ffscouter.com via GM_xmlhttpRequest  
+> 建议：Review all transmitted data to ensure no sensitive or personal information is sent. Document what is sent and why. Consider user consent.
 
-**🟠 MEDIUM** — Permission Abuse  
-> 脚本申请了 GM_xmlhttpRequest 和 unsafeWindow 权限，GM_xmlhttpRequest 用于跨域请求，unsafeWindow 可访问页面上下文，存在权限滥用风险。  
-> 位置：@grant GM_xmlhttpRequest, @grant unsafeWindow  
-> 建议：仅申请实际需要的权限，避免滥用 unsafeWindow，限制其访问范围。
+**🔴 HIGH** — Privilege Escalation  
+> The script requests the unsafeWindow permission, which exposes the page context to the userscript and increases the risk of privilege escalation or data leakage.  
+> 位置：@grant unsafeWindow in metadata  
+> 建议：Remove unsafeWindow unless strictly necessary. If required, minimize its usage and audit all interactions with page context.
 
-**🟡 LOW** — Remote Code Execution  
-> 未检测到远程代码执行、eval、动态 script 加载等高风险行为。  
-> 位置：全局代码审查  
-> 建议：保持代码透明，避免动态加载和执行外部代码。
+**🟠 MEDIUM** — Permission Usage  
+> The script requests GM_xmlhttpRequest permission, which is necessary for cross-origin requests, but should be limited to only required domains.  
+> 位置：@grant GM_xmlhttpRequest in metadata  
+> 建议：Ensure only required domains are listed in @connect and that requests are strictly controlled.
 
-**🟡 LOW** — Privacy Collection  
-> 未检测到隐私采集行为，如读取 cookie、localStorage、表单、剪贴板等。  
-> 位置：全局代码审查  
-> 建议：继续保持不采集用户隐私数据。
-
-**🟡 LOW** — Obfuscation  
-> 未检测到代码混淆、base64 解码、字符串映射、unicode 混淆等行为。  
-> 位置：全局代码审查  
-> 建议：保持代码可读性，避免混淆。
-
-**🟡 LOW** — DOM XSS  
-> 未检测到 DOM XSS 或注入风险，未直接插入用户输入到 innerHTML。  
-> 位置：全局代码审查  
-> 建议：继续保持安全的 DOM 操作。
-
-**🟡 LOW** — Sensitive API  
-> 未检测到敏感 API 调用，如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification。  
-> 位置：全局代码审查  
-> 建议：避免调用敏感 API，除非有明确用途。
-
-**🟡 LOW** — Supply Chain  
-> 未检测到供应链风险，未使用 @require 加载第三方库。  
-> 位置：元数据区  
-> 建议：如需加载第三方库，建议使用官方 CDN 并固定版本。
-
-**🟡 LOW** — ClickJacking  
-> 未检测到 ClickJacking 或 iframe 风险，未修改 frame 保护策略或创建隐藏 iframe。  
-> 位置：全局代码审查  
-> 建议：继续保持安全的 iframe 使用。
+**🟡 LOW** — DOM Injection Risk  
+> The script loads a large block of CSS as a string and injects it into the page. While not inherently dangerous, if the CSS string is ever replaced with dynamic content, it could become a vector for DOM-based XSS.  
+> 位置：importCSS function  
+> 建议：Ensure only static, trusted CSS is injected. Do not allow user input or external data to be injected as CSS.
 
 ---
 

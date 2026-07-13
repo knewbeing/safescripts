@@ -30,14 +30,14 @@ title: "WEXI veck.io hack aimbot, ESP and Speed"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：35/100　　**分析时间**：2026-05-25
+**风险等级**：🔴 HIGH　　**安全评分**：62/100　　**分析时间**：2026-07-13
 
-> This script poses critical security risks due to dynamic remote code execution, external data transmission, and storage of sensitive keys in localStorage. It allows arbitrary code to be fetched and executed, which can compromise user privacy and security. Use with extreme caution.
+> This UserScript introduces significant security risks, primarily due to its ability to dynamically load and execute remote code, which could be exploited for remote code execution. It also stores sensitive user keys in localStorage and deletes IndexedDB data, which may impact user privacy and data persistence. The script prompts users to visit an external site for key retrieval, introducing supply chain risk. No direct data exfiltration or obfuscation was detected, and there is no evidence of DOM XSS. The script should not be considered safe for general use.
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：https://wexi.qzz.io/key, Remote URL via loadscript(url) (dynamic, user-controlled)） |
-| 隐私采集 | ❌ 检测到（Stores user access key in localStorage） |
+| 数据外传 | ✅ 未检测到 |
+| 隐私采集 | ❌ 检测到（localStorage used to store user key） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -45,35 +45,25 @@ title: "WEXI veck.io hack aimbot, ESP and Speed"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Remote Code Execution  
-> The script dynamically loads and executes remote JavaScript code using fetch and new Function, allowing arbitrary code execution from any URL passed to loadscript().  
-> 位置：loadscript(url) function  
-> 建议：Avoid dynamic code execution from remote sources. Only load trusted, versioned scripts and validate URLs.
-
-**⛔ CRITICAL** — Data Transmission  
-> The script references an external key retrieval page (https://wexi.qzz.io/key) and encourages users to visit it, potentially exposing users to phishing or malicious content.  
-> 位置：wxKeyGate overlay (Get Daily Key link)  
-> 建议：Ensure the external key page is trustworthy and does not collect sensitive information.
-
-**🔴 HIGH** — Privacy Collection  
-> The script stores the user-provided access key in localStorage, which is accessible to any script running on the same domain.  
-> 位置：localStorage.setItem('wx_user_key', input)  
-> 建议：Consider encrypting sensitive keys or using more secure storage mechanisms.
-
 **🔴 HIGH** — Remote Code Execution  
-> The script uses new Function to execute fetched code, which is equivalent to eval and poses a high security risk.  
+> The script dynamically loads and executes remote JavaScript code using fetch() and new Function(). The URL is not hardcoded in the provided code, but the loadscript function can be called with arbitrary URLs, which is a remote code execution risk.  
 > 位置：loadscript(url) function  
-> 建议：Avoid using new Function or eval for executing remote code.
+> 建议：Avoid dynamic code execution via new Function() and only use trusted, version-pinned @require resources.
+
+**🟠 MEDIUM** — Privacy Collection  
+> The script stores and reads a user key in localStorage for authentication. While not directly exfiltrating data, this is a form of local privacy-sensitive data storage.  
+> 位置：localStorage.getItem('wx_user_key') and localStorage.setItem('wx_user_key', input)  
+> 建议：Minimize storage of sensitive data in localStorage; consider session-based memory storage if possible.
 
 **🟠 MEDIUM** — Sensitive API Usage  
-> The script deletes the IndexedDB database 'UnityCache', which may disrupt normal game operation or cause loss of cached data.  
+> The script deletes the IndexedDB database 'UnityCache', which may impact user data persistence for the site.  
 > 位置：indexedDB.deleteDatabase("UnityCache")  
-> 建议：Warn users before deleting browser storage and ensure it is necessary.
+> 建议：Warn users before deleting site data; only clear caches if necessary.
 
-**🟡 LOW** — Permission Usage  
-> The script requests no @grant permissions, but uses localStorage and indexedDB, which are accessible in the page context.  
-> 位置：@grant none  
-> 建议：Review permission usage and minimize access to sensitive APIs.
+**🟠 MEDIUM** — Supply Chain Risk  
+> The script creates an overlay that prompts the user to visit an external site (https://wexi.qzz.io/key) to obtain a daily key. This is a potential supply chain risk if the external site is compromised.  
+> 位置：Overlay HTML and link to https://wexi.qzz.io/key  
+> 建议：Ensure the external key provider is trustworthy and uses HTTPS. Consider providing keys in a more secure, verifiable manner.
 
 ---
 

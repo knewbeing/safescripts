@@ -32,9 +32,9 @@ title: "GeoGuessr 地点解析助手"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：81/100　　**分析时间**：2026-07-06
+**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-07-13
 
-> The script does not transmit data externally, does not collect sensitive user information, and avoids dynamic code execution and obfuscation. The only notable issue is the unnecessary GM_webRequest permission, which should be removed. Overall, the script is safe with a low risk profile.
+> 该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险或 iframe 风险。唯一的安全问题是声明了未使用的高权限 GM_webRequest，建议移除。整体风险极低，安全性良好。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -47,50 +47,50 @@ title: "GeoGuessr 地点解析助手"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Transmission  
-> Script intercepts Google Maps API responses via XMLHttpRequest, but does not transmit data externally. No evidence of data exfiltration or external network requests.  
+**⛔ CRITICAL** — Data Exfiltration  
+> The script overrides XMLHttpRequest.prototype.open to intercept Google Maps API responses, but does not transmit data to third-party servers. No evidence of data exfiltration or external network requests was found.  
 > 位置：XMLHttpRequest.prototype.open override  
-> 建议：Continue to monitor for any future changes that may introduce external requests.
+> 建议：Continue to avoid sending intercepted data to external servers. Monitor for future code changes that may introduce network requests.
 
 **⛔ CRITICAL** — Privacy Collection  
-> Script listens for keydown events but does not transmit input data or collect sensitive information.  
-> 位置：document.addEventListener("keydown", onKeyDown)  
-> 建议：Ensure no future code changes combine input collection with network requests.
+> The script listens for keydown events to trigger its features, but does not log or transmit key inputs. No keylogger behavior detected.  
+> 位置：document.addEventListener('keydown', onKeyDown)  
+> 建议：Ensure that key events are not logged or transmitted in future updates.
 
 **🔴 HIGH** — Remote Code Execution  
-> No use of eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection detected.  
-> 位置：Full script scan  
-> 建议：Maintain avoidance of dynamic code execution.
+> No use of eval, new Function, setTimeout(string), setInterval(string), or dynamic script execution detected. No remote code execution risk found.  
+> 位置：Full script  
+> 建议：Maintain current practice of avoiding dynamic code execution.
 
-**🔴 HIGH** — Code Obfuscation  
-> No code obfuscation detected; script is readable and not minified or encoded.  
-> 位置：Full script scan  
-> 建议：Maintain transparency for security review.
+**🔴 HIGH** — Obfuscation  
+> No code obfuscation detected. Code is readable and not minified or encoded.  
+> 位置：Full script  
+> 建议：Maintain code transparency for security review.
 
-**🔴 HIGH** — DOM XSS/Injection  
-> No DOM XSS or injection risk detected; user input is not inserted into the DOM via innerHTML/outerHTML.  
-> 位置：Full script scan  
-> 建议：Continue to avoid unsafe DOM manipulation.
+**🔴 HIGH** — DOM XSS  
+> No DOM XSS or injection risk detected. No user input or URL parameters are inserted into the DOM without sanitization.  
+> 位置：Full script  
+> 建议：Continue to avoid inserting untrusted data into the DOM.
 
 **🟠 MEDIUM** — Permission Abuse  
-> Script requests GM_webRequest permission but does not use it in the code.  
+> The script requests the GM_webRequest permission, but does not use any GM_* APIs in the code. This is an unused high-privilege permission.  
 > 位置：@grant GM_webRequest in metadata  
-> 建议：Remove unused permission to minimize attack surface.
+> 建议：Remove unused @grant GM_webRequest to minimize attack surface.
 
-**🟠 MEDIUM** — Sensitive API Usage  
-> No sensitive browser APIs (geolocation, RTCPeerConnection, MediaDevices, Clipboard, Notification) are used.  
-> 位置：Full script scan  
-> 建议：Maintain avoidance of sensitive APIs.
+**🟠 MEDIUM** — Sensitive API  
+> No use of sensitive APIs such as geolocation, RTCPeerConnection, MediaDevices, or Clipboard API detected.  
+> 位置：Full script  
+> 建议：Continue to avoid unnecessary access to sensitive browser APIs.
 
-**🟠 MEDIUM** — Supply Chain Risk  
-> No @require third-party libraries or supply chain risk detected.  
-> 位置：Metadata block  
-> 建议：If adding dependencies, use official sources and fixed versions.
+**🟠 MEDIUM** — Supply Chain  
+> No @require directives or external library dependencies detected. No supply chain risk found.  
+> 位置：Metadata  
+> 建议：If adding dependencies in the future, use official CDNs and fixed versions.
 
-**🟡 LOW** — ClickJacking/Iframe Risk  
-> No iframe manipulation or clickjacking risk detected.  
-> 位置：Full script scan  
-> 建议：Continue to avoid iframe manipulation.
+**🟡 LOW** — ClickJacking/iframe  
+> No modification of frame protection or creation of hidden iframes detected.  
+> 位置：Full script  
+> 建议：Continue to avoid iframe-based risks.
 
 ---
 

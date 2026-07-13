@@ -1,0 +1,30 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "The script creates a popup using innerHTML, but the content is static and not influenced by user input or URL parameters. There is no evidence of DOM XSS.",
+      "location": "showDarkShadowPopup() function",
+      "recommendation": "Keep innerHTML usage limited to static, trusted content. Do not insert user-controlled data.",
+      "severity": "HIGH",
+      "type": "DOM XSS"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "LOW",
+  "script_name": "Youtube Ads BYPASSER👻",
+  "security_score": 85,
+  "summary": "The script does not transmit data externally, does not collect privacy-sensitive information, and does not use dangerous APIs or obfuscation. It uses innerHTML for a static popup, which is a minor risk but not exploitable in this context. No supply chain or permission abuse detected.",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-07-13T05:54:27.314468+00:00",
+  "slug": "Youtube_Ads_BYPASSER"
+}

@@ -1,0 +1,22 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [],
+    "detected": false
+  },
+  "dom_xss_risk": false,
+  "issues": [],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [],
+    "detected": false
+  },
+  "risk_level": "SAFE",
+  "script_name": "GitHub: gh-pages Link",
+  "security_score": 100,
+  "summary": "该脚本仅包含一条 console.log 语句，不包含任何 DOM 操作、网络请求、数据收集、远程代码执行或权限申请。无安全风险。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-07-13T05:56:56.429692+00:00",
+  "slug": "github-gh-pages-link"
+}

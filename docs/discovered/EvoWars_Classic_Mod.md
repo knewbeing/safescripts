@@ -33,9 +33,9 @@ title: "EvoWars经典增强版"
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-07-06
+**风险等级**：🟢 SAFE　　**安全评分**：97/100　　**分析时间**：2026-07-13
 
-> The EvoWars Classic Mod UserScript does not transmit data externally, collect user privacy, execute remote code, or use obfuscated/minified code. It does not request excessive permissions or load external libraries. No DOM XSS, supply chain, or sensitive API risks detected. The script is considered SAFE with a security score of 100.
+> The script does not perform any network requests, does not collect or transmit user data, and does not use any dangerous or obfuscated code. All UI is statically defined and does not use user input, so DOM XSS risk is minimal. No supply chain or permission risks detected. Overall, the script is safe for use.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -48,50 +48,15 @@ title: "EvoWars经典增强版"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Transmission  
-> No network requests (GM_xmlhttpRequest, fetch, XMLHttpRequest, WebSocket, EventSource, sendBeacon) detected. No data transmission to third-party servers.  
-> 位置：Entire script  
-> 建议：Maintain no external data transmission unless strictly necessary.
-
-**⛔ CRITICAL** — Privacy Collection  
-> No privacy collection: script does not access cookies, localStorage, sessionStorage, IndexedDB, clipboard, or listen to keyboard/form input.  
-> 位置：Entire script  
-> 建议：Continue to avoid collecting user data.
-
-**🔴 HIGH** — Remote Code Execution  
-> No eval, new Function, setTimeout(string), setInterval(string), or dynamic script loading detected. No remote code execution risk.  
-> 位置：Entire script  
-> 建议：Avoid introducing dynamic code execution.
-
-**🔴 HIGH** — Code Obfuscation  
-> No code obfuscation detected: code is readable, no base64/unicode/minified/obfuscated patterns.  
-> 位置：Entire script  
-> 建议：Keep code transparent and readable.
-
-**🟠 MEDIUM** — Supply Chain  
-> No supply chain risk: no @require or external library loading.  
-> 位置：Metadata block  
-> 建议：If adding dependencies, use official CDN and fixed version.
-
-**🟠 MEDIUM** — Sensitive API  
-> No sensitive API calls (geolocation, RTCPeerConnection, MediaDevices, clipboard, notifications) detected.  
-> 位置：Entire script  
-> 建议：Avoid using sensitive APIs unless necessary.
-
-**🟠 MEDIUM** — Permission Abuse  
-> No permission abuse: @grant none, no unused or excessive permissions.  
-> 位置：Metadata block  
-> 建议：Only request permissions required for functionality.
-
-**🟡 LOW** — DOM Manipulation  
-> Script creates a custom UI panel and manipulates DOM elements, but does not use user input or URL parameters in innerHTML/outerHTML. No DOM XSS detected.  
+**🟡 LOW** — DOM Injection  
+> The script injects a large amount of UI via innerHTML, but all content is static and not based on user input or URL parameters. No DOM XSS found.  
 > 位置：initUI() function  
-> 建议：Continue to avoid inserting untrusted data into innerHTML/outerHTML.
+> 建议：If dynamic content is ever added, sanitize all user input before inserting into the DOM.
 
-**🟡 LOW** — ClickJacking  
-> No clickjacking or iframe manipulation detected.  
-> 位置：Entire script  
-> 建议：Avoid creating hidden iframes or modifying frame protection.
+**🟡 LOW** — Permissions Review  
+> The script requests no special permissions (@grant none) and does not use any network APIs (fetch, XMLHttpRequest, GM_xmlhttpRequest, WebSocket, etc.).  
+> 位置：Global  
+> 建议：None needed.
 
 ---
 

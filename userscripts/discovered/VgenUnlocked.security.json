@@ -1,0 +1,41 @@
+{
+  "approved": true,
+  "data_transmission": {
+    "destinations": [
+      "https://api.vgen.co/exchange-rate"
+    ],
+    "detected": true
+  },
+  "dom_xss_risk": false,
+  "issues": [
+    {
+      "description": "脚本会向 https://api.vgen.co/exchange-rate 发起请求以获取汇率数据，但未发现向第三方或非官方服务器发送用户数据、页面内容或 Cookie。",
+      "location": "fetchExchangeRates()",
+      "recommendation": "确认目标 API 为官方且可信，避免将敏感信息发送至第三方。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本会读取 document.cookie 以尝试解析 v-guest JWT 并获取货币信息。",
+      "location": "getSelectedCurrency()",
+      "recommendation": "避免读取 cookie 中的敏感信息，或确保不会外传。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    }
+  ],
+  "obfuscation_detected": false,
+  "privacy_collection": {
+    "details": [
+      "读取 document.cookie 以解析 v-guest JWT"
+    ],
+    "detected": true
+  },
+  "risk_level": "MEDIUM",
+  "script_name": "VgenUnlocked",
+  "security_score": 50,
+  "summary": "该脚本主要用于增强 VGen 网站的用户体验，包括价格展示、排序、筛选等功能。安全审查发现：1）脚本会向 vgen.co 官方 API 请求汇率数据，未发现向第三方服务器外传用户数据。2）脚本会读取 document.cookie 以解析货币信息，但未发现将 cookie 内容外传。3）未发现远程代码执行、代码混淆、DOM XSS、权限滥用、供应链风险等问题。整体风险为中等，建议关注 cookie 读取行为，确保不会被滥用。",
+  "supply_chain_risk": false,
+  "websocket_usage": false,
+  "analyzed_at": "2026-07-13T05:50:03.659912+00:00",
+  "slug": "VgenUnlocked"
+}
