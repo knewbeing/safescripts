@@ -46,9 +46,9 @@ title: "CSDN优化"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-07-13
+**风险等级**：🟡 LOW　　**安全评分**：84/100　　**分析时间**：2026-07-20
 
-> 该脚本主要用于优化 CSDN 站点体验，屏蔽广告、优化排版等。未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。所有网络请求目标均为 CSDN 官方域名，且未见敏感数据外传。存在部分未使用的 GM_* 权限申请，建议精简。依赖库均为锁定版本，供应链风险低。整体安全风险较低，建议定期复查依赖库安全性。
+> 该脚本主要用于优化 CSDN 网页体验，屏蔽广告、自动展开内容等。未检测到数据外传、隐私采集、远程代码执行、DOM XSS、WebSocket 使用等高危行为。第三方库均通过 CDN 且固定版本，供应链风险较低。部分权限申请（GM_xmlhttpRequest、unsafeWindow）未见实际使用，建议精简。整体安全风险较低，建议定期审查第三方库代码。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -57,19 +57,29 @@ title: "CSDN优化"
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ✅ 可信 |
+| 供应链风险 | ⚠️ 存在风险 |
 
 ### 发现的问题
 
-**🟠 MEDIUM** — 权限滥用  
-> @grant 申请了较多 GM_* 权限，但部分如 GM_getResourceText, GM_setValues, GM_unregisterMenuCommand 在脚本中未见实际使用，存在权限冗余。  
-> 位置：元数据 @grant 字段  
-> 建议：仅申请实际需要的权限，减少潜在攻击面。
+**🟠 MEDIUM** — 供应链风险  
+> @require 加载的第三方库（如 CoverUMD/index.js、@whitesev/utils、@whitesev/domutils、@whitesev/pops、qmsg）均通过 jsdelivr CDN，且指定了版本号或 commit 哈希，供应链风险较低，但 CoverUMD/index.js 来源为个人仓库，需注意其代码安全。  
+> 位置：元数据 @require  
+> 建议：建议定期审查 CoverUMD/index.js 代码，确保无恶意行为。第三方库建议优先使用官方源。
 
-**🟡 LOW** — 供应链风险  
-> 脚本通过 @require 加载了多个第三方库，均来自 fastly.jsdelivr.net，且均为固定版本（含哈希/版本号），来源可信。  
-> 位置：元数据 @require 字段  
-> 建议：保持依赖锁定版本，定期安全复查依赖库。
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 GM_xmlhttpRequest 权限，但代码未见实际使用（主代码段未见网络请求，且 @connect 仅允许 csdn.net 域名）。  
+> 位置：元数据 @grant/@connect  
+> 建议：如无实际使用 GM_xmlhttpRequest，建议移除该权限。
+
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 unsafeWindow 权限，但主代码未见直接操作 unsafeWindow，可能为第三方库需求。  
+> 位置：元数据 @grant  
+> 建议：如无实际使用 unsafeWindow，建议移除该权限。
+
+**🟡 LOW** — 代码混淆  
+> 主代码段存在 __toESM、__copyProps 等模块兼容代码，但无明显混淆特征（无 base64、unicode、字符串数组映射等）。  
+> 位置：主代码段  
+> 建议：无需处理，代码结构正常。
 
 ---
 

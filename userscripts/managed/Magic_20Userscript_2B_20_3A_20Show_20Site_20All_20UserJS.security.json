@@ -13,25 +13,25 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本未提供完整代码，无法检测实际数据外传、隐私采集、远程代码执行等实现细节。仅根据元数据分析。",
+      "description": "脚本未提供完整代码，仅有元数据，无法检测实际的数据外传、隐私采集、远程代码执行等行为。",
       "location": "N/A",
-      "recommendation": "建议补充完整代码以进行更全面的安全审查。",
-      "severity": "MEDIUM",
+      "recommendation": "请补充完整代码以便进行全面安全审查。",
+      "severity": "CRITICAL",
       "type": "代码缺失"
     },
     {
-      "description": "@grant 申请了 GM_openInTab、GM_xmlhttpRequest 等高权限，但无法确认是否全部实际使用。",
+      "description": "@grant 申请了 GM_openInTab 等高权限，但未能确认实际使用情况。",
       "location": "元数据 @grant",
       "recommendation": "仅申请实际需要的权限，避免权限滥用。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "@connect 仅允许连接知名用户脚本社区和 GitHub，无明显恶意第三方域名。",
+      "description": "@connect 指定了多个第三方域名，存在数据外传潜在风险。",
       "location": "元数据 @connect",
-      "recommendation": "保持连接目标透明，避免添加未知或可疑域名。",
-      "severity": "LOW",
-      "type": "数据外传目标"
+      "recommendation": "确保仅向可信域名发送必要数据，避免敏感信息泄露。",
+      "severity": "MEDIUM",
+      "type": "数据外传"
     }
   ],
   "obfuscation_detected": false,
@@ -39,12 +39,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "LOW",
+  "risk_level": "CRITICAL",
   "script_name": "Magic Userscript+ : Show Site All UserJS",
-  "security_score": 89,
-  "summary": "本次审查仅基于元数据，未发现明显高危安全风险。脚本仅声明连接主流用户脚本社区和 GitHub，未见恶意外传目标。存在权限申请较多但无法确认实际用途的问题。建议补充完整代码以进行更深入的安全分析。",
+  "security_score": 50,
+  "summary": "由于缺少完整代码，无法对核心安全项进行有效检测。元数据显示脚本可能涉及第三方数据交互和高权限申请，存在一定安全风险。建议补充完整代码以便进行详细审查。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:26:37.855156+00:00",
+  "analyzed_at": "2026-07-20T05:30:43.389981+00:00",
   "slug": "Magic_20Userscript_2B_20_3A_20Show_20Site_20All_20UserJS"
 }
