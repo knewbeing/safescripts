@@ -4,38 +4,38 @@
     "destinations": [
       "https://api.vgen.co/exchange-rate"
     ],
-    "detected": true
+    "detected": false
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本会向 https://api.vgen.co/exchange-rate 发起请求以获取汇率数据，但未发现向第三方或非官方服务器发送用户数据、页面内容或 Cookie。",
-      "location": "fetchExchangeRates()",
-      "recommendation": "确认目标 API 为官方且可信，避免将敏感信息发送至第三方。",
-      "severity": "CRITICAL",
-      "type": "数据外传"
+      "description": "The script intercepts fetch requests and makes a request to https://api.vgen.co/exchange-rate to retrieve exchange rates. This is a first-party API and does not transmit user data or sensitive information.",
+      "location": "fetchExchangeRates() function",
+      "recommendation": "Ensure only necessary data is requested and no user data is sent.",
+      "severity": "LOW",
+      "type": "Network Request"
     },
     {
-      "description": "脚本会读取 document.cookie 以尝试解析 v-guest JWT 并获取货币信息。",
-      "location": "getSelectedCurrency()",
-      "recommendation": "避免读取 cookie 中的敏感信息，或确保不会外传。",
-      "severity": "CRITICAL",
-      "type": "隐私采集"
+      "description": "The script reads document.cookie to extract the v-guest JWT for currency detection. No cookie data is transmitted externally.",
+      "location": "getSelectedCurrency() function",
+      "recommendation": "Avoid reading cookies unless strictly necessary; do not transmit cookie data.",
+      "severity": "MEDIUM",
+      "type": "Privacy Collection"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "读取 document.cookie 以解析 v-guest JWT"
+      "Reads document.cookie to extract v-guest JWT for currency detection"
     ],
     "detected": true
   },
-  "risk_level": "MEDIUM",
+  "risk_level": "LOW",
   "script_name": "VgenUnlocked",
-  "security_score": 50,
-  "summary": "该脚本主要用于增强 VGen 网站的用户体验，包括价格展示、排序、筛选等功能。安全审查发现：1）脚本会向 vgen.co 官方 API 请求汇率数据，未发现向第三方服务器外传用户数据。2）脚本会读取 document.cookie 以解析货币信息，但未发现将 cookie 内容外传。3）未发现远程代码执行、代码混淆、DOM XSS、权限滥用、供应链风险等问题。整体风险为中等，建议关注 cookie 读取行为，确保不会被滥用。",
+  "security_score": 89,
+  "summary": "The script does not transmit user data externally, does not collect sensitive information beyond reading a cookie for currency detection, does not execute remote code, and does not use obfuscation. No DOM XSS or supply chain risks are present. Overall, the script is safe with minor privacy collection.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:50:03.659912+00:00",
+  "analyzed_at": "2026-07-27T06:00:09.813196+00:00",
   "slug": "VgenUnlocked"
 }

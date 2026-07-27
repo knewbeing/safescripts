@@ -38,14 +38,14 @@ title: "Youtube 工具 多合一本地下載 MP4、MP3"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：50/100　　**分析时间**：2026-07-13
+**风险等级**：🔴 HIGH　　**安全评分**：47/100　　**分析时间**：2026-07-27
 
-> 该脚本存在较高安全风险，主要体现在与多个第三方 API 通信，可能外传用户行为数据（如视频 ID、页面 URL），并申请了 unsafeWindow 高权限。未发现明显的代码混淆、远程代码执行或 DOM XSS 风险。建议仅在信任脚本作者和 API 服务的前提下使用，并注意个人隐私保护。
+> 该脚本存在严重的数据外传风险，涉及多个第三方 API，可能会传递用户数据。未发现明显隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。供应链风险和权限滥用为中等。建议用户谨慎使用，尤其关注数据外传行为。
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：https://returnyoutubedislikeapi.com, https://translate.googleapis.com, https://p.savenow.to） |
-| 隐私采集 | ❌ 检测到（API 请求可能包含视频 ID、页面 URL 等用户行为数据） |
+| 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -54,34 +54,24 @@ title: "Youtube 工具 多合一本地下載 MP4、MP3"
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本通过 fetch/GM_xmlhttpRequest 等方式与多个第三方 API 通信，包括 returnyoutubedislikeapi.com、translate.googleapis.com、p.savenow.to、p.lbserver.xyz、dubs.io，可能传递视频 ID、页面信息等数据。  
-> 位置：全局常量定义及后续 API 调用  
-> 建议：仅允许必要的 API 通信，明确告知用户数据用途，避免传递敏感信息。
+> 脚本通过 fetch/GM_xmlhttpRequest 等方式与多个第三方 API 通信，包括 returnyoutubedislikeapi.com、translate.googleapis.com、savenow.to、lbserver.xyz、dubs.io，可能会传递用户数据（如视频ID、页面内容等）。  
+> 位置：apiDislikes, apiGoogleTranslate, API_URL_AUDIO_VIDEO, DUBS_START_ENDPOINT, DUBS_STATUS_ENDPOINT  
+> 建议：仅在必要时调用第三方 API，避免传递敏感用户数据，明确告知用户数据用途。
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本未发现明显的隐私采集（如读取 cookie、localStorage、监听键盘输入等），但部分 API 请求可能间接传递用户行为数据（如视频 ID、页面 URL）。  
-> 位置：API 调用参数构造处  
-> 建议：确保不上传用户敏感信息，API 请求参数应最小化。
-
-**🔴 HIGH** — 远程代码执行  
-> 脚本未发现 eval、new Function、setTimeout(string) 等远程代码执行风险。  
-> 位置：全局  
-> 建议：保持此安全实践。
-
-**🔴 HIGH** — 代码混淆  
-> 脚本未发现明显的代码混淆、base64 解码、字符串数组混淆等。  
-> 位置：全局  
-> 建议：保持代码可读性，便于安全审计。
+**🟠 MEDIUM** — 隐私采集  
+> 脚本访问和操作 localStorage、sessionStorage、GM_setValue、GM_getValue，可能涉及用户偏好或数据存储，但未发现直接采集敏感隐私数据。  
+> 位置：GM_setValue, GM_getValue  
+> 建议：确保仅存储必要的非敏感数据，避免存储用户隐私信息。
 
 **🟠 MEDIUM** — 供应链风险  
-> @require 加载了第三方库 iziToast，来源为 jsdelivr 官方 CDN，版本已锁定。  
-> 位置：元数据 @require  
-> 建议：建议定期检查依赖安全性。
+> 脚本通过 @require 加载第三方库 iziToast，来源为 jsdelivr 官方 CDN，版本号已固定。  
+> 位置：@require https://cdn.jsdelivr.net/npm/izitoast@1.4.0/dist/js/iziToast.min.js  
+> 建议：保持第三方库来源可信且版本固定，定期检查依赖安全性。
 
 **🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 unsafeWindow 权限，存在一定安全隐患（可访问页面全局作用域，增加攻击面）。  
-> 位置：元数据 @grant  
-> 建议：如非必要，建议移除 unsafeWindow 权限。
+> 脚本申请了 unsafeWindow 权限，但代码未发现实际使用 unsafeWindow 的高风险操作。  
+> 位置：@grant unsafeWindow  
+> 建议：仅在必要时申请 unsafeWindow 权限，避免滥用。
 
 ---
 

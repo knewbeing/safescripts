@@ -5,29 +5,36 @@
       "translate.google.com",
       "greasyfork.org"
     ],
-    "detected": false
+    "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "@grant 申请了 GM_xmlhttpRequest 权限，但主脚本未发现实际使用。",
-      "location": "元数据头部",
-      "recommendation": "如无实际用途，建议移除未使用的高权限申请，减少权限滥用风险。",
+      "description": "脚本通过 GM_xmlhttpRequest 允许向 translate.google.com 和 greasyfork.org 发起网络请求。未发现携带敏感用户数据，但存在外部通信。",
+      "location": "元数据 @connect 和 GM_xmlhttpRequest 权限",
+      "recommendation": "确保所有请求内容不包含敏感信息，限制请求目的地。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本申请了 unsafeWindow 权限，允许访问页面全局对象，存在潜在远程代码执行风险。",
+      "location": "元数据 @grant unsafeWindow",
+      "recommendation": "仅在必要时使用 unsafeWindow，避免滥用。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本申请了 GM_xmlhttpRequest 权限，但实际代码未发现主动向非官方或未知第三方域名发送数据。",
+      "location": "元数据 @grant GM_xmlhttpRequest",
+      "recommendation": "限制 GM_xmlhttpRequest 的使用范围，避免敏感数据泄露。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "@grant 申请了 unsafeWindow 权限，但主脚本未发现实际使用。",
-      "location": "元数据头部",
-      "recommendation": "如无实际用途，建议移除未使用的高权限申请，减少权限滥用风险。",
+      "description": "脚本通过 @require 加载 greasyfork.org 上的 fsfb facts.js，来源可信，但未固定版本哈希，存在供应链风险。",
+      "location": "元数据 @require",
+      "recommendation": "建议使用固定版本哈希或官方 CDN，避免供应链污染。",
       "severity": "MEDIUM",
-      "type": "权限滥用"
-    },
-    {
-      "description": "@require 加载了 https://greasyfork.org/scripts/459346-fsfb-facts/code/fsfb%20facts.js?version=1145073，来源为 greasyfork.org，且固定了版本号。",
-      "location": "元数据头部",
-      "recommendation": "已固定版本，来源可信，无需调整。",
-      "severity": "LOW",
       "type": "供应链风险"
     }
   ],
@@ -36,12 +43,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "LOW",
+  "risk_level": "MEDIUM",
   "script_name": "fsfb script",
-  "security_score": 81,
-  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。仅存在未使用的高权限申请（GM_xmlhttpRequest、unsafeWindow），建议移除以降低权限滥用风险。@require 的第三方库来源可信且已锁定版本。整体安全风险较低。",
-  "supply_chain_risk": false,
+  "security_score": 49,
+  "summary": "脚本存在数据外传（CRITICAL），远程代码执行（HIGH）、权限滥用和供应链风险（MEDIUM）。未发现隐私采集、代码混淆、DOM XSS、敏感 API 调用、ClickJacking/iframe 风险。建议限制外部请求、审查 unsafeWindow 使用、固定第三方依赖版本。",
+  "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:56:29.367560+00:00",
+  "analyzed_at": "2026-07-27T06:05:28.616524+00:00",
   "slug": "fsfb_script"
 }

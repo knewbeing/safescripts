@@ -5,18 +5,84 @@
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [],
+  "issues": [
+    {
+      "description": "脚本使用 localStorage 进行状态记录和黑名单管理，但未外传数据。仅在本地存储和读取。",
+      "location": "localStorage 相关函数（permanentClearOnce, getDebugOverrideList, toggleDebugOverride, getPageBlacklist, togglePageBlacklist）",
+      "recommendation": "确保 localStorage 仅用于本地状态管理，不要与外部服务器同步。",
+      "severity": "MEDIUM",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本未申请任何 Tampermonkey/Greasemonkey权限（@grant none），权限申请合理。",
+      "location": "元数据 @grant none",
+      "recommendation": "无需修改，权限申请合理。",
+      "severity": "LOW",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本未检测到任何网络请求、数据外传、统计、追踪或 WebSocket 行为。",
+      "location": "全局代码",
+      "recommendation": "保持无外传行为。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本未检测到 eval/new Function/setTimeout(string)/setInterval(string) 或动态加载远程脚本。",
+      "location": "全局代码",
+      "recommendation": "保持无远程代码执行风险。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本未检测到代码混淆、base64 解码、字符串映射或高度压缩代码。",
+      "location": "全局代码",
+      "recommendation": "保持代码可读性。",
+      "severity": "HIGH",
+      "type": "代码混淆"
+    },
+    {
+      "description": "脚本未检测到 DOM XSS 或注入风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML。",
+      "location": "全局代码",
+      "recommendation": "保持安全的 DOM 操作。",
+      "severity": "HIGH",
+      "type": "DOM XSS / 注入"
+    },
+    {
+      "description": "脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。",
+      "location": "全局代码",
+      "recommendation": "保持无敏感 API 调用。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "脚本未通过 @require 加载第三方库，无供应链风险。",
+      "location": "元数据 @require 缺失",
+      "recommendation": "如需加载第三方库，建议固定版本哈希并使用官方 CDN。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    },
+    {
+      "description": "脚本未修改 frame 保护策略，也未创建隐藏 iframe 用于数据提取。",
+      "location": "applyIframeSandbox, document.createElement Hook",
+      "recommendation": "保持 iframe 操作仅用于安全目的。",
+      "severity": "LOW",
+      "type": "ClickJacking / iframe 风险"
+    }
+  ],
   "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [],
-    "detected": false
+    "details": [
+      "localStorage 记录页面状态、黑名单、调试覆盖列表"
+    ],
+    "detected": true
   },
   "risk_level": "SAFE",
   "script_name": "元素屏蔽/追踪器 (V26.39.10 - 拦截程序化点击和 PostMessage)",
-  "security_score": 100,
-  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。所有本地存储操作仅限于 localStorage，且未与外部服务器通信。脚本主要功能为拦截程序化点击、postMessage 及 iframe 沙箱管理，未发现安全隐患。",
+  "security_score": 92,
+  "summary": "该脚本未检测到任何数据外传、远程代码执行、代码混淆、DOM XSS、敏感 API 调用或供应链风险。唯一涉及隐私采集的是 localStorage 的本地状态记录，未与外部服务器交互。整体安全性高，适合在用户环境中部署。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:56:21.439975+00:00",
+  "analyzed_at": "2026-07-27T06:05:19.784720+00:00",
   "slug": "elementBlocker"
 }

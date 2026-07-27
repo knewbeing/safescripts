@@ -4,15 +4,15 @@ title: "新标签页打开链接"
 
 # 新标签页打开链接
 
-`浏览增强`  `新标签页`  `网页链接`  `通用脚本`  `效率提升`
+`浏览增强`  `新标签页`  `通用脚本`  `网页优化`  `便捷体验`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/TargetBlank.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**1.0.9**　　发现时间：**2026-06-15**　　来源：[XIU2/UserScript](https://github.com/XIU2/UserScript) <Badge type="tip" text="GitHub" />
+> 版本：**1.0.9**　　发现时间：**2026-07-27**　　来源：[XIU2/UserScript](https://github.com/XIU2/UserScript) <Badge type="tip" text="GitHub" />
 
 ## 功能介绍
 
-本脚本会让网页中的所有链接在新标签页打开，无需手动右键操作。适用于大多数网站，方便浏览多个页面。谷歌账号登录页除外。
+本脚本让网页上的所有链接都在新标签页打开，避免当前页面被覆盖。适用于绝大多数网站，提升浏览体验。
 
 ## 适用网站
 
@@ -20,21 +20,21 @@ title: "新标签页打开链接"
 
 ## 使用方法
 
-1. 安装脚本后，访问任意网站。
-2. 点击网页上的任何链接，都会自动在新标签页打开。
+1. 安装脚本后，访问任意网页。
+2. 点击网页中的任何链接，都会在新标签页打开。
 3. 无需额外设置，自动生效。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `none` | 脚本不需要特殊权限，仅操作网页内容。 |
+| `none` | 脚本不需要额外权限，直接作用于页面。 |
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-07-13
+**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-07-27
 
-> 该脚本仅修改页面所有链接为新标签页打开，并对部分特殊情况（如 Discuz! 论坛、动态内容）做了兼容处理。未检测到任何数据外传、隐私采集、远程代码执行、混淆、XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。未申请任何 @grant 权限，代码结构清晰，无安全隐患。
+> 该脚本仅操作页面链接和表单的 target 属性，使其在新标签页打开，无任何数据外传、隐私采集、远程代码执行、混淆、XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码结构清晰，未申请任何高权限，安全性极高。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -49,4 +49,4 @@ title: "新标签页打开链接"
 
 ---
 
-*由 SafeScripts 自动发现 · [查看原始来源](https://raw.githubusercontent.com/XIU2/UserScript/d8fcb017ba7108be3b9813667e63b7f28cbf6424/TargetBlank.user.js)*
+*由 SafeScripts 自动发现 · [查看原始来源](https://raw.githubusercontent.com/XIU2/UserScript/a4d1659b7d9cdcb5d9e55a81bb14e85e875e3f49/TargetBlank.user.js)*

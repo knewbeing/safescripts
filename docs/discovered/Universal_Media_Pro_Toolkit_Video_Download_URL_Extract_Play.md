@@ -30,9 +30,9 @@ title: "Universal Media Pro Toolkit | Video Download, URL Extract, Play"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-07-13
+**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-07-27
 
-> 该脚本主要功能为提取视频直链、下载媒体和悬浮播放。未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。唯一中等风险为第三方库依赖（hls.js），但已锁定版本且来源可信。权限申请合理，仅 GM_setClipboard。整体安全性较高，建议定期关注第三方库安全更新。
+> 该脚本安全性极高，无数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感API调用、供应链风险及iframe风险。仅使用官方CDN固定版本的hls.js，申请必要的GM_setClipboard权限。建议保持现有安全实践。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -41,19 +41,54 @@ title: "Universal Media Pro Toolkit | Video Download, URL Extract, Play"
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ⚠️ 存在风险 |
+| 供应链风险 | ✅ 可信 |
 
 ### 发现的问题
 
-**🟠 MEDIUM** — 供应链风险  
-> 脚本通过 @require 加载了 hls.js 第三方库，来源为 jsdelivr 官方 CDN，且指定了明确版本号。  
-> 位置：@require 元数据  
-> 建议：保持使用官方 CDN 并锁定版本，避免使用未知来源或可变 URL。
+**⛔ CRITICAL** — Data Transmission  
+> 脚本未检测到任何网络请求（GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource等），不存在数据外传行为。  
+> 位置：全局  
+> 建议：保持现有状态，避免添加任何外传代码。
 
-**🟡 LOW** — 权限滥用  
-> 脚本申请了 GM_setClipboard 权限，但未发现其他高权限申请。  
-> 位置：@grant 元数据  
-> 建议：仅申请实际需要的权限，避免权限滥用。
+**⛔ CRITICAL** — Privacy Collection  
+> 脚本未检测到任何隐私采集行为（未访问cookie/localStorage/sessionStorage/IndexedDB、未监听键盘输入、未读取表单字段、未访问指纹API、未读取剪贴板内容）。  
+> 位置：全局  
+> 建议：保持现有状态，避免添加隐私采集代码。
+
+**🔴 HIGH** — Remote Code Execution  
+> 脚本未检测到远程代码执行风险（未使用eval/new Function/setTimeout(string)/setInterval(string)、未动态插入外部脚本、未通过innerHTML/outerHTML插入脚本、未使用document.write插入脚本）。  
+> 位置：全局  
+> 建议：保持现有状态，避免动态执行代码。
+
+**🔴 HIGH** — Code Obfuscation  
+> 脚本未检测到代码混淆（无base64解码、无字符串数组索引映射、无unicode混淆、无高度压缩单行代码）。  
+> 位置：全局  
+> 建议：保持代码可读性，避免混淆。
+
+**🔴 HIGH** — DOM XSS  
+> 脚本未检测到DOM XSS风险（未将用户输入或URL参数直接插入innerHTML/outerHTML、未使用document.write插入不可信内容、未操作iframe src为javascript协议）。  
+> 位置：全局  
+> 建议：保持现有状态，避免插入不可信内容。
+
+**🟠 MEDIUM** — Permission Abuse  
+> 脚本仅申请了GM_setClipboard权限，未滥用高权限（如GM_download、GM_openInTab等），且实际代码与权限申请一致。  
+> 位置：元数据 @grant  
+> 建议：仅申请必要权限，避免权限滥用。
+
+**🟠 MEDIUM** — Sensitive API  
+> 脚本未调用敏感API（如navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API）。  
+> 位置：全局  
+> 建议：避免调用敏感API。
+
+**🟠 MEDIUM** — Supply Chain Risk  
+> @require加载的hls.js来自官方CDN（jsdelivr），且版本固定（1.5.15），供应链风险较低。  
+> 位置：元数据 @require  
+> 建议：继续使用官方CDN并固定版本。
+
+**🟡 LOW** — ClickJacking/Iframe Risk  
+> 脚本未检测到ClickJacking或iframe风险（未修改frame保护策略、未创建隐藏iframe用于数据提取）。  
+> 位置：全局  
+> 建议：避免创建隐藏iframe或修改frame保护。
 
 ---
 

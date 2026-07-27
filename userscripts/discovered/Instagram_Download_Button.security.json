@@ -14,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "Instagram Download Button",
   "security_score": 100,
-  "summary": "该脚本仅在 Instagram 页面上插入下载/打开按钮，未检测到任何数据外传、隐私采集、远程代码执行、混淆、XSS、权限滥用或供应链风险。代码结构清晰，未使用任何高危 API。",
+  "summary": "该脚本仅在 Instagram 页面上添加下载和打开按钮，允许用户下载或打开帖子、故事和高亮中的媒体。代码未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。脚本未申请任何特殊权限（@grant none），未加载第三方库，未使用危险 API，未监听敏感用户输入或访问敏感存储。整体安全性极高。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:40:21.573773+00:00",
+  "analyzed_at": "2026-07-27T05:53:01.464691+00:00",
   "slug": "Instagram_Download_Button"
 }

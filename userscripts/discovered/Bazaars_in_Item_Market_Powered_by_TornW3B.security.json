@@ -9,40 +9,48 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 GM.xmlHttpRequest 访问 weav3r.dev 以获取数据。虽然该域名为作者自有域名，但属于第三方服务器，存在数据外传风险。",
-      "location": "@connect weav3r.dev 及相关 GM.xmlHttpRequest 调用",
-      "recommendation": "建议明确说明传输内容，避免发送用户敏感信息。建议在隐私政策中披露此行为。",
+      "description": "Script uses GM.xmlHttpRequest to connect to weav3r.dev, a third-party server. Potential for user data or page context to be transmitted.",
+      "location": "GM.xmlHttpRequest calls (network requests)",
+      "recommendation": "Review transmitted data, ensure only minimal and non-sensitive information is sent. Document privacy policy.",
       "severity": "CRITICAL",
-      "type": "数据外传"
+      "type": "Data Transmission"
     },
     {
-      "description": "脚本在兼容实现中访问 localStorage 进行数据存储，未发现读取 cookie、表单、剪贴板、指纹等隐私数据。",
-      "location": "GM_getValue/GM_setValue 兼容实现",
-      "recommendation": "仅存储必要的脚本设置，避免存储敏感信息。",
+      "description": "Script reads and writes values to localStorage and GM storage for settings and cache. No evidence of sensitive data collection, but localStorage usage should be reviewed for privacy.",
+      "location": "GM_getValue, GM_setValue, localStorage",
+      "recommendation": "Ensure only non-sensitive settings are stored. Avoid storing authentication tokens or personal data.",
       "severity": "MEDIUM",
-      "type": "隐私采集"
+      "type": "Privacy Collection"
     },
     {
-      "description": "脚本申请了 GM_setValue、GM_getValue、GM_deleteValue、GM_listValues 及其 GM.* 变体，部分权限未在代码中实际使用，存在权限冗余。",
-      "location": "元数据 @grant",
-      "recommendation": "仅申请实际使用的权限，减少攻击面。",
+      "description": "Script requests multiple GM_* permissions, including GM.xmlHttpRequest, GM_setValue, GM_getValue, GM_deleteValue, GM_listValues, GM.setValue, GM.getValue, GM.deleteValue, GM.listValues. Some are redundant.",
+      "location": "UserScript metadata @grant section",
+      "recommendation": "Remove unused or redundant permissions to minimize attack surface.",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "Script uses @connect weav3r.dev, which is not a well-known CDN or official domain. Supply chain risk if the server is compromised.",
+      "location": "UserScript metadata @connect section",
+      "recommendation": "Ensure the third-party server is trustworthy and monitored for security.",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "使用 localStorage 存储脚本设置"
+      "localStorage usage for settings",
+      "GM storage for settings"
     ],
     "detected": false
   },
-  "risk_level": "MEDIUM",
+  "risk_level": "HIGH",
   "script_name": "Bazaars in Item Market Powered by TornW3B",
-  "security_score": 67,
-  "summary": "该脚本主要功能为在 Torn 游戏市场页面展示和排序集市商品信息。脚本通过 GM.xmlHttpRequest 访问 weav3r.dev 获取数据，存在数据外传风险，但未发现敏感隐私数据采集、远程代码执行、代码混淆或 DOM XSS 风险。部分权限存在冗余，建议精简。整体安全风险为中等，建议用户关注数据传输内容。",
-  "supply_chain_risk": false,
+  "security_score": 47,
+  "summary": "The script connects to a third-party server (weav3r.dev) using GM.xmlHttpRequest, which is a critical risk if user/page data is transmitted. No evidence of sensitive privacy collection or code obfuscation. Permissions are somewhat redundant, and supply chain risk exists due to reliance on a non-official domain. No DOM XSS or remote code execution detected. Overall, the script is functional but presents significant risks due to external data transmission and supply chain concerns.",
+  "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:29:23.308537+00:00",
+  "analyzed_at": "2026-07-27T05:44:27.107475+00:00",
   "slug": "Bazaars_in_Item_Market_Powered_by_TornW3B"
 }

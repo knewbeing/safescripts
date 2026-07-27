@@ -2,74 +2,125 @@
   "approved": true,
   "data_transmission": {
     "destinations": [
-      "https://gh.h233.eu.org",
-      "https://rapidgit.jjda.de5.net",
-      "https://gh.ddlc.top",
-      "https://gh-proxy.org",
-      "https://cdn.gh-proxy.org",
-      "https://edgeone.gh-proxy.org",
-      "https://cors.isteed.cc",
-      "https://ghproxy.it",
-      "https://github.boki.moe",
-      "https://gh-proxy.net",
-      "https://gh.jasonzeng.dev",
-      "https://gh.monlor.com",
-      "https://fastgit.cc",
-      "https://github.tbedu.top",
-      "https://firewall.lxstd.org",
-      "https://github.ednovas.xyz",
-      "https://ghfile.geekertao.top",
-      "https://ghp.keleyaa.com",
-      "https://gh.chjina.com",
-      "https://ghpxy.hwinzniej.top",
-      "https://cdn.crashmc.com",
-      "https://git.yylx.win",
-      "https://gitproxy.mrhjx.cn",
-      "https://ghproxy.cxkpro.top",
-      "https://gh.xxooo.cf",
-      "https://github.limoruirui.com",
-      "https://gh.idayer.com",
-      "https://gh.llkk.cc",
-      "https://down.npee.cn",
-      "https://raw.ihtw.moe",
-      "https://xget.xi-xu.me",
-      "https://gh.nxnow.top",
-      "https://gh.zwy.one",
-      "https://ghproxy.monkeyray.net",
-      "https://gh.xx9527.cn",
-      "https://ghfast.top",
-      "https://wget.la"
+      "gh.h233.eu.org",
+      "rapidgit.jjda.de5.net",
+      "gh.ddlc.top",
+      "gh-proxy.org",
+      "cdn.gh-proxy.org",
+      "edgeone.gh-proxy.org",
+      "cors.isteed.cc",
+      "ghproxy.it",
+      "github.boki.moe",
+      "gh-proxy.net",
+      "gh.jasonzeng.dev",
+      "gh.monlor.com",
+      "fastgit.cc",
+      "github.tbedu.top",
+      "firewall.lxstd.org",
+      "github.ednovas.xyz",
+      "ghfile.geekertao.top",
+      "ghp.keleyaa.com",
+      "gh.chjina.com",
+      "ghpxy.hwinzniej.top",
+      "cdn.crashmc.com",
+      "git.yylx.win",
+      "gitproxy.mrhjx.cn",
+      "ghproxy.cxkpro.top",
+      "gh.xxooo.cf",
+      "github.limoruirui.com",
+      "gh.idayer.com",
+      "gh.llkk.cc",
+      "down.npee.cn",
+      "raw.ihtw.moe",
+      "xget.xi-xu.me",
+      "gh.nxnow.top",
+      "gh.zwy.one",
+      "ghproxy.monkeyray.net",
+      "gh.xx9527.cn",
+      "ghfast.top",
+      "wget.la"
     ],
-    "detected": false
+    "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本包含大量第三方加速下载节点的 URL，但未检测到实际的数据外传代码（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket 等），仅为静态链接配置。",
-      "location": "download_url_us 数组与相关配置",
-      "recommendation": "确保后续代码实现中不将用户敏感信息或 Cookie 通过这些加速节点外传。",
-      "severity": "LOW",
-      "type": "Potential data transmission risk"
+      "description": "脚本通过构造下载链接，将用户请求重定向到第三方加速代理服务器（如 gh.h233.eu.org、gh-proxy.org 等），存在数据外传风险。虽然主要用于下载 Github 文件，但用户的请求、URL、可能的 Cookie 或 Referer 信息会被第三方服务器获取。",
+      "location": "download_url_us 数组及相关下载逻辑",
+      "recommendation": "警告用户下载时数据会被第三方服务器获取，避免下载敏感或私有仓库内容。建议仅用于公开仓库。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
     },
     {
-      "description": "脚本申请了 GM_openInTab 权限，但在当前代码片段未见实际使用。",
-      "location": "@grant 元数据",
-      "recommendation": "如无实际需求，建议移除未使用的高权限申请，减少权限滥用风险。",
+      "description": "脚本未检测到主动收集用户隐私数据（如 cookie、localStorage、表单、剪贴板等），但通过下载代理可能间接泄露用户的 Github 访问行为。",
+      "location": "下载链接重定向",
+      "recommendation": "提醒用户代理服务器可能记录访问行为。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行方式，也未动态加载外部 JS。",
+      "location": "全局代码",
+      "recommendation": "保持当前安全实践。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本未发现明显代码混淆、base64 解码、字符串映射或高度压缩代码。",
+      "location": "全局代码",
+      "recommendation": "保持代码可读性。",
+      "severity": "HIGH",
+      "type": "代码混淆"
+    },
+    {
+      "description": "脚本未检测到 DOM XSS 或注入风险，未直接将用户输入插入 innerHTML/outerHTML。",
+      "location": "全局代码",
+      "recommendation": "继续避免直接插入用户输入。",
+      "severity": "HIGH",
+      "type": "DOM XSS / 注入"
+    },
+    {
+      "description": "脚本申请了 GM_openInTab、GM_notification、GM_setClipboard 等权限，但实际用途与功能相符，未发现权限滥用。",
+      "location": "元数据 @grant",
+      "recommendation": "仅申请必要权限。",
       "severity": "MEDIUM",
-      "type": "Permission overgrant"
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API 读取、Notification API 滥用）。",
+      "location": "全局代码",
+      "recommendation": "继续避免敏感 API 滥用。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "脚本未通过 @require 加载第三方库，供应链风险较低。",
+      "location": "元数据",
+      "recommendation": "如需加载第三方库，建议固定版本哈希。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    },
+    {
+      "description": "脚本未修改 frame 保护策略，也未创建隐藏 iframe 用于数据提取。",
+      "location": "全局代码",
+      "recommendation": "继续避免 iframe 风险。",
+      "severity": "LOW",
+      "type": "ClickJacking / iframe 风险"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [],
-    "detected": false
+    "details": [
+      "通过下载代理服务器间接收集用户 Github 访问行为"
+    ],
+    "detected": true
   },
-  "risk_level": "LOW",
+  "risk_level": "CRITICAL",
   "script_name": "Github Enhancement - High Speed Download",
-  "security_score": 89,
-  "summary": "该脚本主要为 Github 提供加速下载节点的静态配置，未检测到实际的数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。存在未使用的 GM_openInTab 权限，建议根据实际需求精简权限。整体风险较低，但需关注后续代码实现中是否有数据外传行为。",
+  "security_score": 50,
+  "summary": "该脚本通过第三方加速代理服务器实现 Github 文件高速下载，存在数据外传和间接隐私泄露风险。未发现远程代码执行、代码混淆、DOM XSS、权限滥用等高风险行为。建议用户仅用于公开仓库，避免下载敏感或私有内容。整体安全评分为 50，风险等级为 CRITICAL。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:39:07.880229+00:00",
+  "analyzed_at": "2026-07-27T05:52:04.237558+00:00",
   "slug": "Github_增强_-_高速下载"
 }

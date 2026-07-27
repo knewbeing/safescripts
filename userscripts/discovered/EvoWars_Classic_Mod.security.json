@@ -7,18 +7,67 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script injects a large amount of UI via innerHTML, but all content is static and not based on user input or URL parameters. No DOM XSS found.",
-      "location": "initUI() function",
-      "recommendation": "If dynamic content is ever added, sanitize all user input before inserting into the DOM.",
-      "severity": "LOW",
-      "type": "DOM Injection"
+      "description": "未检测到任何网络请求（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource、sendBeacon），不存在数据外传行为。",
+      "location": "全局代码",
+      "recommendation": "保持无外部数据传输，确保用户隐私安全。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
     },
     {
-      "description": "The script requests no special permissions (@grant none) and does not use any network APIs (fetch, XMLHttpRequest, GM_xmlhttpRequest, WebSocket, etc.).",
-      "location": "Global",
-      "recommendation": "None needed.",
+      "description": "未检测到任何隐私采集行为（如读取 cookie、localStorage、sessionStorage、IndexedDB、监听键盘输入、读取表单字段、访问指纹 API、读取剪贴板）。",
+      "location": "全局代码",
+      "recommendation": "保持无隐私采集，确保用户数据安全。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    },
+    {
+      "description": "未检测到 eval、new Function、setTimeout(string)、setInterval(string)、innerHTML/outerHTML 插入脚本、@require 或动态 script 标签加载远程 JS、document.write 插入脚本等远程代码执行风险。",
+      "location": "全局代码",
+      "recommendation": "避免动态执行或加载外部代码，防止 RCE。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "未检测到代码混淆（如 base64 解码执行、字符串数组映射、unicode 混淆、高度压缩单行代码）。",
+      "location": "全局代码",
+      "recommendation": "保持代码可读性，便于安全审查。",
+      "severity": "HIGH",
+      "type": "代码混淆"
+    },
+    {
+      "description": "未检测到 DOM XSS 或注入风险（如用户输入或 URL 参数直接插入 innerHTML/outerHTML、document.write 插入不可信内容、操作 iframe src 为 javascript: 协议）。",
+      "location": "initUI() 函数",
+      "recommendation": "继续避免插入不可信内容到 DOM。",
+      "severity": "HIGH",
+      "type": "DOM XSS / 注入"
+    },
+    {
+      "description": "未申请任何 Tampermonkey/Greasemonkey权限（@grant none），不存在权限滥用风险。",
+      "location": "元数据",
+      "recommendation": "仅申请必要权限，避免权限滥用。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API）。",
+      "location": "全局代码",
+      "recommendation": "继续避免调用敏感 API。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "未使用 @require 加载第三方库，供应链风险为零。",
+      "location": "元数据",
+      "recommendation": "如需加载第三方库，建议使用官方 CDN 并固定版本哈希。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    },
+    {
+      "description": "未检测到修改 frame 保护策略或创建隐藏 iframe 用于数据提取。",
+      "location": "initUI() 函数",
+      "recommendation": "继续避免 iframe 风险。",
       "severity": "LOW",
-      "type": "Permissions Review"
+      "type": "ClickJacking / iframe 风险"
     }
   ],
   "obfuscation_detected": false,
@@ -28,10 +77,10 @@
   },
   "risk_level": "SAFE",
   "script_name": "EvoWars Classic Mod",
-  "security_score": 97,
-  "summary": "The script does not perform any network requests, does not collect or transmit user data, and does not use any dangerous or obfuscated code. All UI is statically defined and does not use user input, so DOM XSS risk is minimal. No supply chain or permission risks detected. Overall, the script is safe for use.",
+  "security_score": 100,
+  "summary": "该 UserScript 未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码结构清晰，权限申请为 none，未加载第三方库，未执行动态代码。整体安全性极高，适合公开使用。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:35:57.516320+00:00",
+  "analyzed_at": "2026-07-27T05:49:40.704658+00:00",
   "slug": "EvoWars_Classic_Mod"
 }

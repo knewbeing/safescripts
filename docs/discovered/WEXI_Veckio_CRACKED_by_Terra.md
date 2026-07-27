@@ -30,40 +30,45 @@ title: "WEXI Veck.io CRACKED by Terra"
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：69/100　　**分析时间**：2026-07-13
+**风险等级**：⛔ CRITICAL　　**安全评分**：35/100　　**分析时间**：2026-07-27
 
-> 该脚本未检测到数据外传、追踪或 WebSocket 行为，也未发现 DOM XSS 或代码混淆。主要安全风险为动态远程代码执行（fetch + new Function），这可能导致任意代码注入和执行。脚本会操作 localStorage 和 IndexedDB，但未发现敏感数据外传。建议移除动态代码执行逻辑，仅加载受信任的本地代码。
+> This script poses a critical security risk due to its ability to fetch and execute arbitrary remote code via new Function, which can lead to remote code execution and data exfiltration. It also collects user input and stores it in localStorage. Supply chain risks are present due to untrusted code loading. The script should not be approved for use in its current form.
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ✅ 未检测到 |
-| 隐私采集 | ❌ 检测到（写入 localStorage（wx_user_key）） |
+| 数据外传 | ❌ 检测到（目标：Arbitrary URL via loadscript(url) (potentially any remote server)） |
+| 隐私采集 | ❌ 检测到（localStorage: wx_user_key） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ✅ 可信 |
+| 供应链风险 | ⚠️ 存在风险 |
 
 ### 发现的问题
 
-**🔴 HIGH** — 远程代码执行  
-> 动态加载并执行远程 JavaScript 代码，使用 fetch + new Function 实现远程代码执行。  
-> 位置：loadscript(url) 函数  
-> 建议：禁止动态执行远程代码，或仅允许加载已知可信、带哈希校验的脚本。
+**⛔ CRITICAL** — Remote Code Execution/Data Exfiltration  
+> The function loadscript(url) fetches remote JavaScript code from an arbitrary URL and executes it via new Function(code), which is equivalent to eval. This allows remote code execution and potential data exfiltration.  
+> 位置：loadscript(url) function  
+> 建议：Remove dynamic remote code loading or restrict to trusted, versioned sources. Avoid using new Function or eval for executing fetched code.
 
-**🔴 HIGH** — 远程代码执行  
-> 使用 new Function 执行任意字符串，属于高危动态代码执行。  
-> 位置：loadscript(url) 函数  
-> 建议：避免使用 new Function，改为静态代码或受信任的模块。
+**🔴 HIGH** — Remote Code Execution  
+> The script uses new Function(code) to execute fetched code, which is a high-risk pattern for remote code execution.  
+> 位置：loadscript(url) function  
+> 建议：Replace new Function with static, locally-audited code. Never execute arbitrary code from remote sources.
 
-**🟠 MEDIUM** — 敏感 API 调用  
-> 脚本会删除 IndexedDB 的 UnityCache 数据库，可能影响用户本地缓存。  
+**🟠 MEDIUM** — Supply Chain Risk  
+> The script fetches code from arbitrary URLs, which can be abused for supply chain attacks if the URL is not trusted or versioned.  
+> 位置：loadscript(url) function  
+> 建议：Only load code from official, versioned, and hash-locked sources. Avoid arbitrary URLs.
+
+**🟠 MEDIUM** — Privacy Collection  
+> The script accesses localStorage to store and retrieve user input (key gate overlay).  
+> 位置：wxKeyGate function  
+> 建议：Ensure no sensitive information is stored in localStorage. Do not store authentication keys or secrets.
+
+**🟡 LOW** — Permission/Storage Manipulation  
+> The script deletes the IndexedDB database 'UnityCache', which may affect game functionality or user data.  
 > 位置：indexedDB.deleteDatabase("UnityCache")  
-> 建议：仅在必要时清理缓存，并告知用户。
-
-**🟠 MEDIUM** — 隐私采集  
-> 脚本会向 localStorage 写入 wx_user_key，但未发现敏感信息读取或外传。  
-> 位置：localStorage.setItem('wx_user_key', input)  
-> 建议：确保不存储敏感信息，或加密存储。
+> 建议：Warn users before deleting local databases. Ensure this action is necessary and safe.
 
 ---
 

@@ -2,31 +2,31 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
-      "fanyi.iflyrec.com"
+      "https://fanyi.iflyrec.com/TJHZTranslationService/v2/textAutoTranslation"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 GM_xmlhttpRequest 访问第三方翻译接口 https://fanyi.iflyrec.com，可能传递页面内容（如简介、描述等）进行翻译。",
-      "location": "CONFIG.TRANS_ENGINES.iflyrec.url_api 及相关翻译函数（未完整展示，但配置已明确）",
-      "recommendation": "仅允许用户主动触发翻译请求，明确告知用户数据将发送至第三方服务器。避免自动传递敏感内容。",
+      "description": "脚本通过 GM_xmlhttpRequest 向 fanyi.iflyrec.com 发送翻译请求，可能包含页面内容（如简介、菜单文本等），存在数据外传风险。",
+      "location": "翻译引擎配置 (CONFIG.TRANS_ENGINES.iflyrec) 及后续翻译功能调用",
+      "recommendation": "明确告知用户数据传输范围，避免发送敏感信息。建议仅发送必要文本，避免携带用户隐私数据。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "@require 加载的第三方库 https://raw.githubusercontent.com/maboloshi/github-chinese/gh-pages/locals.js?v1.9.4.4-2026-06-21 来源为 GitHub Pages，非官方 CDN，且未固定哈希，存在供应链污染风险。",
-      "location": "@require 元数据",
-      "recommendation": "建议使用可信 CDN 并固定版本哈希，或对加载内容进行完整性校验。",
+      "description": "@require 加载的 locals.js 文件来源于 raw.githubusercontent.com，虽然为 GitHub 官方托管，但未固定版本哈希，存在供应链风险。",
+      "location": "@require https://raw.githubusercontent.com/maboloshi/github-chinese/gh-pages/locals.js?v1.9.4.4-2026-07-26",
+      "recommendation": "建议使用固定版本哈希或官方 CDN，避免供应链污染。",
       "severity": "MEDIUM",
       "type": "供应链风险"
     },
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限，但仅用于翻译接口调用，未发现其他高权限滥用。",
-      "location": "@grant 元数据",
-      "recommendation": "定期复查权限申请，确保无冗余高权限。",
-      "severity": "LOW",
+      "description": "脚本申请了 GM_xmlhttpRequest 权限用于翻译功能，但未检测到其他高权限滥用。",
+      "location": "元数据 @grant",
+      "recommendation": "仅申请实际需要的权限，定期复查权限申请。",
+      "severity": "MEDIUM",
       "type": "权限滥用"
     }
   ],
@@ -37,10 +37,10 @@
   },
   "risk_level": "HIGH",
   "script_name": "GitHub 中文化插件",
-  "security_score": 67,
-  "summary": "该脚本主要功能为本地化 GitHub 界面，未发现隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要安全问题为：1）通过 GM_xmlhttpRequest 将页面内容发送至第三方翻译服务，存在数据外传风险；2）@require 加载的 locals.js 词库文件来源为 GitHub Pages，未固定哈希，存在一定供应链风险。建议加强用户告知、限制自动数据传输，并固定依赖库版本。",
+  "security_score": 52,
+  "summary": "该脚本主要用于 GitHub 页面汉化，核心功能涉及页面文本翻译。存在数据外传风险（页面内容通过 GM_xmlhttpRequest 发送至第三方翻译服务 fanyi.iflyrec.com），且 @require 加载的 locals.js 未固定版本哈希，存在供应链风险。未检测到隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 调用等高风险行为。建议加强数据传输透明度、供应链安全，并定期复查权限申请。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:57:31.671953+00:00",
+  "analyzed_at": "2026-07-27T06:06:29.191687+00:00",
   "slug": "main"
 }

@@ -5,21 +5,36 @@
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [],
+  "issues": [
+    {
+      "description": "脚本会将用户设置的密码（以及锁定状态）存储在 localStorage 中，未加密。虽然未外传，但本地存储明文密码存在一定隐私风险。",
+      "location": "localStorage.setItem(KEY_PWD, val1)",
+      "recommendation": "建议对密码进行哈希处理（如 SHA-256），避免明文存储。",
+      "severity": "MEDIUM",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本会读取和写入 localStorage，涉及用户输入的密码和锁定状态。",
+      "location": "localStorage.getItem(KEY_PWD), localStorage.setItem(KEY_PWD, val1)",
+      "recommendation": "如无必要，避免存储敏感信息；如需存储，建议加密或哈希。",
+      "severity": "MEDIUM",
+      "type": "隐私采集"
+    }
+  ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "Reads and writes password and lock status to localStorage (keys: privateProtect, nsfw_status, is_locked)",
-      "Reads input values from password fields for local authentication"
+      "存储用户输入的密码到 localStorage（明文）",
+      "读取用户输入的密码进行验证"
     ],
     "detected": true
   },
-  "risk_level": "LOW",
+  "risk_level": "MEDIUM",
   "script_name": "🔒 页面保护模式 (双重验证+持久锁定)",
-  "security_score": 97,
-  "summary": "该脚本实现了本地页面锁定和双重验证功能，所有敏感数据（如密码）均存储于 localStorage，未发现任何外部数据传输、远程代码执行、代码混淆或 DOM XSS 风险。仅涉及本地密码输入和状态管理，未申请任何 GM_* 权限。整体安全性高，隐私风险极低。",
+  "security_score": 84,
+  "summary": "该脚本未检测到任何数据外传、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。唯一的安全隐患是将用户输入的密码明文存储在 localStorage，存在一定隐私风险，但未外传。整体安全性较高，建议对密码进行哈希处理以提升隐私保护。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:58:10.368273+00:00",
+  "analyzed_at": "2026-07-27T06:07:06.148761+00:00",
   "slug": "pageProtect"
 }

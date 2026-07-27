@@ -33,9 +33,9 @@ title: "Sketchfab模型下载"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：84/100　　**分析时间**：2026-07-13
+**风险等级**：🟡 LOW　　**安全评分**：81/100　　**分析时间**：2026-07-27
 
-> 该脚本主要功能为在 sketchfab.com 页面添加下载按钮，导出 3D 模型数据为 zip 文件。未检测到数据外传、隐私采集、远程代码执行、混淆、DOM XSS 等高危行为。仅存在申请了 unsafeWindow 权限（实际用途有限）和加载第三方库的供应链风险，但均为可信来源并锁定版本。整体安全风险较低。
+> 该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。仅存在权限申请略高于实际需求和第三方库供应链风险，整体安全性较高。建议移除未使用的高权限申请以进一步提升安全性。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -49,39 +49,19 @@ title: "Sketchfab模型下载"
 ### 发现的问题
 
 **🟠 MEDIUM** — 权限滥用  
-> 申请了 @grant unsafeWindow 权限，但仅用于访问页面上下文对象，没有发现滥用。  
-> 位置：@grant 元数据及脚本顶部  
-> 建议：如无必要可移除 unsafeWindow 权限，降低潜在风险。
+> 申请了 unsafeWindow 权限，但实际用途仅为访问页面 window 对象，无明显滥用。  
+> 位置：元数据 @grant unsafeWindow  
+> 建议：如无必要可移除 unsafeWindow 权限，减少攻击面。
+
+**🟠 MEDIUM** — 权限滥用  
+> 申请了 GM_download 权限，但实际代码未直接调用 GM_download，仅用于文件保存（FileSaver.js）。  
+> 位置：元数据 @grant GM_download  
+> 建议：如无实际使用 GM_download，可移除该权限。
 
 **🟠 MEDIUM** — 供应链风险  
-> 脚本通过 @require 加载第三方库（jszip、jszip-utils、FileSaver.js），但均来自官方 CDNJS，且指定了具体版本。  
-> 位置：@require 元数据  
-> 建议：继续保持使用可信 CDN 并锁定版本，防止供应链污染。
-
-**🟡 LOW** — 数据外传  
-> 脚本未检测到任何外部数据传输、统计、追踪或 WebSocket 行为。  
-> 位置：全局  
-> 建议：无。
-
-**🟡 LOW** — 远程代码执行  
-> 未检测到 eval、new Function、setTimeout(string) 等远程代码执行风险。  
-> 位置：全局  
-> 建议：无。
-
-**🟡 LOW** — 代码混淆  
-> 未检测到代码混淆、base64 解码、字符串数组映射或高度压缩代码。  
-> 位置：全局  
-> 建议：无。
-
-**🟡 LOW** — DOM XSS  
-> 未检测到 DOM XSS 风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML。  
-> 位置：全局  
-> 建议：无。
-
-**🟡 LOW** — 隐私采集  
-> 未检测到隐私采集行为（如读取 cookie、localStorage、表单、剪贴板、指纹等）。  
-> 位置：全局  
-> 建议：无。
+> 通过 @require 加载第三方库（jszip、jszip-utils、FileSaver.js），均为官方 CDN 且固定版本。  
+> 位置：元数据 @require  
+> 建议：保持固定版本，避免使用未知域名或可变 URL。
 
 ---
 

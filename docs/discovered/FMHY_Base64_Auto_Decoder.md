@@ -38,9 +38,9 @@ title: "FMHY Base64自动解码器"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：97/100　　**分析时间**：2026-07-13
+**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-07-27
 
-> 该脚本仅在特定 Pastebin 类网站上自动解码 Base64 链接并将其转为可点击链接。未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、供应链风险或权限滥用。唯一的轻微风险为通过 innerHTML 插入内容，但已做基本校验，整体风险极低。
+> 该脚本仅在本地页面解析和解码 base64 字符串，并将解码后的 URL 转为可点击链接。未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码结构清晰，未申请任何高权限，未加载第三方库，未与外部服务器通信，安全性极高。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -51,12 +51,7 @@ title: "FMHY Base64自动解码器"
 | DOM XSS 风险 | ✅ 未检测到 |
 | 供应链风险 | ✅ 可信 |
 
-### 发现的问题
-
-**🟡 LOW** — Potential DOM manipulation risk  
-> The script uses innerHTML to insert decoded and linkified content into the DOM. However, the decoded content is strictly from base64-decoded strings that are validated to be URLs, minimizing XSS risk. There is no direct insertion of user-controlled input.  
-> 位置：Multiple locations (e.g., element.innerHTML assignment in Pastebin, Rentry, PrivateBin branches)  
-> 建议：Continue to ensure only trusted, validated content is inserted via innerHTML. Consider using textContent and DOM methods where possible.
+### 未发现安全问题 ✅
 
 ---
 

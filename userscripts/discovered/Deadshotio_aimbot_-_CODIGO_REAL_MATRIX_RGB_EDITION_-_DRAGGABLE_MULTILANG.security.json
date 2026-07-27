@@ -7,25 +7,67 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本申请了 @grant unsafeWindow 权限，但实际代码仅用于与页面通信和全局变量注入，没有发现明显滥用，但该权限本身风险较高。",
+      "description": "脚本申请了 unsafeWindow 权限，允许脚本与页面 JS 进行深度交互，存在被页面代码利用或注入恶意代码的风险。",
       "location": "元数据 @grant unsafeWindow",
-      "recommendation": "如非必要，建议移除 unsafeWindow 权限，或限制其使用范围。",
-      "severity": "MEDIUM",
+      "recommendation": "仅在必要时使用 unsafeWindow，避免与页面代码共享敏感数据。",
+      "severity": "HIGH",
       "type": "权限滥用"
     },
     {
-      "description": "脚本通过 WebAssembly hook、canvas、shader、骨骼数据等方式分析游戏内存和渲染数据，属于高权限操作，可能被用于作弊或绕过安全机制。",
-      "location": "核心逻辑（WebAssembly、canvas、shader hook）",
-      "recommendation": "警惕此类脚本可能违反游戏服务条款，且存在被恶意利用的风险。",
-      "severity": "HIGH",
+      "description": "脚本通过覆盖 WebAssembly.instantiate 和 WebAssembly.instantiateStreaming，捕获 WASM 内存实例。这可能用于游戏作弊，但也可能用于读取游戏进程中的敏感数据。",
+      "location": "WebAssembly.instantiate/instantiateStreaming 重写",
+      "recommendation": "确保捕获的 WASM 内存仅用于合法用途，不要读取或泄露用户敏感信息。",
+      "severity": "MEDIUM",
       "type": "敏感 API 调用"
     },
     {
-      "description": "脚本包含部分字符串异或混淆（_SIGKEY, _ENCODED_SIGS, _decodeSig），但整体未见严重混淆或压缩。",
-      "location": "_SIGKEY, _ENCODED_SIGS, _decodeSig",
-      "recommendation": "避免使用混淆技术，提升代码可审计性。",
+      "description": "脚本包含大量压缩和混淆特征，如字符串数组、位运算、变量名缩写，部分代码高度压缩，存在混淆风险。",
+      "location": "主代码块",
+      "recommendation": "避免混淆，保持代码可读性，便于安全审查。",
       "severity": "HIGH",
       "type": "代码混淆"
+    },
+    {
+      "description": "脚本未检测到任何网络请求（如 GM_xmlhttpRequest、fetch、WebSocket 等），未发现数据外传行为。",
+      "location": "全局代码",
+      "recommendation": "继续监控后续版本，防止新增数据外传。",
+      "severity": "LOW",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本未直接读取 document.cookie、localStorage、sessionStorage、IndexedDB，也未监听键盘输入或表单字段，未发现隐私采集行为。",
+      "location": "全局代码",
+      "recommendation": "继续监控后续版本，防止新增隐私采集。",
+      "severity": "LOW",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本未检测到 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险。",
+      "location": "全局代码",
+      "recommendation": "避免动态执行字符串代码。",
+      "severity": "LOW",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本未检测到 DOM XSS 或注入风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML。",
+      "location": "全局代码",
+      "recommendation": "继续监控后续版本，防止新增 DOM 注入。",
+      "severity": "LOW",
+      "type": "DOM XSS / 注入"
+    },
+    {
+      "description": "脚本未检测到 WebSocket、EventSource、navigator.sendBeacon 等实时数据传输行为。",
+      "location": "全局代码",
+      "recommendation": "继续监控后续版本，防止新增实时数据外传。",
+      "severity": "LOW",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本未检测到 @require 加载第三方库，供应链风险较低。",
+      "location": "元数据",
+      "recommendation": "如需加载第三方库，请固定版本哈希并使用官方 CDN。",
+      "severity": "LOW",
+      "type": "供应链风险"
     }
   ],
   "obfuscation_detected": true,
@@ -33,12 +75,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "MEDIUM",
+  "risk_level": "HIGH",
   "script_name": "Deadshot.io aimbot - CODIGO REAL (MATRIX RGB EDITION) - DRAGGABLE & MULTILANG",
-  "security_score": 69,
-  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行或 DOM XSS 风险。存在部分代码混淆和高权限申请（unsafeWindow），以及对 WebAssembly/canvas/shader 的敏感操作，具有一定安全和合规风险。未发现供应链风险或 WebSocket/网络请求。整体安全性中等，但不建议在敏感环境下使用。",
+  "security_score": 59,
+  "summary": "该脚本未检测到数据外传和隐私采集行为，但存在 unsafeWindow 权限滥用、代码混淆和 WASM 内存捕获等高风险项。建议仅在可信环境下使用，并持续关注后续版本的安全变化。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:32:51.090788+00:00",
+  "analyzed_at": "2026-07-27T05:46:47.488698+00:00",
   "slug": "Deadshotio_aimbot_-_CODIGO_REAL_MATRIX_RGB_EDITION_-_DRAGGABLE_MULTILANG"
 }

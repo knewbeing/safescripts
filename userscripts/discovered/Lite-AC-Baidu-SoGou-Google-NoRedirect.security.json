@@ -2,74 +2,76 @@
   "approved": true,
   "data_transmission": {
     "destinations": [
-      "www.baidu.com"
+      "www.baidu.com",
+      "baidu.com",
+      "sogou.com"
     ],
-    "detected": true
+    "detected": false
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本使用 GM_xmlhttpRequest 仅向 www.baidu.com 发起 GET 请求以解析真实目标链接，未发现向第三方服务器或作者服务器发送用户数据。",
-      "location": "resetURL > GM_xmlhttpRequest",
-      "recommendation": "确认请求内容仅为公开页面链接，避免携带敏感信息。",
+      "description": "脚本使用 GM_xmlhttpRequest 向 baidu.com 和 sogou.com 发起 GET 请求，但仅用于解析真实目标链接，无用户数据、cookie、页面内容或敏感信息外传。",
+      "location": "resetURL() -> GM_xmlhttpRequest",
+      "recommendation": "确保请求仅用于解析跳转链接，不携带用户敏感数据。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本未读取 cookie、localStorage、sessionStorage、IndexedDB、表单字段、剪贴板等隐私数据。",
+      "description": "脚本未涉及 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板、表单字段、指纹 API 等隐私采集行为。",
       "location": "全局",
-      "recommendation": "无。",
+      "recommendation": "保持现有状态，勿添加隐私采集代码。",
       "severity": "CRITICAL",
       "type": "隐私采集"
     },
     {
-      "description": "未发现 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险。",
+      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string)、innerHTML/outerHTML 执行 JS、动态 script 标签加载远程 JS、document.write 插入脚本。",
       "location": "全局",
-      "recommendation": "无。",
+      "recommendation": "保持现有状态，勿添加远程代码执行相关代码。",
       "severity": "HIGH",
       "type": "远程代码执行"
     },
     {
-      "description": "未发现代码混淆、base64 解码、字符串数组混淆、unicode 混淆或高度压缩单行代码。",
+      "description": "脚本未发现代码混淆、base64 解码执行、字符串数组映射、unicode 混淆或高度压缩单行代码。",
       "location": "全局",
-      "recommendation": "无。",
+      "recommendation": "保持代码可读性，勿混淆。",
       "severity": "HIGH",
       "type": "代码混淆"
     },
     {
-      "description": "未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未发现 document.write 或 iframe src 注入。",
+      "description": "脚本未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未使用 document.write 插入不可信内容，未操作 iframe src 为 javascript: 协议。",
       "location": "全局",
-      "recommendation": "无。",
+      "recommendation": "保持现有状态，勿添加 XSS 注入风险代码。",
       "severity": "HIGH",
-      "type": "DOM XSS/注入"
+      "type": "DOM XSS / 注入"
     },
     {
-      "description": "@grant 仅申请 GM_xmlhttpRequest，且实际使用 GM_xmlhttpRequest，无权限滥用。",
-      "location": "元数据与代码对比",
-      "recommendation": "无。",
+      "description": "脚本仅申请 GM_xmlhttpRequest 权限，未申请高权限如 GM_openInTab、GM_download，权限申请与实际使用一致。",
+      "location": "元数据 @grant",
+      "recommendation": "保持最小权限原则。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "未调用 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification 等敏感 API。",
+      "description": "脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。",
       "location": "全局",
-      "recommendation": "无。",
+      "recommendation": "勿添加敏感 API 调用。",
       "severity": "MEDIUM",
       "type": "敏感 API 调用"
     },
     {
-      "description": "未使用 @require 加载第三方库，无供应链风险。",
+      "description": "脚本未通过 @require 加载第三方库，无供应链风险。",
       "location": "元数据",
-      "recommendation": "无。",
+      "recommendation": "如需加载第三方库，建议固定版本哈希并使用官方 CDN。",
       "severity": "MEDIUM",
       "type": "供应链风险"
     },
     {
-      "description": "未发现修改 frame 保护策略或创建隐藏 iframe。",
+      "description": "脚本未修改 frame 保护策略，未创建隐藏 iframe 用于数据提取。",
       "location": "全局",
-      "recommendation": "无。",
+      "recommendation": "勿添加 iframe 风险相关代码。",
       "severity": "LOW",
-      "type": "ClickJacking/iframe 风险"
+      "type": "ClickJacking / iframe 风险"
     }
   ],
   "obfuscation_detected": false,
@@ -79,10 +81,10 @@
   },
   "risk_level": "LOW",
   "script_name": "AC-baidu： 优化百度、搜狗、谷歌搜索结果之重定向 lite",
-  "security_score": 75,
-  "summary": "该脚本主要用于去除百度、搜狗等搜索结果的重定向，提升用户体验。仅使用 GM_xmlhttpRequest 向 www.baidu.com 发起 GET 请求以解析真实链接，未发现向第三方服务器或作者服务器上报数据，也未采集用户隐私信息。无远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链或 iframe 风险。整体安全性较高，风险等级为 LOW。",
+  "security_score": 97,
+  "summary": "该脚本主要用于去除搜索结果重定向，未发现用户数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。唯一的网络请求为解析真实链接，未携带敏感信息。整体安全性高，风险极低。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:41:51.803374+00:00",
+  "analyzed_at": "2026-07-27T05:53:53.936891+00:00",
   "slug": "Lite-AC-Baidu-SoGou-Google-NoRedirect"
 }

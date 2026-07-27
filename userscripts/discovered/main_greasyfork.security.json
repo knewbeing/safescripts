@@ -7,18 +7,25 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本声明了 @grant GM_xmlhttpRequest 权限和 @connect www.iflyrec.com，但主代码未检测到任何网络请求或数据外传行为。",
-      "location": "元数据区",
-      "recommendation": "如无实际用途，建议移除未使用的 GM_xmlhttpRequest 权限和 @connect 声明，减少权限滥用风险。",
+      "description": "脚本申请了 GM_xmlhttpRequest 权限，但实际代码未使用该 API进行任何网络请求。@connect 仅允许 www.iflyrec.com，但未见实际数据外传。",
+      "location": "元数据 @grant/@connect",
+      "recommendation": "如无实际用途，建议移除 GM_xmlhttpRequest 权限和 @connect 域名。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "脚本通过 @require 加载了 GreasyFork 上的第三方中文词库规则脚本，来源可信，但未锁定具体版本哈希。",
-      "location": "元数据区",
-      "recommendation": "建议使用带有版本哈希的 @require URL，防止供应链污染。",
+      "description": "@require 加载的第三方库来自 greasyfork.org，属于可信源，但未固定版本哈希，仅通过 v1.9.2.4-2026-06-21 参数控制版本，存在一定供应链风险。",
+      "location": "元数据 @require",
+      "recommendation": "建议采用官方 CDN 或固定哈希版本，避免供应链污染。",
       "severity": "MEDIUM",
       "type": "供应链风险"
+    },
+    {
+      "description": "脚本申请了 GM_notification 权限，但实际代码未见调用 GM_notification。",
+      "location": "元数据 @grant",
+      "recommendation": "建议移除未使用的 GM_notification 权限。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
     }
   ],
   "obfuscation_detected": false,
@@ -28,10 +35,10 @@
   },
   "risk_level": "LOW",
   "script_name": "GitHub 中文化插件",
-  "security_score": 84,
-  "summary": "该脚本主要用于 GitHub 界面汉化，未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。存在未使用的高权限申请和供应链版本未锁定的中等风险，建议优化权限和依赖管理。整体风险较低，适合普通用户使用。",
+  "security_score": 81,
+  "summary": "该脚本主要用于 GitHub 页面本地化，未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。存在部分权限滥用和供应链风险，整体安全性较高。建议优化权限申请和第三方库版本管理。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:57:41.730822+00:00",
+  "analyzed_at": "2026-07-27T06:06:38.623277+00:00",
   "slug": "main_greasyfork"
 }

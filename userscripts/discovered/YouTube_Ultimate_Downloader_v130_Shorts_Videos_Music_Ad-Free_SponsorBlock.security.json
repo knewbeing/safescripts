@@ -7,52 +7,24 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本代码不完整，无法全面审查所有安全风险。",
-      "location": "main script body",
-      "recommendation": "请提供完整代码以进行全面安全分析。",
-      "severity": "HIGH",
+      "description": "脚本代码不完整，无法全面审查所有安全项。仅元数据部分可分析。",
+      "location": "N/A",
+      "recommendation": "请提供完整代码以便进行全面安全审查。",
+      "severity": "MEDIUM",
       "type": "审查范围受限"
     },
     {
-      "description": "未检测到任何网络请求（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket 等），但代码不完整，无法确认后续行为。",
-      "location": "main script body",
-      "recommendation": "补充完整代码，重点关注网络请求相关实现。",
-      "severity": "HIGH",
-      "type": "数据外传"
+      "description": "未申请任何高权限（如 GM_xmlhttpRequest、GM_download、GM_openInTab），仅申请 GM_addStyle。",
+      "location": "元数据 @grant",
+      "recommendation": "仅申请必要权限，当前无权限滥用风险。",
+      "severity": "LOW",
+      "type": "权限申请"
     },
     {
-      "description": "未检测到隐私采集行为（如读取 cookie、localStorage、监听输入等），但代码不完整，无法确认后续行为。",
-      "location": "main script body",
-      "recommendation": "补充完整代码，重点关注隐私相关 API 的使用。",
-      "severity": "HIGH",
-      "type": "隐私采集"
-    },
-    {
-      "description": "未检测到 eval、new Function、setTimeout(string) 等远程代码执行风险，但代码不完整，无法确认后续行为。",
-      "location": "main script body",
-      "recommendation": "补充完整代码，重点关注动态代码执行相关实现。",
-      "severity": "HIGH",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "未检测到代码混淆特征，但代码不完整，无法确认后续行为。",
-      "location": "main script body",
-      "recommendation": "补充完整代码，检查是否存在混淆或压缩代码。",
-      "severity": "HIGH",
-      "type": "代码混淆"
-    },
-    {
-      "description": "仅申请了 GM_addStyle 权限，未发现权限滥用，但代码不完整，无法确认后续行为。",
-      "location": "@grant 元数据",
-      "recommendation": "补充完整代码，核查实际权限使用情况。",
-      "severity": "MEDIUM",
-      "type": "权限滥用"
-    },
-    {
-      "description": "未检测到供应链风险（如 @require 加载第三方库），但代码不完整，无法确认后续行为。",
-      "location": "@require 元数据",
-      "recommendation": "补充完整代码，检查是否有外部依赖。",
-      "severity": "MEDIUM",
+      "description": "未检测到 @require 加载第三方库，供应链风险较低。",
+      "location": "元数据 @require",
+      "recommendation": "如需加载第三方库，建议固定版本哈希并使用可信 CDN。",
+      "severity": "LOW",
       "type": "供应链风险"
     }
   ],
@@ -61,12 +33,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "HIGH",
+  "risk_level": "MEDIUM",
   "script_name": "YouTube® Ultimate Downloader v13.0 👑🌍 — Shorts, Videos & Music 🔥 | Ad-Free + SponsorBlock 🚀🛡️",
-  "security_score": 25,
-  "summary": "由于脚本代码不完整，无法全面评估其安全性。当前未发现明显的数据外传、隐私采集、远程代码执行、代码混淆等高危行为，但由于缺失主要功能实现部分，存在较高的潜在风险。建议补充完整代码以进行详细安全审查。",
+  "security_score": 92,
+  "summary": "由于代码不完整，无法判断是否存在数据外传、隐私采集、远程代码执行等高危行为。元数据显示仅申请 GM_addStyle 权限，无高权限滥用和供应链风险。建议补充完整代码以进行全面安全审查。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:52:24.292153+00:00",
+  "analyzed_at": "2026-07-27T06:02:46.751092+00:00",
   "slug": "YouTube_Ultimate_Downloader_v130_Shorts_Videos_Music_Ad-Free_SponsorBlock"
 }

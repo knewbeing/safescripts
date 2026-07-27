@@ -34,9 +34,9 @@ title: "屏蔽内容农场（油猴脚本）"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：77/100　　**分析时间**：2026-07-13
+**风险等级**：🟠 MEDIUM　　**安全评分**：77/100　　**分析时间**：2026-07-27
 
-> 该脚本主要通过动态插入远程 JS 实现功能，存在远程代码执行和供应链风险。未检测到数据外传、隐私采集、代码混淆或 DOM XSS 风险。建议将远程 JS 本地化或使用受信任的 CDN 并固定版本哈希，以降低安全风险。
+> 该脚本未涉及数据外传、隐私采集、代码混淆或 DOM XSS，但存在远程代码执行和供应链风险。建议避免动态加载可变 URL 的远程脚本，提升安全性。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -50,14 +50,14 @@ title: "屏蔽内容农场（油猴脚本）"
 ### 发现的问题
 
 **🔴 HIGH** — 远程代码执行  
-> 脚本通过动态创建 <script> 标签加载远程 JavaScript 代码（https://limbopro.com/Adguard/contentFarm/contentFarm.js），存在远程代码执行风险。该远程脚本内容可被更改，可能导致任意代码执行。  
-> 位置：document.body.appendChild(javaScript);  
-> 建议：避免动态加载远程 JS，或使用 @require 并固定版本哈希，确保代码可审计和不可被篡改。
+> 脚本通过动态创建 script 标签加载远程 JavaScript 文件（https://limbopro.com/Adguard/contentFarm/contentFarm.js），存在远程代码执行风险。该文件内容可随时被更改，用户无法保证其安全性。  
+> 位置：document.body.appendChild(javaScript)  
+> 建议：建议将内容农场屏蔽逻辑直接内置于脚本，或仅加载经过哈希校验的固定版本。避免加载可变 URL 的远程脚本。
 
 **🟠 MEDIUM** — 供应链风险  
-> 未使用 @require 固定版本哈希，直接加载第三方 JS，存在供应链污染风险。  
-> 位置：javaScript.src = 'https://limbopro.com/Adguard/contentFarm/contentFarm.js';  
-> 建议：使用可信 CDN 并固定版本哈希，或将 JS 代码本地化。
+> 脚本未固定远程 JS 的版本哈希，存在供应链风险。远程文件可能被篡改或污染，导致执行恶意代码。  
+> 位置：javaScript.src = 'https://limbopro.com/Adguard/contentFarm/contentFarm.js'  
+> 建议：建议使用官方 CDN 并固定版本哈希，或将代码直接嵌入脚本。
 
 ---
 

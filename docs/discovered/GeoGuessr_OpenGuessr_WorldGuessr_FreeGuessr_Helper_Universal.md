@@ -38,14 +38,14 @@ title: "地理猜谜助手通用版"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：50/100　　**分析时间**：2026-07-13
+**风险等级**：⛔ CRITICAL　　**安全评分**：25/100　　**分析时间**：2026-07-27
 
-> This script transmits user location data to third-party servers (discord.com and nominatim.openstreetmap.org) via GM_xmlhttpRequest, which is a critical privacy and data exfiltration risk. It also requests Notification API permissions and modifies iframe protections, but does not appear to contain code obfuscation, DOM XSS, or supply chain risks. The main concern is the transmission of sensitive user data to external servers, which may be used for tracking or logging without explicit user consent.
+> 该脚本存在严重的数据外传和隐私采集风险，尤其是向 discord.com 和 nominatim.openstreetmap.org 发送地理位置数据，以及操作 localStorage 可能影响用户隐私。未检测到远程代码执行、混淆、DOM XSS、供应链风险等问题。建议严格限制数据外传行为，确保用户知情并主动操作，避免自动泄露敏感信息。
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：discord.com, nominatim.openstreetmap.org） |
-| 隐私采集 | ❌ 检测到（Reads and stores user hotkeys and feature toggles via GM_setValue/GM_getValue., Sends user-selected map coordinates to third-party APIs.） |
+| 隐私采集 | ❌ 检测到（操作 localStorage（Storage.prototype.setItem Proxy）, 可能读取或影响存储的用户数据） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -53,25 +53,60 @@ title: "地理猜谜助手通用版"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Exfiltration  
-> The script sends location data to Discord via GM_xmlhttpRequest, which may include user-coordinated map pins or game data. This is a third-party server and may be used for tracking or data collection.  
-> 位置：sendToDiscord function (implied by description and GM_xmlhttpRequest usage)  
-> 建议：Warn users and make data transmission opt-in. Allow users to review and edit data before sending. Document exactly what is sent.
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过 GM_xmlhttpRequest 向 discord.com 发送地理位置数据（send location to discord），存在用户数据外传风险。  
+> 位置：sendToDiscord 功能、GM_xmlhttpRequest 调用  
+> 建议：仅允许用户主动触发发送，明确告知用户数据外传行为，并限制发送内容为非敏感信息。
 
-**⛔ CRITICAL** — Data Exfiltration  
-> The script sends latitude and longitude to nominatim.openstreetmap.org for reverse geocoding. While this is a public geocoding API, it still transmits user location data to a third party.  
-> 位置：_getAddress function  
-> 建议：Inform users about this data transmission. Consider caching or minimizing requests.
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过 GM_xmlhttpRequest 向 nominatim.openstreetmap.org 查询地理位置，可能包含用户当前坐标。  
+> 位置：_getAddress()、getAddress()  
+> 建议：仅在用户主动操作时请求，避免自动频繁发送坐标。
 
-**🟠 MEDIUM** — Sensitive API Usage  
-> The script requests Notification API permission and can send notifications to the user.  
-> 位置：requestNotificationPermission, sendNotification  
-> 建议：Ensure notifications are not abused. Only use for legitimate user actions.
+**⛔ CRITICAL** — 数据外传  
+> 脚本申请 GM_xmlhttpRequest 权限并声明 @connect discord.com，允许向第三方服务器发送任意数据。  
+> 位置：元数据 @grant/@connect  
+> 建议：限制发送内容，避免敏感信息泄露。
 
-**🟡 LOW** — ClickJacking / iframe Risk  
-> The script modifies iframe sandbox attributes and disables anti-cheat scripts, which may weaken frame protections.  
-> 位置：Element.prototype.setAttribute proxy, script removal  
-> 建议：Avoid interfering with security features unless strictly necessary.
+**⛔ CRITICAL** — 隐私采集  
+> 脚本读取并操作 localStorage（Storage.prototype.setItem Proxy），可能影响或访问存储的用户数据。  
+> 位置：WORLDGUESSR 分支 Storage.prototype.setItem Proxy  
+> 建议：避免读取或修改与用户隐私相关的存储项，确保不泄露敏感信息。
+
+**🟠 MEDIUM** — 敏感 API 调用  
+> 脚本使用 Notification API 发送通知，可能被滥用。  
+> 位置：sendNotification()、requestNotificationPermission()  
+> 建议：仅在用户允许和主动操作时使用通知功能。
+
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请 GM_xmlhttpRequest 高权限，但实际用途仅为地理位置查询和发送到 Discord，存在权限滥用风险。  
+> 位置：元数据 @grant  
+> 建议：仅申请实际需要的权限，避免过度授权。
+
+**🟡 LOW** — 代码混淆  
+> 脚本未混淆，代码结构清晰，无明显混淆特征。  
+> 位置：全局代码  
+> 建议：无
+
+**🟡 LOW** — DOM XSS / 注入  
+> 脚本未检测到 DOM XSS 或注入风险，未直接操作 innerHTML/outerHTML 插入用户输入。  
+> 位置：全局代码  
+> 建议：无
+
+**🟡 LOW** — 远程代码执行  
+> 脚本未检测到远程代码执行（未使用 eval/new Function/setTimeout(string) 等）。  
+> 位置：全局代码  
+> 建议：无
+
+**🟡 LOW** — ClickJacking / iframe 风险  
+> 脚本未检测到 WebSocket/EventSource/iframe 隐藏数据提取等行为。  
+> 位置：全局代码  
+> 建议：无
+
+**🟡 LOW** — 供应链风险  
+> 脚本未通过 @require 加载第三方库，无供应链风险。  
+> 位置：元数据  
+> 建议：无
 
 ---
 

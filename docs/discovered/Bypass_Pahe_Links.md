@@ -75,9 +75,9 @@ title: "Pahe跳转广告自动跳过"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：85/100　　**分析时间**：2026-07-13
+**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-07-27
 
-> 脚本本体未检测到数据外传、隐私采集、代码混淆、DOM XSS 或权限滥用等高危行为。主要风险在于 @require 加载的外部脚本（https://greasyfork.org/scripts/456228/code/456228.js?version=1309113），其内容未知，存在供应链和远程代码执行风险。建议仅在信任该依赖的情况下使用，并定期复查依赖内容。
+> 该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、WebSocket 使用等高风险行为。唯一风险为 @require 加载第三方脚本，建议定期审查其内容。整体安全性较高。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -90,10 +90,10 @@ title: "Pahe跳转广告自动跳过"
 
 ### 发现的问题
 
-**🔴 HIGH** — supply_chain/remote_code  
-> @require 加载了外部脚本 https://greasyfork.org/scripts/456228/code/456228.js?version=1309113，未锁定哈希且内容未知，存在供应链风险和远程代码执行风险。  
-> 位置：元数据 @require  
-> 建议：仅使用可信来源的第三方库，并锁定具体版本或哈希，定期审查依赖内容。
+**🟠 MEDIUM** — Supply Chain Risk  
+> @require 加载了第三方脚本 https://greasyfork.org/scripts/456228/code/456228.js?version=1309113，存在供应链风险。  
+> 位置：UserScript metadata (@require)  
+> 建议：建议审查该第三方脚本内容，确保其安全且来源可信，并固定版本哈希。
 
 ---
 

@@ -9,80 +9,82 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 fetch/XHR 方式与 Discord 官方 API 进行通信以删除消息。未发现向第三方服务器发送数据。",
-      "location": "主逻辑（未展示完整代码，但根据功能和开源项目分析）",
-      "recommendation": "确保仅与 Discord 官方域名通信，不要修改为第三方域名。",
+      "description": "Script sends bulk delete requests to Discord API endpoints using fetch/XMLHttpRequest. All requests are directed to discord.com, no third-party destinations detected.",
+      "location": "Bulk deletion logic (fetch/XMLHttpRequest calls)",
+      "recommendation": "Ensure only necessary data is sent to Discord API. No user data is transmitted to third-party servers.",
       "severity": "CRITICAL",
-      "type": "数据外传"
+      "type": "Data Transmission"
     },
     {
-      "description": "脚本需要读取页面内容（如消息 ID、token）以实现批量删除功能，但未发现读取 cookie、localStorage、sessionStorage、IndexedDB 或监听键盘输入、剪贴板等隐私采集行为。",
-      "location": "主逻辑",
-      "recommendation": "仅收集执行功能所需的最小数据，不要扩展到用户隐私数据。",
+      "description": "Script reads user authentication tokens from localStorage to authenticate API requests.",
+      "location": "Token extraction logic (localStorage access)",
+      "recommendation": "Warn users about the risk of exposing authentication tokens. Do not transmit tokens to third-party servers.",
       "severity": "CRITICAL",
-      "type": "隐私采集"
+      "type": "Privacy Collection"
     },
     {
-      "description": "未发现 eval、new Function、setTimeout(string)、setInterval(string) 或动态加载远程 JS 的行为。",
-      "location": "全局",
-      "recommendation": "保持当前实现，避免远程代码执行风险。",
+      "description": "No evidence of eval, new Function, setTimeout(string), or dynamic script injection. No remote code execution risk detected.",
+      "location": "Entire script",
+      "recommendation": "Continue to avoid unsafe code execution patterns.",
       "severity": "HIGH",
-      "type": "远程代码执行"
+      "type": "Remote Code Execution"
     },
     {
-      "description": "未发现代码混淆、base64 解码、字符串数组映射或高度压缩单行代码。",
-      "location": "全局",
-      "recommendation": "保持代码可读性，便于社区审计。",
+      "description": "No code obfuscation detected. Code is readable and not minified/obfuscated.",
+      "location": "Entire script",
+      "recommendation": "Maintain code transparency for user trust.",
       "severity": "HIGH",
-      "type": "代码混淆"
+      "type": "Code Obfuscation"
     },
     {
-      "description": "未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML 的行为。",
-      "location": "界面渲染相关代码",
-      "recommendation": "如需插入用户输入，务必进行转义。",
+      "description": "No DOM XSS or injection risks detected. User input is not directly inserted into innerHTML/outerHTML.",
+      "location": "UI rendering logic",
+      "recommendation": "Continue to sanitize any user input if added in future updates.",
       "severity": "HIGH",
-      "type": "DOM XSS"
+      "type": "DOM XSS/Injection"
     },
     {
-      "description": "未申请任何 @grant 权限，实际代码也未使用 GM_* API。",
-      "location": "元数据",
-      "recommendation": "保持最小权限原则。",
+      "description": "No excessive permissions requested. @grant none is used.",
+      "location": "Metadata block",
+      "recommendation": "Only request permissions as needed.",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "Permission Abuse"
     },
     {
-      "description": "未发现敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）调用。",
-      "location": "全局",
-      "recommendation": "如需使用敏感 API，需明确告知用户。",
+      "description": "No sensitive browser APIs (geolocation, RTCPeerConnection, MediaDevices, Clipboard API, Notification API) are used.",
+      "location": "Entire script",
+      "recommendation": "Avoid using sensitive APIs unless absolutely necessary.",
       "severity": "MEDIUM",
-      "type": "敏感 API 调用"
+      "type": "Sensitive API Usage"
     },
     {
-      "description": "未通过 @require 加载第三方库，未发现供应链风险。",
-      "location": "元数据",
-      "recommendation": "如需引入第三方库，建议使用官方 CDN 并锁定版本。",
+      "description": "No @require dependencies or supply chain risks detected.",
+      "location": "Metadata block",
+      "recommendation": "If adding dependencies, use official sources and fixed versions.",
       "severity": "MEDIUM",
-      "type": "供应链风险"
+      "type": "Supply Chain Risk"
     },
     {
-      "description": "未发现修改 frame 保护策略或创建隐藏 iframe 的行为。",
-      "location": "全局",
-      "recommendation": "如需嵌入 iframe，需明确告知用户。",
+      "description": "No clickjacking or iframe manipulation detected.",
+      "location": "UI logic",
+      "recommendation": "Avoid creating hidden iframes or modifying frame protection.",
       "severity": "LOW",
-      "type": "ClickJacking / iframe 风险"
+      "type": "ClickJacking/Iframe Risk"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [],
-    "detected": false
+    "details": [
+      "Reads Discord authentication token from localStorage"
+    ],
+    "detected": true
   },
-  "risk_level": "LOW",
+  "risk_level": "MEDIUM",
   "script_name": "Undiscord",
-  "security_score": 75,
-  "summary": "该脚本主要与 Discord 官方 API 通信以实现批量删除消息功能，未发现向第三方服务器外传数据、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用、供应链风险或 iframe 风险等问题。整体安全性较高，风险等级为 LOW。",
+  "security_score": 50,
+  "summary": "Undiscord is a bulk message deletion tool for Discord. It transmits user authentication tokens and message deletion requests to Discord's own API endpoints, but does not send data to third-party servers. No code obfuscation, remote code execution, DOM XSS, or supply chain risks detected. The main privacy risk is the extraction of authentication tokens from localStorage. Users should be aware of the potential for token exposure. Overall, the script is transparent and does not abuse permissions.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:56:16.586367+00:00",
+  "analyzed_at": "2026-07-27T06:05:06.630225+00:00",
   "slug": "deleteDiscordMessages"
 }

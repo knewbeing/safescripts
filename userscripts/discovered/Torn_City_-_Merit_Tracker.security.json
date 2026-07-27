@@ -4,23 +4,72 @@
     "destinations": [
       "greasyfork.org"
     ],
-    "detected": false
+    "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "@grant 申请了 GM_xmlhttpRequest 权限，但在代码中未检测到实际使用。",
-      "location": "元数据与主代码",
-      "recommendation": "如无实际需要，建议移除 GM_xmlhttpRequest 权限以减少权限滥用风险。",
+      "description": "使用 GM_xmlhttpRequest 访问 greasyfork.org，可能获取脚本更新信息。未发现携带用户数据或敏感信息。",
+      "location": "GM_xmlhttpRequest 调用（元数据 @grant, @connect）",
+      "recommendation": "确保仅用于脚本更新检查，不携带用户数据。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "未发现隐私采集行为，如读取 cookie、localStorage、sessionStorage、IndexedDB、剪贴板或监听键盘输入。",
+      "location": "全局代码",
+      "recommendation": "保持现有状态，勿添加隐私采集。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    },
+    {
+      "description": "未发现 eval、new Function、setTimeout(string)、setInterval(string) 或动态 script 标签加载远程 JS。",
+      "location": "全局代码",
+      "recommendation": "保持现有状态，勿添加远程代码执行相关用法。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "未发现代码混淆、base64 解码、字符串数组映射或高度压缩代码。",
+      "location": "全局代码",
+      "recommendation": "保持代码可读性，勿混淆。",
+      "severity": "HIGH",
+      "type": "代码混淆"
+    },
+    {
+      "description": "未发现 DOM XSS 风险，未直接插入用户输入或 URL 参数到 innerHTML/outerHTML。",
+      "location": "全局代码",
+      "recommendation": "如需插入动态内容，务必转义。",
+      "severity": "HIGH",
+      "type": "DOM XSS"
+    },
+    {
+      "description": "申请了 GM_xmlhttpRequest 权限，实际代码中有使用，未发现权限滥用。",
+      "location": "元数据 @grant",
+      "recommendation": "仅申请实际需要的权限。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "@connect 声明了 greasyfork.org，但主代码未检测到任何网络请求。",
+      "description": "@require 未使用，未发现供应链风险。",
       "location": "元数据",
-      "recommendation": "如无实际需要，建议移除 @connect greasyfork.org。",
+      "recommendation": "如需引入第三方库，建议固定版本哈希并使用官方 CDN。",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "供应链风险"
+    },
+    {
+      "description": "未发现敏感 API 调用，如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API。",
+      "location": "全局代码",
+      "recommendation": "保持现有状态。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "未发现修改 frame 保护策略或创建隐藏 iframe。",
+      "location": "全局代码",
+      "recommendation": "如需使用 iframe，避免用于数据提取。",
+      "severity": "LOW",
+      "type": "ClickJacking / iframe 风险"
     }
   ],
   "obfuscation_detected": false,
@@ -30,10 +79,10 @@
   },
   "risk_level": "LOW",
   "script_name": "Torn City - Merit Tracker",
-  "security_score": 84,
-  "summary": "该脚本主要为 Torn City 游戏提供荣誉成就攻略，无任何数据外传、隐私采集、远程代码执行、代码混淆或 XSS 风险。仅存在未使用的 GM_xmlhttpRequest 权限和 @connect 声明，属于中等权限滥用风险。整体安全性高，建议移除未使用的权限以进一步提升安全性。",
+  "security_score": 97,
+  "summary": "脚本仅使用 GM_xmlhttpRequest 与 greasyfork.org 通信用于更新检查，无用户数据外传、隐私采集、远程代码执行、混淆、DOM XSS、敏感 API 调用或供应链风险。整体安全性高，风险极低。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:48:42.689660+00:00",
+  "analyzed_at": "2026-07-27T05:58:54.622162+00:00",
   "slug": "Torn_City_-_Merit_Tracker"
 }

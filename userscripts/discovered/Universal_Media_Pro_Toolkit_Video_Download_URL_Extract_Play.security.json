@@ -7,18 +7,67 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 @require 加载了 hls.js 第三方库，来源为 jsdelivr 官方 CDN，且指定了明确版本号。",
-      "location": "@require 元数据",
-      "recommendation": "保持使用官方 CDN 并锁定版本，避免使用未知来源或可变 URL。",
-      "severity": "MEDIUM",
-      "type": "供应链风险"
+      "description": "脚本未检测到任何网络请求（GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource等），不存在数据外传行为。",
+      "location": "全局",
+      "recommendation": "保持现有状态，避免添加任何外传代码。",
+      "severity": "CRITICAL",
+      "type": "Data Transmission"
     },
     {
-      "description": "脚本申请了 GM_setClipboard 权限，但未发现其他高权限申请。",
-      "location": "@grant 元数据",
-      "recommendation": "仅申请实际需要的权限，避免权限滥用。",
+      "description": "脚本未检测到任何隐私采集行为（未访问cookie/localStorage/sessionStorage/IndexedDB、未监听键盘输入、未读取表单字段、未访问指纹API、未读取剪贴板内容）。",
+      "location": "全局",
+      "recommendation": "保持现有状态，避免添加隐私采集代码。",
+      "severity": "CRITICAL",
+      "type": "Privacy Collection"
+    },
+    {
+      "description": "脚本未检测到远程代码执行风险（未使用eval/new Function/setTimeout(string)/setInterval(string)、未动态插入外部脚本、未通过innerHTML/outerHTML插入脚本、未使用document.write插入脚本）。",
+      "location": "全局",
+      "recommendation": "保持现有状态，避免动态执行代码。",
+      "severity": "HIGH",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "脚本未检测到代码混淆（无base64解码、无字符串数组索引映射、无unicode混淆、无高度压缩单行代码）。",
+      "location": "全局",
+      "recommendation": "保持代码可读性，避免混淆。",
+      "severity": "HIGH",
+      "type": "Code Obfuscation"
+    },
+    {
+      "description": "脚本未检测到DOM XSS风险（未将用户输入或URL参数直接插入innerHTML/outerHTML、未使用document.write插入不可信内容、未操作iframe src为javascript协议）。",
+      "location": "全局",
+      "recommendation": "保持现有状态，避免插入不可信内容。",
+      "severity": "HIGH",
+      "type": "DOM XSS"
+    },
+    {
+      "description": "脚本仅申请了GM_setClipboard权限，未滥用高权限（如GM_download、GM_openInTab等），且实际代码与权限申请一致。",
+      "location": "元数据 @grant",
+      "recommendation": "仅申请必要权限，避免权限滥用。",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "脚本未调用敏感API（如navigator.geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API）。",
+      "location": "全局",
+      "recommendation": "避免调用敏感API。",
+      "severity": "MEDIUM",
+      "type": "Sensitive API"
+    },
+    {
+      "description": "@require加载的hls.js来自官方CDN（jsdelivr），且版本固定（1.5.15），供应链风险较低。",
+      "location": "元数据 @require",
+      "recommendation": "继续使用官方CDN并固定版本。",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    },
+    {
+      "description": "脚本未检测到ClickJacking或iframe风险（未修改frame保护策略、未创建隐藏iframe用于数据提取）。",
+      "location": "全局",
+      "recommendation": "避免创建隐藏iframe或修改frame保护。",
       "severity": "LOW",
-      "type": "权限滥用"
+      "type": "ClickJacking/Iframe Risk"
     }
   ],
   "obfuscation_detected": false,
@@ -26,12 +75,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "LOW",
+  "risk_level": "SAFE",
   "script_name": "Universal Media Pro Toolkit | Video Download, URL Extract, Play",
-  "security_score": 89,
-  "summary": "该脚本主要功能为提取视频直链、下载媒体和悬浮播放。未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。唯一中等风险为第三方库依赖（hls.js），但已锁定版本且来源可信。权限申请合理，仅 GM_setClipboard。整体安全性较高，建议定期关注第三方库安全更新。",
-  "supply_chain_risk": true,
+  "security_score": 100,
+  "summary": "该脚本安全性极高，无数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感API调用、供应链风险及iframe风险。仅使用官方CDN固定版本的hls.js，申请必要的GM_setClipboard权限。建议保持现有安全实践。",
+  "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:49:54.924740+00:00",
+  "analyzed_at": "2026-07-27T06:00:03.552577+00:00",
   "slug": "Universal_Media_Pro_Toolkit_Video_Download_URL_Extract_Play"
 }

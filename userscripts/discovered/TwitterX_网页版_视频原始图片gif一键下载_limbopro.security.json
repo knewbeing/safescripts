@@ -7,65 +7,65 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本未检测到任何网络请求（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource 等），也未发现数据外传行为。",
-      "location": "全局",
-      "recommendation": "保持当前实现，避免添加任何外传逻辑。",
+      "description": "脚本未检测到任何网络请求（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource），也未向第三方服务器发送数据。",
+      "location": "全局代码",
+      "recommendation": "保持现有状态，避免添加任何数据外传逻辑。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本未访问 document.cookie、localStorage、sessionStorage、IndexedDB，也未监听键盘输入、表单字段或剪贴板内容。",
-      "location": "全局",
-      "recommendation": "保持当前实现，避免添加隐私采集逻辑。",
+      "description": "脚本未读取 cookie、localStorage、sessionStorage、IndexedDB，也未监听键盘输入、表单字段或剪贴板内容。",
+      "location": "全局代码",
+      "recommendation": "保持现有状态，避免添加任何隐私采集逻辑。",
       "severity": "CRITICAL",
       "type": "隐私采集"
     },
     {
-      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string)，也未动态插入外部脚本或通过 @require 加载远程 JS。",
-      "location": "全局",
-      "recommendation": "保持当前实现，避免远程代码执行风险。",
+      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string)，也未通过 innerHTML/outerHTML 插入外部脚本或动态加载远程 JS。",
+      "location": "全局代码",
+      "recommendation": "保持现有状态，避免添加远程代码执行相关逻辑。",
       "severity": "HIGH",
       "type": "远程代码执行"
     },
     {
-      "description": "脚本代码未混淆，无 base64 解码、字符串数组映射或高度压缩单行代码。",
-      "location": "全局",
+      "description": "脚本未检测到任何代码混淆特征，如 base64 解码、字符串数组映射、unicode 混淆或高度压缩单行代码。",
+      "location": "全局代码",
       "recommendation": "保持代码可读性，避免混淆。",
       "severity": "HIGH",
       "type": "代码混淆"
     },
     {
-      "description": "脚本未检测到将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未发现 DOM XSS 风险。",
-      "location": "全局",
-      "recommendation": "如需插入动态内容，务必进行转义。",
+      "description": "脚本未检测到任何 DOM XSS 风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，也未操作 iframe src 为 javascript: 协议。",
+      "location": "全局代码",
+      "recommendation": "保持现有状态，避免插入不可信内容。",
       "severity": "HIGH",
       "type": "DOM XSS / 注入"
     },
     {
-      "description": "脚本未申请任何 @grant 权限，实际代码也未使用 GM_* API，无权限滥用风险。",
+      "description": "脚本未申请任何 @grant 权限，实际代码也未使用高权限 API。",
       "location": "元数据",
-      "recommendation": "仅申请必要权限，避免权限滥用。",
+      "recommendation": "保持最小权限原则。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification 等）。",
-      "location": "全局",
-      "recommendation": "如需使用敏感 API，需征得用户同意。",
+      "description": "脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。",
+      "location": "全局代码",
+      "recommendation": "避免调用敏感 API，除非必要且需征得用户同意。",
       "severity": "MEDIUM",
       "type": "敏感 API 调用"
     },
     {
-      "description": "脚本未通过 @require 加载第三方库，也未动态加载外部 JS，无供应链风险。",
+      "description": "脚本未通过 @require 加载任何第三方库，未检测到供应链风险。",
       "location": "元数据",
-      "recommendation": "如需加载第三方库，建议使用可信 CDN 并固定版本。",
+      "recommendation": "如需加载第三方库，建议使用官方 CDN 并固定版本哈希。",
       "severity": "MEDIUM",
       "type": "供应链风险"
     },
     {
-      "description": "脚本未检测到修改 frame 保护策略或创建隐藏 iframe，无 ClickJacking/iframe 风险。",
-      "location": "全局",
-      "recommendation": "如需操作 iframe，需确保安全。",
+      "description": "脚本未修改 frame 保护策略，也未创建隐藏 iframe 用于数据提取。",
+      "location": "全局代码",
+      "recommendation": "保持现有状态，避免 iframe 滥用。",
       "severity": "LOW",
       "type": "ClickJacking / iframe 风险"
     }
@@ -78,9 +78,9 @@
   "risk_level": "SAFE",
   "script_name": "Twitter/X(网页版)视频/原始图片/gif一键下载.[limbopro]",
   "security_score": 100,
-  "summary": "该脚本仅在页面上插入下载按钮和样式，无任何数据外传、隐私采集、远程代码执行、混淆、DOM XSS、权限滥用、敏感 API 调用、供应链或 iframe 风险。安全性极高，适合放心使用。",
+  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码结构清晰，权限申请最小，未加载第三方库，整体安全性极高。建议持续保持代码透明与最小权限原则。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:49:38.611709+00:00",
+  "analyzed_at": "2026-07-27T05:59:38.429465+00:00",
   "slug": "TwitterX_网页版_视频原始图片gif一键下载_limbopro"
 }

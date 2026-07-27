@@ -3,77 +3,77 @@
   "data_transmission": {
     "destinations": [
       "ksw2-moomoo.glitch.me",
-      "External URLs via Utils.loadModule"
+      "external URLs via Utils.loadModule (dynamic)"
     ],
     "detected": true
   },
   "dom_xss_risk": true,
   "issues": [
     {
-      "description": "The script uses XMLHttpRequest to fetch external scripts and executes them via a[a][a](x.responseText), which is equivalent to eval(). This allows remote code execution from arbitrary URLs.",
+      "description": "The script uses XMLHttpRequest to fetch external code and executes it via a[a][a](x.responseText), which is equivalent to eval(). This allows remote code execution from arbitrary URLs.",
       "location": "Utils.loadModule function",
-      "recommendation": "Remove dynamic code execution and only use static, trusted code. Avoid eval or similar constructs.",
+      "recommendation": "Remove dynamic code loading and execution. Only load trusted, versioned libraries via @require.",
       "severity": "CRITICAL",
       "type": "Remote Code Execution"
     },
     {
-      "description": "The script executes code using a[a][a](x.responseText), which is an obfuscated way to call the Function constructor (i.e., window['constructor']['constructor'] = Function). This is a strong sign of code obfuscation.",
+      "description": "The script stores and retrieves a UUID and a counter in GM storage, which could be used for user tracking. The @antifeature explicitly mentions tracking for performance debugging.",
+      "location": "uuidv4, GM.getValue, GM.setValue usage",
+      "recommendation": "Clarify what data is tracked and ensure no sensitive information is stored or transmitted.",
+      "severity": "CRITICAL",
+      "type": "Privacy Collection"
+    },
+    {
+      "description": "The script grants unsafeWindow, which allows full access to the page context and can be abused for privilege escalation or data extraction.",
+      "location": "@grant unsafeWindow",
+      "recommendation": "Remove unsafeWindow unless strictly necessary and audit all usages.",
+      "severity": "HIGH",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "The script uses a[a][a](x.responseText), which is a highly obfuscated way to call eval(). This is a code obfuscation pattern.",
       "location": "Utils.loadModule function",
-      "recommendation": "Avoid obfuscation and use clear, readable code. Remove dynamic code execution.",
+      "recommendation": "Avoid obfuscation and use clear, readable code.",
       "severity": "HIGH",
       "type": "Code Obfuscation"
     },
     {
-      "description": "The script loads third-party libraries via @require from GreasyFork and CDN (jQuery). The GreasyFork scripts are not version-pinned with hashes, and the CDN could be updated or compromised.",
-      "location": "@require metadata",
-      "recommendation": "Pin dependencies to specific versions and use trusted, official sources. Prefer SRI hashes if possible.",
+      "description": "The script loads third-party libraries via @require from greasyfork.org and code.jquery.com, but also loads scijs from greasyfork.org (not official CDN) and msgpack.js (unknown trust level).",
+      "location": "@require statements",
+      "recommendation": "Only use official, versioned libraries from trusted CDNs. Avoid loading from user scripts unless verified.",
       "severity": "MEDIUM",
       "type": "Supply Chain Risk"
     },
     {
-      "description": "The script requests a large set of @grant permissions, including unsafeWindow and GM_getTabs/GM_saveTab, which are not all used in the visible code. This increases the attack surface.",
-      "location": "@grant metadata",
-      "recommendation": "Request only the minimum permissions required for functionality.",
+      "description": "The script grants GM_getTabs, GM_getTab, GM_saveTab, which are high privileges and may not be necessary for all features.",
+      "location": "@grant statements",
+      "recommendation": "Minimize granted permissions to only those required.",
       "severity": "MEDIUM",
       "type": "Permission Abuse"
     },
     {
-      "description": "The script manipulates innerHTML/outerHTML and document structure in various places (e.g., deleteElement, watchAndDelete), and the code is designed to run on hundreds of sites, increasing the risk of DOM-based XSS if user input is ever inserted.",
-      "location": "Utils.deleteElement, watchAndDelete, and general script structure",
-      "recommendation": "Sanitize all user input and avoid inserting untrusted data into the DOM.",
+      "description": "The script inserts code via innerHTML and document.getElementById, and may manipulate DOM based on user input or external data. There is a risk of DOM XSS if not properly sanitized.",
+      "location": "Utils.deleteElement, Utils.watchAndDelete",
+      "recommendation": "Sanitize all user input and external data before inserting into DOM.",
       "severity": "HIGH",
       "type": "DOM XSS Risk"
-    },
-    {
-      "description": "The script stores a unique user identifier (UUID) in GM storage and increments a counter. While not directly exfiltrated, this is a form of persistent user tracking.",
-      "location": "uuidv4, GM.setValue('id'), GM.setValue('count')",
-      "recommendation": "Disclose tracking clearly and avoid persistent identifiers unless necessary.",
-      "severity": "MEDIUM",
-      "type": "Privacy Collection"
-    },
-    {
-      "description": "The script's @antifeature explicitly states 'Tracking, for performance debugging', indicating intentional user tracking.",
-      "location": "@antifeature metadata",
-      "recommendation": "Make tracking opt-in and provide clear privacy disclosures.",
-      "severity": "MEDIUM",
-      "type": "Privacy Collection"
     }
   ],
   "obfuscation_detected": true,
   "privacy_collection": {
     "details": [
-      "Persistent UUID stored in GM storage",
-      "Usage counter stored in GM storage",
-      "Explicit tracking via @antifeature"
+      "UUID generation and storage",
+      "Counter tracking",
+      "@antifeature: Tracking"
     ],
     "detected": true
   },
   "risk_level": "CRITICAL",
   "script_name": "Lift Web Restrictions: .io Game Mods (MooMoo.io/Krunker.io/..), Ad Link Bypasser, Adblock, & MORE!",
   "security_score": 0,
-  "summary": "This userscript presents critical security risks, including remote code execution via dynamic script loading and eval-like constructs, code obfuscation, supply chain risks, excessive permissions, privacy tracking, and DOM XSS risk. It should NOT be considered safe for use.",
+  "summary": "This userscript poses severe security risks: it dynamically loads and executes remote code, tracks users via UUID and counters, uses obfuscated code patterns, grants excessive permissions, and exposes DOM XSS risks. It is not safe for use and should be avoided unless thoroughly audited and rewritten.",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:41:36.196186+00:00",
+  "analyzed_at": "2026-07-27T05:53:43.142369+00:00",
   "slug": "Lift_Web_Restrictions_io_Game_Mods_MooMooioKrunkerio_Ad_Link_Bypasser_Adblock_MO"
 }

@@ -33,9 +33,9 @@ title: "GitHub增强套件"
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：97/100　　**分析时间**：2026-07-13
+**风险等级**：🟢 SAFE　　**安全评分**：97/100　　**分析时间**：2026-07-27
 
-> The script does not perform any network requests, does not collect or transmit user data, and does not use any dangerous or obfuscated code. It only manipulates the DOM to add UI elements and stores a simple filter state in localStorage. No supply chain or XSS risks detected. Overall, the script is safe for use.
+> 该脚本未涉及任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 调用、供应链风险或权限滥用。仅使用 localStorage 存储简单字符串状态，未涉及敏感信息。整体安全风险极低，推荐使用。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -49,9 +49,39 @@ title: "GitHub增强套件"
 ### 发现的问题
 
 **🟡 LOW** — localStorage usage  
-> The script uses localStorage to save and retrieve the user's draft filter state. No sensitive or personal data is stored, only the filter preference.  
+> 脚本使用 localStorage 存储和读取过滤器状态，但未涉及敏感数据或隐私信息，仅存储字符串（'all', 'draft', 'non-draft'）。  
 > 位置：saveFilterState(), getSavedFilterState()  
-> 建议：No action needed, as only non-sensitive UI state is stored.
+> 建议：确认存储内容无敏感信息，当前实现安全。
+
+**🟡 LOW** — permission usage  
+> 未申请任何 Tampermonkey/Greasemonkey权限（@grant none），权限申请与实际代码一致。  
+> 位置：元数据 @grant  
+> 建议：保持最小权限原则，当前实现安全。
+
+**🟡 LOW** — network request  
+> 未使用任何网络请求、WebSocket、数据外传相关 API。  
+> 位置：全局  
+> 建议：保持无外部通信，当前实现安全。
+
+**🟡 LOW** — remote code execution  
+> 未使用 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行相关 API。  
+> 位置：全局  
+> 建议：避免动态执行字符串代码，当前实现安全。
+
+**🟡 LOW** — DOM XSS  
+> 未使用 innerHTML/outerHTML 插入用户输入或 URL 参数，未发现 DOM XSS 风险。  
+> 位置：injectDraftFilter()  
+> 建议：保持安全的 DOM 操作，当前实现安全。
+
+**🟡 LOW** — supply chain  
+> 未加载任何第三方库，无供应链风险。  
+> 位置：元数据、全局  
+> 建议：如需加载第三方库，建议固定版本哈希并使用可信 CDN。
+
+**🟡 LOW** — obfuscation  
+> 未使用代码混淆、压缩、base64/unicode编码等混淆技术。  
+> 位置：全局  
+> 建议：保持代码可读性，当前实现安全。
 
 ---
 

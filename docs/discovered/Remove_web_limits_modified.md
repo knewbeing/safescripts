@@ -30,9 +30,9 @@ title: "网页限制解除(改)"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：84/100　　**分析时间**：2026-07-13
+**风险等级**：🟡 LOW　　**安全评分**：77/100　　**分析时间**：2026-07-27
 
-> 该脚本主要用于解除网页上的复制、剪切、选择文本、右键菜单等限制。未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险或 iframe 风险。仅存在未使用的高权限申请（GM_xmlhttpRequest、GM_setClipboard、@connect），建议移除以进一步提升安全性。
+> 该脚本主要用于解除网页复制、剪切、选择文本、右键菜单等限制。代码未发现任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 调用、供应链风险或 iframe 风险。唯一风险为申请了多项未实际使用的高权限，建议精简权限配置。整体安全性较高，适合公开使用。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -46,14 +46,24 @@ title: "网页限制解除(改)"
 ### 发现的问题
 
 **🟠 MEDIUM** — 权限滥用  
-> 脚本声明了 @connect eemm.me 以及 @grant GM_xmlhttpRequest，但在实际代码中未发现任何网络请求（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource、sendBeacon 等）的调用。  
-> 位置：元数据与全局代码  
-> 建议：如无实际用途，建议移除 @connect 和 GM_xmlhttpRequest 权限，减少潜在攻击面。
+> 脚本申请了 GM_xmlhttpRequest 权限，并声明 @connect eemm.me，但实际代码未发现任何网络请求（GM_xmlhttpRequest、fetch、WebSocket等）或数据外传行为。  
+> 位置：元数据与主代码  
+> 建议：如无实际用途，建议移除 GM_xmlhttpRequest 和 @connect 权限，减少攻击面。
 
 **🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_setClipboard 权限，但在当前代码中未发现实际使用。  
-> 位置：元数据与全局代码  
+> 脚本申请了 GM_setClipboard 权限，但主代码未发现实际调用。  
+> 位置：元数据与主代码  
 > 建议：如无实际用途，建议移除 GM_setClipboard 权限。
+
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 GM_deleteValue 权限，但主代码未发现实际调用。  
+> 位置：元数据与主代码  
+> 建议：如无实际用途，建议移除 GM_deleteValue 权限。
+
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 GM_addStyle 权限，但主代码未发现实际调用。  
+> 位置：元数据与主代码  
+> 建议：如无实际用途，建议移除 GM_addStyle 权限。
 
 ---
 

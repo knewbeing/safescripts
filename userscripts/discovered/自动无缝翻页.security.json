@@ -21,23 +21,23 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 GM_xmlhttpRequest 等方式向多个第三方服务器（如 jsdmirror.com、glowp.xyz、xiu2.xyz 等）请求 rules.json 规则文件。此行为涉及数据外传，且目标为第三方服务器。",
-      "location": "urlArr, urlArr2 变量及相关 GM_xmlhttpRequest 调用",
-      "recommendation": "建议仅连接可信、官方 CDN，减少第三方依赖，并明确告知用户外联行为。",
+      "description": "脚本通过 GM_xmlhttpRequest 向多个第三方服务器（如 CDN、代理、作者自建域名等）请求外部规则文件（rules.json），存在数据外传行为。虽然请求内容为规则文件，但部分域名为非官方 CDN、代理或作者自建，存在供应链风险。",
+      "location": "urlArr, urlArr2, GM_xmlhttpRequest",
+      "recommendation": "仅使用官方可信 CDN，避免使用未知代理或自建域名；建议固定规则文件版本哈希，防止供应链污染。",
       "severity": "CRITICAL",
-      "type": "数据外传"
+      "type": "数据外传/供应链风险"
     },
     {
-      "description": "脚本申请了 GM_openInTab、unsafeWindow 等高权限，但主逻辑中未见明显使用，存在权限滥用风险。",
+      "description": "脚本申请了 GM_openInTab、unsafeWindow 等高权限，但实际代码未见明显使用，存在权限滥用风险。",
       "location": "@grant 元数据",
       "recommendation": "仅申请实际需要的权限，移除未使用的高权限。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "脚本通过多个第三方代理和镜像（如 hub.glowp.xyz、g.blfrp.cn、gh.catmak.name 等）加载规则文件，存在供应链污染和中间人攻击风险。",
-      "location": "urlArr, urlArr2 变量",
-      "recommendation": "建议仅使用官方 CDN 并固定版本或哈希，避免使用不明代理。",
+      "description": "脚本通过 GM_xmlhttpRequest 加载外部规则文件，未固定版本哈希，规则文件内容可变，存在供应链风险。",
+      "location": "urlArr, urlArr2",
+      "recommendation": "建议固定规则文件版本哈希，或采用内容校验机制。",
       "severity": "MEDIUM",
       "type": "供应链风险"
     }
@@ -47,12 +47,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "MEDIUM",
+  "risk_level": "HIGH",
   "script_name": "AutoPager",
-  "security_score": 67,
-  "summary": "AutoPager 脚本主要安全风险为：1）通过 GM_xmlhttpRequest 等方式频繁访问多个第三方服务器获取规则文件，存在数据外传和供应链风险；2）申请了部分高权限但未见实际使用，存在权限滥用嫌疑。未发现隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。建议优化外联目标、权限申请和供应链安全。",
+  "security_score": 52,
+  "summary": "AutoPager 脚本存在数据外传（向多个第三方服务器请求规则文件）和供应链风险（规则文件未固定版本哈希，部分域名为非官方/代理/自建），并申请了部分未实际使用的高权限。未发现隐私采集、远程代码执行、代码混淆、DOM XSS、WebSocket、敏感 API 调用等高危行为。建议仅使用官方可信 CDN、固定规则文件版本哈希、移除未使用高权限。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:59:47.465617+00:00",
+  "analyzed_at": "2026-07-27T06:08:50.435900+00:00",
   "slug": "自动无缝翻页"
 }

@@ -35,14 +35,14 @@ title: "多邻国 DuoHacker"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：34/100　　**分析时间**：2026-07-13
+**风险等级**：🔴 HIGH　　**安全评分**：47/100　　**分析时间**：2026-07-27
 
-> The script requests high-risk permissions (GM_xmlhttpRequest) and connects to multiple third-party domains, including non-official ones. This introduces critical risks of data exfiltration and supply chain attacks. There is no evidence of code obfuscation or DOM XSS, and privacy collection is limited to language preference. However, the broad network permissions and supply chain risks make this script unsafe for general use without further code review and restriction of external connections.
+> Duolingo DuoHacker 用户脚本存在严重的数据外传风险，连接多个第三方域名并申请高权限。虽然当前代码未见明显隐私采集和代码混淆，但供应链风险和权限滥用问题突出。建议严格限制外部连接、移除未使用权限、仅使用官方 CDN 并固定资源版本。整体安全风险较高，不建议在生产环境使用。
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：duolingo.com, stories.duolingo.com, goals-api.duolingo.com） |
-| 隐私采集 | ❌ 检测到（Reads language preference from localStorage） |
+| 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -50,30 +50,25 @@ title: "多邻国 DuoHacker"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Exfiltration / Supply Chain  
-> The script requests GM_xmlhttpRequest permission and @connect to multiple third-party domains, including raw.githubusercontent.com, greasyfork.org, and assets/font.duohacker.io.vn. These are not official Duolingo domains and may be used to fetch remote resources or code.  
-> 位置：Metadata block (@grant, @connect)  
-> 建议：Restrict @connect to only necessary and trusted domains. Avoid loading code or resources from non-official or unverifiable sources.
+**⛔ CRITICAL** — 数据外传  
+> 脚本申请 GM_xmlhttpRequest 权限，并声明 @connect 多个第三方域名，包括 duohacker.io.vn、raw.githubusercontent.com、greasyfork.org 等，存在数据外传风险。虽然部分为资源加载，但部分为自有域名，可能用于数据收集或追踪。  
+> 位置：元数据 @grant/@connect，代码 GM_xmlhttpRequest  
+> 建议：限制仅连接 Duolingo 官方域名，避免连接第三方资源服务器，明确数据传输内容。
 
-**⛔ CRITICAL** — Data Exfiltration  
-> The script requests GM_xmlhttpRequest, which allows arbitrary cross-origin requests. This can be abused for data exfiltration or remote code loading.  
-> 位置：Metadata block (@grant)  
-> 建议：Limit the use of GM_xmlhttpRequest and ensure all requests are strictly validated and only target trusted endpoints.
+**🟠 MEDIUM** — 隐私采集  
+> 脚本通过 localStorage.getItem 读取本地存储，虽然目前仅用于语言选择，但后续可能扩展为隐私数据采集。  
+> 位置：代码 var _lang = localStorage.getItem(_I18N_KEY) || 'vi';  
+> 建议：仅存储非敏感数据，避免读取/写入用户隐私信息。
 
-**🟠 MEDIUM** — Privacy Collection  
-> The script requests access to localStorage for language preference. While this is not sensitive, it is a privacy-related API.  
-> 位置：Code: var _lang = localStorage.getItem(_I18N_KEY) || 'vi';  
-> 建议：Ensure no sensitive user data is stored or read from localStorage.
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请 GM_xmlhttpRequest 高权限，但当前代码段未见实际调用，存在权限滥用风险。  
+> 位置：元数据 @grant GM_xmlhttpRequest  
+> 建议：仅申请实际需要的权限，移除未使用的高权限。
 
-**🟠 MEDIUM** — Permission Abuse  
-> The script requests GM_addStyle, which is not a high-risk permission but should be justified.  
-> 位置：Metadata block (@grant)  
-> 建议：Remove unused permissions if not required.
-
-**🟠 MEDIUM** — Supply Chain Risk  
-> The script allows @require and @connect to raw.githubusercontent.com and greasyfork.org, which can be a supply chain risk if not pinned to a specific commit or version.  
-> 位置：Metadata block (@require, @connect)  
-> 建议：Pin all external resources to a specific version or hash to prevent supply chain attacks.
+**🟠 MEDIUM** — 供应链风险  
+> 脚本声明 @connect assets.duohacker.io.vn 和 font.duohacker.io.vn 等非官方 CDN，存在供应链风险，资源可能被篡改。  
+> 位置：元数据 @connect  
+> 建议：仅使用官方可信 CDN，固定资源版本哈希。
 
 ---
 

@@ -5,18 +5,26 @@
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [],
+  "issues": [
+    {
+      "description": "脚本申请了 GM_xmlhttpRequest 权限，但实际代码未使用该 API进行任何网络请求。",
+      "location": "元数据 @grant",
+      "recommendation": "移除未使用的高权限申请，减少权限滥用风险。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    }
+  ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
     "detected": false
   },
-  "risk_level": "SAFE",
+  "risk_level": "LOW",
   "script_name": "POE2 trade 繁体",
-  "security_score": 100,
-  "summary": "该脚本仅包含大量的物品名称映射（简体转繁体），未检测到任何网络请求、隐私数据收集、远程代码执行、代码混淆、XSS 注入、权限滥用或供应链风险。所有 @grant 权限均未被滥用，未发现敏感 API 调用。整体安全性极高。",
+  "security_score": 89,
+  "summary": "该脚本主要为本地翻译映射，无任何数据外传、隐私采集、远程代码执行、混淆或 DOM XSS 风险。唯一问题是申请了未使用的 GM_xmlhttpRequest 高权限，建议移除。整体安全风险极低，适合使用。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:43:51.788650+00:00",
+  "analyzed_at": "2026-07-27T05:55:36.152026+00:00",
   "slug": "POE2_trade_繁体"
 }

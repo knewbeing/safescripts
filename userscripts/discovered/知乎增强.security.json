@@ -7,74 +7,67 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限，但在已提供代码中未见实际使用。若后续代码有外部请求需进一步审查。",
-      "location": "@grant 元数据及全局",
-      "recommendation": "仅申请实际需要的权限，避免权限滥用。",
+      "description": "脚本申请了 GM_xmlhttpRequest 权限，但在已提供代码中未发现任何网络请求（GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource、sendBeacon）用于数据外传或第三方通信。",
+      "location": "元数据与主代码",
+      "recommendation": "后续代码如有网络请求，需确保目标为可信域名且不携带用户敏感数据。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "脚本申请了 GM_openInTab 权限，并用于打开反馈页面（github/greasyfork），无恶意外链。",
-      "location": "registerMenuCommand 函数",
-      "recommendation": "确保 GM_openInTab 仅用于可信站点。",
-      "severity": "LOW",
+      "description": "脚本申请了 GM_openInTab 权限，仅用于打开反馈页面，无滥用迹象。",
+      "location": "registerMenuCommand()",
+      "recommendation": "如无其他用途，可考虑移除 GM_openInTab 权限。",
+      "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "脚本未见任何网络请求、WebSocket、数据外传相关代码。",
-      "location": "全局",
-      "recommendation": "保持此状态，勿添加外传逻辑。",
+      "description": "脚本申请了 GM_notification 权限，仅用于本地通知提示，无滥用迹象。",
+      "location": "menu_switch()",
+      "recommendation": "用途合理，无需调整。",
       "severity": "LOW",
-      "type": "数据外传"
+      "type": "敏感 API 调用"
     },
     {
-      "description": "脚本未见任何 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板、键盘监听、表单读取等隐私采集行为。",
-      "location": "全局",
-      "recommendation": "保持此状态，勿添加隐私采集逻辑。",
-      "severity": "LOW",
-      "type": "隐私采集"
-    },
-    {
-      "description": "脚本未见 eval、new Function、setTimeout(string)、setInterval(string)、动态 script 标签、document.write、@require 等远程代码执行风险。",
-      "location": "全局",
-      "recommendation": "保持此状态，勿添加动态代码执行逻辑。",
-      "severity": "LOW",
+      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string)、innerHTML/outerHTML 插入脚本、document.write、动态加载远程 JS，无远程代码执行风险。",
+      "location": "完整代码",
+      "recommendation": "保持当前安全实践。",
+      "severity": "HIGH",
       "type": "远程代码执行"
     },
     {
-      "description": "脚本无混淆、无 base64 编码、无字符串数组映射、无高度压缩单行代码。",
-      "location": "全局",
-      "recommendation": "保持代码可读性，便于社区审计。",
-      "severity": "LOW",
+      "description": "脚本未监听键盘输入、未读取表单字段、未访问剪贴板、未读取 cookie/localStorage/sessionStorage/IndexedDB，无隐私采集行为。",
+      "location": "完整代码",
+      "recommendation": "保持当前安全实践。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本未使用 WebSocket、EventSource、sendBeacon，无实时数据外传行为。",
+      "location": "完整代码",
+      "recommendation": "保持当前安全实践。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本未发现代码混淆、base64 解码、字符串映射、unicode 混淆或高度压缩代码。",
+      "location": "完整代码",
+      "recommendation": "保持代码可读性。",
+      "severity": "HIGH",
       "type": "代码混淆"
     },
     {
-      "description": "脚本未见任何 DOM XSS 风险（未将用户输入/URL参数插入 innerHTML/outerHTML）。",
-      "location": "全局",
-      "recommendation": "插入 HTML 时始终进行转义。",
+      "description": "脚本未操作 iframe、未修改 frame 保护策略，无 ClickJacking/iframe 风险。",
+      "location": "完整代码",
+      "recommendation": "保持当前安全实践。",
       "severity": "LOW",
-      "type": "DOM XSS"
+      "type": "ClickJacking / iframe 风险"
     },
     {
-      "description": "脚本未见敏感 API 调用（地理位置、摄像头、麦克风、剪贴板读取、通知等）。",
-      "location": "全局",
-      "recommendation": "如需使用敏感 API，需征得用户同意。",
-      "severity": "LOW",
-      "type": "敏感 API"
-    },
-    {
-      "description": "脚本未见 @require 加载第三方库，无供应链风险。",
+      "description": "脚本未通过 @require 加载第三方库，无供应链风险。",
       "location": "元数据",
-      "recommendation": "如需加载第三方库，建议使用官方 CDN 并锁定版本。",
-      "severity": "LOW",
+      "recommendation": "如需引入第三方库，建议使用官方 CDN 并固定版本哈希。",
+      "severity": "MEDIUM",
       "type": "供应链风险"
-    },
-    {
-      "description": "脚本未见 iframe 操作、frame 保护策略修改、隐藏 iframe。",
-      "location": "全局",
-      "recommendation": "如需操作 iframe，需确保安全。",
-      "severity": "LOW",
-      "type": "iframe 风险"
     }
   ],
   "obfuscation_detected": false,
@@ -82,12 +75,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "LOW",
+  "risk_level": "SAFE",
   "script_name": "Zhihu enhancement",
-  "security_score": 92,
-  "summary": "该脚本主要用于增强知乎网页体验，未检测到数据外传、隐私采集、远程代码执行、混淆、XSS、供应链等高危风险。仅存在部分未使用的高权限申请（如 GM_xmlhttpRequest），建议精简权限。整体安全性高，适合大众用户使用。",
+  "security_score": 100,
+  "summary": "该脚本未发现任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险、敏感 API 滥用或 iframe 风险。权限申请合理，未被滥用。整体安全性极高，适合公开使用。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:59:28.179299+00:00",
+  "analyzed_at": "2026-07-27T06:08:37.916597+00:00",
   "slug": "知乎增强"
 }

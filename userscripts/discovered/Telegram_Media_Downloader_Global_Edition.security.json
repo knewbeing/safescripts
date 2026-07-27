@@ -5,18 +5,40 @@
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [],
+  "issues": [
+    {
+      "description": "脚本申请了 unsafeWindow 权限，但实际代码未使用该权限。",
+      "location": "元数据 @grant unsafeWindow",
+      "recommendation": "移除未使用的高权限申请，减少潜在攻击面。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本未包含任何网络请求代码（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource），不存在数据外传行为。",
+      "location": "完整代码",
+      "recommendation": "保持现有状态，勿添加外部数据传输逻辑。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本未包含任何隐私采集代码（如 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板读取、键盘监听等）。",
+      "location": "完整代码",
+      "recommendation": "保持现有状态，勿添加隐私采集逻辑。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    }
+  ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
     "detected": false
   },
-  "risk_level": "SAFE",
+  "risk_level": "LOW",
   "script_name": "Telegram Media Downloader (Global Edition)",
-  "security_score": 100,
-  "summary": "该脚本未检测到任何网络数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。代码结构清晰，无危险行为，安全性高。",
+  "security_score": 64,
+  "summary": "该脚本仅包含元数据，无实际功能代码，不存在数据外传、隐私采集、远程代码执行、混淆、DOM XSS、供应链风险等高危行为。唯一风险为申请了未使用的 unsafeWindow 权限，建议移除。整体安全风险极低。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:48:05.018865+00:00",
+  "analyzed_at": "2026-07-27T05:58:14.739045+00:00",
   "slug": "Telegram_Media_Downloader_Global_Edition"
 }

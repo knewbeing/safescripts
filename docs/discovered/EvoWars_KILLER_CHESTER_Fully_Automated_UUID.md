@@ -33,14 +33,14 @@ title: "EvoWars全自动助手"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：50/100　　**分析时间**：2026-07-13
+**风险等级**：⛔ CRITICAL　　**安全评分**：50/100　　**分析时间**：2026-07-27
 
-> This UserScript does not transmit data to third-party servers and does not perform network exfiltration. However, it actively intercepts the user's UUID from in-game network traffic and stores it in localStorage, which is a critical privacy concern. No code obfuscation, remote code execution, DOM XSS, or supply chain risks were detected. The script does not request elevated permissions and does not use sensitive browser APIs beyond localStorage. The main risk is the interception and storage of a unique user identifier without explicit user consent.
+> 该脚本自动拦截游戏网络请求并提取用户 UUID，属于敏感隐私采集行为。虽然未检测到数据外传、远程代码执行、代码混淆或 DOM XSS，但自动化采集用户标识符存在严重隐私风险。建议仅在用户明确授权后采集敏感信息，并告知用途。未发现供应链风险、WebSocket 使用或敏感 API 调用。
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ✅ 未检测到 |
-| 隐私采集 | ❌ 检测到（Intercepts and stores user UUID from network traffic, Reads and writes to localStorage for UUID persistence） |
+| 隐私采集 | ❌ 检测到（自动拦截并存储用户 UUID, 读取并写入 localStorage） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -48,15 +48,20 @@ title: "EvoWars全自动助手"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Privacy Collection  
-> The script intercepts and stores the user's UUID from network requests by hooking into the game's network engine and saving the UUID to localStorage. This is a form of privacy-sensitive data interception.  
-> 位置：hookNetworkEngine() and localStorage.setItem('evowars_auto_uuid', userUUID)  
-> 建议：Clearly inform users about UUID interception and storage. Avoid storing sensitive identifiers unless necessary and with user consent.
+**⛔ CRITICAL** — 隐私采集  
+> 脚本自动拦截并读取游戏网络请求中的 UUID，将其存储到 localStorage。此行为属于自动化隐私采集，且未告知用户详细用途。  
+> 位置：hookNetworkEngine() 函数，localStorage.setItem('evowars_auto_uuid', userUUID)  
+> 建议：应明确告知用户 UUID 的用途，并避免自动采集敏感标识符。建议仅在用户授权后采集。
 
-**⛔ CRITICAL** — Privacy Collection  
-> The script reads from localStorage to retrieve the previously captured UUID.  
-> 位置：let userUUID = localStorage.getItem('evowars_auto_uuid')  
-> 建议：Limit access to localStorage to only what is necessary. Ensure no sensitive data is stored or exposed.
+**⛔ CRITICAL** — 隐私采集  
+> 脚本通过 hookNetworkEngine() 拦截游戏网络请求，分析请求内容以提取 UUID。虽然未向外部发送数据，但此行为属于敏感信息自动化拦截。  
+> 位置：hookNetworkEngine() 函数，instance.doRequest 重写  
+> 建议：应限制对敏感网络请求的拦截，避免自动化采集用户标识符。
+
+**🟡 LOW** — 权限申请  
+> 脚本未申请任何 @grant 权限，实际代码也未使用 GM_* API，权限申请合理。  
+> 位置：@grant none  
+> 建议：无需调整。
 
 ---
 

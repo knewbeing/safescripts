@@ -4,52 +4,66 @@
     "destinations": [
       "https://wexi.qzz.io/key"
     ],
-    "detected": false
+    "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script dynamically loads and executes remote JavaScript code using fetch() and new Function(). The URL is not hardcoded in the provided code, but the loadscript function can be called with arbitrary URLs, which is a remote code execution risk.",
-      "location": "loadscript(url) function",
-      "recommendation": "Avoid dynamic code execution via new Function() and only use trusted, version-pinned @require resources.",
+      "description": "脚本通过 fetch 动态加载并执行远程 JavaScript 代码（loadscript 函数），存在远程代码执行风险。",
+      "location": "loadscript(url) 函数",
+      "recommendation": "禁止动态加载和执行未固定哈希的远程代码，改为本地静态代码或固定版本 CDN。",
       "severity": "HIGH",
       "type": "Remote Code Execution"
     },
     {
-      "description": "The script stores and reads a user key in localStorage for authentication. While not directly exfiltrating data, this is a form of local privacy-sensitive data storage.",
-      "location": "localStorage.getItem('wx_user_key') and localStorage.setItem('wx_user_key', input)",
-      "recommendation": "Minimize storage of sensitive data in localStorage; consider session-based memory storage if possible.",
-      "severity": "MEDIUM",
+      "description": "脚本使用 new Function() 执行远程代码，属于高危远程代码执行方式。",
+      "location": "loadscript(url) 函数",
+      "recommendation": "避免使用 new Function()，改为安全的模块化加载方式。",
+      "severity": "HIGH",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "脚本通过 localStorage 存储和读取用户输入的密钥，涉及隐私采集。",
+      "location": "localStorage.getItem('wx_user_key'), localStorage.setItem('wx_user_key', input)",
+      "recommendation": "如需存储敏感信息，建议加密处理并明确告知用户用途。",
+      "severity": "CRITICAL",
       "type": "Privacy Collection"
     },
     {
-      "description": "The script deletes the IndexedDB database 'UnityCache', which may impact user data persistence for the site.",
-      "location": "indexedDB.deleteDatabase(\"UnityCache\")",
-      "recommendation": "Warn users before deleting site data; only clear caches if necessary.",
-      "severity": "MEDIUM",
-      "type": "Sensitive API Usage"
+      "description": "脚本引导用户访问第三方站点（https://wexi.qzz.io/key）获取密钥，存在数据外传和追踪风险。",
+      "location": "HTML overlay <a href=\"https://wexi.qzz.io/key\">",
+      "recommendation": "避免引导用户访问非官方、未知第三方站点，或明确告知风险。",
+      "severity": "CRITICAL",
+      "type": "Data Transmission"
     },
     {
-      "description": "The script creates an overlay that prompts the user to visit an external site (https://wexi.qzz.io/key) to obtain a daily key. This is a potential supply chain risk if the external site is compromised.",
-      "location": "Overlay HTML and link to https://wexi.qzz.io/key",
-      "recommendation": "Ensure the external key provider is trustworthy and uses HTTPS. Consider providing keys in a more secure, verifiable manner.",
+      "description": "脚本未申请任何 @grant 权限，但实际使用 localStorage、indexedDB，权限申请与实际使用不符。",
+      "location": "@grant none 与 localStorage/indexedDB",
+      "recommendation": "建议根据实际使用申请最小权限，避免权限滥用。",
       "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "脚本删除 UnityCache 数据库，可能影响用户游戏体验或数据完整性。",
+      "location": "indexedDB.deleteDatabase(\"UnityCache\")",
+      "recommendation": "删除数据库前应征得用户同意，并说明影响。",
+      "severity": "MEDIUM",
+      "type": "Sensitive API Usage"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "localStorage used to store user key"
+      "localStorage 存储用户密钥"
     ],
     "detected": true
   },
-  "risk_level": "HIGH",
+  "risk_level": "CRITICAL",
   "script_name": "WEXI veck.io hack aimbot, ESP and Speed",
-  "security_score": 62,
-  "summary": "This UserScript introduces significant security risks, primarily due to its ability to dynamically load and execute remote code, which could be exploited for remote code execution. It also stores sensitive user keys in localStorage and deletes IndexedDB data, which may impact user privacy and data persistence. The script prompts users to visit an external site for key retrieval, introducing supply chain risk. No direct data exfiltration or obfuscation was detected, and there is no evidence of DOM XSS. The script should not be considered safe for general use.",
+  "security_score": 27,
+  "summary": "该脚本存在严重安全风险，包括远程代码执行、隐私采集、数据外传（引导用户访问第三方站点获取密钥），以及敏感 API 调用。建议禁止使用或仅在充分了解风险的情况下使用。未发现代码混淆和 DOM XSS 注入，但远程代码执行和隐私采集风险极高。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:50:27.939690+00:00",
+  "analyzed_at": "2026-07-27T06:00:27.759436+00:00",
   "slug": "WEXI_veckio_hack_aimbot_ESP_and_Speed"
 }

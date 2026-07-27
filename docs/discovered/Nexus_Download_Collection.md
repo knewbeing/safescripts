@@ -34,13 +34,13 @@ title: "Nexus模组集合批量下载"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：75/100　　**分析时间**：2026-07-13
+**风险等级**：🟡 LOW　　**安全评分**：92/100　　**分析时间**：2026-07-27
 
-> 该脚本主要与 nexusmods 官方 API 通信以获取集合 mod 列表，未检测到隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链或 iframe 风险。数据传输仅限官方域名，未发现敏感用户数据外传。整体安全风险较低，建议保持当前实现并持续关注后续更新。
+> 该脚本主要用于批量下载 Nexus Mods 集合中的 mod，所有网络请求均指向官方域名且未携带敏感用户数据，未发现隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。整体安全性较高，建议持续关注后续更新。评分 92/100。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：https://api-router.nexusmods.com/graphql） |
+| 数据外传 | ❌ 检测到（目标：https://api-router.nexusmods.com/graphql, https://www.nexusmods.com/Core/Libs/Common/Managers/Downloads?GenerateDownloadUrl） |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
@@ -50,44 +50,49 @@ title: "Nexus模组集合批量下载"
 ### 发现的问题
 
 **⛔ CRITICAL** — 数据外传  
-> 脚本通过 fetch 向 https://api-router.nexusmods.com/graphql 发送请求以获取集合 mod 列表。该请求为官方 API，未发现敏感用户数据外传。  
-> 位置：NDC.fetchMods()  
-> 建议：仅与官方域名通信，风险可接受。
+> 脚本通过 fetch 向 https://api-router.nexusmods.com/graphql 和 https://www.nexusmods.com/Core/Libs/Common/Managers/Downloads?GenerateDownloadUrl 发起网络请求，目标均为官方域名，未发现携带敏感用户数据或页面内容，仅用于获取 mod 列表和下载链接。  
+> 位置：NDC.fetchMods() 方法及常量 API_URL_GRAPHQL、API_URL_DOWNLOAD_GEN  
+> 建议：确保请求内容仅包含必要参数，避免携带敏感信息。目标为官方域名，风险较低。
+
+**⛔ CRITICAL** — 隐私采集  
+> 脚本未监听键盘输入、未读取表单字段、未访问剪贴板、未读取 cookie/localStorage/sessionStorage/IndexedDB，未发现隐私采集行为。  
+> 位置：全局代码审查  
+> 建议：保持现有设计，避免后续添加隐私采集代码。
 
 **🔴 HIGH** — 远程代码执行  
-> 脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等动态代码执行方式。  
-> 位置：全局  
-> 建议：保持当前实现，避免远程代码执行风险。
+> 脚本未使用 eval、new Function、setTimeout(string)、setInterval(string)、innerHTML/outerHTML 插入脚本、@require 或动态 script 标签加载远程 JS，未发现远程代码执行风险。  
+> 位置：全局代码审查  
+> 建议：保持现有设计，避免后续添加动态代码执行相关函数。
 
 **🔴 HIGH** — 代码混淆  
-> 未检测到代码混淆、base64 解码、字符串数组映射或高度压缩代码。  
-> 位置：全局  
-> 建议：保持代码可读性，便于安全审查。
+> 脚本未发现代码混淆、base64 解码、字符串数组映射、unicode 混淆或高度压缩单行代码。  
+> 位置：全局代码审查  
+> 建议：保持代码可读性，避免混淆。
 
-**🔴 HIGH** — DOM XSS  
-> 未检测到 DOM XSS 风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML。  
-> 位置：全局  
-> 建议：如后续涉及用户输入，需严格转义。
+**🔴 HIGH** — DOM XSS / 注入  
+> 脚本未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未使用 document.write()，未操作 iframe src 为 javascript: 协议，未发现 DOM XSS 风险。  
+> 位置：NDC.init()、element.innerHTML 用于静态字符串  
+> 建议：如需插入用户输入，务必进行转义。
 
 **🟠 MEDIUM** — 权限滥用  
-> 仅申请了 GM.setValue、GM.getValue、GM_addStyle 权限，未发现权限滥用。  
-> 位置：元数据 @grant  
-> 建议：仅申请实际需要的权限。
+> 脚本仅申请 GM.setValue、GM.getValue、GM_addStyle 权限，均被实际使用，未发现权限滥用。  
+> 位置：元数据 @grant 与实际代码  
+> 建议：仅申请必要权限，避免高权限滥用。
 
 **🟠 MEDIUM** — 敏感 API 调用  
-> 未检测到敏感 API（如 geolocation、WebRTC、剪贴板读取、通知等）调用。  
-> 位置：全局  
-> 建议：如需使用敏感 API，需明确告知用户。
+> 脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification），未发现敏感 API 调用风险。  
+> 位置：全局代码审查  
+> 建议：避免后续添加敏感 API 调用。
 
 **🟠 MEDIUM** — 供应链风险  
-> 未检测到 @require 加载第三方库，无供应链风险。  
-> 位置：元数据  
-> 建议：如需引入第三方库，建议使用官方 CDN 并锁定版本。
+> 脚本未通过 @require 加载第三方库，无供应链风险。  
+> 位置：元数据 @require  
+> 建议：如需加载第三方库，建议固定版本哈希并使用官方 CDN。
 
-**🟡 LOW** — ClickJacking/iframe 风险  
-> 未检测到脚本修改 frame 保护策略或创建隐藏 iframe。  
-> 位置：全局  
-> 建议：如需操作 iframe，需评估 ClickJacking 风险。
+**🟡 LOW** — ClickJacking / iframe 风险  
+> 脚本未修改 frame 保护策略，未创建隐藏 iframe 用于数据提取，未发现 ClickJacking/iframe 风险。  
+> 位置：全局代码审查  
+> 建议：避免后续添加 iframe 操作。
 
 ---
 

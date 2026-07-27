@@ -14,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "EvoKID",
   "security_score": 100,
-  "summary": "该脚本未检测到任何安全或隐私风险。代码未包含任何网络请求、隐私数据收集、远程代码执行、混淆、DOM XSS、权限滥用或供应链风险。仅对页面样式和部分全局变量进行了操作，属于安全脚本。",
+  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码结构清晰，未使用任何危险 API，未申请高权限，未加载远程脚本，仅包含页面样式和游戏参数配置。安全性高。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:35:51.607294+00:00",
+  "analyzed_at": "2026-07-27T05:49:30.617462+00:00",
   "slug": "EvoKID"
 }

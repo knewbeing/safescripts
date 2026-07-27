@@ -32,20 +32,30 @@ title: "页面保护模式（双重验证+持久锁定）"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：97/100　　**分析时间**：2026-07-13
+**风险等级**：🟠 MEDIUM　　**安全评分**：84/100　　**分析时间**：2026-07-27
 
-> 该脚本实现了本地页面锁定和双重验证功能，所有敏感数据（如密码）均存储于 localStorage，未发现任何外部数据传输、远程代码执行、代码混淆或 DOM XSS 风险。仅涉及本地密码输入和状态管理，未申请任何 GM_* 权限。整体安全性高，隐私风险极低。
+> 该脚本未检测到任何数据外传、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。唯一的安全隐患是将用户输入的密码明文存储在 localStorage，存在一定隐私风险，但未外传。整体安全性较高，建议对密码进行哈希处理以提升隐私保护。
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ✅ 未检测到 |
-| 隐私采集 | ❌ 检测到（Reads and writes password and lock status to localStorage (keys: privateProtect, nsfw_status, is_locked), Reads input values from password fields for local authentication） |
+| 隐私采集 | ❌ 检测到（存储用户输入的密码到 localStorage（明文）, 读取用户输入的密码进行验证） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
 | 供应链风险 | ✅ 可信 |
 
-### 未发现安全问题 ✅
+### 发现的问题
+
+**🟠 MEDIUM** — 隐私采集  
+> 脚本会将用户设置的密码（以及锁定状态）存储在 localStorage 中，未加密。虽然未外传，但本地存储明文密码存在一定隐私风险。  
+> 位置：localStorage.setItem(KEY_PWD, val1)  
+> 建议：建议对密码进行哈希处理（如 SHA-256），避免明文存储。
+
+**🟠 MEDIUM** — 隐私采集  
+> 脚本会读取和写入 localStorage，涉及用户输入的密码和锁定状态。  
+> 位置：localStorage.getItem(KEY_PWD), localStorage.setItem(KEY_PWD, val1)  
+> 建议：如无必要，避免存储敏感信息；如需存储，建议加密或哈希。
 
 ---
 

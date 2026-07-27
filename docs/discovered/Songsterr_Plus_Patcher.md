@@ -32,9 +32,9 @@ title: "Songsterr Plus 解锁补丁"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：92/100　　**分析时间**：2026-07-13
+**风险等级**：🟡 LOW　　**安全评分**：77/100　　**分析时间**：2026-07-27
 
-> The script does not transmit data to third-party servers, does not collect sensitive user data, and does not execute remote or obfuscated code. It only intercepts fetch requests to the site's own /auth/profile endpoint to modify the user's plan status locally and manipulates the DOM to unlock features. The only notable risk is the use of @grant unsafeWindow, which is necessary for its function but should be monitored. No critical or high-severity issues were found.
+> The script does not transmit data externally, nor does it collect privacy-sensitive information. It does not load remote code or use obfuscation. The main risk is the use of @grant unsafeWindow, which exposes privileged context and could be abused if the page is compromised. There is minor risk from innerHTML manipulation, but the data is controlled. No supply chain or clickjacking risks detected.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -47,10 +47,15 @@ title: "Songsterr Plus 解锁补丁"
 
 ### 发现的问题
 
-**🟠 MEDIUM** — Permission Usage  
-> The script uses the @grant unsafeWindow permission, which exposes the script to the page context and can increase the risk of privilege escalation or interference between page and script.  
-> 位置：Metadata block (@grant unsafeWindow)  
-> 建议：Only use unsafeWindow if strictly necessary. Monitor for any future code that may leverage this for malicious purposes.
+**🔴 HIGH** — Permission Abuse  
+> Uses @grant unsafeWindow, which exposes privileged script context to the page and may be abused if the page is compromised.  
+> 位置：UserScript metadata (@grant unsafeWindow)  
+> 建议：Avoid using unsafeWindow unless strictly necessary. Consider alternatives such as GM_* APIs or direct window access if possible.
+
+**🟠 MEDIUM** — DOM Manipulation  
+> Modifies innerHTML of the #state element with JSON data. If the JSON is not properly sanitized or if user input is injected, this could lead to DOM-based XSS. However, in this script, the data is controlled and not user-supplied.  
+> 位置：window.addEventListener('DOMContentLoaded')  
+> 建议：Ensure that only trusted data is written to innerHTML. Consider using textContent or DOM manipulation instead of innerHTML where possible.
 
 ---
 

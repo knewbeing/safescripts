@@ -13,44 +13,30 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 fetch/GM_xmlhttpRequest 等方式与多个第三方 API 通信，包括 returnyoutubedislikeapi.com、translate.googleapis.com、p.savenow.to、p.lbserver.xyz、dubs.io，可能传递视频 ID、页面信息等数据。",
-      "location": "全局常量定义及后续 API 调用",
-      "recommendation": "仅允许必要的 API 通信，明确告知用户数据用途，避免传递敏感信息。",
+      "description": "脚本通过 fetch/GM_xmlhttpRequest 等方式与多个第三方 API 通信，包括 returnyoutubedislikeapi.com、translate.googleapis.com、savenow.to、lbserver.xyz、dubs.io，可能会传递用户数据（如视频ID、页面内容等）。",
+      "location": "apiDislikes, apiGoogleTranslate, API_URL_AUDIO_VIDEO, DUBS_START_ENDPOINT, DUBS_STATUS_ENDPOINT",
+      "recommendation": "仅在必要时调用第三方 API，避免传递敏感用户数据，明确告知用户数据用途。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本未发现明显的隐私采集（如读取 cookie、localStorage、监听键盘输入等），但部分 API 请求可能间接传递用户行为数据（如视频 ID、页面 URL）。",
-      "location": "API 调用参数构造处",
-      "recommendation": "确保不上传用户敏感信息，API 请求参数应最小化。",
-      "severity": "CRITICAL",
-      "type": "数据外传"
+      "description": "脚本访问和操作 localStorage、sessionStorage、GM_setValue、GM_getValue，可能涉及用户偏好或数据存储，但未发现直接采集敏感隐私数据。",
+      "location": "GM_setValue, GM_getValue",
+      "recommendation": "确保仅存储必要的非敏感数据，避免存储用户隐私信息。",
+      "severity": "MEDIUM",
+      "type": "隐私采集"
     },
     {
-      "description": "脚本未发现 eval、new Function、setTimeout(string) 等远程代码执行风险。",
-      "location": "全局",
-      "recommendation": "保持此安全实践。",
-      "severity": "HIGH",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "脚本未发现明显的代码混淆、base64 解码、字符串数组混淆等。",
-      "location": "全局",
-      "recommendation": "保持代码可读性，便于安全审计。",
-      "severity": "HIGH",
-      "type": "代码混淆"
-    },
-    {
-      "description": "@require 加载了第三方库 iziToast，来源为 jsdelivr 官方 CDN，版本已锁定。",
-      "location": "元数据 @require",
-      "recommendation": "建议定期检查依赖安全性。",
+      "description": "脚本通过 @require 加载第三方库 iziToast，来源为 jsdelivr 官方 CDN，版本号已固定。",
+      "location": "@require https://cdn.jsdelivr.net/npm/izitoast@1.4.0/dist/js/iziToast.min.js",
+      "recommendation": "保持第三方库来源可信且版本固定，定期检查依赖安全性。",
       "severity": "MEDIUM",
       "type": "供应链风险"
     },
     {
-      "description": "脚本申请了 unsafeWindow 权限，存在一定安全隐患（可访问页面全局作用域，增加攻击面）。",
-      "location": "元数据 @grant",
-      "recommendation": "如非必要，建议移除 unsafeWindow 权限。",
+      "description": "脚本申请了 unsafeWindow 权限，但代码未发现实际使用 unsafeWindow 的高风险操作。",
+      "location": "@grant unsafeWindow",
+      "recommendation": "仅在必要时申请 unsafeWindow 权限，避免滥用。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     }
@@ -58,16 +44,17 @@
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "API 请求可能包含视频 ID、页面 URL 等用户行为数据"
+      "GM_setValue",
+      "GM_getValue"
     ],
-    "detected": true
+    "detected": false
   },
   "risk_level": "HIGH",
   "script_name": "Youtube Tools All in one local download mp3 mp4 HIGT QUALITY return dislikes and more",
-  "security_score": 50,
-  "summary": "该脚本存在较高安全风险，主要体现在与多个第三方 API 通信，可能外传用户行为数据（如视频 ID、页面 URL），并申请了 unsafeWindow 高权限。未发现明显的代码混淆、远程代码执行或 DOM XSS 风险。建议仅在信任脚本作者和 API 服务的前提下使用，并注意个人隐私保护。",
+  "security_score": 47,
+  "summary": "该脚本存在严重的数据外传风险，涉及多个第三方 API，可能会传递用户数据。未发现明显隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。供应链风险和权限滥用为中等。建议用户谨慎使用，尤其关注数据外传行为。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:54:43.472607+00:00",
+  "analyzed_at": "2026-07-27T06:04:42.801510+00:00",
   "slug": "Youtube_Tools_All_in_one_local_download_mp3_mp4_HIGT_QUALITY_return_dislikes_and"
 }

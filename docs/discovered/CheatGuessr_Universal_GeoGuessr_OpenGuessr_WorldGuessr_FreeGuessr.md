@@ -30,14 +30,14 @@ title: "CheatGuessr Universal | GeoGuessr | OpenGuessr | WorldGuessr | FreeGuess
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：50/100　　**分析时间**：2026-07-13
+**风险等级**：⛔ CRITICAL　　**安全评分**：34/100　　**分析时间**：2026-07-27
 
-> 该脚本存在严重的数据外传风险，主要体现在将地理坐标等信息发送到第三方服务器（nominatim.openstreetmap.org、discord.com），可能导致用户隐私泄露。未发现明显的隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。部分敏感 API（通知）和 iframe 安全策略被修改，存在中低风险。整体安全评级为 HIGH，不建议在敏感环境下使用。
+> This script transmits user/game data (coordinates) to third-party services (discord.com, nominatim.openstreetmap.org), which is a critical privacy and data exfiltration risk. It also hijacks built-in browser functions via Proxy, which could have unintended consequences. No evidence of code obfuscation, DOM XSS, or supply chain risk. Sensitive API usage is limited to notifications. Overall, the script poses a CRITICAL risk due to external data transmission and function hijacking.
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：nominatim.openstreetmap.org, discord.com） |
-| 隐私采集 | ✅ 未检测到 |
+| 数据外传 | ❌ 检测到（目标：discord.com, nominatim.openstreetmap.org） |
+| 隐私采集 | ❌ 检测到（Coordinates (lat/lng) sent to external APIs, Notification permission requested） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -45,55 +45,60 @@ title: "CheatGuessr Universal | GeoGuessr | OpenGuessr | WorldGuessr | FreeGuess
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本通过 GM_xmlhttpRequest 发送地理坐标到 nominatim.openstreetmap.org 进行逆地理编码。  
-> 位置：_getAddress() 函数  
-> 建议：仅允许可信的第三方 API，明确告知用户数据用途。
+**⛔ CRITICAL** — Data Exfiltration  
+> Script sends data to discord.com via GM_xmlhttpRequest, potentially including user coordinates or game data.  
+> 位置：sendToDiscord feature, GM_xmlhttpRequest usage  
+> 建议：Ensure only non-sensitive, non-personal data is transmitted. Warn users about external transmission.
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本通过 GM_xmlhttpRequest 允许连接 discord.com，结合描述“send to discord”功能，可能将用户操作或地理信息发送到 Discord 服务器。  
-> 位置：@connect discord.com 及相关功能代码（未完全展示）  
-> 建议：确保用户明确知情并同意外发数据，避免敏感信息泄露。
+**⛔ CRITICAL** — Data Exfiltration  
+> Script sends coordinates to nominatim.openstreetmap.org for reverse geocoding.  
+> 位置：_getAddress function, GM_xmlhttpRequest usage  
+> 建议：Review transmitted data for privacy concerns. Use only trusted APIs.
 
-**🟠 MEDIUM** — 敏感 API 调用  
-> 脚本使用 Notification API 发送通知，需防止滥用骚扰用户。  
-> 位置：sendNotification() 函数  
-> 建议：确保通知行为可控，用户可关闭。
+**🔴 HIGH** — Remote Code Execution / Function Hijacking  
+> Script applies Proxy wrappers to built-in functions (setAttribute, push, fetch, setItem, startsWith) to bypass cheat detection and alter behavior.  
+> 位置：Proxy usage throughout platform-specific blocks  
+> 建议：Carefully review for unintended side effects or privilege escalation.
 
-**🟡 LOW** — 隐私采集  
-> 脚本未发现明显的隐私采集（如读取 cookie、localStorage、监听键盘输入、读取表单/剪贴板等）。  
-> 位置：全局  
-> 建议：继续关注后续代码更新，防止新增隐私采集行为。
+**🟠 MEDIUM** — Sensitive API Usage  
+> Script requests Notification API permission and sends notifications.  
+> 位置：requestNotificationPermission, sendNotification  
+> 建议：Limit notification usage and avoid spam.
 
-**🟡 LOW** — 远程代码执行  
-> 脚本未发现 eval、new Function、setTimeout(string) 等远程代码执行风险。  
-> 位置：全局  
-> 建议：保持禁止动态代码执行的良好实践。
+**🟠 MEDIUM** — Permission Abuse  
+> Script grants GM_xmlhttpRequest permission and @connect to external domains, which is necessary but increases attack surface.  
+> 位置：UserScript metadata  
+> 建议：Restrict @connect domains to only those strictly required.
 
-**🟡 LOW** — 代码混淆  
-> 脚本未发现明显的代码混淆、base64 解码、字符串数组混淆或高度压缩代码。  
-> 位置：全局  
-> 建议：保持代码可读性，便于安全审计。
+**🟡 LOW** — Remote Code Execution  
+> Script does not use eval, new Function, or dynamic script injection, reducing RCE risk.  
+> 位置：Global code review  
+> 建议：Maintain this practice.
+
+**🟡 LOW** — Obfuscation  
+> No evidence of code obfuscation or minification.  
+> 位置：Global code review  
+> 建议：Maintain code transparency.
 
 **🟡 LOW** — DOM XSS  
-> 脚本未发现 DOM XSS 或将用户输入直接插入 innerHTML/outerHTML。  
-> 位置：全局  
-> 建议：如后续涉及 DOM 操作，需严格转义用户输入。
+> No DOM XSS or injection detected; user input is not inserted into innerHTML/outerHTML.  
+> 位置：Global code review  
+> 建议：Maintain input sanitization.
 
-**🟡 LOW** — 权限滥用  
-> 脚本申请了 GM_xmlhttpRequest 权限并实际使用，未发现权限滥用。  
-> 位置：@grant  
-> 建议：仅申请实际需要的权限。
+**🟡 LOW** — Sensitive API Usage  
+> No clipboard, geolocation, RTCPeerConnection, MediaDevices, or browser fingerprinting APIs used.  
+> 位置：Global code review  
+> 建议：Maintain privacy-respecting practices.
 
-**🟡 LOW** — 供应链风险  
-> 脚本通过 @require 未加载第三方库，无供应链风险。  
-> 位置：元数据  
-> 建议：如需加载第三方库，建议使用官方 CDN 并锁定版本。
+**🟡 LOW** — Supply Chain Risk  
+> No supply chain risk detected; script does not use @require for external libraries.  
+> 位置：UserScript metadata  
+> 建议：Maintain strict supply chain control.
 
-**🟡 LOW** — ClickJacking/iframe 风险  
-> 脚本在部分平台通过 Proxy 修改 Element.prototype.setAttribute，可能影响 iframe sandbox 属性，存在一定 ClickJacking/iframe 风险。  
-> 位置：Element.prototype.setAttribute Proxy  
-> 建议：避免破坏页面安全策略，防止潜在安全隐患。
+**🟡 LOW** — ClickJacking / iframe Risk  
+> No clickjacking or iframe manipulation for data extraction detected.  
+> 位置：Global code review  
+> 建议：Maintain safe iframe usage.
 
 ---
 

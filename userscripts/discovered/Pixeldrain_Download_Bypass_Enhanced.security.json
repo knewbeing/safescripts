@@ -1,5 +1,5 @@
 {
-  "approved": true,
+  "approved": false,
   "data_transmission": {
     "destinations": [
       "https://pixeldrain-bypass.gamedrive.org/api/proxy.json"
@@ -9,47 +9,89 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script fetches a proxy list from https://pixeldrain-bypass.gamedrive.org/api/proxy.json and caches it in localStorage. This is a third-party server, but only the proxy list is fetched; no user data or cookies are sent.",
-      "location": "loadProxyListCached() function, fetch(PROXY_JSON_URL)",
-      "recommendation": "Verify the trustworthiness of the third-party API. Ensure no sensitive user data is sent in requests.",
+      "description": "脚本通过 fetch 请求 https://pixeldrain-bypass.gamedrive.org/api/proxy.json 获取代理列表，存在数据外传行为。",
+      "location": "loadProxyListCached() 函数",
+      "recommendation": "建议明确告知用户数据外传目的，并确保请求内容不包含用户敏感信息。",
       "severity": "CRITICAL",
-      "type": "Data Transmission"
+      "type": "数据外传"
     },
     {
-      "description": "The script uses localStorage to cache proxy lists and timestamps. No sensitive user data is stored.",
-      "location": "localStorage.setItem/getItem for PROXY_LIST_KEY and PROXY_TS_KEY",
-      "recommendation": "Ensure only non-sensitive data is stored. No action needed if only proxy list is cached.",
-      "severity": "MEDIUM",
-      "type": "Privacy Collection"
+      "description": "脚本读取 localStorage 存储代理列表和时间戳，涉及隐私采集。",
+      "location": "loadProxyListCached() 函数",
+      "recommendation": "建议仅存储必要数据，避免存储用户敏感信息。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
     },
     {
-      "description": "The script requests the GM_openInTab permission, which is used to open URLs in new tabs. This is appropriate for the script's function.",
-      "location": "@grant GM_openInTab in metadata and openInNewTab() function",
-      "recommendation": "No action needed unless unused or abused.",
-      "severity": "MEDIUM",
-      "type": "Permission Usage"
+      "description": "脚本动态解析页面内容并构造下载链接，未发现远程代码执行，但存在一定 DOM 操作。",
+      "location": "readInitialNode(), buildDirBypassUrls() 等函数",
+      "recommendation": "确保插入的内容经过安全处理，避免 XSS。",
+      "severity": "HIGH",
+      "type": "DOM 操作"
     },
     {
-      "description": "The script uses fetch to retrieve a remote JSON file. No dynamic code execution, eval, or script injection is present.",
-      "location": "fetch(PROXY_JSON_URL)",
-      "recommendation": "No action needed.",
+      "description": "脚本未使用 eval、new Function、setTimeout(string) 等高危动态执行代码方式。",
+      "location": "全局",
+      "recommendation": "保持现有安全实践。",
       "severity": "LOW",
-      "type": "Supply Chain"
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本未混淆，代码结构清晰，无 base64、unicode、字符串数组混淆特征。",
+      "location": "全局",
+      "recommendation": "无需调整。",
+      "severity": "LOW",
+      "type": "代码混淆"
+    },
+    {
+      "description": "脚本未直接操作 innerHTML/outerHTML 插入用户输入或 URL 参数，DOM XSS 风险较低。",
+      "location": "全局",
+      "recommendation": "继续保持安全 DOM 操作。",
+      "severity": "LOW",
+      "type": "DOM XSS"
+    },
+    {
+      "description": "脚本申请 GM_openInTab 权限，实际代码中有使用，未发现权限滥用。",
+      "location": "@grant 元数据与 openInNewTab() 函数",
+      "recommendation": "仅申请必要权限。",
+      "severity": "LOW",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。",
+      "location": "全局",
+      "recommendation": "保持现有安全实践。",
+      "severity": "LOW",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "脚本未使用 @require 加载第三方库，无供应链风险。",
+      "location": "元数据",
+      "recommendation": "如需引入第三方库，建议固定版本哈希。",
+      "severity": "LOW",
+      "type": "供应链风险"
+    },
+    {
+      "description": "脚本未修改 frame 保护策略，也未创建隐藏 iframe。",
+      "location": "全局",
+      "recommendation": "继续保持安全。",
+      "severity": "LOW",
+      "type": "ClickJacking / iframe 风险"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "Uses localStorage for proxy list caching. No sensitive data or user input is collected."
+      "localStorage 读取/写入代理列表和时间戳"
     ],
-    "detected": false
+    "detected": true
   },
-  "risk_level": "LOW",
+  "risk_level": "CRITICAL",
   "script_name": "Pixeldrain Download Bypass Enhanced",
-  "security_score": 67,
-  "summary": "The script fetches a proxy list from a third-party server and uses it to construct bypass URLs for Pixeldrain downloads. No user data, cookies, or sensitive information are transmitted. There is no evidence of code obfuscation, remote code execution, DOM XSS, or excessive permissions. The main risk is reliance on a third-party API for proxy lists, but no user data is sent. Overall, the script is low risk.",
+  "security_score": 50,
+  "summary": "该脚本存在数据外传和隐私采集风险，主要体现在通过 fetch 请求第三方服务器获取代理列表，并在 localStorage 存储相关数据。未发现远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险等高危问题。建议加强用户告知和数据处理安全。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:45:54.281584+00:00",
+  "analyzed_at": "2026-07-27T05:56:23.646246+00:00",
   "slug": "Pixeldrain_Download_Bypass_Enhanced"
 }

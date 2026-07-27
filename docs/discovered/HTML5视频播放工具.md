@@ -62,9 +62,9 @@ title: "HTML5视频播放工具"
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-07-13
+**风险等级**：🟡 LOW　　**安全评分**：81/100　　**分析时间**：2026-07-27
 
-> 该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用、供应链或 iframe 风险。@require 的第三方库来源可信且锁定版本。整体安全性高，适合普通用户使用。
+> 该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要风险为供应链风险（未锁定第三方库版本哈希）和权限滥用（申请了未使用的高权限）。整体安全性较高，建议进一步最小化权限并锁定依赖库版本。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -73,54 +73,24 @@ title: "HTML5视频播放工具"
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ✅ 可信 |
+| 供应链风险 | ⚠️ 存在风险 |
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本未检测到任何外部数据传输、统计或追踪行为。未发现 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource 等网络请求。  
-> 位置：全局代码  
-> 建议：保持现状，勿添加外传代码。
-
-**⛔ CRITICAL** — 隐私采集  
-> 脚本未检测到对 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板、表单字段、键盘输入的监听与外传。  
-> 位置：全局代码  
-> 建议：保持现状，勿采集用户隐私数据。
-
-**🔴 HIGH** — 远程代码执行  
-> 未检测到 eval、new Function、setTimeout(string)、setInterval(string)、document.write、动态 script 标签加载远程 JS 等远程代码执行风险。  
-> 位置：全局代码  
-> 建议：保持现状，避免引入动态执行代码。
-
-**🔴 HIGH** — 代码混淆  
-> 未检测到代码混淆、base64 解码执行、字符串数组混淆、unicode 混淆或高度压缩单行代码。  
-> 位置：全局代码  
-> 建议：保持代码可读性，避免混淆。
-
-**🔴 HIGH** — DOM XSS / 注入  
-> 未检测到 DOM XSS 风险。未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未见 document.write 注入不可信内容。  
-> 位置：全局代码  
-> 建议：如需插入动态内容，务必进行转义。
-
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_addStyle、window.onurlchange、unsafeWindow、GM_registerMenuCommand、GM_setValue、GM_getValue 权限，均有实际用途，未见权限滥用。  
-> 位置：元数据 @grant  
-> 建议：仅申请实际需要的权限。
-
-**🟠 MEDIUM** — 敏感 API 调用  
-> 脚本未检测到敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API）调用。  
-> 位置：全局代码  
-> 建议：如需调用敏感 API，需征得用户同意。
-
-**🟠 MEDIUM** — 供应链风险  
-> @require 加载的第三方库（Vue 2.7.16、jQuery 3.6.4）均来自官方 CDN（jsdelivr），且指定了明确版本，无供应链污染风险。  
+**🟠 MEDIUM** — Supply Chain Risk  
+> @require 加载第三方库（Vue、jQuery）来自 jsdelivr 官方 CDN，但未锁定具体文件哈希，存在供应链污染风险。  
 > 位置：元数据 @require  
-> 建议：继续使用可信 CDN 并锁定版本。
+> 建议：建议使用 CDN 的固定版本哈希 URL 或官方 CDN，避免使用可变/latest 路径。
 
-**🟡 LOW** — ClickJacking / iframe 风险  
-> 未检测到脚本修改 frame 保护策略或创建隐藏 iframe 用于数据提取。  
-> 位置：全局代码  
-> 建议：如需操作 iframe，需确保安全。
+**🟠 MEDIUM** — Permission Abuse  
+> 申请了 unsafeWindow 权限，允许脚本访问页面全局对象，可能被滥用。  
+> 位置：元数据 @grant unsafeWindow  
+> 建议：仅在确实需要与页面交互时使用 unsafeWindow，避免滥用。
+
+**🟠 MEDIUM** — Permission Abuse  
+> 申请了 window.onurlchange 权限，但代码未见实际使用，属于高权限未使用。  
+> 位置：元数据 @grant window.onurlchange  
+> 建议：移除未使用的高权限申请，最小化权限。
 
 ---
 

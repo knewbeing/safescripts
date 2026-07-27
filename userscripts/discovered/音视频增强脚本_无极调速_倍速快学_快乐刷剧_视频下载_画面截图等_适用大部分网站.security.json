@@ -7,16 +7,30 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本申请了较多 GM_* 权限，包括 GM_openInTab、GM_setClipboard、GM_addValueChangeListener 等，但实际代码中未发现对部分高权限 API 的使用。",
-      "location": "元数据 @grant 列表",
-      "recommendation": "仅申请实际需要的权限，移除未使用的高权限申请，降低潜在攻击面。",
+      "description": "脚本申请了 unsafeWindow 权限，但实际代码未见对 unsafeWindow 的高风险操作（如注入恶意脚本或读取敏感数据）。此权限有潜在滥用风险。",
+      "location": "元数据 @grant unsafeWindow",
+      "recommendation": "仅在确实需要时申请 unsafeWindow，避免滥用。建议审查后移除或限制使用。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "脚本通过 @grant unsafeWindow 申请了对页面全局对象的访问权限，理论上可能被滥用，但未发现危险用法。",
-      "location": "元数据 @grant unsafeWindow",
-      "recommendation": "如无特殊需求，建议移除 unsafeWindow 权限，或确保其使用安全。",
+      "description": "脚本申请了 GM_openInTab 权限，但代码未见实际调用。此权限可被滥用打开钓鱼或恶意页面。",
+      "location": "元数据 @grant GM_openInTab",
+      "recommendation": "仅在确实需要时申请 GM_openInTab，建议审查后移除或限制使用。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本申请了 GM_setClipboard 权限，但代码未见实际调用。此权限可被滥用读取或写入剪贴板内容。",
+      "location": "元数据 @grant GM_setClipboard",
+      "recommendation": "仅在确实需要时申请 GM_setClipboard，建议审查后移除或限制使用。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本申请了 GM_getTab、GM_saveTab、GM_getTabs 等高权限，但代码未见实际调用。此权限可被滥用跨标签通信。",
+      "location": "元数据 @grant GM_getTab, GM_saveTab, GM_getTabs",
+      "recommendation": "仅在确实需要时申请这些权限，建议审查后移除或限制使用。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     }
@@ -29,9 +43,9 @@
   "risk_level": "LOW",
   "script_name": "音视频增强脚本：无极调速|倍速快学|快乐刷剧|视频下载|画面截图等「适用大部分网站」",
   "security_score": 84,
-  "summary": "该脚本主要实现音视频播放增强功能，未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、WebSocket、供应链风险等高危行为。仅存在部分未使用的高权限申请，建议精简权限。整体安全风险较低。",
+  "summary": "该脚本主要用于音视频增强，未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 调用、供应链风险、WebSocket 使用等高风险行为。唯一风险点为申请了多项高权限但未实际使用，存在权限滥用的潜在隐患。建议精简权限申请，提升安全性。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:59:55.890149+00:00",
+  "analyzed_at": "2026-07-27T06:08:59.350087+00:00",
   "slug": "音视频增强脚本_无极调速_倍速快学_快乐刷剧_视频下载_画面截图等_适用大部分网站"
 }

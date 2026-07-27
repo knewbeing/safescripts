@@ -33,9 +33,9 @@ title: "Ultra-FPS无卡顿版"
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-07-13
+**风险等级**：🟢 SAFE　　**安全评分**：97/100　　**分析时间**：2026-07-27
 
-> 该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。仅本地存储少量配置数据，未与外部服务器通信。整体安全性高。
+> 该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 调用、供应链风险或 iframe 风险。仅使用 localStorage 做本地配置持久化，未涉及用户敏感数据。整体安全性高，适合公开使用。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -46,7 +46,57 @@ title: "Ultra-FPS无卡顿版"
 | DOM XSS 风险 | ✅ 未检测到 |
 | 供应链风险 | ✅ 可信 |
 
-### 未发现安全问题 ✅
+### 发现的问题
+
+**⛔ CRITICAL** — 数据外传  
+> 脚本未检测到任何网络请求（fetch、GM_xmlhttpRequest、XMLHttpRequest、WebSocket、EventSource、sendBeacon）。  
+> 位置：全局代码  
+> 建议：保持无外部数据传输，防止数据泄露。
+
+**⛔ CRITICAL** — 隐私采集  
+> 脚本未监听键盘输入、未读取表单字段、未访问剪贴板、未调用指纹相关 API。  
+> 位置：全局代码  
+> 建议：继续避免隐私采集行为。
+
+**🔴 HIGH** — 代码混淆  
+> 脚本未检测到代码混淆（无 base64 解码、字符串数组映射、unicode 混淆、压缩单行代码）。  
+> 位置：全局代码  
+> 建议：保持代码可读性，便于安全审查。
+
+**🔴 HIGH** — DOM XSS / 注入  
+> 脚本未检测到 DOM XSS 风险（未将用户输入或 URL 参数插入 innerHTML/outerHTML，未操作 iframe src 为 javascript:）。  
+> 位置：全局代码  
+> 建议：继续避免 DOM 注入风险。
+
+**🟠 MEDIUM** — 隐私采集  
+> 脚本使用 localStorage 存储和读取 'killer_hitbox_profiles'，但未外传数据，仅用于本地配置持久化。  
+> 位置：localStorage.getItem('killer_hitbox_profiles')  
+> 建议：确保 localStorage 仅用于本地用途，不要将敏感数据存储于此。
+
+**🟠 MEDIUM** — 敏感 API 调用  
+> 脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Notification、Clipboard）。  
+> 位置：全局代码  
+> 建议：避免调用敏感 API，防止隐私泄露。
+
+**🟡 LOW** — 权限滥用  
+> 脚本未申请任何 Tampermonkey/Greasemonkey权限（@grant none），权限申请安全。  
+> 位置：@grant none  
+> 建议：保持最小权限原则，避免申请不必要的高权限。
+
+**🟡 LOW** — 远程代码执行  
+> 脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等动态执行代码方式。  
+> 位置：全局代码  
+> 建议：继续避免动态代码执行，防止远程代码注入风险。
+
+**🟡 LOW** — 供应链风险  
+> 脚本未加载任何第三方库（无 @require），无供应链风险。  
+> 位置：元数据区  
+> 建议：如需加载第三方库，建议固定版本并使用官方 CDN。
+
+**🟡 LOW** — ClickJacking / iframe 风险  
+> 脚本未修改 frame 保护策略，未创建隐藏 iframe 用于数据提取。  
+> 位置：全局代码  
+> 建议：继续避免 iframe 风险。
 
 ---
 

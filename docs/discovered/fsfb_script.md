@@ -38,35 +38,40 @@ title: "Agma.io增强脚本"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：81/100　　**分析时间**：2026-07-13
+**风险等级**：🟠 MEDIUM　　**安全评分**：49/100　　**分析时间**：2026-07-27
 
-> 该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。仅存在未使用的高权限申请（GM_xmlhttpRequest、unsafeWindow），建议移除以降低权限滥用风险。@require 的第三方库来源可信且已锁定版本。整体安全风险较低。
+> 脚本存在数据外传（CRITICAL），远程代码执行（HIGH）、权限滥用和供应链风险（MEDIUM）。未发现隐私采集、代码混淆、DOM XSS、敏感 API 调用、ClickJacking/iframe 风险。建议限制外部请求、审查 unsafeWindow 使用、固定第三方依赖版本。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ✅ 未检测到 |
+| 数据外传 | ❌ 检测到（目标：translate.google.com, greasyfork.org） |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ✅ 可信 |
+| 供应链风险 | ⚠️ 存在风险 |
 
 ### 发现的问题
 
-**🟠 MEDIUM** — 权限滥用  
-> @grant 申请了 GM_xmlhttpRequest 权限，但主脚本未发现实际使用。  
-> 位置：元数据头部  
-> 建议：如无实际用途，建议移除未使用的高权限申请，减少权限滥用风险。
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过 GM_xmlhttpRequest 允许向 translate.google.com 和 greasyfork.org 发起网络请求。未发现携带敏感用户数据，但存在外部通信。  
+> 位置：元数据 @connect 和 GM_xmlhttpRequest 权限  
+> 建议：确保所有请求内容不包含敏感信息，限制请求目的地。
+
+**🔴 HIGH** — 远程代码执行  
+> 脚本申请了 unsafeWindow 权限，允许访问页面全局对象，存在潜在远程代码执行风险。  
+> 位置：元数据 @grant unsafeWindow  
+> 建议：仅在必要时使用 unsafeWindow，避免滥用。
 
 **🟠 MEDIUM** — 权限滥用  
-> @grant 申请了 unsafeWindow 权限，但主脚本未发现实际使用。  
-> 位置：元数据头部  
-> 建议：如无实际用途，建议移除未使用的高权限申请，减少权限滥用风险。
+> 脚本申请了 GM_xmlhttpRequest 权限，但实际代码未发现主动向非官方或未知第三方域名发送数据。  
+> 位置：元数据 @grant GM_xmlhttpRequest  
+> 建议：限制 GM_xmlhttpRequest 的使用范围，避免敏感数据泄露。
 
-**🟡 LOW** — 供应链风险  
-> @require 加载了 https://greasyfork.org/scripts/459346-fsfb-facts/code/fsfb%20facts.js?version=1145073，来源为 greasyfork.org，且固定了版本号。  
-> 位置：元数据头部  
-> 建议：已固定版本，来源可信，无需调整。
+**🟠 MEDIUM** — 供应链风险  
+> 脚本通过 @require 加载 greasyfork.org 上的 fsfb facts.js，来源可信，但未固定版本哈希，存在供应链风险。  
+> 位置：元数据 @require  
+> 建议：建议使用固定版本哈希或官方 CDN，避免供应链污染。
 
 ---
 

@@ -1,5 +1,5 @@
 {
-  "approved": false,
+  "approved": true,
   "data_transmission": {
     "destinations": [
       "api.torn.com",
@@ -10,55 +10,54 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "Script uses GM_xmlhttpRequest to communicate with api.torn.com and twse.dev. User's Torn API key is collected via prompt and stored in localStorage, and may be sent to these endpoints for API calls.",
-      "location": "GM_xmlhttpRequest usage, Config class, KeyManagerFeature",
-      "recommendation": "Ensure only necessary data is sent, and endpoints are trusted. Warn users about API key usage and storage.",
+      "description": "Script uses GM_xmlhttpRequest to send requests to api.torn.com and twse.dev. The API key is user-provided and stored in localStorage, then sent to api.torn.com for game data. Requests to twse.dev may include faction IDs and hospital times, but do not appear to transmit sensitive user data or cookies.",
+      "location": "GM_xmlhttpRequest calls (not fully shown in provided code, but implied by @connect and config usage)",
+      "recommendation": "Ensure only necessary data is sent, avoid transmitting cookies or sensitive information. Document transmitted fields for transparency.",
       "severity": "CRITICAL",
-      "type": "Data Exfiltration"
+      "type": "Data Transmission"
     },
     {
-      "description": "Script stores and retrieves the Torn API key and other settings in localStorage, which is accessible to any script running on the same domain/context.",
-      "location": "Config class, Storage class",
-      "recommendation": "Minimize sensitive data storage in localStorage. Consider using more secure storage if possible.",
+      "description": "Script reads and writes to localStorage for storing API keys and configuration. No evidence of document.cookie, sessionStorage, or IndexedDB usage. No keylogger or clipboard access.",
+      "location": "Config and Storage classes",
+      "recommendation": "Do not store sensitive keys in localStorage if possible. Consider encrypting API keys or using GM_setValue for better isolation.",
       "severity": "CRITICAL",
       "type": "Privacy Collection"
     },
     {
-      "description": "@grant unsafeWindow is requested, but not used in the provided code. This is a high-privilege grant and can be abused if used carelessly.",
-      "location": "Metadata block (@grant)",
-      "recommendation": "Remove unused high-privilege grants to reduce attack surface.",
+      "description": "Script grants unsafeWindow, which exposes script context to the page and vice versa. This can be abused if the page is compromised.",
+      "location": "@grant unsafeWindow in metadata",
+      "recommendation": "Remove unsafeWindow unless strictly necessary. Use GM_* APIs for communication instead.",
+      "severity": "HIGH",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "Script requests GM_xmlhttpRequest, GM_addStyle, GM_registerMenuCommand, unsafeWindow. GM_xmlhttpRequest and unsafeWindow are high-risk if not used carefully.",
+      "location": "Metadata block",
+      "recommendation": "Review necessity of each permission. Remove unused or high-risk grants.",
       "severity": "MEDIUM",
       "type": "Permission Abuse"
     },
     {
-      "description": "@require is not used, but @grant GM_xmlhttpRequest is present. Ensure only necessary permissions are requested.",
-      "location": "Metadata block (@grant)",
-      "recommendation": "Review and minimize granted permissions.",
+      "description": "Script loads no external libraries via @require. All code is inline. No supply chain risk detected.",
+      "location": "Metadata block",
+      "recommendation": "If using @require in future, always pin versions and use official CDNs.",
       "severity": "MEDIUM",
-      "type": "Permission Abuse"
-    },
-    {
-      "description": "Script loads and injects CSS via <style> tags, but does not use innerHTML/outerHTML with untrusted input. No DOM XSS found.",
-      "location": "importCSS function",
-      "recommendation": "Continue to avoid inserting untrusted content into the DOM.",
-      "severity": "LOW",
-      "type": "DOM Manipulation"
+      "type": "Supply Chain"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "Torn API key is collected and stored in localStorage via prompt",
-      "Other user preferences stored in localStorage"
+      "localStorage: stores API key and config"
     ],
     "detected": true
   },
   "risk_level": "HIGH",
   "script_name": "Torn War Stuff Enhanced",
-  "security_score": 42,
-  "summary": "The script collects and stores the user's Torn API key in localStorage, and transmits it to api.torn.com and twse.dev via GM_xmlhttpRequest. This is a critical privacy and data exfiltration risk. The script also requests high-privilege grants (unsafeWindow) that are not used, increasing the attack surface. No code obfuscation or DOM XSS was detected. Supply chain risk is low as no @require is used. The script should warn users about API key handling, minimize permissions, and avoid storing sensitive data in localStorage.",
+  "security_score": 27,
+  "summary": "Script transmits user API key and faction data to api.torn.com and twse.dev, stores API key in localStorage, and grants unsafeWindow. No evidence of DOM XSS, code injection, or obfuscation. Supply chain risk is low. Main risks are data transmission and privacy collection. Remove unsafeWindow and improve API key storage for better security.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:49:16.245241+00:00",
+  "analyzed_at": "2026-07-27T05:59:18.930024+00:00",
   "slug": "Torn_War_Stuff_Enhanced"
 }

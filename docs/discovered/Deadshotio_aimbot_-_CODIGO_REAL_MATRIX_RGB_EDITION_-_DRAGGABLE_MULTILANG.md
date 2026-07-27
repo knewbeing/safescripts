@@ -33,9 +33,9 @@ title: "Deadshot.io 辅助脚本"
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：69/100　　**分析时间**：2026-07-13
+**风险等级**：🔴 HIGH　　**安全评分**：59/100　　**分析时间**：2026-07-27
 
-> 该脚本未检测到数据外传、隐私采集、远程代码执行或 DOM XSS 风险。存在部分代码混淆和高权限申请（unsafeWindow），以及对 WebAssembly/canvas/shader 的敏感操作，具有一定安全和合规风险。未发现供应链风险或 WebSocket/网络请求。整体安全性中等，但不建议在敏感环境下使用。
+> 该脚本未检测到数据外传和隐私采集行为，但存在 unsafeWindow 权限滥用、代码混淆和 WASM 内存捕获等高风险项。建议仅在可信环境下使用，并持续关注后续版本的安全变化。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -48,20 +48,50 @@ title: "Deadshot.io 辅助脚本"
 
 ### 发现的问题
 
-**🔴 HIGH** — 敏感 API 调用  
-> 脚本通过 WebAssembly hook、canvas、shader、骨骼数据等方式分析游戏内存和渲染数据，属于高权限操作，可能被用于作弊或绕过安全机制。  
-> 位置：核心逻辑（WebAssembly、canvas、shader hook）  
-> 建议：警惕此类脚本可能违反游戏服务条款，且存在被恶意利用的风险。
+**🔴 HIGH** — 权限滥用  
+> 脚本申请了 unsafeWindow 权限，允许脚本与页面 JS 进行深度交互，存在被页面代码利用或注入恶意代码的风险。  
+> 位置：元数据 @grant unsafeWindow  
+> 建议：仅在必要时使用 unsafeWindow，避免与页面代码共享敏感数据。
 
 **🔴 HIGH** — 代码混淆  
-> 脚本包含部分字符串异或混淆（_SIGKEY, _ENCODED_SIGS, _decodeSig），但整体未见严重混淆或压缩。  
-> 位置：_SIGKEY, _ENCODED_SIGS, _decodeSig  
-> 建议：避免使用混淆技术，提升代码可审计性。
+> 脚本包含大量压缩和混淆特征，如字符串数组、位运算、变量名缩写，部分代码高度压缩，存在混淆风险。  
+> 位置：主代码块  
+> 建议：避免混淆，保持代码可读性，便于安全审查。
 
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 @grant unsafeWindow 权限，但实际代码仅用于与页面通信和全局变量注入，没有发现明显滥用，但该权限本身风险较高。  
-> 位置：元数据 @grant unsafeWindow  
-> 建议：如非必要，建议移除 unsafeWindow 权限，或限制其使用范围。
+**🟠 MEDIUM** — 敏感 API 调用  
+> 脚本通过覆盖 WebAssembly.instantiate 和 WebAssembly.instantiateStreaming，捕获 WASM 内存实例。这可能用于游戏作弊，但也可能用于读取游戏进程中的敏感数据。  
+> 位置：WebAssembly.instantiate/instantiateStreaming 重写  
+> 建议：确保捕获的 WASM 内存仅用于合法用途，不要读取或泄露用户敏感信息。
+
+**🟡 LOW** — 数据外传  
+> 脚本未检测到任何网络请求（如 GM_xmlhttpRequest、fetch、WebSocket 等），未发现数据外传行为。  
+> 位置：全局代码  
+> 建议：继续监控后续版本，防止新增数据外传。
+
+**🟡 LOW** — 隐私采集  
+> 脚本未直接读取 document.cookie、localStorage、sessionStorage、IndexedDB，也未监听键盘输入或表单字段，未发现隐私采集行为。  
+> 位置：全局代码  
+> 建议：继续监控后续版本，防止新增隐私采集。
+
+**🟡 LOW** — 远程代码执行  
+> 脚本未检测到 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险。  
+> 位置：全局代码  
+> 建议：避免动态执行字符串代码。
+
+**🟡 LOW** — DOM XSS / 注入  
+> 脚本未检测到 DOM XSS 或注入风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML。  
+> 位置：全局代码  
+> 建议：继续监控后续版本，防止新增 DOM 注入。
+
+**🟡 LOW** — 数据外传  
+> 脚本未检测到 WebSocket、EventSource、navigator.sendBeacon 等实时数据传输行为。  
+> 位置：全局代码  
+> 建议：继续监控后续版本，防止新增实时数据外传。
+
+**🟡 LOW** — 供应链风险  
+> 脚本未检测到 @require 加载第三方库，供应链风险较低。  
+> 位置：元数据  
+> 建议：如需加载第三方库，请固定版本哈希并使用官方 CDN。
 
 ---
 

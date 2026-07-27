@@ -40,9 +40,9 @@ title: "Github增强"
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-07-13
+**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-07-27
 
-> 该脚本主要用于在 Github 页面上增强下载体验，未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险或权限滥用等安全问题。所有 @grant 权限均有实际用途。整体安全性高，适合公开分发。
+> 该脚本主要为 Github 页面插入加速下载链接，未检测到自动数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。唯一中等风险为申请了部分高权限（GM_openInTab、GM_setClipboard），但实际用途安全。整体安全性较高，建议后续功能扩展时继续遵循最小权限原则。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -55,50 +55,35 @@ title: "Github增强"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本未检测到任何网络请求（如 fetch、GM_xmlhttpRequest、XMLHttpRequest、WebSocket、sendBeacon 等）用于数据外传。  
-> 位置：全局  
-> 建议：保持现状，勿添加任何外传逻辑。
+**🟠 MEDIUM** — 权限滥用风险  
+> 脚本申请了 GM_openInTab、GM_notification、GM_setClipboard 等权限，但实际仅用于菜单反馈和通知，无滥用迹象。  
+> 位置：元数据 @grant 与菜单命令逻辑  
+> 建议：如后续扩展功能，需最小化权限申请。
 
-**⛔ CRITICAL** — 隐私采集  
-> 脚本未检测到任何隐私数据采集行为（如读取 cookie、localStorage、sessionStorage、IndexedDB、监听键盘输入、读取表单字段、访问指纹 API、读取剪贴板等）。  
-> 位置：全局  
-> 建议：保持现状，勿添加任何隐私采集逻辑。
+**🟡 LOW** — 数据外传风险  
+> 脚本未检测到任何网络请求（如 fetch、GM_xmlhttpRequest、XMLHttpRequest、WebSocket、EventSource），仅构建加速下载链接并插入页面。链接目标为第三方加速服务，但无自动数据外传行为。  
+> 位置：URLS.* 变量和页面插入逻辑  
+> 建议：如后续添加自动下载或数据上报功能，需严格限制数据类型和目的地。
 
-**🔴 HIGH** — 远程代码执行  
-> 脚本未检测到 eval、new Function、setTimeout(string)、setInterval(string)、动态 script 标签、@require 远程 JS、document.write 等远程代码执行风险。  
-> 位置：全局  
-> 建议：保持现状，勿引入动态执行代码。
+**🟡 LOW** — 隐私采集风险  
+> 脚本未读取 cookie、localStorage、sessionStorage、IndexedDB，也未监听键盘输入、表单字段或剪贴板内容。  
+> 位置：全局代码与工具函数  
+> 建议：保持现有行为，勿添加隐私采集逻辑。
 
-**🔴 HIGH** — 代码混淆  
-> 脚本未检测到代码混淆、base64 解码、字符串数组混淆、unicode 混淆或高度压缩单行代码。  
-> 位置：全局  
-> 建议：保持代码可读性，避免混淆。
+**🟡 LOW** — 远程代码执行风险  
+> 未检测到 eval、new Function、setTimeout(string)、setInterval(string) 或动态 script 标签加载远程 JS。  
+> 位置：全局代码  
+> 建议：避免引入远程代码执行相关 API。
 
-**🔴 HIGH** — DOM XSS / 注入  
-> 脚本未检测到 DOM XSS 风险（如用户输入或 URL 参数直接插入 innerHTML/outerHTML、document.write 注入、iframe src 操作等）。  
-> 位置：全局  
-> 建议：如后续涉及动态内容插入，需严格转义。
+**🟡 LOW** — 代码混淆风险  
+> 代码未混淆，无 base64 解码、字符串数组映射或 unicode 混淆特征。  
+> 位置：全局代码  
+> 建议：保持代码可读性，勿混淆。
 
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了部分 GM_* 权限（如 GM_openInTab、GM_notification、GM_setClipboard），但均有实际用途，未发现权限滥用。  
-> 位置：元数据 @grant  
-> 建议：仅申请实际需要的权限。
-
-**🟠 MEDIUM** — 敏感 API 调用  
-> 脚本未检测到敏感 API 调用（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API 读取、Notification 滥用等）。  
-> 位置：全局  
-> 建议：如需使用敏感 API，需征得用户同意。
-
-**🟠 MEDIUM** — 供应链风险  
-> 脚本未检测到 @require 加载第三方库，无供应链风险。  
-> 位置：元数据 @require  
-> 建议：如需引入第三方库，建议使用官方 CDN 并锁定版本。
-
-**🟡 LOW** — ClickJacking / iframe 风险  
-> 脚本未检测到对 frame 保护策略的修改，也未创建隐藏 iframe 用于数据提取。  
-> 位置：全局  
-> 建议：保持现状，勿引入相关风险。
+**🟡 LOW** — DOM XSS/注入风险  
+> 未检测到用户输入或 URL 参数直接插入 innerHTML/outerHTML，未使用 document.write()，未操作 iframe src。  
+> 位置：页面插入逻辑  
+> 建议：如后续插入用户输入，需严格转义。
 
 ---
 

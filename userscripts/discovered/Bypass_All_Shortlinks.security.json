@@ -2,31 +2,32 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
-      "Third-party shortlink services (varies, based on GM_xmlhttpRequest usage)",
-      "https://update.greasyfork.org/scripts/528923/1588272/MonkeyConfig%20Mod.js (via @require)"
+      "Shortlink domains (varies, potentially third-party)",
+      "GreasyFork CDN (for @require)",
+      "Potentially other domains via GM_xmlhttpRequest"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script requests GM_xmlhttpRequest permission, which allows arbitrary cross-origin requests. The actual script code is missing, but the permission itself is high risk if misused.",
-      "location": "Metadata block (@grant GM_xmlhttpRequest)",
-      "recommendation": "Review the script code for actual usage. Limit requests to trusted domains only.",
+      "description": "The script requests GM_xmlhttpRequest permission, which allows arbitrary cross-origin requests. Without full code, it's unclear if user data is sent, but this is a CRITICAL risk if abused.",
+      "location": "Metadata (@grant GM_xmlhttpRequest)",
+      "recommendation": "Review all GM_xmlhttpRequest usages to ensure no user data or sensitive information is sent to third-party domains.",
       "severity": "CRITICAL",
-      "type": "Data Exfiltration"
+      "type": "Data Transmission"
     },
     {
-      "description": "The script uses @require to load a remote library (MonkeyConfig Mod.js) from update.greasyfork.org without a version hash. This introduces supply chain risk if the remote file is compromised.",
-      "location": "Metadata block (@require)",
-      "recommendation": "Pin the @require to a specific version or hash, and only use trusted sources.",
+      "description": "The script uses @require to load MonkeyConfig Mod.js from GreasyFork CDN. While GreasyFork is generally trusted, the URL is not version-hashed and could be updated by the author, introducing supply chain risk.",
+      "location": "Metadata (@require https://update.greasyfork.org/scripts/528923/1588272/MonkeyConfig%20Mod.js)",
+      "recommendation": "Use a version-hashed or integrity-checked URL for third-party libraries to prevent supply chain attacks.",
       "severity": "MEDIUM",
       "type": "Supply Chain Risk"
     },
     {
-      "description": "The script requests high-privilege grants such as GM_openInTab and GM_setClipboard, which can be abused if the script is malicious or compromised.",
-      "location": "Metadata block (@grant GM_openInTab, GM_setClipboard)",
-      "recommendation": "Only request permissions that are strictly necessary for script functionality.",
+      "description": "The script requests GM_openInTab, GM_setClipboard, GM_addStyle, GM_setValue, GM_getValue, GM_registerMenuCommand, and window.onurlchange permissions. Some are high privilege and may be unnecessary.",
+      "location": "Metadata (@grant ...)",
+      "recommendation": "Reduce permissions to only those strictly required by the script logic.",
       "severity": "MEDIUM",
       "type": "Permission Abuse"
     }
@@ -38,10 +39,10 @@
   },
   "risk_level": "HIGH",
   "script_name": "Bypass All Shortlinks",
-  "security_score": 67,
-  "summary": "The script metadata requests several high-privilege permissions (GM_xmlhttpRequest, GM_openInTab, GM_setClipboard) and loads a remote library without a fixed version, introducing supply chain risk. The actual script code is missing, so a full review is not possible. Based on the metadata, there is a high risk of data exfiltration and permission abuse if the script or its dependencies are compromised. No evidence of privacy collection, obfuscation, or DOM XSS is present in the metadata.",
+  "security_score": 52,
+  "summary": "The script requests high-risk permissions (GM_xmlhttpRequest, GM_openInTab) and loads a remote library without version pinning, introducing supply chain and data transmission risks. Without full code, it's unclear if user data is transmitted, but the potential exists. No evidence of code obfuscation, DOM XSS, or privacy collection in the metadata. Permissions should be minimized and remote dependencies version-pinned for improved security.",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:29:50.275989+00:00",
+  "analyzed_at": "2026-07-27T05:44:49.256870+00:00",
   "slug": "Bypass_All_Shortlinks"
 }

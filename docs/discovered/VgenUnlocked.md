@@ -34,14 +34,14 @@ title: "VGen解锁增强"
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：50/100　　**分析时间**：2026-07-13
+**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-07-27
 
-> 该脚本主要用于增强 VGen 网站的用户体验，包括价格展示、排序、筛选等功能。安全审查发现：1）脚本会向 vgen.co 官方 API 请求汇率数据，未发现向第三方服务器外传用户数据。2）脚本会读取 document.cookie 以解析货币信息，但未发现将 cookie 内容外传。3）未发现远程代码执行、代码混淆、DOM XSS、权限滥用、供应链风险等问题。整体风险为中等，建议关注 cookie 读取行为，确保不会被滥用。
+> The script does not transmit user data externally, does not collect sensitive information beyond reading a cookie for currency detection, does not execute remote code, and does not use obfuscation. No DOM XSS or supply chain risks are present. Overall, the script is safe with minor privacy collection.
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：https://api.vgen.co/exchange-rate） |
-| 隐私采集 | ❌ 检测到（读取 document.cookie 以解析 v-guest JWT） |
+| 数据外传 | ✅ 未检测到 |
+| 隐私采集 | ❌ 检测到（Reads document.cookie to extract v-guest JWT for currency detection） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -49,15 +49,15 @@ title: "VGen解锁增强"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本会向 https://api.vgen.co/exchange-rate 发起请求以获取汇率数据，但未发现向第三方或非官方服务器发送用户数据、页面内容或 Cookie。  
-> 位置：fetchExchangeRates()  
-> 建议：确认目标 API 为官方且可信，避免将敏感信息发送至第三方。
+**🟠 MEDIUM** — Privacy Collection  
+> The script reads document.cookie to extract the v-guest JWT for currency detection. No cookie data is transmitted externally.  
+> 位置：getSelectedCurrency() function  
+> 建议：Avoid reading cookies unless strictly necessary; do not transmit cookie data.
 
-**⛔ CRITICAL** — 隐私采集  
-> 脚本会读取 document.cookie 以尝试解析 v-guest JWT 并获取货币信息。  
-> 位置：getSelectedCurrency()  
-> 建议：避免读取 cookie 中的敏感信息，或确保不会外传。
+**🟡 LOW** — Network Request  
+> The script intercepts fetch requests and makes a request to https://api.vgen.co/exchange-rate to retrieve exchange rates. This is a first-party API and does not transmit user data or sensitive information.  
+> 位置：fetchExchangeRates() function  
+> 建议：Ensure only necessary data is requested and no user data is sent.
 
 ---
 

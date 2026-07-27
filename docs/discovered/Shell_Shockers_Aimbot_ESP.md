@@ -33,9 +33,9 @@ title: "蛋壳射击自动瞄准+透视"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-07-13
+**风险等级**：🟡 LOW　　**安全评分**：74/100　　**分析时间**：2026-07-27
 
-> 该脚本未检测到数据外传、远程代码执行、代码混淆、DOM XSS 或 WebSocket 使用。主要风险为申请了 unsafeWindow 权限（中等风险），但当前用途有限。localStorage 仅用于存储设置，无敏感信息。@require 的第三方库来源可信且锁定版本。整体安全风险较低，但建议定期复查权限申请和依赖库。
+> The script does not transmit data externally, does not collect sensitive privacy information, and does not use obfuscated code. The main risks are the use of unsafeWindow (HIGH) and supply chain risk from @require (MEDIUM). No DOM XSS, remote code execution, or WebSocket usage detected. Overall, the script is relatively safe for use, but caution is advised regarding permissions and supply chain integrity.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -44,24 +44,24 @@ title: "蛋壳射击自动瞄准+透视"
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ✅ 可信 |
+| 供应链风险 | ⚠️ 存在风险 |
 
 ### 发现的问题
 
-**🟠 MEDIUM** — 权限滥用  
-> 使用了 @grant unsafeWindow，允许脚本访问页面上下文，可能被滥用，但当前代码仅用于设置标志位。  
-> 位置：元数据 @grant unsafeWindow 及 saveSettings()、初始化部分  
-> 建议：仅在必要时申请 unsafeWindow，避免滥用，定期复查其用途。
+**🔴 HIGH** — Permission Abuse  
+> The script uses @grant unsafeWindow, which exposes the userscript context to the page and can be abused if the page is malicious.  
+> 位置：Metadata (@grant unsafeWindow)  
+> 建议：Avoid using unsafeWindow unless strictly necessary. Consider safer alternatives or restrict usage.
 
-**🟡 LOW** — 隐私采集  
-> 通过 localStorage 存储和读取设置，但未发现敏感信息（如账号、密码、cookie）被存储。  
-> 位置：localStorage 相关代码（SETTINGS_KEY、saveSettings、初始化）  
-> 建议：确保不存储敏感信息，避免与其他脚本共享存储空间。
+**🟠 MEDIUM** — Supply Chain Risk  
+> The script loads Babylon.js from jsdelivr CDN via @require. Although jsdelivr is a reputable CDN, the version is fixed but not hash-locked, which presents a supply chain risk.  
+> 位置：Metadata (@require https://cdn.jsdelivr.net/npm/babylonjs@7.15.0/babylon.min.js)  
+> 建议：Use hash-locked URLs or verify the integrity of third-party libraries. Monitor for supply chain attacks.
 
-**🟡 LOW** — 供应链风险  
-> @require 加载了 babylonjs，来源为 jsdelivr 官方 CDN，且指定了明确版本。  
-> 位置：@require https://cdn.jsdelivr.net/npm/babylonjs@7.15.0/babylon.min.js  
-> 建议：继续使用可信 CDN 并锁定版本，避免使用未知来源。
+**🟡 LOW** — Privacy Collection  
+> The script reads and writes settings to localStorage, which is a privacy consideration but does not transmit data externally.  
+> 位置：localStorage access (SETTINGS_KEY)  
+> 建议：Ensure only non-sensitive settings are stored. No external transmission detected.
 
 ---
 

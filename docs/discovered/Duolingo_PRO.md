@@ -33,45 +33,65 @@ title: "多邻国PRO增强版"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：50/100　　**分析时间**：2026-07-13
+**风险等级**：⛔ CRITICAL　　**安全评分**：25/100　　**分析时间**：2026-07-27
 
-> This script is HIGH RISK. It references and likely communicates with third-party servers (duolingopro.net, api.duolingopro.net), reads cookies, and contains UI for feedback and server-side actions. These behaviors present critical privacy and data exfiltration risks. The script is not obfuscated and does not request dangerous permissions, but the use of non-official domains for updates and icons increases supply chain risk. Do NOT use this script unless you fully trust the author and infrastructure. The security score is 50 due to multiple CRITICAL and MEDIUM issues. Full code review is recommended to identify further risks.
+> This script transmits data to third-party servers (duolingopro.net, api.duolingopro.net), reads cookies, and likely collects user input for feedback and auto-update features. There is DOM XSS risk due to unsanitized HTML rendering. No code obfuscation or supply chain risk detected. Security score is critically low due to data exfiltration and privacy collection.
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：https://www.duolingopro.net, https://api.duolingopro.net） |
-| 隐私采集 | ❌ 检测到（Reads document.cookie for 'lang' value） |
+| 隐私采集 | ❌ 检测到（Reads document.cookie for language setting, Likely collects user feedback and transmits to external server） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
-| DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ⚠️ 存在风险 |
+| DOM XSS 风险 | ❌ 存在风险 |
+| 供应链风险 | ✅ 可信 |
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Exfiltration / Third-party Communication  
-> The script defines server endpoints (https://www.duolingopro.net, https://api.duolingopro.net) and contains UI text referencing feedback submission, XP/gem redemption, and server-side processing. This strongly indicates network requests and user data transmission to third-party servers, even though the code is incomplete and the actual request logic is not shown in the snippet.  
-> 位置：Global scope, variables 'serverURL', 'apiURL', UI text, and feedback logic  
-> 建议：Do not use scripts that transmit user data or interact with third-party APIs unless you fully trust the source. Review the full code for explicit network request functions (fetch, GM_xmlhttpRequest, etc.) and block or remove them if privacy is a concern.
+**⛔ CRITICAL** — Data Exfiltration  
+> Script defines server endpoints (duolingopro.net, api.duolingopro.net) and references feedback sending, XP/gem redemption, and auto-update features, implying network requests to third-party servers.  
+> 位置：Global variables and systemText, feedback, update logic  
+> 建议：Review all network requests, ensure no sensitive user data (account, cookies, page content) is transmitted. Avoid sending user data to third-party servers.
 
 **⛔ CRITICAL** — Privacy Collection  
-> The script reads document.cookie to extract the 'lang' value, which may include session or authentication information depending on the site's implementation.  
+> Script reads document.cookie to extract language setting, which may include session or authentication cookies.  
 > 位置：let systemLanguage = document.cookie.split('; ').find(row => row.startsWith('lang=')).split('=')[1];  
-> 建议：Avoid reading cookies unless absolutely necessary. Ensure no sensitive information is read or transmitted. Review for further cookie or storage access in the full code.
+> 建议：Avoid reading cookies unless strictly necessary. Never transmit cookies to external servers.
 
-**🔴 HIGH** — Remote Code Execution Risk  
-> The script is not minified or obfuscated, but the code is incomplete. No eval, Function constructor, or dynamic script loading is visible in the provided snippet.  
-> 位置：N/A (based on provided code)  
-> 建议：Review the full code for any use of eval, new Function, setTimeout(string), or dynamic script injection. Avoid such patterns.
+**⛔ CRITICAL** — Privacy Collection  
+> Script references feedback sending and auto-update features, which likely involve transmitting user input and possibly page data to external servers.  
+> 位置：systemText, feedback logic (SEND, SENDING, SENT, Feedback Sent, Error Sending Feedback)  
+> 建议：Ensure user input is not transmitted without explicit consent. Avoid sending page content or sensitive data.
 
-**🟠 MEDIUM** — Permission Usage  
-> The script requests only GM_log permission, which is not dangerous. No excessive or unused permissions are declared.  
-> 位置：@grant GM_log  
-> 建议：Keep permissions minimal. No action needed unless further permissions are added in the full code.
+**🔴 HIGH** — DOM XSS  
+> Potential DOM XSS risk: systemText includes HTML fragments with user-controlled variables (e.g., {amount}, {timeMessage}) and uses innerHTML for rendering.  
+> 位置：systemText, HTML rendering logic  
+> 建议：Sanitize all user input and variables before inserting into innerHTML. Use textContent where possible.
 
-**🟠 MEDIUM** — Supply Chain Risk  
-> The script references external resources (icon, download/update URLs) from duolingopro.net, which is not an official Duolingo domain. This presents a supply chain risk if the domain is compromised or malicious.  
-> 位置：@icon, @downloadURL, @updateURL  
-> 建议：Only use scripts and resources from trusted and official sources. Avoid third-party script loaders unless you can verify their integrity.
+**🔴 HIGH** — DOM Manipulation  
+> Script uses document.body.appendChild to insert DOM elements for duplicate detection, but does not sanitize input. May be vulnerable if attacker controls attributes.  
+> 位置：duplicateDetectionMarker logic  
+> 建议：Ensure only trusted values are used for DOM manipulation.
+
+**🟡 LOW** — Obfuscation  
+> No evidence of code obfuscation or minification in the provided code.  
+> 位置：Global code  
+> 建议：Maintain readable, non-obfuscated code for transparency.
+
+**🟡 LOW** — Remote Code Execution  
+> No evidence of eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection in the provided code.  
+> 位置：Global code  
+> 建议：Avoid dynamic code execution.
+
+**🟡 LOW** — Supply Chain  
+> No @require third-party libraries or supply chain risk detected in metadata.  
+> 位置：Metadata  
+> 建议：If adding @require, use official CDN and fixed version.
+
+**🟡 LOW** — Permission Usage  
+> Script only requests GM_log permission, which is appropriate and not excessive.  
+> 位置：Metadata  
+> 建议：Do not request unnecessary permissions.
 
 ---
 

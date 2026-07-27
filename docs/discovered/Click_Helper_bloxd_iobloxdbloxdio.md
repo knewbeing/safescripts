@@ -49,14 +49,14 @@ title: "点击助手（Bloxd.io 游戏专用）"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：50/100　　**分析时间**：2026-07-13
+**风险等级**：🟠 MEDIUM　　**安全评分**：69/100　　**分析时间**：2026-07-27
 
-> 该脚本未检测到数据外传、远程代码执行、代码混淆、DOM XSS、WebSocket 使用、供应链风险等高危行为。但存在对 localStorage 和 document.cookie 的读取和清除，属于高危隐私采集行为。未发现网络请求或外部数据传输。整体风险为 HIGH，建议仅在信任环境下使用。
+> 该脚本未检测到数据外传、WebSocket、第三方统计或追踪行为，也未发现代码混淆和 DOM XSS 风险。主要风险为 localStorage 读写（中等隐私风险）、cookie 清除（中等敏感 API 风险）以及 setTimeout(string) 的高风险远程代码执行隐患。整体安全性中等，建议优化 setTimeout 用法并注意存储数据类型。
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ✅ 未检测到 |
-| 隐私采集 | ❌ 检测到（读取和写入 localStorage, 读取和清除 document.cookie） |
+| 隐私采集 | ❌ 检测到（localStorage 读取和写入） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -64,15 +64,20 @@ title: "点击助手（Bloxd.io 游戏专用）"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 隐私采集  
-> 脚本读取和写入 localStorage，用于保存和加载用户设置和按键绑定。  
-> 位置：StorageManager.loadBinds, StorageManager.loadSettings, StorageManager.saveBinds, StorageManager.saveSettings  
-> 建议：仅保存必要的非敏感设置，避免存储敏感信息。
+**🔴 HIGH** — 远程代码执行  
+> 脚本通过 setTimeout(string) 用于 debounce 保存设置。  
+> 位置：StorageManager.debouncedSave  
+> 建议：建议使用 setTimeout(function) 替代字符串形式，避免潜在远程代码执行风险。
 
-**⛔ CRITICAL** — 隐私采集  
-> 脚本读取和清除 document.cookie，尤其在 AccountModule.clearAndReload 中清除所有 cookie。  
-> 位置：AccountModule.clearAndReload  
-> 建议：避免操作敏感 cookie，确保不会误删安全相关 cookie。
+**🟠 MEDIUM** — 隐私采集  
+> 脚本读取和写入 localStorage，用于保存和加载用户设置与按键绑定。  
+> 位置：StorageManager.loadBinds(), StorageManager.loadSettings(), StorageManager.saveBinds(), StorageManager.saveSettings()  
+> 建议：仅存储必要的非敏感数据，避免存储敏感信息如密码、账号等。
+
+**🟠 MEDIUM** — 敏感 API 调用  
+> 脚本清除所有 cookie 和 localStorage 数据，用于账号生成/切换。  
+> 位置：AccountModule.clearAndReload()  
+> 建议：确保不会误清除用户重要数据，提示用户操作风险。
 
 ---
 

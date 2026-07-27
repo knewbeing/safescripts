@@ -30,9 +30,9 @@ title: "Shell Shockers Basic Aimbot + ESP: LibertyMutualV1"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：84/100　　**分析时间**：2026-07-13
+**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-07-27
 
-> 该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。仅存在中等风险的权限申请（@grant unsafeWindows）和供应链依赖（@require 第三方库），但依赖来源可信且版本固定。整体安全性较高。
+> 该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 调用、WebSocket 使用等高风险行为。主要风险为申请了高权限（unsafeWindows）和第三方库依赖，但均未被滥用。整体安全性较高，建议关注依赖库安全和权限申请合理性。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -46,14 +46,14 @@ title: "Shell Shockers Basic Aimbot + ESP: LibertyMutualV1"
 ### 发现的问题
 
 **🟠 MEDIUM** — 权限滥用  
-> 申请了 @grant unsafeWindows 权限，但代码中仅用于访问 unsafeWindow，无进一步高危操作。  
-> 位置：元数据与全局作用域  
-> 建议：如无必要，建议移除 @grant unsafeWindows 权限，降低潜在风险。
+> 申请了 unsafeWindows 权限，但实际代码只用于访问 unsafeWindow 对象，没有进一步滥用或敏感操作。  
+> 位置：元数据 @grant  
+> 建议：如无必要可移除高权限申请，或限制使用范围。
 
 **🟠 MEDIUM** — 供应链风险  
-> 通过 @require 加载了 babylonjs 和 crypto-js，均为知名 CDN 且指定了明确版本号。  
-> 位置：元数据  
-> 建议：建议定期检查依赖库的安全性，确保未被污染。
+> 通过 @require 加载 babylonjs 和 crypto-js，均为官方 CDN 且指定版本，供应链风险较低。  
+> 位置：元数据 @require  
+> 建议：建议持续关注依赖库安全公告，确保版本安全。
 
 ---
 

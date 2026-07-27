@@ -9,38 +9,24 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 GM_xmlhttpRequest 主动向第三方服务器 xbaidu.ntaow.com 发起网络请求，获取数据。虽然当前未携带用户数据，但存在外部通信行为。",
+      "description": "脚本通过 GM_xmlhttpRequest 向第三方服务器 xbaidu.ntaow.com 发起 GET 请求，可能泄露用户访问页面的相关信息。",
       "location": "GM_xmlhttpRequest 调用",
-      "recommendation": "仅允许可信服务器通信，避免发送敏感信息。",
+      "recommendation": "仅允许请求可信域名，避免请求第三方服务器，或明确说明用途并限制数据传输内容。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限，并实际使用。未发现权限滥用。",
-      "location": "@grant 元数据与实际代码",
-      "recommendation": "仅申请必要权限。",
+      "description": "脚本申请了 GM_xmlhttpRequest 权限，并实际使用该权限进行网络请求。",
+      "location": "@grant GM_xmlhttpRequest",
+      "recommendation": "确保仅申请和使用必要权限，避免权限滥用。",
       "severity": "MEDIUM",
-      "type": "权限申请"
+      "type": "权限滥用"
     },
     {
-      "description": "未发现 eval、new Function、setTimeout(string) 等远程代码执行风险。",
-      "location": "全局",
-      "recommendation": "保持当前实现，避免动态执行字符串代码。",
-      "severity": "LOW",
-      "type": "远程代码执行"
-    },
-    {
-      "description": "未发现代码混淆、base64 解码、字符串数组混淆等特征。",
-      "location": "全局",
-      "recommendation": "保持代码可读性，便于安全审计。",
-      "severity": "LOW",
-      "type": "代码混淆"
-    },
-    {
-      "description": "@require 未使用，未发现供应链风险。",
-      "location": "元数据",
-      "recommendation": "如需加载第三方库，建议使用官方 CDN 并锁定版本。",
-      "severity": "LOW",
+      "description": "脚本通过 @connect 指定了 xbaidu.ntaow.com，存在供应链风险，因该域名非官方 CDN。",
+      "location": "@connect xbaidu.ntaow.com",
+      "recommendation": "建议仅连接官方、可信的第三方服务，避免供应链污染。",
+      "severity": "MEDIUM",
       "type": "供应链风险"
     }
   ],
@@ -49,12 +35,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "MEDIUM",
+  "risk_level": "HIGH",
   "script_name": "AC-有道取词+翻译-库文件",
-  "security_score": 67,
-  "summary": "该脚本作为库文件，主要通过 GM_xmlhttpRequest 向第三方服务器 xbaidu.ntaow.com 获取 SoGouKey。未发现用户数据、页面内容或隐私信息被采集和外传，也未发现远程代码执行、代码混淆、DOM XSS 等高危行为。主要风险在于主动与第三方服务器通信，存在一定的数据外传风险。建议仅在可信环境下使用，并关注第三方服务器的安全性。",
-  "supply_chain_risk": false,
+  "security_score": 42,
+  "summary": "该脚本存在严重的数据外传风险，向第三方服务器发起网络请求，且存在供应链风险。未检测到隐私采集、代码混淆或 DOM XSS。建议限制网络请求目标并加强供应链安全。",
+  "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:46:36.676359+00:00",
+  "analyzed_at": "2026-07-27T05:56:58.843474+00:00",
   "slug": "SearchBlock"
 }

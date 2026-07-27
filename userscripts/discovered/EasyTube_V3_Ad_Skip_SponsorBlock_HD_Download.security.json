@@ -2,71 +2,85 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
-      "sponsor.ajay.app",
-      "co.wuk.sh",
-      "cobalt.api.timelessnesses.me",
-      "api.cobalt.tools"
+      "https://sponsor.ajay.app/api/skipSegments",
+      "https://co.wuk.sh",
+      "https://cobalt.api.timelessnesses.me",
+      "https://api.cobalt.tools"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script uses GM_xmlhttpRequest to communicate with third-party APIs (SponsorBlock and multiple Cobalt instances) for segment skipping and video downloading. These requests may include YouTube video IDs and possibly other metadata, which could be considered user data.",
-      "location": "CFG.sbApi, CFG.cobaltInstances, and related logic (network requests to sponsor.ajay.app, co.wuk.sh, cobalt.api.timelessnesses.me, api.cobalt.tools)",
-      "recommendation": "Document all data sent to third-party APIs. Consider proxying requests or informing users about privacy implications. Limit data to only what is strictly necessary.",
+      "description": "Script uses GM_xmlhttpRequest to communicate with SponsorBlock API and multiple Cobalt instances for video download. These are third-party servers and may receive YouTube video IDs and possibly other metadata.",
+      "location": "CFG.sbApi, CFG.cobaltInstances, GM_xmlhttpRequest usage",
+      "recommendation": "Ensure only minimal, non-sensitive data is sent. Review SponsorBlock and Cobalt privacy policies.",
       "severity": "CRITICAL",
-      "type": "Data Exfiltration"
+      "type": "Data Transmission"
     },
     {
-      "description": "The script stores and retrieves user toggle settings (ad skip, SponsorBlock, quality) using GM_setValue/GM_getValue. While this is local, it does not appear to collect sensitive data. No evidence of reading cookies, clipboard, or keylogging.",
-      "location": "Persistent state section (GM_setValue/GM_getValue)",
-      "recommendation": "Ensure no sensitive user data is stored or transmitted. Document what is stored for transparency.",
+      "description": "Script stores and retrieves user toggle settings and state using GM_setValue/GM_getValue. No evidence of sensitive data collection (cookies, passwords, clipboard, etc.), but persistent storage is used.",
+      "location": "GM_setValue, GM_getValue",
+      "recommendation": "Do not store sensitive information. Document what is stored for transparency.",
       "severity": "MEDIUM",
       "type": "Privacy Collection"
     },
     {
-      "description": "The script requests GM_xmlhttpRequest permission, which is necessary for cross-origin API calls, but does not request other high-risk permissions. No evidence of unused high-privilege grants.",
-      "location": "@grant section in metadata",
-      "recommendation": "Keep permissions minimal and only request those strictly necessary.",
+      "description": "Script requests GM_xmlhttpRequest permission and @connect for multiple domains, but only uses these for SponsorBlock and Cobalt APIs. No evidence of excessive or unused permissions.",
+      "location": "@grant GM_xmlhttpRequest, @connect",
+      "recommendation": "Limit @connect domains to only those strictly necessary. Periodically review for unused permissions.",
       "severity": "MEDIUM",
       "type": "Permission Usage"
     },
     {
-      "description": "No evidence of eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection. No obfuscation or minified code detected.",
-      "location": "Full script body",
-      "recommendation": "Maintain code clarity and avoid introducing dynamic code execution.",
+      "description": "No evidence of eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection. No remote code execution risk detected.",
+      "location": "Full script review",
+      "recommendation": "Continue to avoid dynamic code execution.",
       "severity": "LOW",
       "type": "Remote Code Execution"
     },
     {
-      "description": "The script does not appear to introduce DOM XSS or inject untrusted user input into the DOM. No use of innerHTML/outerHTML with untrusted data.",
-      "location": "UI and toast functions",
-      "recommendation": "Continue to avoid inserting untrusted data into the DOM without sanitization.",
+      "description": "No code obfuscation detected. Code is readable and not minified or encoded.",
+      "location": "Full script review",
+      "recommendation": "Maintain code transparency.",
+      "severity": "LOW",
+      "type": "Obfuscation"
+    },
+    {
+      "description": "No DOM XSS risk detected. User input and URL parameters are not inserted into innerHTML/outerHTML unsafely.",
+      "location": "Full script review",
+      "recommendation": "Continue to sanitize any future user input.",
       "severity": "LOW",
       "type": "DOM XSS"
     },
     {
-      "description": "@require is not used; all code is local. No supply chain risk from external libraries.",
+      "description": "No supply chain risk detected. No @require or external library loading.",
       "location": "Metadata block",
-      "recommendation": "If adding @require in the future, use only official, version-pinned sources.",
+      "recommendation": "If adding @require, use official CDN and fixed version.",
       "severity": "LOW",
-      "type": "Supply Chain Risk"
+      "type": "Supply Chain"
+    },
+    {
+      "description": "No WebSocket/EventSource usage detected.",
+      "location": "Full script review",
+      "recommendation": "Avoid real-time external connections unless necessary.",
+      "severity": "LOW",
+      "type": "WebSocket Usage"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "Stores toggle settings (ad skip, SponsorBlock, quality) locally via GM_setValue/GM_getValue"
+      "Persistent toggle settings stored via GM_setValue/GM_getValue"
     ],
     "detected": false
   },
-  "risk_level": "MEDIUM",
+  "risk_level": "HIGH",
   "script_name": "EasyTube V3 — Ad Skip, SponsorBlock & HD Download⬇️🚀",
-  "security_score": 67,
-  "summary": "The script is generally well-structured and does not use obfuscation, dynamic code execution, or introduce DOM XSS. The main security concern is the transmission of YouTube video IDs and possibly other metadata to third-party APIs (SponsorBlock and Cobalt instances) for ad skipping and video downloading. No evidence of sensitive privacy data collection or supply chain risk. Permissions are appropriate for the functionality. Users should be aware of the privacy implications of using third-party APIs for SponsorBlock and video download.",
+  "security_score": 50,
+  "summary": "The script communicates with third-party APIs (SponsorBlock and Cobalt) to provide ad skipping and video downloading features. While no sensitive user data (cookies, passwords, clipboard, etc.) is collected, YouTube video IDs and possibly metadata are sent to external servers. No code execution, obfuscation, DOM XSS, or supply chain risks detected. Persistent settings are stored locally. Overall, the main risk is data transmission to third-party services, which warrants caution and transparency.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:35:02.160580+00:00",
+  "analyzed_at": "2026-07-27T05:48:47.598073+00:00",
   "slug": "EasyTube_V3_Ad_Skip_SponsorBlock_HD_Download"
 }

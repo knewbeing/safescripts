@@ -12,67 +12,18 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script constructs download URLs using third-party services (y2mate.stream, africabazaar.co.za, saveanyyoutube.com, scoozy.ca) and opens them with the current YouTube video ID. This may leak user activity (video IDs, possibly referrer) to external servers.",
-      "location": "MultiURL array and button click handler (not fully shown, but implied by code structure)",
-      "recommendation": "Warn users about privacy risks. Only use trusted download services. Avoid sending sensitive data to third parties.",
+      "description": "脚本通过构造下载按钮，用户点击后会跳转到第三方下载网站（如 y2mate.stream、africabazaar.co.za、saveanyyoutube.com、scoozy.ca），这些网站可能会收集用户数据或页面信息。",
+      "location": "MultiURL 数组与按钮点击事件",
+      "recommendation": "警告用户这些第三方网站可能存在隐私和安全风险，建议仅使用可信的下载服务。",
       "severity": "CRITICAL",
-      "type": "Data Exfiltration"
+      "type": "数据外传"
     },
     {
-      "description": "The script does not appear to collect cookies, localStorage, or other sensitive browser data, nor does it listen to keyboard or clipboard events.",
-      "location": "Global scope and main logic",
-      "recommendation": "No action needed.",
+      "description": "脚本未申请高权限，仅使用 GM_addStyle，未检测到敏感 API 调用、远程代码执行、代码混淆、DOM XSS、供应链风险等问题。",
+      "location": "元数据与主代码结构",
+      "recommendation": "保持最小权限原则，避免后续版本申请不必要的高权限。",
       "severity": "LOW",
-      "type": "Privacy Collection"
-    },
-    {
-      "description": "No use of eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection detected in the visible code.",
-      "location": "Global scope and main logic",
-      "recommendation": "No action needed.",
-      "severity": "LOW",
-      "type": "Remote Code Execution"
-    },
-    {
-      "description": "No code obfuscation detected in the visible code. Code is readable and not minified/obfuscated.",
-      "location": "Global scope and main logic",
-      "recommendation": "No action needed.",
-      "severity": "LOW",
-      "type": "Obfuscation"
-    },
-    {
-      "description": "No DOM XSS or injection risk detected in the visible code. No user input is inserted into the DOM via innerHTML/outerHTML/document.write.",
-      "location": "Global scope and main logic",
-      "recommendation": "No action needed.",
-      "severity": "LOW",
-      "type": "DOM XSS"
-    },
-    {
-      "description": "The script only requests GM_addStyle, which is appropriate for its functionality. No excessive permissions requested.",
-      "location": "@grant metadata",
-      "recommendation": "No action needed.",
-      "severity": "LOW",
-      "type": "Permission Abuse"
-    },
-    {
-      "description": "No use of sensitive APIs (geolocation, WebRTC, MediaDevices, Clipboard, Notification) detected.",
-      "location": "Global scope and main logic",
-      "recommendation": "No action needed.",
-      "severity": "LOW",
-      "type": "Sensitive API"
-    },
-    {
-      "description": "No @require or dynamic loading of third-party libraries detected. All code is inline.",
-      "location": "Metadata and code",
-      "recommendation": "No action needed.",
-      "severity": "LOW",
-      "type": "Supply Chain Risk"
-    },
-    {
-      "description": "No iframe manipulation or frame protection bypass detected.",
-      "location": "Global scope and main logic",
-      "recommendation": "No action needed.",
-      "severity": "LOW",
-      "type": "ClickJacking/iframe"
+      "type": "权限滥用"
     }
   ],
   "obfuscation_detected": false,
@@ -83,9 +34,9 @@
   "risk_level": "HIGH",
   "script_name": "YouTube™ Ultimate Downloader v12.7 👑🌍 — Desktop & Mobile | Shorts, Videos & Music 🔥 - AdBlock 🛡️🚫",
   "security_score": 75,
-  "summary": "This script adds a floating download button to YouTube, which sends the current video ID to several third-party download services. This constitutes a privacy risk, as user activity (video IDs, possibly referrer) is leaked to external servers. No other critical or high-risk behaviors (such as code execution, obfuscation, or sensitive data collection) were detected. The script requests minimal permissions and does not use dangerous APIs. The main risk is data exfiltration to untrusted third-party sites.",
+  "summary": "该脚本主要风险在于将用户引导至第三方下载网站，存在数据外传和隐私泄露风险。未检测到代码混淆、远程代码执行、敏感 API 调用等高危行为。建议用户谨慎使用，警惕第三方下载服务的安全与隐私问题。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:51:55.405310+00:00",
+  "analyzed_at": "2026-07-27T06:01:29.062108+00:00",
   "slug": "YouTube_Ultimate_Downloader_v127_Desktop_Mobile_Shorts_Videos_Music_-_AdBlock"
 }

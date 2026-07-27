@@ -33,9 +33,9 @@ title: "Telegram图片视频下载器（优化加强版）"
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-07-13
+**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-07-27
 
-> 该脚本未检测到任何安全风险。未发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用、供应链风险或 iframe 风险。代码结构清晰，未申请任何 @grant 权限，且无外部依赖。
+> 该脚本仅包含元数据，无实际功能代码。未检测到任何安全风险，未涉及数据外传、隐私采集、远程代码执行、混淆、DOM 注入、权限滥用、敏感 API、供应链或 iframe 风险。安全评分为 100，风险等级 SAFE。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -46,7 +46,52 @@ title: "Telegram图片视频下载器（优化加强版）"
 | DOM XSS 风险 | ✅ 未检测到 |
 | 供应链风险 | ✅ 可信 |
 
-### 未发现安全问题 ✅
+### 发现的问题
+
+**⛔ CRITICAL** — 数据外传检查  
+> 脚本未包含任何网络请求代码（如 fetch、GM_xmlhttpRequest、WebSocket 等），不存在数据外传风险。  
+> 位置：全局  
+> 建议：保持现状，勿添加外部数据传输逻辑。
+
+**⛔ CRITICAL** — 隐私采集检查  
+> 脚本未访问 document.cookie、localStorage、sessionStorage、IndexedDB，也未监听键盘输入或读取表单字段，未涉及隐私采集。  
+> 位置：全局  
+> 建议：保持现状，勿添加隐私采集逻辑。
+
+**🔴 HIGH** — 远程代码执行检查  
+> 脚本未使用 eval、new Function、setTimeout(string)、setInterval(string)、innerHTML/outerHTML 插入脚本、@require 或 document.write，未涉及远程代码执行风险。  
+> 位置：全局  
+> 建议：保持现状，勿动态执行或加载外部代码。
+
+**🔴 HIGH** — 代码混淆检查  
+> 脚本未使用任何混淆技术（如 base64 解码、字符串数组映射、unicode 混淆、高度压缩单行代码）。  
+> 位置：全局  
+> 建议：保持代码可读性，勿混淆。
+
+**🔴 HIGH** — DOM XSS/注入检查  
+> 脚本未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未使用 document.write 插入不可信内容，未操作 iframe src 为 javascript: 协议。  
+> 位置：全局  
+> 建议：保持现状，勿插入不可信内容。
+
+**🟠 MEDIUM** — 权限滥用检查  
+> 脚本未申请任何 GM_* 权限（@grant none），不存在权限滥用风险。  
+> 位置：元数据  
+> 建议：仅申请必要权限。
+
+**🟠 MEDIUM** — 敏感 API 调用检查  
+> 脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。  
+> 位置：全局  
+> 建议：仅在必要场景调用敏感 API。
+
+**🟠 MEDIUM** — 供应链风险检查  
+> 脚本未通过 @require 加载第三方库，无供应链风险。  
+> 位置：元数据  
+> 建议：如需加载第三方库，建议使用官方 CDN 并固定版本哈希。
+
+**🟡 LOW** — ClickJacking/iframe 风险检查  
+> 脚本未修改 frame 保护策略，也未创建隐藏 iframe 用于数据提取。  
+> 位置：全局  
+> 建议：勿滥用 iframe。
 
 ---
 

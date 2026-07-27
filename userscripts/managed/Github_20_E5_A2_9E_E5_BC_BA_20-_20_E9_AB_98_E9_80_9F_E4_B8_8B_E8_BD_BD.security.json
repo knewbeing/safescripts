@@ -1,22 +1,120 @@
 {
   "approved": true,
   "data_transmission": {
-    "destinations": [],
-    "detected": false
+    "destinations": [
+      "gh.h233.eu.org",
+      "gh.ddlc.top",
+      "gh-proxy.org",
+      "cdn.gh-proxy.org",
+      "edgeone.gh-proxy.org",
+      "cors.isteed.cc",
+      "ghproxy.it",
+      "github.boki.moe",
+      "gh.jasonzeng.dev",
+      "gh.monlor.com",
+      "github.geekery.cn",
+      "github.ednovas.xyz",
+      "ghfile.geekertao.top",
+      "ghp.keleyaa.com",
+      "gh.chjina.com",
+      "ghpxy.hwinzniej.top",
+      "cdn.crashmc.com",
+      "git.yylx.win",
+      "gitproxy.mrhjx.cn",
+      "ghproxy.cxkpro.top",
+      "gh.xxooo.cf",
+      "gh.idayer.com",
+      "down.npee.cn",
+      "raw.ihtw.moe",
+      "xget.xi-xu.me",
+      "gh.zwy.one",
+      "ghproxy.monkeyray.net",
+      "ghproxy.net",
+      "ghfast.top",
+      "wget.la",
+      "gitclone.com",
+      "hk.gh-proxy.org",
+      "githubfast.com"
+    ],
+    "detected": true
   },
   "dom_xss_risk": false,
-  "issues": [],
+  "issues": [
+    {
+      "description": "脚本通过构造下载链接，将用户请求重定向到第三方加速代理服务器（如 gh.h233.eu.org、gh-proxy.org 等），存在数据外传风险。虽然主要用于下载 Github 文件，但用户的请求、URL、可能的 Referer 信息会被第三方服务器获取。",
+      "location": "download_url_us、clone_url、raw_url 等数组及相关下载逻辑",
+      "recommendation": "提醒用户这些加速节点为第三方，下载敏感内容时需谨慎。建议仅用于公开项目，避免下载私有仓库或敏感文件。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本未检测到主动采集用户隐私数据（如 cookie、localStorage、表单、剪贴板等），也未监听键盘输入或访问指纹 API。",
+      "location": "全局代码",
+      "recommendation": "保持现有设计，避免后续加入隐私采集逻辑。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等动态代码执行方式，也未通过 innerHTML/outerHTML 插入外部脚本。",
+      "location": "全局代码",
+      "recommendation": "保持现有设计，避免后续加入远程代码执行相关功能。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本未检测到代码混淆、base64 解码执行、字符串数组映射或高度压缩单行代码。",
+      "location": "全局代码",
+      "recommendation": "保持代码可读性，便于社区审查。",
+      "severity": "HIGH",
+      "type": "代码混淆"
+    },
+    {
+      "description": "脚本未检测到 DOM XSS 风险（未直接将用户输入或 URL 参数插入 innerHTML/outerHTML）。",
+      "location": "全局代码",
+      "recommendation": "继续避免直接插入不可信内容到 DOM。",
+      "severity": "HIGH",
+      "type": "DOM XSS / 注入"
+    },
+    {
+      "description": "脚本申请了 GM_openInTab、GM_notification、GM_setClipboard 等权限，但实际代码未检测到滥用行为。",
+      "location": "元数据 @grant",
+      "recommendation": "建议仅申请实际需要的权限，减少潜在攻击面。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API），仅申请 GM_notification 用于通知。",
+      "location": "全局代码",
+      "recommendation": "保持现有设计，避免后续加入敏感 API 调用。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "脚本未通过 @require 加载第三方库，所有代码均为本地实现，无供应链风险。",
+      "location": "元数据 @require",
+      "recommendation": "如需引入第三方库，建议使用官方 CDN 并固定版本哈希。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    },
+    {
+      "description": "脚本未检测到修改 frame 保护策略或创建隐藏 iframe 用于数据提取。",
+      "location": "全局代码",
+      "recommendation": "继续避免 iframe 相关风险。",
+      "severity": "LOW",
+      "type": "ClickJacking / iframe 风险"
+    }
+  ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
     "detected": false
   },
-  "risk_level": "SAFE",
+  "risk_level": "HIGH",
   "script_name": "Github Enhancement - High Speed Download",
-  "security_score": 100,
-  "summary": "该脚本仅提供元数据，无任何实际代码，因此不存在数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 ClickJacking/iframe 风险。安全评分为满分100分。",
+  "security_score": 35,
+  "summary": "该脚本主要通过第三方加速节点实现 Github 文件高速下载，存在数据外传风险（用户请求、URL、Referer 等会被第三方服务器获取）。未检测到隐私采集、远程代码执行、代码混淆、DOM XSS、供应链风险等问题。建议用户仅用于公开项目下载，避免敏感内容通过第三方节点传输。整体安全性为高风险，安全评分为 35。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-20T05:30:36.864837+00:00",
+  "analyzed_at": "2026-07-27T05:41:50.394083+00:00",
   "slug": "Github_20_E5_A2_9E_E5_BC_BA_20-_20_E9_AB_98_E9_80_9F_E4_B8_8B_E8_BD_BD"
 }

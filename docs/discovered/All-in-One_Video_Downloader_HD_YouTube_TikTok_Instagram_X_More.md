@@ -51,13 +51,13 @@ title: "多合一视频下载器（支持：YouTube, TikTok, Instagram等）"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：47/100　　**分析时间**：2026-07-13
+**风险等级**：🔴 HIGH　　**安全评分**：52/100　　**分析时间**：2026-07-27
 
-> 该脚本仅提供了元数据区，未包含任何实际可审查的 JavaScript 代码逻辑，无法判断其真实行为。元数据中申请了大量高权限（如 GM_openInTab、GM_xmlhttpRequest、GM_download、unsafeWindow），但未见实际用途，存在权限滥用风险。未发现数据外传、隐私采集、远程代码执行、混淆、XSS 等直接证据，但由于缺乏代码，无法排除高危行为。安全风险极高，不建议在生产环境或主力浏览器中安装。
+> 该脚本主要用于视频下载，声明了大量第三方 CDN 网络权限，存在数据外传风险。未见明显隐私采集、代码混淆或 DOM XSS，但申请了高权限（GM_xmlhttpRequest、GM_openInTab、GM_download、unsafeWindow），存在远程代码执行和权限滥用隐患。建议进一步审查实际代码逻辑，限制权限申请和网络请求用途。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ✅ 未检测到 |
+| 数据外传 | ❌ 检测到（目标：googlevideo.com, tiktokcdn.com, snssdk.com） |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
@@ -66,20 +66,25 @@ title: "多合一视频下载器（支持：YouTube, TikTok, Instagram等）"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 代码缺失/不可审查  
-> 脚本未展示任何实际代码逻辑，无法判断是否存在数据外传、隐私采集、远程代码执行、混淆、XSS 等高危行为。  
-> 位置：整体代码  
-> 建议：应提供完整可审查的脚本代码，避免仅有元数据。
+**⛔ CRITICAL** — Data Transmission  
+> 脚本申请了 GM_xmlhttpRequest 权限，并声明 @connect 多个第三方视频 CDN，存在数据外传风险。虽然主要用于视频下载，但无法确认是否仅用于合法下载行为。  
+> 位置：元数据 @grant/@connect  
+> 建议：限制 GM_xmlhttpRequest 的用途，仅用于视频文件下载，避免发送用户敏感数据。建议代码层面审查所有网络请求。
 
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_openInTab、GM.openInTab、GM_xmlhttpRequest、GM_download、unsafeWindow 等高权限，但代码未展示实际用途，存在权限滥用风险。  
-> 位置：@grant 元数据  
-> 建议：仅申请实际需要的权限，移除未使用的高权限。
+**🔴 HIGH** — Remote Code Execution  
+> 脚本申请了 unsafeWindow 权限，可能导致远程代码执行或与页面脚本交互带来安全隐患。  
+> 位置：元数据 @grant  
+> 建议：避免使用 unsafeWindow，除非确实需要与页面脚本通信且已做安全隔离。
 
-**🟡 LOW** — 供应链风险  
-> 脚本未 @require 任何第三方库，供应链风险较低。  
-> 位置：@require 元数据  
-> 建议：如需引入第三方库，建议使用可信官方 CDN 并锁定版本。
+**🟠 MEDIUM** — Permission Abuse  
+> 脚本申请了 GM_openInTab 和 GM_download 权限，但代码未展示实际用途，存在权限滥用风险。  
+> 位置：元数据 @grant  
+> 建议：仅申请实际需要的权限，移除未使用或高风险权限。
+
+**🟠 MEDIUM** — Supply Chain Risk  
+> 未见 @require 第三方库，但 update/download URL 来自 greasyfork 官方，供应链风险较低。  
+> 位置：元数据 @require/@downloadURL/@updateURL  
+> 建议：如需引入第三方库，建议固定版本哈希并使用官方 CDN。
 
 ---
 

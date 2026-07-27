@@ -10,32 +10,46 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 XMLHttpRequest 方式与第三方代理服务器（https://youtube-proxy.zerody.one 和 https://ny.4everproxy.com）通信以绕过 YouTube 年龄限制，可能传递视频 ID、认证头等信息。",
+      "description": "脚本通过 XMLHttpRequest 访问外部代理服务器（https://youtube-proxy.zerody.one 和 https://ny.4everproxy.com），用于绕过 YouTube 年龄限制。可能会传递视频 ID、请求参数等，但未发现传递用户敏感数据（如 Cookie、账号信息）。",
       "location": "ACCOUNT_PROXY_SERVER_HOST, VIDEO_PROXY_SERVER_HOST, getSignatureTimestamp()",
-      "recommendation": "确保代理服务器可信，建议用户自建代理或审查代理服务端代码。",
+      "recommendation": "确保代理服务器可信，避免敏感信息泄露。建议用户自行搭建代理或审查官方代理隐私政策。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本通过 eval 注入自身到主页面上下文以绕过沙箱限制。",
+      "description": "脚本使用 window.eval 注入自身到主窗口，绕过 Greasemonkey 沙箱限制。虽然用途明确，但 eval 属于高风险远程代码执行方式。",
       "location": "window.eval('(' + iife.toString() + ')(true);')",
       "recommendation": "避免使用 eval，改用安全的注入方式。",
       "severity": "HIGH",
       "type": "远程代码执行"
     },
     {
-      "description": "脚本为兼容性目的使用了 window.eval，但未发现混淆、加密或隐藏恶意行为。",
-      "location": "window.eval('(' + iife.toString() + ')(true);')",
-      "recommendation": "仅限于必要场景使用，建议注明用途。",
-      "severity": "HIGH",
+      "description": "脚本未混淆，代码结构清晰，部分变量名和注释保留。",
+      "location": "整体代码",
+      "recommendation": "无需处理。",
+      "severity": "LOW",
       "type": "代码混淆"
     },
     {
-      "description": "脚本未使用 @grant 权限，符合最小权限原则。",
-      "location": "@grant none",
-      "recommendation": "无。",
+      "description": "脚本未申请任何 GM_* 权限，@grant 为 none，权限申请合理。",
+      "location": "元数据 @grant none",
+      "recommendation": "无需处理。",
       "severity": "LOW",
       "type": "权限滥用"
+    },
+    {
+      "description": "脚本未使用敏感 API（如 geolocation、MediaDevices、Clipboard、Notification）。",
+      "location": "整体代码",
+      "recommendation": "无需处理。",
+      "severity": "LOW",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "脚本未通过 @require 加载第三方库，无供应链风险。",
+      "location": "元数据",
+      "recommendation": "无需处理。",
+      "severity": "LOW",
+      "type": "供应链风险"
     }
   ],
   "obfuscation_detected": false,
@@ -46,9 +60,9 @@
   "risk_level": "HIGH",
   "script_name": "Simple YouTube Age Restriction Bypass",
   "security_score": 60,
-  "summary": "该脚本通过第三方代理服务器绕过 YouTube 年龄限制，涉及用户请求数据外传，存在一定隐私和供应链风险。未发现主动采集用户隐私数据、键盘监听、指纹收集等行为。代码结构清晰，无明显混淆，但使用了 eval 进行上下文注入。建议仅在信任代理服务器的前提下使用。",
-  "supply_chain_risk": true,
+  "summary": "该脚本主要通过代理服务器绕过 YouTube 年龄限制，存在数据外传风险（视频请求会发送到第三方代理服务器），但未发现敏感用户数据采集。使用 eval 注入自身到主窗口，属于高风险远程代码执行方式。未发现代码混淆、DOM XSS、权限滥用、敏感 API 调用或供应链风险。建议用户关注代理服务器隐私政策，避免敏感信息泄露。",
+  "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:47:03.376200+00:00",
+  "analyzed_at": "2026-07-27T05:57:26.682737+00:00",
   "slug": "Simple_YouTube_Age_Restriction_Bypass"
 }

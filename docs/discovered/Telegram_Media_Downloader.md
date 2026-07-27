@@ -32,9 +32,9 @@ title: "Telegram受限图片视频下载器"
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-07-13
+**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-07-27
 
-> 该脚本仅在 Telegram 官方 Web 站点下运行，功能为下载受限频道的媒体内容。未发现任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用、供应链或 iframe 风险。整体实现安全，未发现安全隐患。
+> 该脚本仅用于在 Telegram Web 客户端下载受限媒体内容，未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。安全评分为 100，属于安全脚本。建议持续保持代码透明与安全，避免引入高风险行为。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -47,50 +47,50 @@ title: "Telegram受限图片视频下载器"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传（未发现问题）  
-> 脚本通过 fetch 方式下载 Telegram 站内媒体资源，但未发现向第三方服务器发送数据的行为。  
-> 位置：tel_download_video, fetchNextPart  
-> 建议：保持现有实现，勿添加任何外部数据上报逻辑。
+**⛔ CRITICAL** — 数据外传  
+> 脚本未检测到任何网络请求向第三方服务器发送用户数据、页面内容或 Cookie。所有 fetch 请求仅用于下载 Telegram 媒体资源，未涉及外部数据传输。  
+> 位置：tel_download_video() fetch 调用  
+> 建议：保持现有行为，避免添加任何外部数据上报逻辑。
 
-**⛔ CRITICAL** — 隐私采集（未发现问题）  
-> 未发现读取 cookie、localStorage、sessionStorage、IndexedDB、剪贴板、表单字段、键盘输入等隐私相关数据。  
-> 位置：全局  
-> 建议：保持现有实现，勿添加隐私采集逻辑。
+**⛔ CRITICAL** — 隐私采集  
+> 脚本未监听键盘输入、未读取表单字段、未访问剪贴板、未读取 cookie/localStorage/sessionStorage/IndexedDB，也未调用指纹相关 API。  
+> 位置：全局代码与事件处理  
+> 建议：继续保持不采集用户隐私数据。
 
-**🔴 HIGH** — 远程代码执行（未发现问题）  
-> 未发现 eval、new Function、setTimeout(string)、setInterval(string)、动态 script 标签、@require 远程 JS、document.write 等远程代码执行风险。  
-> 位置：全局  
-> 建议：保持现有实现，勿引入动态代码执行。
+**🔴 HIGH** — 远程代码执行  
+> 脚本未使用 eval、new Function、setTimeout(string)、setInterval(string)，也未通过 innerHTML/outerHTML 插入外部脚本或动态加载远程 JS。  
+> 位置：全局代码  
+> 建议：避免引入远程代码执行相关危险用法。
 
-**🔴 HIGH** — 代码混淆（未发现问题）  
-> 未发现代码混淆、base64 解码、字符串数组映射、unicode 混淆或高度压缩单行代码。  
-> 位置：全局  
-> 建议：保持代码可读性，勿混淆。
+**🔴 HIGH** — 代码混淆  
+> 脚本未检测到任何代码混淆行为，无 base64 解码、字符串数组映射、unicode 混淆或高度压缩单行代码。  
+> 位置：全局代码  
+> 建议：保持代码可读性，避免混淆。
 
-**🔴 HIGH** — DOM XSS/注入（未发现问题）  
-> 未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未见 document.write 注入或 iframe src 操作。  
-> 位置：全局  
-> 建议：如需插入 HTML，务必转义用户输入。
+**🔴 HIGH** — DOM XSS / 注入  
+> 脚本未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未检测到 DOM XSS 风险。  
+> 位置：createProgressBar() 等 DOM 操作  
+> 建议：如需插入用户输入，务必进行转义。
 
-**🟠 MEDIUM** — 权限滥用（未发现问题）  
-> 未发现 @grant 权限声明，脚本未滥用高权限 API。  
+**🟠 MEDIUM** — 权限滥用  
+> 脚本未申请任何 @grant 权限，未检测到权限滥用。  
+> 位置：元数据与代码  
+> 建议：仅申请必要权限，避免高权限滥用。
+
+**🟠 MEDIUM** — 敏感 API 调用  
+> 脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。  
+> 位置：全局代码  
+> 建议：如需调用敏感 API，需征得用户明确同意。
+
+**🟠 MEDIUM** — 供应链风险  
+> 脚本未通过 @require 加载任何第三方库，无供应链风险。  
 > 位置：元数据  
-> 建议：如需申请 GM_* 权限，仅申请必要权限。
+> 建议：如需引入第三方库，建议固定版本哈希并使用官方 CDN。
 
-**🟠 MEDIUM** — 敏感 API 调用（未发现问题）  
-> 未发现敏感 API（如 geolocation、RTC、MediaDevices、Clipboard、Notification）调用。  
-> 位置：全局  
-> 建议：如需调用敏感 API，需征得用户同意。
-
-**🟠 MEDIUM** — 供应链风险（未发现问题）  
-> 未发现 @require 加载第三方库，无供应链风险。  
-> 位置：元数据  
-> 建议：如需引入第三方库，建议使用可信官方 CDN 并锁定版本。
-
-**🟡 LOW** — ClickJacking/iframe 风险（未发现问题）  
-> 未发现修改 frame 保护策略或创建隐藏 iframe。  
-> 位置：全局  
-> 建议：如需操作 iframe，确保无 clickjacking 风险。
+**🟡 LOW** — ClickJacking / iframe 风险  
+> 脚本未修改 frame 保护策略，也未创建隐藏 iframe 用于数据提取。  
+> 位置：全局代码  
+> 建议：避免 iframe 滥用，防止 ClickJacking。
 
 ---
 

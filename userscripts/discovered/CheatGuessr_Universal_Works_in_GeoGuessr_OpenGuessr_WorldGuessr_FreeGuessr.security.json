@@ -2,62 +2,84 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
-      "nominatim.openstreetmap.org",
-      "discord.com"
+      "discord.com",
+      "nominatim.openstreetmap.org"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 GM_xmlhttpRequest 向 nominatim.openstreetmap.org 发送地理坐标，获取地址信息。",
-      "location": "_getAddress() 函数",
-      "recommendation": "仅允许必要的地理数据外传，明确告知用户。",
+      "description": "脚本通过 GM_xmlhttpRequest 向 discord.com 发送用户地理位置、游戏数据等敏感信息，属于数据外传行为。",
+      "location": "sendToDiscord(embed) 函数",
+      "recommendation": "仅允许用户明确授权后发送数据，并在文档中声明数据用途。避免自动上报敏感信息。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本通过 GM_xmlhttpRequest 向用户自定义的 Discord Webhook 发送地理坐标、地址、地图截图等信息。",
-      "location": "sendToDiscord() 函数",
-      "recommendation": "警告用户敏感数据外传风险，避免将个人信息发送到第三方。",
+      "description": "脚本通过 GM_xmlhttpRequest 向 nominatim.openstreetmap.org 查询地理位置，可能包含用户当前坐标。",
+      "location": "_getAddress(lat, lng) 函数",
+      "recommendation": "仅在用户主动操作时发送请求，避免自动采集和外传用户位置。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本读取和存储用户设置（如 Discord Webhook URL、热键、功能开关）到本地存储。",
-      "location": "GM_setValue / GM_getValue 多处",
-      "recommendation": "确保仅存储必要的非敏感信息。",
-      "severity": "MEDIUM",
+      "description": "脚本采集用户地理坐标（lat/lng），并通过 Discord webhook 外传。",
+      "location": "getCoordinates()、sendToDiscord(embed) 函数",
+      "recommendation": "限制采集范围，仅在用户明确同意时采集和外传。",
+      "severity": "CRITICAL",
       "type": "隐私采集"
     },
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限，并声明 @connect discord.com，允许任意 Discord Webhook 数据外传。",
-      "location": "@grant/@connect 元数据",
-      "recommendation": "仅申请必要权限，限制外联域名。",
+      "description": "脚本允许用户输入 Discord webhook URL，并将其存储在 GM_setValue，存在远程代码执行风险（如 webhook 被攻击者控制）。",
+      "location": "sendToDiscord(embed) 函数",
+      "recommendation": "验证 webhook URL 来源，避免用户输入恶意 URL。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本申请 GM_xmlhttpRequest 权限，并实际用于跨域数据发送，权限申请合理但存在滥用风险。",
+      "location": "元数据 @grant GM_xmlhttpRequest",
+      "recommendation": "仅申请实际需要的权限，避免滥用。",
       "severity": "MEDIUM",
       "type": "权限滥用"
     },
     {
-      "description": "脚本使用 Notification API 发送通知。",
-      "location": "sendNotification() 函数",
-      "recommendation": "仅在用户明确授权后使用通知。",
+      "description": "脚本通过 Notification API 发送通知，可能被滥用骚扰用户。",
+      "location": "sendNotification(title, body) 函数",
+      "recommendation": "仅在用户明确授权后使用通知功能。",
       "severity": "MEDIUM",
       "type": "敏感 API 调用"
+    },
+    {
+      "description": "脚本未使用代码混淆，但部分功能（如 buildTileUrl）生成复杂 URL，需关注是否有隐藏数据传输。",
+      "location": "buildTileUrl(lat, lng) 函数",
+      "recommendation": "确保所有生成的 URL 不含敏感信息。",
+      "severity": "LOW",
+      "type": "供应链风险"
+    },
+    {
+      "description": "脚本修改 Element.prototype.setAttribute，可能影响页面 iframe 的 sandbox 属性，存在 clickjacking/iframe 风险。",
+      "location": "Element.prototype.setAttribute 重写",
+      "recommendation": "避免全局修改原型链，仅针对特定元素操作。",
+      "severity": "LOW",
+      "type": "ClickJacking / iframe 风险"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "存储 Discord Webhook URL、热键、功能开关等用户设置"
+      "采集用户地理坐标（lat/lng）",
+      "采集用户输入的 Discord webhook URL"
     ],
     "detected": true
   },
   "risk_level": "CRITICAL",
   "script_name": "CheatGuessr Universal (Works in GeoGuessr | OpenGuessr | WorldGuessr | FreeGuessr)",
-  "security_score": 42,
-  "summary": "该脚本存在严重的数据外传风险：会将用户当前地理坐标、地址等信息通过 Discord Webhook 主动外传到第三方服务器，并调用外部地理反查服务（nominatim.openstreetmap.org）。此外，脚本会存储用户的 Discord Webhook URL 等设置。未发现代码混淆、远程代码执行或 DOM XSS 风险。建议仅在充分理解风险的前提下使用，并避免将敏感信息外传到不受信任的服务器。",
+  "security_score": 25,
+  "summary": "该脚本存在严重的数据外传和隐私采集风险，主要通过 GM_xmlhttpRequest 向第三方服务器（discord.com、nominatim.openstreetmap.org）发送用户地理位置和游戏数据。脚本允许用户输入 Discord webhook URL 并存储，存在远程代码执行风险。部分敏感 API（通知、iframe 原型链修改）存在滥用和安全隐患。建议仅在用户明确授权和知情情况下使用，并限制敏感数据的采集和外传。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:31:32.038130+00:00",
+  "analyzed_at": "2026-07-27T05:46:01.832544+00:00",
   "slug": "CheatGuessr_Universal_Works_in_GeoGuessr_OpenGuessr_WorldGuessr_FreeGuessr"
 }

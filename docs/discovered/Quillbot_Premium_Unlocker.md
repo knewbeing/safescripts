@@ -33,9 +33,9 @@ title: "Quillbot高级功能解锁"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：84/100　　**分析时间**：2026-07-13
+**风险等级**：🟠 MEDIUM　　**安全评分**：84/100　　**分析时间**：2026-07-27
 
-> 该脚本主要通过拦截和篡改 Quillbot 相关 API 响应实现解锁 Premium 功能。未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 或 WebSocket 使用等高危行为。存在供应链风险（@require 第三方库未锁定哈希）和权限冗余（申请未用 GM_setValue/GM_getValue），总体安全风险较低。
+> 该脚本未检测到数据外传、隐私采集、远程代码执行、DOM XSS 或代码混淆等高危行为。主要风险为供应链风险（@require 非官方 CDN 且未固定哈希）和权限滥用（申请未用 GM_setValue/GM_getValue）。建议移除未用权限，并确保第三方依赖来源可信且版本固定。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -49,14 +49,14 @@ title: "Quillbot高级功能解锁"
 ### 发现的问题
 
 **🟠 MEDIUM** — Supply Chain Risk  
-> 脚本通过 @require 加载了第三方库 ajaxHooker.js，虽然来源为 greasyfork.org，但未锁定具体哈希版本，存在一定供应链风险。  
+> @require 加载了 ajaxHooker.js，来源为 greasyfork.org，虽然是知名平台，但不是官方 CDN，且未固定哈希，存在供应链风险。  
 > 位置：@require https://greasyfork.org/scripts/455943-ajaxhooker/code/ajaxHooker.js?version=1124435  
-> 建议：建议核查第三方库代码安全性，并定期检查其内容是否被篡改。
+> 建议：建议仅使用官方 CDN 或固定哈希版本，避免供应链污染。
 
-**🟠 MEDIUM** — Permission Overgrant  
-> 脚本申请了 GM_setValue 和 GM_getValue 权限，但在代码中未实际使用，属于权限冗余。  
-> 位置：@grant GM_setValue, GM_getValue  
-> 建议：建议移除未使用的权限，最小化权限申请。
+**🟠 MEDIUM** — Permission Abuse  
+> 申请了 GM_setValue 和 GM_getValue 权限，但脚本实际未使用这两个 API，存在权限滥用风险。  
+> 位置：UserScript metadata @grant  
+> 建议：仅申请实际需要的权限，移除未使用的 GM_setValue 和 GM_getValue。
 
 ---
 

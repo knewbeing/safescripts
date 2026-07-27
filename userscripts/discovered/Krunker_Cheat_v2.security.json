@@ -7,18 +7,25 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "使用了 @grant unsafeWindow，允许脚本访问页面原始 window 对象，存在高权限滥用风险。",
-      "location": "元数据 @grant unsafeWindow",
-      "recommendation": "仅在确有必要时申请 unsafeWindow 权限，避免滥用高权限。",
+      "description": "申请了 unsafeWindow 权限，但实际代码未使用 unsafeWindow，存在权限滥用风险。",
+      "location": "UserScript metadata (@grant unsafeWindow)",
+      "recommendation": "移除未使用的高权限申请，减少攻击面。",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "Permission Abuse"
     },
     {
-      "description": "通过 @require 加载了 three.js 库，虽然来源为 unpkg 官方 CDN，但未锁定具体文件哈希，存在供应链污染风险。",
-      "location": "@require https://unpkg.com/three@0.150.0/build/three.min.js",
-      "recommendation": "建议使用带有内容哈希的 CDN 地址或官方 CDN 并固定版本，确保依赖安全。",
+      "description": "通过 @require 加载了第三方库 three.js，虽然使用官方 CDN，但未固定版本哈希，存在供应链污染风险。",
+      "location": "UserScript metadata (@require https://unpkg.com/three@0.150.0/build/three.min.js)",
+      "recommendation": "建议使用固定版本哈希或官方 CDN，避免加载可变内容。",
       "severity": "MEDIUM",
-      "type": "供应链风险"
+      "type": "Supply Chain Risk"
+    },
+    {
+      "description": "脚本通过 innerHTML 插入自定义 GUI 元素，但内容为静态字符串，未直接插入用户输入或 URL 参数，XSS 风险较低。",
+      "location": "el.innerHTML = `<style>...</style>`",
+      "recommendation": "确保后续未将用户输入插入 innerHTML，保持安全。",
+      "severity": "LOW",
+      "type": "DOM Injection"
     }
   ],
   "obfuscation_detected": false,
@@ -28,10 +35,10 @@
   },
   "risk_level": "MEDIUM",
   "script_name": "Krunker Cheat v2",
-  "security_score": 84,
-  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要安全问题为申请了高权限（unsafeWindow）和依赖未锁定哈希的第三方库（three.js），存在一定的权限滥用和供应链风险。建议仅在必要时申请高权限，并固定依赖库版本以降低风险。整体安全风险为中等（MEDIUM），不建议在高安全要求环境下使用。",
+  "security_score": 81,
+  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 高风险行为。主要风险为权限滥用（unsafeWindow）和供应链风险（@require 未固定版本哈希）。建议移除未使用的高权限申请，并固定第三方库版本。整体安全性中等，适合有一定安全意识的用户使用。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:41:12.225865+00:00",
+  "analyzed_at": "2026-07-27T05:53:32.252914+00:00",
   "slug": "Krunker_Cheat_v2"
 }

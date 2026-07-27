@@ -4,15 +4,15 @@ title: "护眼模式"
 
 # 护眼模式
 
-`护眼`  `暗黑模式`  `夜间模式`  `网页美化`  `全网通用`  `用户体验`
+`暗黑模式`  `护眼`  `夜间模式`  `全网通用`  `网页美化`  `用户体验`
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/discovered/DarkMode.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**1.5.8**　　发现时间：**2026-06-15**　　来源：[XIU2/UserScript](https://github.com/XIU2/UserScript) <Badge type="tip" text="GitHub" />
+> 版本：**1.5.8**　　发现时间：**2026-07-27**　　来源：[XIU2/UserScript](https://github.com/XIU2/UserScript) <Badge type="tip" text="GitHub" />
 
 ## 功能介绍
 
-本脚本为全网提供护眼模式（暗黑/夜间/深色模式），自动将网页背景变暗，减少眼睛疲劳。适用于大多数网站，简单有效。
+本脚本为全网通用的护眼模式，自动将网页切换为暗色主题，减少眼睛疲劳。适用于夜间浏览或长时间用眼，提升阅读舒适度。
 
 ## 适用网站
 
@@ -22,25 +22,25 @@ title: "护眼模式"
 ## 使用方法
 
 1. 安装脚本后，网页会自动切换为暗色护眼模式。
-2. 如需手动开关或调整，可在浏览器油猴菜单中找到相关命令。
-3. 设置会自动保存，下次访问网页无需重复操作。
+2. 如需关闭或调整护眼模式，可通过浏览器的用户脚本菜单操作。
+3. 设置会自动保存，下次访问网页时自动应用。
 
 ## 权限说明
 
 | 权限 | 用途说明 |
 |------|----------|
-| `GM_registerMenuCommand` | 用于在浏览器菜单中添加脚本功能入口，方便用户操作。 |
-| `GM_unregisterMenuCommand` | 用于移除已添加的菜单命令。 |
-| `GM_openInTab` | 用于在新标签页打开链接，便于访问相关页面。 |
-| `GM_getValue` | 用于保存脚本设置，如护眼模式开关状态。 |
-| `GM_setValue` | 用于修改和存储脚本配置。 |
-| `GM_notification` | 用于弹出通知提醒用户操作结果或状态。 |
+| `GM_registerMenuCommand` | 允许脚本在浏览器菜单中添加自定义功能按钮。 |
+| `GM_unregisterMenuCommand` | 允许脚本移除已添加的菜单按钮。 |
+| `GM_openInTab` | 允许脚本在新标签页打开指定链接。 |
+| `GM_getValue` | 允许脚本保存用户设置，如护眼模式开关状态。 |
+| `GM_setValue` | 允许脚本修改和存储用户设置。 |
+| `GM_notification` | 允许脚本在桌面弹出通知，提示用户操作结果。 |
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：84/100　　**分析时间**：2026-07-13
+**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-07-27
 
-> 该脚本主要用于全网暗黑模式切换，未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、WebSocket 使用等高危行为。权限申请略有冗余，但整体风险较低。
+> 该脚本主要用于页面暗色模式切换，未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 调用、供应链风险等高危行为。仅存在未使用权限申请和 GM_openInTab 权限使用，整体安全风险较低。建议移除未使用权限以进一步提升安全性。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -54,15 +54,15 @@ title: "护眼模式"
 ### 发现的问题
 
 **🟠 MEDIUM** — 权限滥用  
-> 申请了 GM_openInTab 权限，但仅用于打开反馈页面，未见其他敏感用途。  
-> 位置：@grant 元数据及 window.GM_openInTab 调用  
-> 建议：确认 GM_openInTab 仅用于用户主动操作，避免自动化滥用。
+> 脚本申请了 GM_openInTab 权限，但仅用于打开反馈页面，没有滥用行为。  
+> 位置：元数据 @grant GM_openInTab, 代码 window.GM_openInTab  
+> 建议：建议仅在需要时申请此权限，并确保目标页面可信。
 
 **🟠 MEDIUM** — 权限滥用  
-> 申请了 GM_notification 权限，但在当前代码片段未见实际使用。  
-> 位置：@grant 元数据  
-> 建议：如未使用 GM_notification，建议移除该权限。
+> 脚本申请了 GM_notification 权限，但未在代码中实际使用。  
+> 位置：元数据 @grant GM_notification  
+> 建议：建议移除未使用的高权限申请，减少攻击面。
 
 ---
 
-*由 SafeScripts 自动发现 · [查看原始来源](https://raw.githubusercontent.com/XIU2/UserScript/d8fcb017ba7108be3b9813667e63b7f28cbf6424/DarkMode.user.js)*
+*由 SafeScripts 自动发现 · [查看原始来源](https://raw.githubusercontent.com/XIU2/UserScript/a4d1659b7d9cdcb5d9e55a81bb14e85e875e3f49/DarkMode.user.js)*

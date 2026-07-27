@@ -49,14 +49,14 @@ title: "解除网络限制：.io游戏模型 、广告链接绕过器、广告�
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：0/100　　**分析时间**：2026-07-13
+**风险等级**：⛔ CRITICAL　　**安全评分**：0/100　　**分析时间**：2026-07-27
 
-> This userscript presents critical security risks, including remote code execution via dynamic script loading and eval-like constructs, code obfuscation, supply chain risks, excessive permissions, privacy tracking, and DOM XSS risk. It should NOT be considered safe for use.
+> This userscript poses severe security risks: it dynamically loads and executes remote code, tracks users via UUID and counters, uses obfuscated code patterns, grants excessive permissions, and exposes DOM XSS risks. It is not safe for use and should be avoided unless thoroughly audited and rewritten.
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：ksw2-moomoo.glitch.me, External URLs via Utils.loadModule） |
-| 隐私采集 | ❌ 检测到（Persistent UUID stored in GM storage, Usage counter stored in GM storage, Explicit tracking via @antifeature） |
+| 数据外传 | ❌ 检测到（目标：ksw2-moomoo.glitch.me, external URLs via Utils.loadModule (dynamic)） |
+| 隐私采集 | ❌ 检测到（UUID generation and storage, Counter tracking, @antifeature: Tracking） |
 | 代码混淆 | ❌ 检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ❌ 存在风险 |
@@ -65,39 +65,39 @@ title: "解除网络限制：.io游戏模型 、广告链接绕过器、广告�
 ### 发现的问题
 
 **⛔ CRITICAL** — Remote Code Execution  
-> The script uses XMLHttpRequest to fetch external scripts and executes them via a[a][a](x.responseText), which is equivalent to eval(). This allows remote code execution from arbitrary URLs.  
+> The script uses XMLHttpRequest to fetch external code and executes it via a[a][a](x.responseText), which is equivalent to eval(). This allows remote code execution from arbitrary URLs.  
 > 位置：Utils.loadModule function  
-> 建议：Remove dynamic code execution and only use static, trusted code. Avoid eval or similar constructs.
+> 建议：Remove dynamic code loading and execution. Only load trusted, versioned libraries via @require.
+
+**⛔ CRITICAL** — Privacy Collection  
+> The script stores and retrieves a UUID and a counter in GM storage, which could be used for user tracking. The @antifeature explicitly mentions tracking for performance debugging.  
+> 位置：uuidv4, GM.getValue, GM.setValue usage  
+> 建议：Clarify what data is tracked and ensure no sensitive information is stored or transmitted.
+
+**🔴 HIGH** — Permission Abuse  
+> The script grants unsafeWindow, which allows full access to the page context and can be abused for privilege escalation or data extraction.  
+> 位置：@grant unsafeWindow  
+> 建议：Remove unsafeWindow unless strictly necessary and audit all usages.
 
 **🔴 HIGH** — Code Obfuscation  
-> The script executes code using a[a][a](x.responseText), which is an obfuscated way to call the Function constructor (i.e., window['constructor']['constructor'] = Function). This is a strong sign of code obfuscation.  
+> The script uses a[a][a](x.responseText), which is a highly obfuscated way to call eval(). This is a code obfuscation pattern.  
 > 位置：Utils.loadModule function  
-> 建议：Avoid obfuscation and use clear, readable code. Remove dynamic code execution.
+> 建议：Avoid obfuscation and use clear, readable code.
 
 **🔴 HIGH** — DOM XSS Risk  
-> The script manipulates innerHTML/outerHTML and document structure in various places (e.g., deleteElement, watchAndDelete), and the code is designed to run on hundreds of sites, increasing the risk of DOM-based XSS if user input is ever inserted.  
-> 位置：Utils.deleteElement, watchAndDelete, and general script structure  
-> 建议：Sanitize all user input and avoid inserting untrusted data into the DOM.
+> The script inserts code via innerHTML and document.getElementById, and may manipulate DOM based on user input or external data. There is a risk of DOM XSS if not properly sanitized.  
+> 位置：Utils.deleteElement, Utils.watchAndDelete  
+> 建议：Sanitize all user input and external data before inserting into DOM.
 
 **🟠 MEDIUM** — Supply Chain Risk  
-> The script loads third-party libraries via @require from GreasyFork and CDN (jQuery). The GreasyFork scripts are not version-pinned with hashes, and the CDN could be updated or compromised.  
-> 位置：@require metadata  
-> 建议：Pin dependencies to specific versions and use trusted, official sources. Prefer SRI hashes if possible.
+> The script loads third-party libraries via @require from greasyfork.org and code.jquery.com, but also loads scijs from greasyfork.org (not official CDN) and msgpack.js (unknown trust level).  
+> 位置：@require statements  
+> 建议：Only use official, versioned libraries from trusted CDNs. Avoid loading from user scripts unless verified.
 
 **🟠 MEDIUM** — Permission Abuse  
-> The script requests a large set of @grant permissions, including unsafeWindow and GM_getTabs/GM_saveTab, which are not all used in the visible code. This increases the attack surface.  
-> 位置：@grant metadata  
-> 建议：Request only the minimum permissions required for functionality.
-
-**🟠 MEDIUM** — Privacy Collection  
-> The script stores a unique user identifier (UUID) in GM storage and increments a counter. While not directly exfiltrated, this is a form of persistent user tracking.  
-> 位置：uuidv4, GM.setValue('id'), GM.setValue('count')  
-> 建议：Disclose tracking clearly and avoid persistent identifiers unless necessary.
-
-**🟠 MEDIUM** — Privacy Collection  
-> The script's @antifeature explicitly states 'Tracking, for performance debugging', indicating intentional user tracking.  
-> 位置：@antifeature metadata  
-> 建议：Make tracking opt-in and provide clear privacy disclosures.
+> The script grants GM_getTabs, GM_getTab, GM_saveTab, which are high privileges and may not be necessary for all features.  
+> 位置：@grant statements  
+> 建议：Minimize granted permissions to only those required.
 
 ---
 

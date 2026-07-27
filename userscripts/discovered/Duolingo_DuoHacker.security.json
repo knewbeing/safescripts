@@ -17,54 +17,47 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script requests GM_xmlhttpRequest permission and @connect to multiple third-party domains, including raw.githubusercontent.com, greasyfork.org, and assets/font.duohacker.io.vn. These are not official Duolingo domains and may be used to fetch remote resources or code.",
-      "location": "Metadata block (@grant, @connect)",
-      "recommendation": "Restrict @connect to only necessary and trusted domains. Avoid loading code or resources from non-official or unverifiable sources.",
+      "description": "脚本申请 GM_xmlhttpRequest 权限，并声明 @connect 多个第三方域名，包括 duohacker.io.vn、raw.githubusercontent.com、greasyfork.org 等，存在数据外传风险。虽然部分为资源加载，但部分为自有域名，可能用于数据收集或追踪。",
+      "location": "元数据 @grant/@connect，代码 GM_xmlhttpRequest",
+      "recommendation": "限制仅连接 Duolingo 官方域名，避免连接第三方资源服务器，明确数据传输内容。",
       "severity": "CRITICAL",
-      "type": "Data Exfiltration / Supply Chain"
+      "type": "数据外传"
     },
     {
-      "description": "The script requests GM_xmlhttpRequest, which allows arbitrary cross-origin requests. This can be abused for data exfiltration or remote code loading.",
-      "location": "Metadata block (@grant)",
-      "recommendation": "Limit the use of GM_xmlhttpRequest and ensure all requests are strictly validated and only target trusted endpoints.",
-      "severity": "CRITICAL",
-      "type": "Data Exfiltration"
-    },
-    {
-      "description": "The script requests access to localStorage for language preference. While this is not sensitive, it is a privacy-related API.",
-      "location": "Code: var _lang = localStorage.getItem(_I18N_KEY) || 'vi';",
-      "recommendation": "Ensure no sensitive user data is stored or read from localStorage.",
+      "description": "脚本通过 localStorage.getItem 读取本地存储，虽然目前仅用于语言选择，但后续可能扩展为隐私数据采集。",
+      "location": "代码 var _lang = localStorage.getItem(_I18N_KEY) || 'vi';",
+      "recommendation": "仅存储非敏感数据，避免读取/写入用户隐私信息。",
       "severity": "MEDIUM",
-      "type": "Privacy Collection"
+      "type": "隐私采集"
     },
     {
-      "description": "The script requests GM_addStyle, which is not a high-risk permission but should be justified.",
-      "location": "Metadata block (@grant)",
-      "recommendation": "Remove unused permissions if not required.",
+      "description": "脚本申请 GM_xmlhttpRequest 高权限，但当前代码段未见实际调用，存在权限滥用风险。",
+      "location": "元数据 @grant GM_xmlhttpRequest",
+      "recommendation": "仅申请实际需要的权限，移除未使用的高权限。",
       "severity": "MEDIUM",
-      "type": "Permission Abuse"
+      "type": "权限滥用"
     },
     {
-      "description": "The script allows @require and @connect to raw.githubusercontent.com and greasyfork.org, which can be a supply chain risk if not pinned to a specific commit or version.",
-      "location": "Metadata block (@require, @connect)",
-      "recommendation": "Pin all external resources to a specific version or hash to prevent supply chain attacks.",
+      "description": "脚本声明 @connect assets.duohacker.io.vn 和 font.duohacker.io.vn 等非官方 CDN，存在供应链风险，资源可能被篡改。",
+      "location": "元数据 @connect",
+      "recommendation": "仅使用官方可信 CDN，固定资源版本哈希。",
       "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
+      "type": "供应链风险"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "Reads language preference from localStorage"
+      "localStorage.getItem"
     ],
-    "detected": true
+    "detected": false
   },
   "risk_level": "HIGH",
   "script_name": "Duolingo DuoHacker",
-  "security_score": 34,
-  "summary": "The script requests high-risk permissions (GM_xmlhttpRequest) and connects to multiple third-party domains, including non-official ones. This introduces critical risks of data exfiltration and supply chain attacks. There is no evidence of code obfuscation or DOM XSS, and privacy collection is limited to language preference. However, the broad network permissions and supply chain risks make this script unsafe for general use without further code review and restriction of external connections.",
+  "security_score": 47,
+  "summary": "Duolingo DuoHacker 用户脚本存在严重的数据外传风险，连接多个第三方域名并申请高权限。虽然当前代码未见明显隐私采集和代码混淆，但供应链风险和权限滥用问题突出。建议严格限制外部连接、移除未使用权限、仅使用官方 CDN 并固定资源版本。整体安全风险较高，不建议在生产环境使用。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:34:30.178778+00:00",
+  "analyzed_at": "2026-07-27T05:48:22.015853+00:00",
   "slug": "Duolingo_DuoHacker"
 }

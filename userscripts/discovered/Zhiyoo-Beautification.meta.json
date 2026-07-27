@@ -1,9 +1,9 @@
 {
   "slug": "Zhiyoo-Beautification",
   "platform": "github",
-  "source_url": "https://raw.githubusercontent.com/XIU2/UserScript/d8fcb017ba7108be3b9813667e63b7f28cbf6424/Zhiyoo-Beautification.user.js",
+  "source_url": "https://raw.githubusercontent.com/XIU2/UserScript/a4d1659b7d9cdcb5d9e55a81bb14e85e875e3f49/Zhiyoo-Beautification.user.js",
   "source_repo": "XIU2/UserScript",
-  "raw_url": "https://raw.githubusercontent.com/XIU2/UserScript/d8fcb017ba7108be3b9813667e63b7f28cbf6424/Zhiyoo-Beautification.user.js",
+  "raw_url": "https://raw.githubusercontent.com/XIU2/UserScript/a4d1659b7d9cdcb5d9e55a81bb14e85e875e3f49/Zhiyoo-Beautification.user.js",
   "filename": "Zhiyoo-Beautification.user.js",
   "name": "智友邦论坛美化",
   "version": "1.0.2",
@@ -15,9 +15,9 @@
   "require": [],
   "metadata_raw": "// @name  智友邦论坛美化\n// @version  1.0.2\n// @author  X.I.U\n// @description  精简多余内容、样式优化、宽屏显示\n// @icon  http://bbs.zhiyoo.net/favicon.ico\n// @match  *://bbs.zhiyoo.net/*\n// @license  GPL-3.0 License\n// @run-at  document-start\n// @namespace  https://greasyfork.org/scripts/412361\n// @supportURL  https://github.com/XIU2/UserScript\n// @homepageURL  https://github.com/XIU2/UserScript",
   "sha256": "7d4045401fda52d8034659af235c9253a3e9d24f215c459cb81c4d6716081ea3",
-  "discovered_at": "2026-06-15T07:10:13.697965+00:00",
-  "ai_reason": "",
-  "target_roles": "",
+  "discovered_at": "2026-07-27T05:41:46.052093+00:00",
+  "ai_reason": "智友邦论坛美化，精简内容、宽屏优化，提升论坛阅读体验，适合 Dev/PM 参与社区讨论。中文友好。",
+  "target_roles": "程序员（Dev）、项目经理（PM）",
   "is_new": false,
   "install_count": null,
   "good_ratings": null,
@@ -26,18 +26,19 @@
     "applicable_sites": [
       "智友邦论坛"
     ],
-    "description": "本脚本为智友邦论坛页面进行美化，去除多余内容，优化版面样式，并实现宽屏显示，让浏览体验更加简洁舒适。",
+    "description": "本脚本可以美化智友邦论坛页面，去除多余内容，优化排版和样式，并让论坛宽屏显示，提升浏览体验。",
     "permissions": [],
     "tags": [
-      "页面美化",
-      "论坛优化",
-      "内容精简",
+      "论坛美化",
+      "界面优化",
       "宽屏显示",
-      "用户体验"
+      "内容精简",
+      "智友邦"
     ],
     "usage": [
-      "安装脚本后，访问智友邦论坛页面即可自动生效。",
-      "无需手动操作，页面会自动变得简洁宽屏。"
+      "安装脚本后，访问智友邦论坛页面。",
+      "页面会自动变得简洁，内容布局更宽，部分无用区域被隐藏。",
+      "无需手动操作，效果自动生效。"
     ],
     "zh_name": "智友邦论坛美化"
   }

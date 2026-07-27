@@ -7,9 +7,9 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "@require 加载了第三方库 jQuery，未锁定具体文件哈希，存在供应链污染风险。",
+      "description": "@require 加载的 jQuery 版本未固定哈希，存在供应链风险。",
       "location": "@require https://code.jquery.com/jquery-3.1.1.js",
-      "recommendation": "建议使用官方 CDN 并锁定具体版本哈希，或将依赖内置到脚本中。",
+      "recommendation": "建议使用官方 CDN 并固定版本哈希，如 https://code.jquery.com/jquery-3.1.1.js 或使用 SRI 校验。",
       "severity": "MEDIUM",
       "type": "Supply Chain Risk"
     }
@@ -22,9 +22,9 @@
   "risk_level": "LOW",
   "script_name": "GitHub Enhancements",
   "security_score": 92,
-  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用等高危行为。唯一的中等风险为 @require 加载的第三方 jQuery 库未锁定哈希，存在一定供应链风险。整体安全性较高。",
+  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用或敏感 API 调用。唯一风险为 @require 加载的 jQuery 版本未固定哈希，存在一定供应链风险。整体安全性较高。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:38:29.875784+00:00",
+  "analyzed_at": "2026-07-27T05:51:38.808608+00:00",
   "slug": "GitHub-Enhancements"
 }

@@ -33,9 +33,9 @@ title: "FF评分侦查器V2"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：60/100　　**分析时间**：2026-07-13
+**风险等级**：🔴 HIGH　　**安全评分**：35/100　　**分析时间**：2026-07-27
 
-> The script transmits data to a third-party server (ffscouter.com) using GM_xmlhttpRequest, which is a critical risk if sensitive user data is sent. It also requests unsafeWindow, increasing the risk of privilege escalation. No evidence of privacy-invasive data collection, code obfuscation, or DOM XSS was found in the provided code. Permissions are mostly appropriate, but should be reviewed. Supply chain risk is low as no @require is used. Overall, the script poses a HIGH risk due to data transmission and privilege escalation potential.
+> FF Scouter V2 存在数据外传风险（向 ffscouter.com 发起网络请求），并申请了 unsafeWindow 高权限，可能导致远程代码执行和权限滥用。未见明显隐私采集、DOM XSS、供应链风险，但部分代码压缩可读性较差。建议详细审查外部通信内容，并限制高权限使用。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -48,25 +48,25 @@ title: "FF评分侦查器V2"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Exfiltration  
-> The script uses GM_xmlhttpRequest to communicate with ffscouter.com, which is a third-party server. This may transmit user data or page context, depending on request payloads.  
-> 位置：Network requests to ffscouter.com via GM_xmlhttpRequest  
-> 建议：Review all transmitted data to ensure no sensitive or personal information is sent. Document what is sent and why. Consider user consent.
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过 GM_xmlhttpRequest 向 ffscouter.com 发起网络请求，可能会携带用户数据或页面内容。@connect 仅允许 ffscouter.com，未见其他第三方，但未明确请求内容，存在数据外传风险。  
+> 位置：GM_xmlhttpRequest 调用，@connect ffscouter.com  
+> 建议：详细审查请求参数和响应处理，确保不发送敏感用户数据。建议在文档中明确数据用途和隐私政策。
 
-**🔴 HIGH** — Privilege Escalation  
-> The script requests the unsafeWindow permission, which exposes the page context to the userscript and increases the risk of privilege escalation or data leakage.  
-> 位置：@grant unsafeWindow in metadata  
-> 建议：Remove unsafeWindow unless strictly necessary. If required, minimize its usage and audit all interactions with page context.
+**🔴 HIGH** — 远程代码执行/权限滥用  
+> 脚本申请了 unsafeWindow 权限，允许访问页面原生 JS 环境，存在远程代码执行和权限滥用风险。  
+> 位置：@grant unsafeWindow  
+> 建议：仅在确实需要时使用 unsafeWindow，避免滥用。建议移除或限制其使用范围。
 
-**🟠 MEDIUM** — Permission Usage  
-> The script requests GM_xmlhttpRequest permission, which is necessary for cross-origin requests, but should be limited to only required domains.  
-> 位置：@grant GM_xmlhttpRequest in metadata  
-> 建议：Ensure only required domains are listed in @connect and that requests are strictly controlled.
+**🟠 MEDIUM** — 权限滥用  
+> 脚本申请了 GM_xmlhttpRequest 权限，属于高权限操作，实际代码中确实使用该权限。  
+> 位置：@grant GM_xmlhttpRequest  
+> 建议：确保 GM_xmlhttpRequest 仅用于必要的外部通信，避免发送敏感信息。
 
-**🟡 LOW** — DOM Injection Risk  
-> The script loads a large block of CSS as a string and injects it into the page. While not inherently dangerous, if the CSS string is ever replaced with dynamic content, it could become a vector for DOM-based XSS.  
-> 位置：importCSS function  
-> 建议：Ensure only static, trusted CSS is injected. Do not allow user input or external data to be injected as CSS.
+**🟠 MEDIUM** — 代码混淆  
+> 脚本未见混淆、eval、动态 script 加载等明显远程代码执行风险，但部分代码高度压缩（如 importCSS 部分），可读性较差。  
+> 位置：importCSS 函数及其调用  
+> 建议：建议提供可读源码或注释，提升代码透明度。
 
 ---
 

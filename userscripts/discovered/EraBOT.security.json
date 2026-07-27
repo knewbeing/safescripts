@@ -1,24 +1,30 @@
 {
   "approved": true,
   "data_transmission": {
-    "destinations": [
-      "evowars.io"
-    ],
+    "destinations": [],
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [],
+  "issues": [
+    {
+      "description": "脚本通过 Proxy 钩住 WebSocket 构造函数和 send 方法，拦截和分析 WebSocket 数据包，但未向第三方服务器发送数据，仅用于本地 AI/自动化逻辑。",
+      "location": "hookWebSocket() 函数",
+      "recommendation": "确保 WebSocket hook 仅用于本地分析，不添加任何外部数据传输逻辑。",
+      "severity": "MEDIUM",
+      "type": "WebSocket Hook"
+    }
+  ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
     "detected": false
   },
-  "risk_level": "SAFE",
+  "risk_level": "LOW",
   "script_name": "⚔️EraBOT🕺",
-  "security_score": 100,
-  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。WebSocket 仅用于与目标站点（evowars.io）通信，未见外传或隐私泄露行为。整体安全性高。",
+  "security_score": 89,
+  "summary": "该脚本主要用于游戏自动化，未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用或供应链风险。唯一的安全注意点是 WebSocket hook 逻辑，但目前仅用于本地分析。整体安全风险较低。",
   "supply_chain_risk": false,
   "websocket_usage": true,
-  "analyzed_at": "2026-07-13T05:35:47.437973+00:00",
+  "analyzed_at": "2026-07-27T05:49:27.673252+00:00",
   "slug": "EraBOT"
 }

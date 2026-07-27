@@ -7,18 +7,26 @@
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [],
+  "issues": [
+    {
+      "description": "Script overrides the global WebSocket constructor to modify the connection URL parameter (&t=...), but only for arras.io. No evidence of data exfiltration or privacy collection.",
+      "location": "WebSocket override in main script body",
+      "recommendation": "Ensure the override does not unintentionally affect other scripts or connections. Limit scope if possible.",
+      "severity": "LOW",
+      "type": "WebSocket override"
+    }
+  ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
     "detected": false
   },
-  "risk_level": "SAFE",
+  "risk_level": "LOW",
   "script_name": "Fix arras.io outdated client",
-  "security_score": 100,
-  "summary": "该脚本仅重写了 WebSocket 构造函数以修正 arras.io 客户端的时间戳参数，未引入任何数据外传、隐私采集、远程代码执行、混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。未检测到任何安全问题，安全性极高。",
+  "security_score": 97,
+  "summary": "The script only modifies the WebSocket connection URL for arras.io to fix client issues. No evidence of data exfiltration, privacy collection, remote code execution, or supply chain risk. The override is global, which is a minor risk if other scripts rely on WebSocket, but no critical or high risks detected.",
   "supply_chain_risk": false,
   "websocket_usage": true,
-  "analyzed_at": "2026-07-13T05:37:17.469327+00:00",
+  "analyzed_at": "2026-07-27T05:50:37.754761+00:00",
   "slug": "Fix_arrasio_outdated_client"
 }

@@ -32,9 +32,9 @@ title: "SteamGifts增强插件"
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：60/100　　**分析时间**：2026-07-13
+**风险等级**：🔴 HIGH　　**安全评分**：77/100　　**分析时间**：2026-07-27
 
-> This user script dynamically loads and executes a remote JavaScript file from an external server (GitHub Pages) without version pinning or integrity checks. This introduces a critical remote code execution and supply chain risk, as the contents of the loaded script can change at any time and are not auditable from this code. No direct data exfiltration or privacy collection is present in the visible code, but the remote script could perform such actions. The script does not use obfuscation, nor does it directly manipulate user data or the DOM in a risky way. However, the dynamic remote code loading is a critical security concern.
+> 该脚本主要风险在于动态加载远程 JS 文件且未固定版本，存在远程代码执行和供应链风险。未检测到数据外传、隐私采集、代码混淆或 DOM XSS。建议本地化依赖或使用可信 CDN 并固定版本哈希，并强制使用 HTTPS。整体安全评分为 77，风险等级为 HIGH。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -47,20 +47,20 @@ title: "SteamGifts增强插件"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Remote Code Execution  
-> The script dynamically loads and executes a remote JavaScript file from an external server (GitHub Pages) using a script tag. The loaded code is not version-pinned or hash-locked, and its contents are not visible in this review.  
-> 位置：Line: script.src assignment and appendChild  
-> 建议：Pin the external script to a specific version or hash, and audit the remote script for security. Avoid loading remote scripts dynamically unless absolutely necessary.
-
 **🔴 HIGH** — Remote Code Execution  
-> The script uses document.createElement('script') and sets the src to an external URL, which can lead to remote code execution if the external resource is compromised.  
-> 位置：Line: script.src assignment and appendChild  
-> 建议：Bundle and audit all code locally within the user script, or use a trusted CDN with version pinning.
+> 脚本通过动态 script 标签加载远程 JavaScript 文件，且未固定版本哈希，存在远程代码执行风险。  
+> 位置：document.body.appendChild(script) with script.src = 'http://rossengeorgiev.github.com/sg-enhancement-addon/sg_enhancement_addon_base.js'  
+> 建议：建议将依赖的 JS 文件本地化或使用可信 CDN 并固定版本哈希，避免远程代码变更导致供应链攻击。
 
 **🟠 MEDIUM** — Supply Chain Risk  
-> The @require directive is not used, but the script loads code from a variable URL (GitHub Pages), which is not a canonical CDN and can change at any time.  
-> 位置：Metadata and script.src  
-> 建议：Use official, versioned CDNs for third-party libraries and avoid loading from personal GitHub Pages.
+> 脚本未使用 HTTPS 加载远程 JS，存在中间人攻击风险。  
+> 位置：script.src = 'http://rossengeorgiev.github.com/sg-enhancement-addon/sg_enhancement_addon_base.js'  
+> 建议：建议使用 HTTPS 协议加载所有远程资源。
+
+**🟡 LOW** — DOM Manipulation  
+> 脚本通过 innerHTML/outerHTML 插入 script 标签，但未直接插入用户输入，XSS 风险较低。  
+> 位置：document.body.appendChild(script)  
+> 建议：确保插入内容来源可信，避免后续代码注入风险。
 
 ---
 

@@ -42,14 +42,14 @@ title: "CheatGuessr 通用版"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：49/100　　**分析时间**：2026-07-13
+**风险等级**：⛔ CRITICAL　　**安全评分**：17/100　　**分析时间**：2026-07-27
 
-> This script transmits data to third-party services (discord.com and nominatim.openstreetmap.org), which may include game state or location information. It accesses localStorage and uses persistent storage APIs, but does not appear to collect sensitive user data such as cookies, passwords, or clipboard contents. There is no evidence of code obfuscation, DOM XSS, or remote code execution. The script loads a third-party library from a trusted source, but the version is not pinned by hash. Notification API is used, but not abused. Overall, the script poses a HIGH risk due to data exfiltration to third-party services.
+> This script poses significant security and privacy risks due to data transmission to third-party servers (discord.com, nominatim.openstreetmap.org), processing of user/game data, and modification of browser prototypes. Supply chain and permission risks are also present. Not recommended for use in sensitive environments.
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：discord.com, nominatim.openstreetmap.org） |
-| 隐私采集 | ❌ 检测到（localStorage access via Storage.prototype.setItem, GM_setValue/GM_getValue usage） |
+| 隐私采集 | ❌ 检测到（Accesses localStorage/sessionStorage, Processes game/user data from WebSocket） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ⚠️ 使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -58,34 +58,44 @@ title: "CheatGuessr 通用版"
 ### 发现的问题
 
 **⛔ CRITICAL** — Data Exfiltration  
-> The script uses GM_xmlhttpRequest to send data to discord.com (likely via webhook) and nominatim.openstreetmap.org. This can be used to exfiltrate user data, game state, or location information.  
-> 位置：GM_xmlhttpRequest usage, @connect metadata  
-> 建议：Limit data sent to third-party services, ensure no sensitive or user-identifiable information is transmitted, and inform users of any data sharing.
+> Script sends data to discord.com via GM_xmlhttpRequest, which may include user actions or game data.  
+> 位置：GM_xmlhttpRequest usage, @connect discord.com  
+> 建议：Limit data sent to Discord, ensure no sensitive user information is transmitted.
 
-**🟠 MEDIUM** — Privacy Collection  
-> The script reads and writes to localStorage via Storage.prototype.setItem proxying, and uses GM_setValue/GM_getValue for persistent storage. There is no evidence of exfiltration of this data, but local storage access is present.  
-> 位置：Storage.prototype.setItem, GM_setValue/GM_getValue  
-> 建议：Ensure no sensitive user data is stored or transmitted. Do not store credentials or personal information.
+**⛔ CRITICAL** — Data Exfiltration  
+> Script sends requests to nominatim.openstreetmap.org, likely for geocoding. Potential for user location data leakage.  
+> 位置：GM_xmlhttpRequest usage, @connect nominatim.openstreetmap.org  
+> 建议：Ensure only necessary location data is sent, avoid transmitting user identifiers.
+
+**⛔ CRITICAL** — Data Exfiltration  
+> Script listens to WebSocket messages and processes opponent guesses, which may expose user/game data.  
+> 位置：WebSocket.prototype.addEventListener proxy  
+> 建议：Do not transmit user/game data externally unless necessary and with user consent.
+
+**🔴 HIGH** — Privacy Collection  
+> Script accesses localStorage and sessionStorage, and modifies Storage.prototype.setItem.  
+> 位置：Storage.prototype.setItem proxy  
+> 建议：Avoid unnecessary access to storage, do not store sensitive data.
+
+**🔴 HIGH** — Code Injection Risk  
+> Script applies Proxy to Element.prototype.setAttribute and Array.prototype.push, which may affect page behavior.  
+> 位置：Proxy wrappers on DOM prototypes  
+> 建议：Avoid modifying global prototypes unless necessary; restrict scope.
 
 **🟠 MEDIUM** — Sensitive API Usage  
-> The script requests Notification API permission and may use Notification API to send notifications to the user.  
+> Script uses Notification API to send notifications.  
 > 位置：state.notificationPermission, Notification.permission  
-> 建议：Do not abuse Notification API for spam or misleading notifications.
+> 建议：Ensure notifications are not abused or used for phishing.
 
 **🟠 MEDIUM** — Supply Chain Risk  
-> The script uses @require to load msgpack.js from update.greasyfork.org, which is a trusted CDN, but the version is not pinned by hash.  
+> Script uses @require to load msgpack.js from greasyfork update CDN, but does not fix version hash.  
 > 位置：@require https://update.greasyfork.org/scripts/423602/1005014/msgpack.js  
-> 建议：Pin third-party dependencies by version and hash to prevent supply chain attacks.
+> 建议：Pin third-party dependencies to a specific version hash to prevent supply chain attacks.
 
-**🟡 LOW** — Permission Usage  
-> The script requests GM_xmlhttpRequest permission, which is used and justified, but also requests GM_setValue, GM_getValue, and GM_deleteValue. All are used, but the script does not request unnecessary high-risk permissions.  
-> 位置：@grant metadata  
-> 建议：Only request permissions that are strictly necessary.
-
-**🟡 LOW** — DOM/Prototype Modification  
-> The script modifies Element.prototype.setAttribute and Storage.prototype.setItem via Proxy, which can have side effects and may break page functionality or introduce compatibility issues.  
-> 位置：Element.prototype.setAttribute, Storage.prototype.setItem  
-> 建议：Avoid monkey-patching built-in prototypes unless absolutely necessary.
+**🟠 MEDIUM** — Permission Abuse  
+> Script requests GM_xmlhttpRequest permission, which is high privilege.  
+> 位置：@grant GM_xmlhttpRequest  
+> 建议：Limit usage to only required domains; review necessity.
 
 ---
 

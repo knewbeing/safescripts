@@ -2,67 +2,109 @@
   "approved": true,
   "data_transmission": {
     "destinations": [
-      "Multiple public CDN/proxy services (e.g., gh.h233.eu.org, gh-proxy.org, github.boki.moe, etc.)"
+      "gh.h233.eu.org",
+      "rapidgit.jjda.de5.net",
+      "gh.ddlc.top",
+      "gh-proxy.org",
+      "cdn.gh-proxy.org",
+      "edgeone.gh-proxy.org",
+      "cors.isteed.cc",
+      "ghproxy.it",
+      "github.boki.moe",
+      "gh.jasonzeng.dev",
+      "gh.monlor.com",
+      "github.tbedu.top",
+      "github.geekery.cn",
+      "github.ednovas.xyz",
+      "ghfile.geekertao.top",
+      "ghp.keleyaa.com",
+      "gh.chjina.com",
+      "ghpxy.hwinzniej.top",
+      "cdn.crashmc.com",
+      "git.yylx.win",
+      "gitproxy.mrhjx.cn",
+      "ghproxy.cxkpro.top",
+      "gh.xxooo.cf",
+      "gh.idayer.com",
+      "down.npee.cn",
+      "raw.ihtw.moe",
+      "xget.xi-xu.me",
+      "gh.zwy.one",
+      "ghproxy.monkeyray.net",
+      "ghproxy.net",
+      "ghfast.top",
+      "wget.la",
+      "gitclone.com",
+      "githubfast.com",
+      "hk.gh-proxy.org",
+      "ssh.github.com"
     ],
-    "detected": false
+    "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本内定义了大量第三方加速节点（CDN/proxy），但未检测到自动向这些节点发送用户数据或页面内容的网络请求。仅在用户主动点击下载相关按钮时，才会重定向或构造下载链接。",
-      "location": "全局变量 download_url_us, clone_url, raw_url 等",
-      "recommendation": "确保所有网络请求均为用户主动触发，且不携带敏感信息。",
-      "severity": "LOW",
-      "type": "Potential third-party data transmission"
+      "description": "脚本通过构造下载链接，将用户请求重定向到第三方加速代理服务器（如 gh.h233.eu.org、ghproxy.net 等），这些服务器可能会记录用户下载行为和请求内容。",
+      "location": "download_url_us、clone_url、raw_url 等数组和相关下载逻辑",
+      "recommendation": "提醒用户这些加速节点为第三方，下载敏感内容时需谨慎。建议脚本作者在界面明确提示用户数据可能被第三方代理服务器收集。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
     },
     {
-      "description": "脚本未检测到对 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板、表单字段、键盘事件等隐私相关 API 的访问或监听。",
-      "location": "全局",
-      "recommendation": "继续保持，不要采集用户隐私数据。",
-      "severity": "LOW",
-      "type": "Privacy collection"
+      "description": "脚本未检测到任何隐私采集行为，如读取 cookie、localStorage、sessionStorage、IndexedDB、剪贴板、表单字段或监听键盘输入。",
+      "location": "全局代码",
+      "recommendation": "保持现有状态，勿添加隐私采集逻辑。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
     },
     {
-      "description": "未检测到 eval、new Function、setTimeout(string)、setInterval(string)、innerHTML/outerHTML 注入外部脚本、document.write、@require 或动态 script 标签加载远程 JS。",
-      "location": "全局",
-      "recommendation": "继续避免远程代码执行相关危险操作。",
-      "severity": "LOW",
-      "type": "Remote code execution"
+      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等动态代码执行方式，也未通过 innerHTML/outerHTML 插入外部脚本。",
+      "location": "全局代码",
+      "recommendation": "保持现有状态，勿添加远程代码执行相关逻辑。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
     },
     {
-      "description": "未检测到代码混淆、base64 解码执行、字符串数组混淆、unicode 混淆或高度压缩单行代码。",
-      "location": "全局",
-      "recommendation": "保持代码可读性，便于社区审计。",
-      "severity": "LOW",
-      "type": "Obfuscation"
+      "description": "脚本未检测到代码混淆、base64 解码、字符串数组映射或高度压缩单行代码。",
+      "location": "全局代码",
+      "recommendation": "保持代码可读性，勿使用混淆技术。",
+      "severity": "HIGH",
+      "type": "代码混淆"
     },
     {
-      "description": "@grant 权限申请与实际代码使用基本匹配，无明显高权限滥用。",
+      "description": "脚本未检测到 DOM XSS 风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，也未操作 iframe src 为 javascript: 协议。",
+      "location": "全局代码",
+      "recommendation": "继续避免直接插入不可信内容。",
+      "severity": "HIGH",
+      "type": "DOM XSS / 注入"
+    },
+    {
+      "description": "脚本申请了 GM_openInTab、GM_notification、GM_setClipboard 等权限，但实际用途与功能相符，未检测到权限滥用。",
       "location": "元数据 @grant",
-      "recommendation": "如未使用 GM_openInTab 等高权限，可考虑移除。",
-      "severity": "LOW",
-      "type": "Permission usage"
+      "recommendation": "仅申请必要权限，避免申请未使用的高权限。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
     },
     {
-      "description": "未检测到敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API）被调用。",
-      "location": "全局",
-      "recommendation": "继续避免调用敏感 API。",
-      "severity": "LOW",
-      "type": "Sensitive API usage"
+      "description": "脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API 读取、Notification API 滥用）。",
+      "location": "全局代码",
+      "recommendation": "继续避免敏感 API 调用。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
     },
     {
-      "description": "未检测到 @require 加载第三方库，也未发现供应链风险。",
+      "description": "脚本未通过 @require 加载第三方库，也未检测到供应链风险。",
       "location": "元数据",
-      "recommendation": "如需引入第三方库，建议使用可信官方 CDN 并锁定版本。",
-      "severity": "LOW",
-      "type": "Supply chain risk"
+      "recommendation": "如需加载第三方库，建议固定版本哈希并使用官方 CDN。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
     },
     {
-      "description": "未检测到脚本修改 frame 保护策略或创建隐藏 iframe。",
-      "location": "全局",
-      "recommendation": "继续避免 ClickJacking/iframe 风险。",
+      "description": "脚本未检测到修改 frame 保护策略或创建隐藏 iframe 用于数据提取。",
+      "location": "全局代码",
+      "recommendation": "继续避免 iframe 风险。",
       "severity": "LOW",
-      "type": "ClickJacking/iframe risk"
+      "type": "ClickJacking / iframe 风险"
     }
   ],
   "obfuscation_detected": false,
@@ -70,12 +112,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "LOW",
+  "risk_level": "HIGH",
   "script_name": "Github Enhancement - High Speed Download",
-  "security_score": 97,
-  "summary": "该脚本主要通过在页面上添加加速下载链接，便于用户选择第三方公益 CDN/proxy 节点加速 Github 相关资源的下载。未检测到自动数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。所有网络请求均为用户主动触发，且仅为资源下载用途。整体安全风险极低，建议定期复查第三方加速节点的可信度。",
+  "security_score": 50,
+  "summary": "该脚本主要通过第三方加速代理服务器实现 Github 文件高速下载，存在数据外传风险（用户请求和下载内容会被第三方服务器处理和记录），但未检测到隐私采集、远程代码执行、代码混淆、DOM XSS、敏感 API 调用、供应链风险或 iframe 风险。建议用户下载敏感内容时谨慎，脚本整体安全性为中高风险，安全评分为 50。未检测到 WebSocket 使用。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:38:49.070626+00:00",
+  "analyzed_at": "2026-07-27T05:51:51.942534+00:00",
   "slug": "GithubEnhanced-High-Speed-Download"
 }

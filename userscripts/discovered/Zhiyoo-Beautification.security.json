@@ -14,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "智友邦论坛美化",
   "security_score": 100,
-  "summary": "该脚本仅通过插入自定义 CSS 样式来美化页面，没有任何网络请求、数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用或供应链风险。整体实现简单透明，安全性极高。",
+  "summary": "该脚本仅通过插入 CSS 样式表来美化页面，没有任何数据外传、隐私采集、远程代码执行、代码混淆、DOM 注入、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码结构简单透明，未申请任何 GM_* 权限，也未加载任何外部资源。安全性极高，适合公开使用。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:54:48.667001+00:00",
+  "analyzed_at": "2026-07-27T06:04:46.437406+00:00",
   "slug": "Zhiyoo-Beautification"
 }

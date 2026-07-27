@@ -10,62 +10,76 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script uses GM_xmlhttpRequest to send data to discord.com (likely via webhook) and nominatim.openstreetmap.org. This can be used to exfiltrate user data, game state, or location information.",
-      "location": "GM_xmlhttpRequest usage, @connect metadata",
-      "recommendation": "Limit data sent to third-party services, ensure no sensitive or user-identifiable information is transmitted, and inform users of any data sharing.",
+      "description": "Script sends data to discord.com via GM_xmlhttpRequest, which may include user actions or game data.",
+      "location": "GM_xmlhttpRequest usage, @connect discord.com",
+      "recommendation": "Limit data sent to Discord, ensure no sensitive user information is transmitted.",
       "severity": "CRITICAL",
       "type": "Data Exfiltration"
     },
     {
-      "description": "The script reads and writes to localStorage via Storage.prototype.setItem proxying, and uses GM_setValue/GM_getValue for persistent storage. There is no evidence of exfiltration of this data, but local storage access is present.",
-      "location": "Storage.prototype.setItem, GM_setValue/GM_getValue",
-      "recommendation": "Ensure no sensitive user data is stored or transmitted. Do not store credentials or personal information.",
-      "severity": "MEDIUM",
+      "description": "Script sends requests to nominatim.openstreetmap.org, likely for geocoding. Potential for user location data leakage.",
+      "location": "GM_xmlhttpRequest usage, @connect nominatim.openstreetmap.org",
+      "recommendation": "Ensure only necessary location data is sent, avoid transmitting user identifiers.",
+      "severity": "CRITICAL",
+      "type": "Data Exfiltration"
+    },
+    {
+      "description": "Script listens to WebSocket messages and processes opponent guesses, which may expose user/game data.",
+      "location": "WebSocket.prototype.addEventListener proxy",
+      "recommendation": "Do not transmit user/game data externally unless necessary and with user consent.",
+      "severity": "CRITICAL",
+      "type": "Data Exfiltration"
+    },
+    {
+      "description": "Script accesses localStorage and sessionStorage, and modifies Storage.prototype.setItem.",
+      "location": "Storage.prototype.setItem proxy",
+      "recommendation": "Avoid unnecessary access to storage, do not store sensitive data.",
+      "severity": "HIGH",
       "type": "Privacy Collection"
     },
     {
-      "description": "The script requests Notification API permission and may use Notification API to send notifications to the user.",
+      "description": "Script uses Notification API to send notifications.",
       "location": "state.notificationPermission, Notification.permission",
-      "recommendation": "Do not abuse Notification API for spam or misleading notifications.",
+      "recommendation": "Ensure notifications are not abused or used for phishing.",
       "severity": "MEDIUM",
       "type": "Sensitive API Usage"
     },
     {
-      "description": "The script uses @require to load msgpack.js from update.greasyfork.org, which is a trusted CDN, but the version is not pinned by hash.",
+      "description": "Script uses @require to load msgpack.js from greasyfork update CDN, but does not fix version hash.",
       "location": "@require https://update.greasyfork.org/scripts/423602/1005014/msgpack.js",
-      "recommendation": "Pin third-party dependencies by version and hash to prevent supply chain attacks.",
+      "recommendation": "Pin third-party dependencies to a specific version hash to prevent supply chain attacks.",
       "severity": "MEDIUM",
       "type": "Supply Chain Risk"
     },
     {
-      "description": "The script requests GM_xmlhttpRequest permission, which is used and justified, but also requests GM_setValue, GM_getValue, and GM_deleteValue. All are used, but the script does not request unnecessary high-risk permissions.",
-      "location": "@grant metadata",
-      "recommendation": "Only request permissions that are strictly necessary.",
-      "severity": "LOW",
-      "type": "Permission Usage"
+      "description": "Script applies Proxy to Element.prototype.setAttribute and Array.prototype.push, which may affect page behavior.",
+      "location": "Proxy wrappers on DOM prototypes",
+      "recommendation": "Avoid modifying global prototypes unless necessary; restrict scope.",
+      "severity": "HIGH",
+      "type": "Code Injection Risk"
     },
     {
-      "description": "The script modifies Element.prototype.setAttribute and Storage.prototype.setItem via Proxy, which can have side effects and may break page functionality or introduce compatibility issues.",
-      "location": "Element.prototype.setAttribute, Storage.prototype.setItem",
-      "recommendation": "Avoid monkey-patching built-in prototypes unless absolutely necessary.",
-      "severity": "LOW",
-      "type": "DOM/Prototype Modification"
+      "description": "Script requests GM_xmlhttpRequest permission, which is high privilege.",
+      "location": "@grant GM_xmlhttpRequest",
+      "recommendation": "Limit usage to only required domains; review necessity.",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "localStorage access via Storage.prototype.setItem",
-      "GM_setValue/GM_getValue usage"
+      "Accesses localStorage/sessionStorage",
+      "Processes game/user data from WebSocket"
     ],
     "detected": true
   },
-  "risk_level": "HIGH",
+  "risk_level": "CRITICAL",
   "script_name": "CheatGuessr Universal | GeoGuessr | OpenGuessr | WorldGuessr | FreeGuessr | GeoDuels | Geotastic",
-  "security_score": 49,
-  "summary": "This script transmits data to third-party services (discord.com and nominatim.openstreetmap.org), which may include game state or location information. It accesses localStorage and uses persistent storage APIs, but does not appear to collect sensitive user data such as cookies, passwords, or clipboard contents. There is no evidence of code obfuscation, DOM XSS, or remote code execution. The script loads a third-party library from a trusted source, but the version is not pinned by hash. Notification API is used, but not abused. Overall, the script poses a HIGH risk due to data exfiltration to third-party services.",
+  "security_score": 17,
+  "summary": "This script poses significant security and privacy risks due to data transmission to third-party servers (discord.com, nominatim.openstreetmap.org), processing of user/game data, and modification of browser prototypes. Supply chain and permission risks are also present. Not recommended for use in sensitive environments.",
   "supply_chain_risk": true,
   "websocket_usage": true,
-  "analyzed_at": "2026-07-13T05:31:17.502025+00:00",
+  "analyzed_at": "2026-07-27T05:45:49.422920+00:00",
   "slug": "CheatGuessr_Universal_GeoGuessr_OpenGuessr_WorldGuessr_FreeGuessr_GeoDuels_Geota"
 }

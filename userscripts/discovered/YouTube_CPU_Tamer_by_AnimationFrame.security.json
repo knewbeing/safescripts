@@ -14,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "YouTube CPU Tamer by AnimationFrame",
   "security_score": 100,
-  "summary": "该脚本仅在 YouTube 相关页面运行，未检测到任何网络请求、数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码结构清晰，未使用任何 @grant 权限，且无可疑行为。安全性极高，适合普通用户使用。",
+  "summary": "该脚本仅在页面内优化动画帧和 Promise 行为以降低 CPU 能耗，没有任何数据外传、隐私采集、远程代码执行、代码混淆、DOM 注入、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码结构清晰，未申请任何高权限，未加载第三方库，安全性极高。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:51:21.581164+00:00",
+  "analyzed_at": "2026-07-27T06:01:06.719308+00:00",
   "slug": "YouTube_CPU_Tamer_by_AnimationFrame"
 }

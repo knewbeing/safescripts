@@ -7,11 +7,18 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script uses prompt() to collect user input and updates the DOM with user-provided values. However, it does not insert untrusted input via innerHTML or similar methods, reducing XSS risk.",
-      "location": "addCoinsAndTokens() and updateBalanceDisplay()",
-      "recommendation": "If updating HTML, always sanitize user input before inserting into the DOM, especially if using innerHTML.",
+      "description": "Uses prompt to collect user input, but does not transmit data externally.",
+      "location": "addCoinsAndTokens function",
+      "recommendation": "Ensure user input is not used in unsafe DOM operations.",
       "severity": "LOW",
-      "type": "Potential DOM manipulation with user input"
+      "type": "User Input Handling"
+    },
+    {
+      "description": "Attempts to update DOM element with user-provided values, but does not use innerHTML or unsafe insertion.",
+      "location": "updateBalanceDisplay function",
+      "recommendation": "Continue using textContent for DOM updates to avoid XSS.",
+      "severity": "LOW",
+      "type": "DOM Manipulation"
     }
   ],
   "obfuscation_detected": false,
@@ -21,10 +28,10 @@
   },
   "risk_level": "SAFE",
   "script_name": "Blooket Coin and Token Hacker",
-  "security_score": 97,
-  "summary": "This UserScript does not perform any network requests, does not collect or transmit user data, and does not use dangerous APIs such as eval or dynamic script loading. It only prompts the user for input and updates the page display. There is no evidence of obfuscation, supply chain risk, or permission abuse. The only minor issue is updating the DOM with user input, but it does not use innerHTML or similar methods that would introduce XSS risk.",
+  "security_score": 94,
+  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用或供应链风险。仅存在低风险的用户输入和 DOM 操作，未涉及任何严重安全问题。整体安全性较高。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:29:37.849710+00:00",
+  "analyzed_at": "2026-07-27T05:44:40.988943+00:00",
   "slug": "Blooket_Coin_and_Token_Hacker"
 }

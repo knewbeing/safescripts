@@ -24,30 +24,37 @@
       "sc-cdn.net",
       "pinimg.com"
     ],
-    "detected": false
+    "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本申请了 GM_openInTab、GM.openInTab、GM_xmlhttpRequest、GM_download、unsafeWindow 等高权限，但代码未展示实际用途，存在权限滥用风险。",
-      "location": "@grant 元数据",
-      "recommendation": "仅申请实际需要的权限，移除未使用的高权限。",
-      "severity": "MEDIUM",
-      "type": "权限滥用"
-    },
-    {
-      "description": "脚本未展示任何实际代码逻辑，无法判断是否存在数据外传、隐私采集、远程代码执行、混淆、XSS 等高危行为。",
-      "location": "整体代码",
-      "recommendation": "应提供完整可审查的脚本代码，避免仅有元数据。",
+      "description": "脚本申请了 GM_xmlhttpRequest 权限，并声明 @connect 多个第三方视频 CDN，存在数据外传风险。虽然主要用于视频下载，但无法确认是否仅用于合法下载行为。",
+      "location": "元数据 @grant/@connect",
+      "recommendation": "限制 GM_xmlhttpRequest 的用途，仅用于视频文件下载，避免发送用户敏感数据。建议代码层面审查所有网络请求。",
       "severity": "CRITICAL",
-      "type": "代码缺失/不可审查"
+      "type": "Data Transmission"
     },
     {
-      "description": "脚本未 @require 任何第三方库，供应链风险较低。",
-      "location": "@require 元数据",
-      "recommendation": "如需引入第三方库，建议使用可信官方 CDN 并锁定版本。",
-      "severity": "LOW",
-      "type": "供应链风险"
+      "description": "脚本申请了 GM_openInTab 和 GM_download 权限，但代码未展示实际用途，存在权限滥用风险。",
+      "location": "元数据 @grant",
+      "recommendation": "仅申请实际需要的权限，移除未使用或高风险权限。",
+      "severity": "MEDIUM",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "脚本申请了 unsafeWindow 权限，可能导致远程代码执行或与页面脚本交互带来安全隐患。",
+      "location": "元数据 @grant",
+      "recommendation": "避免使用 unsafeWindow，除非确实需要与页面脚本通信且已做安全隔离。",
+      "severity": "HIGH",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "未见 @require 第三方库，但 update/download URL 来自 greasyfork 官方，供应链风险较低。",
+      "location": "元数据 @require/@downloadURL/@updateURL",
+      "recommendation": "如需引入第三方库，建议固定版本哈希并使用官方 CDN。",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
     }
   ],
   "obfuscation_detected": false,
@@ -55,12 +62,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "CRITICAL",
+  "risk_level": "HIGH",
   "script_name": "All-in-One Video Downloader – HD (YouTube, TikTok, Instagram, X & More)",
-  "security_score": 47,
-  "summary": "该脚本仅提供了元数据区，未包含任何实际可审查的 JavaScript 代码逻辑，无法判断其真实行为。元数据中申请了大量高权限（如 GM_openInTab、GM_xmlhttpRequest、GM_download、unsafeWindow），但未见实际用途，存在权限滥用风险。未发现数据外传、隐私采集、远程代码执行、混淆、XSS 等直接证据，但由于缺乏代码，无法排除高危行为。安全风险极高，不建议在生产环境或主力浏览器中安装。",
+  "security_score": 52,
+  "summary": "该脚本主要用于视频下载，声明了大量第三方 CDN 网络权限，存在数据外传风险。未见明显隐私采集、代码混淆或 DOM XSS，但申请了高权限（GM_xmlhttpRequest、GM_openInTab、GM_download、unsafeWindow），存在远程代码执行和权限滥用隐患。建议进一步审查实际代码逻辑，限制权限申请和网络请求用途。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:28:52.866906+00:00",
+  "analyzed_at": "2026-07-27T05:44:04.000554+00:00",
   "slug": "All-in-One_Video_Downloader_HD_YouTube_TikTok_Instagram_X_More"
 }

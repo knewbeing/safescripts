@@ -14,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "YouTube Ads-Bypass",
   "security_score": 100,
-  "summary": "该脚本仅通过 DOM 操作隐藏/跳过广告元素，无任何数据外传、隐私采集、远程代码执行、混淆、XSS、权限滥用或供应链风险。未检测到敏感 API 调用或 iframe 风险。整体结构清晰，安全性高。",
+  "summary": "该脚本仅操作 DOM 元素以隐藏广告，无任何数据外传、隐私采集、远程代码执行、混淆、XSS、权限滥用、敏感 API 调用或供应链风险。代码结构清晰，未申请任何高权限，未加载第三方库，未使用危险 API。整体安全性极高，适合公开使用。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:51:16.058166+00:00",
+  "analyzed_at": "2026-07-27T06:01:02.951882+00:00",
   "slug": "YouTube_Ads-Bypass"
 }

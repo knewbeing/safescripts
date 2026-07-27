@@ -34,9 +34,9 @@ title: "YouTube终极下载器"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：75/100　　**分析时间**：2026-07-13
+**风险等级**：🔴 HIGH　　**安全评分**：75/100　　**分析时间**：2026-07-27
 
-> This script adds a floating download button to YouTube, which sends the current video ID to several third-party download services. This constitutes a privacy risk, as user activity (video IDs, possibly referrer) is leaked to external servers. No other critical or high-risk behaviors (such as code execution, obfuscation, or sensitive data collection) were detected. The script requests minimal permissions and does not use dangerous APIs. The main risk is data exfiltration to untrusted third-party sites.
+> 该脚本主要风险在于将用户引导至第三方下载网站，存在数据外传和隐私泄露风险。未检测到代码混淆、远程代码执行、敏感 API 调用等高危行为。建议用户谨慎使用，警惕第三方下载服务的安全与隐私问题。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -49,50 +49,15 @@ title: "YouTube终极下载器"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Exfiltration  
-> The script constructs download URLs using third-party services (y2mate.stream, africabazaar.co.za, saveanyyoutube.com, scoozy.ca) and opens them with the current YouTube video ID. This may leak user activity (video IDs, possibly referrer) to external servers.  
-> 位置：MultiURL array and button click handler (not fully shown, but implied by code structure)  
-> 建议：Warn users about privacy risks. Only use trusted download services. Avoid sending sensitive data to third parties.
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过构造下载按钮，用户点击后会跳转到第三方下载网站（如 y2mate.stream、africabazaar.co.za、saveanyyoutube.com、scoozy.ca），这些网站可能会收集用户数据或页面信息。  
+> 位置：MultiURL 数组与按钮点击事件  
+> 建议：警告用户这些第三方网站可能存在隐私和安全风险，建议仅使用可信的下载服务。
 
-**🟡 LOW** — Privacy Collection  
-> The script does not appear to collect cookies, localStorage, or other sensitive browser data, nor does it listen to keyboard or clipboard events.  
-> 位置：Global scope and main logic  
-> 建议：No action needed.
-
-**🟡 LOW** — Remote Code Execution  
-> No use of eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection detected in the visible code.  
-> 位置：Global scope and main logic  
-> 建议：No action needed.
-
-**🟡 LOW** — Obfuscation  
-> No code obfuscation detected in the visible code. Code is readable and not minified/obfuscated.  
-> 位置：Global scope and main logic  
-> 建议：No action needed.
-
-**🟡 LOW** — DOM XSS  
-> No DOM XSS or injection risk detected in the visible code. No user input is inserted into the DOM via innerHTML/outerHTML/document.write.  
-> 位置：Global scope and main logic  
-> 建议：No action needed.
-
-**🟡 LOW** — Permission Abuse  
-> The script only requests GM_addStyle, which is appropriate for its functionality. No excessive permissions requested.  
-> 位置：@grant metadata  
-> 建议：No action needed.
-
-**🟡 LOW** — Sensitive API  
-> No use of sensitive APIs (geolocation, WebRTC, MediaDevices, Clipboard, Notification) detected.  
-> 位置：Global scope and main logic  
-> 建议：No action needed.
-
-**🟡 LOW** — Supply Chain Risk  
-> No @require or dynamic loading of third-party libraries detected. All code is inline.  
-> 位置：Metadata and code  
-> 建议：No action needed.
-
-**🟡 LOW** — ClickJacking/iframe  
-> No iframe manipulation or frame protection bypass detected.  
-> 位置：Global scope and main logic  
-> 建议：No action needed.
+**🟡 LOW** — 权限滥用  
+> 脚本未申请高权限，仅使用 GM_addStyle，未检测到敏感 API 调用、远程代码执行、代码混淆、DOM XSS、供应链风险等问题。  
+> 位置：元数据与主代码结构  
+> 建议：保持最小权限原则，避免后续版本申请不必要的高权限。
 
 ---
 

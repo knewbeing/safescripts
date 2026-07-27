@@ -30,13 +30,13 @@ title: "CAMP-XT: Jira"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：77/100　　**分析时间**：2026-07-13
+**风险等级**：🟠 MEDIUM　　**安全评分**：77/100　　**分析时间**：2026-07-27
 
-> 该脚本本身未直接收集用户隐私数据，也未检测到数据外传或 DOM XSS 行为。但存在较高的远程代码执行风险：脚本会动态加载并执行外部 camp-loader.js 和 camp-utils.js 文件，且未做内容校验，存在供应链污染和远程代码注入风险。建议仅在信任 camp-plus/camp-xt 仓库的前提下使用，并定期审计外部依赖内容。
+> 该脚本主要通过动态加载 camp-loader.js 和 camp-utils.js 实现功能，未检测到数据外传、隐私采集、代码混淆、DOM XSS、权限滥用、敏感 API 调用、WebSocket 使用等高风险行为。最大风险为远程代码执行（动态加载外部 JS），且依赖文件采用固定 commit 哈希，供应链风险较低。建议定期审查依赖文件内容，确保安全。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：https://cdn.jsdelivr.net/gh/camp-plus/camp-xt@157c87e9f39d2721dd50084e1841eb7b7ac61107/shared/camp-loader.js, https://raw.githubusercontent.com/camp-plus/camp-xt/157c87e9f39d2721dd50084e1841eb7b7ac61107/shared/camp-loader.js, https://cdn.jsdelivr.net/gh/camp-plus/camp-xt@157c87e9f39d2721dd50084e1841eb7b7ac61107/shared/camp-utils.js） |
+| 数据外传 | ✅ 未检测到 |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
@@ -46,14 +46,14 @@ title: "CAMP-XT: Jira"
 ### 发现的问题
 
 **🔴 HIGH** — 远程代码执行  
-> 脚本通过 fetch 和动态 script 标签从外部（CDN 和 raw.githubusercontent.com）加载并执行 camp-loader.js 和 camp-utils.js，属于远程代码执行风险。  
-> 位置：loadScriptWithFallback, fetchAndInject, 元数据 @updateURL/@downloadURL  
-> 建议：建议仅加载受信任、固定版本哈希的第三方脚本，并定期审计外部依赖内容。
+> 动态加载远程 JS 文件（camp-loader.js 和 camp-utils.js），通过 fetch 和 script 标签注入。虽然使用固定 commit 哈希，仍存在远程代码执行风险。  
+> 位置：loadScriptWithFallback, fetchAndInject, loaderCDN, loaderRaw, utilsCDN, utilsRaw  
+> 建议：建议进一步审查 camp-loader.js 和 camp-utils.js 的内容，确保无恶意代码。若可，将其本地化或采用更严格的哈希校验。
 
 **🟠 MEDIUM** — 供应链风险  
-> 动态加载的外部脚本（camp-loader.js, camp-utils.js）未做内容校验，存在供应链污染风险。  
-> 位置：fetchAndInject, loadScriptWithFallback  
-> 建议：建议对外部依赖进行内容校验（如 SRI 哈希），并限制来源。
+> 脚本通过 @require 以 CDN 固定 commit 哈希加载自身，供应链风险较低，但依赖 camp-loader.js 和 camp-utils.js 的安全性。  
+> 位置：@updateURL, @downloadURL, loaderCDN, loaderRaw, utilsCDN, utilsRaw  
+> 建议：建议定期审查依赖文件的内容，确保未被污染。
 
 ---
 

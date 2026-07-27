@@ -52,13 +52,13 @@ Picviewer CE+ 是一款在线看图工具，支持图片弹出大图、旋转、
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：50/100　　**分析时间**：2026-07-13
+**风险等级**：🔴 HIGH　　**安全评分**：52/100　　**分析时间**：2026-07-27
 
-> Picviewer CE+ 存在严重的安全隐患，主要体现在 @connect * 允许任意外联、GM_xmlhttpRequest 高权限配合通配符可导致数据外传、unsafeWindow 增加远程代码执行风险，以及部分高权限未实际使用。建议严格限制网络权限、移除未用高权限、锁定第三方依赖版本。当前不建议在敏感环境下使用。
+> Picviewer CE+ 用户脚本存在较高安全风险，主要由于 @connect * 允许任意外部通信（CRITICAL），高权限申请与供应链风险（MEDIUM）。当前代码片段未检测到隐私采集、远程代码执行、代码混淆或 DOM XSS，但完整功能需进一步审查。建议收紧 @connect 域名、精简权限申请、固定第三方库版本。未批准。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：*, www.google.com, www.google.com.hk） |
+| 数据外传 | ✅ 未检测到 |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
@@ -67,30 +67,20 @@ Picviewer CE+ 是一款在线看图工具，支持图片弹出大图、旋转、
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> @connect * 允许脚本向任意域名发起网络请求，存在数据外传的高风险，尤其是配合 GM_xmlhttpRequest 等高权限 API。  
+**⛔ CRITICAL** — Data Transmission  
+> @connect * 允许任意域名的网络请求，存在数据外传潜在风险，尤其是 GM_xmlhttpRequest 可用于任意第三方通信。  
 > 位置：元数据 @connect *  
-> 建议：严格限制 @connect 域名范围，仅允许必要的目标，移除通配符。
+> 建议：限制 @connect 域名范围，仅允许必要的目标，避免任意外部通信。
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本申请了 GM_xmlhttpRequest/GM.xmlHttpRequest 权限，结合 @connect *，理论上可向任意服务器发送数据。  
-> 位置：元数据 @grant GM_xmlhttpRequest, GM.xmlHttpRequest  
-> 建议：移除不必要的高权限，或限制 @connect 域名。
+**🟠 MEDIUM** — Permission Abuse  
+> 申请了大量高权限（GM_download、GM_openInTab、unsafeWindow），部分未在当前代码片段中使用，存在权限滥用风险。  
+> 位置：元数据 @grant  
+> 建议：仅申请实际需要的权限，移除未使用的高权限。
 
-**🔴 HIGH** — 远程代码执行  
-> 脚本申请了 unsafeWindow 权限，可能导致主页面和脚本间的任意代码互操作，增加远程代码执行和隐私泄露风险。  
-> 位置：元数据 @grant unsafeWindow  
-> 建议：仅在绝对必要时使用 unsafeWindow，建议移除。
-
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_download、GM_openInTab、GM_setClipboard、GM_notification 等高权限，部分权限未在主代码中直接使用，存在权限滥用风险。  
-> 位置：元数据 @grant 多项  
-> 建议：仅申请实际使用的权限，移除未用权限。
-
-**🟠 MEDIUM** — 供应链风险  
-> 脚本通过 @require 加载了第三方脚本（pvcep_rules.js, pvcep_lang.js, GM_config CN.js），但未锁定版本哈希，存在供应链污染风险。  
+**🟠 MEDIUM** — Supply Chain Risk  
+> @require 加载的第三方库未固定版本哈希，存在供应链污染风险。  
 > 位置：元数据 @require  
-> 建议：使用可信 CDN 并锁定具体版本或哈希。
+> 建议：使用官方 CDN 并固定版本哈希，避免加载可变内容。
 
 ---
 

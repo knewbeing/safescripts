@@ -32,9 +32,9 @@ title: "Blooket金币代币助手"
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：97/100　　**分析时间**：2026-07-13
+**风险等级**：🟢 SAFE　　**安全评分**：94/100　　**分析时间**：2026-07-27
 
-> This UserScript does not perform any network requests, does not collect or transmit user data, and does not use dangerous APIs such as eval or dynamic script loading. It only prompts the user for input and updates the page display. There is no evidence of obfuscation, supply chain risk, or permission abuse. The only minor issue is updating the DOM with user input, but it does not use innerHTML or similar methods that would introduce XSS risk.
+> 该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用或供应链风险。仅存在低风险的用户输入和 DOM 操作，未涉及任何严重安全问题。整体安全性较高。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -47,10 +47,15 @@ title: "Blooket金币代币助手"
 
 ### 发现的问题
 
-**🟡 LOW** — Potential DOM manipulation with user input  
-> The script uses prompt() to collect user input and updates the DOM with user-provided values. However, it does not insert untrusted input via innerHTML or similar methods, reducing XSS risk.  
-> 位置：addCoinsAndTokens() and updateBalanceDisplay()  
-> 建议：If updating HTML, always sanitize user input before inserting into the DOM, especially if using innerHTML.
+**🟡 LOW** — User Input Handling  
+> Uses prompt to collect user input, but does not transmit data externally.  
+> 位置：addCoinsAndTokens function  
+> 建议：Ensure user input is not used in unsafe DOM operations.
+
+**🟡 LOW** — DOM Manipulation  
+> Attempts to update DOM element with user-provided values, but does not use innerHTML or unsafe insertion.  
+> 位置：updateBalanceDisplay function  
+> 建议：Continue using textContent for DOM updates to avoid XSS.
 
 ---
 

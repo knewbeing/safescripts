@@ -1,22 +1,121 @@
 {
   "approved": true,
   "data_transmission": {
-    "destinations": [],
-    "detected": false
+    "destinations": [
+      "https://gh.h233.eu.org",
+      "https://gh.ddlc.top",
+      "https://gh-proxy.org",
+      "https://cdn.gh-proxy.org",
+      "https://edgeone.gh-proxy.org",
+      "https://cors.isteed.cc",
+      "https://ghproxy.it",
+      "https://github.boki.moe",
+      "https://gh.jasonzeng.dev",
+      "https://gh.monlor.com",
+      "https://github.geekery.cn",
+      "https://github.ednovas.xyz",
+      "https://ghfile.geekertao.top",
+      "https://ghp.keleyaa.com",
+      "https://gh.chjina.com",
+      "https://ghpxy.hwinzniej.top",
+      "https://cdn.crashmc.com",
+      "https://git.yylx.win",
+      "https://gitproxy.mrhjx.cn",
+      "https://ghproxy.cxkpro.top",
+      "https://gh.xxooo.cf",
+      "https://gh.idayer.com",
+      "https://down.npee.cn",
+      "https://raw.ihtw.moe",
+      "https://xget.xi-xu.me",
+      "https://gh.zwy.one",
+      "https://ghproxy.monkeyray.net",
+      "https://ghproxy.net",
+      "https://ghfast.top",
+      "https://wget.la",
+      "https://gitclone.com",
+      "https://githubfast.com",
+      "https://raw.githubusercontent.com",
+      "https://hk.gh-proxy.org"
+    ],
+    "detected": true
   },
   "dom_xss_risk": false,
-  "issues": [],
+  "issues": [
+    {
+      "description": "脚本通过修改下载链接，将用户的下载请求重定向到第三方加速代理服务器（如 gh.h233.eu.org、gh-proxy.org 等），存在数据外传风险。虽然主要为文件下载用途，但所有下载请求均会被第三方服务器处理，可能泄露用户下载行为和目标文件信息。",
+      "location": "下载链接重定向逻辑（download_url_us、clone_url、raw_url 等数组及后续处理）",
+      "recommendation": "提醒用户这些加速节点为第三方，下载敏感文件时需谨慎。建议在文档中明确风险，或允许用户自定义节点。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本未直接采集用户隐私数据（如 cookie、localStorage、表单、剪贴板等），但通过 GM_getValue/GM_setValue 存储用户配置，未发现敏感信息存储。",
+      "location": "GM_getValue/GM_setValue 使用",
+      "recommendation": "确保仅存储非敏感配置项，避免后续扩展时采集隐私数据。",
+      "severity": "MEDIUM",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等动态代码执行方式，也未通过 innerHTML/outerHTML 插入外部脚本。",
+      "location": "全局代码审查",
+      "recommendation": "保持当前安全实践，避免后续引入远程代码执行风险。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本未发现代码混淆、base64 解码、字符串映射或高度压缩单行代码。",
+      "location": "全局代码审查",
+      "recommendation": "保持代码可读性，便于社区审查。",
+      "severity": "HIGH",
+      "type": "代码混淆"
+    },
+    {
+      "description": "脚本未发现 DOM XSS 风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML。",
+      "location": "全局代码审查",
+      "recommendation": "保持当前安全实践，避免后续引入 XSS 风险。",
+      "severity": "HIGH",
+      "type": "DOM XSS"
+    },
+    {
+      "description": "脚本申请了 GM_openInTab、GM_notification、GM_setClipboard 等权限，实际代码中主要用于增强用户体验，未发现滥用高权限行为。",
+      "location": "元数据 @grant 与实际代码对比",
+      "recommendation": "建议仅申请实际需要的权限，避免权限冗余。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API），仅使用 GM_notification 发送通知。",
+      "location": "全局代码审查",
+      "recommendation": "保持当前安全实践，避免后续引入敏感 API 滥用。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "脚本未通过 @require 加载第三方库，也未动态加载远程 JS，供应链风险较低。",
+      "location": "元数据与代码审查",
+      "recommendation": "如需引入第三方库，建议固定版本哈希并使用官方 CDN。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    },
+    {
+      "description": "脚本未修改 frame 保护策略，也未创建隐藏 iframe 用于数据提取。",
+      "location": "全局代码审查",
+      "recommendation": "保持当前安全实践，避免后续引入 ClickJacking 风险。",
+      "severity": "LOW",
+      "type": "ClickJacking / iframe 风险"
+    }
+  ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
     "detected": false
   },
-  "risk_level": "SAFE",
+  "risk_level": "HIGH",
   "script_name": "Github Enhancement - High Speed Download",
-  "security_score": 100,
-  "summary": "该 UserScript 仅包含元数据，无任何实际代码执行，因此不存在数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。安全评分为满分 100，风险等级 SAFE。",
+  "security_score": 50,
+  "summary": "该脚本主要通过重定向下载链接到第三方加速节点实现 Github 文件高速下载，存在数据外传风险（所有下载请求均被第三方服务器处理）。未发现隐私采集、远程代码执行、代码混淆、DOM XSS、供应链等高风险问题。建议用户下载敏感文件时谨慎使用，开发者应在文档中明确风险。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-20T05:30:33.671355+00:00",
+  "analyzed_at": "2026-07-27T05:41:36.667981+00:00",
   "slug": "GithubEnhanced-High-Speed-Download"
 }

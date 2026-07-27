@@ -14,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "YouTube Video Downloader - Tenzaa (Global) 2026 Latest",
   "security_score": 100,
-  "summary": "该脚本仅包含元数据注释，无任何实际 JavaScript 代码逻辑。未检测到任何网络请求、隐私数据采集、远程代码执行、混淆、XSS、权限滥用或供应链风险。安全性极高。",
+  "summary": "该脚本仅包含元数据，没有任何实际 JavaScript 代码执行逻辑。不存在数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。安全评分为满分。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:52:58.045344+00:00",
+  "analyzed_at": "2026-07-27T06:04:08.208002+00:00",
   "slug": "YouTube_Video_Downloader_-_Tenzaa_Global_2026_Latest"
 }

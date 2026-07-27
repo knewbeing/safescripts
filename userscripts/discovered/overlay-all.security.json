@@ -7,25 +7,11 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "@require 加载的 camp-utils.js 和 camp-overlay.js 来自 jsdelivr CDN，指向 GitHub main 分支，未锁定具体 commit 或版本哈希，存在供应链污染风险。",
-      "location": "@require 元数据",
-      "recommendation": "建议将 @require 链接固定为特定 commit 哈希，避免 main 分支变更导致供应链攻击。",
+      "description": "@require 加载的第三方库未固定版本哈希，使用 GitHub main 分支，存在供应链污染风险。",
+      "location": "元数据 @require https://cdn.jsdelivr.net/gh/camp-plus/camp-xt@main/shared/camp-utils.js 和 camp-overlay.js",
+      "recommendation": "建议使用固定版本或 commit 哈希的 CDN URL，避免 main 分支随时变更导致供应链风险。",
       "severity": "MEDIUM",
       "type": "Supply Chain Risk"
-    },
-    {
-      "description": "脚本通过 document.execCommand('insertText', ...) 向 Gmail 邮件正文插入模板文本，涉及对页面内容的写入，但未发现对用户输入的读取或外传。",
-      "location": "camp-insert-template handler",
-      "recommendation": "确认插入内容安全，避免插入不可信内容。",
-      "severity": "LOW",
-      "type": "Content Injection"
-    },
-    {
-      "description": "脚本未使用任何 @grant 权限，实际代码也未调用 GM_* API，权限申请合理。",
-      "location": "@grant 元数据",
-      "recommendation": "无。",
-      "severity": "LOW",
-      "type": "Permissions"
     }
   ],
   "obfuscation_detected": false,
@@ -35,10 +21,10 @@
   },
   "risk_level": "LOW",
   "script_name": "CAMP-XT: All-in-One Installer",
-  "security_score": 89,
-  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要风险为 @require 加载的第三方库未锁定版本，存在一定供应链风险。整体安全性较高，建议关注依赖库的版本锁定。",
+  "security_score": 92,
+  "summary": "该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、WebSocket 使用等高风险行为。唯一风险为 @require 加载的第三方库未固定版本哈希，存在供应链污染风险。整体安全性较高，建议加强供应链管理。",
   "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:58:01.269316+00:00",
+  "analyzed_at": "2026-07-27T06:06:54.491204+00:00",
   "slug": "overlay-all"
 }

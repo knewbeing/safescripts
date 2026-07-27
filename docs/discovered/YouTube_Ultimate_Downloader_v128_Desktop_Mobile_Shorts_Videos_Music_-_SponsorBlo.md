@@ -30,14 +30,14 @@ title: "YouTube™ Ultimate Downloader v12.8 👑🌍 — Desktop & Mobile | Sho
 
 ## 安全分析
 
-**风险等级**：⛔ CRITICAL　　**安全评分**：50/100　　**分析时间**：2026-07-13
+**风险等级**：🔴 HIGH　　**安全评分**：75/100　　**分析时间**：2026-07-27
 
-> This script exposes the user's currently watched YouTube video ID to multiple third-party download services when the download button is used. While it does not collect cookies, localStorage, or other sensitive browser data, and does not use dangerous APIs or code execution techniques, the privacy risk of sending video IDs to untrusted third-party sites is significant. No code obfuscation, supply chain, or XSS risks detected. The script is not recommended for privacy-sensitive users.
+> 脚本主要风险为数据外传：用户点击下载按钮时，当前视频ID会被发送到第三方下载服务，存在用户行为被第三方收集的风险。未检测到隐私采集、远程代码执行、混淆、DOM XSS、敏感 API 调用、供应链风险等问题。建议警示用户数据可能被第三方收集。
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：y2mate.stream, giggity.co.za, saveanyyoutube.com） |
-| 隐私采集 | ❌ 检测到（Current YouTube video ID is sent to third-party download services when user clicks download button.） |
+| 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -45,50 +45,50 @@ title: "YouTube™ Ultimate Downloader v12.8 👑🌍 — Desktop & Mobile | Sho
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Exfiltration  
-> The script constructs download URLs using third-party services (y2mate.stream, giggity.co.za, saveanyyoutube.com, scoozy.ca) and opens them with the current YouTube video ID. This may leak the user's currently watched video and potentially other data if the third-party site collects more information.  
-> 位置：MultiURL array and button click handler (code section where download URLs are constructed and opened)  
-> 建议：Warn users about privacy risks when sending video IDs to third-party downloaders. Consider using only trusted services and review their privacy policies.
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过构造下载按钮，向第三方网站（y2mate.stream、giggity.co.za、saveanyyoutube.com、scoozy.ca）发送当前视频ID，可能涉及用户数据外传。  
+> 位置：MultiURL 数组及按钮事件处理  
+> 建议：仅允许用户主动操作时跳转，避免自动请求；警示用户数据可能被第三方收集。
 
-**⛔ CRITICAL** — Privacy Collection  
-> The script does not appear to collect cookies, localStorage, or other sensitive browser data, nor does it listen to keyboard or clipboard events. However, the act of sending the current video ID to third-party sites is a privacy risk.  
-> 位置：MultiURL usage and window.open calls  
-> 建议：Minimize data sent to third-party services and inform users of privacy implications.
+**🟠 MEDIUM** — 权限滥用  
+> 脚本未申请高权限，仅使用 GM_addStyle，但未使用 GM_xmlhttpRequest、fetch 等主动网络请求。  
+> 位置：@grant 元数据与代码权限对比  
+> 建议：保持最小权限原则，避免申请未用权限。
 
-**🔴 HIGH** — Remote Code Execution  
-> The script does not use eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection. No remote code execution risk detected.  
-> 位置：N/A  
-> 建议：No action needed.
+**🟡 LOW** — 代码混淆  
+> 脚本未混淆，代码结构清晰，无 base64、字符串数组映射、unicode 混淆等特征。  
+> 位置：整体代码结构  
+> 建议：无安全风险。
 
-**🔴 HIGH** — Code Obfuscation  
-> No code obfuscation detected. The code is readable and not minified or encoded.  
-> 位置：N/A  
-> 建议：No action needed.
+**🟡 LOW** — 远程代码执行  
+> 脚本未检测到 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险。  
+> 位置：整体代码结构  
+> 建议：无安全风险。
 
-**🔴 HIGH** — DOM XSS  
-> No DOM XSS or injection risk detected. The script does not insert untrusted user input into the DOM via innerHTML or similar methods.  
-> 位置：N/A  
-> 建议：No action needed.
+**🟡 LOW** — DOM XSS  
+> 脚本未检测到 DOM XSS 风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML。  
+> 位置：整体代码结构  
+> 建议：无安全风险。
 
-**🟠 MEDIUM** — Permission Abuse  
-> The script only requests the GM_addStyle permission, which is appropriate for its functionality. No permission abuse detected.  
-> 位置：@grant metadata  
-> 建议：No action needed.
+**🟡 LOW** — 隐私采集  
+> 脚本未检测到隐私采集行为，如读取 cookie、localStorage、sessionStorage、IndexedDB、剪贴板、表单字段等。  
+> 位置：整体代码结构  
+> 建议：无安全风险。
 
-**🟠 MEDIUM** — Sensitive API  
-> No sensitive browser APIs (geolocation, WebRTC, MediaDevices, Clipboard, Notification) are used.  
-> 位置：N/A  
-> 建议：No action needed.
+**🟡 LOW** — 敏感 API 调用  
+> 脚本未检测到敏感 API 调用，如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification。  
+> 位置：整体代码结构  
+> 建议：无安全风险。
 
-**🟠 MEDIUM** — Supply Chain Risk  
-> No @require directives or dynamic loading of third-party libraries detected. No supply chain risk from external JS libraries.  
-> 位置：Metadata block  
-> 建议：No action needed.
+**🟡 LOW** — 供应链风险  
+> 脚本未检测到供应链风险，未通过 @require 加载第三方库。  
+> 位置：元数据  
+> 建议：无安全风险。
 
 **🟡 LOW** — ClickJacking/iframe  
-> No iframe manipulation or frame protection bypass detected.  
-> 位置：N/A  
-> 建议：No action needed.
+> 脚本未检测到 ClickJacking 或 iframe 风险，未修改 frame 保护策略或创建隐藏 iframe。  
+> 位置：整体代码结构  
+> 建议：无安全风险。
 
 ---
 

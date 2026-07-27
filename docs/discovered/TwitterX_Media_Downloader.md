@@ -37,9 +37,9 @@ title: "Twitter/X 媒体下载器"
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-07-13
+**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-07-27
 
-> 该脚本仅在 Twitter/X 页面上运行，主要功能为一键下载图片和视频。未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。所有 @grant 权限均为本地存储、样式注入和下载，未发现滥用。代码结构清晰，无混淆和压缩。
+> 该脚本仅在 Twitter/X 页面本地操作，未检测到任何数据外传、隐私采集、远程代码执行、混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。安全性极高，适合公开使用。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -50,7 +50,52 @@ title: "Twitter/X 媒体下载器"
 | DOM XSS 风险 | ✅ 未检测到 |
 | 供应链风险 | ✅ 可信 |
 
-### 未发现安全问题 ✅
+### 发现的问题
+
+**⛔ CRITICAL** — 数据外传（未发现）  
+> 脚本未检测到任何网络请求（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource），也未向第三方服务器发送数据。  
+> 位置：全局代码审查  
+> 建议：保持现有设计，避免添加任何外部数据传输。
+
+**⛔ CRITICAL** — 隐私采集（未发现）  
+> 脚本未读取 cookie、localStorage、sessionStorage、IndexedDB，也未监听键盘输入或读取表单字段、剪贴板内容。  
+> 位置：全局代码审查  
+> 建议：继续避免隐私采集行为。
+
+**🔴 HIGH** — 远程代码执行（未发现）  
+> 脚本未使用 eval、new Function、setTimeout(string)、setInterval(string)，也未通过 innerHTML/outerHTML 插入外部脚本或动态加载远程 JS。  
+> 位置：全局代码审查  
+> 建议：继续避免远程代码执行风险。
+
+**🔴 HIGH** — 代码混淆（未发现）  
+> 脚本未发现混淆、压缩、base64 解码、字符串数组映射等混淆特征。  
+> 位置：全局代码审查  
+> 建议：保持代码可读性。
+
+**🔴 HIGH** — DOM XSS/注入（未发现）  
+> 脚本未发现将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未发现 document.write 注入或 iframe src 操作。  
+> 位置：全局代码审查  
+> 建议：继续避免 DOM XSS 风险。
+
+**🟠 MEDIUM** — 权限滥用（未发现）  
+> 脚本申请的 @grant 权限与实际使用相符，无高权限滥用或未使用高权限。  
+> 位置：元数据与代码对比  
+> 建议：仅申请必要权限。
+
+**🟠 MEDIUM** — 敏感 API 调用（未发现）  
+> 脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。  
+> 位置：全局代码审查  
+> 建议：继续避免敏感 API 滥用。
+
+**🟠 MEDIUM** — 供应链风险（未发现）  
+> 脚本未通过 @require 加载第三方库，无供应链风险。  
+> 位置：元数据  
+> 建议：如需加载第三方库，请固定版本并使用可信源。
+
+**🟡 LOW** — ClickJacking/iframe 风险（未发现）  
+> 脚本未修改 frame 保护策略，也未创建隐藏 iframe 用于数据提取。  
+> 位置：全局代码审查  
+> 建议：继续避免 ClickJacking/iframe 风险。
 
 ---
 

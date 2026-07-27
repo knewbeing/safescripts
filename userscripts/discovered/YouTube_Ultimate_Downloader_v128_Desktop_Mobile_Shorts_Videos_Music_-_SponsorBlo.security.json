@@ -12,82 +12,80 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script constructs download URLs using third-party services (y2mate.stream, giggity.co.za, saveanyyoutube.com, scoozy.ca) and opens them with the current YouTube video ID. This may leak the user's currently watched video and potentially other data if the third-party site collects more information.",
-      "location": "MultiURL array and button click handler (code section where download URLs are constructed and opened)",
-      "recommendation": "Warn users about privacy risks when sending video IDs to third-party downloaders. Consider using only trusted services and review their privacy policies.",
+      "description": "脚本通过构造下载按钮，向第三方网站（y2mate.stream、giggity.co.za、saveanyyoutube.com、scoozy.ca）发送当前视频ID，可能涉及用户数据外传。",
+      "location": "MultiURL 数组及按钮事件处理",
+      "recommendation": "仅允许用户主动操作时跳转，避免自动请求；警示用户数据可能被第三方收集。",
       "severity": "CRITICAL",
-      "type": "Data Exfiltration"
+      "type": "数据外传"
     },
     {
-      "description": "The script does not appear to collect cookies, localStorage, or other sensitive browser data, nor does it listen to keyboard or clipboard events. However, the act of sending the current video ID to third-party sites is a privacy risk.",
-      "location": "MultiURL usage and window.open calls",
-      "recommendation": "Minimize data sent to third-party services and inform users of privacy implications.",
-      "severity": "CRITICAL",
-      "type": "Privacy Collection"
+      "description": "脚本未申请高权限，仅使用 GM_addStyle，但未使用 GM_xmlhttpRequest、fetch 等主动网络请求。",
+      "location": "@grant 元数据与代码权限对比",
+      "recommendation": "保持最小权限原则，避免申请未用权限。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
     },
     {
-      "description": "The script does not use eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection. No remote code execution risk detected.",
-      "location": "N/A",
-      "recommendation": "No action needed.",
-      "severity": "HIGH",
-      "type": "Remote Code Execution"
+      "description": "脚本未混淆，代码结构清晰，无 base64、字符串数组映射、unicode 混淆等特征。",
+      "location": "整体代码结构",
+      "recommendation": "无安全风险。",
+      "severity": "LOW",
+      "type": "代码混淆"
     },
     {
-      "description": "No code obfuscation detected. The code is readable and not minified or encoded.",
-      "location": "N/A",
-      "recommendation": "No action needed.",
-      "severity": "HIGH",
-      "type": "Code Obfuscation"
+      "description": "脚本未检测到 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险。",
+      "location": "整体代码结构",
+      "recommendation": "无安全风险。",
+      "severity": "LOW",
+      "type": "远程代码执行"
     },
     {
-      "description": "No DOM XSS or injection risk detected. The script does not insert untrusted user input into the DOM via innerHTML or similar methods.",
-      "location": "N/A",
-      "recommendation": "No action needed.",
-      "severity": "HIGH",
+      "description": "脚本未检测到 DOM XSS 风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML。",
+      "location": "整体代码结构",
+      "recommendation": "无安全风险。",
+      "severity": "LOW",
       "type": "DOM XSS"
     },
     {
-      "description": "The script only requests the GM_addStyle permission, which is appropriate for its functionality. No permission abuse detected.",
-      "location": "@grant metadata",
-      "recommendation": "No action needed.",
-      "severity": "MEDIUM",
-      "type": "Permission Abuse"
+      "description": "脚本未检测到隐私采集行为，如读取 cookie、localStorage、sessionStorage、IndexedDB、剪贴板、表单字段等。",
+      "location": "整体代码结构",
+      "recommendation": "无安全风险。",
+      "severity": "LOW",
+      "type": "隐私采集"
     },
     {
-      "description": "No sensitive browser APIs (geolocation, WebRTC, MediaDevices, Clipboard, Notification) are used.",
-      "location": "N/A",
-      "recommendation": "No action needed.",
-      "severity": "MEDIUM",
-      "type": "Sensitive API"
+      "description": "脚本未检测到敏感 API 调用，如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification。",
+      "location": "整体代码结构",
+      "recommendation": "无安全风险。",
+      "severity": "LOW",
+      "type": "敏感 API 调用"
     },
     {
-      "description": "No @require directives or dynamic loading of third-party libraries detected. No supply chain risk from external JS libraries.",
-      "location": "Metadata block",
-      "recommendation": "No action needed.",
-      "severity": "MEDIUM",
-      "type": "Supply Chain Risk"
+      "description": "脚本未检测到供应链风险，未通过 @require 加载第三方库。",
+      "location": "元数据",
+      "recommendation": "无安全风险。",
+      "severity": "LOW",
+      "type": "供应链风险"
     },
     {
-      "description": "No iframe manipulation or frame protection bypass detected.",
-      "location": "N/A",
-      "recommendation": "No action needed.",
+      "description": "脚本未检测到 ClickJacking 或 iframe 风险，未修改 frame 保护策略或创建隐藏 iframe。",
+      "location": "整体代码结构",
+      "recommendation": "无安全风险。",
       "severity": "LOW",
       "type": "ClickJacking/iframe"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [
-      "Current YouTube video ID is sent to third-party download services when user clicks download button."
-    ],
-    "detected": true
+    "details": [],
+    "detected": false
   },
-  "risk_level": "CRITICAL",
+  "risk_level": "HIGH",
   "script_name": "YouTube™ Ultimate Downloader v12.8 👑🌍 — Desktop & Mobile | Shorts, Videos & Music - SponsorBlock 🛡️🚫",
-  "security_score": 50,
-  "summary": "This script exposes the user's currently watched YouTube video ID to multiple third-party download services when the download button is used. While it does not collect cookies, localStorage, or other sensitive browser data, and does not use dangerous APIs or code execution techniques, the privacy risk of sending video IDs to untrusted third-party sites is significant. No code obfuscation, supply chain, or XSS risks detected. The script is not recommended for privacy-sensitive users.",
+  "security_score": 75,
+  "summary": "脚本主要风险为数据外传：用户点击下载按钮时，当前视频ID会被发送到第三方下载服务，存在用户行为被第三方收集的风险。未检测到隐私采集、远程代码执行、混淆、DOM XSS、敏感 API 调用、供应链风险等问题。建议警示用户数据可能被第三方收集。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:52:11.049379+00:00",
+  "analyzed_at": "2026-07-27T06:01:39.367468+00:00",
   "slug": "YouTube_Ultimate_Downloader_v128_Desktop_Mobile_Shorts_Videos_Music_-_SponsorBlo"
 }

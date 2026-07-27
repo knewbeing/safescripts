@@ -13,25 +13,32 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本未提供完整代码，仅有元数据，无法检测实际的数据外传、隐私采集、远程代码执行等行为。",
-      "location": "N/A",
-      "recommendation": "请补充完整代码以便进行全面安全审查。",
+      "description": "脚本未提供完整代码，仅有元数据，无法审查实际数据外传、隐私采集、远程代码执行等行为。仅根据元数据分析。",
+      "location": "全局",
+      "recommendation": "补充完整代码以进行全面安全审查。",
       "severity": "CRITICAL",
       "type": "代码缺失"
     },
     {
-      "description": "@grant 申请了 GM_openInTab 等高权限，但未能确认实际使用情况。",
-      "location": "元数据 @grant",
-      "recommendation": "仅申请实际需要的权限，避免权限滥用。",
+      "description": "元数据申请了 GM_xmlhttpRequest 权限，并声明 @connect 多个第三方域名，存在潜在数据外传风险。",
+      "location": "元数据 @grant/@connect",
+      "recommendation": "确保仅请求公开 API，不携带用户敏感数据。",
       "severity": "MEDIUM",
-      "type": "权限滥用"
+      "type": "数据外传潜在风险"
     },
     {
-      "description": "@connect 指定了多个第三方域名，存在数据外传潜在风险。",
-      "location": "元数据 @connect",
-      "recommendation": "确保仅向可信域名发送必要数据，避免敏感信息泄露。",
+      "description": "申请了 GM_openInTab 权限，可能被滥用打开恶意页面。",
+      "location": "元数据 @grant",
+      "recommendation": "仅在用户明确操作时调用 GM_openInTab。",
       "severity": "MEDIUM",
-      "type": "数据外传"
+      "type": "权限滥用潜在风险"
+    },
+    {
+      "description": "未检测到 @require 加载第三方库，供应链风险较低。",
+      "location": "元数据",
+      "recommendation": "如后续添加 @require，需固定版本哈希并使用可信 CDN。",
+      "severity": "LOW",
+      "type": "供应链风险"
     }
   ],
   "obfuscation_detected": false,
@@ -41,10 +48,10 @@
   },
   "risk_level": "CRITICAL",
   "script_name": "Magic Userscript+ : Show Site All UserJS",
-  "security_score": 50,
-  "summary": "由于缺少完整代码，无法对核心安全项进行有效检测。元数据显示脚本可能涉及第三方数据交互和高权限申请，存在一定安全风险。建议补充完整代码以便进行详细审查。",
+  "security_score": 75,
+  "summary": "仅根据元数据分析，脚本未提供完整代码，无法全面审查。元数据显示申请了高权限（GM_xmlhttpRequest、GM_openInTab），并允许连接多个第三方域名，存在潜在数据外传和权限滥用风险。未检测到隐私采集、代码混淆、DOM XSS、供应链风险等问题。建议补充完整代码以进行详细安全审查。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-20T05:30:43.389981+00:00",
+  "analyzed_at": "2026-07-27T05:41:58.483043+00:00",
   "slug": "Magic_20Userscript_2B_20_3A_20Show_20Site_20All_20UserJS"
 }

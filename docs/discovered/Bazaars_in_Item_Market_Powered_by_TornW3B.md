@@ -41,9 +41,9 @@ title: "Torn集市商品展示与排序"
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：67/100　　**分析时间**：2026-07-13
+**风险等级**：🔴 HIGH　　**安全评分**：47/100　　**分析时间**：2026-07-27
 
-> 该脚本主要功能为在 Torn 游戏市场页面展示和排序集市商品信息。脚本通过 GM.xmlHttpRequest 访问 weav3r.dev 获取数据，存在数据外传风险，但未发现敏感隐私数据采集、远程代码执行、代码混淆或 DOM XSS 风险。部分权限存在冗余，建议精简。整体安全风险为中等，建议用户关注数据传输内容。
+> The script connects to a third-party server (weav3r.dev) using GM.xmlHttpRequest, which is a critical risk if user/page data is transmitted. No evidence of sensitive privacy collection or code obfuscation. Permissions are somewhat redundant, and supply chain risk exists due to reliance on a non-official domain. No DOM XSS or remote code execution detected. Overall, the script is functional but presents significant risks due to external data transmission and supply chain concerns.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -52,24 +52,29 @@ title: "Torn集市商品展示与排序"
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ✅ 可信 |
+| 供应链风险 | ⚠️ 存在风险 |
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本通过 GM.xmlHttpRequest 访问 weav3r.dev 以获取数据。虽然该域名为作者自有域名，但属于第三方服务器，存在数据外传风险。  
-> 位置：@connect weav3r.dev 及相关 GM.xmlHttpRequest 调用  
-> 建议：建议明确说明传输内容，避免发送用户敏感信息。建议在隐私政策中披露此行为。
+**⛔ CRITICAL** — Data Transmission  
+> Script uses GM.xmlHttpRequest to connect to weav3r.dev, a third-party server. Potential for user data or page context to be transmitted.  
+> 位置：GM.xmlHttpRequest calls (network requests)  
+> 建议：Review transmitted data, ensure only minimal and non-sensitive information is sent. Document privacy policy.
 
-**🟠 MEDIUM** — 隐私采集  
-> 脚本在兼容实现中访问 localStorage 进行数据存储，未发现读取 cookie、表单、剪贴板、指纹等隐私数据。  
-> 位置：GM_getValue/GM_setValue 兼容实现  
-> 建议：仅存储必要的脚本设置，避免存储敏感信息。
+**🟠 MEDIUM** — Privacy Collection  
+> Script reads and writes values to localStorage and GM storage for settings and cache. No evidence of sensitive data collection, but localStorage usage should be reviewed for privacy.  
+> 位置：GM_getValue, GM_setValue, localStorage  
+> 建议：Ensure only non-sensitive settings are stored. Avoid storing authentication tokens or personal data.
 
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了 GM_setValue、GM_getValue、GM_deleteValue、GM_listValues 及其 GM.* 变体，部分权限未在代码中实际使用，存在权限冗余。  
-> 位置：元数据 @grant  
-> 建议：仅申请实际使用的权限，减少攻击面。
+**🟠 MEDIUM** — Permission Abuse  
+> Script requests multiple GM_* permissions, including GM.xmlHttpRequest, GM_setValue, GM_getValue, GM_deleteValue, GM_listValues, GM.setValue, GM.getValue, GM.deleteValue, GM.listValues. Some are redundant.  
+> 位置：UserScript metadata @grant section  
+> 建议：Remove unused or redundant permissions to minimize attack surface.
+
+**🟠 MEDIUM** — Supply Chain Risk  
+> Script uses @connect weav3r.dev, which is not a well-known CDN or official domain. Supply chain risk if the server is compromised.  
+> 位置：UserScript metadata @connect section  
+> 建议：Ensure the third-party server is trustworthy and monitored for security.
 
 ---
 

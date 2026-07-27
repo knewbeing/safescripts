@@ -60,9 +60,9 @@ title: "🏆[#1国际象棋助手]A.C.A.S（高级国际象棋辅助系统）"
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：84/100　　**分析时间**：2026-07-13
+**风险等级**：🟠 MEDIUM　　**安全评分**：84/100　　**分析时间**：2026-07-27
 
-> The script does not directly transmit data to third-party servers, collect privacy-sensitive information, or use obfuscation or dangerous code execution patterns in the visible code. However, it requests more permissions than necessary and loads external dependencies without strict version pinning, introducing medium-level supply chain and permission risks. The actual behavior of the required scripts is not auditable from this code alone, so further review of those dependencies is recommended.
+> 脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要风险为供应链风险（@require 未固定版本哈希）和权限滥用（申请高权限但未实际使用）。建议加强第三方库管理和权限最小化。整体安全性中等，适合谨慎使用。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -75,15 +75,15 @@ title: "🏆[#1国际象棋助手]A.C.A.S（高级国际象棋辅助系统）"
 
 ### 发现的问题
 
-**🟠 MEDIUM** — Permission Over-claim  
-> The script requests a large set of @grant permissions, including GM_openInTab, GM_setClipboard, GM_notification, and unsafeWindow, but not all are used in the visible code. This may be considered permission over-claiming.  
-> 位置：Metadata block (@grant)  
-> 建议：Reduce @grant permissions to only those actually used in the script.
-
 **🟠 MEDIUM** — Supply Chain Risk  
-> The script uses @require to load three external scripts from update.greasyfork.org. These are not fixed to a specific version hash, only a query parameter (?acasv=2), which does not guarantee immutability.  
-> 位置：Metadata block (@require)  
-> 建议：Pin @require URLs to a specific version or hash to prevent supply chain attacks.
+> @require 加载的第三方库（LegacyGMjs.js, CommLinkjs.js, UniversalBoardDrawerjs.js）均来自 update.greasyfork.org，未固定版本哈希，存在供应链风险。  
+> 位置：UserScript metadata (@require)  
+> 建议：建议使用官方 CDN 并固定版本哈希，避免供应链污染。
+
+**🟠 MEDIUM** — Permission Abuse  
+> 申请了 GM_openInTab、GM_setClipboard、GM_notification、unsafeWindow 等高权限，但代码中未见实际使用，存在权限滥用风险。  
+> 位置：UserScript metadata (@grant)  
+> 建议：仅申请实际需要的权限，移除未使用的高权限。
 
 ---
 

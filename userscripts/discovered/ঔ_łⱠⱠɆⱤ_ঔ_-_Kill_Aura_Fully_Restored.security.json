@@ -5,7 +5,71 @@
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [],
+  "issues": [
+    {
+      "description": "脚本未检测到任何网络请求（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource、sendBeacon），不存在数据外传行为。",
+      "location": "全局",
+      "recommendation": "保持无外部数据传输，避免添加任何第三方数据上报代码。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本未读取 cookie、localStorage、sessionStorage、IndexedDB，也未监听键盘输入并外传，未访问指纹 API、剪贴板等隐私相关接口。",
+      "location": "全局",
+      "recommendation": "继续避免采集用户隐私数据，确保所有用户交互仅限于本地。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string)，也未通过 innerHTML/outerHTML 插入外部脚本或动态加载远程 JS。",
+      "location": "全局",
+      "recommendation": "避免任何远程代码执行相关操作，确保所有代码均为本地静态。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本未检测到代码混淆（无 base64 解码、字符串数组映射、unicode 混淆、高度压缩单行代码）。",
+      "location": "全局",
+      "recommendation": "保持代码可读性，避免混淆以便社区审查。",
+      "severity": "HIGH",
+      "type": "代码混淆"
+    },
+    {
+      "description": "脚本未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，所有 DOM 操作均为静态字符串，未检测到 DOM XSS 风险。",
+      "location": "menuHtml 注入",
+      "recommendation": "如需插入动态内容，务必进行转义。",
+      "severity": "HIGH",
+      "type": "DOM XSS / 注入"
+    },
+    {
+      "description": "脚本未申请任何 Tampermonkey/Greasemonkey权限（@grant none），不存在权限滥用风险。",
+      "location": "元数据 @grant",
+      "recommendation": "仅申请必要权限，避免高权限滥用。",
+      "severity": "MEDIUM",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。",
+      "location": "全局",
+      "recommendation": "避免调用敏感 API，保护用户隐私。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "脚本未通过 @require 加载任何第三方库，无供应链风险。",
+      "location": "元数据 @require",
+      "recommendation": "如需加载第三方库，建议使用官方 CDN 并固定版本哈希。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    },
+    {
+      "description": "脚本未修改 frame 保护策略，也未创建隐藏 iframe 用于数据提取。",
+      "location": "全局",
+      "recommendation": "避免 iframe 滥用，防止 clickjacking。",
+      "severity": "LOW",
+      "type": "ClickJacking / iframe 风险"
+    }
+  ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
@@ -14,9 +78,9 @@
   "risk_level": "SAFE",
   "script_name": "꧁ঔৣ☬₭łⱠⱠɆⱤ☬ঔৣ꧂ - Kill Aura Fully Restored",
   "security_score": 100,
-  "summary": "该脚本未检测到任何网络数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 滥用或供应链风险。所有功能均为本地页面增强和 UI 交互，未涉及安全敏感操作。整体安全性高，适合使用。",
+  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。所有功能均为本地实现，界面注入安全，未申请任何高权限，安全评分为100分，风险等级SAFE。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:58:50.505317+00:00",
+  "analyzed_at": "2026-07-27T06:07:43.496766+00:00",
   "slug": "ঔ_łⱠⱠɆⱤ_ঔ_-_Kill_Aura_Fully_Restored"
 }

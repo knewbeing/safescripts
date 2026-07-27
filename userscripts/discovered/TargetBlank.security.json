@@ -14,9 +14,9 @@
   "risk_level": "SAFE",
   "script_name": "新标签页打开链接",
   "security_score": 100,
-  "summary": "该脚本仅修改页面所有链接为新标签页打开，并对部分特殊情况（如 Discuz! 论坛、动态内容）做了兼容处理。未检测到任何数据外传、隐私采集、远程代码执行、混淆、XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。未申请任何 @grant 权限，代码结构清晰，无安全隐患。",
+  "summary": "该脚本仅操作页面链接和表单的 target 属性，使其在新标签页打开，无任何数据外传、隐私采集、远程代码执行、混淆、XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。代码结构清晰，未申请任何高权限，安全性极高。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:47:41.842907+00:00",
+  "analyzed_at": "2026-07-27T05:57:58.566721+00:00",
   "slug": "TargetBlank"
 }

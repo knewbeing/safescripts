@@ -1,22 +1,32 @@
 {
   "approved": true,
   "data_transmission": {
-    "destinations": [],
+    "destinations": [
+      "arras.io WebSocket endpoint (modified URL)"
+    ],
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [],
+  "issues": [
+    {
+      "description": "The script overrides the global WebSocket constructor, modifying the connection URL by appending custom query parameters including a timestamp. This affects all WebSocket connections on arras.io.",
+      "location": "Global WebSocket override",
+      "recommendation": "Ensure the modified URL does not leak sensitive information and is only used for intended game functionality.",
+      "severity": "MEDIUM",
+      "type": "WebSocket manipulation"
+    }
+  ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
     "detected": false
   },
-  "risk_level": "SAFE",
+  "risk_level": "LOW",
   "script_name": "Fix Arras.io shooting",
-  "security_score": 100,
-  "summary": "该脚本通过重写 WebSocket 构造函数，修改连接参数以修复 Arras.io 的射击问题。未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用或供应链风险。整体实现简单，未引入安全隐患。",
+  "security_score": 89,
+  "summary": "The script modifies the WebSocket URL for arras.io, likely to fix game mechanics. It does not collect or transmit user data, nor does it use dangerous APIs or code execution methods. No privacy or supply chain risks detected. The main risk is the global override of WebSocket, which could affect other scripts or site functionality.",
   "supply_chain_risk": false,
   "websocket_usage": true,
-  "analyzed_at": "2026-07-13T05:37:11.669151+00:00",
+  "analyzed_at": "2026-07-27T05:50:33.534769+00:00",
   "slug": "Fix_Arrasio_shooting"
 }

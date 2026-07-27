@@ -33,14 +33,14 @@ title: "公平战斗评分助手"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：35/100　　**分析时间**：2026-07-13
+**风险等级**：⛔ CRITICAL　　**安全评分**：42/100　　**分析时间**：2026-07-27
 
-> The script requests network access to a third-party server (ffscouter.com) and stores data in localStorage. It also requests the powerful 'unsafeWindow' grant. While no direct evidence of sensitive data exfiltration or code execution vulnerabilities is present in the provided code fragment, the combination of these permissions and storage practices presents a high risk. A full review of the complete script is recommended to ensure no sensitive data is transmitted or exposed.
+> 脚本存在数据外传和隐私采集风险，主要通过 GM_xmlhttpRequest 向 ffscouter.com 发起请求，以及 localStorage 存储用户数据。未发现代码混淆、远程代码执行、DOM XSS、敏感 API 调用、供应链风险等问题。权限申请存在滥用风险（unsafeWindow、GM_xmlhttpRequest）。建议详细审查网络请求内容，移除未使用高权限，确保不存储敏感信息。
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：ffscouter.com） |
-| 隐私采集 | ❌ 检测到（Reads and writes to localStorage for configuration and possibly user data） |
+| 隐私采集 | ❌ 检测到（localStorage 读写（配置项、用户输入）） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -48,40 +48,25 @@ title: "公平战斗评分助手"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Exfiltration  
-> Script uses GM_xmlhttpRequest to connect to ffscouter.com, which is a third-party server. The exact data sent is not visible in the provided code fragment, but the permission is declared.  
-> 位置：Metadata block and possible network logic  
-> 建议：Review all GM_xmlhttpRequest usages to ensure no sensitive user data (such as cookies, tokens, or personal information) is transmitted. Document all data flows.
+**⛔ CRITICAL** — Data Transmission  
+> 脚本通过 GM_xmlhttpRequest 向 ffscouter.com 发起网络请求，可能携带用户数据或页面内容。  
+> 位置：GM_xmlhttpRequest usage (potential, based on @connect and @grant)  
+> 建议：详细审查请求内容，确保不发送敏感信息。建议明确列出请求参数和数据类型。
 
 **⛔ CRITICAL** — Privacy Collection  
-> Script reads and writes to localStorage for configuration and possibly user data.  
-> 位置：Storage class and FFConfig class  
-> 建议：Ensure only non-sensitive configuration data is stored. Do not store authentication tokens or sensitive information in localStorage.
+> 脚本使用 localStorage 存储和读取数据，涉及配置项和可能的用户输入。  
+> 位置：Storage class (localStorage usage)  
+> 建议：确保不存储敏感信息（如密码、cookie）。如需存储敏感数据，建议加密。
 
-**🔴 HIGH** — Privilege Escalation  
-> Script requests the 'unsafeWindow' grant, which allows the script to interact with the page's JS context and can be abused for privilege escalation or data exfiltration.  
-> 位置：Metadata block  
-> 建议：Remove 'unsafeWindow' if not strictly necessary. If required, audit all usages for security risks.
+**🟠 MEDIUM** — Permission Abuse  
+> 脚本申请了 unsafeWindow 权限，但实际代码未见明显使用。该权限可导致主页面 JS 环境暴露，存在安全隐患。  
+> 位置：@grant unsafeWindow  
+> 建议：如未使用 unsafeWindow，建议移除该权限。
 
-**🔴 HIGH** — Remote Code Execution  
-> No evidence of eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection in the provided code fragment.  
-> 位置：General code  
-> 建议：Continue to avoid dynamic code execution. Review any future updates for such patterns.
-
-**🟡 LOW** — Code Obfuscation  
-> No code obfuscation detected. Code is readable and not minified or encoded.  
-> 位置：General code  
-> 建议：Maintain code transparency for auditability.
-
-**🟡 LOW** — DOM XSS  
-> No DOM XSS or direct insertion of untrusted input into innerHTML/outerHTML detected in the provided code fragment.  
-> 位置：General code  
-> 建议：Continue to sanitize any user input before DOM insertion.
-
-**🟡 LOW** — Supply Chain  
-> No evidence of supply chain risk (@require) in the metadata block.  
-> 位置：Metadata block  
-> 建议：If adding @require in the future, use official CDNs and fixed versions.
+**🟠 MEDIUM** — Permission Abuse  
+> 脚本申请了 GM_xmlhttpRequest 权限，并声明 @connect ffscouter.com，存在数据外传风险。  
+> 位置：@grant GM_xmlhttpRequest, @connect ffscouter.com  
+> 建议：仅在必要时申请该权限，并限制请求内容。
 
 ---
 

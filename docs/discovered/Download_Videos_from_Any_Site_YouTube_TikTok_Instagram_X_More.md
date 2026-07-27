@@ -48,13 +48,13 @@ title: "全站视频下载按钮"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：67/100　　**分析时间**：2026-07-13
+**风险等级**：⛔ CRITICAL　　**安全评分**：75/100　　**分析时间**：2026-07-27
 
-> The script adds a download button to supported video/music sites. When clicked, it opens a third-party downloader site/app with the current video/track URL as a parameter. This results in user data (the video/track URL) being sent to external servers. No evidence of keylogging, clipboard access, or DOM XSS was found. The script does not appear obfuscated or minified. The use of GM_openInTab is a medium risk due to its potential for abuse. No supply chain or sensitive API risks detected.
+> 该脚本通过下载按钮将视频 URL 发送到第三方服务（chilldownloader.com、tool77.com、spotriff.com），存在数据外传和隐私风险。未检测到代码混淆、远程代码执行、DOM XSS、敏感 API 调用或供应链风险。建议警告用户并允许手动操作，移除未使用的高权限申请。整体安全评分为 75，风险等级为 CRITICAL。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：https://chilldownloader.com, https://www.tool77.com, https://www.spotriff.com） |
+| 数据外传 | ❌ 检测到（目标：chilldownloader://download?url=, https://chilldownloader.com, https://www.tool77.com/it/v/downloader?url={url}） |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
@@ -64,14 +64,49 @@ title: "全站视频下载按钮"
 ### 发现的问题
 
 **⛔ CRITICAL** — Data Exfiltration  
-> The script opens external URLs (chilldownloader.com, tool77.com, spotriff.com) with the current video/track URL as a parameter when the user clicks the download button. This constitutes data transmission to third-party servers.  
-> 位置：Main script logic (button click handler)  
-> 建议：Warn users that their video/track URL will be sent to third-party services. Consider adding a confirmation dialog or privacy notice.
+> Script sends video URLs to third-party services (chilldownloader.com, tool77.com, spotriff.com) for download processing. This constitutes data transmission to external servers.  
+> 位置：APP_SITE_URL, WEB_DOWNLOADER, SPOTIFY_DOWNLOADER usage in download button logic  
+> 建议：Warn users about privacy risks and allow manual URL copy instead of automatic transmission. Consider local download logic.
 
-**🟠 MEDIUM** — Permission Overuse  
-> The script requests GM_openInTab permission, which allows opening arbitrary URLs in new tabs. This is a high-privilege API and could be abused if the script is modified.  
-> 位置：Metadata block (@grant GM_openInTab)  
-> 建议：Only request GM_openInTab if strictly necessary. Review code to ensure it is not used for malicious redirects.
+**🟠 MEDIUM** — Permission Abuse  
+> Script requests GM_openInTab, GM_addStyle, GM_setValue, GM_getValue. Only GM_openInTab is used for opening download links. No evidence of privilege abuse.  
+> 位置：Metadata and download logic  
+> 建议：Remove unused GM_setValue and GM_getValue grants if not used.
+
+**🟡 LOW** — Privacy Collection  
+> No evidence of privacy collection such as reading cookies, localStorage, sessionStorage, or clipboard. No keylogger behavior detected.  
+> 位置：Entire script  
+> 建议：Maintain current practice; do not add privacy collection.
+
+**🟡 LOW** — Remote Code Execution  
+> No eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection detected.  
+> 位置：Entire script  
+> 建议：Maintain current practice; avoid remote code execution vectors.
+
+**🟡 LOW** — Code Obfuscation  
+> No code obfuscation detected. Code is readable and not minified or encoded.  
+> 位置：Entire script  
+> 建议：Maintain transparency; avoid obfuscation.
+
+**🟡 LOW** — DOM XSS  
+> No DOM XSS or injection risk detected. User input is not inserted into innerHTML/outerHTML.  
+> 位置：Entire script  
+> 建议：Maintain current practice; sanitize any future user input.
+
+**🟡 LOW** — Sensitive API  
+> No sensitive API calls (geolocation, RTCPeerConnection, MediaDevices, Clipboard API, Notification API) detected.  
+> 位置：Entire script  
+> 建议：Maintain current practice; avoid sensitive API usage.
+
+**🟡 LOW** — Supply Chain  
+> No @require third-party libraries used. All code is inline.  
+> 位置：Metadata  
+> 建议：Maintain current practice; avoid supply chain risk.
+
+**🟡 LOW** — ClickJacking  
+> No iframe manipulation or clickjacking detected.  
+> 位置：Entire script  
+> 建议：Maintain current practice; avoid iframe risks.
 
 ---
 

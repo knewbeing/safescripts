@@ -30,50 +30,45 @@ title: "Torn Toolbox"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：89/100　　**分析时间**：2026-07-13
+**风险等级**：⛔ CRITICAL　　**安全评分**：25/100　　**分析时间**：2026-07-27
 
-> 该脚本主要与 Torn 官方 API 通信，未发现向第三方服务器发送数据、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。存在部分未使用的高权限声明（GM.xmlHttpRequest/GM_xmlhttpRequest、@connect weav3r.dev），建议最小化权限。整体安全风险较低。
+> 脚本存在敏感数据外传（API Key）、隐私采集（API Key 存储）、第三方域名连接（weav3r.dev）等 CRITICAL 风险。建议加强 API Key 安全、移除未用高权限、限制第三方连接。未检测到代码混淆、DOM XSS、WebSocket、敏感 API 调用等高风险行为。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：api.torn.com） |
-| 隐私采集 | ✅ 未检测到 |
+| 数据外传 | ❌ 检测到（目标：api.torn.com, weav3r.dev） |
+| 隐私采集 | ❌ 检测到（API Key 采集与存储） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ✅ 可信 |
+| 供应链风险 | ⚠️ 存在风险 |
 
 ### 发现的问题
 
-**🟠 MEDIUM** — 权限滥用  
-> 脚本声明 @connect weav3r.dev，但代码中未发现实际向该域名发起请求。  
-> 位置：元数据 @connect  
-> 建议：如无实际用途，建议移除 @connect weav3r.dev 权限。
+**⛔ CRITICAL** — 数据外传  
+> 脚本通过 fetch 向 api.torn.com 发起请求，包含用户 API Key（敏感信息）。  
+> 位置：AIO.getMarket() 方法  
+> 建议：确保 API Key 仅用于 Torn 官方 API，避免泄露给第三方。建议对 API Key 做本地加密存储。
+
+**⛔ CRITICAL** — 数据外传  
+> 脚本元数据声明 @connect weav3r.dev，可能存在后续数据外传或统计行为。  
+> 位置：元数据 @connect weav3r.dev  
+> 建议：检查所有与 weav3r.dev 的网络请求，确保不携带用户敏感数据。
+
+**⛔ CRITICAL** — 隐私采集  
+> 脚本通过 GM_getValue/GM_setValue 存储和读取 API Key，属于敏感信息采集。  
+> 位置：AIO.getApiKey()、AIO.set() 方法  
+> 建议：建议对 API Key 做本地加密，避免明文存储。确保不会外传。
 
 **🟠 MEDIUM** — 权限滥用  
-> @grant 声明了 GM.xmlHttpRequest/GM_xmlhttpRequest，但实际代码未使用，仅用 fetch。  
-> 位置：元数据 @grant  
-> 建议：建议移除未使用的高权限声明，最小化权限。
+> 脚本申请 GM.xmlHttpRequest/GM_xmlhttpRequest 高权限，但实际代码未见使用（仅用 fetch）。  
+> 位置：元数据 @grant GM.xmlHttpRequest/GM_xmlHttpRequest  
+> 建议：移除未使用的高权限申请，减少攻击面。
 
-**🟡 LOW** — 网络请求  
-> 脚本通过 fetch 请求 Torn 官方 API（api.torn.com），未发现向第三方服务器发送用户数据。  
-> 位置：AIO.getMarket (fetch https://api.torn.com/torn/)  
-> 建议：仅与官方 API 通信，避免向未知第三方域名发送数据。
-
-**🟡 LOW** — 远程代码执行  
-> 未发现 eval、new Function、setTimeout(string) 等远程代码执行风险。  
-> 位置：全局  
-> 建议：保持此安全实践，避免动态执行字符串代码。
-
-**🟡 LOW** — 隐私采集  
-> 未发现 document.cookie、localStorage、sessionStorage、IndexedDB、剪贴板、键盘监听等隐私采集行为。  
-> 位置：全局  
-> 建议：继续避免采集用户隐私数据。
-
-**🟡 LOW** — 代码混淆  
-> 未发现代码混淆、base64 解码、字符串数组映射、unicode 混淆等特征。  
-> 位置：全局  
-> 建议：保持代码可读性，便于社区审查。
+**🟠 MEDIUM** — 供应链风险  
+> 脚本申请 @connect weav3r.dev，但实际代码未见直接请求，存在潜在供应链风险。  
+> 位置：元数据 @connect weav3r.dev  
+> 建议：仅允许可信域名，避免第三方数据供应链污染。
 
 ---
 

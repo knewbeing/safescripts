@@ -55,9 +55,9 @@ title: "AC-百度搜索重定向优化"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：49/100　　**分析时间**：2026-07-13
+**风险等级**：🔴 HIGH　　**安全评分**：49/100　　**分析时间**：2026-07-27
 
-> 该脚本未发现明显的数据外传、隐私采集、远程代码执行、DOM XSS 或代码混淆行为。但存在严重的权限滥用（@connect *），以及中等程度的供应链风险（第三方库和样式资源来源非官方）。建议移除 @connect * 并精简权限，核查所有外部依赖安全性。整体风险等级为 HIGH，不建议在敏感环境下使用。
+> 该脚本在元数据层面存在严重安全隐患，主要为 @connect * 允许任意域名网络请求，可能导致数据外传风险。大量高权限申请和第三方资源加载也带来供应链风险。代码片段未见实际隐私采集、数据外传或代码混淆，但元数据配置已足以判定为高风险。建议严格收缩权限、限制网络请求目标、审查第三方资源来源。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -70,25 +70,30 @@ title: "AC-百度搜索重定向优化"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 权限滥用  
-> @connect * 存在，允许任意域名的跨域请求，权限过高，存在潜在数据外传风险。  
-> 位置：元数据 @connect  
-> 建议：移除 @connect *，仅保留实际需要的域名。
+**⛔ CRITICAL** — Data Transmission  
+> @connect * 允许任意域名的网络请求，存在数据外传风险。虽然代码片段未见实际数据外传，但此权限可被滥用。  
+> 位置：UserScript metadata (@connect *)  
+> 建议：移除 @connect *，仅保留实际需要的域名。严格限制网络请求目标。
 
-**🟠 MEDIUM** — 权限滥用  
-> 脚本申请了大量 GM_* 权限（如 GM_xmlhttpRequest、unsafeWindow），部分权限未在片段代码中实际使用，存在权限滥用嫌疑。  
-> 位置：元数据 @grant  
-> 建议：仅申请实际需要的权限，移除未使用的高权限。
+**🟠 MEDIUM** — Permission Abuse  
+> 大量 @grant 权限申请，包括 GM_xmlhttpRequest、unsafeWindow 等高权限，部分未在代码片段中实际使用。  
+> 位置：UserScript metadata (@grant)  
+> 建议：仅申请实际需要的权限，移除未使用的高权限项。
 
-**🟠 MEDIUM** — 供应链风险  
-> 通过 @require 加载第三方库 less.js 和 vue.js，来源为 npmmirror.com，虽然为知名镜像，但并非官方 CDN，存在一定供应链风险。  
-> 位置：元数据 @require  
-> 建议：建议使用官方 CDN 并固定版本哈希，定期核查依赖安全性。
+**🟠 MEDIUM** — Supply Chain Risk  
+> @require 加载第三方库 less.min.js 和 vue.runtime.global.prod.js，来源为 registry.npmmirror.com，非官方 CDN，存在供应链风险。  
+> 位置：UserScript metadata (@require)  
+> 建议：建议使用官方 CDN 并固定版本哈希，避免供应链污染。
 
-**🟠 MEDIUM** — 供应链风险  
-> 通过 @resource 加载大量 less/css 资源，部分来源为 ibaidu.tujidu.com 和 gitcode.net，非官方域名，存在一定供应链风险。  
-> 位置：元数据 @resource  
-> 建议：建议核查资源内容安全性，优先使用可信官方源。
+**🟠 MEDIUM** — Supply Chain Risk  
+> @resource 加载大量样式文件，部分来源为 ibaidu.tujidu.com 和 gitcode.net，非官方域名，存在供应链风险。  
+> 位置：UserScript metadata (@resource)  
+> 建议：建议确认资源可信性，优先使用官方或知名 CDN。
+
+**🟠 MEDIUM** — Sensitive API Usage  
+> 申请 unsafeWindow 权限，可能导致脚本与页面 JS 相互影响，存在安全隐患。  
+> 位置：UserScript metadata (@grant unsafeWindow)  
+> 建议：仅在确实需要时使用 unsafeWindow，并做好隔离。
 
 ---
 

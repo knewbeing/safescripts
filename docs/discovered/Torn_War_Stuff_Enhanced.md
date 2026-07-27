@@ -35,14 +35,14 @@ title: "Torn战争信息增强"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：42/100　　**分析时间**：2026-07-13
+**风险等级**：🔴 HIGH　　**安全评分**：27/100　　**分析时间**：2026-07-27
 
-> The script collects and stores the user's Torn API key in localStorage, and transmits it to api.torn.com and twse.dev via GM_xmlhttpRequest. This is a critical privacy and data exfiltration risk. The script also requests high-privilege grants (unsafeWindow) that are not used, increasing the attack surface. No code obfuscation or DOM XSS was detected. Supply chain risk is low as no @require is used. The script should warn users about API key handling, minimize permissions, and avoid storing sensitive data in localStorage.
+> Script transmits user API key and faction data to api.torn.com and twse.dev, stores API key in localStorage, and grants unsafeWindow. No evidence of DOM XSS, code injection, or obfuscation. Supply chain risk is low. Main risks are data transmission and privacy collection. Remove unsafeWindow and improve API key storage for better security.
 
 | 检查项 | 结果 |
 |--------|------|
 | 数据外传 | ❌ 检测到（目标：api.torn.com, twse.dev） |
-| 隐私采集 | ❌ 检测到（Torn API key is collected and stored in localStorage via prompt, Other user preferences stored in localStorage） |
+| 隐私采集 | ❌ 检测到（localStorage: stores API key and config） |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -50,30 +50,30 @@ title: "Torn战争信息增强"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Exfiltration  
-> Script uses GM_xmlhttpRequest to communicate with api.torn.com and twse.dev. User's Torn API key is collected via prompt and stored in localStorage, and may be sent to these endpoints for API calls.  
-> 位置：GM_xmlhttpRequest usage, Config class, KeyManagerFeature  
-> 建议：Ensure only necessary data is sent, and endpoints are trusted. Warn users about API key usage and storage.
+**⛔ CRITICAL** — Data Transmission  
+> Script uses GM_xmlhttpRequest to send requests to api.torn.com and twse.dev. The API key is user-provided and stored in localStorage, then sent to api.torn.com for game data. Requests to twse.dev may include faction IDs and hospital times, but do not appear to transmit sensitive user data or cookies.  
+> 位置：GM_xmlhttpRequest calls (not fully shown in provided code, but implied by @connect and config usage)  
+> 建议：Ensure only necessary data is sent, avoid transmitting cookies or sensitive information. Document transmitted fields for transparency.
 
 **⛔ CRITICAL** — Privacy Collection  
-> Script stores and retrieves the Torn API key and other settings in localStorage, which is accessible to any script running on the same domain/context.  
-> 位置：Config class, Storage class  
-> 建议：Minimize sensitive data storage in localStorage. Consider using more secure storage if possible.
+> Script reads and writes to localStorage for storing API keys and configuration. No evidence of document.cookie, sessionStorage, or IndexedDB usage. No keylogger or clipboard access.  
+> 位置：Config and Storage classes  
+> 建议：Do not store sensitive keys in localStorage if possible. Consider encrypting API keys or using GM_setValue for better isolation.
+
+**🔴 HIGH** — Permission Abuse  
+> Script grants unsafeWindow, which exposes script context to the page and vice versa. This can be abused if the page is compromised.  
+> 位置：@grant unsafeWindow in metadata  
+> 建议：Remove unsafeWindow unless strictly necessary. Use GM_* APIs for communication instead.
 
 **🟠 MEDIUM** — Permission Abuse  
-> @grant unsafeWindow is requested, but not used in the provided code. This is a high-privilege grant and can be abused if used carelessly.  
-> 位置：Metadata block (@grant)  
-> 建议：Remove unused high-privilege grants to reduce attack surface.
+> Script requests GM_xmlhttpRequest, GM_addStyle, GM_registerMenuCommand, unsafeWindow. GM_xmlhttpRequest and unsafeWindow are high-risk if not used carefully.  
+> 位置：Metadata block  
+> 建议：Review necessity of each permission. Remove unused or high-risk grants.
 
-**🟠 MEDIUM** — Permission Abuse  
-> @require is not used, but @grant GM_xmlhttpRequest is present. Ensure only necessary permissions are requested.  
-> 位置：Metadata block (@grant)  
-> 建议：Review and minimize granted permissions.
-
-**🟡 LOW** — DOM Manipulation  
-> Script loads and injects CSS via <style> tags, but does not use innerHTML/outerHTML with untrusted input. No DOM XSS found.  
-> 位置：importCSS function  
-> 建议：Continue to avoid inserting untrusted content into the DOM.
+**🟠 MEDIUM** — Supply Chain  
+> Script loads no external libraries via @require. All code is inline. No supply chain risk detected.  
+> 位置：Metadata block  
+> 建议：If using @require in future, always pin versions and use official CDNs.
 
 ---
 

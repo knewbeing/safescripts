@@ -36,35 +36,35 @@ title: "YouTube 视频下载助手"
 
 ## 安全分析
 
-**风险等级**：🟠 MEDIUM　　**安全评分**：67/100　　**分析时间**：2026-07-13
+**风险等级**：🟡 LOW　　**安全评分**：81/100　　**分析时间**：2026-07-27
 
-> The script does not collect user privacy data or perform code obfuscation. The main risk is that clicking the download button sends the current YouTube video URL to a third-party service (saveanyyoutube.com), which may have privacy implications. There is no evidence of DOM XSS, remote code execution, or keylogging. Permissions are slightly broader than necessary, and the supply chain risk is moderate due to CDN usage without hash pinning.
+> 该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。主要安全问题为申请了未使用的高权限（GM_xmlhttpRequest、@connect），以及供应链风险（第三方库加载但已固定版本）。整体风险较低，建议移除未使用权限以进一步提升安全性。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：saveanyyoutube.com） |
+| 数据外传 | ✅ 未检测到 |
 | 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
-| 供应链风险 | ⚠️ 存在风险 |
+| 供应链风险 | ✅ 可信 |
 
 ### 发现的问题
 
-**⛔ CRITICAL** — Data Transmission  
-> The script rewrites the current YouTube video URL to a third-party domain (saveanyyoutube.com) and opens it in a new tab when the user clicks the download button. This transmits the current video URL (which may include user-specific parameters) to an external service.  
-> 位置：createDownloadButton() function, download button click handler  
-> 建议：Clearly inform users that clicking the download button will send the current video URL to a third-party service. Consider privacy implications if the URL contains sensitive information.
+**🟠 MEDIUM** — 权限滥用  
+> 申请了 GM_xmlhttpRequest 权限，但代码未实际使用该 API进行任何网络请求。  
+> 位置：UserScript 元数据 @grant 和代码主体  
+> 建议：移除未使用的高权限申请，减少权限滥用风险。
 
-**🟠 MEDIUM** — Permission Abuse  
-> The script requests @connect permission for www.ssyoutube.com, but the code only uses saveanyyoutube.com for download redirection. No actual GM_xmlhttpRequest or network request to www.ssyoutube.com is present.  
-> 位置：Metadata block (@connect)  
-> 建议：Remove unnecessary @connect permissions to minimize attack surface.
+**🟠 MEDIUM** — 权限滥用  
+> 申请了 @connect www.ssyoutube.com，但代码未实际使用 GM_xmlhttpRequest 或 fetch 访问该域名。  
+> 位置：UserScript 元数据 @connect  
+> 建议：移除未使用的 @connect 域名声明，避免误导用户。
 
-**🟠 MEDIUM** — Supply Chain Risk  
-> The script uses @require to load SweetAlert2 from jsdelivr CDN without a fixed version hash. While the version is pinned (v11), CDN-based supply chain attacks are possible if the CDN is compromised.  
-> 位置：Metadata block (@require)  
-> 建议：Consider using a fixed hash or self-hosting trusted libraries to mitigate supply chain risks.
+**🟠 MEDIUM** — 供应链风险  
+> 通过 @require 加载 sweetalert2@11，使用官方 CDN（jsdelivr），版本号固定，供应链风险较低。  
+> 位置：UserScript 元数据 @require  
+> 建议：继续保持固定版本加载，避免使用可变 URL。
 
 ---
 

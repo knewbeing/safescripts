@@ -13,47 +13,90 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本通过 GM_xmlhttpRequest 访问第三方域名（如 dlsite.com、store.steampowered.com、kio.ac、kiosk.ac 及任意域名 *），用于产品卡片、链接健康检查等功能。虽然主要为功能性用途，但存在潜在的数据外传风险，尤其是 @connect * 允许任意域名。",
-      "location": "GM_xmlhttpRequest 调用及 @connect * 元数据",
-      "recommendation": "限制 @connect 仅允许必要的可信域名，避免 * 通配符，确保请求内容不包含敏感用户数据。",
+      "description": "脚本申请了 GM_xmlhttpRequest 权限，并通过 @connect * 允许向任意域名发起网络请求，存在数据外传风险。虽然主要用于链接健康检查和产品卡片预览，但理论上可向任意第三方服务器发送数据。",
+      "location": "元数据 @grant GM_xmlhttpRequest, @connect *",
+      "recommendation": "将 @connect 限定为实际需要的域名，避免允许任意外部通信。审查所有 GM_xmlhttpRequest 调用，确保不发送敏感用户数据。",
       "severity": "CRITICAL",
-      "type": "数据外传"
+      "type": "Data Transmission"
     },
     {
-      "description": "脚本读取和存储用户的密码列表（pwList），并自动填充到匹配站点的表单中。虽然未发现外传行为，但本地存储的密码存在被其他脚本读取的风险。",
-      "location": "GM_getValue('pwList'), GM_setValue('pwList')",
-      "recommendation": "确保密码仅在本地安全存储，避免与其他脚本共享存储空间。建议加密存储。",
+      "description": "脚本包含密码自动填充功能，涉及读取和存储用户输入的密码，并可能自动填写到表单。虽然未发现密码外传，但本地存储和自动填充存在隐私采集风险。",
+      "location": "CFG.PW_SITES 及 getPwList/savePwList",
+      "recommendation": "确保密码仅在本地存储且不外传，建议增加用户提示和加密措施。",
       "severity": "CRITICAL",
-      "type": "隐私采集"
+      "type": "Privacy Collection"
     },
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限，但未发现未授权的数据上报、统计或追踪行为。",
-      "location": "@grant GM_xmlhttpRequest",
-      "recommendation": "定期复查网络请求逻辑，防止未来代码变更引入隐私风险。",
-      "severity": "MEDIUM",
-      "type": "权限滥用"
+      "description": "脚本允许 GM_getValue/GM_setValue 存储和读取用户配置及密码列表，涉及敏感信息本地存储。",
+      "location": "getPwList/savePwList/CFG",
+      "recommendation": "敏感信息如密码应加密存储，避免明文保存。",
+      "severity": "HIGH",
+      "type": "Privacy Collection"
     },
     {
-      "description": "脚本允许 @connect *，存在供应链和外部依赖风险，可能被滥用加载恶意内容。",
-      "location": "@connect * 元数据",
-      "recommendation": "严格限定 @connect 域名，移除 * 通配符。",
-      "severity": "MEDIUM",
-      "type": "供应链风险"
+      "description": "脚本未发现 eval/new Function/setTimeout(string) 等远程代码执行风险，也未动态加载外部 JS，但 @require 未使用，若后续添加需注意。",
+      "location": "全局代码审查",
+      "recommendation": "避免动态执行字符串代码，若需加载第三方库应固定版本哈希。",
+      "severity": "HIGH",
+      "type": "Remote Code Execution"
+    },
+    {
+      "description": "脚本未发现明显代码混淆，但部分变量和配置项较多，代码结构复杂。",
+      "location": "全局代码审查",
+      "recommendation": "保持代码可读性，避免混淆和压缩。",
+      "severity": "LOW",
+      "type": "Code Obfuscation"
+    },
+    {
+      "description": "脚本未发现 DOM XSS 风险，未直接将用户输入插入 innerHTML/outerHTML。",
+      "location": "全局代码审查",
+      "recommendation": "继续保持安全的 DOM 操作，避免插入不可信内容。",
+      "severity": "LOW",
+      "type": "DOM XSS"
+    },
+    {
+      "description": "脚本申请了 GM_registerMenuCommand/GM_unregisterMenuCommand/GM_getValue/GM_setValue 权限，均实际使用。未发现权限滥用。",
+      "location": "元数据 @grant",
+      "recommendation": "仅申请实际需要的权限。",
+      "severity": "LOW",
+      "type": "Permission Abuse"
+    },
+    {
+      "description": "脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API）。",
+      "location": "全局代码审查",
+      "recommendation": "如需调用敏感 API，需征得用户同意。",
+      "severity": "LOW",
+      "type": "Sensitive API Usage"
+    },
+    {
+      "description": "@require 未使用，供应链风险较低。若后续添加第三方库，需固定版本哈希并使用官方 CDN。",
+      "location": "元数据 @require",
+      "recommendation": "仅使用可信来源并固定版本。",
+      "severity": "LOW",
+      "type": "Supply Chain Risk"
+    },
+    {
+      "description": "脚本未发现 clickjacking 或 iframe 风险，未修改 frame 保护策略或创建隐藏 iframe。",
+      "location": "全局代码审查",
+      "recommendation": "避免创建隐藏 iframe 或修改 frame 保护。",
+      "severity": "LOW",
+      "type": "ClickJacking / iframe Risk"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "读取/存储用户密码（pwList）用于自动填充"
+      "自动填充和存储用户密码",
+      "读取和存储用户配置"
     ],
     "detected": true
   },
-  "risk_level": "HIGH",
+  "risk_level": "CRITICAL",
   "script_name": "KONE +",
   "security_score": 42,
-  "summary": "KONE + 脚本功能丰富，主要用于解码、产品卡片展示、链接健康检查和密码自动填充。安全审查发现：1）存在对任意域名的数据请求（@connect *），可能导致数据外传和供应链风险；2）本地存储用户密码，若与其他脚本共享存储空间存在隐私泄露风险。未发现远程代码执行、代码混淆或 DOM XSS 问题。建议收紧 @connect 权限、加密本地敏感数据存储。",
-  "supply_chain_risk": true,
+  "summary": "KONE + 脚本存在较高安全风险，主要体现在数据外传（@connect * 允许任意域名通信）和密码自动填充/存储功能（涉及敏感隐私采集）。未发现远程代码执行、代码混淆、DOM XSS、权限滥用等高风险问题。建议收紧 @connect 域名范围、加强密码存储安全，并持续审查网络请求和敏感数据处理。",
+  "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:40:58.557629+00:00",
+  "analyzed_at": "2026-07-27T05:53:26.341693+00:00",
   "slug": "KONE"
 }

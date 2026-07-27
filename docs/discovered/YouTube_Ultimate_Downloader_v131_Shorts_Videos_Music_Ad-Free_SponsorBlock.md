@@ -34,14 +34,14 @@ title: "YouTube终极下载器"
 
 ## 安全分析
 
-**风险等级**：🔴 HIGH　　**安全评分**：50/100　　**分析时间**：2026-07-13
+**风险等级**：⛔ CRITICAL　　**安全评分**：75/100　　**分析时间**：2026-07-27
 
-> 该脚本集成 SponsorBlock 功能，会将当前 YouTube 视频 ID 发送到 SponsorBlock 官方服务器（https://sponsor.ajay.app），属于第三方数据外传和隐私采集。未发现远程代码执行、混淆、DOM XSS、权限滥用、敏感 API 滥用、供应链或 iframe 风险。SponsorBlock 为知名项目，但用户需知晓其行为数据会被外传。总体安全风险为 HIGH，建议用户权衡隐私风险后使用。
+> 该脚本主要风险在于通过 SponsorBlock API（https://sponsor.ajay.app/api/skipSegments）向第三方服务器发送用户正在观看的视频 ID，可能泄露用户的观看行为。除此之外，未检测到隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。建议用户知晓 SponsorBlock 数据外传风险，其他方面安全性较高。
 
 | 检查项 | 结果 |
 |--------|------|
-| 数据外传 | ❌ 检测到（目标：https://sponsor.ajay.app） |
-| 隐私采集 | ❌ 检测到（发送当前视频 ID 到 SponsorBlock 服务器） |
+| 数据外传 | ❌ 检测到（目标：https://sponsor.ajay.app/api/skipSegments, YouTube internal APIs (for video info)） |
+| 隐私采集 | ✅ 未检测到 |
 | 代码混淆 | ✅ 未检测到 |
 | WebSocket/SSE | ✅ 未使用 |
 | DOM XSS 风险 | ✅ 未检测到 |
@@ -49,50 +49,50 @@ title: "YouTube终极下载器"
 
 ### 发现的问题
 
-**⛔ CRITICAL** — 数据外传  
-> 脚本通过 fetch 访问 SponsorBlock API（https://sponsor.ajay.app）以获取 sponsor 段信息。虽然 SponsorBlock 是知名项目，但属于第三方服务器，且可能传递当前视频 ID 等信息。  
-> 位置：SB_fetchSegments 函数（未完全展示，但根据 SponsorBlock 集成描述和常见实现方式推断）  
-> 建议：仅允许访问可信第三方 API，明确告知用户数据用途。
+**⛔ CRITICAL** — Data Transmission  
+> Script uses fetch to request SponsorBlock segments from https://sponsor.ajay.app/api/skipSegments, sending YouTube video IDs. This is a third-party API and may expose user video viewing activity.  
+> 位置：SB_fetchSegments function (fetch call)  
+> 建议：Warn users about SponsorBlock API usage and potential privacy implications. Consider anonymizing requests if possible.
 
-**⛔ CRITICAL** — 隐私采集  
-> 脚本未展示完整实现，但 SponsorBlock 集成通常会将当前视频 ID 发送到 SponsorBlock 服务器。视频 ID 可视为用户行为数据（观看内容）。  
-> 位置：SB_fetchSegments 函数及 SponsorBlock 相关逻辑  
-> 建议：最小化外传数据，仅发送必要信息，并在文档中披露。
+**🟡 LOW** — Privacy Collection  
+> No evidence of privacy collection such as reading cookies, localStorage, sessionStorage, or clipboard. No keylogger behavior detected.  
+> 位置：Global script scope  
+> 建议：Maintain current privacy practices.
 
-**🔴 HIGH** — 远程代码执行  
-> 脚本未发现 eval、new Function、setTimeout(string) 等远程代码执行高危 API。  
-> 位置：全局  
-> 建议：保持此安全实践。
+**🟡 LOW** — Remote Code Execution  
+> No eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection detected. No @require or document.write usage.  
+> 位置：Global script scope  
+> 建议：Maintain current code execution practices.
 
-**🔴 HIGH** — 代码混淆  
-> 脚本未发现混淆、base64 解码、字符串数组映射等混淆特征。  
-> 位置：全局  
-> 建议：保持代码可读性。
+**🟡 LOW** — Code Obfuscation  
+> No code obfuscation detected. Code is readable and not minified or encoded.  
+> 位置：Global script scope  
+> 建议：Maintain code transparency.
 
-**🔴 HIGH** — DOM XSS  
-> 脚本未发现 DOM XSS 风险（如直接插入 innerHTML/outerHTML）。  
-> 位置：全局  
-> 建议：继续避免不安全的 DOM 操作。
+**🟡 LOW** — DOM XSS  
+> No DOM XSS or injection risk detected. User input is not inserted into innerHTML/outerHTML.  
+> 位置：Global script scope  
+> 建议：Maintain current DOM handling.
 
-**🟠 MEDIUM** — 权限滥用  
-> 仅申请了 GM_addStyle 权限，未发现权限滥用。  
-> 位置：元数据 @grant  
-> 建议：仅申请实际需要的权限。
+**🟡 LOW** — Permission Abuse  
+> Only GM_addStyle is granted, which is appropriate for styling. No excessive or unused permissions.  
+> 位置：UserScript metadata  
+> 建议：Maintain minimal permission usage.
 
-**🟠 MEDIUM** — 敏感 API 调用  
-> 未发现敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard API、Notification API）调用。  
-> 位置：全局  
-> 建议：继续避免敏感 API 滥用。
+**🟡 LOW** — Sensitive API  
+> No sensitive API calls (geolocation, RTCPeerConnection, MediaDevices, Clipboard, Notification) detected.  
+> 位置：Global script scope  
+> 建议：Maintain current API usage.
 
-**🟠 MEDIUM** — 供应链风险  
-> 未使用 @require 加载第三方库，无供应链风险。  
-> 位置：元数据  
-> 建议：如需加载第三方库，建议使用官方 CDN 并锁定版本。
+**🟡 LOW** — Supply Chain Risk  
+> No @require or external library loading detected. All code is local.  
+> 位置：UserScript metadata  
+> 建议：Maintain supply chain safety.
 
-**🟡 LOW** — ClickJacking/iframe  
-> 未发现 ClickJacking 或 iframe 风险。  
-> 位置：全局  
-> 建议：继续避免相关风险。
+**🟡 LOW** — ClickJacking / iframe Risk  
+> No iframe manipulation or clickjacking detected.  
+> 位置：Global script scope  
+> 建议：Maintain current iframe handling.
 
 ---
 

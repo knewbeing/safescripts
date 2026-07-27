@@ -35,9 +35,9 @@ title: "Songsterr高级功能解锁"
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：84/100　　**分析时间**：2026-07-13
+**风险等级**：🟠 MEDIUM　　**安全评分**：76/100　　**分析时间**：2026-07-27
 
-> 该脚本未检测到数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高危行为。主要风险为申请了 GM_xmlhttpRequest 和 unsafeWindow 权限，但主代码未实际使用 GM_xmlhttpRequest，且 @require 的第三方库来源可信。整体安全风险较低，但建议最小化权限申请。
+> 该脚本未检测到数据外传、远程代码执行、代码混淆、DOM XSS、敏感 API 调用等高危行为。主要风险为申请了未实际使用的高权限（GM_xmlhttpRequest、unsafeWindow）、声明 @connect 到第三方域，以及依赖第三方库。当前版本未采集敏感隐私数据，仅使用 localStorage 存储配置。建议移除未用权限，持续关注依赖库安全，避免后续扩展引入高危行为。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -51,29 +51,34 @@ title: "Songsterr高级功能解锁"
 ### 发现的问题
 
 **🟠 MEDIUM** — 权限滥用  
-> @grant 申请了 GM_xmlhttpRequest 权限，但主代码未检测到实际使用。若后续代码有使用，需关注数据外传风险。  
-> 位置：元数据 @grant  
-> 建议：仅申请实际需要的权限，避免权限滥用。
+> 申请了 GM_xmlhttpRequest 权限，并声明 @connect 到两个 cloudfront.net 域，但代码未实际调用 GM_xmlhttpRequest 或其他网络请求。若后续版本加入数据外传，风险提升。  
+> 位置：元数据 @grant/@connect  
+> 建议：仅申请实际需要的权限，移除未使用的高权限和 @connect 域。
 
-**🟠 MEDIUM** — 权限滥用  
-> @grant 申请了 unsafeWindow 权限，可能导致脚本可访问页面全局对象，增加潜在攻击面。  
-> 位置：元数据 @grant  
-> 建议：仅在确有必要时申请 unsafeWindow，并确保代码安全。
+**🟠 MEDIUM** — 隐私采集  
+> 脚本通过 localStorage 读取和写入日志开关、YouTube 音频模式等配置，但未采集敏感隐私数据（如 cookie、表单、剪贴板等）。  
+> 位置：LOG_KEY/localStorage  
+> 建议：确保仅存储非敏感配置，避免后续扩展隐私采集。
 
 **🟠 MEDIUM** — 供应链风险  
-> @require 加载了第三方库 alphaTab，来源为 jsdelivr 官方 CDN，且指定了明确版本号，供应链风险较低。  
-> 位置：元数据 @require  
-> 建议：建议定期检查依赖库安全性，确保 CDN 未被污染。
+> 使用 @require 加载第三方库 alphaTab.min.js，来源为 jsdelivr 官方 CDN，版本号固定（1.8.1），供应链风险较低。  
+> 位置：@require  
+> 建议：持续关注依赖库安全，避免加载未知来源或可变版本。
 
-**🟡 LOW** — 隐私采集  
-> 脚本通过 localStorage 记录日志开关和 YouTube 音频模式，但未检测到敏感信息采集。  
-> 位置：main code  
-> 建议：确保不采集用户敏感信息。
+**🟠 MEDIUM** — 权限滥用  
+> 申请了 unsafeWindow 权限，允许脚本与页面全局对象交互，存在被页面脚本利用的风险。  
+> 位置：元数据 @grant  
+> 建议：仅在确实需要时申请 unsafeWindow，避免滥用。
 
-**🟡 LOW** — 安全性良好  
-> 脚本未检测到任何网络请求、数据外传、WebSocket、EventSource、键盘监听、表单读取、eval、new Function、字符串混淆、DOM XSS、敏感 API 调用等高危行为。  
-> 位置：main code  
-> 建议：继续保持代码简洁透明。
+**🟡 LOW** — 远程代码执行/混淆  
+> 未检测到 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险，也未检测到代码混淆。  
+> 位置：主代码段  
+> 建议：保持代码透明，避免后续引入动态执行或混淆。
+
+**🟡 LOW** — 通用安全  
+> 未检测到 DOM XSS、注入、敏感 API 调用、WebSocket、剪贴板读取、iframe 风险等。  
+> 位置：主代码段  
+> 建议：继续保持安全开发，避免后续引入相关风险。
 
 ---
 

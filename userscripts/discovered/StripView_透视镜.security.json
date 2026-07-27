@@ -1,5 +1,5 @@
 {
-  "approved": false,
+  "approved": true,
   "data_transmission": {
     "destinations": [
       "sv.acreatorhub.com"
@@ -9,11 +9,67 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "@connect 申请了 sv.acreatorhub.com 但代码未见实际网络请求，存在潜在外传风险。",
-      "location": "元数据头部",
-      "recommendation": "如无必要，移除 @connect sv.acreatorhub.com，或确保无任何数据外传相关代码。",
+      "description": "脚本声明 @connect sv.acreatorhub.com，但代码中未发现任何网络请求（GM_xmlhttpRequest、fetch、WebSocket等），未实际向该域发送数据。",
+      "location": "元数据与代码",
+      "recommendation": "如未来添加网络请求，需严格限制数据类型与目的地。",
+      "severity": "CRITICAL",
+      "type": "数据外传"
+    },
+    {
+      "description": "未发现任何隐私采集行为，如读取 cookie、localStorage、sessionStorage、IndexedDB、剪贴板、表单字段、键盘监听等。",
+      "location": "完整代码",
+      "recommendation": "保持现有状态，勿添加隐私采集。",
+      "severity": "CRITICAL",
+      "type": "隐私采集"
+    },
+    {
+      "description": "未发现 eval、new Function、setTimeout(string)、setInterval(string)、innerHTML/outerHTML 执行 JS、动态 script 标签、document.write 等远程代码执行风险。",
+      "location": "完整代码",
+      "recommendation": "避免动态执行代码。",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "代码未混淆，无 base64 解码、字符串数组映射、unicode 混淆或高度压缩单行代码。",
+      "location": "完整代码",
+      "recommendation": "保持代码可读性。",
+      "severity": "HIGH",
+      "type": "代码混淆"
+    },
+    {
+      "description": "未发现 DOM XSS 或注入风险，未将用户输入或 URL 参数直接插入 innerHTML/outerHTML。",
+      "location": "完整代码",
+      "recommendation": "如需插入用户数据，务必转义。",
+      "severity": "HIGH",
+      "type": "DOM XSS"
+    },
+    {
+      "description": "仅申请 GM_addStyle 权限，未滥用高权限。",
+      "location": "元数据",
+      "recommendation": "仅申请必要权限。",
       "severity": "MEDIUM",
       "type": "权限滥用"
+    },
+    {
+      "description": "未调用敏感 API（地理位置、RTCPeerConnection、MediaDevices、Clipboard、Notification）。",
+      "location": "完整代码",
+      "recommendation": "如需调用敏感 API，需征得用户同意。",
+      "severity": "MEDIUM",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "未使用 @require 加载第三方库，无供应链风险。",
+      "location": "元数据",
+      "recommendation": "如需引入第三方库，建议固定版本哈希并使用官方 CDN。",
+      "severity": "MEDIUM",
+      "type": "供应链风险"
+    },
+    {
+      "description": "未修改 frame 保护策略，未创建隐藏 iframe 用于数据提取。",
+      "location": "完整代码",
+      "recommendation": "避免 iframe 滥用。",
+      "severity": "LOW",
+      "type": "ClickJacking/iframe风险"
     }
   ],
   "obfuscation_detected": false,
@@ -21,12 +77,12 @@
     "details": [],
     "detected": false
   },
-  "risk_level": "LOW",
+  "risk_level": "SAFE",
   "script_name": "StripView 透视镜",
-  "security_score": 92,
-  "summary": "脚本主要为视频页面注入样式和 UI 元素，未检测到数据外传、隐私采集、远程代码执行、混淆、XSS、供应链风险等高危行为。唯一风险为 @connect 权限声明了第三方域名，但实际代码未见网络请求。建议移除无用权限以进一步提升安全性。",
+  "security_score": 100,
+  "summary": "该脚本仅注入 CSS 并实现视频透视镜功能，无任何数据外传、隐私采集、远程代码执行、混淆、XSS、敏感 API 调用或供应链风险。仅申请 GM_addStyle 权限，安全性极高。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:47:35.721724+00:00",
+  "analyzed_at": "2026-07-27T05:57:55.612345+00:00",
   "slug": "StripView_透视镜"
 }

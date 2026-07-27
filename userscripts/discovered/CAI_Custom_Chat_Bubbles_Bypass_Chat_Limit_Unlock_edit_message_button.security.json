@@ -9,38 +9,68 @@
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "The script requests @connect permission for translate.googleapis.com and grants GM_xmlhttpRequest, but no code in the provided snippet actually sends data to third-party servers or uses GM_xmlhttpRequest for exfiltration.",
-      "location": "Metadata and code",
-      "recommendation": "Ensure any future use of GM_xmlhttpRequest does not send sensitive user data to third-party servers.",
+      "description": "脚本申请了 GM_xmlhttpRequest 权限，并声明 @connect translate.googleapis.com，但代码中未发现实际调用 GM_xmlhttpRequest 或 fetch/XHR/WebSocket 向 translate.googleapis.com或其他第三方服务器发送用户数据、页面内容或 Cookie。",
+      "location": "元数据与主代码",
+      "recommendation": "确保未来代码更新时 GM_xmlhttpRequest 仅用于可信目的，避免发送敏感数据。",
       "severity": "MEDIUM",
-      "type": "Permission Overprovision"
+      "type": "权限滥用"
     },
     {
-      "description": "The script overrides fetch and XMLHttpRequest to block requests to 'neo.character.ai/feature_limits', but does not transmit user data externally.",
-      "location": "fetch/XHR override",
-      "recommendation": "Monitor for any future code changes that might add data exfiltration.",
+      "description": "脚本通过 localStorage 读取 'cai_adv_fake_verify' 和 'cai_bypass_limit' 状态，但未采集用户隐私数据、表单内容、Cookie、剪贴板等敏感信息。",
+      "location": "主代码",
+      "recommendation": "保持不采集敏感隐私数据，避免后续版本引入隐私风险。",
       "severity": "LOW",
-      "type": "Network Interception"
+      "type": "隐私采集"
     },
     {
-      "description": "The script requests GM_xmlhttpRequest permission but does not use it in the provided code.",
-      "location": "Metadata",
-      "recommendation": "Remove unused permissions to reduce attack surface.",
+      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行风险 API，也未动态加载未固定版本的第三方库。",
+      "location": "主代码",
+      "recommendation": "继续避免远程代码执行相关 API，@require 的 turndown 库为官方 CDN且版本固定。",
+      "severity": "LOW",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本未发现代码混淆、base64 解码、字符串数组映射或高度压缩单行代码。",
+      "location": "主代码",
+      "recommendation": "保持代码可读性，避免混淆。",
+      "severity": "LOW",
+      "type": "代码混淆"
+    },
+    {
+      "description": "脚本未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未发现 DOM XSS 注入风险。",
+      "location": "主代码",
+      "recommendation": "继续避免不可信内容插入 DOM。",
+      "severity": "LOW",
+      "type": "DOM XSS / 注入"
+    },
+    {
+      "description": "脚本申请了 GM_setValue、GM_getValue、GM_xmlhttpRequest、GM_addStyle 权限，实际代码仅用 GM_addStyle，未发现高权限滥用。",
+      "location": "元数据与主代码",
+      "recommendation": "建议只申请实际使用的权限，减少攻击面。",
       "severity": "MEDIUM",
-      "type": "Permission Overprovision"
+      "type": "权限滥用"
+    },
+    {
+      "description": "@require 加载 turndown 库，来源为 unpkg 官方 CDN，版本号固定，供应链风险较低。",
+      "location": "元数据",
+      "recommendation": "继续固定版本，避免加载未知来源或可变 URL。",
+      "severity": "LOW",
+      "type": "供应链风险"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [],
+    "details": [
+      "读取 localStorage 配置项（非敏感数据）"
+    ],
     "detected": false
   },
   "risk_level": "LOW",
   "script_name": "C.AI Custom Chat Bubbles + Bypass Chat Limit (Unlock edit message button)",
-  "security_score": 89,
-  "summary": "该脚本主要用于美化 character.ai 聊天界面和绕过聊天限制。未发现数据外传、隐私采集、远程代码执行、代码混淆或 DOM XSS 风险。仅存在权限申请过多（如 GM_xmlhttpRequest 未实际使用），以及网络拦截逻辑。整体风险较低，建议移除未使用的高权限。@require 的第三方库（turndown）来源可信且版本固定，无供应链风险。",
+  "security_score": 81,
+  "summary": "该脚本未发现数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS 等高风险行为。权限申请略多于实际使用，建议精简。@require 的第三方库来源可信且版本固定。整体安全风险较低，建议持续关注后续更新。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:30:11.057957+00:00",
+  "analyzed_at": "2026-07-27T05:45:04.523373+00:00",
   "slug": "CAI_Custom_Chat_Bubbles_Bypass_Chat_Limit_Unlock_edit_message_button"
 }

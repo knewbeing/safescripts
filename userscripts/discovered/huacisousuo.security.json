@@ -2,25 +2,91 @@
   "approved": true,
   "data_transmission": {
     "destinations": [
-      "https://www.google.com/search",
-      "https://limbopro.com/search.html",
-      "https://limbopro.com/btsearch.html"
+      "https://www.google.com/search?q=",
+      "https://limbopro.com/search.html#gsc.tab=0&gsc.q=",
+      "https://limbopro.com/btsearch.html#gsc.tab=0&gsc.q="
     ],
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [],
+  "issues": [
+    {
+      "description": "脚本将用户选中的文本拼接到搜索 URL 并通过 a 标签跳转，但未通过 fetch、GM_xmlhttpRequest 等主动网络请求发送数据。",
+      "location": "btns.forEach(b => { if (b.dataset.url) { b.href = b.dataset.url + encodeURIComponent(text); } });",
+      "recommendation": "确保目标搜索页面可信，避免用户敏感信息被误传。仅通过 a 标签跳转，风险较低。",
+      "severity": "LOW",
+      "type": "数据外传"
+    },
+    {
+      "description": "脚本监听 selectionchange 事件，读取用户选中的文本，但未主动采集或外传隐私数据。",
+      "location": "document.addEventListener('selectionchange', ...)",
+      "recommendation": "避免将敏感信息（如密码、身份证号等）选中后跳转到第三方搜索。",
+      "severity": "LOW",
+      "type": "隐私采集"
+    },
+    {
+      "description": "脚本未使用 eval、new Function、setTimeout(string)、setInterval(string) 等远程代码执行方式。",
+      "location": "全局",
+      "recommendation": "保持当前实现，避免动态执行字符串代码。",
+      "severity": "LOW",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "脚本未使用混淆、压缩、base64 编码或字符串映射等混淆技术。",
+      "location": "全局",
+      "recommendation": "保持代码可读性，便于安全审查。",
+      "severity": "LOW",
+      "type": "代码混淆"
+    },
+    {
+      "description": "脚本未将用户输入直接插入 innerHTML/outerHTML，未发现 DOM XSS 风险。",
+      "location": "全局",
+      "recommendation": "如需插入用户输入到 DOM，需进行转义。",
+      "severity": "LOW",
+      "type": "DOM XSS / 注入"
+    },
+    {
+      "description": "脚本未申请任何 @grant 权限，未滥用敏感权限。",
+      "location": "元数据 @grant none",
+      "recommendation": "保持最小权限原则。",
+      "severity": "LOW",
+      "type": "权限滥用"
+    },
+    {
+      "description": "脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。",
+      "location": "全局",
+      "recommendation": "如需调用敏感 API，需征得用户同意。",
+      "severity": "LOW",
+      "type": "敏感 API 调用"
+    },
+    {
+      "description": "脚本未通过 @require 加载第三方库，无供应链风险。",
+      "location": "元数据 @require none",
+      "recommendation": "如需引入第三方库，建议使用官方 CDN 并固定版本。",
+      "severity": "LOW",
+      "type": "供应链风险"
+    },
+    {
+      "description": "脚本未修改 frame 保护策略，也未创建隐藏 iframe 用于数据提取。",
+      "location": "全局",
+      "recommendation": "保持当前实现，避免 iframe 滥用。",
+      "severity": "LOW",
+      "type": "ClickJacking / iframe 风险"
+    }
+  ],
   "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [],
+    "details": [
+      "监听 selectionchange 事件，读取用户选中的文本"
+    ],
     "detected": false
   },
-  "risk_level": "SAFE",
+  "risk_level": "LOW",
   "script_name": "Limbopro 网页划词搜索神器（a 标签优化版）",
-  "security_score": 100,
-  "summary": "该脚本未检测到任何安全或隐私风险。它不会外传数据、采集隐私信息、执行远程代码或使用高危 API。所有网络跳转均为用户主动点击 a 标签后进行，且无自动数据上报行为。代码无混淆，无 XSS 风险，无权限滥用。整体安全性高，适合日常使用。",
+  "security_score": 97,
+  "summary": "该脚本仅监听用户划词并生成搜索链接，通过 a 标签跳转，无主动数据外传、隐私采集、远程代码执行、混淆、XSS、权限滥用、敏感 API 调用、供应链或 iframe 风险。整体安全性高，风险极低。建议用户注意不要选中敏感信息进行搜索。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:57:07.132208+00:00",
+  "analyzed_at": "2026-07-27T06:06:11.065137+00:00",
   "slug": "huacisousuo"
 }

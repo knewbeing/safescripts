@@ -1,53 +1,62 @@
 {
-  "approved": true,
+  "approved": false,
   "data_transmission": {
-    "destinations": [],
-    "detected": false
+    "destinations": [
+      "Arbitrary URL via loadscript(url) (potentially any remote server)"
+    ],
+    "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "动态加载并执行远程 JavaScript 代码，使用 fetch + new Function 实现远程代码执行。",
-      "location": "loadscript(url) 函数",
-      "recommendation": "禁止动态执行远程代码，或仅允许加载已知可信、带哈希校验的脚本。",
-      "severity": "HIGH",
-      "type": "远程代码执行"
+      "description": "The function loadscript(url) fetches remote JavaScript code from an arbitrary URL and executes it via new Function(code), which is equivalent to eval. This allows remote code execution and potential data exfiltration.",
+      "location": "loadscript(url) function",
+      "recommendation": "Remove dynamic remote code loading or restrict to trusted, versioned sources. Avoid using new Function or eval for executing fetched code.",
+      "severity": "CRITICAL",
+      "type": "Remote Code Execution/Data Exfiltration"
     },
     {
-      "description": "使用 new Function 执行任意字符串，属于高危动态代码执行。",
-      "location": "loadscript(url) 函数",
-      "recommendation": "避免使用 new Function，改为静态代码或受信任的模块。",
+      "description": "The script uses new Function(code) to execute fetched code, which is a high-risk pattern for remote code execution.",
+      "location": "loadscript(url) function",
+      "recommendation": "Replace new Function with static, locally-audited code. Never execute arbitrary code from remote sources.",
       "severity": "HIGH",
-      "type": "远程代码执行"
+      "type": "Remote Code Execution"
     },
     {
-      "description": "脚本会删除 IndexedDB 的 UnityCache 数据库，可能影响用户本地缓存。",
+      "description": "The script fetches code from arbitrary URLs, which can be abused for supply chain attacks if the URL is not trusted or versioned.",
+      "location": "loadscript(url) function",
+      "recommendation": "Only load code from official, versioned, and hash-locked sources. Avoid arbitrary URLs.",
+      "severity": "MEDIUM",
+      "type": "Supply Chain Risk"
+    },
+    {
+      "description": "The script accesses localStorage to store and retrieve user input (key gate overlay).",
+      "location": "wxKeyGate function",
+      "recommendation": "Ensure no sensitive information is stored in localStorage. Do not store authentication keys or secrets.",
+      "severity": "MEDIUM",
+      "type": "Privacy Collection"
+    },
+    {
+      "description": "The script deletes the IndexedDB database 'UnityCache', which may affect game functionality or user data.",
       "location": "indexedDB.deleteDatabase(\"UnityCache\")",
-      "recommendation": "仅在必要时清理缓存，并告知用户。",
-      "severity": "MEDIUM",
-      "type": "敏感 API 调用"
-    },
-    {
-      "description": "脚本会向 localStorage 写入 wx_user_key，但未发现敏感信息读取或外传。",
-      "location": "localStorage.setItem('wx_user_key', input)",
-      "recommendation": "确保不存储敏感信息，或加密存储。",
-      "severity": "MEDIUM",
-      "type": "隐私采集"
+      "recommendation": "Warn users before deleting local databases. Ensure this action is necessary and safe.",
+      "severity": "LOW",
+      "type": "Permission/Storage Manipulation"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [
-      "写入 localStorage（wx_user_key）"
+      "localStorage: wx_user_key"
     ],
     "detected": true
   },
-  "risk_level": "MEDIUM",
+  "risk_level": "CRITICAL",
   "script_name": "WEXI Veck.io CRACKED by Terra",
-  "security_score": 69,
-  "summary": "该脚本未检测到数据外传、追踪或 WebSocket 行为，也未发现 DOM XSS 或代码混淆。主要安全风险为动态远程代码执行（fetch + new Function），这可能导致任意代码注入和执行。脚本会操作 localStorage 和 IndexedDB，但未发现敏感数据外传。建议移除动态代码执行逻辑，仅加载受信任的本地代码。",
-  "supply_chain_risk": false,
+  "security_score": 35,
+  "summary": "This script poses a critical security risk due to its ability to fetch and execute arbitrary remote code via new Function, which can lead to remote code execution and data exfiltration. It also collects user input and stores it in localStorage. Supply chain risks are present due to untrusted code loading. The script should not be approved for use in its current form.",
+  "supply_chain_risk": true,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:50:14.235435+00:00",
+  "analyzed_at": "2026-07-27T06:00:18.276561+00:00",
   "slug": "WEXI_Veckio_CRACKED_by_Terra"
 }

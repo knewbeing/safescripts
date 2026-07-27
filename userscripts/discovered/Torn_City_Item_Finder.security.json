@@ -5,20 +5,26 @@
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [],
+  "issues": [
+    {
+      "description": "脚本通过 localStorage 存储和读取面板位置，但未涉及敏感数据，仅用于 UI 位置恢复。",
+      "location": "localStorage.getItem(\"tornItemFinderPos\") / localStorage.setItem(\"tornItemFinderPos\")",
+      "recommendation": "确保仅存储非敏感数据，当前实现安全。",
+      "severity": "LOW",
+      "type": "UI state storage"
+    }
+  ],
   "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [
-      "Reads and writes panel position to localStorage under key 'tornItemFinderPos'"
-    ],
+    "details": [],
     "detected": false
   },
   "risk_level": "SAFE",
   "script_name": "Torn City Item Finder",
-  "security_score": 100,
-  "summary": "该脚本未检测到任何网络数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用或供应链风险。仅在本地 localStorage 存储面板位置，未访问敏感信息或外部服务器。整体安全性高。",
+  "security_score": 97,
+  "summary": "该脚本未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用或供应链风险。唯一涉及 localStorage 用于面板位置存储，属于低风险。整体安全，适合使用。",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:48:47.324320+00:00",
+  "analyzed_at": "2026-07-27T05:58:59.542326+00:00",
   "slug": "Torn_City_Item_Finder"
 }

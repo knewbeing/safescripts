@@ -5,7 +5,29 @@
     "detected": false
   },
   "dom_xss_risk": false,
-  "issues": [],
+  "issues": [
+    {
+      "description": "The script creates a custom overlay UI and collects user input (access code) via an input field. However, it does not transmit this data externally or store it.",
+      "location": "createOverlay function",
+      "recommendation": "Ensure that future versions do not add network requests or external data transmission.",
+      "severity": "LOW",
+      "type": "UI Input Collection"
+    },
+    {
+      "description": "The script uses innerHTML to inject static HTML into the overlay. The content is not based on user input, so XSS risk is minimal.",
+      "location": "createOverlay function (overlay.innerHTML)",
+      "recommendation": "If overlay content ever includes user input, sanitize it before insertion.",
+      "severity": "LOW",
+      "type": "DOM Manipulation"
+    },
+    {
+      "description": "No permissions are requested (@grant none), reducing risk of privilege abuse.",
+      "location": "Metadata block",
+      "recommendation": "Maintain minimal permission usage.",
+      "severity": "LOW",
+      "type": "Permissions"
+    }
+  ],
   "obfuscation_detected": false,
   "privacy_collection": {
     "details": [],
@@ -13,10 +35,10 @@
   },
   "risk_level": "SAFE",
   "script_name": "Omoggle cheats",
-  "security_score": 100,
-  "summary": "该脚本仅在页面加载时插入一个自定义的 UI 覆盖层，要求用户输入访问码。未检测到任何网络请求、隐私数据采集、远程代码执行、代码混淆、DOM XSS、权限滥用或供应链风险。整体安全性高。",
+  "security_score": 94,
+  "summary": "This UserScript does not transmit data externally, does not collect sensitive information, and does not use obfuscated or dangerous code patterns. It creates a UI overlay for access code input, but the input is only used locally. No critical or high risks detected. Security score is high.",
   "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:43:32.717271+00:00",
+  "analyzed_at": "2026-07-27T05:55:24.475635+00:00",
   "slug": "Omoggle_cheats"
 }

@@ -36,9 +36,9 @@ title: "EasyTube V4 — 广告跳过、SponsorBlock 和 HD 下载器（无卡顿
 
 ## 安全分析
 
-**风险等级**：🟡 LOW　　**安全评分**：72/100　　**分析时间**：2026-07-13
+**风险等级**：🟠 MEDIUM　　**安全评分**：67/100　　**分析时间**：2026-07-27
 
-> The script is generally safe and well-structured. It communicates with two third-party APIs (SponsorBlock and evdfrance.fr) to provide its features, but does not transmit sensitive user data or cookies. No code obfuscation, DOM XSS, or dangerous dynamic code execution is present. Permissions are appropriate for the functionality. Users should be aware of the third-party API usage for transparency.
+> The script communicates with two third-party servers (SponsorBlock and evdfrance.fr) for ad skipping and HD download functionality. No evidence of sensitive data collection, code obfuscation, remote code execution, or DOM XSS. Permissions are appropriate for the functionality. The main risk is data transmission to external servers, which may include video IDs or metadata. Overall, the script is reasonably safe for use, but users should be aware of the privacy implications of contacting third-party APIs.
 
 | 检查项 | 结果 |
 |--------|------|
@@ -52,19 +52,39 @@ title: "EasyTube V4 — 广告跳过、SponsorBlock 和 HD 下载器（无卡顿
 ### 发现的问题
 
 **⛔ CRITICAL** — Data Transmission  
-> The script uses GM_xmlhttpRequest to communicate with sponsor.ajay.app (SponsorBlock API) and evdfrance.fr (video download). These are third-party servers. However, only video IDs and category data are sent, not sensitive user data or cookies.  
-> 位置：SponsorBlock and download logic (CFG.sbApi, evdfrance.fr)  
-> 建议：Review the endpoints' privacy policies and ensure only minimal, non-sensitive data is sent. Consider warning users about third-party API usage.
+> Script uses GM_xmlhttpRequest to communicate with sponsor.ajay.app (SponsorBlock API) and evdfrance.fr (HD download service). These are third-party servers and may receive video IDs or related metadata.  
+> 位置：CFG.sbApi and download logic (likely further in code, but endpoints are defined)  
+> 建议：Ensure only minimal, non-sensitive data is sent. Review SponsorBlock and evdfrance.fr privacy policies.
+
+**🔴 HIGH** — Remote Code Execution  
+> No evidence of eval, new Function, setTimeout(string), setInterval(string), or dynamic script injection in the provided code.  
+> 位置：Entire code (reviewed up to DOM helpers)  
+> 建议：Avoid dynamic code execution. Use static, auditable code.
+
+**🔴 HIGH** — Code Obfuscation  
+> No evidence of code obfuscation, base64 encoding, unicode escapes, or minified/obfuscated code.  
+> 位置：Entire code (reviewed up to DOM helpers)  
+> 建议：Maintain readable, auditable code.
+
+**🔴 HIGH** — DOM XSS  
+> No evidence of DOM XSS or injection vulnerabilities. User input is not inserted into innerHTML/outerHTML.  
+> 位置：Entire code (reviewed up to DOM helpers)  
+> 建议：Always sanitize user input before DOM insertion.
+
+**🟠 MEDIUM** — Privacy Collection  
+> Script stores and retrieves settings using GM_setValue and GM_getValue. No evidence of sensitive data collection (cookies, form fields, clipboard, etc.) in the provided code.  
+> 位置：STATE section and save() function  
+> 建议：Do not store sensitive user data. Only store settings relevant to script functionality.
 
 **🟠 MEDIUM** — Permission Usage  
-> The script requests GM_xmlhttpRequest permission, which allows arbitrary cross-origin requests. However, usage is limited to the two whitelisted domains.  
-> 位置：Metadata block (@grant GM_xmlhttpRequest, @connect)  
-> 建议：Limit @connect domains strictly and document all external requests in user documentation.
+> Script requests GM_xmlhttpRequest permission and @connect for two third-party domains. No evidence of excessive or unused permissions.  
+> 位置：Metadata block (@grant, @connect)  
+> 建议：Limit permissions to only those required. Remove unused grants.
 
-**🟡 LOW** — Privacy  
-> The script stores and retrieves user settings using GM_setValue and GM_getValue. No sensitive data is stored, only feature toggles.  
-> 位置：Settings logic (S, save(), GM_setValue/GM_getValue)  
-> 建议：Ensure no sensitive or personal data is stored or transmitted.
+**🟠 MEDIUM** — Supply Chain Risk  
+> Script uses @require only for icons, not for third-party JS libraries. No supply chain risk detected.  
+> 位置：Metadata block (@icon, @icon64)  
+> 建议：If using @require for JS, ensure official CDN and fixed version.
 
 ---
 

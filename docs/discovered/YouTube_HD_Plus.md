@@ -36,9 +36,9 @@ title: "YouTube HD Plus"
 
 ## 安全分析
 
-**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-07-13
+**风险等级**：🟢 SAFE　　**安全评分**：100/100　　**分析时间**：2026-07-27
 
-> 该脚本仅操作 YouTube 播放器相关 DOM 和设置，未检测到任何数据外传、隐私采集、远程代码执行、混淆、XSS 或供应链风险。仅申请了 GM.getValue / GM.setValue 权限，未滥用高权限。整体安全性高。
+> 该脚本仅在本地操作 YouTube 播放器参数，未检测到任何数据外传、隐私采集、远程代码执行、代码混淆、DOM XSS、权限滥用、敏感 API 调用、供应链风险或 iframe 风险。安全性极高，适合公开使用。
 
 | 检查项 | 结果 |
 |--------|------|
@@ -49,7 +49,52 @@ title: "YouTube HD Plus"
 | DOM XSS 风险 | ✅ 未检测到 |
 | 供应链风险 | ✅ 可信 |
 
-### 未发现安全问题 ✅
+### 发现的问题
+
+**⛔ CRITICAL** — 数据外传  
+> 脚本未检测到任何网络请求（如 GM_xmlhttpRequest、fetch、XMLHttpRequest、WebSocket、EventSource、navigator.sendBeacon），不存在数据外传行为。  
+> 位置：全局代码  
+> 建议：保持无外部数据传输，确保用户隐私安全。
+
+**⛔ CRITICAL** — 隐私采集  
+> 脚本未读取 document.cookie、localStorage、sessionStorage、IndexedDB，也未监听键盘输入或表单字段，未访问指纹相关 API，未读取剪贴板内容。  
+> 位置：全局代码  
+> 建议：继续避免隐私采集，保障用户数据安全。
+
+**🔴 HIGH** — 远程代码执行  
+> 脚本未使用 eval、new Function、setTimeout(string)、setInterval(string)，未通过 innerHTML/outerHTML 插入外部脚本或执行 JS，未动态加载远程 JS。  
+> 位置：全局代码  
+> 建议：继续避免远程代码执行风险。
+
+**🔴 HIGH** — 代码混淆  
+> 脚本未检测到代码混淆特征（如 base64 解码、字符串数组映射、unicode 混淆、高度压缩单行代码）。  
+> 位置：全局代码  
+> 建议：保持代码可读性，便于安全审查。
+
+**🔴 HIGH** — DOM XSS / 注入  
+> 脚本未将用户输入或 URL 参数直接插入 innerHTML/outerHTML，未通过 document.write 插入不可信内容，未操作 iframe src 为 javascript: 协议。  
+> 位置：全局代码  
+> 建议：继续避免 DOM XSS/注入风险。
+
+**🟠 MEDIUM** — 权限滥用  
+> 脚本仅申请 GM.getValue 和 GM.setValue 权限，未申请高权限（如 GM_download、GM_openInTab），权限申请与实际使用一致。  
+> 位置：元数据 @grant  
+> 建议：仅申请必要权限，避免权限滥用。
+
+**🟠 MEDIUM** — 敏感 API 调用  
+> 脚本未调用敏感 API（如 geolocation、RTCPeerConnection、MediaDevices、Clipboard、Notification）。  
+> 位置：全局代码  
+> 建议：继续避免敏感 API 调用。
+
+**🟠 MEDIUM** — 供应链风险  
+> 脚本未通过 @require 加载第三方库，无供应链风险。  
+> 位置：元数据 @require  
+> 建议：如需加载第三方库，建议固定版本哈希并使用官方 CDN。
+
+**🟡 LOW** — ClickJacking / iframe 风险  
+> 脚本未修改 frame 保护策略，未创建隐藏 iframe 用于数据提取。  
+> 位置：全局代码  
+> 建议：继续避免 ClickJacking/iframe 风险。
 
 ---
 

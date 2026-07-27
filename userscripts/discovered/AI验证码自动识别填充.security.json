@@ -2,54 +2,59 @@
   "approved": false,
   "data_transmission": {
     "destinations": [
-      "未知（代码未完整，无法确定）"
+      "User-configurable third-party API endpoints (for CAPTCHA recognition)"
     ],
     "detected": true
   },
   "dom_xss_risk": false,
   "issues": [
     {
-      "description": "脚本使用 GM_xmlhttpRequest 进行网络请求，可能将验证码图片或页面内容发送到第三方服务器进行 AI 识别。由于代码不完整，无法确认目标服务器及数据内容。",
-      "location": "主逻辑（未完整展示）",
-      "recommendation": "明确告知用户数据传输目的地，限制为可信的验证码识别 API，避免发送敏感信息。",
+      "description": "脚本通过 GM_xmlhttpRequest 将验证码图片（base64）发送到用户配置的第三方 API 进行识别，属于数据外传行为。",
+      "location": "识别按钮点击事件处理逻辑、API 配置相关代码",
+      "recommendation": "确保用户明确知晓数据将发送到第三方服务器，建议默认关闭并提示风险。仅允许可信 API，或增加白名单校验。",
       "severity": "CRITICAL",
       "type": "数据外传"
     },
     {
-      "description": "脚本申请了 GM_xmlhttpRequest 权限，具备跨域数据传输能力，存在隐私数据外传风险。",
-      "location": "@grant 元数据",
-      "recommendation": "仅在必要时申请该权限，并限制为可信 API 域名。",
-      "severity": "CRITICAL",
-      "type": "数据外传"
+      "description": "脚本未发现监听键盘输入、读取表单密码字段、读取剪贴板等隐私采集行为。",
+      "location": "全局代码",
+      "recommendation": "无",
+      "severity": "LOW",
+      "type": "隐私采集"
     },
     {
-      "description": "脚本未混淆，但存在 @require 加载第三方库（Vue.js），依赖于外部 CDN（unpkg.com），存在供应链风险。",
-      "location": "@require https://unpkg.com/vue@3.4.38/dist/vue.global.prod.js",
-      "recommendation": "建议使用官方 CDN 并固定具体版本哈希，避免 CDN 污染。",
-      "severity": "MEDIUM",
+      "description": "脚本未发现 eval、new Function、setTimeout(string) 等远程代码执行高危用法。",
+      "location": "全局代码",
+      "recommendation": "无",
+      "severity": "HIGH",
+      "type": "远程代码执行"
+    },
+    {
+      "description": "@require 加载了官方 CDN 的 Vue 3，来源可信，且为固定版本。",
+      "location": "元数据 @require",
+      "recommendation": "无",
+      "severity": "LOW",
       "type": "供应链风险"
     },
     {
-      "description": "脚本申请了 GM_getValue/GM_setValue/GM_registerMenuCommand 等权限，但未见全部实际使用，存在权限冗余。",
-      "location": "@grant 元数据",
-      "recommendation": "仅申请实际使用的权限，减少权限面。",
-      "severity": "MEDIUM",
+      "description": "脚本申请了 GM_xmlhttpRequest 权限，实际用于识别 API 调用，未发现权限滥用。",
+      "location": "元数据 @grant",
+      "recommendation": "无",
+      "severity": "LOW",
       "type": "权限滥用"
     }
   ],
   "obfuscation_detected": false,
   "privacy_collection": {
-    "details": [
-      "可能读取验证码图片内容（canvas/image）用于识别"
-    ],
-    "detected": true
+    "details": [],
+    "detected": false
   },
   "risk_level": "HIGH",
   "script_name": "AI验证码自动识别填充",
-  "security_score": 50,
-  "summary": "该脚本具备验证码自动识别和填充功能，核心逻辑依赖 GM_xmlhttpRequest 发送验证码图片数据到第三方服务器进行 AI 识别，存在数据外传和隐私采集风险。脚本依赖外部 Vue.js 库，存在一定供应链风险。未发现代码混淆和 DOM XSS 问题。建议明确告知用户数据传输目的地，限制为可信 API，最小化权限申请，并固定依赖库版本哈希。",
-  "supply_chain_risk": true,
+  "security_score": 75,
+  "summary": "该脚本核心功能为自动识别网页验证码并填充，识别过程会将验证码图片通过 GM_xmlhttpRequest 发送到用户自定义的第三方 API 进行识别，存在数据外传风险。未发现隐私采集、远程代码执行、代码混淆、DOM XSS 等高危问题。@require 的 Vue 3 来源可信，未发现供应链风险。整体安全性较高，但因数据外传为核心功能，安全评分为 75，风险等级为 HIGH。",
+  "supply_chain_risk": false,
   "websocket_usage": false,
-  "analyzed_at": "2026-07-13T05:28:19.130179+00:00",
+  "analyzed_at": "2026-07-27T05:43:39.404845+00:00",
   "slug": "AI验证码自动识别填充"
 }
