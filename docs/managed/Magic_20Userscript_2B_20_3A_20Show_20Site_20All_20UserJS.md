@@ -8,7 +8,7 @@ title: "Magic Userscript+ : Show Site All UserJS"
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/managed/Magic_20Userscript_2B_20_3A_20Show_20Site_20All_20UserJS.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**7.6.10**　　最后更新：**2026-08-10**
+> 版本：**8.0.0**　　最后更新：**2026-08-31**
 
 ## 功能介绍
 

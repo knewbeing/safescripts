@@ -8,7 +8,7 @@ title: "GitHub 中文化插件"
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/managed/main.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**1.9.4.4-2026-08-23**　　最后更新：**2026-08-24**
+> 版本：**1.9.4.4-2026-08-25**　　最后更新：**2026-08-31**
 
 ## 功能介绍
 
