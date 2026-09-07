@@ -8,7 +8,7 @@ title: "Github Enhancement - High Speed Download"
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/managed/GitHub_20Issue_20Link_20Status.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**2.6.39**　　最后更新：**2026-08-03**
+> 版本：**2.6.41**　　最后更新：**2026-09-07**
 
 ## 功能介绍
 
