@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CSDN优化
 // @namespace    https://github.com/WhiteSevs/TamperMonkeyScript
-// @version      2026.6.26.16
+// @version      2026.9.12
 // @author       WhiteSevs
 // @description  支持PC和手机端、屏蔽广告、优化浏览体验、重定向拦截的Url、自动展开全文、自动展开代码块、全文居中、允许复制内容、去除复制内容的小尾巴、自定义屏蔽元素等
 // @license      GPL-3.0-only
@@ -9,9 +9,9 @@
 // @supportURL   https://github.com/WhiteSevs/TamperMonkeyScript/issues
 // @match        *://*.csdn.net/*
 // @require      https://fastly.jsdelivr.net/gh/WhiteSevs/TamperMonkeyScript@86be74b83fca4fa47521cded28377b35e1d7d2ac/lib/CoverUMD/index.js
-// @require      https://fastly.jsdelivr.net/npm/@whitesev/utils@2.12.2/dist/index.umd.js
+// @require      https://fastly.jsdelivr.net/npm/@whitesev/utils@2.13.1/dist/index.umd.js
 // @require      https://fastly.jsdelivr.net/npm/@whitesev/domutils@2.0.8/dist/index.umd.js
-// @require      https://fastly.jsdelivr.net/npm/@whitesev/pops@4.2.8/dist/index.umd.js
+// @require      https://fastly.jsdelivr.net/npm/@whitesev/pops@4.2.9/dist/index.umd.js
 // @require      https://fastly.jsdelivr.net/npm/qmsg@1.7.2/dist/index.umd.js
 // @connect      blog.csdn.net
 // @connect      mp-action.csdn.net
@@ -56,7 +56,7 @@
   var __toESM = (mod, isNodeMode, target) => (
     (target = mod != null ? __create(__getProtoOf(mod)) : {}),
     __copyProps(
-      isNodeMode || !mod || !mod.__esModule
+      isNodeMode || !mod || !mod.__esModule || !__hasOwnProp.call(mod, "default")
         ? __defProp(target, "default", {
             value: mod,
             enumerable: true,
@@ -141,6 +141,11 @@
       });
       selectorList = selectorList.map((it) => it.trim()).filter((it) => it !== "");
       if (selectorList.length) return addStyle(`${selectorList.join(",\n")}{display: none !important;}`);
+    },
+    addBlockCSSWithEnd(...args) {
+      const $css = CommonUtil$1.addBlockCSS(...args);
+      if ($css) document.documentElement.appendChild($css);
+      return $css;
     },
     setGMResourceCSS(resourceMapData) {
       const cssText = typeof _GM_getResourceText === "function" ? _GM_getResourceText(resourceMapData.keyName) : null;
@@ -359,20 +364,20 @@
       let result = time;
       let oldTime = new Date(typeof time === "string" ? time.replace(/-/g, "/") : time);
       let timeDifference = new Date(endTime ?? Date.now()).getTime() - oldTime.getTime();
-      let days = Math.floor(timeDifference / (24 * 3600 * 1e3));
-      if (days > 0)
+      let days = Math.floor(timeDifference / 864e5);
+      if (days > 0) {
         if (days > 7) result = utils.formatTime(oldTime.getTime());
         else result = days + "天前";
-      else {
-        let leave1 = timeDifference % (24 * 3600 * 1e3);
-        let hours = Math.floor(leave1 / (3600 * 1e3));
+      } else {
+        let leave1 = timeDifference % 864e5;
+        let hours = Math.floor(leave1 / 36e5);
         if (hours > 0) result = hours + "小时前";
         else {
-          let leave2 = leave1 % (3600 * 1e3);
-          let minutes = Math.floor(leave2 / (60 * 1e3));
+          let leave2 = leave1 % 36e5;
+          let minutes = Math.floor(leave2 / 6e4);
           if (minutes > 0) result = minutes + "分钟前";
           else {
-            let leave3 = leave2 % (60 * 1e3);
+            let leave3 = leave2 % 6e4;
             result = Math.round(leave3 / 1e3) + "秒前";
           }
         }
@@ -454,7 +459,7 @@
   });
   var httpx = new utils.Httpx({
     xmlHttpRequest: _GM_xmlhttpRequest,
-    logDetails: false,
+    isConsoleRequestOption: false,
   });
   httpx.interceptors.request.use((data) => {
     return data;
@@ -484,12 +489,14 @@
     _unsafeWindow.clearInterval.bind(_unsafeWindow));
   var addStyle = domUtils.addStyle.bind(domUtils);
   var addBlockCSS = CommonUtil$1.addBlockCSS.bind(CommonUtil$1);
+  CommonUtil$1.addBlockCSSWithEnd.bind(CommonUtil$1);
   var $ = _whitesev_domutils.default.selector.bind(_whitesev_domutils.default);
   var $$ = _whitesev_domutils.default.selectorAll.bind(_whitesev_domutils.default);
   var cookieManager = new utils.CookieManagerService({ baseCookieHandler: "GM_cookie" });
-  if (!cookieManager.isSupportGM_cookie)
+  if (!cookieManager.isSupportGM_cookie) {
     if (cookieManager.isSupportCookieStore) cookieManager.setOptions({ baseCookieHandler: "cookieStore" });
     else cookieManager.setOptions({ baseCookieHandler: "document.cookie" });
+  }
   new utils.DocumentCookieHandler();
   var KEY = "GM_Panel";
   var ATTRIBUTE_INIT = "data-init";
@@ -638,15 +645,16 @@
           const $network = $alert.$shadowRoot.querySelector(".btn-control[data-mode='network']");
           const $clipboard = $alert.$shadowRoot.querySelector(".btn-control[data-mode='clipboard']");
           const updateConfigToStorage = async (data) => {
-            if (confirm(translateCallback("是否清空脚本存储的配置？（如果点击取消按钮，则仅做配置覆盖处理）")))
-              if (typeof _GM_listValues === "function")
+            if (confirm(translateCallback("是否清空脚本存储的配置？（如果点击取消按钮，则仅做配置覆盖处理）"))) {
+              if (typeof _GM_listValues === "function") {
                 if (typeof _GM_deleteValue === "function") {
                   _GM_listValues().forEach((key) => {
                     _GM_deleteValue(key);
                   });
                   qmsg.default.success(translateCallback("已清空脚本存储的配置"));
                 } else qmsg.default.error(translateCallback("不支持GM_deleteValue函数，无法执行删除脚本配置"));
-              else qmsg.default.error(translateCallback("不支持GM_listValues函数，无法清空脚本存储的配置"));
+              } else qmsg.default.error(translateCallback("不支持GM_listValues函数，无法清空脚本存储的配置"));
+            }
             if (typeof _GM_setValues === "function") _GM_setValues(data);
             else
               Object.keys(data).forEach((key) => {
@@ -993,7 +1001,7 @@
       if (Array.isArray(args)) resultValueList = resultValueList.concat(args);
       else {
         const handleArgs = (obj) => {
-          if (typeof obj === "object" && obj != null)
+          if (typeof obj === "object" && obj != null) {
             if (obj instanceof Element) resultValueList.push(obj);
             else if (Array.isArray(obj)) handleArgs(obj);
             else {
@@ -1004,7 +1012,7 @@
               }
               if (typeof destory === "function") resultValueList.push(destory);
             }
-          else resultValueList.push(obj);
+          } else resultValueList.push(obj);
         };
         handleArgs(args);
       }
@@ -1307,9 +1315,10 @@
     },
     setDefaultValue(key, defaultValue) {
       if (this.$data.contentConfigInitDefaultValue.has(key))
-        log.warn("该key已存在，初始化默认值失败: ", {
+        log.warn("该key的默认值已进行初始化，覆盖该默认值: ", {
           key,
-          initValue: this.$data.contentConfigInitDefaultValue.get(key),
+          defaultValue,
+          coverDefaultValue: this.$data.contentConfigInitDefaultValue.get(key),
         });
       this.$data.contentConfigInitDefaultValue.set(key, defaultValue);
     },
@@ -2047,12 +2056,12 @@
       );
     },
     transformKey(key) {
-      if (Array.isArray(key))
+      if (Array.isArray(key)) {
         if (key.length > 1) {
           const keyArray = key.sort();
           return JSON.stringify(keyArray);
         } else return key[0];
-      else return key;
+      } else return key;
     },
     getDynamicValue(key, defaultValue) {
       let isInit = false;
@@ -2365,89 +2374,89 @@
       const urlInst = new URL(this.__href);
       return [
         () => {
-          if (this.__origin.value)
-            if (this.__origin.type === "same")
+          if (this.__origin.value) {
+            if (this.__origin.type === "same") {
               if (typeof this.__origin.value === "string") return urlInst.origin === this.__origin.value;
               else throw new TypeError("origin value should be string by type " + this.__origin.type);
-            else if (this.__origin.type === "startsWith")
+            } else if (this.__origin.type === "startsWith") {
               if (typeof this.__origin.value === "string") return urlInst.origin.startsWith(this.__origin.value);
               else throw new TypeError("origin value should be string by type " + this.__origin.type);
-            else if (this.__origin.type === "endsWith")
+            } else if (this.__origin.type === "endsWith") {
               if (typeof this.__origin.value === "string") return urlInst.origin.endsWith(this.__origin.value);
               else throw new TypeError("origin value should be string by type " + this.__origin.type);
-            else if (this.__origin.type === "includes")
+            } else if (this.__origin.type === "includes") {
               if (typeof this.__origin.value === "string") return urlInst.origin.includes(this.__origin.value);
               else throw new TypeError("origin value should be string by type " + this.__origin.type);
-            else if (this.__origin.type === "match")
+            } else if (this.__origin.type === "match") {
               if (this.__origin.value instanceof RegExp) return this.__origin.value.test(urlInst.origin);
               else if (typeof this.__origin.value === "string") return urlInst.origin.match(this.__origin.value);
               else throw new TypeError("origin value should be RegExp or string by type " + this.__origin.type);
-            else throw new TypeError("origin type should be same or startsWith or endsWith or includes or match");
-          else return true;
+            } else throw new TypeError("origin type should be same or startsWith or endsWith or includes or match");
+          } else return true;
         },
         () => {
-          if (this.__protocol.value)
-            if (this.__protocol.type === "same")
+          if (this.__protocol.value) {
+            if (this.__protocol.type === "same") {
               if (typeof this.__protocol.value === "string") return urlInst.protocol === this.__protocol.value;
               else throw new TypeError("protocol value should be string by type " + this.__protocol.type);
-            else if (this.__protocol.type === "startsWith")
+            } else if (this.__protocol.type === "startsWith") {
               if (typeof this.__protocol.value === "string") return urlInst.protocol.startsWith(this.__protocol.value);
               else throw new TypeError("protocol value should be string by type " + this.__protocol.type);
-            else if (this.__protocol.type === "endsWith")
+            } else if (this.__protocol.type === "endsWith") {
               if (typeof this.__protocol.value === "string") return urlInst.protocol.endsWith(this.__protocol.value);
               else throw new TypeError("protocol value should be string by type " + this.__protocol.type);
-            else if (this.__protocol.type === "includes")
+            } else if (this.__protocol.type === "includes") {
               if (typeof this.__protocol.value === "string") return urlInst.protocol.includes(this.__protocol.value);
               else throw new TypeError("protocol value should be string by type " + this.__protocol.type);
-            else if (this.__protocol.type === "match")
+            } else if (this.__protocol.type === "match") {
               if (this.__protocol.value instanceof RegExp) return this.__protocol.value.test(urlInst.protocol);
               else if (typeof this.__protocol.value === "string") return urlInst.protocol.match(this.__protocol.value);
               else throw new TypeError("protocol value should be RegExp or string by type " + this.__protocol.type);
-            else throw new TypeError("protocol type should be same,startsWith,endsWith,includes,match");
-          else return true;
+            } else throw new TypeError("protocol type should be same,startsWith,endsWith,includes,match");
+          } else return true;
         },
         () => {
           if (this.__host.value) {
             const host = this.__host.hasPort ? urlInst.host : urlInst.hostname;
-            if (this.__host.type === "same")
+            if (this.__host.type === "same") {
               if (typeof this.__host.value === "string") return this.__host.value === host;
               else throw new TypeError("host value should be string by type " + this.__host.type);
-            else if (this.__host.type === "startsWith")
+            } else if (this.__host.type === "startsWith") {
               if (typeof this.__host.value === "string") return host.startsWith(this.__host.value);
               else throw new TypeError("host value should be string by type " + this.__host.type);
-            else if (this.__host.type === "endsWith")
+            } else if (this.__host.type === "endsWith") {
               if (typeof this.__host.value === "string") return host.endsWith(this.__host.value);
               else throw new TypeError("host value should be string by type " + this.__host.type);
-            else if (this.__host.type === "includes")
+            } else if (this.__host.type === "includes") {
               if (typeof this.__host.value === "string") return host.includes(this.__host.value);
               else throw new TypeError("host value should be string by type " + this.__host.type);
-            else if (this.__host.type === "match")
+            } else if (this.__host.type === "match") {
               if (this.__host.value instanceof RegExp) return this.__host.value.test(host);
               else if (typeof this.__host.value === "string") return host.match(this.__host.value);
               else throw new TypeError("host value should be RegExp or string by type " + this.__host.type);
-            else throw new TypeError("host type should be same,startsWith,endsWith,includes,match");
+            } else throw new TypeError("host type should be same,startsWith,endsWith,includes,match");
           } else return true;
         },
         () => {
-          if (this.__pathname.value)
-            if (this.__pathname.type === "same")
+          if (this.__pathname.value) {
+            if (this.__pathname.type === "same") {
               if (typeof this.__pathname.value === "string") return urlInst.pathname === this.__pathname.value;
               else throw new TypeError("pathname value should be string by type " + this.__pathname.type);
-            else if (this.__pathname.type === "startsWith")
+            } else if (this.__pathname.type === "startsWith") {
               if (typeof this.__pathname.value === "string") return urlInst.pathname.startsWith(this.__pathname.value);
               else throw new TypeError("pathname value should be string by type " + this.__pathname.type);
-            else if (this.__pathname.type === "endsWith")
+            } else if (this.__pathname.type === "endsWith") {
               if (typeof this.__pathname.value === "string") return urlInst.pathname.endsWith(this.__pathname.value);
               else throw new TypeError("pathname value should be string by type " + this.__pathname.type);
-            else if (this.__pathname.type === "includes")
+            } else if (this.__pathname.type === "includes") {
               if (typeof this.__pathname.value === "string") return urlInst.pathname.includes(this.__pathname.value);
               else throw new TypeError("pathname value should be string by type " + this.__pathname.type);
-            else if (this.__pathname.type === "match")
+            } else if (this.__pathname.type === "match") {
               if (this.__pathname.value instanceof RegExp) return this.__pathname.value.test(urlInst.pathname);
               else if (typeof this.__pathname.value === "string") return urlInst.pathname.match(this.__pathname.value);
               else throw new TypeError("pathname value should be RegExp or string by type " + this.__pathname.type);
-            else throw new TypeError("pathname type should be same,startsWith,endsWith,includes,match");
-          else return true;
+            } else throw new TypeError("pathname type should be same,startsWith,endsWith,includes,match");
+          } else return true;
         },
         () => {
           let flag = true;
@@ -2457,24 +2466,24 @@
           });
           for (let index = 0; index < searchParamsList.length; index++) {
             const item = searchParamsList[index];
-            if (item.type)
-              if (item.type === "same")
+            if (item.type) {
+              if (item.type === "same") {
                 if (typeof item.value === "string" || typeof item.value === "number" || typeof item.value === "boolean")
                   return urlInst.search === item.value.toString();
                 else throw new TypeError("search value should be string、number、boolean by type " + item.type);
-              else if (item.type === "startsWith")
+              } else if (item.type === "startsWith") {
                 if (typeof item.value === "string" || typeof item.value === "number" || typeof item.value === "boolean")
                   return urlInst.search.startsWith(item.value.toString());
                 else throw new TypeError("search value should be string、number、boolean by type " + item.type);
-              else if (item.type === "endsWith")
+              } else if (item.type === "endsWith") {
                 if (typeof item.value === "string" || typeof item.value === "number" || typeof item.value === "boolean")
                   return urlInst.search.endsWith(item.value.toString());
                 else throw new TypeError("search value should be string、number、boolean by type " + item.type);
-              else if (item.type === "includes")
+              } else if (item.type === "includes") {
                 if (typeof item.value === "string" || typeof item.value === "number" || typeof item.value === "boolean")
                   return urlInst.search.includes(item.value.toString());
                 else throw new TypeError("search value should be string、number、boolean by type " + item.type);
-              else if (item.type === "match")
+              } else if (item.type === "match") {
                 if (item.value instanceof RegExp) return item.value.test(urlInst.search);
                 else if (
                   typeof item.value === "string" ||
@@ -2483,8 +2492,8 @@
                 )
                   return urlInst.search.match(item.value.toString());
                 else throw new TypeError("search value should be RegExp、string、number、boolean by type " + item.type);
-              else throw new TypeError("search type should be same, startsWith, endsWith, includes, match");
-            else if (typeof item.name === "string") {
+              } else throw new TypeError("search type should be same, startsWith, endsWith, includes, match");
+            } else if (typeof item.name === "string") {
               let value = item.value;
               if (
                 value == null ||
@@ -2526,7 +2535,7 @@
                   value = value.toString();
                   flag = value === targetValue;
                   if (!flag) break;
-                } else if (value instanceof RegExp)
+                } else if (value instanceof RegExp) {
                   if (targetValue) {
                     if (!value.test(targetValue)) {
                       flag = false;
@@ -2536,7 +2545,7 @@
                     flag = false;
                     break;
                   }
-                else
+                } else
                   throw new TypeError("searchParams value should be string, RegExp, boolean, number, null, undefined");
               } else {
                 flag = false;
@@ -2753,7 +2762,7 @@
   var CSDNBlog_default =
     "/*.blog_container_aside,\n#nav {\n	margin-left: -45px;\n}\n.recommend-right.align-items-stretch.clearfix,\n.dl_right_fixed {\n	margin-left: 45px;\n}*/\n";
   var shield_default$3 =
-    '.ecommend-item-box.recommend-recommend-box,\n.login-mark,\n.opt-box.text-center,\n.leftPop,\n#csdn-shop-window,\n.toolbar-advert,\n.hide-article-box,\n.user-desc.user-desc-fix,\n.recommend-card-box,\n.more-article,\n.article-show-more,\n#csdn-toolbar-profile-nologin,\n.guide-rr-first,\n#recommend-item-box-tow,\n/* 发文章得原力分图片提示 */\ndiv.csdn-toolbar-creative-mp,\n/* 阅读终点，创作起航，您可以撰写心得或摘录文章要点写篇博文。 */\n#toolBarBox div.write-guide-buttom-box,\n/* 觉得还不错? 一键收藏 */\nul.toolbox-list div.tool-active-list,\n/* 右边按钮组的最上面的创作话题 */\ndiv.csdn-side-toolbar .activity-swiper-box,\n.sidetool-writeguide-box .tip-box,\n/* 右下角的登录提示 */\n.passport-login-tip-container,\n/* 全屏双十一红包 */\n.csdn-reapck-select,\n/* 侧栏的618会员开通 */\n.csdn-side-toolbar  .sidecolumn-vip,\n/* 右边推荐的推广广告 */\n#recommendAdBox,\n/* 顶部导航栏的vip推广 */\n#csdn-plugin-vip,\n/* 顶部导航栏的会员中心的右边的推广图片，如：春招 */\n#csdn-toolbar .toolbar-btn a[href*="mall.csdn.net/vip"]>img[src],\n/* 侧栏的【点击体验 DeepSeekR1满血版】 */\n#sidecolumn-deepseek,\n/* 侧栏的【下载APP、公众号、视频号】 */\n.csdn-side-toolbar .option-box[data-type="app"],\n/* 右偏下的悬浮的 本文章已经生成可运行项目 */\nbody > .ins-code-runner-btn {\n  display: none !important;\n}\n';
+    '.ecommend-item-box.recommend-recommend-box,\n.login-mark,\n.opt-box.text-center,\n.leftPop,\n#csdn-shop-window,\n.toolbar-advert,\n.hide-article-box,\n.user-desc.user-desc-fix,\n.recommend-card-box,\n.more-article,\n.article-show-more,\n#csdn-toolbar-profile-nologin,\n.guide-rr-first,\n#recommend-item-box-tow,\n/* 发文章得原力分图片提示 */\ndiv.csdn-toolbar-creative-mp,\n/* 阅读终点，创作起航，您可以撰写心得或摘录文章要点写篇博文。 */\n#toolBarBox div.write-guide-buttom-box,\n/* 觉得还不错? 一键收藏 */\nul.toolbox-list div.tool-active-list,\n/* 右边按钮组的最上面的创作话题 */\ndiv.csdn-side-toolbar .activity-swiper-box,\n.sidetool-writeguide-box .tip-box,\n/* 右下角的登录提示 */\n.passport-login-tip-container,\n/* 全屏双十一红包 */\n.csdn-reapck-select,\n/* 侧栏的618会员开通 */\n.csdn-side-toolbar  .sidecolumn-vip,\n/* 右边推荐的推广广告 */\n#recommendAdBox,\n/* 顶部导航栏的vip推广 */\n#csdn-plugin-vip,\n/* 顶部导航栏的会员中心的右边的推广图片，如：春招 */\n#csdn-toolbar .toolbar-btn a[href*="mall.csdn.net/vip"]>img[src],\n/* 侧栏的【点击体验 DeepSeekR1满血版】 */\n#sidecolumn-deepseek,\n/* 侧栏的【下载APP、公众号、视频号】 */\n.csdn-side-toolbar .option-box[data-type="app"],\n/* 右偏下的悬浮的 本文章已经生成可运行项目 */\nbody > .ins-code-runner-btn ,\n/* 顶部工具栏最右边的 登录最高领取xx算力币 */\n#csdn-toolbar .csdn-new-user-gift-bubble-anchor,\n/* 会员积分下载推广 */\n#mainBox .simple-ad-slot {\n  display: none !important;\n}\n';
   var CSDNBlogBlock = {
     init() {
       Panel.onceExec("csdn-blog-blockCSS", () => {
@@ -3304,7 +3313,7 @@
                 if (check_isCollect == null) return;
                 log.info(folderId, check_isCollect);
                 $item.setAttribute("data-is-collect", (!!check_isCollect[folderId]).toString());
-                if (toCollect)
+                if (toCollect) {
                   if (!check_isCollect[folderId]) {
                     log.error("收藏失败", check_isCollect, folderId);
                     qmsg.default.error("收藏失败");
@@ -3315,7 +3324,7 @@
                     if (!isFavoriteFolderIdList.includes(folderId)) isFavoriteFolderIdList.push(folderId);
                     data.FavoriteNum++;
                   }
-                else if (!check_isCollect[folderId]) {
+                } else if (!check_isCollect[folderId]) {
                   log.success("取消收藏成功");
                   qmsg.default.success("取消收藏成功");
                   domUtils.text($collectBtn, "收藏");
@@ -3648,37 +3657,8 @@
       } else log.error("暂未适配，请反馈开发者：" + globalThis.location.href);
     },
   };
-  var wenku_default =
-    "#chatgpt-article-detail > div.layout-center > div.main > div.article-box > div.cont.first-show.forbid {\n  max-height: unset !important;\n  height: auto !important;\n  overflow: auto !important;\n}\n\n.forbid {\n  user-select: text !important;\n}\n";
-  var shield_default =
-    "/* wenku顶部横幅 */\n#app > div > div.main.pb-32 > div > div.top-bar,\n/* 底部展开全文 */\n#chatgpt-article-detail > div.layout-center > div.main > div.article-box > div.cont.first-show.forbid > div.open,\n/* 全屏红包雨 */\n#csdn-redpack {\n  display: none !important;\n}\n";
-  var CSDNWenKu = {
-    init() {
-      addStyle(wenku_default);
-      addStyle(shield_default);
-      Panel.execMenuOnce("csdn-wenku-shieldResourceRecommend", () => {
-        return this.shieldResourceRecommend();
-      });
-      Panel.execMenuOnce("csdn-wenku-shieldRightUserInfo", () => {
-        return this.shieldRightUserInfo();
-      });
-      Panel.execMenuOnce("csdn-wenku-shieldRightToolBar", () => {
-        return this.shieldRightToolBar();
-      });
-    },
-    shieldResourceRecommend() {
-      log.info("【屏蔽】资源推荐");
-      return CommonUtil$1.addBlockCSS("#recommend");
-    },
-    shieldRightUserInfo() {
-      log.info("【屏蔽】右侧用户信息");
-      return CommonUtil$1.addBlockCSS(".layout-right");
-    },
-    shieldRightToolBar() {
-      log.info("【屏蔽】右侧悬浮工具栏");
-      return CommonUtil$1.addBlockCSS(".csdn-side-toolbar");
-    },
-  };
+  var block_default$1 =
+    '/* 顶部工具栏右边的 会员 */\n#csdn-toolbar .toolbar-btn > a[href*="mall.csdn.net/vip"],\n/* 顶部工具栏右边的 VIP抢千元豪礼 */\n#csdn-toolbar a.toolbar-btn[href*="mall.csdn.net/vip"] {\n  display: none !important;\n}\n';
   var CSDNBlogArticleBlock = {
     init() {
       Panel.execMenuOnce("csdn-blog-shieldBottomSkillTree", () => {
@@ -3705,7 +3685,7 @@
     },
   };
   var articleCenter_default =
-    '.main_father {\n  justify-content: center;\n}\n#mainBox main {\n  width: inherit !important;\n}\n/* 当文章向下滚动时，触发左侧信息悬浮 */\naside.blog_container_aside[style*="position: fixed;"] {\n  display: none !important;\n}\n\n@media (min-width: 1320px) and (max-width: 1380px) {\n  .nodata .container {\n    width: 900px !important;\n  }\n\n  .nodata .container main {\n    width: 900px;\n  }\n\n  .nodata .container main #pcCommentBox pre > ol.hljs-ln {\n    width: 490px !important;\n  }\n\n  .nodata .container main .articleConDownSource {\n    width: 500px;\n  }\n}\n\n@media screen and (max-width: 1320px) {\n  .nodata .container {\n    width: 760px !important;\n  }\n\n  .nodata .container main {\n    width: 760px;\n  }\n\n  .nodata .container main #pcCommentBox pre > ol.hljs-ln {\n    width: 490px !important;\n  }\n\n  .nodata .container main .toolbox-list .tool-reward {\n    display: none;\n  }\n\n  .nodata .container main .more-toolbox-new .toolbox-left .profile-box .profile-name {\n    max-width: 128px;\n  }\n\n  .nodata .container main .articleConDownSource {\n    width: 420px;\n  }\n}\n\n@media screen and (min-width: 1380px) {\n  .nodata .container {\n    width: 1010px !important;\n  }\n\n  .nodata .container main {\n    width: 1010px;\n  }\n\n  .nodata .container main #pcCommentBox pre > ol.hljs-ln {\n    width: 490px !important;\n  }\n\n  .nodata .container main .articleConDownSource {\n    width: 560px;\n  }\n}\n\n@media (min-width: 1550px) and (max-width: 1700px) {\n  .nodata .container {\n    width: 820px !important;\n  }\n\n  .nodata .container main {\n    width: 820px;\n  }\n\n  .nodata .container main #pcCommentBox pre > ol.hljs-ln {\n    width: 690px !important;\n  }\n\n  .nodata .container main .articleConDownSource {\n    width: 500px;\n  }\n}\n\n@media screen and (min-width: 1700px) {\n  .nodata .container {\n    width: 1010px !important;\n  }\n\n  .nodata .container main {\n    width: 1010px;\n  }\n\n  .nodata .container main #pcCommentBox pre > ol.hljs-ln {\n    width: 690px !important;\n  }\n\n  .nodata .container main .articleConDownSource {\n    width: 560px;\n  }\n}\n';
+    '.main_father {\n  justify-content: center;\n}\n#mainBox main {\n  width: inherit !important;\n\n  & .left-toolbox {\n    left: 0px !important;\n    right: 0px !important;\n    margin: 0 auto !important;\n  }\n}\n\n/* 当文章向下滚动时，触发左侧信息悬浮 */\naside.blog_container_aside[style*="position: fixed;"] {\n  display: none !important;\n}\n\n@media (min-width: 1320px) and (max-width: 1380px) {\n  .nodata .container {\n    &,\n    & .left-toolbox {\n      width: 900px !important;\n    }\n  }\n\n  .nodata .container main {\n    width: 900px;\n  }\n\n  .nodata .container main #pcCommentBox pre > ol.hljs-ln {\n    width: 490px !important;\n  }\n\n  .nodata .container main .articleConDownSource {\n    width: 500px;\n  }\n}\n\n@media screen and (max-width: 1320px) {\n  .nodata .container {\n    &,\n    & .left-toolbox {\n      width: 760px !important;\n    }\n  }\n\n  .nodata .container main {\n    width: 760px;\n  }\n\n  .nodata .container main #pcCommentBox pre > ol.hljs-ln {\n    width: 490px !important;\n  }\n\n  .nodata .container main .toolbox-list .tool-reward {\n    display: none;\n  }\n\n  .nodata .container main .more-toolbox-new .toolbox-left .profile-box .profile-name {\n    max-width: 128px;\n  }\n\n  .nodata .container main .articleConDownSource {\n    width: 420px;\n  }\n}\n\n@media screen and (min-width: 1380px) {\n  .nodata .container {\n    &,\n    & .left-toolbox {\n      width: 1010px !important;\n    }\n  }\n\n  .nodata .container main {\n    width: 1010px;\n  }\n\n  .nodata .container main #pcCommentBox pre > ol.hljs-ln {\n    width: 490px !important;\n  }\n\n  .nodata .container main .articleConDownSource {\n    width: 560px;\n  }\n}\n\n@media (min-width: 1550px) and (max-width: 1700px) {\n  .nodata .container {\n    &,\n    & .left-toolbox {\n      width: 820px !important;\n    }\n  }\n\n  .nodata .container main {\n    width: 820px;\n  }\n\n  .nodata .container main #pcCommentBox pre > ol.hljs-ln {\n    width: 690px !important;\n  }\n\n  .nodata .container main .articleConDownSource {\n    width: 500px;\n  }\n}\n\n@media screen and (min-width: 1700px) {\n  .nodata .container {\n    &,\n    & .left-toolbox {\n      width: 1010px !important;\n    }\n  }\n\n  .nodata .container main {\n    width: 1010px;\n  }\n\n  .nodata .container main #pcCommentBox pre > ol.hljs-ln {\n    width: 690px !important;\n  }\n\n  .nodata .container main .articleConDownSource {\n    width: 560px;\n  }\n}\n';
   var CSDNBlogArticleComment = {
     init() {
       Panel.execMenuOnce("csdn-blog-blockComment", () => {
@@ -4068,19 +4048,48 @@
 		`);
     },
   };
-  var block_default$1 =
+  var block_default =
     "/* 红包雨 */\n#csdn-redpack,\n/* 顶部 购会员横幅 */\n.page-container .top-bar,\n/* 底部 购会员横幅 */\n.page-container .fix-bottom-bar {\n  display: none !important;\n}\n";
   var CSDNDownload = {
     init() {
-      addStyle(block_default$1);
+      addStyle(block_default);
       addStyle("");
     },
   };
-  var block_default =
-    '/* 顶部工具栏右边的 会员 */\n#csdn-toolbar .toolbar-btn > a[href*="mall.csdn.net/vip"],\n/* 顶部工具栏右边的 VIP抢千元豪礼 */\n#csdn-toolbar a.toolbar-btn[href*="mall.csdn.net/vip"] {\n  display: none !important;\n}\n';
+  var wenku_default =
+    "#chatgpt-article-detail > div.layout-center > div.main > div.article-box > div.cont.first-show.forbid {\n  max-height: unset !important;\n  height: auto !important;\n  overflow: auto !important;\n}\n\n.forbid {\n  user-select: text !important;\n}\n";
+  var shield_default =
+    "/* wenku顶部横幅 */\n#app > div > div.main.pb-32 > div > div.top-bar,\n/* 底部展开全文 */\n#chatgpt-article-detail > div.layout-center > div.main > div.article-box > div.cont.first-show.forbid > div.open,\n/* 全屏红包雨 */\n#csdn-redpack {\n  display: none !important;\n}\n";
+  var CSDNWenKu = {
+    init() {
+      addStyle(wenku_default);
+      addStyle(shield_default);
+      Panel.execMenuOnce("csdn-wenku-shieldResourceRecommend", () => {
+        return this.shieldResourceRecommend();
+      });
+      Panel.execMenuOnce("csdn-wenku-shieldRightUserInfo", () => {
+        return this.shieldRightUserInfo();
+      });
+      Panel.execMenuOnce("csdn-wenku-shieldRightToolBar", () => {
+        return this.shieldRightToolBar();
+      });
+    },
+    shieldResourceRecommend() {
+      log.info("【屏蔽】资源推荐");
+      return CommonUtil$1.addBlockCSS("#recommend");
+    },
+    shieldRightUserInfo() {
+      log.info("【屏蔽】右侧用户信息");
+      return CommonUtil$1.addBlockCSS(".layout-right");
+    },
+    shieldRightToolBar() {
+      log.info("【屏蔽】右侧悬浮工具栏");
+      return CommonUtil$1.addBlockCSS(".csdn-side-toolbar");
+    },
+  };
   var CSDN = {
     init() {
-      addStyle(block_default);
+      addStyle(block_default$1);
       if (CSDNRouter.isLink()) {
         log.info("Router: 中转链接");
         CSDNLink.init();
@@ -5155,7 +5164,7 @@
   var isMobile = utils.isPhone();
   var CHANGE_ENV_SET_KEY = "change_env_set";
   var chooseMode = _GM_getValue(CHANGE_ENV_SET_KEY);
-  if (chooseMode != null)
+  if (chooseMode != null) {
     if (chooseMode == 1) {
       isMobile = true;
       log.info(`手动指定为移动端`);
@@ -5166,6 +5175,7 @@
       qmsg.default.error(`意外，手动指定的值不在允许范围内，自动判定为${chooseMode === 1 ? "移动端" : "PC端"}`);
       _GM_deleteValue(CHANGE_ENV_SET_KEY);
     }
+  }
   MenuRegister.add({
     key: CHANGE_ENV_SET_KEY,
     text: `🖥️ 自动: ${isMobile ? "移动端" : "PC端"}`,
