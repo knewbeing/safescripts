@@ -5,7 +5,7 @@ outline: false
 
 # 托管脚本
 
-> 共 **13** 个脚本　·　2026-09-28 07:56 UTC　·　由 `target-repos.json` 配置，每天自动同步安全分析
+> 共 **13** 个脚本　·　2026-10-05 07:54 UTC　·　由 `target-repos.json` 配置，每天自动同步安全分析
 
 <script setup>
 import managedItems from '../.vitepress/data/managed.json'
