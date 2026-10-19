@@ -1,62 +1,34 @@
 {
   "slug": "Nexus_Download_Collection",
   "platform": "greasyfork",
-  "source_url": "https://greasyfork.org/scripts/563176-nexus-download-collection",
-  "source_repo": "563176",
-  "raw_url": "https://update.greasyfork.org/scripts/563176/Nexus%20Download%20Collection%2B%2B.user.js",
+  "source_url": "https://greasyfork.org/scripts/483337-nexus-download-collection",
+  "source_repo": "483337",
+  "raw_url": "https://update.greasyfork.org/scripts/483337/Nexus%20Download%20Collection.user.js",
   "filename": "Nexus_Download_Collection.user.js",
-  "name": "Nexus Download Collection++",
-  "version": "1.0.3.1",
-  "description": "Download every mod in a collection from one panel",
+  "name": "Nexus Download Collection",
+  "version": "0.9.10",
+  "description": "Download every mods of a collection in a single click",
   "match": [
     "https://www.nexusmods.com/*"
   ],
   "grant": [
+    "GM.xmlHttpRequest",
+    "GM_xmlhttpRequest",
+    "GM_setValue",
+    "GM_getValue",
     "GM.setValue",
     "GM.getValue",
     "GM_addStyle"
   ],
   "require": [],
-  "metadata_raw": "// @name  Nexus Download Collection++\n// @namespace  NDC\n// @version  1.0.3.1\n// @description  Download every mod in a collection from one panel\n// @author  1Tdd\n// @license  MIT\n// @match  https://www.nexusmods.com/*\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=nexusmods.com\n// @compatible  chrome\n// @compatible  edge\n// @compatible  firefox\n// @compatible  safari\n// @compatible  brave\n// @grant  GM.setValue\n// @grant  GM.getValue\n// @grant  GM_addStyle\n// @downloadURL  https://update.greasyfork.org/scripts/563176/Nexus%20Download%20Collection%2B%2B.user.js\n// @updateURL  https://update.greasyfork.org/scripts/563176/Nexus%20Download%20Collection%2B%2B.meta.js",
-  "sha256": "74aaf0fee6dcb88094749706da1c698b01aa48c442d587fdda3109fbac204876",
-  "discovered_at": "2026-07-06T06:24:04.466086+00:00",
+  "metadata_raw": "// @name  Nexus Download Collection\n// @namespace  NDC\n// @version  0.9.10\n// @description  Download every mods of a collection in a single click\n// @author  Drigtime\n// @match  https://www.nexusmods.com/*\n// @icon  https://www.google.com/s2/favicons?sz=64&domain=nexusmods.com\n// @compatible  chrome\n// @compatible  edge\n// @compatible  firefox\n// @compatible  safari\n// @compatible  brave\n// @grant  GM.xmlHttpRequest\n// @grant  GM_xmlhttpRequest\n// @grant  GM_setValue\n// @grant  GM_getValue\n// @grant  GM.setValue\n// @grant  GM.getValue\n// @grant  GM_addStyle\n// @connect  nexusmods.com\n// @downloadURL  https://update.greasyfork.org/scripts/483337/Nexus%20Download%20Collection.user.js\n// @updateURL  https://update.greasyfork.org/scripts/483337/Nexus%20Download%20Collection.meta.js",
+  "sha256": "6d5580b416fab0e88b0797f637271088f4977af56c207f09f8bef9f716ce6dd0",
+  "discovered_at": "2026-10-19T07:07:28.772194+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 1266,
-  "good_ratings": 6,
-  "bad_ratings": 1,
-  "summary": {
-    "applicable_sites": [
-      "NexusMods"
-    ],
-    "description": "此脚本为 NexusMods 网站的模组集合页面添加一个面板，允许用户一键批量下载集合中的所有模组，无需逐个点击下载。适合需要快速获取大量模组的用户。",
-    "permissions": [
-      {
-        "explanation": "用于存储脚本设置或下载进度等信息。",
-        "grant": "GM.setValue"
-      },
-      {
-        "explanation": "用于读取之前存储的设置或进度。",
-        "grant": "GM.getValue"
-      },
-      {
-        "explanation": "用于为页面添加自定义样式，让面板更美观。",
-        "grant": "GM_addStyle"
-      }
-    ],
-    "tags": [
-      "模组管理",
-      "批量下载",
-      "游戏工具",
-      "NexusMods",
-      "效率提升"
-    ],
-    "usage": [
-      "安装脚本后，访问 NexusMods 网站的模组集合页面。",
-      "页面会出现一个新的下载面板。",
-      "点击面板上的按钮，即可批量下载集合内所有模组。"
-    ],
-    "zh_name": "Nexus模组集合批量下载"
-  }
+  "install_count": 25988,
+  "good_ratings": 89,
+  "bad_ratings": 7,
+  "summary": {}
 }

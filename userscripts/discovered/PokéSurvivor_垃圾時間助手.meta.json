@@ -1,0 +1,31 @@
+{
+  "slug": "PokéSurvivor_垃圾時間助手",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/600408-pok%C3%A9survivor-%E5%9E%83%E5%9C%BE%E6%99%82%E9%96%93%E5%8A%A9%E6%89%8B",
+  "source_repo": "600408",
+  "raw_url": "https://update.greasyfork.org/scripts/600408/Pok%C3%A9Survivor%20%E5%9E%83%E5%9C%BE%E6%99%82%E9%96%93%E5%8A%A9%E6%89%8B.user.js",
+  "filename": "PokéSurvivor_垃圾時間助手.user.js",
+  "name": "PokéSurvivor 垃圾時間助手",
+  "version": "1.6.5",
+  "description": "當升級選項沒有任何招式時，依自訂優先度自動選擇能力。",
+  "match": [
+    "https://pokesurvivor.com/*",
+    "https://www.pokesurvivor.com/*",
+    "https://pokesurvivor.org/*",
+    "https://www.pokesurvivor.org/*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  PokéSurvivor 垃圾時間助手\n// @name:zh-TW  PokéSurvivor 垃圾時間助手\n// @name:en  PokéSurvivor Trash Time Helper\n// @description  當升級選項沒有任何招式時，依自訂優先度自動選擇能力。\n// @description:zh-TW  當升級選項沒有任何招式時，依自訂優先度自動選擇能力。\n// @description:en  Automatically picks a stat upgrade by your custom priority when no move options appear.\n// @namespace  pokesurvivor-trash-time-helper\n// @version  1.6.5\n// @license  MIT\n// @homepageURL  https://greasyfork.org/zh-TW/scripts/600408\n// @author  readygolol\n// @match  https://pokesurvivor.com/*\n// @match  https://www.pokesurvivor.com/*\n// @match  https://pokesurvivor.org/*\n// @match  https://www.pokesurvivor.org/*\n// @run-at  document-end\n// @sandbox  raw\n// @grant  none\n// @downloadURL  https://update.greasyfork.org/scripts/600408/Pok%C3%A9Survivor%20%E5%9E%83%E5%9C%BE%E6%99%82%E9%96%93%E5%8A%A9%E6%89%8B.user.js\n// @updateURL  https://update.greasyfork.org/scripts/600408/Pok%C3%A9Survivor%20%E5%9E%83%E5%9C%BE%E6%99%82%E9%96%93%E5%8A%A9%E6%89%8B.meta.js",
+  "sha256": "e3e8c3aace101089c8f2e109f076462fd5751ee005a912e9a00f73d97c010d9d",
+  "discovered_at": "2026-10-19T07:07:20.884077+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 224,
+  "good_ratings": 0,
+  "bad_ratings": 0,
+  "summary": {}
+}

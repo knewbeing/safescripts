@@ -70,7 +70,7 @@
 // @description:en Youtube Tools All in one local Download mp4, MP3 HIGT QUALITY
 // @description Youtube Tools All in one local Download mp4, MP3 HIGT QUALITY
 // @homepage     https://github.com/DeveloperMDCM/
-// @version      2.4.3.2
+// @version      2.5.2
 // @author       DeveloperMDCM
 // @match        *://www.youtube.com/*
 // @exclude      *://music.youtube.com/*
@@ -80,9 +80,16 @@
 // @grant        GM_addStyle
 // @grant        GM_setValue
 // @grant        GM_getValue
+// @grant        GM_xmlhttpRequest
 // @grant        unsafeWindow
 // @run-at       document-end
 // @grant        GM_registerMenuCommand
+// @connect      p.savenow.to
+// @connect      savenow.to
+// @connect      p.lbserver.xyz
+// @connect      lbserver.xyz
+// @connect      dubs.io
+// @connect      *
 // @require      https://cdn.jsdelivr.net/npm/izitoast@1.4.0/dist/js/iziToast.min.js
 // @compatible chrome
 // @compatible firefox
@@ -98,7 +105,12 @@
 
 (function () {
   'use strict';
+
+  // --- 01-config-utils.js ---
   let validoUrl = document.location.href;
+  // When true (Chrome/Edge/Firefox extension), the in-page gear menu is hidden;
+  // the extension popup is the only settings UI.
+  const IS_EXTENSION = !!globalThis.__YT_TOOLS_EXTENSION__;
   const $e = (el) => document.querySelector(el); // any element
   const $id = (el) => document.getElementById(el); // element by id
   const $m = (el) => document.querySelectorAll(el); // multiple all elements
@@ -107,7 +119,7 @@
   const $ap = (el) => document.body.appendChild(el); // append element
   const apiDislikes = "https://returnyoutubedislikeapi.com/Votes?videoId="; // Api dislikes
   const apiGoogleTranslate = "https://translate.googleapis.com/translate_a/t"; // Api google translate
-  let selectedBgColor = "#252525"; // Background color menu default
+  let selectedBgColor = "#0c0c0c"; // Background color menu default
   let selectedTextColor = "#ffffff"; // Text color menu default
   let selectedBgAccentColor = "#ff0000"; // Accent color menu default
   const urlSharedCode = "https://greasyfork.org/es/scripts/460680-youtube-tools-all-in-one-local-download-mp3-mp4-higt-quality-return-dislikes-and-more";
@@ -291,6 +303,8 @@
       ts: 0,
     },
     downloadClickHandlerInitialized: false,
+    transcriptClickHandlerInitialized: false,
+    transcriptPanelOpen: false,
     shortsObserver: null,
     statsObserver: null,
     statsIntervalId: null,
@@ -367,6 +381,7 @@
       });
   }
 
+  // --- 02-download.js ---
   async function startDownloadVideoOrAudio(format, container) {
     const videoURL = window.location.href;
     // Notify('info', 'Starting download...');
@@ -408,16 +423,60 @@
     progressFill.style.width = '0%';
     progressText.textContent = '0%';
 
-    const fetchJsonWithTimeout = async (url, timeoutMs = 20000) => {
+    // Prefer GM_xmlhttpRequest so provider calls are not blocked by page CORS.
+    const fetchJsonWithTimeout = (url, timeoutMs = 20000) => {
+      const gmXhr =
+        typeof GM_xmlhttpRequest === 'function'
+          ? GM_xmlhttpRequest
+          : typeof GM !== 'undefined' && typeof GM.xmlHttpRequest === 'function'
+            ? GM.xmlHttpRequest.bind(GM)
+            : null;
+
+      if (gmXhr) {
+        return new Promise((resolve, reject) => {
+          let settled = false;
+          const done = (fn, value) => {
+            if (settled) return;
+            settled = true;
+            fn(value);
+          };
+          gmXhr({
+            method: 'GET',
+            url: String(url),
+            timeout: timeoutMs,
+            anonymous: true,
+            headers: {
+              Accept: 'application/json, text/plain, */*',
+            },
+            onload: (res) => {
+              const status = Number(res.status) || 0;
+              if (status < 200 || status >= 300) {
+                done(reject, new Error(`HTTP ${status}`));
+                return;
+              }
+              try {
+                const text = res.responseText ?? '';
+                done(resolve, text ? JSON.parse(text) : {});
+              } catch (err) {
+                done(reject, err instanceof Error ? err : new Error(String(err)));
+              }
+            },
+            onerror: () => done(reject, new Error('Network error')),
+            ontimeout: () => done(reject, new Error('Request timeout')),
+            onabort: () => done(reject, new Error('Request aborted')),
+          });
+        });
+      }
+
+      // Fallback (extension polyfill should provide GM_xmlhttpRequest)
       const ctrl = new AbortController();
       const t = setTimeout(() => ctrl.abort(), timeoutMs);
-      try {
-        const res = await fetch(url, { signal: ctrl.signal });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return await res.json();
-      } finally {
-        clearTimeout(t);
-      }
+      return fetch(url, { signal: ctrl.signal })
+        .then(async (res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        })
+        .finally(() => clearTimeout(t));
     };
 
     const setErrorState = () => {
@@ -610,6 +669,7 @@
     return parametrosURL.get('v');
   }
 
+  // --- 03-storage-version.js ---
   // ------------------------------
   // Feature helpers: videoId / channelId / storage
   // ------------------------------
@@ -695,7 +755,7 @@
       return null;
     }
   }
-
+  
 
   function readJsonGM(key, fallback) {
     try {
@@ -748,16 +808,27 @@
       if (!currentVer || !isVersionNewer(latestVer, currentVer)) return;
 
       const updateUrl = 'https://update.greasyfork.org/scripts/460680/Youtube%20Tools%20All%20in%20one%20local%20download%20mp3%20mp4%20HIGT%20QUALITY%20return%20dislikes%20and%20more.user.js';
-       iziToast.show({
-         title: 'New Update',
-         message: 'A new version YoutubeTools is available.',
-         buttons: [
-             ['<button>View Now</button>', function (instance, toast) {
-                 window.open(updateUrl, '_blank');
-                 instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-             }, true] // true = focus
-         ]
-     });
+      iziToast.info({
+        title: 'Nueva versión disponible',
+        message: 'YouTube Tools v' + latestVer + ' está disponible. Haz clic para actualizar.',
+        position: 'bottomLeft',
+        timeout: 12000,
+        progressBar: true,
+        closeOnClick: true,
+        onclick: function () {
+          window.open(updateUrl, '_blank');
+        },
+      });
+    //   iziToast.show({
+    //     title: 'New Update',
+    //     message: 'A new version is available.',
+    //     buttons: [
+    //         ['<button>View Now</button>', function (instance, toast) {
+    //             window.open('https://your-site.com', '_blank');
+    //             instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+    //         }, true] // true = focus
+    //     ]
+    // });
     } catch (e) {
       // silent: network or parse error
     }
@@ -771,9 +842,7 @@
     return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${String(r).padStart(2, '0')}` : `${m}:${String(r).padStart(2, '0')}`;
   }
 
-
-
-
+  // --- 04-continue-watching.js ---
   // ------------------------------
   // Feature: History / Continue watching (per video)
   // ------------------------------
@@ -911,7 +980,13 @@
     const panel = $id('yt-continue-watching-panel');
     if (!btn || !panel) return;
 
-    const enabled = !!rt.enabled;
+    let btnAllowed = true;
+    try {
+      const stored = JSON.parse(GM_getValue('ytSettingsMDCM', '{}') || '{}');
+      btnAllowed = stored.btnContinueWatching !== false;
+    } catch (e) {}
+
+    const enabled = !!rt.enabled && btnAllowed;
     if (!enabled || !isWatchPage()) {
       btn.style.display = 'none';
       panel.style.display = 'none';
@@ -1328,8 +1403,9 @@
     updateContinueWatchingHistoryUi();
   }
 
+  // --- 05-shorts-channel.js ---
   // ------------------------------
-  // Feature: Show channel name on Shorts list (Home / feeds)
+  // Feature: Show channel name on Shorts list (Home / feeds) 
   // Adapted from: @𝖢𝖸 𝖥𝗎𝗇𝗀
   // ------------------------------
   function setupShortsChannelNameFeature(enabled) {
@@ -1512,6 +1588,7 @@
     scan();
   }
 
+  // --- 06-lockup-stats.js ---
   // ------------------------------
   // Feature: Show cached rating/likes/dislikes on video cards (watch related + home/search)
   // ------------------------------
@@ -1718,6 +1795,7 @@
     }
   }
 
+  // --- 07-bookmarks.js ---
   // ------------------------------
   // Feature: Bookmarks per video (persisted)
   // ------------------------------
@@ -1777,7 +1855,7 @@
 
     if (!addBtn || !toggleBtn || !panel) return;
 
-    const enabled = !!settings?.bookmarks;
+    const enabled = !!settings?.bookmarks && settings?.btnBookmark !== false;
     addBtn.style.display = enabled ? 'inline-flex' : 'none';
     toggleBtn.style.display = enabled ? 'inline-flex' : 'none';
     panel.style.display = enabled && __ytToolsRuntime.bookmarksPanelOpen ? 'block' : 'none';
@@ -1845,6 +1923,7 @@
     });
   }
 
+  // --- 08-dislikes.js ---
   // ------------------------------
   // Feature: Like vs Dislike bar
   // ------------------------------
@@ -2059,7 +2138,7 @@
     const validoVentanaShort = $m(
       "#button-bar > reel-action-bar-view-model > dislike-button-view-model > toggle-button-view-model > button-view-model > label > div > span"
     );
-
+    
     if (validoVentanaShort != undefined && document.location.href.split('/')[3] === 'shorts') {
       validoUrl = document.location.href.split('/')[4];
       let dislikes = null;
@@ -2129,511 +2208,704 @@
     policy = null;
   }
 
+  // --- 09-styles.js ---
   // Styles for our enhancement panel
-  GM_addStyle(`
-       @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
-      @import url("https://cdn.jsdelivr.net/npm/izitoast@1.4.0/dist/css/iziToast.min.css");
-      :root {
-              --primary-custom: #ff0000 !important;
-              --bg-dark-custom: #1a1a1a !important;
-              --bg-card-custom: #252525 !important;
-              --text-custom: #ffffff !important;
-              --text-custom-secondary: #9e9e9e !important;
-              --accent-custom: #ff4444 !important;
-          }
-        body .container-mdcm {
-              font-family: "Inter", -apple-system, sans-serif;
-              color: var(--yt-enhance-menu-text, --text-custom);
-        }
-        #toggle-button:hover {
-          background-color: rgba(255,255,255,0.1);
-          border-radius: 50%;
-          opacity: 1 !important;
-          }
-        .container-mdcm {
-            width: 420px;
-            max-width: 420px;
-            background-color: var(--yt-enhance-menu-bg, #252525);
-            border-radius: 16px 16px 0 0;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            flex-direction: column;
-            max-height: 80vh;
-            overflow-y: auto;
-            overflow-x: hidden;
-            height: auto;
-        }
+  GM_addStyle(`@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
+@import url("https://cdn.jsdelivr.net/npm/izitoast@1.4.0/dist/css/iziToast.min.css");
 
-        #shareDropdown {
-        display: none;
-        position: absolute;
-        top: 50px;
-        right: 100px;
-        background-color: var(--yt-enhance-menu-bg, #252525);
-        border-radius: 6px;
-        padding: 10px;
-        box-shadow: rgba(0, 0, 0, 0.2) 0px 4px 12px;
-        z-index: 11;
-        }
-        #shareDropdown a {
-        color: var(--text-custom);
-        text-decoration: none;
-        line-height: 2;
-        font-size: 14px;
-        }
-        #shareDropdown a:hover {
-        color: var(--primary-custom);
-        }
-        .header-mdcm {
-            padding: 12px 16px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            position: sticky;
-            top: 0;
-            background-color: var(--yt-enhance-menu-bg, #252525);
-            border-radius: 16px 16px 0 0;
-            z-index: 10;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+:root {
+  --primary-custom: #ff0000;
+  --popup-bg: #0c0c0c;
+  --popup-text: #ffffff;
+  --popup-accent: #ff0000;
+  --popup-width: 380px;
+  --popup-height: 560px;
+  --check-off: color-mix(in srgb, var(--popup-text) 18%, var(--popup-bg));
+  --check-border: color-mix(in srgb, var(--popup-text) 55%, transparent);
+  --yt-enhance-menu-bg: var(--popup-bg);
+  --yt-enhance-menu-text: var(--popup-text);
+  --yt-enhance-menu-accent: var(--popup-accent);
+}
 
-        .header-mdcm h1 {
-            font-size: 16px;
-            margin: 0;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+#yt-enhancement-panel {
+  position: fixed;
+  top: 56px;
+  right: 16px;
+  z-index: 9999;
+  width: var(--popup-width);
+  height: var(--popup-height);
+  max-height: min(560px, calc(100vh - 72px));
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+  background: var(--popup-bg, #0c0c0c);
+  color: var(--popup-text, #fff);
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+}
 
+#yt-enhancement-panel.is-open {
+  display: flex !important;
+}
 
-        .header-mdcm i {
-         color: var(--primary-custom)
-        }
+#toggle-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  opacity: 1 !important;
+}
 
+.container-mdcm {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  background: var(--popup-bg, #0c0c0c);
+  color: var(--popup-text, #fff);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 18px;
+  animation: ytPanelFadeIn 0.25s ease-out;
+}
 
-        .icons-mdcm {
-            display: flex;
-            gap: 4px;
-        }
-        .icons-mdcm i {
-          color: var(--yh-enhance-menu-accent, var(--text-custom));
-        }
+@keyframes ytPanelFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
+.popup-header,
+.header-mdcm {
+  flex-shrink: 0;
+  position: relative;
+  z-index: 20;
+  padding: 12px 12px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.05), transparent), var(--popup-bg, #0c0c0c);
+}
 
-        .icon-btn-mdcm {
-            background: rgba(255,255,255,0.1);
-            border: none;
-            color: var(--text-custom);
-            width: 28px;
-            height: 28px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
+.popup-header-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
 
-        .icon-btn-mdcm:hover {
-            background: rgba(255,255,255,0.2);
-            transform: translateY(-2px);
-        }
+.popup-brand {
+  min-width: 0;
+}
 
-        .icon-btn-mdcm i {
-         color: var(--text-custom);
-         outline: none;
-         text-decoration: none;
-        }
+.popup-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
 
-        .tabs-mdcm {
-            padding: 10px 12px;
-            margin: 10px 0;
-            position: sticky;
-            top: 50px;
-            background-color: var(--yt-enhance-menu-bg, #252525);
-            z-index: 10;
-            display: flex;
-            gap: 8px;
-            -ms-overflow-style: none;
-            padding-bottom: 8px;
-        }
+.popup-brand-icon {
+  display: flex;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--popup-accent, #ff0000);
+  color: #fff;
+  font-size: 12px;
+}
 
+.popup-brand h1 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--popup-text, #fff);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
+.popup-brand p {
+  margin: 0;
+  font-size: 11px;
+  opacity: 0.5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-        .tabs-mdcm::-webkit-scrollbar {
-            height: 0px;
-            background-color: transparent;
-        }
+.icons-mdcm {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 2px;
+}
 
-        .tabs-mdcm:hover::-webkit-scrollbar {
-            height: 6px;
-        }
+.icon-btn-mdcm {
+  background: transparent;
+  border: none;
+  color: var(--popup-text, #fff);
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: background 0.15s, opacity 0.15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  text-decoration: none;
+}
 
-        .tabs-mdcm::-webkit-scrollbar-thumb {
-            background-color: rgba(255, 0, 0, 0.5);
-            border-radius: 3px;
-        }
+a.icon-btn-mdcm {
+  text-decoration: none;
+}
 
-        .tabs-mdcm::-webkit-scrollbar-track {
-            background-color: transparent;
-        }
+.icon-btn-mdcm:hover,
+.icon-btn-mdcm.active {
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 1;
+}
 
-        .tab-mdcm {
-            padding: 6px 10px;
-            border: none;
-            background: rgba(255,255,255,0.05);
-            cursor: pointer;
-            font-size: 12px;
-            color: var(--text-custom-secondary);
-            border-radius: 6px;
-            transition: all 0.3s;
-            flex: 1;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            flex-shrink: 0;
-            justify-content: center;
-            white-space: nowrap;
-        }
+.icon-btn-mdcm.active {
+  background: rgba(255, 255, 255, 0.15);
+}
 
-        .tab-mdcm svg {
-            width: 14px;
-            height: 14px;
-            fill: currentColor;
-        }
+.tabs-mdcm {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
 
-        .tab-mdcm.active {
-            background: var(--yt-enhance-menu-accent, --primary-custom) !important;
-            color: var(--text-custom);
-            font-weight: 500;
-            box-shadow: 0 4px 12px rgba(255,0,0,0.2);
-        }
+.tab-mdcm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 4px;
+  border: none;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--popup-text, #fff);
+  cursor: pointer;
+  opacity: 0.7;
+  transition: background 0.15s, opacity 0.15s, box-shadow 0.15s;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1.15;
+  text-align: center;
+}
 
-        .tab-mdcm:hover:not(.active) {
-            background: rgba(255,255,255,0.1);
-            transform: translateY(-1px);
-        }
+.tab-mdcm i {
+  font-size: 12px;
+}
 
-        .options-mdcm {
-            flex: 1;
-            overflow-y: auto;
-            padding: 0 16px 0;
-            scrollbar-width: thin;
-            scrollbar-color: var(--primary-custom) var(--bg-dark-custom);
-            max-height: 300px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 8px;
-        }
+.tab-mdcm:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 1;
+}
 
-        .options-settings-mdcm {
-            flex: 1;
-            overflow-y: auto;
-            padding: 0 16px 0;
-            scrollbar-width: thin;
-            scrollbar-color: var(--primary-custom) var(--bg-dark-custom);
-            max-height: 300px;
-            display: grid;
-            gap: 8px;
-        }
+.tab-mdcm.active {
+  background: var(--popup-accent, #ff0000) !important;
+  color: #fff;
+  opacity: 1;
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--popup-accent, #ff0000) 35%, transparent);
+}
 
-         .card-items-end {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          width: 175px;
-        }
+.popup-main {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 12px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--popup-accent, #e11d1d) transparent;
+}
 
-         .radio-mdcm {
-            width: 14px;
-            height: 14px;
-            accent-color: var(--primary-custom);
-        }
+.popup-main::-webkit-scrollbar {
+  width: 5px;
+}
+.popup-main::-webkit-scrollbar-thumb {
+  background: var(--popup-accent, #e11d1d);
+  border-radius: 99px;
+}
 
-        .color-picker-mdcm {
-            width: 50px;
-            height: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
+.tab-content {
+  display: none;
+}
+.tab-content.active {
+  display: block;
+}
 
-        .color-picker-mdcm:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
+.yt-page-title {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 700;
+}
+.yt-page-desc {
+  margin: 0 0 12px;
+  font-size: 12px;
+  opacity: 0.45;
+}
 
-        .options-mdcm::-webkit-scrollbar, .options-settings-mdcm::-webkit-scrollbar {
-            width: 6px;
-        }
+.options-mdcm,
+.yt-toggle-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
 
-        .options-mdcm::-webkit-scrollbar-track, .options-settings-mdcm::-webkit-scrollbar-track {
-            background: var(--bg-dark-custom);
-            border-radius: 3px;
-        }
+.yt-toggle-grid.cols-1 {
+  grid-template-columns: 1fr;
+}
 
-        .options-mdcm::-webkit-scrollbar-thumb, .options-settings-mdcm::-webkit-scrollbar-thumb {
-            background: var(--primary-custom);
-            border-radius: 3px;
-        }
+.yt-toggle-row {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  margin: 0;
+  cursor: pointer;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--popup-text, #fff);
+  text-align: left;
+  box-sizing: border-box;
+  transition: background 0.15s;
+}
+.yt-toggle-row:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
 
-        .options-mdcm::-webkit-scrollbar-thumb:hover, .options-settings-mdcm::-webkit-scrollbar-thumb:hover {
-            background: var(--accent-custom);
-        }
+.yt-check {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
 
-        .options-mdcm::after, .options-settings-mdcm::after {
-            content: '';
-            display: block;
-        }
+.checkmark {
+  display: block;
+  width: 20px;
+  height: 20px;
+  background-color: var(--check-off, #3a3a3a);
+  border: 1.5px solid var(--check-border, rgba(255, 255, 255, 0.45));
+  border-radius: 6px;
+  position: relative;
+  flex-shrink: 0;
+  transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
 
-        .option-mdcm {
-            display: grid;
-            grid-template-columns: auto 1fr;
-            align-items: center;
-            margin-bottom: 0;
-            padding: 5px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 6px;
-            transition: all 0.3s;
-            border: 1px solid rgba(255,255,255,0.05);
-            color: var(--yt-)
-            gap: 6px;
-        }
+.yt-check:checked + .checkmark {
+  background-color: var(--popup-accent, #ff0000);
+  border-color: color-mix(in srgb, var(--popup-accent, #ff0000) 70%, #fff);
+  box-shadow:
+    0 2px 10px color-mix(in srgb, var(--popup-accent, #ff0000) 45%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--popup-accent, #ff0000) 50%, #fff),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
 
-        .option-mdcm:hover {
-            background: rgba(255,255,255,0.08);
-            border-color: rgba(255,255,255,0.1);
-        }
-        .option-settings-mdcm {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 0;
-          padding: 6px;
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: 6px;
-          transition: all 0.3s;
-          border: 1px solid rgba(255, 255, 255, 0.05);
-          gap: 6px;
-        }
+.checkmark::after {
+  content: "";
+  position: absolute;
+  width: 5px;
+  height: 9px;
+  border-right: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotateZ(40deg) scale(0);
+  opacity: 0;
+  transition: all 0.2s;
+}
 
-        .option-settings-mdcm:hover {
-            background: rgba(255,255,255,0.08);
-            border-color: rgba(255,255,255,0.1);
-        }
-            .tab-content {
-            display: none;
-        }
-            .tab-content.active {
-                display: block;
-                margin-bottom: 10px;
-            }
+.yt-check:checked + .checkmark::after {
+  opacity: 1;
+  transform: translate(-50%, -50%) rotateZ(40deg) scale(1);
+}
 
-        .checkbox-mdcm {
-            width: 14px;
-            height: 14px;
-            accent-color: var(--yt-enhance-menu-accent, --primary-custom) !important;
-        }
+.yt-toggle-label {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+  opacity: 0.95;
+}
 
-        label {
-            font-size: 12px;
-            color: var(--text-custom);
-        }
+.yt-field {
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px;
+  margin-bottom: 8px;
+}
+.yt-field > label,
+.yt-field-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
 
-        .slider-container-mdcm {
-            background: rgba(255,255,255,0.05);
-            padding: 10px;
-            border-radius: 6px;
-        }
+.yt-select,
+.quality-selector-mdcm select,
+.select-wrapper-mdcm select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.4);
+  color: var(--popup-text, #fff);
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+  appearance: auto;
+}
+.yt-select:focus,
+.quality-selector-mdcm select:focus {
+  border-color: var(--popup-accent, #ff0000);
+}
 
-        .slider-mdcm {
-            width: 100%;
-            height: 3px;
-            accent-color: var(--yt-enhance-menu-accent, --primary-custom) !important;
-            margin: 10px 0;
-        }
+.slider-container-mdcm {
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px;
+}
+.slider-mdcm,
+.yt-range {
+  width: 100%;
+  accent-color: var(--popup-accent, #ff0000);
+  height: 6px;
+  cursor: pointer;
+  margin: 10px 0;
+}
+.reset-btn-mdcm,
+.yt-btn {
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--popup-text, #fff);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+}
+.reset-btn-mdcm:hover,
+.yt-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+.yt-btn-accent {
+  background: var(--popup-accent, #ff0000);
+  border-color: transparent;
+  color: #fff;
+}
 
-        .reset-btn-mdcm {
-            padding: 5px 10px;
-            border: 1px solid rgba(255,255,255,0.2);
-            background: rgba(255,255,255,0.1);
-            color: var(--text-custom);
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 11px;
-            transition: all 0.3s;
-        }
+.color-picker-mdcm {
+  width: 50px;
+  height: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.card-items-end {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+.option-mdcm {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 6px;
+  color: var(--popup-text, #fff);
+}
+.radio-mdcm {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--popup-accent, #ff0000);
+}
+.checkbox-mdcm {
+  accent-color: var(--popup-accent, #ff0000);
+}
 
-        .reset-btn-mdcm:hover {
-            background: rgba(255,255,255,0.2);
-        }
+.popup-footer,
+.actions-mdcm {
+  flex-shrink: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px 12px;
+  background: var(--popup-bg, #0c0c0c);
+  text-align: center;
+}
+.popup-footer-versions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 10px;
+  opacity: 0.45;
+  margin-bottom: 6px;
+}
+.popup-footer a,
+.developer-mdcm a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 11px;
+  opacity: 0.55;
+  color: var(--popup-text, #fff);
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+.popup-footer a:hover,
+.developer-mdcm a:hover {
+  opacity: 1;
+}
+.developer-mdcm {
+  font-size: 11px;
+  color: inherit;
+}
 
-        .quality-selector-mdcm select {
-            position: relative;
-            padding: 3px;
-            outline: none;
-            border-radius: 4px;
-            border: 1px solid rgba(255,255,255,0.2);
-            background: var(--yt-enhance-menu-accent, --primary-custom) !important;
-            color: var(--text-custom);
-            width: fit-content;
-            appearance: none;
-            cursor: pointer;
-            font-size: 11px;
-        }
+.yt-home-hero {
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.1), transparent);
+  padding: 20px;
+  margin-bottom: 12px;
+}
+.yt-home-hero h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.yt-home-hero p {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  opacity: 0.7;
+}
+.yt-home-hero .yt-home-hint {
+  font-size: 12px;
+  opacity: 0.5;
+}
+.yt-version-grid,
+.yt-action-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.yt-version-chip {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px;
+}
+.yt-version-chip .label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.45;
+}
+.yt-version-chip .value {
+  margin-top: 4px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--popup-accent, #ff0000);
+}
+.yt-action-grid button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--popup-text, #fff);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.yt-action-grid button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.yt-action-grid button i {
+  color: var(--popup-accent, #ff0000);
+}
 
+#shareDropdown {
+  display: none;
+  margin-bottom: 12px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+}
+#shareDropdown.is-open {
+  display: block;
+}
+#shareDropdown a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--popup-text, #fff);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.25);
+}
+#shareDropdown a:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
 
-        .quality-selector-mdcm {
-            background: rgba(255,255,255,0.05);
-            padding: 10px;
-            border-radius: 6px;
-        }
+#importExportArea {
+  display: none;
+  padding: 16px;
+  margin-bottom: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+}
+#importExportArea.active {
+  display: block;
+}
+#importExportArea h3 {
+  margin: 0;
+  font-size: 14px;
+}
+#importExportArea textarea {
+  width: 100%;
+  min-height: 80px;
+  margin: 10px 0;
+  padding: 8px;
+  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.4);
+  color: var(--popup-text, #fff);
+  font-size: 11px;
+  font-family: ui-monospace, monospace;
+  resize: vertical;
+}
+.action-buttons-mdcm {
+  display: flex;
+  gap: 8px;
+}
+.action-btn-mdcm {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 12px;
+  background: var(--popup-accent, #ff0000);
+  color: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+}
 
-        .select-wrapper-mdcm {
-          position: relative;
-          display: inline-block;
-        }
+.options-settings-mdcm {
+  display: grid;
+  gap: 10px;
+}
+.option-settings-mdcm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+}
+.color-boxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.color-box {
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(221, 221, 221, 0.6);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.color-box.selected {
+  border: 2px solid var(--popup-accent, #ff0000);
+  filter: drop-shadow(0 1px 6px color-mix(in srgb, var(--popup-accent) 60%, transparent));
+}
 
-        .select-wrapper-mdcm select {
-          -webkit-appearance: auto;
-          -moz-appearance: auto;
-        }
+#yt-stats-toggle {
+  font-size: 12px;
+  color: var(--popup-text, #fff);
+  padding: 4px 0;
+}
+.stat-row {
+  margin: 0 0 14px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+}
+.progress {
+  height: 6px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 99px;
+  margin: 8px 0;
+}
+.progress-bar {
+  height: 100%;
+  transition: width 0.3s;
+}
+.total-bar { background: #44aaff !important; }
+.video-bar { background: #00ff88 !important; }
+.shorts-bar { background: #ff4444 !important; }
 
-        .actions-mdcm {
-            position: sticky;
-            top: 0;
-            padding: 12px 16px;
-            backdrop-filter: blur(15px);
-            background-color: var(--yt-enhance-menu-bg, #252525);
-            display: flex;
-            gap: 6px;
-            width: 390px;
-            border-radius: 0 0 16px 16px;
-            justify-content: space-between;
-            align-items: center;
-        }
+.background-image-container {
+  margin-bottom: 12px;
+}
+.themes-options .options-mdcm {
+  max-height: none;
+}
 
-        .action-buttons-mdcm {
-            display: flex;
-            gap: 6px;
-        }
-
-        .action-btn-mdcm {
-            flex: 1;
-            padding: 8px;
-            border: none;
-            border-radius: 6px;
-            background: var(--primary-custom);
-            color: var(--text-custom);
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 500;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            box-shadow: 0 4px 12px rgba(255,0,0,0.2);
-        }
-
-        .action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(255,0,0,0.3);
-        }
-
-        textarea.textarea-mdcm {
-            width: 100%;
-            height: 50px;
-            margin-top: 10px;
-            margin-bottom: 12px;
-            padding: 8px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 6px;
-            color: var(--text-custom);
-            font-size: 11px;
-            resize: none;
-            transition: all 0.3s;
-        }
-
-        textarea.textarea-mdcm:focus {
-            outline: none;
-            border-color: var(--primary-custom);
-            background: rgba(255,255,255,0.08);
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .container-mdcm {
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        .developer-mdcm {
-            font-size: 10px;
-            color: var(--text-custom-secondary);
-        }
-
-        .developer-mdcm a {
-            color: var(--primary-custom);
-            text-decoration: none;
-        }
-
-        /* Styles for the import/export area */
-        #importExportArea {
-            display: none;
-            padding: 16px;
-            margin: 0px;
-            background-color: var(--yt-enhance-menu-bg, #252525);
-            border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        #importExportArea.active {
-            display: block;
-            margin-top: 10px;
-        }
-
-        /* Style the textarea */
-        #importExportArea textarea {
-            width: 370px;
-            height: 20px;
-            margin-bottom: 10px;
-            padding: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 6px;
-            background-color: rgba(255, 255, 255, 0.05);
-            color: var(--text-custom);
-            font-size: 12px;
-            resize: vertical;
-        }
-
-        /* Style the buttons */
-        #importExportArea .action-buttons-mdcm  {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-        }
-
-        #importExportArea .action-btn-mdcm {
-            flex: 1;
-            padding: 10px 16px;
-            border: none;
-            border-radius: 6px;
-            background-color: var(--primary-custom);
-            color: var(--text-custom);
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        #importExportArea .action-btn-mdcm:hover {
-            background-color: var(--accent-custom);
-        }
+#icon-menu-settings {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 7px;
+  font-size: 20px;
+  color: var(--yt-spec-icon-inactive);
+  cursor: pointer;
+  user-select: none;
+  filter: drop-shadow(2px 4px 6px black);
+}
 
       #yt-stats {
       position: fixed;
@@ -2697,13 +2969,6 @@
     // justify-content: center;
     // align-items: center;
     // }
-
-        #yt-enhancement-panel {
-            position: fixed;
-            top: 60px;
-            right: 20px;
-            z-index: 9999;
-        }
 
         .color-picker {
             width: 100%;
@@ -3113,6 +3378,139 @@
         font-size: 12px;
       }
 
+      /* Transcript panel (copy / download .txt) */
+      .yt-transcript-panel {
+        margin-top: 10px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 10px;
+        padding: 10px;
+        text-align: left;
+      }
+      .yt-tr-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+      .yt-tr-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-custom, #fff);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .yt-tr-close {
+        border: none;
+        background: transparent;
+        color: var(--text-custom-secondary, #aaa);
+        cursor: pointer;
+        font-size: 13px;
+        line-height: 1;
+        padding: 4px 6px;
+        border-radius: 6px;
+      }
+      .yt-tr-close:hover {
+        background: rgba(255,255,255,0.1);
+        color: #fff;
+      }
+      .yt-tr-controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+      .yt-tr-field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 11px;
+        color: var(--text-custom-secondary, #aaa);
+      }
+      .yt-tr-field select {
+        background: rgba(0,0,0,0.35);
+        color: var(--text-custom, #fff);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 6px;
+        padding: 5px 8px;
+        font-size: 12px;
+        max-width: 220px;
+      }
+      .yt-tr-check {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--text-custom, #fff);
+        padding-bottom: 5px;
+        cursor: pointer;
+      }
+      .yt-tr-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+      .yt-tr-btn {
+        border: none;
+        border-radius: 6px;
+        padding: 6px 12px;
+        background: rgba(255,255,255,0.14);
+        color: #fff;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .yt-tr-btn:hover:not(:disabled) {
+        background: rgba(255,255,255,0.22);
+      }
+      .yt-tr-btn.primary {
+        background: rgba(239,68,68,0.85);
+      }
+      .yt-tr-btn.primary:hover:not(:disabled) {
+        background: rgba(239,68,68,1);
+      }
+      .yt-tr-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .yt-tr-status {
+        font-size: 11px;
+        color: var(--text-custom-secondary, #aaa);
+        margin-bottom: 6px;
+        min-height: 14px;
+      }
+      .yt-tr-status[data-kind="error"] {
+        color: #f87171;
+      }
+      .yt-tr-empty {
+        font-size: 12px;
+        color: var(--text-custom-secondary, #aaa);
+      }
+      .yt-tr-preview {
+        margin: 0;
+        max-height: 240px;
+        overflow: auto;
+        padding: 8px;
+        background: rgba(0,0,0,0.3);
+        border-radius: 8px;
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--text-custom, #fff);
+        white-space: pre-wrap;
+        word-break: break-word;
+        font-family: inherit;
+      }
+      .yt-tr-preview:empty {
+        display: none;
+      }
+
       /* Shorts channel name label (Home/feed Shorts lockups) */
       html:not([data-mdcm-shorts-channel-name="1"]) .yt-tools-shorts-channel-name {
         display: none !important;
@@ -3518,9 +3916,9 @@
         text-align: center;
         margin-top: 10px;
         }
-    `);
+`);
 
-
+  // --- 10-player-buttons.js ---
   // botons bottom video player
 
   const thumbnailVideo = `
@@ -3664,6 +4062,12 @@
 
   `;
 
+  const transcriptBtn = `
+  <button title="Transcript (copy / download .txt)" type="button" id="yt-transcript-btn" class="botones_div">
+  <svg width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" /><path d="M9 9h1" /><path d="M9 13h6" /><path d="M9 17h6" /></svg>
+</button>
+  `;
+
   const checkUpdates = `
   <button title="Check new updates" type="button" class="checked_updates botones_div">
   <svg width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" /><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" /></svg>
@@ -3726,6 +4130,7 @@
       ${bookmarkAddBtn}
       ${bookmarkToggleBtn}
       ${continueWatchingHistoryBtn}
+      ${transcriptBtn}
       ${downloadMp4Mp3}
       ${donwloadExternal}
       ${viewExternalVideo}
@@ -3735,6 +4140,7 @@
       </div>
       <div id="yt-bookmarks-panel" class="yt-bookmarks-panel" style="display:none;"></div>
       <div id="yt-continue-watching-panel" class="yt-continue-watching-panel" style="display:none;"></div>
+      <div id="yt-transcript-panel" class="yt-transcript-panel" style="display:none;"></div>
       <div>
       </div>
     </form>
@@ -3831,9 +4237,7 @@
       </main>
   `;
 
-
-
-  // Define themes
+  // --- 11-menu-ui.js ---
   const themes = [
     {
       name: 'Default / Reload',
@@ -3915,8 +4319,8 @@
       textLogo: '#f00',
     },
     {
-      name: 'Raind ',
-      gradient: 'linear-gradient(90deg, #3f5efb 0%, #fc466b) 100%',
+      name: 'Raind',
+      gradient: 'linear-gradient(90deg, #3f5efb 0%, #fc466b 100%)',
       textColor: '#ffffff',
       raised: '#303131',
       btnTranslate: '#000',
@@ -3960,8 +4364,7 @@
     },
     {
       name: 'Colombia',
-      gradient:
-        'linear-gradient(174deg, #fbf63f  0%, #0000bb 45%, #ff0000 99%)',
+      gradient: 'linear-gradient(174deg, #fbf63f 0%, #0000bb 45%, #ff0000 99%)',
       textColor: '#ffffff',
       raised: '#303131',
       btnTranslate: '#000',
@@ -3969,6 +4372,163 @@
       videoDuration: '#fff',
       colorIcons: '#fff',
       textLogo: '#f00',
+    },
+    {
+      name: 'Mexico',
+      gradient: 'linear-gradient(180deg, #006847 0%, #ffffff 48%, #ce1126 100%)',
+      textColor: '#1a1a1a',
+      raised: '#006847',
+      btnTranslate: '#000',
+      CurrentProgressVideo: '#ce1126',
+      videoDuration: '#1a1a1a',
+      // Black contrasts on green / white / red bands (green icons vanished on green)
+      colorIcons: '#1a1a1a',
+      textLogo: '#ce1126',
+    },
+    {
+      name: 'Brazil',
+      gradient: 'linear-gradient(135deg, #009c3b 0%, #ffdf00 50%, #002776 100%)',
+      textColor: '#ffffff',
+      raised: '#002776',
+      btnTranslate: '#000',
+      CurrentProgressVideo: '#ffdf00',
+      videoDuration: '#fff',
+      colorIcons: '#002776',
+      textLogo: '#ffdf00',
+    },
+    {
+      name: 'Argentina',
+      gradient: 'linear-gradient(180deg, #74acdf 0%, #ffffff 45%, #74acdf 100%)',
+      textColor: '#0a2540',
+      raised: '#74acdf',
+      btnTranslate: '#000',
+      CurrentProgressVideo: '#fcbf49',
+      videoDuration: '#0a2540',
+      // Sun gold — readable on light-blue and white stripes
+      colorIcons: '#c58b00',
+      textLogo: '#0a2540',
+    },
+    {
+      name: 'Spain',
+      gradient: 'linear-gradient(180deg, #aa151b 0%, #f1bf00 45%, #aa151b 100%)',
+      textColor: '#ffffff',
+      raised: '#aa151b',
+      btnTranslate: '#000',
+      CurrentProgressVideo: '#f1bf00',
+      videoDuration: '#fff',
+      colorIcons: '#aa151b',
+      textLogo: '#f1bf00',
+    },
+    {
+      name: 'France',
+      gradient: 'linear-gradient(90deg, #002395 0%, #ffffff 50%, #ed2939 100%)',
+      textColor: '#0b1b3a',
+      raised: '#002395',
+      btnTranslate: '#000',
+      CurrentProgressVideo: '#ed2939',
+      videoDuration: '#0b1b3a',
+      colorIcons: '#002395',
+      textLogo: '#ed2939',
+    },
+    {
+      name: 'Germany',
+      gradient: 'linear-gradient(180deg, #000000 0%, #dd0000 50%, #ffce00 100%)',
+      textColor: '#ffffff',
+      raised: '#111111',
+      btnTranslate: '#000',
+      CurrentProgressVideo: '#ffce00',
+      videoDuration: '#fff',
+      colorIcons: '#ffce00',
+      textLogo: '#dd0000',
+    },
+    {
+      name: 'Italy',
+      gradient: 'linear-gradient(90deg, #009246 0%, #ffffff 50%, #ce2b37 100%)',
+      textColor: '#0f2a1a',
+      raised: '#009246',
+      btnTranslate: '#000',
+      CurrentProgressVideo: '#ce2b37',
+      videoDuration: '#0f2a1a',
+      colorIcons: '#009246',
+      textLogo: '#ce2b37',
+    },
+    {
+      name: 'Japan',
+      gradient: 'linear-gradient(135deg, #ffffff 0%, #bc002d 55%, #111111 100%)',
+      textColor: '#ffffff',
+      raised: '#bc002d',
+      btnTranslate: '#000',
+      CurrentProgressVideo: '#bc002d',
+      videoDuration: '#fff',
+      colorIcons: '#bc002d',
+      textLogo: '#bc002d',
+    },
+    {
+      name: 'South Korea',
+      gradient: 'linear-gradient(135deg, #003478 0%, #ffffff 45%, #c60c30 100%)',
+      textColor: '#ffffff',
+      raised: '#003478',
+      btnTranslate: '#000',
+      CurrentProgressVideo: '#c60c30',
+      videoDuration: '#fff',
+      colorIcons: '#003478',
+      textLogo: '#c60c30',
+    },
+    {
+      name: 'USA',
+      gradient: 'linear-gradient(135deg, #3c3b6e 0%, #ffffff 45%, #b22234 100%)',
+      textColor: '#ffffff',
+      raised: '#3c3b6e',
+      btnTranslate: '#000',
+      CurrentProgressVideo: '#b22234',
+      videoDuration: '#fff',
+      colorIcons: '#3c3b6e',
+      textLogo: '#b22234',
+    },
+    {
+      name: 'United Kingdom',
+      gradient: 'linear-gradient(135deg, #012169 0%, #ffffff 40%, #c8102e 100%)',
+      textColor: '#ffffff',
+      raised: '#012169',
+      btnTranslate: '#000',
+      CurrentProgressVideo: '#c8102e',
+      videoDuration: '#fff',
+      colorIcons: '#012169',
+      textLogo: '#c8102e',
+    },
+    {
+      name: 'India',
+      gradient: 'linear-gradient(180deg, #ff9933 0%, #ffffff 48%, #138808 100%)',
+      textColor: '#0b2a12',
+      raised: '#138808',
+      btnTranslate: '#000',
+      CurrentProgressVideo: '#000080',
+      videoDuration: '#0b2a12',
+      // Ashoka blue — readable on saffron / white / green (orange vanished on saffron)
+      colorIcons: '#000080',
+      textLogo: '#ff9933',
+    },
+    {
+      name: 'Canada',
+      gradient: 'linear-gradient(90deg, #ff0000 0%, #ffffff 50%, #ff0000 100%)',
+      textColor: '#1a1a1a',
+      raised: '#ff0000',
+      btnTranslate: '#000',
+      CurrentProgressVideo: '#ff0000',
+      videoDuration: '#1a1a1a',
+      colorIcons: '#ff0000',
+      textLogo: '#ff0000',
+    },
+    {
+      name: 'Chile',
+      gradient: 'linear-gradient(180deg, #d52b1e 0%, #ffffff 50%, #0039a6 100%)',
+      textColor: '#ffffff',
+      raised: '#0039a6',
+      btnTranslate: '#000',
+      CurrentProgressVideo: '#d52b1e',
+      videoDuration: '#fff',
+      colorIcons: '#d52b1e',
+      textLogo: '#0039a6',
     },
   ];
 
@@ -4007,7 +4567,7 @@
       const prefCookie = document.cookie.split('; ').find(c => c.startsWith('PREF='));
       if (!prefCookie) return 'light';
 
-      const prefValue = prefCookie.substring(5);
+      const prefValue = prefCookie.substring(5); 
       const params = new URLSearchParams(prefValue);
 
       const f6Value = params.get('f6');
@@ -4020,401 +4580,281 @@
     let isDarkModeActive = checkDarkModeActive();
 
 
+  const ytToggle = (id, label, checked = false) => `
+    <label class="yt-toggle-row">
+      <input type="checkbox" class="checkbox-mdcm yt-check" id="${id}"${checked ? ' checked' : ''}>
+      <span class="checkmark" aria-hidden="true"></span>
+      <span class="yt-toggle-label">${label}</span>
+    </label>`;
+
   // Use Trusted Types to set innerHTML
   const menuHTML = `
-   <div class="container-mdcm">
-    <div class="header-mdcm">
-      <h1> <i class="fa-brands fa-youtube"></i> YouTube Tools</h1>
-      <div class="icons-mdcm">
-        <a href="https://update.greasyfork.org/scripts/460680/Youtube%20Tools%20All%20in%20one%20local%20download%20mp3%20mp4%20HIGT%20QUALITY%20return%20dislikes%20and%20more.user.js"
-          target="_blank">
-          <button class="icon-btn-mdcm">
+  <div class="container-mdcm">
+    <header class="popup-header header-mdcm">
+      <div class="popup-header-top">
+        <div class="popup-brand">
+          <div class="popup-brand-row">
+            <span class="popup-brand-icon"><i class="fa-brands fa-youtube"></i></span>
+            <h1>Youtube Tools</h1>
+          </div>
+          <p>Themes, downloads, dislikes and more for YouTube</p>
+        </div>
+        <div class="icons-mdcm">
+          <button type="button" class="icon-btn-mdcm active" id="home-nav-btn" title="Home">
+            <i class="fa-solid fa-house"></i>
+          </button>
+          <a class="icon-btn-mdcm" href="https://update.greasyfork.org/scripts/460680/Youtube%20Tools%20All%20in%20one%20local%20download%20mp3%20mp4%20HIGT%20QUALITY%20return%20dislikes%20and%20more.user.js" target="_blank" title="Update">
             <i class="fa-solid fa-arrows-rotate"></i>
+          </a>
+          <button type="button" class="icon-btn-mdcm close_menu_settings" title="Close">
+            <i class="fa-solid fa-xmark"></i>
           </button>
-        </a>
-        <a href="https://github.com/DeveloperMDCM" target="_blank">
-          <button class="icon-btn-mdcm">
-            <i class="fa-brands fa-github"></i>
-          </button>
-        </a>
-        <button class="icon-btn-mdcm" id="shareBtn-mdcm">
-          <i class="fa-solid fa-share-alt"></i>
-        </button>
-        <button class="icon-btn-mdcm" id="importExportBtn">
-          <i class="fa-solid fa-file-import"></i>
-        </button>
-        <button id="menu-settings-icon" class="icon-btn-mdcm tab-mdcm" data-tab="menu-settings">
-          <i class="fa-solid fa-gear"></i>
-        </button>
-        <button class="icon-btn-mdcm close_menu_settings">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-    </div>
-
-    <div class="tabs-mdcm">
-      <button class="tab-mdcm active" data-tab="general">
-        <i class="fa-solid fa-shield-halved"></i>
-        General
-      </button>
-      <button class="tab-mdcm" data-tab="themes">
-        <i class="fa-solid fa-palette"></i>
-        Themes
-      </button>
-      <button class="tab-mdcm" data-tab="stats">
-        <i class="fa-solid fa-square-poll-vertical"></i>
-        Stats
-      </button>
-      <button class="tab-mdcm" data-tab="headers">
-        <i class="fa-regular fa-newspaper"></i>
-        Header
-      </button>
-    </div>
-
-
-    <div id="general" class="tab-content active">
-
-      <div class="options-mdcm">
-        <label>
-          <div class="option-mdcm">
-            <input type="checkbox" class="checkbox-mdcm" id="hide-comments-toggle"> Hide Comments
-          </div>
-        </label>
-        <label>
-          <div class="option-mdcm">
-            <input type="checkbox" class="checkbox-mdcm" id="hide-sidebar-toggle"> Hide Sidebar
-          </div>
-        </label>
-        <label>
-          <div class="option-mdcm">
-            <input type="checkbox" class="checkbox-mdcm" id="autoplay-toggle"> Disable Autoplay
-          </div>
-        </label>
-        <label>
-          <div class="option-mdcm">
-            <input type="checkbox" class="checkbox-mdcm" id="subtitles-toggle"> Disable Subtitles
-          </div>
-        </label>
-        <label>
-          <div class="option-mdcm">
-            <input type="checkbox" class="checkbox-mdcm" checked id="dislikes-toggle"> Show Dislikes
-          </div>
-        </label>
-        <label>
-          <div class="option-mdcm">
-            <input type="checkbox" class="checkbox-mdcm" id="like-dislike-bar-toggle"> Like vs Dislike bar
-          </div>
-        </label>
-        <label>
-          <div class="option-mdcm">
-            <input type="checkbox" class="checkbox-mdcm" id="bookmarks-toggle"> Bookmarks (timestamps)
-          </div>
-        </label>
-        <label>
-          <div class="option-mdcm">
-            <input type="checkbox" class="checkbox-mdcm" id="continue-watching-toggle"> Continue watching
-          </div>
-        </label>
-        <label>
-          <div class="option-mdcm">
-            <input type="checkbox" class="checkbox-mdcm" id="shorts-channel-name-toggle"> Shorts: show channel name
-          </div>
-        </label>
-        <label>
-          <div class="option-mdcm">
-            <input type="checkbox" class="checkbox-mdcm" id="themes-toggle"> Active Themes
-          </div>
-        </label>
-        <label>
-          <div class="option-mdcm">
-            <input type="checkbox" class="checkbox-mdcm" id="translation-toggle"> Translate comments
-          </div>
-        </label>
-        <label>
-          <div class="option-mdcm">
-            <input type="checkbox" class="checkbox-mdcm" id="avatars-toggle"> Download avatars
-          </div>
-        </label>
-        <label>
-          <div class="option-mdcm">
-            <input type="checkbox" class="checkbox-mdcm" id="reverse-mode-toggle"> Reverse mode
-          </div>
-        </label>
-        <label>
-          <div class="option-mdcm">
-            <input type="checkbox" class="checkbox-mdcm" id="cinematic-lighting-toggle"> Cinematic Mode
-          </div>
-        </label>
-        <label>
-          <div class="option-mdcm">
-            <input type="checkbox" class="checkbox-mdcm" checked id="wave-visualizer-toggle"> Wave visualizer Beta
-          </div>
-        </label>
-        <label>
-          <div class="option-mdcm">
-            <input type="checkbox" class="checkbox-mdcm" id="sync-cinematic-toggle"> Sync Ambient Mode YT
-          </div>
-        </label>
-        <div class="quality-selector-mdcm" style="grid-column: span 2;">
-          <div class="select-wrapper-mdcm">
-            <label>Effect wave visualizer:
-              <select class="tab-button-active" id="select-wave-visualizer-select">
-                <option value="linea">Line smooth</option>
-                <option value="barras">Vertical bars</option>
-                <option value="curva">Curved</option>
-                <option value="picos">Smooth peaks</option>
-                <option value="solida">Solid wave</option>
-                <option value="dinamica">Dynamic wave</option>
-                <option value="montana">Smooth mountain</option>
-              </select>
-            </label>
-          </div>
-        </div>
-        <div class="quality-selector-mdcm" style="grid-column: span 2;">
-          <div class="select-wrapper-mdcm">
-            <label>Default video player quality:
-              <select class="tab-button-active" id="select-video-qualitys-select">
-                <option value="user">User Default</option>
-                <option value="">Auto</option>
-                <option value="144">144</option>
-                <option value="240">240</option>
-                <option value="360">360</option>
-                <option value="480">480</option>
-                <option value="720">720</option>
-                <option value="1080">1080</option>
-                <option value="1440">1440</option>
-                <option value="2160">2160</option>
-              </select>
-            </label>
-          </div>
-        </div>
-        <div class="quality-selector-mdcm" style="grid-column: span 2;">
-          <div class="select-wrapper-mdcm">
-            <label>Language for translate comments:
-              <select class="tab-button-active" id="select-languages-comments-select">
-              ${languageOptionsHTML}
-              </select>
-            </label>
-          </div>
-        </div>
-        <div class="slider-container-mdcm" style="grid-column: span 2;">
-          <label>Video Player Size: <span id="player-size-value">100</span>%</label>
-          <input type="range" id="player-size-slider" class="slider-mdcm" min="50" max="150" value="100">
-          <button class="reset-btn-mdcm" id="reset-player-size">Reset video size</button>
         </div>
       </div>
-    </div>
+      <nav class="tabs-mdcm">
+        <button type="button" class="tab-mdcm" data-tab="general">
+          <i class="fa-solid fa-sliders"></i>
+          <span>General</span>
+        </button>
+        <button type="button" class="tab-mdcm" data-tab="themes">
+          <i class="fa-solid fa-palette"></i>
+          <span>Themes</span>
+        </button>
+        <button type="button" class="tab-mdcm" data-tab="stats">
+          <i class="fa-solid fa-chart-simple"></i>
+          <span>Stats</span>
+        </button>
+        <button type="button" class="tab-mdcm" data-tab="menu-settings">
+          <i class="fa-solid fa-swatchbook"></i>
+          <span>Menu</span>
+        </button>
+      </nav>
+    </header>
 
-    <div id="themes" class="tab-content">
-     <div id="background-image-container" class="background-image-container">
-     <h4>Background Image</h4>
-  <input type="file" id="background_image" accept="image/png, image/jpeg" style="display:none;" />
-  <div id="background-image-preview" class="background-image-preview">
-    <span class="background-image-overlay">
-      <i class="fa fa-camera"></i>
-      <span class="background-image-text">Select image</span>
-    </span>
-    <button id="remove-background-image" class="remove-background-image" title="Quitar fondo">&times;</button>
-  </div>
-</div>
-      <div class="themes-hidden">
-        <div class="options-mdcm" style="margin-bottom: 10px;">
-          <div>
-            <h4>Choose a Theme</h4>
-            <p>Disable Mode Cinematic on General</p>
-            ${isDarkModeActive === 'dark' ? '' : '<p style="color: red; margin: 10px 0;font-size: 11px;">Activate dark mode to use this option</p>'}
+    <main class="popup-main">
+      <div id="yt-tools-home" class="tab-content active">
+        <div class="yt-home-hero">
+          <h2>Youtube Tools</h2>
+          <p>Userscript that enhances YouTube: themes, MP3/MP4 download, dislikes, bookmarks, continue watching, wave visualizer and more.</p>
+          <p class="yt-home-hint">Open General to toggle features, Themes for looks, Menu to style this panel.</p>
+        </div>
+        <div class="yt-version-grid">
+          <div class="yt-version-chip">
+            <div class="label">Extension</div>
+            <div class="value">v2.0.0</div>
+          </div>
+          <div class="yt-version-chip">
+            <div class="label">Script</div>
+            <div class="value">v2.5.1</div>
           </div>
         </div>
-        <div class="options-mdcm">
-          <label>
-            <div class="theme-option option-mdcm">
+        <div class="yt-action-grid">
+          <button type="button" id="shareBtn-mdcm"><i class="fa-solid fa-share-nodes"></i> Share</button>
+          <button type="button" id="importExportBtn"><i class="fa-solid fa-file-import"></i> Import / Export</button>
+        </div>
+        <div id="shareDropdown">
+          <p class="yt-page-desc" style="margin-top:0">Share Youtube Tools with others</p>
+          <a href="https://www.facebook.com/sharer/sharer.php?u=${urlSharedCode}" target="_blank" data-network="facebook" class="share-link"><i class="fa-brands fa-facebook"></i> Facebook</a>
+          <a href="https://twitter.com/intent/tweet?url=${urlSharedCode}" target="_blank" data-network="twitter" class="share-link"><i class="fa-brands fa-twitter"></i> X / Twitter</a>
+          <a href="https://api.whatsapp.com/send?text=${urlSharedCode}" target="_blank" data-network="whatsapp" class="share-link"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+          <a href="https://www.linkedin.com/sharing/share-offsite/?url=${urlSharedCode}" target="_blank" data-network="linkedin" class="share-link"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+        </div>
+        <div id="importExportArea">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <h3>Import / Export</h3>
+            <button type="button" class="icon-btn-mdcm" id="closeImportExportBtn" title="Close"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <p class="yt-page-desc">Back up or restore settings</p>
+          <textarea id="config-data" placeholder="Paste configuration here to import"></textarea>
+          <div class="action-buttons-mdcm">
+            <button type="button" id="export-config" class="action-btn-mdcm">Export</button>
+            <button type="button" id="import-config" class="action-btn-mdcm">Import</button>
+          </div>
+        </div>
+        <p class="yt-page-desc" style="text-align:center;margin:0">Userscript · Tampermonkey</p>
+      </div>
+
+      <div id="general" class="tab-content">
+        <h2 class="yt-page-title">Features</h2>
+        <p class="yt-page-desc">Toggle YouTube enhancements</p>
+        <div class="yt-toggle-grid">
+          ${ytToggle('hide-comments-toggle', 'Hide Comments')}
+          ${ytToggle('hide-sidebar-toggle', 'Hide Sidebar')}
+          ${ytToggle('autoplay-toggle', 'Disable Autoplay')}
+          ${ytToggle('subtitles-toggle', 'Disable Subtitles')}
+          ${ytToggle('dislikes-toggle', 'Show Dislikes', true)}
+          ${ytToggle('like-dislike-bar-toggle', 'Like vs Dislike bar')}
+          ${ytToggle('bookmarks-toggle', 'Bookmarks (timestamps)')}
+          ${ytToggle('continue-watching-toggle', 'Continue watching')}
+          ${ytToggle('shorts-channel-name-toggle', 'Shorts: show channel name')}
+          ${ytToggle('themes-toggle', 'Active Themes')}
+          ${ytToggle('translation-toggle', 'Translate comments')}
+          ${ytToggle('avatars-toggle', 'Download avatars')}
+          ${ytToggle('reverse-mode-toggle', 'Reverse mode')}
+          ${ytToggle('cinematic-lighting-toggle', 'Cinematic Mode')}
+          ${ytToggle('wave-visualizer-toggle', 'Wave visualizer Beta', true)}
+          ${ytToggle('sync-cinematic-toggle', 'Sync Ambient Mode YT')}
+        </div>
+        <div style="margin-top:12px;display:grid;gap:8px;">
+          <div class="yt-field">
+            <label class="yt-field-label" for="select-wave-visualizer-select">Effect wave visualizer</label>
+            <select class="yt-select" id="select-wave-visualizer-select">
+              <option value="linea">Line smooth</option>
+              <option value="barras">Vertical bars</option>
+              <option value="curva">Curved</option>
+              <option value="picos">Smooth peaks</option>
+              <option value="solida">Solid wave</option>
+              <option value="dinamica">Dynamic wave</option>
+              <option value="montana">Smooth mountain</option>
+            </select>
+          </div>
+          <div class="yt-field">
+            <label class="yt-field-label" for="select-video-qualitys-select">Default video player quality</label>
+            <select class="yt-select" id="select-video-qualitys-select">
+              <option value="user">User Default</option>
+              <option value="">Auto</option>
+              <option value="144">144</option>
+              <option value="240">240</option>
+              <option value="360">360</option>
+              <option value="480">480</option>
+              <option value="720">720</option>
+              <option value="1080">1080</option>
+              <option value="1440">1440</option>
+              <option value="2160">2160</option>
+            </select>
+          </div>
+          <div class="yt-field">
+            <label class="yt-field-label" for="select-languages-comments-select">Language for translate comments</label>
+            <select class="yt-select" id="select-languages-comments-select">${languageOptionsHTML}</select>
+          </div>
+          <div class="slider-container-mdcm">
+            <label>Video Player Size: <span id="player-size-value">100</span>%</label>
+            <input type="range" id="player-size-slider" class="slider-mdcm yt-range" min="50" max="150" value="100">
+            <button type="button" class="reset-btn-mdcm" id="reset-player-size">Reset video size</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="themes" class="tab-content">
+        <h2 class="yt-page-title">Themes</h2>
+        <p class="yt-page-desc">Customize YouTube colors and presets</p>
+        <div id="background-image-container" class="background-image-container">
+          <h4>Background Image</h4>
+          <input type="file" id="background_image" accept="image/png, image/jpeg" style="display:none;" />
+          <div id="background-image-preview" class="background-image-preview">
+            <span class="background-image-overlay">
+              <i class="fa fa-camera"></i>
+              <span class="background-image-text">Select image</span>
+            </span>
+            <button type="button" id="remove-background-image" class="remove-background-image" title="Quitar fondo">&times;</button>
+          </div>
+        </div>
+        <div class="themes-hidden">
+          <p class="yt-page-desc">Disable Cinematic Mode on General for best results.${isDarkModeActive === 'dark' ? '' : ' <span style="color:#f66;">Activate dark mode to use themes.</span>'}</p>
+          <div class="yt-toggle-grid" style="margin-bottom:10px;">
+            <label class="yt-toggle-row">
               <input type="radio" class="radio-mdcm" name="theme" value="custom" checked>
-              <span class="theme-name">Custom</span>
-            </div>
-          </label>
-          <label>
-            <div class="theme-option option-mdcm theme-selected-normal">
+              <span class="yt-toggle-label">Custom</span>
+            </label>
+            <label class="yt-toggle-row theme-selected-normal">
               <input type="radio" class="radio-mdcm" name="theme" value="normal">
-              <span class="theme-name">Selected Themes</span>
-            </div>
-          </label>
-        </div>
-        <div class="themes-options">
-          <div class="options-mdcm">
-            ${themeOptionsHTML}
+              <span class="yt-toggle-label">Selected Themes</span>
+            </label>
           </div>
-        </div>
-        <div class="theme-custom-options">
-          <div class="options-mdcm">
-            <div class="option-mdcm">
-              <div class="card-items-end">
-                <label>Progressbar Video:</label>
-                <input type="color" id="progressbar-color-picker" class="color-picker-mdcm" value="#ff0000">
-              </div>
-            </div>
-            <div class="option-mdcm">
-              <div class="card-items-end">
-                <label>Background Color:</label>
-                <input type="color" id="bg-color-picker" class="color-picker-mdcm" value="#000000">
-              </div>
-            </div>
-            <div class="option-mdcm">
-              <div class="card-items-end">
-                <label>Primary Color:</label>
-                <input type="color" id="primary-color-picker" class="color-picker-mdcm" value="#ffffff">
-              </div>
-            </div>
-            <div class="option-mdcm">
-              <div class="card-items-end">
-                <label>Secondary Color:</label>
-                <input type="color" id="secondary-color-picker" class="color-picker-mdcm" value="#ffffff">
-              </div>
-            </div>
-            <div class="option-mdcm">
-              <div class="card-items-end">
-                <label>Header Color:</label>
-                <input type="color" id="header-color-picker" class="color-picker-mdcm" value="#000000">
-              </div>
-            </div>
-            <div class="option-mdcm">
-              <div class="card-items-end">
-                <label>Icons Color:</label>
-                <input type="color" id="icons-color-picker" class="color-picker-mdcm" value="#ffffff">
-              </div>
-            </div>
-            <div class="option-mdcm">
-              <div class="card-items-end">
-                <label>Menu Color:</label>
-                <input type="color" id="menu-color-picker" class="color-picker-mdcm" value="#000000">
-              </div>
-            </div>
-            <div class="option-mdcm">
-              <div class="card-items-end">
-                <label>Line Color Preview:</label>
-                <input type="color" id="line-color-picker" class="color-picker-mdcm" value="#ff0000">
-              </div>
-            </div>
-            <div class="option-mdcm">
-              <div class="card-items-end">
-                <label>Time Color Preview:</label>
-                <input type="color" id="time-color-picker" class="color-picker-mdcm" value="#ffffff">
-              </div>
+          <div class="themes-options">
+            <div class="options-mdcm">${themeOptionsHTML}</div>
+          </div>
+          <div class="theme-custom-options">
+            <div class="options-mdcm">
+              <div class="option-mdcm"><div class="card-items-end"><label>Progressbar Video:</label><input type="color" id="progressbar-color-picker" class="color-picker-mdcm" value="#ff0000"></div></div>
+              <div class="option-mdcm"><div class="card-items-end"><label>Background Color:</label><input type="color" id="bg-color-picker" class="color-picker-mdcm" value="#000000"></div></div>
+              <div class="option-mdcm"><div class="card-items-end"><label>Primary Color:</label><input type="color" id="primary-color-picker" class="color-picker-mdcm" value="#ffffff"></div></div>
+              <div class="option-mdcm"><div class="card-items-end"><label>Secondary Color:</label><input type="color" id="secondary-color-picker" class="color-picker-mdcm" value="#ffffff"></div></div>
+              <div class="option-mdcm"><div class="card-items-end"><label>Header Color:</label><input type="color" id="header-color-picker" class="color-picker-mdcm" value="#000000"></div></div>
+              <div class="option-mdcm"><div class="card-items-end"><label>Icons Color:</label><input type="color" id="icons-color-picker" class="color-picker-mdcm" value="#ffffff"></div></div>
+              <div class="option-mdcm"><div class="card-items-end"><label>Menu Color:</label><input type="color" id="menu-color-picker" class="color-picker-mdcm" value="#000000"></div></div>
+              <div class="option-mdcm"><div class="card-items-end"><label>Line Color Preview:</label><input type="color" id="line-color-picker" class="color-picker-mdcm" value="#ff0000"></div></div>
+              <div class="option-mdcm"><div class="card-items-end"><label>Time Color Preview:</label><input type="color" id="time-color-picker" class="color-picker-mdcm" value="#ffffff"></div></div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div id="stats" class="tab-content">
-      <div id="yt-stats-toggle">
-        <div class="stat-row">
-          <div>Foreground Time</div>
-          <div class="progress">
-            <div class="progress-bar total-bar" id="usage-bar"></div>
+      <div id="stats" class="tab-content">
+        <h2 class="yt-page-title">Statistics</h2>
+        <p class="yt-page-desc">Time spent on YouTube</p>
+        <div id="yt-stats-toggle">
+          <div class="stat-row">
+            <div>Foreground Time</div>
+            <div class="progress"><div class="progress-bar total-bar" id="usage-bar"></div></div>
+            <div id="total-time">0h 0m 0s</div>
           </div>
-          <div id="total-time">0h 0m 0s</div>
-        </div>
-        <div class="stat-row">
-          <div>Video Time</div>
-          <div class="progress">
-            <div class="progress-bar video-bar" id="video-bar"></div>
+          <div class="stat-row">
+            <div>Video Time</div>
+            <div class="progress"><div class="progress-bar video-bar" id="video-bar"></div></div>
+            <div id="video-time">0h 0m 0s</div>
           </div>
-          <div id="video-time">0h 0m 0s</div>
-        </div>
-        <div class="stat-row">
-          <div>Shorts Time</div>
-          <div class="progress">
-            <div class="progress-bar shorts-bar" id="shorts-bar"></div>
-          </div>
-          <div id="shorts-time">0h 0m 0s</div>
-        </div>
-      </div>
-    </div>
-
-    <div id="headers" class="tab-content">
-      <div class="options-mdcm">
-        <label>Available in next update</label>
-      </div>
-    </div>
-
-
-    <div id="menu-settings" class="tab-content">
-      <div class="options-mdcm">
-        <h4 style="margin: 10px 0">Menu Appearance</h4>
-      </div>
-      <div class="options-settings-mdcm">
-        <div class="option-settings-mdcm">
-          <label>Backgrounds:</label>
-          <div class="color-boxes" id="bg-color-options">
-            <div class="color-box" data-type="bg" data-value="#252525" style="background-color: #252525;"></div>
-            <div class="color-box" data-type="bg" data-value="#1e1e1e" style="background-color: #1e1e1e;"></div>
-            <div class="color-box" data-type="bg" data-value="#3a3a3a" style="background-color: #3a3a3a;"></div>
-            <div class="color-box" data-type="bg" data-value="#4a4a4a" style="background-color: #4a4a4a;"></div>
-            <div class="color-box" data-type="bg" data-value="#000000" style="background-color: #000000;"></div>
-            <div class="color-box" data-type="bg" data-value="#00000000" style="background-color: #00000000;"></div>
-            <div class="color-box" data-type="bg" data-value="#2d2d2d" style="background-color: #2d2d2d;"></div>
-            <div class="color-box" data-type="bg" data-value="#444" style="background-color: #444;"></div>
-          </div>
-        </div>
-
-        <div class="option-settings-mdcm">
-          <label>Accent Colors:</label>
-          <div class="color-boxes" id="bg-accent-color-options">
-            <div class="color-box" data-type="accent" data-value="#ff0000" style="background-color: #ff0000;"></div>
-            <div class="color-box" data-type="accent" data-value="#000000" style="background-color: #000000;"></div>
-            <div class="color-box" data-type="accent" data-value="#009c37 " style="background-color: #009c37 ;"></div>
-            <div class="color-box" data-type="accent" data-value="#0c02a0 " style="background-color: #0c02a0 ;"></div>
-          </div>
-        </div>
-
-        <div class="option-settings-mdcm">
-          <label>Titles Colors:</label>
-          <div class="color-boxes" id="text-color-options">
-            <div class="color-box" data-type="color" data-value="#ffffff" style="background-color: #ffffff;"></div>
-            <div class="color-box" data-type="color" data-value="#cccccc" style="background-color: #cccccc;"></div>
-            <div class="color-box" data-type="color" data-value="#b3b3b3" style="background-color: #b3b3b3;"></div>
-            <div class="color-box" data-type="color" data-value="#00ffff" style="background-color: #00ffff;"></div>
-            <div class="color-box" data-type="color" data-value="#00ff00" style="background-color: #00ff00;"></div>
-            <div class="color-box" data-type="color" data-value="#ffff00" style="background-color: #ffff00;"></div>
-            <div class="color-box" data-type="color" data-value="#ffcc00" style="background-color: #ffcc00;"></div>
-            <div class="color-box" data-type="color" data-value="#ff66cc" style="background-color: #ff66cc;"></div>
+          <div class="stat-row">
+            <div>Shorts Time</div>
+            <div class="progress"><div class="progress-bar shorts-bar" id="shorts-bar"></div></div>
+            <div id="shorts-time">0h 0m 0s</div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div id="importExportArea">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <h3>Import / Export Settings</h3>
-        <button class="icon-btn-mdcm" id="closeImportExportBtn">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
+      <div id="menu-settings" class="tab-content">
+        <h2 class="yt-page-title">Menu appearance</h2>
+        <p class="yt-page-desc">Colors for this settings panel</p>
+        <div class="options-settings-mdcm">
+          <div class="option-settings-mdcm">
+            <label>Backgrounds</label>
+            <div class="color-boxes" id="bg-color-options">
+              <div class="color-box" data-type="bg" data-value="#0c0c0c" style="background-color:#0c0c0c;"></div>
+              <div class="color-box" data-type="bg" data-value="#252525" style="background-color:#252525;"></div>
+              <div class="color-box" data-type="bg" data-value="#1e1e1e" style="background-color:#1e1e1e;"></div>
+              <div class="color-box" data-type="bg" data-value="#3a3a3a" style="background-color:#3a3a3a;"></div>
+              <div class="color-box" data-type="bg" data-value="#000000" style="background-color:#000000;"></div>
+              <div class="color-box" data-type="bg" data-value="#2d2d2d" style="background-color:#2d2d2d;"></div>
+              <div class="color-box" data-type="bg" data-value="#444444" style="background-color:#444;"></div>
+            </div>
+          </div>
+          <div class="option-settings-mdcm">
+            <label>Accent</label>
+            <div class="color-boxes" id="bg-accent-color-options">
+              <div class="color-box" data-type="accent" data-value="#ff0000" style="background-color:#ff0000;"></div>
+              <div class="color-box" data-type="accent" data-value="#e11d1d" style="background-color:#e11d1d;"></div>
+              <div class="color-box" data-type="accent" data-value="#009c37" style="background-color:#009c37;"></div>
+              <div class="color-box" data-type="accent" data-value="#0c02a0" style="background-color:#0c02a0;"></div>
+              <div class="color-box" data-type="accent" data-value="#000000" style="background-color:#000000;"></div>
+            </div>
+          </div>
+          <div class="option-settings-mdcm">
+            <label>Text</label>
+            <div class="color-boxes" id="text-color-options">
+              <div class="color-box" data-type="color" data-value="#ffffff" style="background-color:#ffffff;"></div>
+              <div class="color-box" data-type="color" data-value="#cccccc" style="background-color:#cccccc;"></div>
+              <div class="color-box" data-type="color" data-value="#b3b3b3" style="background-color:#b3b3b3;"></div>
+              <div class="color-box" data-type="color" data-value="#00ffff" style="background-color:#00ffff;"></div>
+              <div class="color-box" data-type="color" data-value="#00ff00" style="background-color:#00ff00;"></div>
+              <div class="color-box" data-type="color" data-value="#ffff00" style="background-color:#ffff00;"></div>
+              <div class="color-box" data-type="color" data-value="#ffcc00" style="background-color:#ffcc00;"></div>
+              <div class="color-box" data-type="color" data-value="#ff66cc" style="background-color:#ff66cc;"></div>
+            </div>
+          </div>
+        </div>
       </div>
-      <textarea id="config-data" placeholder="Paste configuration here to import"></textarea>
-      <div class="action-buttons-mdcm">
-        <button id="export-config" class="action-btn-mdcm">Export</button>
-        <button id="import-config" class="action-btn-mdcm">Import</button>
+    </main>
+
+    <footer class="popup-footer actions-mdcm">
+      <div class="popup-footer-versions">
+        <span>Ext v2.0.0</span>
+        <span>·</span>
+        <span>Script v2.5.1</span>
       </div>
-    </div>
-
-    <div id="shareDropdown">
-      <a href="https://www.facebook.com/sharer/sharer.php?u=${urlSharedCode}" target="_blank" data-network="facebook"
-        class="share-link"><i class="fa-brands fa-facebook"></i> Facebook</a><br>
-      <a href="https://twitter.com/intent/tweet?url=${urlSharedCode}" target="_blank" data-network="twitter"
-        class="share-link"><i class="fa-brands fa-twitter"></i> Twitter</a><br>
-      <a href="https://api.whatsapp.com/send?text=${urlSharedCode}" target="_blank" data-network="whatsapp"
-        class="share-link"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a><br>
-      <a href="https://www.linkedin.com/sharing/share-offsite/?url=${urlSharedCode}" target="_blank"
-        data-network="linkedin" class="share-link"><i class="fa-brands fa-linkedin"></i> LinkedIn</a><br>
-    </div>
-
-
-  </div>
-  <div class="actions-mdcm">
-    <div class="developer-mdcm">
-      Developed by <a href="https://github.com/DeveloperMDCM" target="_blank"> <i class="fa-brands fa-github"></i> DeveloperMDCM</a>
-    </div>
-    <span style="color: #fff" ;>v2.4.3.2</span>
+      <a href="https://github.com/DeveloperMDCM" target="_blank" rel="noreferrer">
+        <i class="fa-brands fa-github"></i> DeveloperMDCM
+      </a>
+    </footer>
   </div>
   `;
   const panelHTML = policy?.createHTML
@@ -4425,7 +4865,23 @@
 
   $ap(panel);
 
+  // Extension mode: keep panel in DOM (for loadSettings/applySettings) but never show it or the gear.
+  if (IS_EXTENSION) {
+    document.documentElement.dataset.ytToolsExtension = '1';
+    panel.style.cssText =
+      'display:none!important;visibility:hidden!important;pointer-events:none!important;position:fixed!important;left:-99999px!important;opacity:0!important;';
+    GM_addStyle(`
+      html[data-yt-tools-extension="1"] #yt-enhancement-panel,
+      html[data-yt-tools-extension="1"] #toggle-button,
+      html[data-yt-tools-extension="1"] #icon-menu-settings {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+      }
+    `);
+  }
 
+  // --- 12-app.js ---
   function addIcon() {
     const topBar = $e('ytd-topbar-menu-button-renderer');
     if (!topBar || $id('icon-menu-settings')) return;
@@ -4443,46 +4899,70 @@
     let openMenu = false;
     toggleButton.addEventListener('click', () => {
       openMenu = !openMenu;
-      // openMenu
-      //   ? (toggleButton.style.backgroundColor = '#f00')
-      //   : (toggleButton.style.backgroundColor = 'transparent');
-      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+      panel.classList.toggle('is-open', openMenu);
+      panel.style.display = openMenu ? 'flex' : 'none';
     });
 
 
     }
 
 
-  addIcon();
+  // In extension mode the popup owns the UI — do not inject the YouTube gear button.
+  if (!IS_EXTENSION) {
+    addIcon();
+  }
   let openMenu = false;
 
   const close_menu_settings = $e('.close_menu_settings');
+  if (close_menu_settings && !IS_EXTENSION) {
     close_menu_settings.addEventListener('click', () => {
-      openMenu = !openMenu;
-      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+      openMenu = false;
+      panel.classList.remove('is-open');
+      panel.style.display = 'none';
     });
+  }
 
-  // $ap(toggleButton);
+  // Tab + Home navigation (matches extension popup shell)
+  // Scope to panel — YouTube also has #home / other IDs on the page
+  const tabButtons = panel.querySelectorAll('.tab-mdcm');
+  const tabContents = panel.querySelectorAll('.tab-content');
+  const homeNavBtn = panel.querySelector('#home-nav-btn');
 
-
-
-
-  // Tab functionality
-  const tabButtons = $m('.tab-mdcm');
-  const tabContents = $m('.tab-content');
+  function showPanelView(tabName) {
+    tabButtons.forEach((btn) => btn.classList.remove('active'));
+    tabContents.forEach((content) => content.classList.remove('active'));
+    const isHome = tabName === 'yt-tools-home' || tabName === 'home';
+    homeNavBtn?.classList.toggle('active', isHome);
+    const targetId = isHome ? 'yt-tools-home' : tabName;
+    const target = panel.querySelector(`#${targetId}`);
+    if (target) target.classList.add('active');
+    if (!isHome) {
+      const btn = panel.querySelector(`.tab-mdcm[data-tab="${tabName}"]`);
+      if (btn) btn.classList.add('active');
+    }
+  }
 
   tabButtons.forEach((button) => {
     button.addEventListener('click', () => {
       const tabName = button.getAttribute('data-tab');
-      tabButtons.forEach((btn) => btn.classList.remove('active'));
-      tabContents.forEach((content) => content.classList.remove('active'));
-      button.classList.add('active');
-      $id(tabName).classList.add('active');
+      if (tabName) showPanelView(tabName);
     });
   });
 
+  if (homeNavBtn) {
+    homeNavBtn.addEventListener('click', () => showPanelView('yt-tools-home'));
+  }
+
+  function readBtnToggle(id) {
+    const el = $id(id);
+    return el ? el.checked : true;
+  }
+
   // Function to save settings
   function saveSettings() {
+    // Extension popup owns persistence — never overwrite chrome.storage from the hidden DOM panel.
+    if (IS_EXTENSION) return;
+
     const settings = {
       theme: $e('input[name="theme"]:checked').value,
       bgColorPicker: $id('bg-color-picker').value,
@@ -4515,14 +4995,26 @@
       playerSize: $id('player-size-slider').value,
       selectVideoQuality: $id('select-video-qualitys-select').value,
       languagesComments: $id('select-languages-comments-select').value,
-      // menuBgColor: $id('menu-bg-color-picker').value,
-      // menuTextColor: $id('menu-text-color-picker').value,
+      btnThumbnail: readBtnToggle('btn-thumbnail-toggle'),
+      btnBuffer: readBtnToggle('btn-buffer-toggle'),
+      btnFilterEyes: readBtnToggle('btn-filter-eyes-toggle'),
+      btnReset: readBtnToggle('btn-reset-toggle'),
+      btnRepeat: readBtnToggle('btn-repeat-toggle'),
+      btnBookmark: readBtnToggle('btn-bookmark-toggle'),
+      btnContinueWatching: readBtnToggle('btn-continue-toggle'),
+      btnTranscript: readBtnToggle('btn-transcript-toggle'),
+      btnDownloadMp4: readBtnToggle('btn-mp4-toggle'),
+      btnDownloadMp3: readBtnToggle('btn-mp3-toggle'),
+      btnExternalDownload: readBtnToggle('btn-external-toggle'),
+      btnViewExternal: readBtnToggle('btn-view-external-toggle'),
+      btnPip: readBtnToggle('btn-pip-toggle'),
+      btnScreenshot: readBtnToggle('btn-screenshot-toggle'),
+      btnCheckUpdates: readBtnToggle('btn-updates-toggle'),
       menu_developermdcm: {
         bg: selectedBgColor,
         color: selectedTextColor,
         accent: selectedBgAccentColor
       }
-      // menuFontSize: $id('menu-font-size-slider').value,
     };
 
     GM_setValue('ytSettingsMDCM', JSON.stringify(settings));
@@ -4540,7 +5032,7 @@
       $e(`input[name="theme"][value="${settings.theme}"]`).checked = true;
     }
     settings.menu_developermdcm = settings.menu_developermdcm || {
-      bg: "#252525",
+      bg: "#0c0c0c",
       color: "#ffffff",
       accent: "#ff0000"
     };
@@ -4574,9 +5066,25 @@
     $id('player-size-slider').value = settings.playerSize || 100;
     $id('select-video-qualitys-select').value = settings.selectVideoQuality || 'user';
     $id('select-languages-comments-select').value = settings.languagesComments || 'en';
-    // $id('menu-bg-color-picker').value = settings.menuBgColor || '#000000';
-    // $id('menu-text-color-picker').value = settings.menuTextColor || '#ffffff';
-    // $id('menu-font-size-slider').value = settings.menuFontSize || 14;
+    const setBtn = (id, value) => {
+      const el = $id(id);
+      if (el) el.checked = value !== false;
+    };
+    setBtn('btn-thumbnail-toggle', settings.btnThumbnail);
+    setBtn('btn-buffer-toggle', settings.btnBuffer);
+    setBtn('btn-filter-eyes-toggle', settings.btnFilterEyes);
+    setBtn('btn-reset-toggle', settings.btnReset);
+    setBtn('btn-repeat-toggle', settings.btnRepeat);
+    setBtn('btn-bookmark-toggle', settings.btnBookmark);
+    setBtn('btn-continue-toggle', settings.btnContinueWatching);
+    setBtn('btn-transcript-toggle', settings.btnTranscript);
+    setBtn('btn-mp4-toggle', settings.btnDownloadMp4);
+    setBtn('btn-mp3-toggle', settings.btnDownloadMp3);
+    setBtn('btn-external-toggle', settings.btnExternalDownload);
+    setBtn('btn-view-external-toggle', settings.btnViewExternal);
+    setBtn('btn-pip-toggle', settings.btnPip);
+    setBtn('btn-screenshot-toggle', settings.btnScreenshot);
+    setBtn('btn-updates-toggle', settings.btnCheckUpdates);
     // Asegurar existencia de menu_developermdcm
 
 
@@ -4597,7 +5105,10 @@
       el.classList.toggle('selected', el.dataset.value === selectedBgAccentColor);
     });
 
-    // Apply menu colors
+    // Apply menu colors (popup shell + legacy aliases)
+    $sp('--popup-bg', selectedBgColor);
+    $sp('--popup-text', selectedTextColor);
+    $sp('--popup-accent', selectedBgAccentColor);
     $sp('--yt-enhance-menu-bg', selectedBgColor);
     $sp('--yt-enhance-menu-text', selectedTextColor);
     $sp('--yt-enhance-menu-accent', selectedBgAccentColor);
@@ -4628,7 +5139,7 @@
           setTimeout(waitForVideo, 500);
           return;
         }
-
+        
         const settings = JSON.parse(GM_getValue('ytSettingsMDCM', '{}'));
         if (!settings.syncCinematic) {
           // apply cinematic toggle
@@ -4644,7 +5155,7 @@
         const checkPlayback = () => {
           if (video.currentTime >= startTime + 1) {
             const isActive = isCinematicActive();
-
+           
             const cinematicToggle = $id('cinematic-lighting-toggle');
             if (cinematicToggle && cinematicToggle.checked !== isActive) {
               cinematicToggle.checked = isActive;
@@ -4671,6 +5182,7 @@
 
       if (type === 'bg') {
         selectedBgColor = value;
+        $sp('--popup-bg', value);
         $sp('--yt-enhance-menu-bg', value);
         $m('#bg-color-options .color-box').forEach(el => {
           el.classList.remove('selected');
@@ -4678,6 +5190,7 @@
         box.classList.add('selected');
       } else if (type === 'color') {
         selectedTextColor = value;
+        $sp('--popup-text', value);
         $sp('--yt-enhance-menu-text', value);
         $m('#text-color-options .color-box').forEach(el => {
           el.classList.remove('selected');
@@ -4686,6 +5199,7 @@
       }
        else if (type === 'accent') {
         selectedBgAccentColor = value;
+        $sp('--popup-accent', value);
         $sp('--yt-enhance-menu-accent', value);
         $m('#bg-accent-color-options .color-box').forEach(el => {
           el.classList.remove('selected');
@@ -4719,8 +5233,12 @@
       shareBtn.addEventListener('click', function(event) {
         event.stopPropagation();
         const dropdown = $id('shareDropdown');
+        const importExportArea = $id('importExportArea');
+        if (importExportArea) importExportArea.classList.remove('active');
         if (dropdown) {
-          dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+          const open = !dropdown.classList.contains('is-open');
+          dropdown.classList.toggle('is-open', open);
+          dropdown.style.display = open ? 'block' : 'none';
         }
       });
     }
@@ -4729,6 +5247,11 @@
       importExportBtn.dataset.initialized = 'true';
       importExportBtn.addEventListener('click', function() {
         const importExportArea = $id('importExportArea');
+        const dropdown = $id('shareDropdown');
+        if (dropdown) {
+          dropdown.classList.remove('is-open');
+          dropdown.style.display = 'none';
+        }
         if (importExportArea) {
           importExportArea.classList.toggle('active');
         }
@@ -4760,7 +5283,7 @@
     const hasContent = cinematicDiv.innerHTML.trim() !== '';
     const hasCanvas = cinematicDiv.querySelector('canvas') !== null;
     const hasChildren = cinematicDiv.children.length > 0;
-
+   
     const hasCinematicElements = cinematicDiv.querySelector('div[style*="position: fixed"]') !== null;
 
     return hasContent || hasCanvas || hasChildren || hasCinematicElements;
@@ -4776,7 +5299,7 @@
 
     settingsButton.click();
 
-
+   
     const observer = new MutationObserver((mutations) => {
       const menuItems = $m('.ytp-menuitem');
 
@@ -4784,12 +5307,12 @@
         const text = item.textContent?.toLowerCase();
         const icon = item.querySelector('.ytp-menuitem-icon svg path');
 
-
+       
         if (text && (text.includes('cinematic') || text.includes('lighting') || text.includes('cinema'))) {
           console.log('Found cinematic lighting option:', text);
           item.click();
 
-
+         
           setTimeout(() => {
             const menu = $e('.ytp-settings-menu');
             if (menu) {
@@ -4801,12 +5324,12 @@
           return;
         }
 
-
+        
         if (icon && (icon.getAttribute('d')?.includes('M21 7v10H3V7') ||
                     icon.getAttribute('d')?.includes('M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'))) {
           console.log('Found cinematic lighting option by SVG path');
           item.click();
-
+          
           setTimeout(() => {
             const menu = $e('.ytp-settings-menu');
             if (menu) {
@@ -4835,6 +5358,114 @@
     }, 5000);
   }
 
+  function syncPlayerButtonsVisibility(settings) {
+    const root = $e('.containerButtons');
+    if (!root) return;
+    const setVisible = (selector, visible) => {
+      root.querySelectorAll(selector).forEach((el) => {
+        el.style.display = visible ? '' : 'none';
+      });
+    };
+    setVisible('#imagen', settings.btnThumbnail !== false);
+    setVisible('.buffer_video', settings.btnBuffer !== false);
+    // Filter-eyes block (wrapper div containing #eyes)
+    root.querySelectorAll('div').forEach((div) => {
+      if (div.querySelector && div.querySelector('#eyes')) {
+        div.style.display = settings.btnFilterEyes !== false ? '' : 'none';
+      }
+    });
+    setVisible('#reset_button', settings.btnReset !== false);
+    setVisible('#repeatvideo', settings.btnRepeat !== false);
+    const showBookmarks = !!settings.bookmarks && settings.btnBookmark !== false;
+    setVisible('#yt-bookmark-add', showBookmarks);
+    setVisible('#yt-bookmark-toggle', showBookmarks);
+    const showContinue = !!settings.continueWatching && settings.btnContinueWatching !== false;
+    setVisible('#yt-cw-history-toggle', showContinue);
+    setVisible('#yt-transcript-btn', settings.btnTranscript !== false);
+    setVisible('.btn1', settings.btnDownloadMp4 !== false);
+    setVisible('.btn2', settings.btnDownloadMp3 !== false);
+    setVisible('.btn3', settings.btnDownloadMp4 !== false || settings.btnDownloadMp3 !== false);
+    setVisible('.external_link', settings.btnExternalDownload !== false);
+    setVisible('.view_external_link', settings.btnViewExternal !== false);
+    setVisible('.video_picture_to_picture', settings.btnPip !== false);
+    setVisible('.screenshot_video', settings.btnScreenshot !== false);
+    setVisible('.checked_updates', settings.btnCheckUpdates !== false);
+  }
+
+  function syncHiddenPanelFromSettings(settings) {
+    if (!$id('dislikes-toggle')) return;
+    try {
+      const themeVal = String(settings.theme ?? 'custom');
+      const themeInput = $e(`input[name="theme"][value="${themeVal}"]`);
+      if (themeInput) themeInput.checked = true;
+      else if (themeVal !== 'custom' && themeVal !== 'normal') {
+        const normal = $e('input[name="theme"][value="normal"]');
+        if (normal) normal.checked = true;
+      }
+
+      const setVal = (id, value) => {
+        const el = $id(id);
+        if (el && value != null) el.value = value;
+      };
+      const setCheck = (id, value) => {
+        const el = $id(id);
+        if (el) el.checked = !!value;
+      };
+
+      setVal('bg-color-picker', settings.bgColorPicker || '#000000');
+      setVal('progressbar-color-picker', settings.progressbarColorPicker || '#ff0000');
+      setVal('primary-color-picker', settings.primaryColorPicker || '#ffffff');
+      setVal('secondary-color-picker', settings.secondaryColorPicker || '#ffffff');
+      setVal('header-color-picker', settings.headerColorPicker || '#000000');
+      setVal('icons-color-picker', settings.iconsColorPicker || '#ffffff');
+      setVal('menu-color-picker', settings.menuColorPicker || '#000000');
+      setVal('line-color-picker', settings.lineColorPicker || '#ff0000');
+      setVal('time-color-picker', settings.timeColorPicker || '#ffffff');
+      setCheck('dislikes-toggle', settings.dislikes);
+      setCheck('like-dislike-bar-toggle', settings.likeDislikeBar);
+      setCheck('bookmarks-toggle', settings.bookmarks);
+      setCheck('continue-watching-toggle', settings.continueWatching);
+      setCheck('shorts-channel-name-toggle', settings.shortsChannelName);
+      setCheck('themes-toggle', settings.themes);
+      setCheck('translation-toggle', settings.translation);
+      setCheck('avatars-toggle', settings.avatars);
+      setCheck('reverse-mode-toggle', settings.reverseMode);
+      setCheck('wave-visualizer-toggle', settings.waveVisualizer);
+      setVal('select-wave-visualizer-select', settings.waveVisualizerSelected || 'dinamica');
+      setCheck('hide-comments-toggle', settings.hideComments);
+      setCheck('hide-sidebar-toggle', settings.hideSidebar);
+      setCheck('autoplay-toggle', settings.disableAutoplay);
+      setCheck('cinematic-lighting-toggle', settings.cinematicLighting);
+      setCheck('sync-cinematic-toggle', settings.syncCinematic);
+      setCheck('subtitles-toggle', settings.disableSubtitles);
+      setVal('player-size-slider', settings.playerSize ?? 100);
+      setVal('select-video-qualitys-select', settings.selectVideoQuality || 'user');
+      setVal('select-languages-comments-select', settings.languagesComments || 'en');
+      setCheck('btn-thumbnail-toggle', settings.btnThumbnail !== false);
+      setCheck('btn-buffer-toggle', settings.btnBuffer !== false);
+      setCheck('btn-filter-eyes-toggle', settings.btnFilterEyes !== false);
+      setCheck('btn-reset-toggle', settings.btnReset !== false);
+      setCheck('btn-repeat-toggle', settings.btnRepeat !== false);
+      setCheck('btn-bookmark-toggle', settings.btnBookmark !== false);
+      setCheck('btn-continue-toggle', settings.btnContinueWatching !== false);
+      setCheck('btn-transcript-toggle', settings.btnTranscript !== false);
+      setCheck('btn-mp4-toggle', settings.btnDownloadMp4 !== false);
+      setCheck('btn-mp3-toggle', settings.btnDownloadMp3 !== false);
+      setCheck('btn-external-toggle', settings.btnExternalDownload !== false);
+      setCheck('btn-view-external-toggle', settings.btnViewExternal !== false);
+      setCheck('btn-pip-toggle', settings.btnPip !== false);
+      setCheck('btn-screenshot-toggle', settings.btnScreenshot !== false);
+      setCheck('btn-updates-toggle', settings.btnCheckUpdates !== false);
+
+      const menu = settings.menu_developermdcm || {};
+      selectedBgColor = menu.bg || selectedBgColor;
+      selectedTextColor = menu.color || selectedTextColor;
+      selectedBgAccentColor = menu.accent || selectedBgAccentColor;
+    } catch (err) {
+      console.warn('[Youtube Tools] syncHiddenPanelFromSettings', err);
+    }
+  }
+
   // Function to apply settings
   function applySettings() {
     const formulariodescarga = $e('.formulariodescarga');
@@ -4843,56 +5474,140 @@
         formulariodescarga.classList.add('ocultarframe');
         formulariodescargaaudio.classList.add('ocultarframe');
       }
-    const settings = {
-      theme: $e('input[name="theme"]:checked').value,
-      bgColorPicker: $id('bg-color-picker').value,
-      progressbarColorPicker: $id('progressbar-color-picker').value,
-      primaryColorPicker: $id('primary-color-picker').value,
-      secondaryColorPicker: $id('secondary-color-picker').value,
-      headerColorPicker: $id('header-color-picker').value,
-      iconsColorPicker: $id('icons-color-picker').value,
-      menuColorPicker: $id('menu-color-picker').value,
-      lineColorPicker: $id('line-color-picker').value,
-      timeColorPicker: $id('time-color-picker').value,
-      dislikes: $id('dislikes-toggle').checked,
-      likeDislikeBar: $id('like-dislike-bar-toggle').checked,
-      bookmarks: $id('bookmarks-toggle').checked,
-      continueWatching: $id('continue-watching-toggle').checked,
-      shortsChannelName: $id('shorts-channel-name-toggle').checked,
-      themes: $id('themes-toggle').checked,
-      translation: $id('translation-toggle').checked,
-      avatars: $id('avatars-toggle').checked,
-      reverseMode: $id('reverse-mode-toggle').checked,
-      waveVisualizer: $id('wave-visualizer-toggle').checked,
-      waveVisualizerSelected: $id('select-wave-visualizer-select').value,
-      hideComments: $id('hide-comments-toggle').checked,
-      hideSidebar: $id('hide-sidebar-toggle').checked,
-      disableAutoplay: $id('autoplay-toggle').checked,
-      cinematicLighting: $id('cinematic-lighting-toggle').checked,
-      syncCinematic: $id('sync-cinematic-toggle').checked, // NUEVO SETTING
-      disableSubtitles: $id('subtitles-toggle').checked,
-      // fontSize: $id('font-size-slider').value,
-      playerSize: $id('player-size-slider').value,
-      selectVideoQuality: $id('select-video-qualitys-select').value,
-      languagesComments: $id('select-languages-comments-select').value,
-      // menuBgColor: $id('menu-bg-color-picker').value,
-      // menuTextColor: $id('menu-text-color-picker').value,
-      menu_developermdcm: {
-        bg: selectedBgColor,
-        color: selectedTextColor,
-        accent: selectedBgAccentColor
+
+    // Prefer storage when running as extension (popup is source of truth).
+    let settings;
+    try {
+      const stored = JSON.parse(GM_getValue('ytSettingsMDCM', '{}') || '{}');
+      if (IS_EXTENSION || !$id('dislikes-toggle')) {
+        settings = {
+          theme: stored.theme || 'custom',
+          bgColorPicker: stored.bgColorPicker || '#000000',
+          progressbarColorPicker: stored.progressbarColorPicker || '#ff0000',
+          primaryColorPicker: stored.primaryColorPicker || '#ffffff',
+          secondaryColorPicker: stored.secondaryColorPicker || '#ffffff',
+          headerColorPicker: stored.headerColorPicker || '#000000',
+          iconsColorPicker: stored.iconsColorPicker || '#ffffff',
+          menuColorPicker: stored.menuColorPicker || '#000000',
+          lineColorPicker: stored.lineColorPicker || '#ff0000',
+          timeColorPicker: stored.timeColorPicker || '#ffffff',
+          dislikes: !!stored.dislikes,
+          likeDislikeBar: !!stored.likeDislikeBar,
+          bookmarks: !!stored.bookmarks,
+          continueWatching: !!stored.continueWatching,
+          shortsChannelName: !!stored.shortsChannelName,
+          themes: !!stored.themes,
+          translation: !!stored.translation,
+          avatars: !!stored.avatars,
+          reverseMode: !!stored.reverseMode,
+          waveVisualizer: !!stored.waveVisualizer,
+          waveVisualizerSelected: stored.waveVisualizerSelected || 'dinamica',
+          hideComments: !!stored.hideComments,
+          hideSidebar: !!stored.hideSidebar,
+          disableAutoplay: !!stored.disableAutoplay,
+          cinematicLighting: !!stored.cinematicLighting,
+          syncCinematic: !!stored.syncCinematic,
+          disableSubtitles: !!stored.disableSubtitles,
+          playerSize: stored.playerSize ?? 100,
+          selectVideoQuality: stored.selectVideoQuality || 'user',
+          languagesComments: stored.languagesComments || 'en',
+          btnThumbnail: stored.btnThumbnail !== false,
+          btnBuffer: stored.btnBuffer !== false,
+          btnFilterEyes: stored.btnFilterEyes !== false,
+          btnReset: stored.btnReset !== false,
+          btnRepeat: stored.btnRepeat !== false,
+          btnBookmark: stored.btnBookmark !== false,
+          btnContinueWatching: stored.btnContinueWatching !== false,
+          btnTranscript: stored.btnTranscript !== false,
+          btnDownloadMp4: stored.btnDownloadMp4 !== false,
+          btnDownloadMp3: stored.btnDownloadMp3 !== false,
+          btnExternalDownload: stored.btnExternalDownload !== false,
+          btnViewExternal: stored.btnViewExternal !== false,
+          btnPip: stored.btnPip !== false,
+          btnScreenshot: stored.btnScreenshot !== false,
+          btnCheckUpdates: stored.btnCheckUpdates !== false,
+          menu_developermdcm: stored.menu_developermdcm || {
+            bg: selectedBgColor,
+            color: selectedTextColor,
+            accent: selectedBgAccentColor,
+          },
+        };
+        selectedBgColor = settings.menu_developermdcm.bg;
+        selectedTextColor = settings.menu_developermdcm.color;
+        selectedBgAccentColor = settings.menu_developermdcm.accent;
+        if (IS_EXTENSION) syncHiddenPanelFromSettings(settings);
       }
-      // menuFontSize: $id('menu-font-size-slider').value,
-    };
+    } catch (e) {
+      settings = null;
+    }
+
+    if (!settings) {
+      settings = {
+        theme: $e('input[name="theme"]:checked')?.value,
+        bgColorPicker: $id('bg-color-picker')?.value,
+        progressbarColorPicker: $id('progressbar-color-picker')?.value,
+        primaryColorPicker: $id('primary-color-picker')?.value,
+        secondaryColorPicker: $id('secondary-color-picker')?.value,
+        headerColorPicker: $id('header-color-picker')?.value,
+        iconsColorPicker: $id('icons-color-picker')?.value,
+        menuColorPicker: $id('menu-color-picker')?.value,
+        lineColorPicker: $id('line-color-picker')?.value,
+        timeColorPicker: $id('time-color-picker')?.value,
+        dislikes: $id('dislikes-toggle')?.checked,
+        likeDislikeBar: $id('like-dislike-bar-toggle')?.checked,
+        bookmarks: $id('bookmarks-toggle')?.checked,
+        continueWatching: $id('continue-watching-toggle')?.checked,
+        shortsChannelName: $id('shorts-channel-name-toggle')?.checked,
+        themes: $id('themes-toggle')?.checked,
+        translation: $id('translation-toggle')?.checked,
+        avatars: $id('avatars-toggle')?.checked,
+        reverseMode: $id('reverse-mode-toggle')?.checked,
+        waveVisualizer: $id('wave-visualizer-toggle')?.checked,
+        waveVisualizerSelected: $id('select-wave-visualizer-select')?.value,
+        hideComments: $id('hide-comments-toggle')?.checked,
+        hideSidebar: $id('hide-sidebar-toggle')?.checked,
+        disableAutoplay: $id('autoplay-toggle')?.checked,
+        cinematicLighting: $id('cinematic-lighting-toggle')?.checked,
+        syncCinematic: $id('sync-cinematic-toggle')?.checked,
+        disableSubtitles: $id('subtitles-toggle')?.checked,
+        playerSize: $id('player-size-slider')?.value,
+        selectVideoQuality: $id('select-video-qualitys-select')?.value,
+        languagesComments: $id('select-languages-comments-select')?.value,
+        btnThumbnail: readBtnToggle('btn-thumbnail-toggle'),
+        btnBuffer: readBtnToggle('btn-buffer-toggle'),
+        btnFilterEyes: readBtnToggle('btn-filter-eyes-toggle'),
+        btnReset: readBtnToggle('btn-reset-toggle'),
+        btnRepeat: readBtnToggle('btn-repeat-toggle'),
+        btnBookmark: readBtnToggle('btn-bookmark-toggle'),
+        btnContinueWatching: readBtnToggle('btn-continue-toggle'),
+        btnTranscript: readBtnToggle('btn-transcript-toggle'),
+        btnDownloadMp4: readBtnToggle('btn-mp4-toggle'),
+        btnDownloadMp3: readBtnToggle('btn-mp3-toggle'),
+        btnExternalDownload: readBtnToggle('btn-external-toggle'),
+        btnViewExternal: readBtnToggle('btn-view-external-toggle'),
+        btnPip: readBtnToggle('btn-pip-toggle'),
+        btnScreenshot: readBtnToggle('btn-screenshot-toggle'),
+        btnCheckUpdates: readBtnToggle('btn-updates-toggle'),
+        menu_developermdcm: {
+          bg: selectedBgColor,
+          color: selectedTextColor,
+          accent: selectedBgAccentColor
+        }
+      };
+    }
+    $sp('--popup-bg', settings.menu_developermdcm.bg);
+    $sp('--popup-text', settings.menu_developermdcm.color);
+    $sp('--popup-accent', settings.menu_developermdcm.accent);
     $sp('--yt-enhance-menu-bg', settings.menu_developermdcm.bg);
     $sp('--yt-enhance-menu-text', settings.menu_developermdcm.color);
     $sp('--yt-enhance-menu-accent', settings.menu_developermdcm.accent);
 
     renderizarButtons();
 
-
         // Initialize header buttons
-    initializeHeaderButtons();
+    if (!IS_EXTENSION) {
+      initializeHeaderButtons();
+    }
 
 
 
@@ -4991,16 +5706,17 @@
         localStorage.setItem('yt-player-quality', JSON.stringify(defaultQualitySettings));
       }
     }
-
+   
     // Apply menu appearance settings
     // $sp('--yt-enhance-menu-bg', settings.menuBgColor);
     // $sp('--yt-enhance-menu-text', settings.menuTextColor);
     // $sp('--yt-enhance-menu-font-size', `${settings.menuFontSize}px`);
 
-    // Apply theme
-    const selectedTheme = themes[settings.theme];
-    const isThemeCustom = $e(`input[name="theme"][value="custom"]`).checked;
-    const isThemeNormal = $e(`input[name="theme"][value="normal"]`).checked;
+    // Apply theme (use settings, not hidden DOM radios — popup is source of truth in extension)
+    const themeKey = String(settings.theme ?? 'custom');
+    const selectedTheme = themes[themeKey] || themes[0];
+    const isThemeCustom = themeKey === 'custom';
+    const isThemeNormal = themeKey === 'normal';
     const themeCustomOptions = $e('.theme-custom-options');
     const themeNormal = $e('.theme-selected-normal');
     // Dynamic CSS (avoid GM_addStyle accumulating thousands of style tags)
@@ -5009,13 +5725,25 @@
       if (!css) return;
       dynamicCss += `\n${css}\n`;
     };
-    if(isThemeCustom != undefined) {
-      themeNormal.style.display = "flex"
-      themeCustomOptions.style.display = "flex";
-      $e('.themes-options').style.display = "none";
-    }
-    if(isThemeNormal) {
-      $e(`input[name="theme"][value="custom"]`).checked = false;
+    if (themeNormal && themeCustomOptions) {
+      if (isThemeCustom) {
+        themeNormal.style.display = 'flex';
+        themeCustomOptions.style.display = 'flex';
+        const opts = $e('.themes-options');
+        if (opts) opts.style.display = 'none';
+      } else if (isThemeNormal) {
+        const customRadio = $e('input[name="theme"][value="custom"]');
+        if (customRadio) customRadio.checked = false;
+        themeNormal.style.display = 'flex';
+        themeCustomOptions.style.display = 'none';
+        const opts = $e('.themes-options');
+        if (opts) opts.style.display = 'block';
+      } else {
+        themeNormal.style.display = 'none';
+        themeCustomOptions.style.display = 'none';
+        const opts = $e('.themes-options');
+        if (opts) opts.style.display = 'block';
+      }
     }
 
 
@@ -5047,8 +5775,11 @@
             $sp('--yt-spec-text-primary', selectedTheme.textColor);
             $sp('--yt-spec-text-secondary', selectedTheme.textColor);
             $sp('--yt-spec-menu-background', selectedTheme.gradient);
-            $sp('--yt-spec-icon-inactive', selectedTheme.textColor);
-            $sp('--yt-spec-brand-icon-inactive', selectedTheme.textColor);
+            // Same pipeline as custom iconsColorPicker — one color for all YT + toolbar icons
+            const iconColor = selectedTheme.colorIcons || selectedTheme.textLogo || '#ffffff';
+            const logoColor = selectedTheme.textLogo || iconColor;
+            $sp('--yt-spec-icon-inactive', iconColor);
+            $sp('--yt-spec-brand-icon-inactive', iconColor);
             $sp('--yt-spec-brand-icon-active', selectedTheme.gradient);
             $sp('--yt-spec-static-brand-red', selectedTheme.gradient); // line current time
             $sp('--yt-spec-raised-background', selectedTheme.raised);
@@ -5056,14 +5787,8 @@
             $sp('--yt-spec-static-brand-white', selectedTheme.textColor);
             $sp('--ytd-searchbox-background', selectedTheme.gradient);
             $sp('--ytd-searchbox-text-color', selectedTheme.textColor);
-            $sp('--ytcp-text-primary', settings.textColor);
+            $sp('--ytcp-text-primary', selectedTheme.textColor);
             addDynamicCss(`
-              .botones_div {
-              background-color: transparent;
-              border: none;
-              color: #999999;
-              user-select: none;
-            }
               .ytp-menuitem[aria-checked=true] .ytp-menuitem-toggle-checkbox {
               background:  ${selectedTheme.gradient} !important;
               }
@@ -5085,28 +5810,93 @@
             color: ${selectedTheme.videoDuration} !important;
             background: ${selectedTheme.gradient} !important;
             }
-            #logo-icon {
-            color:  ${selectedTheme.textLogo} !important;
+
+          /* === iconsColorPicker-equivalent rules (preset colorIcons) === */
+          .ytp-menuitem .ytp-menuitem-icon svg path {
+            fill: ${iconColor} !important;
           }
+          a svg > path,
+          .ytp-button svg path {
+            fill: ${iconColor} !important;
+          }
+          svg.path {
+            fill: ${iconColor} !important;
+          }
+          svg {
+            color: ${iconColor} !important;
+          }
+          .ytp-volume-slider-handle:before,
+          .ytp-volume-slider-handle,
+          .ytp-tooltip.ytp-preview:not(.ytp-text-detail) {
+            background-color: ${iconColor} !important;
+          }
+          .ytp-autonav-toggle-button[aria-checked=true] {
+            background-color: ${iconColor} !important;
+          }
+          .tp-yt-iron-icon {
+            fill: ${iconColor} !important;
+          }
+          .botones_div {
+            background-color: transparent !important;
+            background: transparent !important;
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+            color: ${iconColor} !important;
+            user-select: none;
+          }
+          /* Color via currentColor only — do not force stroke on all paths
+             (Tabler has a full-box path with stroke="none"; forcing stroke draws a square) */
+          .botones_div svg,
+          .containerButtons .botones_div svg {
+            color: ${iconColor} !important;
+            fill: none !important;
+          }
+          .yt-spec-icon-shape {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            color: ${iconColor} !important;
+          }
+          .ytp-time-current, .ytp-time-separator, .ytp-time-duration {
+            color: ${iconColor} !important;
+          }
+          #logo-icon,
+          ytd-logo #logo-icon,
+          #logo #logo-icon,
+          ytd-masthead ytd-logo #logo-icon {
+            color: ${logoColor} !important;
+          }
+          #buttons.ytd-masthead yt-icon,
+          #buttons.ytd-masthead .yt-spec-icon-shape,
+          #buttons.ytd-masthead .yt-spec-button-shape-next--overlay.yt-spec-button-shape-next--text,
           .yt-spec-button-shape-next--overlay.yt-spec-button-shape-next--text {
-            color:  ${selectedTheme.iconsColor} !important;
+            color: ${iconColor} !important;
           }
           .ytd-topbar-menu-button-renderer #button.ytd-topbar-menu-button-renderer {
-            color:  ${selectedTheme.iconsColor} !important;
+            color: ${iconColor} !important;
           }
           .yt-spec-icon-badge-shape--style-overlay .yt-spec-icon-badge-shape__icon {
-            color:  ${selectedTheme.iconsColor} !important;
+            color: ${iconColor} !important;
+          }
+          ytd-masthead #guide-button yt-icon,
+          ytd-masthead #guide-button .yt-spec-icon-shape,
+          ytd-masthead #start yt-icon,
+          ytd-masthead #end yt-icon,
+          ytd-masthead ytd-button-renderer yt-icon,
+          ytd-masthead ytd-notification-topbar-button-renderer yt-icon {
+            color: ${iconColor} !important;
           }
           .ytp-svg-fill {
-            fill:  ${selectedTheme.iconsColor} !important;
+            fill: ${iconColor} !important;
           }
-          #ytp-id-30,#ytp-id-17,#ytp-id-19,#ytp-id-20{
-            fill:  ${selectedTheme.iconsColor} !important;
+          #ytp-id-30,#ytp-id-17,#ytp-id-19,#ytp-id-20 {
+            fill: ${iconColor} !important;
           }
-
 
             `);
-
         } else if(isDarkModeActive === 'dark' && isThemeCustom) {
           $sp('--yt-spec-base-background', settings.bgColorPicker);
           $sp('--yt-spec-text-primary', settings.primaryColorPicker);
@@ -5141,13 +5931,13 @@
                 a svg > path, .ytp-button svg path  {
                   fill: ${settings.iconsColorPicker} !important;
               }
-                svg.path{
+                svg.path{ 
                  fill: ${settings.iconsColorPicker} !important;
                 }
 
               svg {
                 color: ${settings.iconsColorPicker} !important;
-                }
+                } 
               .ytp-volume-slider-handle:before, .ytp-volume-slider-handle, .ytp-tooltip.ytp-preview:not(.ytp-text-detail) {
                 background-color: ${settings.iconsColorPicker} !important;
               }
@@ -5160,9 +5950,16 @@
 
              .botones_div {
             background-color: transparent;
-            border: none;
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
             color: ${settings.iconsColorPicker} !important;
             user-select: none;
+          }
+          .botones_div svg,
+          .containerButtons .botones_div svg {
+            color: ${settings.iconsColorPicker} !important;
+            fill: none !important;
           }
               #container.ytd-searchbox {
               color: red !important;
@@ -5197,9 +5994,16 @@
             color: ${settings.timeColorPicker} !important;
              background: ${settings.secondaryColor} !important;
             }
-             #logo-icon {
-             color:  ${settings.primaryColorPicker} !important;
+             #logo-icon,
+             ytd-logo #logo-icon,
+             #logo #logo-icon,
+             ytd-masthead ytd-logo yt-icon {
+             color: unset !important;
+             fill: unset !important;
           }
+          #buttons.ytd-masthead yt-icon,
+          #buttons.ytd-masthead .yt-spec-icon-shape,
+          #buttons.ytd-masthead .yt-spec-button-shape-next--overlay.yt-spec-button-shape-next--text,
           .yt-spec-button-shape-next--overlay.yt-spec-button-shape-next--text {
             color:  ${settings.iconsColorPicker} !important;
           }
@@ -5263,10 +6067,15 @@
     // Apply new features (safe, no heavy loops)
     applyBookmarksIfEnabled(settings);
     setupContinueWatchingFeature(settings.continueWatching);
+    // After feature setup so bookmark / continue-watching buttons respect both feature + btn toggles
+    syncPlayerButtonsVisibility(settings);
     scheduleLikeBarUpdate(settings, 5);
     setupShortsChannelNameFeature(settings.shortsChannelName);
     setupLockupCachedStats();
    function checkForVideo() {
+    // Keep wave style in sync with popup/storage (even if analyzer already running)
+    waveStyle = settings.waveVisualizerSelected || waveStyle || 'dinamica';
+
     if (!settings.waveVisualizer) {
       cleanup(true); // Limpieza completa
       return;
@@ -5743,19 +6552,22 @@
 
 
     function createControlPanelWave() {
+      // Always refresh style from current settings (popup may change it live)
+      waveStyle = settings.waveVisualizerSelected || waveStyle || 'dinamica';
       if (controlPanel) return;
 
       controlPanel = $cl('div');
       controlPanel.id = 'wave-visualizer-control';
       const selectAppend = $id('select-wave-visualizer-select');
-      waveStyle = settings.waveVisualizerSelected;
 
-      selectAppend.addEventListener('change', (e) => {
+      if (selectAppend && selectAppend.dataset.ytWaveBound !== '1') {
+        selectAppend.dataset.ytWaveBound = '1';
+        selectAppend.addEventListener('change', (e) => {
           waveStyle = e.target.value;
           selectAppend.value = e.target.value;
           saveSettings();
-      });
-
+        });
+      }
   }
 
 
@@ -5994,8 +6806,8 @@
 
   updateUI();
 
-  // end stats
-  if (__ytToolsRuntime.settingsLoaded) {
+  // end stats — only persist from DOM in Tampermonkey (never in extension popup mode)
+  if (__ytToolsRuntime.settingsLoaded && !IS_EXTENSION) {
     saveSettings();
   }
 
@@ -6430,17 +7242,17 @@
       // for background image file photo higt quality
       const fileInput = $id('background_image');
       const backgroundDiv = $e('ytd-app');
-
+ 
       const storedImage = localStorage.getItem('backgroundImage');
       if (storedImage) {
         backgroundDiv.style = `
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
-
+ 
         background-image: url(${storedImage}) !important`;
       }
-
+ 
       fileInput.addEventListener('change', (event) => {
         const file = event.target.files[0];
         if (file) {
@@ -6572,7 +7384,7 @@
 
   console.log(
     '%cYoutube Tools Extension NEW UI\n' +
-      '%cRun %c(v2.4.3.2)\n' +
+      '%cRun %c(v2.5.1)\n' +
       'By: DeveloperMDCM.',
     HEADER_STYLE,
     CODE_STYLE,
@@ -6694,13 +7506,13 @@
       const cinematicToggle = $e('#cinematic-lighting-toggle');
       const syncToggle = $e('#sync-cinematic-toggle');
       const cinematicDiv = $id('cinematics');
-
+      
       if (cinematicToggle.checked) {
         Notify('success', 'Cinematic mode enabled');
       } else {
         Notify('success', 'Cinematic mode disabled');
       }
-
+      
       // Aplicar el comportamiento según el estado de sincronización
       if (syncToggle.checked) {
         // Si hay sincronización, usar toggleCinematicLighting
@@ -6723,7 +7535,7 @@
       const syncToggle = $e('#sync-cinematic-toggle');
       const cinematicToggle = $e('#cinematic-lighting-toggle');
       const cinematicDiv = $id('cinematics');
-
+      
       if (syncToggle.checked) {
         Notify('success', 'Sync with YouTube enabled');
         // Si se activa la sincronización y el modo cinematic está activado, sincronizar con YouTube
@@ -6839,5 +7651,483 @@
       });
     }
 
+  // --- 13-transcript.js ---
+  const __ytTranscriptState = {
+    panelOpen: false,
+    tracks: [],
+    cues: [],
+    text: '',
+    videoId: null,
+    langIndex: 0,
+    translate: '',
+    withTimestamps: true,
+    loading: false,
+    resolved: false,
+    fetchToken: 0,
+  };
+
+  function ytTranscriptPageWindow() {
+    try {
+      if (typeof unsafeWindow !== 'undefined' && unsafeWindow) return unsafeWindow;
+    } catch (e) {}
+    return typeof window !== 'undefined' ? window : null;
+  }
+
+  function ytTranscriptEscapeHtml(str) {
+    return String(str == null ? '' : str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function ytTranscriptTrackName(track) {
+    const name = track?.name;
+    if (name?.simpleText) return name.simpleText;
+    if (Array.isArray(name?.runs)) return name.runs.map((r) => r.text || '').join('').trim();
+    return track?.languageCode || 'Unknown';
+  }
+
+  // Extract a JSON object that follows `marker` in a page HTML string.
+  function ytTranscriptExtractJson(html, marker) {
+    const at = html.indexOf(marker);
+    if (at === -1) return null;
+    const start = html.indexOf('{', at);
+    if (start === -1) return null;
+    let depth = 0;
+    let inString = false;
+    let escaped = false;
+    for (let i = start; i < html.length; i++) {
+      const ch = html[i];
+      if (inString) {
+        if (escaped) escaped = false;
+        else if (ch === '\\') escaped = true;
+        else if (ch === '"') inString = false;
+        continue;
+      }
+      if (ch === '"') inString = true;
+      else if (ch === '{') depth++;
+      else if (ch === '}') {
+        depth--;
+        if (depth === 0) return html.slice(start, i + 1);
+      }
+    }
+    return null;
+  }
+
+  async function ytTranscriptFetchPagePlayerResponse() {
+    const pageWin = ytTranscriptPageWindow();
+    try {
+      if (pageWin && pageWin.ytInitialPlayerResponse) return pageWin.ytInitialPlayerResponse;
+    } catch (e) {}
+    const res = await fetch(window.location.href, { credentials: 'include' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const html = await res.text();
+    const json = ytTranscriptExtractJson(html, 'ytInitialPlayerResponse');
+    if (!json) throw new Error('Player response not found');
+    return JSON.parse(json);
+  }
+
+  // The WEB caption URLs now return empty bodies without a proof-of-origin token.
+  // The ANDROID InnerTube client still returns working caption track URLs.
+  async function ytTranscriptFetchInnertubePlayer(videoId) {
+    const client = {
+      clientName: 'ANDROID',
+      clientVersion: '20.10.38',
+      androidSdkVersion: 30,
+      hl: 'en',
+      gl: 'US',
+    };
+    try {
+      const cfg = ytTranscriptPageWindow()?.ytcfg;
+      const hl = cfg?.get?.('HL');
+      const gl = cfg?.get?.('GL');
+      if (hl) client.hl = hl;
+      if (gl) client.gl = gl;
+    } catch (e) {}
+
+    const res = await fetch('https://www.youtube.com/youtubei/v1/player?prettyPrint=false', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        context: { client },
+        videoId,
+        contentCheckOk: true,
+        racyCheckOk: true,
+      }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  }
+
+  async function ytTranscriptResolvePlayerResponse(videoId) {
+    try {
+      const android = await ytTranscriptFetchInnertubePlayer(videoId);
+      if (ytTranscriptGetTracks(android).length) return android;
+      const page = await ytTranscriptFetchPagePlayerResponse();
+      if (ytTranscriptGetTracks(page).length) return page;
+      return android;
+    } catch (err) {
+      console.warn('[Youtube Tools] innertube player failed, using page response', err);
+      return ytTranscriptFetchPagePlayerResponse();
+    }
+  }
+
+  function ytTranscriptGetTracks(playerResponse) {
+    const list = playerResponse?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
+    return Array.isArray(list) ? list.filter((t) => t && t.baseUrl) : [];
+  }
+
+  function ytTranscriptFormatTime(sec) {
+    const total = Math.max(0, Math.floor(Number(sec) || 0));
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const s = total % 60;
+    const mm = h > 0 ? String(m).padStart(2, '0') : String(m);
+    return `${h > 0 ? `${h}:` : ''}${mm}:${String(s).padStart(2, '0')}`;
+  }
+
+  function ytTranscriptParseJson3(data) {
+    const events = Array.isArray(data?.events) ? data.events : [];
+    const cues = [];
+    for (const ev of events) {
+      if (!Array.isArray(ev?.segs)) continue;
+      const text = ev.segs.map((s) => s.utf8 || '').join('').replace(/\s+/g, ' ').trim();
+      if (!text) continue;
+      cues.push({ start: (Number(ev.tStartMs) || 0) / 1000, text });
+    }
+    return cues;
+  }
+
+  function ytTranscriptParseXml(xml) {
+    const doc = new DOMParser().parseFromString(xml, 'text/xml');
+    return Array.from(doc.querySelectorAll('text'))
+      .map((node) => ({
+        start: parseFloat(node.getAttribute('start')) || 0,
+        text: (node.textContent || '').replace(/\s+/g, ' ').trim(),
+      }))
+      .filter((cue) => cue.text);
+  }
+
+  async function ytTranscriptFetchCues(track, tlang) {
+    const jsonUrl = new URL(track.baseUrl);
+    jsonUrl.searchParams.set('fmt', 'json3');
+    if (tlang) jsonUrl.searchParams.set('tlang', tlang);
+
+    const res = await fetch(jsonUrl.toString(), { credentials: 'include' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const contentType = res.headers.get('content-type') || '';
+    const body = await res.text();
+
+    if (body.trim().startsWith('<')) return ytTranscriptParseXml(body);
+
+    try {
+      const cues = ytTranscriptParseJson3(JSON.parse(body));
+      if (cues.length) return cues;
+    } catch (e) {}
+
+    if (contentType.includes('json')) return [];
+    return ytTranscriptParseXml(body);
+  }
+
+  function ytTranscriptBuildText(cues, withTimestamps) {
+    if (!cues || !cues.length) return '';
+    if (withTimestamps) {
+      return cues.map((c) => `[${ytTranscriptFormatTime(c.start)}] ${c.text}`).join('\n');
+    }
+    let out = '';
+    for (const cue of cues) {
+      out += `${cue.text} `;
+      if (/[.!?。！？…]["')\]]?$/.test(cue.text)) out += '\n';
+    }
+    out = out.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+    if (!out.includes('\n') && cues.length > 1) out = cues.map((c) => c.text).join(' ');
+    return out;
+  }
+
+  function ytTranscriptFilename() {
+    const id = getCurrentVideoId() || 'video';
+    let title = '';
+    try {
+      title = $e('h1.style-scope.ytd-watch-metadata')?.innerText || '';
+      if (!title) title = (document.title || '').replace(/\s*-\s*YouTube\s*$/, '');
+    } catch (e) {}
+    title = String(title).replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
+    return `${title || id} - transcript.txt`;
+  }
+
+  function ytTranscriptDownloadText(text) {
+    const blob = new Blob([`\uFEFF${text}`], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = $cl('a');
+    link.href = url;
+    link.download = ytTranscriptFilename();
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+
+  async function ytTranscriptCopyText(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (e) {
+      const area = $cl('textarea');
+      area.value = text;
+      area.setAttribute('readonly', '');
+      area.style.cssText = 'position:fixed;left:-9999px;top:0;';
+      document.body.appendChild(area);
+      area.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+      area.remove();
+      return ok;
+    }
+  }
+
+  function ytTranscriptSetStatus(message, kind) {
+    const status = $id('yt-tr-status');
+    if (!status) return;
+    status.textContent = message || '';
+    status.dataset.kind = kind || '';
+  }
+
+  function ytTranscriptUpdatePreview() {
+    const preview = $id('yt-tr-preview');
+    const copyBtn = $id('yt-tr-copy');
+    const downloadBtn = $id('yt-tr-download');
+    const text = ytTranscriptBuildText(__ytTranscriptState.cues, __ytTranscriptState.withTimestamps);
+    __ytTranscriptState.text = text;
+
+    if (preview) preview.textContent = text.length > 8000 ? `${text.slice(0, 8000)}\n…` : text;
+    const hasText = !!text;
+    if (copyBtn) copyBtn.disabled = !hasText;
+    if (downloadBtn) downloadBtn.disabled = !hasText;
+  }
+
+  function ytTranscriptRenderPanel() {
+    const panel = $id('yt-transcript-panel');
+    if (!panel) return;
+
+    const tracks = __ytTranscriptState.tracks;
+    if (!__ytTranscriptState.resolved) {
+      panel.innerHTML = `
+        <div class="yt-tr-header">
+          <span class="yt-tr-title"><i class="fa-solid fa-align-left"></i> Transcript</span>
+          <button type="button" class="yt-tr-close" id="yt-tr-close" title="Close">✕</button>
+        </div>
+        <div class="yt-tr-empty">Reading available captions…</div>
+      `;
+      $id('yt-tr-close')?.addEventListener('click', () => ytTranscriptToggle(false));
+      return;
+    }
+    if (!tracks.length) {
+      panel.innerHTML = `
+        <div class="yt-tr-header">
+          <span class="yt-tr-title"><i class="fa-solid fa-align-left"></i> Transcript</span>
+          <button type="button" class="yt-tr-close" id="yt-tr-close" title="Close">✕</button>
+        </div>
+        <div class="yt-tr-empty">No captions / transcript available for this video.</div>
+      `;
+      $id('yt-tr-close')?.addEventListener('click', () => ytTranscriptToggle(false));
+      return;
+    }
+
+    const langOptions = tracks
+      .map((track, index) => {
+        const auto = track.kind === 'asr' ? ' (auto)' : '';
+        return `<option value="${index}">${ytTranscriptEscapeHtml(ytTranscriptTrackName(track) + auto)}</option>`;
+      })
+      .join('');
+
+    const translateOptions = Object.entries(languagesTranslate)
+      .map(([code, name]) => `<option value="${code}">${ytTranscriptEscapeHtml(name)}</option>`)
+      .join('');
+
+    panel.innerHTML = `
+      <div class="yt-tr-header">
+        <span class="yt-tr-title"><i class="fa-solid fa-align-left"></i> Transcript</span>
+        <button type="button" class="yt-tr-close" id="yt-tr-close" title="Close">✕</button>
+      </div>
+      <div class="yt-tr-controls">
+        <label class="yt-tr-field">
+          <span>Language</span>
+          <select id="yt-tr-lang">${langOptions}</select>
+        </label>
+        <label class="yt-tr-field">
+          <span>Translate to</span>
+          <select id="yt-tr-translate">
+            <option value="">Original (no translation)</option>
+            ${translateOptions}
+          </select>
+        </label>
+        <label class="yt-tr-check">
+          <input type="checkbox" id="yt-tr-timestamps"${__ytTranscriptState.withTimestamps ? ' checked' : ''}>
+          <span>Include timestamps</span>
+        </label>
+      </div>
+      <div class="yt-tr-actions">
+        <button type="button" class="yt-tr-btn" id="yt-tr-copy" disabled><i class="fa-solid fa-copy"></i> Copy</button>
+        <button type="button" class="yt-tr-btn primary" id="yt-tr-download" disabled><i class="fa-solid fa-download"></i> Download .txt</button>
+      </div>
+      <div class="yt-tr-status" id="yt-tr-status"></div>
+      <pre class="yt-tr-preview" id="yt-tr-preview"></pre>
+    `;
+
+    $id('yt-tr-close')?.addEventListener('click', () => ytTranscriptToggle(false));
+
+    const langSelect = $id('yt-tr-lang');
+    const translateSelect = $id('yt-tr-translate');
+    const timestampsCheck = $id('yt-tr-timestamps');
+
+    if (langSelect) langSelect.value = String(__ytTranscriptState.langIndex || 0);
+    if (translateSelect) translateSelect.value = __ytTranscriptState.translate || '';
+
+    langSelect?.addEventListener('change', () => {
+      __ytTranscriptState.langIndex = Number(langSelect.value) || 0;
+      ytTranscriptLoad();
+    });
+    translateSelect?.addEventListener('change', () => {
+      __ytTranscriptState.translate = translateSelect.value || '';
+      ytTranscriptLoad();
+    });
+    timestampsCheck?.addEventListener('change', () => {
+      __ytTranscriptState.withTimestamps = !!timestampsCheck.checked;
+      ytTranscriptUpdatePreview();
+    });
+
+    $id('yt-tr-copy')?.addEventListener('click', async () => {
+      if (!__ytTranscriptState.text) return;
+      const ok = await ytTranscriptCopyText(__ytTranscriptState.text);
+      ytTranscriptSetStatus(ok ? 'Transcript copied to clipboard' : 'Could not copy transcript', ok ? 'ok' : 'error');
+      if (ok) Notify('success', 'Transcript copied');
+    });
+    $id('yt-tr-download')?.addEventListener('click', () => {
+      if (!__ytTranscriptState.text) return;
+      ytTranscriptDownloadText(__ytTranscriptState.text);
+      ytTranscriptSetStatus('Transcript downloaded as .txt', 'ok');
+      Notify('success', 'Transcript downloaded');
+    });
+  }
+
+  async function ytTranscriptLoad() {
+    const tracks = __ytTranscriptState.tracks;
+    if (!tracks.length) return;
+
+    const token = ++__ytTranscriptState.fetchToken;
+    const track = tracks[__ytTranscriptState.langIndex] || tracks[0];
+    const tlang = __ytTranscriptState.translate;
+
+    __ytTranscriptState.loading = true;
+    ytTranscriptSetStatus('Loading transcript…', 'loading');
+
+    try {
+      const cues = await ytTranscriptFetchCues(track, tlang);
+      if (token !== __ytTranscriptState.fetchToken) return;
+      __ytTranscriptState.cues = cues;
+      __ytTranscriptState.loading = false;
+      if (!cues.length) {
+        ytTranscriptSetStatus('No transcript content for this language.', 'error');
+      } else {
+        const shown = `${cues.length} segments${tlang ? ` · translated to ${languagesTranslate[tlang] || tlang}` : ''}`;
+        ytTranscriptSetStatus(shown, 'ok');
+      }
+      ytTranscriptUpdatePreview();
+    } catch (err) {
+      if (token !== __ytTranscriptState.fetchToken) return;
+      __ytTranscriptState.loading = false;
+      __ytTranscriptState.cues = [];
+      ytTranscriptUpdatePreview();
+      ytTranscriptSetStatus('Could not load transcript. Try another language.', 'error');
+      console.warn('[Youtube Tools] transcript error', err);
+    }
+  }
+
+  async function ytTranscriptEnsureLoaded(videoId) {
+    if (__ytTranscriptState.videoId === videoId && __ytTranscriptState.tracks.length) return;
+    __ytTranscriptState.videoId = videoId;
+    __ytTranscriptState.tracks = [];
+    __ytTranscriptState.cues = [];
+    __ytTranscriptState.langIndex = 0;
+    __ytTranscriptState.translate = '';
+    __ytTranscriptState.text = '';
+    __ytTranscriptState.resolved = false;
+    ytTranscriptRenderPanel();
+    ytTranscriptSetStatus('Reading available captions…', 'loading');
+    try {
+      const playerResponse = await ytTranscriptResolvePlayerResponse(videoId);
+      if (__ytTranscriptState.videoId !== videoId) return;
+      __ytTranscriptState.tracks = ytTranscriptGetTracks(playerResponse);
+      __ytTranscriptState.resolved = true;
+      ytTranscriptRenderPanel();
+      if (__ytTranscriptState.tracks.length) await ytTranscriptLoad();
+      else ytTranscriptSetStatus('No captions / transcript available for this video.', 'error');
+    } catch (err) {
+      if (__ytTranscriptState.videoId !== videoId) return;
+      __ytTranscriptState.resolved = true;
+      ytTranscriptRenderPanel();
+      ytTranscriptSetStatus('Could not read captions for this video.', 'error');
+      console.warn('[Youtube Tools] transcript error', err);
+    }
+  }
+
+  function ytTranscriptToggle(force) {
+    const panel = $id('yt-transcript-panel');
+    if (!panel) return;
+    __ytToolsRuntime.transcriptPanelOpen = force == null
+      ? !__ytToolsRuntime.transcriptPanelOpen
+      : !!force;
+    panel.style.display = __ytToolsRuntime.transcriptPanelOpen ? 'block' : 'none';
+    if (__ytToolsRuntime.transcriptPanelOpen) {
+      const videoId = getCurrentVideoId();
+      if (!videoId) return;
+      ytTranscriptEnsureLoaded(videoId);
+      setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+    }
+  }
+
+  function ytTranscriptHandleButtonClick() {
+    if (!window.location.href.includes('youtube.com/watch')) {
+      Notify('info', 'Open a video to use the transcript tool');
+      return;
+    }
+    ytTranscriptToggle();
+  }
+
+  (function ytTranscriptBind() {
+    if (__ytToolsRuntime.transcriptClickHandlerInitialized) return;
+    __ytToolsRuntime.transcriptClickHandlerInitialized = true;
+
+    document.addEventListener('click', (e) => {
+      const target = e.target;
+      if (!(target instanceof Element)) return;
+      if (!target.closest('#yt-transcript-btn')) return;
+      e.preventDefault();
+      e.stopPropagation();
+      ytTranscriptHandleButtonClick();
+    });
+
+    document.addEventListener('yt-navigate-finish', () => {
+      // Reset between videos (SPA navigation keeps the panel in the DOM).
+      const wasOpen = __ytToolsRuntime.transcriptPanelOpen;
+      __ytTranscriptState.videoId = null;
+      __ytTranscriptState.tracks = [];
+      __ytTranscriptState.cues = [];
+      __ytTranscriptState.text = '';
+      __ytTranscriptState.resolved = false;
+      const panel = $id('yt-transcript-panel');
+      if (!panel) return;
+      const onWatch = window.location.href.includes('youtube.com/watch');
+      if (wasOpen && onWatch) {
+        ytTranscriptToggle(true);
+      } else {
+        panel.innerHTML = '';
+        panel.style.display = 'none';
+        __ytToolsRuntime.transcriptPanelOpen = false;
+      }
+    });
+  })();
 
 })();

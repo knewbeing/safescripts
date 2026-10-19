@@ -1,0 +1,32 @@
+{
+  "slug": "MooMod_-_MooMooio_Insta-Kill_Auto-Heal_Hat-Macros_and_more",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/600395-moomod-moomoo-io-insta-kill-auto-heal-hat-macros-and-more",
+  "source_repo": "600395",
+  "raw_url": "https://update.greasyfork.org/scripts/600395/%E2%98%85%20MooMod%20-%20MooMooio%20Insta-Kill%2C%20Auto-Heal%2C%20Hat-Macros%2C%20and%20more%21.user.js",
+  "filename": "MooMod_-_MooMooio_Insta-Kill_Auto-Heal_Hat-Macros_and_more.user.js",
+  "name": "★ MooMod - MooMoo.io Insta-Kill, Auto-Heal, Hat-Macros, and more!",
+  "version": "1.3.3",
+  "description": "press O to open the menu. use at own risk.",
+  "match": [
+    "*://moomoo.io/*",
+    "*://*.moomoo.io/*",
+    "*://localhost:8080/*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [
+    "https://update.greasyfork.org/scripts/600256/1966462/MooMoo-js.js"
+  ],
+  "metadata_raw": "// @name  ★ MooMod - MooMoo.io Insta-Kill, Auto-Heal, Hat-Macros, and more!\n// @namespace  https://greasyfork.org/en/users/457054-al007ex\n// @version  1.3.3\n// @description  press O to open the menu. use at own risk.\n// @author  al007ex\n// @match  *://moomoo.io/*\n// @match  *://*.moomoo.io/*\n// @match  *://localhost:8080/*\n// @run-at  document-start\n// @require  https://update.greasyfork.org/scripts/600256/1966462/MooMoo-js.js\n// @grant  none\n// @downloadURL  https://update.greasyfork.org/scripts/600395/%E2%98%85%20MooMod%20-%20MooMooio%20Insta-Kill%2C%20Auto-Heal%2C%20Hat-Macros%2C%20and%20more%21.user.js\n// @updateURL  https://update.greasyfork.org/scripts/600395/%E2%98%85%20MooMod%20-%20MooMooio%20Insta-Kill%2C%20Auto-Heal%2C%20Hat-Macros%2C%20and%20more%21.meta.js",
+  "sha256": "a3838f69cb7d95d48a4320b6c50336ec002a0bca74980896d07fb9af363ce5b5",
+  "discovered_at": "2026-10-19T07:07:22.882603+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 204,
+  "good_ratings": 1,
+  "bad_ratings": 0,
+  "summary": {}
+}

@@ -1,0 +1,31 @@
+{
+  "slug": "PokéSurvivor_Ultimate_Trainer_HUD",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/600697-pok%C3%A9survivor-ultimate-trainer-hud",
+  "source_repo": "600697",
+  "raw_url": "https://update.greasyfork.org/scripts/600697/Pok%C3%A9Survivor%20Ultimate%20Trainer%20%20HUD.user.js",
+  "filename": "PokéSurvivor_Ultimate_Trainer_HUD.user.js",
+  "name": "PokéSurvivor Ultimate Trainer & HUD",
+  "version": "1.0.1",
+  "description": "Single-panel trainer for pokesurvivor.com: currencies, stat toggles, auto level-up, batch gacha, live HUD, zoom, enemy HP bars.",
+  "match": [
+    "*://pokesurvivor.com/*",
+    "*://www.pokesurvivor.com/*",
+    "*://localhost:*/*",
+    "*://127.0.0.1:*/*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  PokéSurvivor Ultimate Trainer & HUD\n// @namespace  local.pokesurvivor.ultimate\n// @version  1.0.1\n// @description  Single-panel trainer for pokesurvivor.com: currencies, stat toggles, auto level-up, batch gacha, live HUD, zoom, enemy HP bars.\n// @author  Rekcheli\n// @match  *://pokesurvivor.com/*\n// @match  *://www.pokesurvivor.com/*\n// @match  *://localhost:*/*\n// @match  *://127.0.0.1:*/*\n// @run-at  document-end\n// @grant  none\n// @license  PolyForm-Noncommercial-1.0.0\n// @homepageURL  https://greasyfork.org/scripts/[ID]\n// @supportURL  https://greasyfork.org/scripts/[ID]/feedback\n// @downloadURL  https://update.greasyfork.org/scripts/600697/Pok%C3%A9Survivor%20Ultimate%20Trainer%20%20HUD.user.js\n// @updateURL  https://update.greasyfork.org/scripts/600697/Pok%C3%A9Survivor%20Ultimate%20Trainer%20%20HUD.meta.js",
+  "sha256": "89e78c80e2c10552b7f2a95310e3b883fd32322a919c5cefcebc44234f39f9ea",
+  "discovered_at": "2026-10-19T07:07:21.887500+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 108,
+  "good_ratings": 0,
+  "bad_ratings": 1,
+  "summary": {}
+}

@@ -1,0 +1,28 @@
+{
+  "slug": "EP_Hacks",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/576559-ep-hacks",
+  "source_repo": "576559",
+  "raw_url": "https://update.greasyfork.org/scripts/576559/EP%20Hacks.user.js",
+  "filename": "EP_Hacks.user.js",
+  "name": "EP Hacks",
+  "version": "10.3",
+  "description": "EP Answer Helper + Anti-Snitch + Maths Solver + MCQ + Gaps + Dropdowns + Auto-Skip + Hotkey",
+  "match": [
+    "https://app.educationperfect.com/*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  EP Hacks\n// @namespace  http://tampermonkey.net/\n// @version  10.3\n// @description  EP Answer Helper + Anti-Snitch + Maths Solver + MCQ + Gaps + Dropdowns + Auto-Skip + Hotkey\n// @match  https://app.educationperfect.com/*\n// @grant  none\n// @run-at  document-start\n// @downloadURL  https://update.greasyfork.org/scripts/576559/EP%20Hacks.user.js\n// @updateURL  https://update.greasyfork.org/scripts/576559/EP%20Hacks.meta.js",
+  "sha256": "ddb42b37f1e4332d4a79742ba78c257f3cc67ce43fe2cdc88d8d4cf1c7c90813",
+  "discovered_at": "2026-10-19T07:07:31.155554+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 3221,
+  "good_ratings": 12,
+  "bad_ratings": 0,
+  "summary": {}
+}

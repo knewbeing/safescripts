@@ -1,0 +1,1499 @@
+// ==UserScript==
+// @name         ★ MooMod - MooMoo.io Insta-Kill, Auto-Heal, Hat-Macros, and more!
+// @namespace    https://greasyfork.org/en/users/457054-al007ex
+// @version      1.3.3
+// @description  press O to open the menu. use at own risk.
+// @author       al007ex
+// @match        *://moomoo.io/*
+// @match        *://*.moomoo.io/*
+// @match        *://localhost:8080/*
+// @run-at       document-start
+// @require      https://update.greasyfork.org/scripts/600256/1966462/MooMoo-js.js
+// @grant        none
+// @downloadURL https://update.greasyfork.org/scripts/600395/%E2%98%85%20MooMod%20-%20MooMooio%20Insta-Kill%2C%20Auto-Heal%2C%20Hat-Macros%2C%20and%20more%21.user.js
+// @updateURL https://update.greasyfork.org/scripts/600395/%E2%98%85%20MooMod%20-%20MooMooio%20Insta-Kill%2C%20Auto-Heal%2C%20Hat-Macros%2C%20and%20more%21.meta.js
+// ==/UserScript==
+
+/*
+ *  ╔══════════════════════════════════════════╗
+ *  ║              ★ MOOMOOLITE ★              ║
+ *  ║               Version 1.3.0              ║
+ *  ╚══════════════════════════════════════════╝
+ *
+ *  ── IMPORTANT ─────────────────────────────
+ *
+ *  * MOD IS COMPATIBLE WITH 1.9.4
+ *  * IF USING WITH ANY OTHER VERSION YOU MAY GET BANNED
+ *  * use at your own risk
+ *
+ *  ── SUPPORT & SOCIALS ──────────────────────
+ *
+ *  * Discord    » al007ex
+ *  * GitHub     » https://github.com/al007ex
+ *  * GreasyFork » https://greasyfork.org/en/users/457054-al007ex
+ *
+ *  ★ Thanks for your support!
+ */
+
+
+
+(function() {
+    "use strict";
+
+    function ft(w, _) {
+        w.register({
+            id: "moomoo-lite",
+            name: "MooMod",
+            version: "1.0.0",
+            description: "Place spammers, legit auto heal and hat hotkeys. Press the menu key (default O).",
+            menu: !0,
+            menuHint: "Open MooMod's menu with its key (default O) to set everything up.",
+            liveSettings: !0,
+            defaultEnabled: !0
+        }, function(o) {
+            const y = typeof unsafeWindow < "u" ? unsafeWindow : window,
+                b = y.document && y.document.createElement ? y.document : null,
+                T = o.data,
+                g = () => w.self,
+                ce = {};
+            for (const e of T.hats || []) ce[e.id] = e;
+            const yt = e => "/img/hats/hat_" + e + ".png",
+                bt = e => e ? ce[e] ? ce[e].name : "Hat " + e : "None",
+                pe = {};
+            for (const e of T.accessories || []) pe[e.id] = e;
+            const gt = e => "/img/accessories/access_" + e + ".png",
+                vt = e => e ? pe[e] ? pe[e].name : "Acc " + e : "None",
+                P = [{
+                    id: "spike",
+                    label: "Spike",
+                    key: "v",
+                    item: "spikes",
+                    speed: 111
+                }, {
+                    id: "trap",
+                    label: "Trap / Boost pad",
+                    key: "f",
+                    item: "trap|booster",
+                    speed: 111
+                }, {
+                    id: "turret",
+                    label: "Turret / Teleporter",
+                    key: "t",
+                    item: "utility",
+                    speed: 150
+                }, {
+                    id: "windmill",
+                    label: "Windmill",
+                    key: "n",
+                    item: "mill",
+                    speed: 150
+                }],
+                me = {
+                    menuKey: "o",
+                    spammers: {},
+                    heal: {
+                        on: !0,
+                        healAt: 70,
+                        legit: !0,
+                        showInHand: 90,
+                        jitter: 40,
+                        maxPerSec: 6,
+                        shameSafe: !0
+                    },
+                    humanize: {
+                        on: !0,
+                        jitter: 25,
+                        pauseChance: 8,
+                        pauseMax: 350
+                    },
+                    insta: {
+                        key: "r",
+                        mode: "packet",
+                        swapDelay: 100,
+                        switchBack: !0,
+                        autoAim: !0,
+                        reverse: !1,
+                        primaryHat: 7,
+                        secondaryHat: 53,
+                        primaryAcc: 0,
+                        secondaryAcc: 0
+                    },
+                    clicks: {
+                        left: {
+                            on: !1,
+                            hat: 7,
+                            acc: 0
+                        },
+                        right: {
+                            on: !1,
+                            hat: 40,
+                            acc: 0
+                        }
+                    },
+                    autogg: {
+                        on: !1,
+                        message: "gg"
+                    },
+                    biomegear: {
+                        on: !1,
+                        snow: 15,
+                        normal: 12,
+                        river: 31
+                    },
+                    arrows: {
+                        on: !0,
+                        players: !0,
+                        animals: !0,
+                        offscreen: !0,
+                        radius: 110,
+                        size: 15
+                    },
+                    reloads: {
+                        on: !0,
+                        self: !0,
+                        enemies: !0
+                    },
+                    counter: {
+                        on: !0
+                    },
+                    minimap: {
+                        on: !0,
+                        items: !0,
+                        trees: !0,
+                        bushes: !0,
+                        stones: !0,
+                        gold: !0,
+                        biomes: !0,
+                        key: "m"
+                    },
+                    hats: [{
+                        key: "",
+                        id: 7
+                    }, {
+                        key: "",
+                        id: 6
+                    }, {
+                        key: "",
+                        id: 40
+                    }, {
+                        key: "",
+                        id: 11
+                    }, {
+                        key: "",
+                        id: 0
+                    }, {
+                        key: "",
+                        id: 0
+                    }]
+                };
+            for (const e of P) me.spammers[e.id] = {
+                key: e.key,
+                item: e.item,
+                speed: e.speed,
+                on: !0
+            };
+            const Q = _ && _.config || null,
+                l = JSON.parse(JSON.stringify(me));
+            try {
+                const e = Q ? Q.get("lite") : null;
+                if (e && typeof e == "object") {
+                    if (typeof e.menuKey == "string" && e.menuKey && (l.menuKey = e.menuKey), e.heal && typeof e.heal == "object" && Object.assign(l.heal, e.heal), e.humanize && typeof e.humanize == "object" && Object.assign(l.humanize, e.humanize), e.insta && typeof e.insta == "object" && Object.assign(l.insta, e.insta), e.autogg && typeof e.autogg == "object" && Object.assign(l.autogg, e.autogg), e.clicks && typeof e.clicks == "object" && (e.clicks.left && Object.assign(l.clicks.left, e.clicks.left), e.clicks.right && Object.assign(l.clicks.right, e.clicks.right)), e.arrows && typeof e.arrows == "object" && Object.assign(l.arrows, e.arrows), e.reloads && typeof e.reloads == "object" && Object.assign(l.reloads, e.reloads), e.counter && typeof e.counter == "object" && Object.assign(l.counter, e.counter), e.minimap && typeof e.minimap == "object" && Object.assign(l.minimap, e.minimap), e.biomegear && typeof e.biomegear == "object" && Object.assign(l.biomegear, e.biomegear), Array.isArray(e.hats) && e.hats.forEach((n, t) => {
+                            l.hats[t] && n && Object.assign(l.hats[t], n)
+                        }), e.spammers)
+                        for (const n of P) e.spammers[n.id] && Object.assign(l.spammers[n.id], e.spammers[n.id]);
+                    l.spammers.trap.item === "trap" && (l.spammers.trap.item = "trap|booster")
+                }
+            } catch {}
+            const R = () => {
+                    try {
+                        Q && Q.set("lite", l)
+                    } catch {}
+                },
+                ue = e => e.key === " " ? "Space" : e.key,
+                Z = e => e ? e === "Space" ? "Space" : e.length === 1 ? e.toUpperCase() : e : "\u2014",
+                B = (e, n) => !!e && !!n && e.toLowerCase() === n.toLowerCase();
+
+            function wt() {
+                const e = b && b.activeElement;
+                return !e || e === b.body ? !1 : e.isContentEditable || e.tagName === "TEXTAREA" ? !0 : e.tagName === "INPUT" && /^(text|search|number|password|email|url|tel|)$/i.test(e.type || "")
+            }
+            const kt = ["turret", "platform", "healing pad", "spawn pad", "blocker", "teleporter"];
+
+            function Te(e) {
+                const n = g().items || [];
+                if (typeof e == "number") return n.indexOf(e) >= 0 ? e : -1;
+                if (e.includes("|")) {
+                    for (const t of e.split("|")) {
+                        const a = Te(t.trim());
+                        if (a >= 0) return a
+                    }
+                    return -1
+                }
+                if (e === "utility") {
+                    for (const t of n) {
+                        const a = T.item(t);
+                        if (a && kt.includes(a.name)) return t
+                    }
+                    return -1
+                }
+                for (const t of n) {
+                    const a = T.item(t);
+                    if (a && (a.name === e || a.group && a.group.name === e)) return t
+                }
+                return -1
+            }
+            const xt = () => o.input ? o.input.aimAngle() : g().dir || 0;
+
+            function Ct(e) {
+                const n = Math.max(40, e.speed | 0),
+                    t = l.humanize;
+                if (!t || !t.on) return n;
+                const a = (Math.random() + Math.random() + Math.random()) / 3;
+                let r = n * (1 + (a - .5) * 2 * ((t.jitter | 0) / 100));
+                return Math.random() * 100 < (t.pauseChance | 0) && (r += Math.random() * (t.pauseMax | 0)), Math.max(40, Math.round(r))
+            }
+            const z = {};
+
+            function At(e) {
+                if (z[e.id]) return;
+                const n = l.spammers[e.id],
+                    t = () => {
+                        if (l.spammers[e.id].on && g() && g().alive) {
+                            const a = Te(n.item);
+                            a >= 0 && o.place(a, xt())
+                        }
+                        z[e.id] = y.setTimeout(t, Ct(n))
+                    };
+                t()
+            }
+
+            function fe(e) {
+                z[e] && (y.clearTimeout(z[e]), z[e] = 0)
+            }
+            o.onCleanup(() => {
+                for (const e in z) fe(e)
+            });
+            let G = 0,
+                je = 0;
+
+            function Oe() {
+                const e = l.heal,
+                    n = g();
+                if (!e.on || G || !n || !n.alive || n.health == null || n.health >= 100 || n.health > e.healAt) return;
+                const t = 1e3 / Math.max(1, e.maxPerSec | 0);
+                if (Date.now() - je < t) return;
+                je = Date.now();
+                const a = n.items && n.items[0] != null ? n.items[0] : 0;
+                if (!(n.items && n.items.indexOf(a) >= 0)) return;
+                if (!e.legit) {
+                    o.eat(a);
+                    return
+                }
+                w.send.selectItem(a, !1);
+                let r = (e.showInHand | 0) + Math.random() * (e.jitter | 0);
+                e.shameSafe && o.combat && o.combat.shameWait && (r = Math.max(r, o.combat.shameWait())), G = y.setTimeout(() => {
+                    G = 0, !(!g() || !g().alive) && (w.send.mouse(!0, g().dir || 0), w.send.selectItem(g().weaponIndex, !0))
+                }, r)
+            }
+            o.on("health", e => {
+                e.sid === g().sid && Oe()
+            }), o.every(100, Oe), o.onCleanup(() => {
+                G && y.clearTimeout(G)
+            });
+            let he = 0,
+                Pe = 0;
+            o.on("playerValue", e => {
+                if (!e || e.key !== "kills") return;
+                const n = e.value | 0,
+                    t = he;
+                if (he = n, n <= t || !l.autogg.on) return;
+                const a = (l.autogg.message || "").trim();
+                if (!a) return;
+                const r = Date.now();
+                if (!(r - Pe < 900)) {
+                    Pe = r;
+                    try {
+                        w.send.chat({
+                            message: a.slice(0, 48)
+                        })
+                    } catch {}
+                }
+            }), o.on("died", () => {
+                he = 0
+            });
+
+            function St(e) {
+                const n = g();
+                if (!(!n || !n.alive)) {
+                    if (!e.id) {
+                        o.setHat(0);
+                        return
+                    }
+                    if (o.store && o.store.hat === e.id) {
+                        o.setHat(0);
+                        return
+                    }
+                    o.store && o.store.ownsHat && !o.store.ownsHat(e.id) || o.setHat(e.id)
+                }
+            }
+            let $ = !1;
+
+            function Ht(e, n) {
+                let t = !1,
+                    a = null;
+                const r = () => {
+                    if (!t) {
+                        if (t = !0, a) try {
+                            a()
+                        } catch {}
+                        e()
+                    }
+                };
+                a = o.on("gatherAnimation", i => {
+                    const s = i && i.args,
+                        c = g();
+                    s && c && s[0] === c.sid && r()
+                }), o.after(Math.max(60, n | 0), r)
+            }
+
+            function Et() {
+                const e = l.insta,
+                    n = g();
+                if ($ || !n || !n.alive) return;
+                const t = n.weapons || [],
+                    a = t[0],
+                    r = t[1];
+                if (a == null) return;
+                $ = !0;
+                const i = o.store && o.store.hat || 0,
+                    s = o.store && o.store.tail || 0;
+                let c = !1;
+                const u = H => !(o.store && o.store.ownsHat) || o.store.ownsHat(H),
+                    m = H => !(o.store && o.store.ownsTail) || o.store.ownsTail(H),
+                    p = (H, A) => {
+                        H && u(H) && o.setHat(H), A && o.setTail && m(A) && (o.setTail(A), c = !0)
+                    },
+                    h = () => {
+                        const H = o.input && o.input.aimAngle ? o.input.aimAngle() : g().dir || 0;
+                        if (!e.autoAim) return H;
+                        const A = o.combat;
+                        if (A && A.z && A.vn && A.vn.length && A.B) return A.B(A.z, A.vn[0]);
+                        if (o.nearestEnemy) {
+                            const se = o.nearestEnemy();
+                            if (se) return o.angleTo(g(), se)
+                        }
+                        return H
+                    },
+                    L = (H, A, se) => !g() || !g().alive ? !1 : (p(A, se), H != null && w.send.selectItem(H, !0), w.send.mouse(!0, h()), !0),
+                    O = r ?? a,
+                    ie = e.reverse ? O : a,
+                    ln = e.reverse ? e.secondaryHat : e.primaryHat,
+                    dn = e.reverse ? e.secondaryAcc : e.primaryAcc,
+                    cn = e.reverse ? a : O,
+                    pn = e.reverse ? e.primaryHat : e.secondaryHat,
+                    mn = e.reverse ? e.primaryAcc : e.secondaryAcc,
+                    mt = () => {
+                        w.send.mouse(!1), e.switchBack && a != null && g() && g().alive && w.send.selectItem(a, !0), o.setHat(i), c && o.setTail && o.setTail(s), $ = !1
+                    },
+                    un = 160,
+                    ut = () => {
+                        if (!g() || !g().alive) {
+                            mt();
+                            return
+                        }
+                        L(cn, pn, mn), o.after(un, mt)
+                    };
+                if (!L(ie, ln, dn)) {
+                    $ = !1;
+                    return
+                }
+                e.mode === "packet" ? Ht(ut, 350) : o.after(Math.max(40, e.swapDelay | 0), ut)
+            }
+            const ee = new Set;
+
+            function Re(e) {
+                if (e.isTrusted === !1) return;
+                if (W) {
+                    e.preventDefault(), e.stopImmediatePropagation(), an(e);
+                    return
+                }
+                if (e.key === "Escape" && b) {
+                    const t = b.querySelector(".mml-pick");
+                    if (t) {
+                        e.preventDefault(), e.stopImmediatePropagation(), t.remove();
+                        return
+                    }
+                }
+                if (e.key === "Escape" && J) {
+                    e.preventDefault(), e.stopImmediatePropagation(), J = !1;
+                    return
+                }
+                if (wt() || e.ctrlKey || e.metaKey || e.altKey) return;
+                const n = ue(e);
+                if (B(n, l.menuKey)) {
+                    e.preventDefault(), e.stopImmediatePropagation(), e.repeat || sn();
+                    return
+                }
+                if (l.minimap.on && !N && B(n, l.minimap.key)) {
+                    e.preventDefault(), e.stopImmediatePropagation(), e.repeat || Yt();
+                    return
+                }
+                if (B(n, l.insta.key)) {
+                    e.preventDefault(), e.stopImmediatePropagation(), e.repeat || Et();
+                    return
+                }
+                for (const t of P) {
+                    const a = l.spammers[t.id];
+                    if (a.on && B(n, a.key)) {
+                        e.preventDefault(), e.stopImmediatePropagation(), !e.repeat && !ee.has(t.id) && (ee.add(t.id), At(t));
+                        return
+                    }
+                }
+                for (const t of l.hats)
+                    if (t.key && B(n, t.key)) {
+                        e.preventDefault(), e.stopImmediatePropagation(), e.repeat || St(t);
+                        return
+                    }
+            }
+
+            function Be(e) {
+                const n = ue(e);
+                for (const t of P) B(n, l.spammers[t.id].key) && (ee.delete(t.id), fe(t.id))
+            }
+            b && (y.addEventListener("keydown", Re, !0), y.addEventListener("keyup", Be, !0), y.addEventListener("blur", () => {
+                for (const e of P) ee.delete(e.id), fe(e.id)
+            }), o.onCleanup(() => {
+                y.removeEventListener("keydown", Re, !0), y.removeEventListener("keyup", Be, !0)
+            }));
+            const f = {
+                    prevHat: 0,
+                    prevAcc: 0,
+                    curHat: 0,
+                    curAcc: 0,
+                    active: null,
+                    order: [],
+                    gen: 0
+                },
+                ze = e => e === 2 ? l.clicks.right : l.clicks.left,
+                Me = e => !e || !(o.store && o.store.ownsHat) || o.store.ownsHat(e),
+                De = e => !e || !(o.store && o.store.ownsTail) || o.store.ownsTail(e);
+
+            function Lt(e, n) {
+                e && e !== f.curHat && Me(e) && o.setHat && (o.setHat(e), f.curHat = e), n && n !== f.curAcc && De(n) && o.setTail && (o.setTail(n), f.curAcc = n)
+            }
+
+            function Ne() {
+                f.prevHat !== f.curHat && Me(f.prevHat) && o.setHat && o.setHat(f.prevHat | 0), f.prevAcc !== f.curAcc && De(f.prevAcc) && o.setTail && o.setTail(f.prevAcc | 0), f.curHat = f.prevHat, f.curAcc = f.prevAcc
+            }
+
+            function It() {
+                if (f.active != null) {
+                    const e = ze(f.active);
+                    Lt(e.hat, e.acc)
+                }
+            }
+
+            function We(e) {
+                f.active = e, f.gen++, It()
+            }
+
+            function Tt(e) {
+                f.order.indexOf(e) >= 0 || (f.order.length || (f.prevHat = f.curHat = o.store && o.store.hat || 0, f.prevAcc = f.curAcc = o.store && o.store.tail || 0), f.order.push(e), We(e))
+            }
+
+            function jt(e) {
+                const n = f.order.indexOf(e);
+                n < 0 || (f.order.splice(n, 1), f.gen++, f.order.length ? We(f.order[f.order.length - 1]) : (f.active = null, Ne()))
+            }
+
+            function Ke() {
+                f.order.length && (f.order.length = 0, f.active = null, f.gen++, Ne())
+            }
+
+            function _e(e) {
+                if (e.isTrusted === !1 || N) return;
+                const n = e.target && e.target.id;
+                if (!n || n !== "gameCanvas" && n.indexOf("touch-controls") !== 0 || e.button !== 0 && e.button !== 2 || !ze(e.button).on) return;
+                const t = g();
+                !t || !t.alive || Tt(e.button)
+            }
+
+            function Ge(e) {
+                (e.button === 0 || e.button === 2) && jt(e.button)
+            }
+            b && (y.addEventListener("mousedown", _e, !0), y.addEventListener("mouseup", Ge, !0), y.addEventListener("blur", Ke), o.onCleanup(() => {
+                y.removeEventListener("mousedown", _e, !0), y.removeEventListener("mouseup", Ge, !0), y.removeEventListener("blur", Ke)
+            }));
+            const Ot = o.combat && o.combat.K && o.combat.K.mapScale || 14400,
+                Pt = 2400,
+                $e = 724 / 2,
+                qe = Ot / 2;
+
+            function Rt(e) {
+                return e == null || isNaN(e) ? null : e < Pt ? "snow" : e >= qe - $e && e <= qe + $e ? "river" : "normal"
+            }
+            let ye = null;
+
+            function Bt() {
+                const e = l.biomegear;
+                if (!e || !e.on) {
+                    ye = null;
+                    return
+                }
+                const n = g();
+                if (!n || !n.alive) return;
+                const t = o.combat && o.combat.Hg && o.combat.Hg(n.sid),
+                    a = t ? t.y2 != null ? t.y2 : t.y : n.y,
+                    r = Rt(a);
+                if (r == null || r === ye || $ || f.active != null) return;
+                ye = r;
+                const i = r === "snow" ? e.snow : r === "river" ? e.river : e.normal;
+                i && (!(o.store && o.store.ownsHat) || o.store.ownsHat(i)) && o.setHat && o.setHat(i)
+            }
+            o.every(150, Bt);
+            const be = {
+                enemy: "#ff4747",
+                teammate: "#49d170",
+                animal: "#3ea6ff"
+            };
+
+            function Ue(e, n, t, a, r, i) {
+                const s = n + l.arrows.radius * Math.cos(a),
+                    c = t + l.arrows.radius * Math.sin(a),
+                    u = i * .7,
+                    m = -i * .5,
+                    p = i * .72;
+                e.save(), e.translate(s, c), e.rotate(a), e.lineJoin = "round", e.lineCap = "round", e.globalAlpha = .72, e.lineWidth = Math.max(2, i * .24), e.strokeStyle = r, e.beginPath(), e.moveTo(m, -p), e.lineTo(u, 0), e.lineTo(m, p), e.stroke(), e.restore()
+            }
+
+            function zt(e, n) {
+                const t = l.arrows;
+                if (!t.on || !o.render) return;
+                const a = o.render.me;
+                if (!a || !a.visible) return;
+                const r = w.self && w.self.team != null ? w.self.team : null,
+                    i = o.render.worldToScreen(a.x, a.y),
+                    s = y.innerWidth || 1920,
+                    c = y.innerHeight || 1080,
+                    u = m => {
+                        const p = o.render.worldToScreen(m.x, m.y);
+                        return p.x >= 0 && p.x <= s && p.y >= 0 && p.y <= c
+                    };
+                if (e.save(), e.setTransform(n.dpr, 0, 0, n.dpr, 0, 0), t.players)
+                    for (const [m, p] of o.render.players) {
+                        if (!p.visible || p === a || t.offscreen && u(p)) continue;
+                        const h = w.player && w.player(m),
+                            L = h && h.team != null ? h.team : null,
+                            O = L != null && L === r ? be.teammate : be.enemy;
+                        Ue(e, i.x, i.y, Math.atan2(p.y - a.y, p.x - a.x), O, t.size)
+                    }
+                if (t.animals)
+                    for (const m of o.render.animals.values()) m.visible && (t.offscreen && u(m) || Ue(e, i.x, i.y, Math.atan2(m.y - a.y, m.x - a.x), be.animal, t.size));
+                e.restore()
+            }
+            let q = null;
+
+            function Fe() {
+                if (!(!o.render || !o.render.layer)) {
+                    if (l.arrows.on && !q) q = o.render.layer("mml-arrows", zt, {
+                        z: 60
+                    });
+                    else if (!l.arrows.on && q) {
+                        try {
+                            q()
+                        } catch {}
+                        q = null
+                    }
+                }
+            }
+            Fe();
+            const ge = {
+                    bg: "#3d3f42",
+                    primary: "#58c0ff",
+                    secondary: "#ffc24a"
+                },
+                Je = 50,
+                M = 4.5,
+                Mt = 34,
+                Dt = 17,
+                Ye = 17,
+                ve = 3,
+                te = new Map;
+            o.every(5e3, () => {
+                for (const e of te.keys())(!o.render || !o.render.players.has(e)) && te.delete(e)
+            });
+
+            function Ve(e, n, t, a, r, i) {
+                const s = e[n] || (e[n] = {
+                        eng: t,
+                        t: i,
+                        shown: t,
+                        fill: a
+                    }),
+                    c = t < s.eng - .05;
+                (t !== s.eng || a && !s.fill) && (s.eng = t, s.t = i), s.fill = a;
+                const u = a && r > 0 ? Math.min(1, t + (i - s.t) / r) : t;
+                return s.shown = c ? u : Math.max(s.shown, Math.min(1, u)), s.shown
+            }
+
+            function Nt(e, n) {
+                let t = te.get(e);
+                t || (t = {}, te.set(e, t));
+                const a = o.combat && o.combat.Hg && o.combat.Hg(e);
+                if (!a) return {
+                    p: 1,
+                    s: 1
+                };
+                const r = a.pr == null ? 1 : a.pr,
+                    i = a.sr == null ? 1 : a.sr,
+                    s = a.weaponIndex | 0,
+                    c = T.weapon(a.primary),
+                    u = T.weapon(a.secondary),
+                    m = c && c.speed ? c.speed * (a.samRP || 1) : 0,
+                    p = u && u.speed ? u.speed * (a.samRS || 1) : 0;
+                return {
+                    p: Ve(t, "p", r, s <= 8 && r < 1 && m > 0, m, n),
+                    s: Ve(t, "s", i, s > 8 && i < 1 && p > 0, p, n)
+                }
+            }
+
+            function Xe(e, n, t, a, r, i) {
+                a <= 0 || (e.beginPath(), e.roundRect ? e.roundRect(n, t, a, r, i) : e.rect(n, t, a, r), e.fill())
+            }
+            const we = (Je * 2 + M * 2 - ve) / 2;
+
+            function Qe(e, n, t, a, r, i) {
+                e.fillStyle = ge.bg, Xe(e, n, t, a, Ye, 8), e.fillStyle = i, Xe(e, n + M, t + M, (a - M * 2) * Math.max(0, Math.min(1, r)), Ye - M * 2, 7)
+            }
+
+            function Wt(e, n) {
+                if (!l.reloads.on || !o.render) return;
+                const t = n.now || Date.now(),
+                    a = n.left,
+                    r = n.top,
+                    i = w.self;
+                e.globalAlpha = 1, e.lineJoin = "round";
+                for (const [s, c] of o.render.players) {
+                    if (!c.visible || (!!(i && s === i.sid) ? !l.reloads.self : !l.reloads.enemies)) continue;
+                    const m = Nt(s, t),
+                        p = c.x - a - (Je + M),
+                        h = c.y - r + (c.scale || 35) + Mt + Dt + ve;
+                    Qe(e, p, h, we, m.p, ge.primary), Qe(e, p + we + ve, h, we, m.s, ge.secondary)
+                }
+            }
+            let U = null;
+
+            function Ze() {
+                if (!(!o.render || !o.render.layer)) {
+                    if (l.reloads.on && !U) U = o.render.layer("mml-reloads", Wt, {
+                        z: 55
+                    });
+                    else if (!l.reloads.on && U) {
+                        try {
+                            U()
+                        } catch {}
+                        U = null
+                    }
+                }
+            }
+            Ze();
+            const ke = {},
+                et = {},
+                tt = (T.weapons || []).length;
+            o.on("itemCount", e => {
+                const n = e && e.args;
+                if (!n) return;
+                const t = n[0],
+                    a = n[1] | 0,
+                    r = et[t] || 0;
+                a > r && (ke[t] = (ke[t] || 0) + (a - r)), et[t] = a
+            });
+
+            function Kt(e) {
+                let n = e.querySelector(".mml-cnt");
+                if (!n) {
+                    try {
+                        y.getComputedStyle(e).position === "static" && (e.style.position = "relative")
+                    } catch {
+                        e.style.position = "relative"
+                    }
+                    n = b.createElement("div"), n.className = "mml-cnt", n.style.cssText = "position:absolute;top:0;right:4px;color:#fff;font-family:'Hammersmith One',sans-serif;font-size:15px;line-height:1.1;-webkit-text-stroke:2.5px #000;paint-order:stroke fill;text-shadow:0 1px 1px rgba(0,0,0,.45);pointer-events:none;z-index:2", e.appendChild(n)
+                }
+                return n
+            }
+
+            function nt() {
+                if (!b) return;
+                const e = T.items || [];
+                for (let n = 0; n < e.length; n++) {
+                    const t = b.getElementById("actionBarItem" + (tt + n));
+                    if (!t) continue;
+                    const a = e[n].group,
+                        r = a == null ? null : typeof a == "object" ? a.id : a,
+                        i = l.counter.on && t.style.display !== "none" && r != null && ke[r] || 0;
+                    if (i > 0) {
+                        const s = Kt(t);
+                        s.textContent = i, s.style.display = ""
+                    } else {
+                        const s = t.querySelector(".mml-cnt");
+                        s && (s.style.display = "none")
+                    }
+                }
+            }
+            b && (o.every(150, nt), o.onCleanup(() => {
+                try {
+                    const e = b.querySelectorAll(".mml-cnt");
+                    for (let n = 0; n < e.length; n++) e[n].remove()
+                } catch {}
+            }));
+            const at = Math.PI * 2,
+                ne = o.combat && o.combat.K && o.combat.K.mapScale || 14400,
+                xe = 2400,
+                rt = 724,
+                ae = {
+                    grass: "#b6db66",
+                    snow: "#ffffff",
+                    desert: "#dbc666",
+                    river: "#91b2db"
+                },
+                _t = .45,
+                Gt = {
+                    tree: "#3f8f2e",
+                    bush: "#cf4b4b",
+                    stone: "#9aa0a6",
+                    gold: "#e8c24a"
+                },
+                F = new Map;
+
+            function $t(e) {
+                return e.isItem ? "item" : e.type === 0 ? "tree" : e.type === 1 ? "bush" : e.type === 2 ? "stone" : e.type === 3 ? "gold" : null
+            }
+
+            function qt() {
+                if (!l.minimap.on || !o.objects || !o.objects.all) return;
+                const e = w.self,
+                    n = e ? e.sid : null,
+                    t = o.objects.all(),
+                    a = new Set;
+                for (let r = 0; r < t.length; r++) {
+                    const i = t[r];
+                    if (a.add(i.sid), F.has(i.sid)) continue;
+                    const s = $t(i);
+                    s && (s === "item" && !(n != null && i.ownerSid === n) || F.set(i.sid, {
+                        x: i.x,
+                        y: i.y,
+                        kind: s,
+                        id: i.id
+                    }))
+                }
+                for (const [r, i] of F) i.kind === "item" && !a.has(r) && F.delete(r)
+            }
+            o.every(500, qt);
+            const Ce = new Map;
+
+            function Ut(e) {
+                const n = b.getElementById("actionBarItem" + (tt + e));
+                if (!n) return null;
+                const t = n.style.backgroundImage;
+                if (t && t !== "none") {
+                    const i = /url\(["']?(.*?)["']?\)/.exec(t);
+                    if (i) return {
+                        url: i[1]
+                    }
+                }
+                const a = n.querySelector("canvas");
+                if (a && a.width) return {
+                    canvas: a
+                };
+                const r = n.querySelector("img");
+                return r && r.src ? {
+                    url: r.src
+                } : null
+            }
+
+            function Ft(e) {
+                if (e == null || !b) return null;
+                const n = Ut(e);
+                let t = Ce.get(e);
+                if (!n) return t && t.ready ? t.cv : null;
+                if (n.canvas) {
+                    const s = Date.now();
+                    if (t && t.src === "#canvas" && s - t.t < 1500) return t.cv;
+                    const c = t && t.cv || b.createElement("canvas");
+                    c.width = 36, c.height = 36;
+                    try {
+                        const u = c.getContext("2d");
+                        u.clearRect(0, 0, 36, 36), u.drawImage(n.canvas, 0, 0, 36, 36)
+                    } catch {
+                        return t ? t.cv : null
+                    }
+                    return Ce.set(e, {
+                        src: "#canvas",
+                        cv: c,
+                        ready: !0,
+                        t: s
+                    }), c
+                }
+                if (t && t.src === n.url) return t.ready ? t.cv : null;
+                const a = b.createElement("canvas");
+                a.width = 36, a.height = 36;
+                const r = {
+                        src: n.url,
+                        cv: a,
+                        ready: !1
+                    },
+                    i = new Image;
+                return i.onload = () => {
+                    try {
+                        const s = a.getContext("2d");
+                        s.clearRect(0, 0, 36, 36), s.drawImage(i, 0, 0, 36, 36), r.ready = !0
+                    } catch {}
+                }, i.src = n.url, Ce.set(e, r), null
+            }
+
+            function ot(e, n, t, a, r) {
+                const i = l.minimap,
+                    s = a / ne;
+                (r || i.biomes) && (e.fillStyle = ae.grass, e.fillRect(n, t, a, a)), i.biomes && (e.globalAlpha = _t, e.fillStyle = ae.snow, e.fillRect(n, t, a, xe * s), e.fillStyle = ae.desert, e.fillRect(n, t + (ne - xe) * s, a, a - (ne - xe) * s), e.fillStyle = ae.river, e.fillRect(n, t + (ne / 2 - rt / 2) * s, a, rt * s), e.globalAlpha = 1);
+                const c = r ? 4 : 1.7,
+                    u = r ? 16 : 6.5;
+                for (const p of F.values()) {
+                    if (!(p.kind === "item" ? i.items : p.kind === "tree" ? i.trees : p.kind === "bush" ? i.bushes : p.kind === "stone" ? i.stones : p.kind === "gold" ? i.gold : !1)) continue;
+                    const L = n + p.x * s,
+                        O = t + p.y * s;
+                    if (p.kind === "item") {
+                        const ie = Ft(p.id);
+                        ie ? e.drawImage(ie, L - u / 2, O - u / 2, u, u) : (e.fillStyle = "#f2f4f7", e.fillRect(L - u * .35, O - u * .35, u * .7, u * .7))
+                    } else e.beginPath(), e.fillStyle = Gt[p.kind], e.arc(L, O, c, 0, at), e.fill()
+                }
+                const m = o.render && o.render.me || w.self;
+                if (m && m.x != null) {
+                    const p = n + m.x * s,
+                        h = t + m.y * s;
+                    e.beginPath(), e.fillStyle = "#ffffff", e.arc(p, h, r ? 5 : 2.6, 0, at), e.fill(), e.lineWidth = r ? 2 : 1.3, e.strokeStyle = "#1a1c22", e.stroke()
+                }
+            }
+
+            function Jt(e, n, t) {
+                e.globalAlpha = .5, e.fillStyle = "#0b0e14", e.fillRect(0, 0, n, t), e.globalAlpha = 1;
+                const a = Math.min(n, t) * .84,
+                    r = (n - a) / 2,
+                    i = (t - a) / 2;
+                e.save(), e.beginPath(), e.rect(r, i, a, a), e.clip(), ot(e, r, i, a, !0), e.restore(), e.lineWidth = 3, e.strokeStyle = "#3d3f42", e.strokeRect(r, i, a, a), e.fillStyle = "#eceef2", e.font = "15px 'Hammersmith One',sans-serif", e.textAlign = "center", e.textBaseline = "bottom", e.fillText("Map \u2014 " + Z(l.minimap.key) + " to close", n / 2, i - 8)
+            }
+            let J = !1;
+
+            function Yt() {
+                J = !J
+            }
+            let k = null,
+                D = null;
+
+            function Vt() {
+                return k || !b || !b.body || (k = b.createElement("canvas"), k.style.cssText = "position:fixed;left:0;top:0;pointer-events:none;z-index:9000;display:none", b.body.appendChild(k), D = k.getContext("2d")), k
+            }
+
+            function Xt(e) {
+                if (!Vt()) return;
+                const n = e && e.inGame,
+                    t = J && n;
+                if ((!l.minimap.on || !n) && !t) {
+                    k.style.display !== "none" && (k.style.display = "none");
+                    return
+                }
+                let a, r, i, s;
+                if (t) a = 0, r = 0, i = y.innerWidth || e.width, s = y.innerHeight || e.height;
+                else {
+                    const p = b && b.getElementById("mapDisplay"),
+                        h = p && p.getBoundingClientRect();
+                    if (!h || h.width < 8) {
+                        k.style.display !== "none" && (k.style.display = "none");
+                        return
+                    }
+                    a = h.left, r = h.top, i = h.width, s = h.height
+                }
+                const c = e && e.dpr || y.devicePixelRatio || 1,
+                    u = Math.max(1, Math.round(i * c)),
+                    m = Math.max(1, Math.round(s * c));
+                (k.width !== u || k.height !== m) && (k.width = u, k.height = m), k.style.left = a + "px", k.style.top = r + "px", k.style.width = i + "px", k.style.height = s + "px", k.style.display = "block", D.setTransform(c, 0, 0, c, 0, 0), D.clearRect(0, 0, i, s), D.lineJoin = "round", t ? Jt(D, i, s) : ot(D, 0, 0, i, !1)
+            }
+            o.render && o.render.onFrame && (o.render.onFrame(Xt), o.onCleanup(() => {
+                try {
+                    k && k.remove()
+                } catch {}
+            }));
+            const it = '"Hammersmith One", sans-serif',
+                j = 'system-ui,-apple-system,"Segoe UI",Roboto,sans-serif',
+                Qt = `
+            .mml-gui{position:fixed;inset:0;z-index:99990;display:none;background:rgba(9,11,16,.5);font-family:${it};-webkit-user-select:none;user-select:none;
+              --acc:#8ecc51;--side:#13151b;--panel:#1b1e26;--ctrl:#ffffff12;--track:#ffffff1c;--text:#eceef2;--sub:#aab0bd;--muted:#6f7684;--border:#2a2e38}
+            .mml-gui.open{display:block}
+            .mml-panel{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;width:720px;max-width:94vw;height:522px;max-height:88vh;background:var(--panel);border-radius:16px;overflow:hidden;color:var(--text);box-shadow:0 22px 64px rgba(0,0,0,.55);font-size:14px}
+            .mml-panel .side{flex:0 0 178px;background:var(--side);display:flex;flex-direction:column;padding:14px 10px}
+            .mml-panel .brand{display:flex;align-items:center;gap:9px;padding:6px 8px 15px}
+            .mml-panel .bname{font-size:17px;font-weight:600;letter-spacing:.3px;color:var(--text)}
+            .mml-panel .nav{flex:1 1 auto;display:flex;flex-direction:column;gap:3px;overflow-y:auto}
+            .mml-panel .navitem{display:flex;align-items:center;gap:11px;padding:10px 11px;border-radius:9px;color:var(--sub);cursor:pointer;transition:background .12s,color .12s}
+            .mml-panel .navitem:hover{background:#1d2029;color:var(--text)}
+            .mml-panel .navitem.active{background:#242834;color:var(--text)}
+            .mml-panel .ntxt{font-size:14px}
+            .mml-panel .user{display:flex;align-items:center;gap:9px;padding:11px 7px 2px;margin-top:8px;border-top:1px solid var(--border)}
+            .mml-panel .uinfo{display:flex;flex-direction:column;min-width:0}
+            .mml-panel .uname{font-size:13px;color:var(--text)}
+            .mml-panel .uver{font-size:11px;color:var(--muted);font-family:${j}}
+            .mml-panel .body{flex:1 1 auto;display:flex;flex-direction:column;min-width:0}
+            .mml-panel .head{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid var(--border)}
+            .mml-panel .htitle{font-size:17px;color:var(--text)}
+            .mml-panel .close{color:var(--muted);cursor:pointer;font-size:15px;padding:5px 9px;border-radius:8px}
+            .mml-panel .close:hover{color:var(--text);background:#242834}
+            /* content: no boxes, no outlines, no scrollbar. modules are plain blocks
+               grouped by a quiet title \u2014 settings sit directly on the panel. */
+            .mml-panel .content{flex:1 1 auto;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding:6px 18px 14px}
+            .mml-panel .content::-webkit-scrollbar{width:0;height:0}
+            .mml-panel .modgrid{display:grid;grid-template-columns:1fr 1fr;gap:4px 22px;align-items:start}
+            .mml-panel .mod{padding:7px 0 2px;min-width:0}
+            .mml-panel .mod.wide{grid-column:1/-1}
+            .mml-panel .modhead{display:flex;align-items:center;justify-content:space-between;min-height:24px}
+            .mml-panel .modtitle{font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+            .mml-panel .modbody{padding:1px 0 0}
+            .mml-panel .row{display:flex;align-items:center;gap:10px;min-height:25px}
+            .mml-panel .rl{font-size:13px;color:var(--sub);font-family:${j}}
+            .mml-panel .row:not(.srow) .rl{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+            .mml-panel .srow .rl{flex:0 0 72px}
+            .mml-panel .sw{flex:0 0 auto;width:32px;height:18px;border-radius:9px;background:var(--track);position:relative;cursor:pointer;transition:background .16s}
+            .mml-panel .sw.on{background:var(--acc)}
+            .mml-panel .sw::after{content:"";position:absolute;top:2.5px;left:2.5px;width:13px;height:13px;border-radius:50%;background:#fff;transition:left .16s}
+            .mml-panel .sw.on::after{left:16.5px}
+            .mml-panel .rng{-webkit-appearance:none;flex:1 1 auto;min-width:40px;height:4px;border-radius:2px;background:var(--track);outline:none;cursor:pointer}
+            .mml-panel .rng::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:#fff;cursor:pointer}
+            .mml-panel .rng::-moz-range-thumb{width:13px;height:13px;border:none;border-radius:50%;background:#fff;cursor:pointer}
+            .mml-panel .rngval{flex:0 0 auto;min-width:40px;text-align:right;font-size:12px;color:var(--text);font-family:${j}}
+            .mml-panel .kb{flex:0 0 auto;min-width:28px;text-align:center;padding:3px 9px;border-radius:5px;background:var(--ctrl);color:var(--sub);font-size:12px;cursor:pointer;font-family:${j}}
+            .mml-panel .kb:hover{color:var(--text)}
+            .mml-panel .kb.grab{color:var(--acc)}
+            .mml-panel .txt{flex:0 1 auto;width:88px;min-width:0;padding:3px 8px;border-radius:5px;background:var(--ctrl);border:none;color:var(--text);font-family:${j};font-size:12px;text-align:center;outline:none}
+            .mml-panel .selwrap{position:relative;flex:0 0 auto}
+            .mml-panel .sel{appearance:none;-webkit-appearance:none;padding:3px 24px 3px 9px;border-radius:5px;background:var(--ctrl);border:none;color:var(--text);font-family:${j};font-size:12px;cursor:pointer;outline:none}
+            .mml-panel .sel option{background:#23262f;color:var(--text)}
+            .mml-panel .selwrap::after{content:"";position:absolute;right:9px;top:45%;width:6px;height:6px;border-right:2px solid var(--sub);border-bottom:2px solid var(--sub);transform:translateY(-50%) rotate(45deg);pointer-events:none}
+            .mml-panel .hatrow{display:flex;flex-wrap:wrap;gap:8px;padding:3px 0 2px}
+            .mml-panel .hatcell{display:flex;flex-direction:column;align-items:center;gap:3px}
+            .mml-panel .accpair{display:flex;gap:5px}
+            .mml-panel .hatbox{width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:6px;background:var(--ctrl);cursor:pointer}
+            .mml-panel .hatbox img{width:30px;height:30px;object-fit:contain}
+            .mml-panel .hatph{color:var(--muted);font-size:16px}
+            .mml-panel .hatcap{font-size:11px;color:var(--muted);font-family:${j}}
+            .mml-panel .btn{margin-top:6px;text-align:center;padding:5px;border-radius:6px;background:var(--ctrl);color:var(--sub);cursor:pointer;font-size:12.5px;font-family:${j}}
+            .mml-panel .btn:hover{color:var(--text)}
+            .mml-pick{position:fixed;inset:0;z-index:99992;display:flex;align-items:center;justify-content:center;background:rgba(9,11,16,.62);font-family:${it}}
+            .mml-pick .pickpanel{width:420px;max-width:92vw;max-height:70vh;overflow-y:auto;scrollbar-width:none;padding:14px;border-radius:12px;background:#1b1e26;box-shadow:0 22px 64px rgba(0,0,0,.6);color:#eceef2}
+            .mml-pick .pickpanel::-webkit-scrollbar{width:0}
+            .mml-pick .picktitle{text-align:center;font-size:16px;margin-bottom:11px}
+            .mml-pick .pickgrid{display:flex;flex-wrap:wrap;gap:7px;justify-content:center}
+            .mml-pick .ptile{box-sizing:border-box;width:60px;height:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:4px;border-radius:8px;background:#ffffff10;border:2px solid transparent;cursor:pointer}
+            .mml-pick .ptile:hover{background:#ffffff1f}
+            .mml-pick .ptile.sel{border-color:#8ecc51}
+            .mml-pick .ptile img{width:40px;height:40px;object-fit:contain}
+            .mml-pick .pcap{font-size:10px;color:#9aa0aa;max-width:54px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:${j}}
+            .mml-pick .pnone{font-size:12px;color:#6f7684}
+            `;
+            let E = null,
+                Y = !1,
+                N = !1,
+                W = null,
+                K = null,
+                Ae = "placement",
+                re = null,
+                V = null;
+
+            function d(e, n, t) {
+                const a = b.createElement(e);
+                return n && (a.className = n), t != null && (a.textContent = t), a
+            }
+
+            function x(e, n) {
+                const t = d("div", "sw"),
+                    a = () => t.classList.toggle("on", !!e());
+                return t.addEventListener("click", r => {
+                    r.stopPropagation(), n(!e()), R(), a()
+                }), a(), t
+            }
+
+            function X(e, n) {
+                const t = d("div", "kb"),
+                    a = () => {
+                        K !== t && (t.classList.remove("grab"), t.textContent = Z(e()))
+                    };
+                return t.addEventListener("click", () => {
+                    t.classList.add("grab"), t.textContent = "\u2026", W = r => {
+                        n(r), R(), a()
+                    }, K = t
+                }), a(), t._paint = a, t
+            }
+
+            function Zt(e, n, t, a, r, i) {
+                const s = d("input", "rng");
+                s.type = "range", s.min = e, s.max = n, s.step = t, s.value = a();
+                const c = d("span", "rngval"),
+                    u = () => {
+                        const m = n > e ? (+s.value - e) / (n - e) * 100 : 0;
+                        s.style.background = "linear-gradient(to right, var(--acc) " + m + "%, var(--track) " + m + "%)", c.textContent = (i || String)(+s.value)
+                    };
+                return s.addEventListener("input", u), s.addEventListener("change", () => {
+                    r(+s.value), R()
+                }), u(), {
+                    input: s,
+                    val: c
+                }
+            }
+
+            function st(e, n, t) {
+                const a = d("input", "txt" + (t ? " " + t : ""));
+                return a.type = "text", a.value = e(), a.addEventListener("change", () => {
+                    n(a.value.trim()), R()
+                }), a.addEventListener("keydown", r => {
+                    r.stopPropagation(), r.key === "Enter" && a.blur()
+                }), a
+            }
+
+            function en(e, n, t) {
+                const a = d("div", "selwrap"),
+                    r = d("select", "sel");
+                for (const i of e) {
+                    const s = d("option");
+                    s.value = i.value, s.textContent = i.label, r.appendChild(s)
+                }
+                return r.value = n(), r.addEventListener("change", () => {
+                    t(r.value), R()
+                }), r.addEventListener("keydown", i => i.stopPropagation()), a.appendChild(r), a
+            }
+            const lt = (e, n) => e === "acc" ? gt(n) : yt(n),
+                dt = (e, n) => e === "acc" ? vt(n) : bt(n),
+                tn = e => (e === "acc" ? T.accessories : T.hats) || [];
+
+            function oe(e, n, t) {
+                const a = d("div", "hatbox"),
+                    r = () => {
+                        a.textContent = "";
+                        const i = e();
+                        if (i) {
+                            const s = d("img");
+                            s.src = lt(t, i), s.alt = dt(t, i), s.onerror = () => {
+                                s.replaceWith(d("div", "hatph", "\u2014"))
+                            }, a.appendChild(s)
+                        } else a.appendChild(d("div", "hatph", "+"));
+                        a.title = dt(t, i)
+                    };
+                return a.addEventListener("click", () => nn(e(), i => {
+                    n(i), R(), r()
+                }, t)), r(), a
+            }
+
+            function nn(e, n, t) {
+                if (!E) return;
+                const a = E.querySelector(".mml-pick");
+                a && a.remove();
+                const r = d("div", "mml-pick"),
+                    i = d("div", "pickpanel");
+                i.appendChild(d("div", "picktitle", t === "acc" ? "Choose an accessory" : "Choose a hat"));
+                const s = d("div", "pickgrid"),
+                    c = () => r.remove(),
+                    u = [{
+                        id: 0,
+                        name: "None"
+                    }].concat(tn(t));
+                for (const m of u) {
+                    const p = d("div", "ptile" + (m.id === e ? " sel" : ""));
+                    if (m.id) {
+                        const h = d("img");
+                        h.src = lt(t, m.id), h.alt = m.name, h.onerror = () => {
+                            h.style.visibility = "hidden"
+                        }, p.appendChild(h)
+                    } else p.appendChild(d("div", "pnone", "none"));
+                    p.appendChild(d("div", "pcap", m.name)), p.title = m.name + (m.desc ? " \u2014 " + m.desc : ""), p.addEventListener("click", h => {
+                        h.stopPropagation(), n(m.id), c()
+                    }), s.appendChild(p)
+                }
+                i.appendChild(s), r.appendChild(i), r.addEventListener("mousedown", m => {
+                    m.stopPropagation(), m.target === r && c()
+                }), E.appendChild(r)
+            }
+
+            function Se(e, n, t, a, r) {
+                const i = d("div", "hatcell"),
+                    s = d("div", "accpair");
+                return s.appendChild(oe(n, t)), s.appendChild(oe(a, r, "acc")), i.appendChild(s), i.appendChild(d("span", "hatcap", e)), i
+            }
+
+            function an(e) {
+                const n = W;
+                W = null;
+                const t = K;
+                if (K = null, /^(Shift|Control|Alt|Meta|CapsLock|OS)$/.test(e.key)) {
+                    W = n, K = t;
+                    return
+                }
+                if (e.key === "Escape") {
+                    n("");
+                    return
+                }
+                n(ue(e))
+            }
+
+            function v(e, n) {
+                const t = d("div", "row");
+                return t.appendChild(d("span", "rl", e)), t.appendChild(n), t
+            }
+
+            function I(e, n, t, a, r, i, s) {
+                const c = d("div", "row srow");
+                c.appendChild(d("span", "rl", e));
+                const u = Zt(n, t, a, r, i, s);
+                return c.appendChild(u.input), c.appendChild(u.val), c
+            }
+
+            function S(e, n, t) {
+                const a = d("div", "mod" + (t ? " wide" : "")),
+                    r = d("div", "modhead");
+                r.appendChild(d("span", "modtitle", e)), n && r.appendChild(x(n.get, n.set)), a.appendChild(r);
+                const i = d("div", "modbody");
+                return a.appendChild(i), {
+                    card: a,
+                    body: i
+                }
+            }
+            const C = {};
+            for (const e of P) {
+                const n = e.id;
+                C["spam_" + n] = () => {
+                    const t = l.spammers[n],
+                        a = S(e.label, {
+                            get: () => t.on,
+                            set: r => {
+                                t.on = r
+                            }
+                        });
+                    return a.body.appendChild(v("Key", X(() => t.key, r => {
+                        t.key = r
+                    }))), a.body.appendChild(v("Item", st(() => t.item, r => {
+                        t.item = r || e.item
+                    }))), a.body.appendChild(I("Speed", 40, 500, 10, () => t.speed, r => {
+                        t.speed = r
+                    }, r => r + "ms")), a.card
+                }
+            }
+            C.humanize = () => {
+                const e = l.humanize,
+                    n = S("Humanize", {
+                        get: () => e.on,
+                        set: t => {
+                            e.on = t
+                        }
+                    });
+                return n.body.appendChild(I("Jitter", 0, 60, 1, () => e.jitter, t => {
+                    e.jitter = t
+                }, t => "\xB1" + t + "%")), n.body.appendChild(I("Pause %", 0, 25, 1, () => e.pauseChance, t => {
+                    e.pauseChance = t
+                }, t => t + "%")), n.body.appendChild(I("Pause ms", 0, 600, 10, () => e.pauseMax, t => {
+                    e.pauseMax = t
+                }, t => t + "ms")), n.card
+            }, C.insta = () => {
+                const e = l.insta,
+                    n = S("Instakill", null);
+                n.body.appendChild(v("Key", X(() => e.key, a => {
+                    a && (e.key = a)
+                }))), n.body.appendChild(v("Mode", en([{
+                    value: "packet",
+                    label: "Confirmed"
+                }, {
+                    value: "timed",
+                    label: "Timed"
+                }], () => e.mode, a => {
+                    e.mode = a
+                }))), n.body.appendChild(v("Auto aim", x(() => e.autoAim, a => {
+                    e.autoAim = a
+                }))), n.body.appendChild(v("Reverse (secondary first)", x(() => e.reverse, a => {
+                    e.reverse = a
+                }))), n.body.appendChild(v("Switch back", x(() => e.switchBack, a => {
+                    e.switchBack = a
+                }))), n.body.appendChild(I("Swap ms", 40, 300, 10, () => e.swapDelay, a => {
+                    e.swapDelay = a
+                }, a => a + "ms"));
+                const t = d("div", "hatrow");
+                return t.appendChild(Se("Primary", () => e.primaryHat, a => {
+                    e.primaryHat = a
+                }, () => e.primaryAcc, a => {
+                    e.primaryAcc = a
+                })), t.appendChild(Se("Secondary", () => e.secondaryHat, a => {
+                    e.secondaryHat = a
+                }, () => e.secondaryAcc, a => {
+                    e.secondaryAcc = a
+                })), n.body.appendChild(t), n.card
+            };
+
+            function ct(e, n) {
+                const t = S(e, {
+                        get: () => n.on,
+                        set: r => {
+                            n.on = r
+                        }
+                    }),
+                    a = d("div", "hatrow");
+                return a.appendChild(Se("On hold", () => n.hat, r => {
+                    n.hat = r
+                }, () => n.acc, r => {
+                    n.acc = r
+                })), t.body.appendChild(a), t.card
+            }
+            C.clickLeft = () => ct("Left click", l.clicks.left), C.clickRight = () => ct("Right click", l.clicks.right), C.biomegear = () => {
+                const e = l.biomegear,
+                    n = S("Biome gear", {
+                        get: () => e.on,
+                        set: r => {
+                            e.on = r
+                        }
+                    }),
+                    t = (r, i) => {
+                        const s = d("div", "hatcell"),
+                            c = d("div", "accpair");
+                        return c.appendChild(oe(() => e[i], u => {
+                            e[i] = u
+                        })), s.appendChild(c), s.appendChild(d("span", "hatcap", r)), s
+                    },
+                    a = d("div", "hatrow");
+                return a.appendChild(t("Snow", "snow")), a.appendChild(t("Normal", "normal")), a.appendChild(t("River", "river")), n.body.appendChild(a), n.card
+            }, C.arrows = () => {
+                const e = l.arrows,
+                    n = S("Player arrows", {
+                        get: () => e.on,
+                        set: t => {
+                            e.on = t, Fe()
+                        }
+                    });
+                return n.body.appendChild(v("Players", x(() => e.players, t => {
+                    e.players = t
+                }))), n.body.appendChild(v("Animals", x(() => e.animals, t => {
+                    e.animals = t
+                }))), n.body.appendChild(v("Off-screen only", x(() => e.offscreen, t => {
+                    e.offscreen = t
+                }))), n.body.appendChild(I("Distance", 60, 220, 5, () => e.radius, t => {
+                    e.radius = t
+                }, t => t + "px")), n.body.appendChild(I("Size", 8, 28, 1, () => e.size, t => {
+                    e.size = t
+                }, t => t + "px")), n.card
+            }, C.reloads = () => {
+                const e = l.reloads,
+                    n = S("Reload bars", {
+                        get: () => e.on,
+                        set: t => {
+                            e.on = t, Ze()
+                        }
+                    });
+                return n.body.appendChild(v("Yourself", x(() => e.self, t => {
+                    e.self = t
+                }))), n.body.appendChild(v("Enemies", x(() => e.enemies, t => {
+                    e.enemies = t
+                }))), n.card
+            }, C.counter = () => {
+                const e = l.counter;
+                return S("Item counter", {
+                    get: () => e.on,
+                    set: t => {
+                        e.on = t, nt()
+                    }
+                }).card
+            }, C.minimap = () => {
+                const e = l.minimap,
+                    n = S("Minimap", {
+                        get: () => e.on,
+                        set: t => {
+                            e.on = t
+                        }
+                    });
+                return n.body.appendChild(v("Placed items", x(() => e.items, t => {
+                    e.items = t
+                }))), n.body.appendChild(v("Trees", x(() => e.trees, t => {
+                    e.trees = t
+                }))), n.body.appendChild(v("Bushes", x(() => e.bushes, t => {
+                    e.bushes = t
+                }))), n.body.appendChild(v("Stones", x(() => e.stones, t => {
+                    e.stones = t
+                }))), n.body.appendChild(v("Gold", x(() => e.gold, t => {
+                    e.gold = t
+                }))), n.body.appendChild(v("Biomes", x(() => e.biomes, t => {
+                    e.biomes = t
+                }))), n.body.appendChild(v("Expand key", X(() => e.key, t => {
+                    t && (e.key = t)
+                }))), n.card
+            }, C.heal = () => {
+                const e = l.heal,
+                    n = S("Auto heal", {
+                        get: () => e.on,
+                        set: t => {
+                            e.on = t
+                        }
+                    });
+                return n.body.appendChild(v("Legit mode", x(() => e.legit, t => {
+                    e.legit = t
+                }))), n.body.appendChild(v("Shame-safe", x(() => e.shameSafe, t => {
+                    e.shameSafe = t
+                }))), n.body.appendChild(I("Below", 1, 99, 1, () => e.healAt, t => {
+                    e.healAt = t
+                }, t => t + "%")), n.body.appendChild(I("In hand", 0, 300, 10, () => e.showInHand, t => {
+                    e.showInHand = t
+                }, t => t + "ms")), n.body.appendChild(I("Jitter", 0, 200, 10, () => e.jitter, t => {
+                    e.jitter = t
+                }, t => t + "ms")), n.body.appendChild(I("Max/s", 1, 12, 1, () => e.maxPerSec, t => {
+                    e.maxPerSec = t
+                }, null)), n.card
+            }, C.autogg = () => {
+                const e = l.autogg,
+                    n = S("Auto GG", {
+                        get: () => e.on,
+                        set: t => {
+                            e.on = t
+                        }
+                    });
+                return n.body.appendChild(v("Message", st(() => e.message, t => {
+                    e.message = t || "gg"
+                }))), n.card
+            }, C.hats = () => {
+                const e = S("Hat keys", null, !0),
+                    n = d("div", "hatrow");
+                return l.hats.forEach(t => {
+                    const a = d("div", "hatcell");
+                    a.appendChild(oe(() => t.id, r => {
+                        t.id = r
+                    })), a.appendChild(X(() => t.key, r => {
+                        t.key = r
+                    })), n.appendChild(a)
+                }), e.body.appendChild(n), e.card
+            }, C.general = () => {
+                const e = S("General", null, !0);
+                e.body.appendChild(v("Menu key", X(() => l.menuKey, t => {
+                    t && (l.menuKey = t)
+                })));
+                const n = d("div", "btn", "Reset to defaults");
+                return n.addEventListener("click", () => {
+                    if (y.confirm && !y.confirm("Reset all MooMod settings?")) return;
+                    const t = JSON.parse(JSON.stringify(me));
+                    for (const a of Object.keys(l)) delete l[a];
+                    Object.assign(l, t), R(), Ee(V)
+                }), e.body.appendChild(n), e.card
+            };
+            const He = [{
+                id: "placement",
+                label: "Placement",
+                mods: P.map(e => "spam_" + e.id).concat(["humanize"])
+            }, {
+                id: "combat",
+                label: "Combat",
+                mods: ["insta", "heal", "autogg"]
+            }, {
+                id: "clicks",
+                label: "Clicks",
+                mods: ["clickLeft", "clickRight"]
+            }, {
+                id: "visual",
+                label: "Visual",
+                mods: ["arrows", "reloads", "counter", "minimap"]
+            }, {
+                id: "hats",
+                label: "Hats",
+                mods: ["hats", "biomegear"]
+            }, {
+                id: "config",
+                label: "Config",
+                mods: ["general"]
+            }];
+
+            function Ee(e) {
+                if (!e) return;
+                e.textContent = "";
+                const n = He.find(a => a.id === Ae) || He[0];
+                re && (re.textContent = n.label);
+                const t = d("div", "modgrid");
+                for (const a of n.mods) {
+                    const r = C[a];
+                    r && t.appendChild(r())
+                }
+                e.appendChild(t)
+            }
+
+            function rn() {
+                const e = d("div", "mml-panel"),
+                    n = d("div", "side"),
+                    t = d("div", "brand");
+                t.appendChild(d("span", "bname", "MooMod")), n.appendChild(t);
+                const a = d("div", "nav"),
+                    r = {};
+                for (const p of He) {
+                    const h = d("div", "navitem" + (p.id === Ae ? " active" : ""));
+                    h.appendChild(d("span", "ntxt", p.label)), h.addEventListener("click", () => {
+                        Ae = p.id;
+                        for (const L in r) r[L].classList.toggle("active", L === p.id);
+                        Ee(V)
+                    }), r[p.id] = h, a.appendChild(h)
+                }
+                n.appendChild(a);
+                const i = d("div", "user"),
+                    s = d("div", "uinfo");
+                s.appendChild(d("span", "uname", "MooMod")), s.appendChild(d("span", "uver", "menu \xB7 " + Z(l.menuKey))), i.appendChild(s), n.appendChild(i), e.appendChild(n);
+                const c = d("div", "body"),
+                    u = d("div", "head");
+                re = d("span", "htitle", "Placement"), u.appendChild(re);
+                const m = d("div", "close", "\u2715");
+                return m.addEventListener("click", Le), u.appendChild(m), c.appendChild(u), V = d("div", "content"), c.appendChild(V), e.appendChild(c), Ee(V), e
+            }
+
+            function pt() {
+                if (Y || !b || !b.body || !b.head) return Y;
+                const e = d("style");
+                return e.textContent = Qt, b.head.appendChild(e), E = d("div", "mml-gui"), E.appendChild(rn()), E.addEventListener("mousedown", n => {
+                    n.target === E && Le()
+                }), b.body.appendChild(E), Y = !0, o.onCleanup(() => {
+                    e.remove(), E.remove(), Y = !1, N = !1
+                }), !0
+            }
+
+            function on() {
+                pt() && (N = !0, E.classList.add("open"))
+            }
+
+            function Le() {
+                E && (N = !1, E.classList.remove("open"), W = null, K = null)
+            }
+
+            function sn() {
+                N ? Le() : on()
+            }
+            b && (function e() {
+                Y || pt() || y.setTimeout(e, 100)
+            })(), o.log("MooMod ready \u2014 press " + Z(l.menuKey) + " for the menu")
+        })
+    }
+    const le = typeof unsafeWindow < "u" ? unsafeWindow : window;
+
+    function de() {
+        let w = null,
+            _ = null;
+        try {
+            le.dispatchEvent(new CustomEvent("moomoo.js:api", {
+                detail: {
+                    resolve: (o, y) => {
+                        w = o, _ = y
+                    }
+                }
+            }))
+        } catch {}
+        return w ? (ft(w, _), !0) : !1
+    }
+    if (de()) return;
+    let ht = 0;
+    const Ie = setInterval(() => {
+        (de() || ++ht > 200) && clearInterval(Ie)
+    }, 50);
+    le.addEventListener && le.addEventListener("moomoo.js:ready", () => {
+        de() && clearInterval(Ie)
+    })
+})();

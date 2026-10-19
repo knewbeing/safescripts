@@ -52,7 +52,7 @@
 // @name:ur             Duolingo DuoHacker
 
 // @namespace           https://github.com/DuoHacker/DuoHacker
-// @version             2026.06.21
+// @version             2026.08.28
 // @description         The #1 Duolingo hack - Farm XP, Gems, Streaks and unlock Duolingo Max for free.
 // @description:vi      Công cụ hack Duolingo #1 - Farm XP, Gems, Streaks và mở khóa Duolingo Max miễn phí.
 // @description:zh-CN   最强 Duolingo 辅助工具 - 自动刷 XP、宝石、连胜，免费解锁 Duolingo Max。
@@ -110,12 +110,13 @@
 // @match               https://*.duolingo.com/*
 // @match               https://*.duolingo.cn/*
 
-// @icon                https://raw.githubusercontent.com/DuoHacker/DuoHacker/refs/heads/main/images/DuoHacker_Logo_NoBG_PNG.png
+// @icon                https://assets.duohacker.io.vn/images/DuoHacker_Logo_NoBG_PNG.png
 // @run-at              document-end
 
 // @grant               GM_xmlhttpRequest
 // @grant               GM_addStyle
 // @connect             duolingo.com
+// @connect             ssr-avatars.duolingo.com
 // @connect             stories.duolingo.com
 // @connect             goals-api.duolingo.com
 // @connect             duolingo-leaderboards-prod.duolingo.com
@@ -123,7 +124,10 @@
 // @connect             avatars.githubusercontent.com
 // @connect             greasyfork.org
 // @connect             assets.duohacker.io.vn
+// @connect             d35aaqx5ub95lt.cloudfront.net
 // @connect             font.duohacker.io.vn
+// @connect             simg-ssl.duolingo.com
+// @connect             d3gq3s1iyyx31w.cloudfront.net/
 
 // @compatible          chrome   Tested on Chrome 120+ with Tampermonkey
 // @compatible          firefox  Tested on Firefox 120+ with Tampermonkey / Violentmonkey
@@ -154,11 +158,13 @@
             lang_select_label: 'Language',
             lang_en: 'English',
             lang_vi: 'Tiếng Việt',
+            lang_es: 'Español',
+            lang_fr: 'Français',
 
             // ── Top bar ──
             hide: 'Hide',
             show: 'Show',
-            switch_v1: 'Switch to V1',
+            switch_v1: 'Switch to Solver',
             switch_v2: 'Switch to V2',
 
             // ── Connection status ──
@@ -176,11 +182,11 @@
 
             // ── Page 2 (extra features) ──
             back: 'Back',
-            farm_practice: 'Farm Practice',
+            farm_practice: 'How many practice lesson you would like to solve?',
             farm_practice_sub: '0 = unlimited practice sessions',
             shop_items: 'Shop Items',
-            auto_league: 'Auto League #1',
-            auto_league_sub: 'Farm XP until rank #1',
+            auto_league: 'Auto League',
+            auto_league_sub: 'Farm XP to reach your target rank',
             auto_daily_quest: 'Auto Daily Quest',
             auto_daily_sub: 'Complete all daily quests',
             claim_monthly: 'Claim Monthly Quest',
@@ -240,7 +246,7 @@
             btn_stop: 'STOP',
             btn_save: 'SAVE',
             btn_saved: 'SAVED ✓',
-            btn_claim: 'CLAIM',
+            btn_claim: 'CLAIM ALL',
             btn_activate: 'ACTIVATE',
             btn_done: 'DONE ✓',
             btn_save_current: 'SAVE CURRENT',
@@ -259,17 +265,123 @@
             status_failed_retry: 'Failed \u2014 try again',
             status_not_connected: 'Not connected',
             status_loading: 'Loading\u2026',
+
+            // ── Page 11 (leaderboard) ──
+            leaderboard: 'Leaderboard',
+            leaderboard_sub: 'View your current league',
+            your_current_league: 'Your current league',
+            lb_loading: 'Loading leaderboard...',
+            lb_failed: 'Failed to load leaderboard.',
+            choose_reaction: 'Choose Reaction',
+            lb_promoted: '⬆ Promoted',
+            lb_demoted: '⬇ Demoted',
+            lb_safe: '🟡 Safe',
+            lb_ended: 'Contest ended',
+
+            // ── Leaderboard separators ──
+            lb_rank_up: 'Rank Up',
+            lb_rank_down: 'Rank Down',
+
+            // ── Monthly quest status ──
+            mq_completed: 'COMPLETED',
+
+            // ── Changelog badge ──
+            changelog_current: 'CURRENT',
+
+            // ── Account manager labels ──
+            acc_active: 'Active',
+            acc_login_btn: 'LOG IN',
+
+            // ── Connection error subtexts ──
+            conn_not_logged_in: 'Not logged in',
+            conn_invalid_token: 'Invalid token',
+            conn_failed_retry: 'Failed — retrying',
+
+            // ── Streak live counter suffixes ──
+            streak_day: 'day',
+            streak_days: 'days',
+
+            // ── Notification titles ──
+            notif_xp_done_title: 'XP Farm Done!',
+            notif_xp_stopped_title: 'XP Farm Stopped',
+            notif_gem_done_title: 'Gem Farm Done!',
+            notif_gem_farm_title: 'Gem Farm',
+            notif_streak_done_title: 'Streak Farm Done!',
+            notif_streak_farm_title: 'Streak Farm',
+            notif_streak_stopped_title: 'Streak Farm Stopped',
+            notif_practice_done_title: 'Farm Practice Done!',
+            notif_practice_title: 'Farm Practice',
+            notif_daily_done_title: 'Daily Quests Done!',
+            notif_all_done_title: 'All Done!',
+            notif_mq_title: 'Monthly Quests',
+            notif_mq_partial_title: 'Partial',
+            notif_super_title: 'Super Activated!',
+            notif_shop_title: 'Shop',
+            notif_error_title: 'Error',
+            notif_failed_title: 'Failed',
+            notif_stopped_title: 'Stopped',
+            notif_busy_title: 'Busy',
+            notif_not_connected_title: 'Not connected',
+            notif_not_loaded_title: 'Not loaded',
+            notif_nothing_to_do_title: 'Nothing to do',
+            notif_v1xp_title: 'V1 XP',
+            notif_acc_saved_title: 'Account Saved',
+            notif_acc_removed_title: 'Removed',
+            notif_acc_already_title: 'Already saved',
+            notif_acc_not_found_title: 'Not found',
+
+            // ── Notification bodies ──
+            notif_xp_done_body: (xp, loops) => `Farmed ${xp} XP in ${loops} loops.`,
+            notif_xp_done_inf_body: (xp) => `+${xp} XP gained.`,
+            notif_xp_stopped_body: (xp) => `+${xp} XP gained.`,
+            notif_gem_done_body: (gems) => `+${gems} gems gained.`,
+            notif_gem_no_rewards: 'No rewards available. Retrying…',
+            notif_streak_done_body: (days) => `Restored ${days} streak days.`,
+            notif_streak_no_days: 'No days could be saved. Please try again.',
+            notif_streak_done_inf_body: (days, unit) => `+${days} ${unit} gained.`,
+            notif_streak_stopped_body: (days) => `Processed ${days} days.`,
+            notif_practice_done_body: (n) => `Completed ${n} practice(s).`,
+            notif_practice_next_body: (n, total) => `Done ${n}${total > 0 ? ' / ' + total : ''} — loading next...`,
+            notif_practice_nav: 'Navigating to practice...',
+            notif_practice_busy: 'Practice farm already running.',
+            notif_daily_done_body: (n) => `Completed ${n} metric(s).`,
+            notif_all_done_body: 'All daily quests completed.',
+            notif_daily_error: 'Could not load quest data.',
+            notif_daily_fail: 'Quest completion failed.',
+            notif_mq_all_body: (n) => `All ${n} quest(s) claimed!`,
+            notif_mq_partial_body: (ok, total) => `${ok}/${total} quests claimed.`,
+            notif_mq_fail: 'No quests could be claimed.',
+            notif_mq_not_loaded: 'Open Monthly Quests first.',
+            notif_mq_nothing: 'No unclaimed quests found.',
+            notif_super_body: 'Free Super Duolingo activated!',
+            notif_super_fail: 'Activation failed. You may already have Super.',
+            notif_shop_got: (name) => `Got ${name}!`,
+            notif_shop_fail: 'Failed to get item.',
+            notif_v1xp_errors: 'Too many errors, stopping.',
+            notif_v1xp_done_body: (xp) => `Farmed ${xp} XP.`,
+            notif_v1gem_done_body: (gems) => `+${gems} gems gained.`,
+            notif_v1streak_done_body: (days) => `Farmed ${days} streak days.`,
+            notif_stopped_body: 'Farm stopped.',
+            notif_busy_v1: 'Stop current V1 farm first.',
+            notif_not_connected_body: 'Please wait.',
+            notif_not_connected_conn: 'Please wait for connection.',
+            notif_acc_saved_body: (name) => `Saved account: ${name}`,
+            notif_acc_removed_body: 'Account removed from list.',
+            notif_acc_already_body: 'This account is already in the list.',
+            notif_acc_not_found_body: 'Account not found.',
         },
         vi: {
             // ── Language selector ──
             lang_select_label: 'Ngôn ngữ',
             lang_en: 'English',
             lang_vi: 'Tiếng Việt',
+            lang_es: 'Español',
+            lang_fr: 'Français',
 
             // ── Top bar ──
             hide: 'Ẩn',
             show: 'Hiện',
-            switch_v1: 'Đổi thành V1',
+            switch_v1: 'Đổi thành Solver',
             switch_v2: 'Đổi thành V2',
 
             // ── Connection status ──
@@ -287,11 +399,11 @@
 
             // ── Page 2 (extra features) ──
             back: 'Quay lại',
-            farm_practice: 'Cày bài ôn tập',
+            farm_practice: 'Số bài Practice bạn muốn giải?',
             farm_practice_sub: '0 = vô hạn luồng cày',
             shop_items: 'Shop vật phẩm',
             auto_league: 'Tự động cày bảng xếp hạng',
-            auto_league_sub: 'Cày XP đến khi đạt #1',
+            auto_league_sub: 'Cày XP để đạt thứ hạng mục tiêu',
             auto_daily_quest: 'Hoàn thành nhiệm vụ hằng ngày',
             auto_daily_sub: 'Hoàn thành tất cả nhiệm vụ hằng ngày',
             claim_monthly: 'Hack huy hiệu tháng',
@@ -351,7 +463,7 @@
             btn_stop: 'DỪNG',
             btn_save: 'LƯU',
             btn_saved: 'ĐÃ LƯU ✓',
-            btn_claim: 'NHẬN',
+            btn_claim: 'NHẬN TẤT CẢ',
             btn_activate: 'KÍCH HOẠT',
             btn_done: 'XONG ✓',
             btn_save_current: 'LƯU HIỆN TẠI',
@@ -370,18 +482,559 @@
             status_failed_retry: 'Lỗi — thử lại',
             status_not_connected: 'Chưa kết nối',
             status_loading: 'Đang tải…',
+
+            // ── Page 11 (leaderboard) ──
+            leaderboard: 'Bảng xếp hạng',
+            leaderboard_sub: 'Xem giải đấu hiện tại',
+            your_current_league: 'Giải đấu hiện tại',
+            lb_loading: 'Đang tải bảng xếp hạng...',
+            lb_failed: 'Không tải được bảng xếp hạng.',
+            choose_reaction: 'Chọn Reaction',
+            lb_promoted: '⬆ Thăng hạng',
+            lb_demoted: '⬇ Xuống hạng',
+            lb_safe: '🟡 An toàn',
+            lb_ended: 'Giải đấu đã kết thúc',
+
+            // ── Leaderboard separators ──
+            lb_rank_up: 'Thăng hạng',
+            lb_rank_down: 'Xuống hạng',
+
+            // ── Monthly quest status ──
+            mq_completed: 'HOÀN THÀNH',
+
+            // ── Changelog badge ──
+            changelog_current: 'HIỆN TẠI',
+
+            // ── Account manager labels ──
+            acc_active: 'Đang dùng',
+            acc_login_btn: 'ĐĂNG NHẬP',
+
+            // ── Connection error subtexts ──
+            conn_not_logged_in: 'Chưa đăng nhập',
+            conn_invalid_token: 'Token không hợp lệ',
+            conn_failed_retry: 'Lỗi — đang thử lại',
+
+            // ── Streak live counter suffixes ──
+            streak_day: 'ngày',
+            streak_days: 'ngày',
+
+            // ── Notification titles ──
+            notif_xp_done_title: 'Farm XP xong!',
+            notif_xp_stopped_title: 'Đã dừng farm XP',
+            notif_gem_done_title: 'Farm Gem xong!',
+            notif_gem_farm_title: 'Farm Gem',
+            notif_streak_done_title: 'Farm Streak xong!',
+            notif_streak_farm_title: 'Farm Streak',
+            notif_streak_stopped_title: 'Đã dừng farm Streak',
+            notif_practice_done_title: 'Farm Practice xong!',
+            notif_practice_title: 'Farm Practice',
+            notif_daily_done_title: 'Nhiệm vụ ngày xong!',
+            notif_all_done_title: 'Xong hết!',
+            notif_mq_title: 'Nhiệm vụ tháng',
+            notif_mq_partial_title: 'Một phần',
+            notif_super_title: 'Kích hoạt Super!',
+            notif_shop_title: 'Shop',
+            notif_error_title: 'Lỗi',
+            notif_failed_title: 'Thất bại',
+            notif_stopped_title: 'Đã dừng',
+            notif_busy_title: 'Đang bận',
+            notif_not_connected_title: 'Chưa kết nối',
+            notif_not_loaded_title: 'Chưa tải',
+            notif_nothing_to_do_title: 'Không có gì',
+            notif_v1xp_title: 'V1 XP',
+            notif_acc_saved_title: 'Đã lưu tài khoản',
+            notif_acc_removed_title: 'Đã xóa',
+            notif_acc_already_title: 'Đã có rồi',
+            notif_acc_not_found_title: 'Không tìm thấy',
+
+            // ── Notification bodies ──
+            notif_xp_done_body: (xp, loops) => `Đã farm ${xp} XP trong ${loops} vòng.`,
+            notif_xp_done_inf_body: (xp) => `+${xp} XP đã nhận.`,
+            notif_xp_stopped_body: (xp) => `+${xp} XP đã nhận.`,
+            notif_gem_done_body: (gems) => `+${gems} gem đã nhận.`,
+            notif_gem_no_rewards: 'Không có phần thưởng. Đang thử lại…',
+            notif_streak_done_body: (days) => `Đã khôi phục ${days} ngày streak.`,
+            notif_streak_no_days: 'Không thể lưu ngày nào. Vui lòng thử lại.',
+            notif_streak_done_inf_body: (days, unit) => `+${days} ${unit} đã nhận.`,
+            notif_streak_stopped_body: (days) => `Đã xử lý ${days} ngày.`,
+            notif_practice_done_body: (n) => `Đã hoàn thành ${n} bài practice.`,
+            notif_practice_next_body: (n, total) => `Xong ${n}${total > 0 ? ' / ' + total : ''} — đang tải tiếp...`,
+            notif_practice_nav: 'Đang điều hướng đến practice...',
+            notif_practice_busy: 'Farm practice đang chạy rồi.',
+            notif_daily_done_body: (n) => `Đã hoàn thành ${n} chỉ tiêu.`,
+            notif_all_done_body: 'Đã hoàn thành tất cả nhiệm vụ ngày.',
+            notif_daily_error: 'Không thể tải dữ liệu nhiệm vụ.',
+            notif_daily_fail: 'Hoàn thành nhiệm vụ thất bại.',
+            notif_mq_all_body: (n) => `Đã nhận ${n} nhiệm vụ!`,
+            notif_mq_partial_body: (ok, total) => `${ok}/${total} nhiệm vụ đã nhận.`,
+            notif_mq_fail: 'Không thể nhận nhiệm vụ nào.',
+            notif_mq_not_loaded: 'Mở trang Nhiệm vụ tháng trước.',
+            notif_mq_nothing: 'Không có nhiệm vụ nào chưa nhận.',
+            notif_super_body: 'Đã kích hoạt Super Duolingo miễn phí!',
+            notif_super_fail: 'Kích hoạt thất bại. Có thể bạn đã có Super rồi.',
+            notif_shop_got: (name) => `Đã nhận ${name}!`,
+            notif_shop_fail: 'Không lấy được vật phẩm.',
+            notif_v1xp_errors: 'Quá nhiều lỗi, đang dừng.',
+            notif_v1xp_done_body: (xp) => `Đã farm ${xp} XP.`,
+            notif_v1gem_done_body: (gems) => `+${gems} gem đã nhận.`,
+            notif_v1streak_done_body: (days) => `Đã farm ${days} ngày streak.`,
+            notif_stopped_body: 'Đã dừng farm.',
+            notif_busy_v1: 'Dừng farm V1 hiện tại trước.',
+            notif_not_connected_body: 'Vui lòng chờ.',
+            notif_not_connected_conn: 'Vui lòng chờ kết nối.',
+            notif_acc_saved_body: (name) => `Đã lưu tài khoản: ${name}`,
+            notif_acc_removed_body: 'Đã xóa tài khoản khỏi danh sách.',
+            notif_acc_already_body: 'Tài khoản này đã được lưu rồi.',
+            notif_acc_not_found_body: 'Không tìm thấy tài khoản.',
+        },
+        es: {
+            // ── Language selector ──
+            lang_select_label: 'Idioma',
+            lang_en: 'English',
+            lang_vi: 'Tiếng Việt',
+            lang_es: 'Español',
+            lang_fr: 'Français',
+
+            // ── Top bar ──
+            hide: 'Ocultar',
+            show: 'Mostrar',
+            switch_v1: 'Cambiar a Solver',
+            switch_v2: 'Cambiar a V2',
+
+            // ── Connection status ──
+            connecting: 'Conectando',
+            connected: 'Conectado',
+            error: 'Error',
+            outdated: 'Desactualizado',
+
+            // ── Page 1 (main) ──
+            donate: 'Donar',
+            xp_question: '¿Cuánto XP te gustaría ganar?',
+            gems_run_label: 'Haz clic en "EJECUTAR" para farmear Gemas',
+            streak_question: '¿Cuántos días de racha quieres restaurar?',
+            extra_features: 'Funciones extra',
+
+            // ── Page 2 (extra features) ──
+            back: 'Atrás',
+            farm_practice: '¿Cuántas lecciones de práctica quieres resolver?',
+            farm_practice_sub: '0 = sesiones de práctica ilimitadas',
+            shop_items: 'Artículos de la tienda',
+            auto_league: 'Liga automática',
+            auto_league_sub: 'Farmea XP para alcanzar tu rango objetivo',
+            auto_daily_quest: 'Misión diaria automática',
+            auto_daily_sub: 'Completa todas las misiones diarias',
+            claim_monthly: 'Reclamar misión mensual',
+            claim_monthly_sub: 'Ver y reclamar misiones mensuales',
+            free_super: 'Super Duolingo gratis',
+            free_super_sub: 'Activa Super Duolingo gratis',
+
+            // ── Page 4 (settings) ──
+            loop_delay: 'Retraso de bucle (ms)',
+            free_duo_max: 'Duolingo Max gratis',
+            free_duo_max_sub: 'Solo del lado del cliente, recarga para aplicar',
+            hide_profile: 'Ocultar perfil',
+            auto_solver: 'Resolución automática',
+            auto_solver_sub: 'Mostrar botones de resolución automática durante las lecciones',
+            hide_animation: 'Ocultar animación',
+            hide_animation_sub: 'Ocultar imágenes y animaciones de Duolingo',
+            lesson_shortener: 'Acortador de lecciones',
+            lesson_shortener_sub: 'Reemplaza las lecciones con 1 pregunta instantánea',
+            stories_shortener: 'Saltar desafíos de historias',
+            stories_shortener_sub: 'Salta todos los desafíos en las historias',
+            safe_mode: 'Modo seguro',
+            safe_mode_sub: 'Añade más retraso entre clics al resolver lecciones/prácticas',
+            view_credits: 'Ver créditos',
+
+            // ── Page 3 (shop) ──
+            search_placeholder: 'Buscar artículos...',
+            loading_shop: 'Cargando tienda...',
+            no_items_found: 'No se encontraron artículos.',
+            no_items_available: 'No hay artículos disponibles.',
+
+            // ── Page 5 (account manager) ──
+            account_manager: 'Administrador de cuentas',
+            no_saved_accounts: 'No hay cuentas guardadas.',
+
+            // ── Page 6 (monthly quests) ──
+            monthly_quests: 'Misiones mensuales',
+            loading_quests: 'Cargando misiones...',
+            no_monthly_quests: 'No se encontraron misiones de este mes.',
+            quest_failed: 'Error al cargar las misiones.',
+
+            // ── Page 7 (credits) ──
+            credits: 'Créditos',
+
+            // ── Page V1 ──
+            xp_farming: 'Farmeo de XP',
+            farm_gems: 'Farmear Gemas',
+            streak_farming: 'Farmeo de racha',
+            activate_super_q: '¿Te gustaría activar Super Duolingo gratis?',
+            settings: 'Ajustes',
+
+            // ── Not connected ──
+            not_connected: 'No conectado.',
+
+            // ── Buttons (short labels) ──
+            btn_get: 'OBTENER',
+            btn_run: 'EJECUTAR',
+            btn_stop: 'DETENER',
+            btn_save: 'GUARDAR',
+            btn_saved: 'GUARDADO ✓',
+            btn_claim: 'RECLAMAR TODO',
+            btn_activate: 'ACTIVAR',
+            btn_done: 'HECHO ✓',
+            btn_save_current: 'GUARDAR ACTUAL',
+            btn_solve_all: 'RESOLVER TODO',
+            btn_pause: 'PAUSAR',
+            btn_loading: 'Cargando...',
+            btn_running: 'Ejecutando...',
+            btn_got: 'OBTENIDO ✓',
+            btn_failed: 'FALLIDO',
+
+            // ── Hide Profile status ──
+            profile_private: 'El perfil es privado',
+            profile_public: 'El perfil es público',
+            status_unavailable: 'No disponible',
+            status_saving: 'Guardando…',
+            status_failed_retry: 'Error — reintentar',
+            status_not_connected: 'No conectado',
+            status_loading: 'Cargando…',
+
+            // ── Page 11 (leaderboard) ──
+            leaderboard: 'Clasificación',
+            leaderboard_sub: 'Ver tu liga actual',
+            your_current_league: 'Tu liga actual',
+            lb_loading: 'Cargando clasificación...',
+            lb_failed: 'Error al cargar la clasificación.',
+            choose_reaction: 'Elegir reacción',
+            lb_promoted: '⬆ Ascendido',
+            lb_demoted: '⬇ Descendido',
+            lb_safe: '🟡 Seguro',
+            lb_ended: 'Concurso finalizado',
+
+            // ── Leaderboard separators ──
+            lb_rank_up: 'Subir de rango',
+            lb_rank_down: 'Bajar de rango',
+
+            // ── Monthly quest status ──
+            mq_completed: 'COMPLETADO',
+
+            // ── Changelog badge ──
+            changelog_current: 'ACTUAL',
+
+            // ── Account manager labels ──
+            acc_active: 'Activa',
+            acc_login_btn: 'INICIAR SESIÓN',
+
+            // ── Connection error subtexts ──
+            conn_not_logged_in: 'No has iniciado sesión',
+            conn_invalid_token: 'Token inválido',
+            conn_failed_retry: 'Error — reintentando',
+
+            // ── Streak live counter suffixes ──
+            streak_day: 'día',
+            streak_days: 'días',
+
+            // ── Notification titles ──
+            notif_xp_done_title: '¡Farmeo de XP completado!',
+            notif_xp_stopped_title: 'Farmeo de XP detenido',
+            notif_gem_done_title: '¡Farmeo de Gemas completado!',
+            notif_gem_farm_title: 'Farmeo de Gemas',
+            notif_streak_done_title: '¡Farmeo de racha completado!',
+            notif_streak_farm_title: 'Farmeo de racha',
+            notif_streak_stopped_title: 'Farmeo de racha detenido',
+            notif_practice_done_title: '¡Farmeo de práctica completado!',
+            notif_practice_title: 'Farmeo de práctica',
+            notif_daily_done_title: '¡Misiones diarias completadas!',
+            notif_all_done_title: '¡Todo listo!',
+            notif_mq_title: 'Misiones mensuales',
+            notif_mq_partial_title: 'Parcial',
+            notif_super_title: '¡Super activado!',
+            notif_shop_title: 'Tienda',
+            notif_error_title: 'Error',
+            notif_failed_title: 'Fallido',
+            notif_stopped_title: 'Detenido',
+            notif_busy_title: 'Ocupado',
+            notif_not_connected_title: 'No conectado',
+            notif_not_loaded_title: 'No cargado',
+            notif_nothing_to_do_title: 'Nada que hacer',
+            notif_v1xp_title: 'V1 XP',
+            notif_acc_saved_title: 'Cuenta guardada',
+            notif_acc_removed_title: 'Eliminada',
+            notif_acc_already_title: 'Ya guardada',
+            notif_acc_not_found_title: 'No encontrada',
+
+            // ── Notification bodies ──
+            notif_xp_done_body: (xp, loops) => `Se farmearon ${xp} XP en ${loops} vueltas.`,
+            notif_xp_done_inf_body: (xp) => `+${xp} XP obtenidos.`,
+            notif_xp_stopped_body: (xp) => `+${xp} XP obtenidos.`,
+            notif_gem_done_body: (gems) => `+${gems} gemas obtenidas.`,
+            notif_gem_no_rewards: 'No hay recompensas disponibles. Reintentando…',
+            notif_streak_done_body: (days) => `Se restauraron ${days} días de racha.`,
+            notif_streak_no_days: 'No se pudo guardar ningún día. Inténtalo de nuevo.',
+            notif_streak_done_inf_body: (days, unit) => `+${days} ${unit} obtenidos.`,
+            notif_streak_stopped_body: (days) => `Se procesaron ${days} días.`,
+            notif_practice_done_body: (n) => `Se completaron ${n} práctica(s).`,
+            notif_practice_next_body: (n, total) => `Hecho ${n}${total > 0 ? ' / ' + total : ''} — cargando siguiente...`,
+            notif_practice_nav: 'Navegando a la práctica...',
+            notif_practice_busy: 'El farmeo de práctica ya está en curso.',
+            notif_daily_done_body: (n) => `Se completaron ${n} objetivo(s).`,
+            notif_all_done_body: 'Todas las misiones diarias completadas.',
+            notif_daily_error: 'No se pudieron cargar los datos de la misión.',
+            notif_daily_fail: 'Error al completar la misión.',
+            notif_mq_all_body: (n) => `¡${n} misión(es) reclamada(s)!`,
+            notif_mq_partial_body: (ok, total) => `${ok}/${total} misiones reclamadas.`,
+            notif_mq_fail: 'No se pudo reclamar ninguna misión.',
+            notif_mq_not_loaded: 'Abre primero Misiones mensuales.',
+            notif_mq_nothing: 'No se encontraron misiones sin reclamar.',
+            notif_super_body: '¡Super Duolingo gratis activado!',
+            notif_super_fail: 'Error al activar. Puede que ya tengas Super.',
+            notif_shop_got: (name) => `¡Obtuviste ${name}!`,
+            notif_shop_fail: 'Error al obtener el artículo.',
+            notif_v1xp_errors: 'Demasiados errores, deteniendo.',
+            notif_v1xp_done_body: (xp) => `Se farmearon ${xp} XP.`,
+            notif_v1gem_done_body: (gems) => `+${gems} gemas obtenidas.`,
+            notif_v1streak_done_body: (days) => `Se farmearon ${days} días de racha.`,
+            notif_stopped_body: 'Farmeo detenido.',
+            notif_busy_v1: 'Detén el farmeo V1 actual primero.',
+            notif_not_connected_body: 'Por favor espera.',
+            notif_not_connected_conn: 'Por favor espera la conexión.',
+            notif_acc_saved_body: (name) => `Cuenta guardada: ${name}`,
+            notif_acc_removed_body: 'Cuenta eliminada de la lista.',
+            notif_acc_already_body: 'Esta cuenta ya está en la lista.',
+            notif_acc_not_found_body: 'Cuenta no encontrada.',
+        },
+        fr: {
+            // ── Language selector ──
+            lang_select_label: 'Langue',
+            lang_en: 'English',
+            lang_vi: 'Tiếng Việt',
+            lang_es: 'Español',
+            lang_fr: 'Français',
+
+            // ── Top bar ──
+            hide: 'Masquer',
+            show: 'Afficher',
+            switch_v1: 'Passer à Solver',
+            switch_v2: 'Passer à V2',
+
+            // ── Connection status ──
+            connecting: 'Connexion',
+            connected: 'Connecté',
+            error: 'Erreur',
+            outdated: 'Obsolète',
+
+            // ── Page 1 (main) ──
+            donate: 'Faire un don',
+            xp_question: "Combien d'XP souhaitez-vous gagner ?",
+            gems_run_label: 'Cliquez sur « LANCER » pour farmer des Gemmes',
+            streak_question: 'Combien de jours de série voulez-vous restaurer ?',
+            extra_features: 'Fonctionnalités supplémentaires',
+
+            // ── Page 2 (extra features) ──
+            back: 'Retour',
+            farm_practice: 'Combien de leçons de pratique voulez-vous résoudre ?',
+            farm_practice_sub: '0 = sessions de pratique illimitées',
+            shop_items: 'Articles de la boutique',
+            auto_league: 'Ligue automatique',
+            auto_league_sub: "Farmez de l'XP pour atteindre votre rang cible",
+            auto_daily_quest: 'Quête quotidienne automatique',
+            auto_daily_sub: 'Complétez toutes les quêtes quotidiennes',
+            claim_monthly: 'Réclamer la quête mensuelle',
+            claim_monthly_sub: 'Voir et réclamer les quêtes mensuelles',
+            free_super: 'Super Duolingo gratuit',
+            free_super_sub: 'Activez Super Duolingo gratuitement',
+
+            // ── Page 4 (settings) ──
+            loop_delay: 'Délai de boucle (ms)',
+            free_duo_max: 'Duolingo Max gratuit',
+            free_duo_max_sub: 'Côté client uniquement, rechargez pour appliquer',
+            hide_profile: 'Masquer le profil',
+            auto_solver: 'Résolveur automatique',
+            auto_solver_sub: 'Afficher les boutons du résolveur automatique pendant les leçons',
+            hide_animation: "Masquer l'animation",
+            hide_animation_sub: 'Masquer les images et animations de Duolingo',
+            lesson_shortener: 'Raccourcisseur de leçons',
+            lesson_shortener_sub: 'Remplace les leçons par 1 question instantanée',
+            stories_shortener: 'Passer les défis des histoires',
+            stories_shortener_sub: 'Ignore tous les défis dans les histoires',
+            safe_mode: 'Mode sécurisé',
+            safe_mode_sub: 'Ajoute plus de délai entre les clics lors de la résolution des leçons/pratiques',
+            view_credits: 'Voir les crédits',
+
+            // ── Page 3 (shop) ──
+            search_placeholder: 'Rechercher des articles...',
+            loading_shop: 'Chargement de la boutique...',
+            no_items_found: 'Aucun article trouvé.',
+            no_items_available: 'Aucun article disponible.',
+
+            // ── Page 5 (account manager) ──
+            account_manager: 'Gestionnaire de comptes',
+            no_saved_accounts: 'Aucun compte enregistré.',
+
+            // ── Page 6 (monthly quests) ──
+            monthly_quests: 'Quêtes mensuelles',
+            loading_quests: 'Chargement des quêtes...',
+            no_monthly_quests: 'Aucune quête trouvée ce mois-ci.',
+            quest_failed: 'Échec du chargement des quêtes.',
+
+            // ── Page 7 (credits) ──
+            credits: 'Crédits',
+
+            // ── Page V1 ──
+            xp_farming: "Farming d'XP",
+            farm_gems: 'Farmer des Gemmes',
+            streak_farming: 'Farming de série',
+            activate_super_q: 'Voulez-vous activer Super Duolingo gratuitement ?',
+            settings: 'Paramètres',
+
+            // ── Not connected ──
+            not_connected: 'Non connecté.',
+
+            // ── Buttons (short labels) ──
+            btn_get: 'OBTENIR',
+            btn_run: 'LANCER',
+            btn_stop: 'ARRÊTER',
+            btn_save: 'ENREGISTRER',
+            btn_saved: 'ENREGISTRÉ ✓',
+            btn_claim: 'TOUT RÉCLAMER',
+            btn_activate: 'ACTIVER',
+            btn_done: 'TERMINÉ ✓',
+            btn_save_current: 'ENREGISTRER ACTUEL',
+            btn_solve_all: 'TOUT RÉSOUDRE',
+            btn_pause: 'PAUSE',
+            btn_loading: 'Chargement...',
+            btn_running: 'En cours...',
+            btn_got: 'OBTENU ✓',
+            btn_failed: 'ÉCHEC',
+
+            // ── Hide Profile status ──
+            profile_private: 'Le profil est privé',
+            profile_public: 'Le profil est public',
+            status_unavailable: 'Indisponible',
+            status_saving: 'Enregistrement…',
+            status_failed_retry: 'Échec — réessayer',
+            status_not_connected: 'Non connecté',
+            status_loading: 'Chargement…',
+
+            // ── Page 11 (leaderboard) ──
+            leaderboard: 'Classement',
+            leaderboard_sub: 'Voir votre ligue actuelle',
+            your_current_league: 'Votre ligue actuelle',
+            lb_loading: 'Chargement du classement...',
+            lb_failed: 'Échec du chargement du classement.',
+            choose_reaction: 'Choisir une réaction',
+            lb_promoted: '⬆ Promu',
+            lb_demoted: '⬇ Rétrogradé',
+            lb_safe: '🟡 Sûr',
+            lb_ended: 'Concours terminé',
+
+            // ── Leaderboard separators ──
+            lb_rank_up: 'Monter de rang',
+            lb_rank_down: 'Descendre de rang',
+
+            // ── Monthly quest status ──
+            mq_completed: 'TERMINÉ',
+
+            // ── Changelog badge ──
+            changelog_current: 'ACTUEL',
+
+            // ── Account manager labels ──
+            acc_active: 'Actif',
+            acc_login_btn: 'CONNEXION',
+
+            // ── Connection error subtexts ──
+            conn_not_logged_in: 'Non connecté',
+            conn_invalid_token: 'Jeton invalide',
+            conn_failed_retry: 'Échec — nouvelle tentative',
+
+            // ── Streak live counter suffixes ──
+            streak_day: 'jour',
+            streak_days: 'jours',
+
+            // ── Notification titles ──
+            notif_xp_done_title: "Farming d'XP terminé !",
+            notif_xp_stopped_title: "Farming d'XP arrêté",
+            notif_gem_done_title: 'Farming de Gemmes terminé !',
+            notif_gem_farm_title: 'Farming de Gemmes',
+            notif_streak_done_title: 'Farming de série terminé !',
+            notif_streak_farm_title: 'Farming de série',
+            notif_streak_stopped_title: 'Farming de série arrêté',
+            notif_practice_done_title: 'Farming de pratique terminé !',
+            notif_practice_title: 'Farming de pratique',
+            notif_daily_done_title: 'Quêtes quotidiennes terminées !',
+            notif_all_done_title: 'Tout est terminé !',
+            notif_mq_title: 'Quêtes mensuelles',
+            notif_mq_partial_title: 'Partiel',
+            notif_super_title: 'Super activé !',
+            notif_shop_title: 'Boutique',
+            notif_error_title: 'Erreur',
+            notif_failed_title: 'Échec',
+            notif_stopped_title: 'Arrêté',
+            notif_busy_title: 'Occupé',
+            notif_not_connected_title: 'Non connecté',
+            notif_not_loaded_title: 'Non chargé',
+            notif_nothing_to_do_title: 'Rien à faire',
+            notif_v1xp_title: 'V1 XP',
+            notif_acc_saved_title: 'Compte enregistré',
+            notif_acc_removed_title: 'Supprimé',
+            notif_acc_already_title: 'Déjà enregistré',
+            notif_acc_not_found_title: 'Introuvable',
+
+            // ── Notification bodies ──
+            notif_xp_done_body: (xp, loops) => `${xp} XP farmés en ${loops} boucles.`,
+            notif_xp_done_inf_body: (xp) => `+${xp} XP obtenus.`,
+            notif_xp_stopped_body: (xp) => `+${xp} XP obtenus.`,
+            notif_gem_done_body: (gems) => `+${gems} gemmes obtenues.`,
+            notif_gem_no_rewards: 'Aucune récompense disponible. Nouvelle tentative…',
+            notif_streak_done_body: (days) => `${days} jours de série restaurés.`,
+            notif_streak_no_days: "Aucun jour n'a pu être enregistré. Veuillez réessayer.",
+            notif_streak_done_inf_body: (days, unit) => `+${days} ${unit} obtenus.`,
+            notif_streak_stopped_body: (days) => `${days} jours traités.`,
+            notif_practice_done_body: (n) => `${n} pratique(s) terminée(s).`,
+            notif_practice_next_body: (n, total) => `${n}${total > 0 ? ' / ' + total : ''} terminé — chargement du suivant...`,
+            notif_practice_nav: 'Navigation vers la pratique...',
+            notif_practice_busy: 'Le farming de pratique est déjà en cours.',
+            notif_daily_done_body: (n) => `${n} objectif(s) complété(s).`,
+            notif_all_done_body: 'Toutes les quêtes quotidiennes terminées.',
+            notif_daily_error: 'Impossible de charger les données de quête.',
+            notif_daily_fail: 'Échec de la complétion de la quête.',
+            notif_mq_all_body: (n) => `${n} quête(s) réclamée(s) !`,
+            notif_mq_partial_body: (ok, total) => `${ok}/${total} quêtes réclamées.`,
+            notif_mq_fail: "Aucune quête n'a pu être réclamée.",
+            notif_mq_not_loaded: "Ouvrez d'abord les Quêtes mensuelles.",
+            notif_mq_nothing: 'Aucune quête non réclamée trouvée.',
+            notif_super_body: 'Super Duolingo gratuit activé !',
+            notif_super_fail: 'Échec de l\'activation. Vous avez peut-être déjà Super.',
+            notif_shop_got: (name) => `Vous avez obtenu ${name} !`,
+            notif_shop_fail: "Échec de l'obtention de l'article.",
+            notif_v1xp_errors: "Trop d'erreurs, arrêt en cours.",
+            notif_v1xp_done_body: (xp) => `${xp} XP farmés.`,
+            notif_v1gem_done_body: (gems) => `+${gems} gemmes obtenues.`,
+            notif_v1streak_done_body: (days) => `${days} jours de série farmés.`,
+            notif_stopped_body: 'Farming arrêté.',
+            notif_busy_v1: "Arrêtez d'abord le farming V1 actuel.",
+            notif_not_connected_body: 'Veuillez patienter.',
+            notif_not_connected_conn: 'Veuillez patienter pendant la connexion.',
+            notif_acc_saved_body: (name) => `Compte enregistré : ${name}`,
+            notif_acc_removed_body: 'Compte supprimé de la liste.',
+            notif_acc_already_body: 'Ce compte est déjà dans la liste.',
+            notif_acc_not_found_body: 'Compte introuvable.',
         }
     };
 
-    function _t(key) {
+    function _t(key, ...args) {
         const d = _LANGS[_lang] || _LANGS.en;
         const v = d[key];
+        const en = _LANGS.en[key];
         // fallback to EN if VI value empty
-        return (v !== undefined && v !== '') ? v : (_LANGS.en[key] || key);
+        const val = (v !== undefined && v !== '') ? v : (en !== undefined ? en : key);
+        // Support function values for parameterised strings
+        return typeof val === 'function' ? val(...args) : val;
     }
 
     function _setLang(l) {
-        if (l !== 'vi' && l !== 'en') return;
+        if (l !== 'vi' && l !== 'en' && l !== 'es' && l !== 'fr') return;
         _lang = l;
         localStorage.setItem(_I18N_KEY, l);
         _applyLang();
@@ -390,7 +1043,7 @@
     function _applyLang() {
         // Static text nodes mapped by element id → translation key
         const _ID_MAP = {
-            'DH_Hide_Txt': () => document.getElementById('DH_Ico_Hidden')?.style.display === 'none' ? 'hide' : 'show',
+            'DH_Hide_Txt': () => document.getElementById('DH_Hide_Ico')?.textContent === '􀋮' ? 'show' : 'hide',
             'DH_Conn_Txt': () => _currentConnState === 'connected' && _isOutdated ? 'outdated' : (_currentConnState || 'connecting'),
             // Page 1
             'DH_Donate_Btn_Lbl': 'donate',
@@ -400,7 +1053,7 @@
             'DH_ExtraFeatures_Lbl': 'extra_features',
             // Page 2
             'DH_Back_Txt': 'back',
-            'DH_Practice_Title': 'farm_practice',
+            'DH_Practice_Question': 'farm_practice',
             'DH_Practice_Sub': 'farm_practice_sub',
             'DH_Shop_Lbl': 'shop_items',
             'DH_League_Title': 'auto_league',
@@ -409,8 +1062,6 @@
             'DH_Quest_Sub': 'auto_daily_sub',
             'DH_Monthly_Title': 'claim_monthly',
             'DH_Monthly_Sub': 'claim_monthly_sub',
-            'DH_FreeSuper_Title': 'free_super',
-            'DH_FreeSuper_Sub': 'free_super_sub',
             // Page 4
             'DH_Settings_Back_Txt': 'back',
             'DH_LoopDelay_Lbl': 'loop_delay',
@@ -445,8 +1096,7 @@
             'DH_V1_XP_Title': 'xp_farming',
             'DH_V1_Gem_Title': 'farm_gems',
             'DH_V1_Streak_Title': 'streak_farming',
-            'DH_V1_Super_Q': 'activate_super_q',
-            'DH_V1_Settings_Lbl': 'settings',
+            'DH_V1_Settings_Lbl': 'extra_features',
             'DH_V1_Settings_Back_Txt': 'back',
             // Switch buttons
             'DH_SwitchV1_Lbl': 'switch_v1',
@@ -459,7 +1109,6 @@
             'DH_League_Lbl': 'btn_run',
             'DH_Quest_Lbl': 'btn_run',
             'DH_MonthlyQuest_Claim_Lbl': 'btn_get',
-            'DH_Super_Activate_Lbl': 'btn_activate',
             'DH_Delay_Lbl': 'btn_save',
 
             // Account / Monthly Quest
@@ -470,11 +1119,18 @@
             'DH_V1_XP_Lbl': 'btn_run',
             'DH_V1_Gem_Lbl': 'btn_run',
             'DH_V1_Streak_Lbl': 'btn_run',
-            'DH_V1_Super_Activate_Lbl': 'btn_activate',
-
             // Static initial state text
             'DH_AccNoSaved_Txt': 'no_saved_accounts',
             'DH_ShopLoading_Txt': 'loading_shop',
+            // Page 11 (leaderboard)
+            'DH_LB_Back_Txt': 'back',
+            // Page 12 (reaction picker)
+            'DH_React_Back_Txt': 'back',
+            'DH_React_Title': 'choose_reaction',
+            'DH_LB_Title': 'leaderboard',
+            'DH_React_Title': 'choose_reaction',
+            'DH_LB_Loading_Txt': 'lb_loading',
+            'DH_LB_Nav_Lbl': 'leaderboard',
         };
 
         for (const [id, key] of Object.entries(_ID_MAP)) {
@@ -495,111 +1151,31 @@
         const ph = document.getElementById('DH_Shop_Search');
         if (ph) ph.placeholder = _t('search_placeholder');
 
+        // Flag icon URLs per language
+        const _LANG_ICON = {
+            vi: 'https://d35aaqx5ub95lt.cloudfront.net/vendor/2b077d42185bc45d4896ed55f15c4fea.svg',
+            en: 'https://d35aaqx5ub95lt.cloudfront.net/vendor/bbe17e16aa4a106032d8e3521eaed13e.svg',
+            es: 'https://d35aaqx5ub95lt.cloudfront.net/vendor/59a90a2cedd48b751a8fd22014768fd7.svg',
+            fr: 'https://d35aaqx5ub95lt.cloudfront.net/vendor/482fda142ee4abd728ebf4ccce5d3307.svg',
+        };
+        const _LANG_CODE = { vi: 'VI', en: 'EN', es: 'ES', fr: 'FR' };
+        const _flagImg = (code) => `<img src="${_LANG_ICON[code]}" style="width:20px;height:14px;border-radius:2px;vertical-align:middle;flex-shrink:0;object-fit:cover;" aria-hidden="true">`;
+
         // Lang selector button label
         const lb = document.getElementById('DH_LangSelector_Lbl');
         if (lb) {
-            lb.innerHTML = _lang === 'vi' ?
-                `
-            <svg
-                width="20"
-                height="14"
-                viewBox="0 0 60 40"
-                style="border-radius:2px; vertical-align:middle; flex-shrink:0;"
-                aria-hidden="true"
-            >
-                <rect width="60" height="40" fill="#DA251D"></rect>
-
-                <polygon
-                    points="
-                        30,9
-                        32.59,16.44
-                        40.46,16.60
-                        34.18,21.36
-                        36.47,28.90
-                        30,24.40
-                        23.53,28.90
-                        25.82,21.36
-                        19.54,16.60
-                        27.41,16.44
-                    "
-                    fill="#FFCD00"
-                ></polygon>
-            </svg>
-            VI
-        ` :
-                `
-            <svg
-                width="20"
-                height="14"
-                viewBox="0 0 60 40"
-                style="border-radius:2px; vertical-align:middle; flex-shrink:0;"
-                aria-hidden="true"
-            >
-                <rect width="60" height="40" fill="#012169"></rect>
-
-                <line
-                    x1="0"
-                    y1="0"
-                    x2="60"
-                    y2="40"
-                    stroke="#fff"
-                    stroke-width="6.5"
-                ></line>
-
-                <line
-                    x1="60"
-                    y1="0"
-                    x2="0"
-                    y2="40"
-                    stroke="#fff"
-                    stroke-width="6.5"
-                ></line>
-
-                <line
-                    x1="0"
-                    y1="0"
-                    x2="60"
-                    y2="40"
-                    stroke="#C8102E"
-                    stroke-width="4"
-                ></line>
-
-                <line
-                    x1="60"
-                    y1="0"
-                    x2="0"
-                    y2="40"
-                    stroke="#C8102E"
-                    stroke-width="4"
-                ></line>
-
-                <rect x="0" y="15" width="60" height="10" fill="#fff"></rect>
-                <rect x="25" y="0" width="10" height="40" fill="#fff"></rect>
-
-                <rect
-                    x="0"
-                    y="16.5"
-                    width="60"
-                    height="7"
-                    fill="#C8102E"
-                ></rect>
-
-                <rect
-                    x="26.5"
-                    y="0"
-                    width="7"
-                    height="40"
-                    fill="#C8102E"
-                ></rect>
-            </svg>
-            EN
-        `;
+            const code = _LANG_ICON[_lang] ? _lang : 'en';
+            lb.innerHTML = `${_flagImg(code)} ${_LANG_CODE[code]}`;
         }
         // Dropdown option labels
         const opEn = document.getElementById('DH_LangOpt_en');
         const opVi = document.getElementById('DH_LangOpt_vi');
-        if (opEn) opEn.innerHTML = '<svg width="20" height="14" viewBox="0 0 60 40" style="border-radius:2px;vertical-align:middle;flex-shrink:0;" aria-hidden="true"><rect width="60" height="40" fill="#012169"/><line x1="0" y1="0" x2="60" y2="40" stroke="#fff" stroke-width="6.5"/><line x1="60" y1="0" x2="0" y2="40" stroke="#fff" stroke-width="6.5"/><line x1="0" y1="0" x2="60" y2="40" stroke="#C8102E" stroke-width="4"/><line x1="60" y1="0" x2="0" y2="40" stroke="#C8102E" stroke-width="4"/><rect x="0" y="15" width="60" height="10" fill="#fff"/><rect x="25" y="0" width="10" height="40" fill="#fff"/><rect x="0" y="16.5" width="60" height="7" fill="#C8102E"/><rect x="26.5" y="0" width="7" height="40" fill="#C8102E"/></svg> ' + _t('lang_en');
-        if (opVi) opVi.innerHTML = '<svg width="20" height="14" viewBox="0 0 60 40" style="border-radius:2px;display:block;flex-shrink:0;" aria-hidden="true"><rect width="60" height="40" fill="#DA251D"></rect><polygon points="30,9 32.59,16.44 40.46,16.60 34.18,21.36 36.47,28.90 30,24.40 23.53,28.90 25.82,21.36 19.54,16.60 27.41,16.44" fill="#FFCD00"></polygon></svg><span>' + _t('lang_vi') + '</span>';
+        const opEs = document.getElementById('DH_LangOpt_es');
+        const opFr = document.getElementById('DH_LangOpt_fr');
+        if (opEn) opEn.innerHTML = _flagImg('en') + ' ' + _t('lang_en');
+        if (opVi) opVi.innerHTML = _flagImg('vi') + ' ' + _t('lang_vi');
+        if (opEs) opEs.innerHTML = _flagImg('es') + ' ' + _t('lang_es');
+        if (opFr) opFr.innerHTML = _flagImg('fr') + ' ' + _t('lang_fr');
     }
     // ── End i18n ──────────────────────────────────────────────────────
 
@@ -666,8 +1242,9 @@
                 try {
                     var d = JSON.parse(j);
                     if (Array.isArray(d.elements)) {
+                        // [PATCHED] chỉ giữ HEADER, bỏ hết LINE + challenge
                         d.elements = d.elements.filter(function(el) {
-                            return !STORY_CHALLENGES.has(el.type);
+                            return el.type === 'HEADER';
                         });
                     }
                     return JSON.stringify(d);
@@ -726,16 +1303,20 @@
                             var fl = (window._dhUser && window._dhUser.fromLanguage)    || data.fromLanguage    || 'en';
                             var lsChallenge = {
                                 character: {
-                                    url: 'https://d2pur3iezf4d1j.cloudfront.net/images/51d3bded9ecbd8bf6e9869041c437ba9',
+                                    url: 'https://d2pur3iezf4d1j.cloudfront.net/images/61e19bb4a1ff1d94e58d58b33db58c36',
+                                    image: { pdf: 'https://d2pur3iezf4d1j.cloudfront.net/images/61e19bb4a1ff1d94e58d58b33db58c36', svg: 'https://d2pur3iezf4d1j.cloudfront.net/images/52a5a774c4de18f4a4e8c91d91788347' },
                                     gender: 'MALE',
-                                    correctAnimation:  'https://simg-ssl.duolingo.com/lottie/Falstaff_CORRECT_Cropped_NotBad.json',
-                                    incorrectAnimation:'https://simg-ssl.duolingo.com/lottie/Bear_INCORRECT_Cropped.json',
-                                    idleAnimation:     'https://simg-ssl.duolingo.com/lottie/Falstaff_IDLE_Cropped.json',
-                                    name: 'FALSTAFF'
+                                    correctAnimation:  'https://simg-ssl.duolingo.com/lottie/Vikram_CORRECT_Cropped_SpiritFingers.json',
+                                    incorrectAnimation:'https://simg-ssl.duolingo.com/lottie/Dan_INCORRECT_Cropped.json',
+                                    idleAnimation:     'https://simg-ssl.duolingo.com/lottie/Vikram_IDLE_Cropped.json',
+                                    name: 'VIKRAM'
                                 },
-                                prompt: 'Thanks for using our tool 🥰',
+                                prompt: 'Thank you for using our script! 🥰',
+                                choices: ['https://duohacker.io.vn'],
                                 correctIndex: 0,
-                                options: [{ text: 'Our website : https://duohacker.io.vn' }],
+                                options: [
+                                    { text: 'https://duohacker.io.vn' }
+                                ],
                                 type: 'assist',
                                 id: 'duohacker',
                                 newWords: [],
@@ -830,18 +1411,20 @@
                     const fl = unsafeWindow._dhUser?.fromLanguage || data.fromLanguage || 'en';
                     const lsChallenge = {
                         character: {
-                            url: 'https://d2pur3iezf4d1j.cloudfront.net/images/51d3bded9ecbd8bf6e9869041c437ba9',
+                            url: 'https://d2pur3iezf4d1j.cloudfront.net/images/61e19bb4a1ff1d94e58d58b33db58c36',
+                            image: { pdf: 'https://d2pur3iezf4d1j.cloudfront.net/images/61e19bb4a1ff1d94e58d58b33db58c36', svg: 'https://d2pur3iezf4d1j.cloudfront.net/images/52a5a774c4de18f4a4e8c91d91788347' },
                             gender: 'MALE',
-                            correctAnimation: 'https://simg-ssl.duolingo.com/lottie/Falstaff_CORRECT_Cropped_NotBad.json',
-                            incorrectAnimation: 'https://simg-ssl.duolingo.com/lottie/Bear_INCORRECT_Cropped.json',
-                            idleAnimation: 'https://simg-ssl.duolingo.com/lottie/Falstaff_IDLE_Cropped.json',
-                            name: 'FALSTAFF'
+                            correctAnimation: 'https://simg-ssl.duolingo.com/lottie/Vikram_CORRECT_Cropped_SpiritFingers.json',
+                            incorrectAnimation: 'https://simg-ssl.duolingo.com/lottie/Dan_INCORRECT_Cropped.json',
+                            idleAnimation: 'https://simg-ssl.duolingo.com/lottie/Vikram_IDLE_Cropped.json',
+                            name: 'VIKRAM'
                         },
-                        prompt: 'Thanks for using our tool 🥰',
+                        prompt: 'Thank you for using our script! 🥰',
+                        choices: ['https://duohacker.io.vn'],
                         correctIndex: 0,
-                        options: [{
-                            text: 'Our website : https://duohacker.io.vn'
-                        }],
+                        options: [
+                            { text: 'https://duohacker.io.vn' }
+                        ],
                         type: 'assist',
                         id: 'duohacker',
                         newWords: [],
@@ -885,8 +1468,8 @@
                     const res = await _storyFetch.call(this, resource, options);
                     const data = await res.clone().json();
                     if (Array.isArray(data.elements)) {
-                        const CHALLENGES = new Set(['MULTIPLE_CHOICE', 'ARRANGE', 'MATCH', 'SELECT_PHRASE', 'POINT_TO_PHRASE', 'CHALLENGE_PROMPT']);
-                        data.elements = data.elements.filter(el => !CHALLENGES.has(el.type));
+                        // [PATCHED] chỉ giữ HEADER, bỏ hết LINE + challenge
+                        data.elements = data.elements.filter(el => el.type === 'HEADER');
                     }
                     return new Response(JSON.stringify(data), {
                         status: res.status,
@@ -1066,6 +1649,23 @@
 .DH_Input_Btn:hover  { filter:brightness(0.88); transform:scale(1.04); }
 .DH_Input_Btn:active { filter:brightness(0.82); transform:scale(0.96); }
 .DH_Input_Btn:disabled { opacity:0.38; pointer-events:none; }
+.DH_Mode_Btn {
+    display:flex; height:48px; width:48px; padding:0; box-sizing:border-box;
+    justify-content:center; align-items:center; flex-shrink:0;
+    border-radius:8px; border:none; cursor:pointer;
+    user-select:none; -webkit-user-select:none;
+    outline:2px solid rgba(0,0,0,0.20); outline-offset:-2px;
+    background:rgb(var(--DH-blue));
+    transition:filter 0.4s cubic-bezier(0.16,1,0.32,1),transform 0.4s cubic-bezier(0.16,1,0.32,1);
+}
+.DH_Mode_Btn:hover  { filter:brightness(0.88); transform:scale(1.04); }
+.DH_Mode_Btn:active { filter:brightness(0.82); transform:scale(0.96); }
+.DH_Mode_Icon {
+    display:flex; align-items:center; justify-content:center;
+    color:#FFF;
+    font-size:18px; font-weight:700; line-height:normal;
+    transition:opacity 0.3s, transform 0.3s;
+}
 .DH_Btn_Label {
     font-size:15px; font-weight:800; letter-spacing:0.2px;
     transition:opacity 0.4s, filter 0.4s, color 0.4s;
@@ -1143,23 +1743,43 @@
 .DH_Page.active { display:flex; flex-direction:column; gap:8px; align-self:stretch; align-items:center; }
 
 .DH_Notif_Main {
-    display:flex; justify-content:center; align-items:center;
-    width:300px; position:fixed; left:calc(50% - 150px);
-    z-index:2147483647; bottom:16px; border-radius:16px;
-    transition:0.8s cubic-bezier(0.16,1,0.32,1); pointer-events:none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    transition: 0.8s cubic-bezier(0.16, 1, 0.32, 1);
+    width: 300px;
+    position: fixed;
+    left: calc(50% - (300px / 2));
+    z-index: 2147483647;
+    bottom: 16px;
+    border-radius: var(--DH-corner-r-l);
+    corner-shape: var(--DH-corner-s);
+    pointer-events: none;
 }
 .DH_Notif_Box {
-    display:flex; width:300px; padding:14px 16px;
-    flex-direction:column; gap:3px;
-    border-radius:16px;
-    outline:2px solid rgb(var(--color-eel,117,117,117),0.10); outline-offset:-2px;
-    background:rgb(var(--color-snow),0.90);
-    backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
-    box-shadow:0 8px 32px rgba(0,0,0,0.12);
-    transition:0.8s cubic-bezier(0.16,1,0.32,1); filter:blur(16px); opacity:0;
-    pointer-events:auto;
+    display: flex;
+    width: 300px;
+    padding: 16px;
+    box-sizing: border-box;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 4px;
+
+    border-radius: var(--DH-corner-r-l);
+    corner-shape: var(--DH-corner-s);
+    outline: 2px solid rgb(var(--color-eel), 0.10);
+    outline-offset: -2px;
+    background: rgb(var(--color-snow), 0.90);
+    backdrop-filter: blur(16px);
+
+    transition: 0.8s cubic-bezier(0.16, 1, 0.32, 1);
+    filter: blur(16px);
+    opacity: 0;
+    pointer-events: auto;
+    position: fixed;
 }
-.DH_Notif_Box.show { filter:blur(0px); opacity:1; }
 
 .DH_Shop_Grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; align-self:stretch; }
 .DH_Shop_Card {
@@ -1280,6 +1900,129 @@
 .DH_Quest_Get_Btn:hover  { filter:brightness(0.88); transform:scale(1.06); }
 .DH_Quest_Get_Btn:active { transform:scale(0.95); }
 .DH_Quest_Get_Btn.done { background:rgba(var(--DH-green),0.10); color:rgb(var(--DH-green)); outline-color:rgba(var(--DH-green),0.20); pointer-events:none; }
+
+
+/* ── PAGE 12: Reaction Picker ── */
+.DH_LB_Reaction {
+    position:absolute; top:-4px; right:-4px;
+    width:19px; height:19px; object-fit:contain;
+    border-radius:50%;
+    background:rgba(var(--color-swan,255,255,255),1);
+    box-shadow:0 1px 4px rgba(0,0,0,0.18);
+    pointer-events:none;
+}
+.DH_LB_Reaction.me {
+    cursor:pointer; pointer-events:auto;
+    transition:transform 0.15s;
+}
+.DH_LB_Reaction.me:hover { transform:scale(1.22); }
+.DH_React_Btn {
+    width:100%; height:28px; border-radius:7px; border:none; cursor:pointer;
+    font-size:11px; font-weight:800; color:#fff;
+    background:rgb(var(--DH-blue));
+    outline:2px solid rgba(0,0,0,0.20); outline-offset:-2px;
+    transition:filter 0.4s cubic-bezier(0.16,1,0.32,1), transform 0.4s cubic-bezier(0.16,1,0.32,1), background 0.4s;
+}
+.DH_React_Btn:hover  { filter:brightness(0.88); transform:scale(1.03); }
+.DH_React_Btn:active { transform:scale(0.97); }
+.DH_React_Btn.active  { background:rgba(var(--DH-green),0.12); color:rgb(var(--DH-green)); outline-color:rgba(var(--DH-green),0.25); pointer-events:none; }
+.DH_React_Btn.loading { background:rgb(var(--color-eel,117,117,117),0.12); color:rgb(var(--color-eel,117,117,117),0.50); outline-color:rgb(var(--color-eel,117,117,117),0.18); pointer-events:none; }
+.DH_React_Btn.success { background:rgba(var(--DH-green),0.12); color:rgb(var(--DH-green)); outline-color:rgba(var(--DH-green),0.25); pointer-events:none; }
+/* ── PAGE 11: Leaderboard ── */
+.DH_LB_Row {
+    display:flex; align-items:center; gap:10px;
+    padding:9px 10px; border-radius:14px;
+    transition:background 0.15s;
+}
+.DH_LB_Row.me {
+    outline:2px solid rgba(var(--DH-blue),0.50); outline-offset:-2px;
+    background:rgba(var(--DH-blue),0.07);
+}
+.DH_LB_RankWrap {
+    width:31px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+}
+.DH_LB_RankNum {
+    font-size:13px; font-weight:800;
+    color:rgba(var(--color-wolf,60,60,67),0.55);
+}
+.DH_LB_RankMedal { width:29px; height:29px; object-fit:contain; display:block; }
+.DH_LB_AvatarWrap {
+    position:relative; flex-shrink:0;
+    width:44px; height:44px;
+}
+.DH_LB_AvatarImg {
+    width:44px; height:44px; border-radius:50%;
+    object-fit:cover; display:block;
+    border:2px solid rgba(var(--color-eel,117,117,117),0.18);
+    background:rgba(var(--DH-blue),0.08);
+}
+.DH_LB_AvatarFallback {
+    width:44px; height:44px; border-radius:50%;
+    background:rgba(var(--DH-blue),0.10);
+    display:flex; align-items:center; justify-content:center;
+    font-size:17px;
+    border:2px solid rgba(var(--color-eel,117,117,117),0.18);
+}
+.DH_LB_AvatarWrap.prom .DH_LB_AvatarImg,
+.DH_LB_AvatarWrap.prom .DH_LB_AvatarFallback { border-color:rgba(var(--DH-green),0.55); }
+.DH_LB_AvatarWrap.dem  .DH_LB_AvatarImg,
+.DH_LB_AvatarWrap.dem  .DH_LB_AvatarFallback { border-color:rgba(var(--DH-red),0.40); }
+.DH_LB_ZoneIcon {
+    position:absolute; bottom:-3px; right:-3px;
+    width:17px; height:17px; object-fit:contain;
+}
+.DH_LB_Info {
+    flex:1; min-width:0;
+    display:flex; flex-direction:column; gap:1px;
+}
+.DH_LB_Name {
+    font-size:12px; font-weight:700;
+    color:rgb(var(--color-wolf,60,60,67));
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.DH_LB_Row.me .DH_LB_Name { color:rgb(var(--DH-blue)); }
+.DH_LB_Status {
+    font-size:10px; font-weight:600;
+    color:rgba(var(--color-wolf,60,60,67),0.40);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.DH_LB_Status.active { color:rgba(28,176,246,0.80); }
+.DH_LB_ScoreWrap {
+    flex-shrink:0; text-align:right;
+}
+.DH_LB_Score {
+    font-size:12px; font-weight:800;
+    color:rgba(var(--color-wolf,60,60,67),0.70);
+    white-space:nowrap;
+}
+.DH_LB_Row.me .DH_LB_Score { color:rgb(var(--DH-blue)); }
+.DH_LB_ScoreUnit {
+    font-size:9px; font-weight:600;
+    color:rgba(var(--color-wolf,60,60,67),0.40);
+}
+.DH_LB_Row.me .DH_LB_ScoreUnit { color:rgba(var(--DH-blue),0.70); }
+.DH_LB_Sep {
+    display:flex; align-items:center; gap:8px;
+    margin:4px 2px; height:14px;
+}
+.DH_LB_SepLine { flex:1; height:1px; border-radius:1px; }
+.DH_LB_SepLine.prom { background:rgba(var(--DH-green),0.30); }
+.DH_LB_SepLine.dem  { background:rgba(var(--DH-red),0.25); }
+.DH_LB_SepIcon { width:14px; height:14px; object-fit:contain; flex-shrink:0; }
+.DH_LB_SepTxt {
+    font-size:9px; font-weight:700; flex-shrink:0;
+}
+.DH_LB_SepTxt.prom { color:rgb(var(--DH-green)); }
+.DH_LB_SepTxt.dem  { color:rgb(var(--DH-red)); }
+.DH_LB_Header {
+    display:flex; align-items:center; gap:10px; align-self:stretch;
+    padding:10px 12px; border-radius:14px;
+    background:rgba(var(--color-eel,117,117,117),0.05);
+    outline:1.5px solid rgba(var(--color-eel,117,117,117),0.10); outline-offset:-1px;
+}
+.DH_LB_LeagueImg { width:36px; height:36px; object-fit:contain; flex-shrink:0; }
+.DH_LB_LeagueName { font-size:15px; font-weight:800; color:rgb(var(--color-wolf,60,60,67)); }
 
 #DH_AccSettings_Btn        { transform-origin: right center; }
 #DH_AccSettings_Btn:hover  { filter:brightness(0.85); transform:scale(1.1); }
@@ -1432,9 +2175,48 @@
     color: rgb(var(--DH-blue));
 }
 
-
+@supports (corner-shape: superellipse(1)) {
+    .DH_Main_Box,
+    .DH_Notif_Box,
+    .DH_Btn,
+    .DH_Input_Wrap,
+    .DH_Input_Btn,
+    .DH_Mode_Btn,
+    .DH_Sm_Btn,
+    .DH_Shop_Card,
+    .DH_Shop_Btn,
+    .DH_Credit_Card,
+    .DH_Credit_Thumb,
+    .DH_Search,
+    .DH_Btn_Ico,
+    .DH_Acc_Card,
+    .DH_Acc_Btn,
+    .DH_Quest_Item,
+    .DH_Quest_Get_Btn,
+    .DH_React_Btn,
+    .DH_LB_Row,
+    .DH_LB_Header,
+    .DH_License_Scroll,
+    .DH_LangSelector_Btn,
+    .DH_LangMenu,
+    .DH_LangOption {
+        corner-shape: var(--DH-corner-s);
+    }
+}
 
 `);
+
+    if (CSS.supports('corner-shape', 'superellipse(1.32)')) {
+        const _dhCornerEl = document.createElement('style');
+        _dhCornerEl.textContent = `:root {
+    --DH-corner-r-s:  6px;
+    --DH-corner-r-m:  10px;
+    --DH-corner-r-ml: 16px;
+    --DH-corner-r-l:  20px;
+    --DH-corner-r-xl: 26px;
+}`;
+        document.head.appendChild(_dhCornerEl);
+    }
 
     // Mount UI only after DOM is ready
     function _dhMountUI() {
@@ -1514,51 +2296,45 @@
             >
                 English
             </button>
+
+            <button
+                type="button"
+                class="DH_LangOption DH_NoSel"
+                id="DH_LangOpt_es"
+                data-lang="es"
+            >
+                Español
+            </button>
+
+            <button
+                type="button"
+                class="DH_LangOption DH_NoSel"
+                id="DH_LangOpt_fr"
+                data-lang="fr"
+            >
+                Français
+            </button>
         </div>
     </div>
-<div class="DH_Notif_Main" id="DH_Notif_Main">
-    <div class="DH_Notif_Box" id="DH_Notif_Box">
-        <div class="DH_HStack_4" style="align-items:center;">
-            <p class="DH_T1 DH_NoSel" id="DH_Notif_Icon" style="font-size:18px;flex-shrink:0;"></p>
-            <p class="DH_T1 DH_NoSel" id="DH_Notif_Title" style="flex:1 0 0;"></p>
-        </div>
-        <p class="DH_T2 DH_NoSel" id="DH_Notif_Body" style="align-self:stretch;overflow-wrap:break-word;"></p>
-    </div>
-</div>
+<div class="DH_Notif_Main" id="DH_Notif_Main"></div>
 
 <div class="DH_Main" id="DH_Main">
 
     <div class="DH_HStack_8" style="align-self:flex-end;">
 <div class="DH_Btn DH_Btn_Blue_Ghost DH_NoSel" id="DH_SwitchV1_Btn"
      style="flex:none; display:none; order:-1;">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M17 1l4 4-4 4" stroke="rgb(var(--DH-blue))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M3 11V9a4 4 0 0 1 4-4h14" stroke="rgb(var(--DH-blue))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M7 23l-4-4 4-4" stroke="rgb(var(--DH-blue))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M21 13v2a4 4 0 0 1-4 4H3" stroke="rgb(var(--DH-blue))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
+    <p class="DH_T1 DH_NoSel" id="DH_SwitchV1_Ico" style="color:rgb(var(--DH-blue));font-size:18px;line-height:1;">􀱏</p>
     <p class="DH_T1 DH_NoSel" id="DH_SwitchV1_Lbl" style="color:rgb(var(--DH-blue));font-size:13px;">Switch to V1</p>
 </div>
 
 <div class="DH_Btn DH_Btn_Blue_Ghost DH_NoSel" id="DH_SwitchV2_Btn"
      style="flex:none; display:none; order:-1;">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M17 1l4 4-4 4" stroke="rgb(var(--DH-blue))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M3 11V9a4 4 0 0 1 4-4h14" stroke="rgb(var(--DH-blue))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M7 23l-4-4 4-4" stroke="rgb(var(--DH-blue))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M21 13v2a4 4 0 0 1-4 4H3" stroke="rgb(var(--DH-blue))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
+    <p class="DH_T1 DH_NoSel" id="DH_SwitchV2_Ico" style="color:rgb(var(--DH-blue));font-size:18px;line-height:1;">􀂑</p>
     <p class="DH_T1 DH_NoSel" id="DH_SwitchV2_Lbl" style="color:rgb(var(--DH-blue));font-size:13px;">Switch to V2</p>
 </div>
         <div class="DH_Btn DH_NoSel" id="DH_Hide_Btn"
              style="flex:none; outline:2px solid rgba(0,0,0,0.20); outline-offset:-2px; background:rgb(var(--DH-blue)); backdrop-filter:blur(16px);">
-            <svg id="DH_Ico_Visible" width="18" height="12" viewBox="0 0 18 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M9 0C5 0 1.73 2.5 0 6c1.73 3.5 5 6 9 6s7.27-2.5 9-6c-1.73-3.5-5-6-9-6zm0 10a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm0-6.4a2.4 2.4 0 1 0 0 4.8 2.4 2.4 0 0 0 0-4.8z" fill="#FFF"/>
-                <path d="M1 1l16 10" stroke="#FFF" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-            <svg id="DH_Ico_Hidden" width="18" height="12" viewBox="0 0 18 12" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:none;">
-                <path d="M9 0C5 0 1.73 2.5 0 6c1.73 3.5 5 6 9 6s7.27-2.5 9-6c-1.73-3.5-5-6-9-6zm0 10a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm0-6.4a2.4 2.4 0 1 0 0 4.8 2.4 2.4 0 0 0 0-4.8z" fill="rgb(var(--DH-blue))"/>
-            </svg>
+            <p class="DH_T1 DH_NoSel" id="DH_Hide_Ico" style="color:#fff;font-size:18px;line-height:1;">􀋰</p>
             <p class="DH_T1 DH_NoSel" id="DH_Hide_Txt" style="color:#fff;">Hide</p>
         </div>
     </div>
@@ -1570,7 +2346,7 @@
             <!-- Row 1: Connection btn + Settings icon -->
             <div class="DH_HStack_8">
                 <div class="DH_Btn DH_Btn_Eel DH_NoSel" id="DH_Conn_Btn" style="padding:10px 0 10px 10px; transition:background 0.8s cubic-bezier(0.16,1,0.32,1), outline 0.8s cubic-bezier(0.16,1,0.32,1), filter 0.4s cubic-bezier(0.16,1,0.32,1), transform 0.4s cubic-bezier(0.16,1,0.32,1);">
-                    <span id="DH_Conn_Ico" style="display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg class="DH_Spin_Ico" width="16" height="16" viewBox="0 0 297 297" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M294.853 178.121c-1.814-1.671-4.404-2.203-6.729-1.382l-25.97 9.168c17.558-70.878-24.569-143.07-94.69-161.569-34.475-9.094-70.423-4.215-101.225 13.737C35.438 56.028 13.475 84.901 4.397 119.377c-8.083 30.698-4.951 63.329 8.819 91.883 13.616 28.234 36.767 50.846 65.186 63.669 3.256 1.47 6.737 2.203 10.214 2.203 3.647 0 7.293-.807 10.672-2.418 6.59-3.141 11.435-8.99 13.293-16.047 3.086-11.721-2.756-23.89-13.893-28.937-37.335-16.923-56.844-58.027-46.387-97.737 5.7-21.65 19.508-39.794 38.878-51.089 19.372-11.295 41.963-14.378 63.611-8.675 44.273 11.659 70.99 56.813 60.113 101.108l-17.584-20.48c-1.612-1.878-4.135-2.705-6.544-2.152-2.412.555-4.318 2.401-4.948 4.794l-11.478 43.588c-.566 2.153-.02 4.447 1.457 6.112l40.428 45.603c1.785 2.012 4.604 2.752 7.144 1.882l57.644-19.78c2.106-.723 3.711-2.45 4.279-4.603l11.479-43.587c.635-2.412-.106-4.949-1.92-6.62z" fill="currentColor"/></svg></span>
+                    <span id="DH_Conn_Ico" style="display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span class="DH_Spin_Ico" style="font-size:18px;line-height:1;">􀓞</span></span>
                     <p class="DH_T1 DH_NoSel" id="DH_Conn_Txt" style="color:rgb(var(--color-eel,117,117,117),0.70);">Connecting</p>
                 </div>
                 <div class="DH_Btn DH_Btn_Icon DH_NoSel" id="DH_TopSettings_Btn" style="outline:2px solid rgba(var(--DH-blue),0.20);outline-offset:-2px;background:linear-gradient(0deg,rgba(var(--DH-blue),0.10),rgba(var(--DH-blue),0.10)),rgb(var(--color-snow),0.80);backdrop-filter:blur(16px);" title="Settings">
@@ -1629,9 +2405,9 @@
                    <div class="DH_VStack_8">
                 <p class="DH_T1 DH_NoSel" id="DH_XP_Question" style="align-self:stretch;">How much XP would you like to gain?</p>
                 <div class="DH_HStack_8">
-                    <div class="DH_Input_Wrap">
-                        <p class="DH_T1 DH_NoSel" style="color:rgba(var(--DH-blue),0.38);font-size:13px;flex-shrink:0;">#</p>
-                        <input type="number" class="DH_Input DH_NoSel" id="DH_XP_Input" placeholder="0" min="30" max="500000">
+                    <button class="DH_Mode_Btn DH_NoSel" id="DH_XP_Mode_Btn" title="Switch to Time Mode"><span class="DH_Mode_Icon" id="DH_XP_Mode_Icon">#</span></button>
+                    <div class="DH_Input_Wrap" id="DH_XP_Input_Wrap">
+                        <input type="number" class="DH_Input" id="DH_XP_Input" placeholder="0" min="30" max="500000">
                     </div>
                     <button class="DH_Input_Btn DH_NoSel" id="DH_XP_Btn" disabled>
                         <span class="DH_Btn_Label" id="DH_XP_Lbl" style="color:#fff;">GET</span>
@@ -1644,14 +2420,14 @@
             <div class="DH_VStack_8" id="DH_Gem_Section">
                 <p class="DH_T1 DH_NoSel" id="DH_Gem_Run_Label" style="align-self:stretch;">Click "RUN" to Farm Gems</p>
                 <div class="DH_HStack_8">
-                    <div class="DH_Input_Wrap">
+                    <button class="DH_Mode_Btn DH_NoSel" id="DH_Gem_Mode_Btn" title="Switch to Infinite Mode"><span class="DH_Mode_Icon" id="DH_Gem_Mode_Icon">#</span></button>
+                    <div class="DH_Input_Wrap" id="DH_Gem_Input_Wrap" style="position:relative;overflow:hidden;">
                         <svg class="DH_Shimmer" width="120" height="48" viewBox="0 0 120 48" fill="none">
                             <path opacity="0.4" d="M72 0H96L72 48H48L72 0Z" fill="rgb(var(--DH-blue))"/>
                             <path opacity="0.4" d="M24 0H60L36 48H0L24 0Z" fill="rgb(var(--DH-blue))"/>
                             <path opacity="0.4" d="M108 0H120L96 48H84L108 0Z" fill="rgb(var(--DH-blue))"/>
                         </svg>
-                        <p class="DH_T1 DH_NoSel" style="color:rgba(var(--DH-blue),0.38);font-size:14px;flex-shrink:0;">#</p>
-                        <input type="number" class="DH_Input DH_NoSel" id="DH_Gem_Input" placeholder="0" readonly style="pointer-events:none;">
+                        <input type="number" class="DH_Input" id="DH_Gem_Input" placeholder="0" readonly style="pointer-events:none;">
                     </div>
                     <button class="DH_Input_Btn DH_NoSel" id="DH_Gem_Btn" disabled>
                         <span class="DH_Btn_Label" id="DH_Gem_Lbl" style="color:#fff;">RUN</span>
@@ -1662,9 +2438,9 @@
             <div class="DH_VStack_8">
                 <p class="DH_T1 DH_NoSel" id="DH_Streak_Question" style="align-self:stretch;">How many Streak days to restore?</p>
                 <div class="DH_HStack_8">
-                    <div class="DH_Input_Wrap">
-                        <p class="DH_T1 DH_NoSel" style="color:rgba(var(--DH-blue),0.38);font-size:14px;flex-shrink:0;">#</p>
-                        <input type="number" class="DH_Input DH_NoSel" id="DH_Streak_Input" placeholder="0" min="1" max="3650">
+                    <button class="DH_Mode_Btn DH_NoSel" id="DH_Streak_Mode_Btn" title="Switch to Time Mode"><span class="DH_Mode_Icon" id="DH_Streak_Mode_Icon">#</span></button>
+                    <div class="DH_Input_Wrap" id="DH_Streak_Input_Wrap">
+                        <input type="number" class="DH_Input" id="DH_Streak_Input" placeholder="0" min="1" max="3650">
                     </div>
                     <button class="DH_Input_Btn DH_NoSel" id="DH_Streak_Btn" disabled>
                         <span class="DH_Btn_Label" id="DH_Streak_Lbl" style="color:#fff;">RUN</span>
@@ -1686,7 +2462,7 @@
 
             <div class="DH_HStack_Auto">
                 <p class="DH_T2 DH_NoSel" style="color:rgba(var(--DH-blue),0.45);">duohacker.io.vn</p>
-                <p class="DH_T2 DH_NoSel" style="color:rgba(var(--DH-blue),0.45);">v2026.06.21</p>
+                <p class="DH_T2 DH_NoSel" id="DH_Version_Txt" style="color:rgb(var(--DH-blue));font-weight:700;cursor:pointer;">v2026.08.28</p>
             </div>
         </div>
 
@@ -1696,25 +2472,6 @@
                 <svg width="8" height="14" viewBox="0 0 9 16" fill="none"><path d="M8 1L2 8l6 7" stroke="rgb(var(--color-wolf,60,60,67))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 <p class="DH_T1" id="DH_Back_Txt">Back</p>
             </div>
-
-            <div class="DH_HStack_Auto" style="align-self:stretch;">
-                <div style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;">
-                    <p class="DH_T1 DH_NoSel" id="DH_Practice_Title">Farm Practice</p>
-                    <p class="DH_T2 DH_NoSel" id="DH_Practice_Sub" style="font-size:11px;">0 = unlimited practice sessions</p>
-                </div>
-                <button class="DH_Sm_Btn DH_NoSel" id="DH_Practice_Btn" disabled>
-                    <span class="DH_Sm_Btn_Label" id="DH_Practice_Lbl" style="color:#fff;">RUN</span>
-                </button>
-            </div>
-            <!-- Practice input inline below button -->
-            <div style="display:flex;align-items:center;gap:8px;align-self:stretch;">
-                <div class="DH_Input_Wrap" style="flex:1;">
-                    <p class="DH_T1 DH_NoSel" style="color:rgba(var(--DH-blue),0.38);font-size:14px;flex-shrink:0;">#</p>
-                    <input type="number" class="DH_Input DH_NoSel" id="DH_Practice_Input" placeholder="0" min="0" max="9999">
-                </div>
-            </div>
-
-            <div class="DH_Divider"></div>
 
             <!-- Shop Items nav -->
             <div class="DH_Btn DH_Btn_Blue_Ghost DH_NoSel"
@@ -1738,11 +2495,21 @@
     </svg>
 </div>
 
+            <!-- Leaderboard nav -->
+            <div class="DH_Btn DH_Btn_Blue_Ghost DH_NoSel"
+     id="DH_LB_Nav_Btn"
+     style="align-self:stretch;justify-content:space-between;padding:10px 12px;">
+    <p class="DH_T1 DH_NoSel" id="DH_LB_Nav_Lbl" style="color:rgb(var(--DH-blue));">Leaderboard</p>
+    <svg width="8" height="13" viewBox="0 0 8 13" fill="none">
+        <path d="M1 1l6 5.5L1 12" stroke="rgb(var(--DH-blue))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+</div>
+
             <!-- Auto League -->
             <div class="DH_HStack_Auto" style="align-self:stretch;">
                 <div style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;">
-                    <p class="DH_T1 DH_NoSel" id="DH_League_Title">Auto League #1</p>
-                    <p class="DH_T2 DH_NoSel" id="DH_League_Sub" style="font-size:11px;">Farm XP until rank #1</p>
+                    <p class="DH_T1 DH_NoSel" id="DH_League_Title">Auto League</p>
+                    <p class="DH_T2 DH_NoSel" id="DH_League_Sub" style="font-size:11px;">Farm XP to reach your target rank</p>
                 </div>
                 <button class="DH_Sm_Btn DH_NoSel" id="DH_League_Btn" disabled>
                     <span class="DH_Sm_Btn_Label" id="DH_League_Lbl" style="color:#fff;">RUN</span>
@@ -1772,18 +2539,6 @@
                 </button>
             </div>
 
-            <!-- Activate Free Super Duolingo -->
-            <div class="DH_HStack_Auto" style="align-self:stretch;">
-                <div style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;">
-                    <p class="DH_T1 DH_NoSel" id="DH_FreeSuper_Title">Free Super Duolingo</p>
-                    <p class="DH_T2 DH_NoSel" id="DH_FreeSuper_Sub" style="font-size:11px;">Activate Super Duolingo for free</p>
-                </div>
-                <button class="DH_Sm_Btn DH_NoSel" id="DH_Super_Activate_Btn" disabled>
-                    <span class="DH_Sm_Btn_Label" id="DH_Super_Activate_Lbl" style="color:#fff;">ACTIVATE</span>
-                </button>
-            </div>
-            <div class="DH_Prog_Wrap" id="DH_Super_Prog" style="align-self:stretch;"><div class="DH_Prog_Fill" id="DH_Super_Fill"></div></div>
-
             <div class="DH_Divider"></div>
         </div>
         <div class="DH_Page" id="DH_Page_4">
@@ -1799,7 +2554,7 @@
                 <div class="DH_HStack_8">
                     <div class="DH_Input_Wrap">
                         <p class="DH_T1 DH_NoSel" style="color:rgba(var(--DH-blue),0.50);font-size:13px;flex-shrink:0;">ms</p>
-                        <input type="number" class="DH_Input DH_NoSel" id="DH_Delay_Input" placeholder="500" min="0" max="10000">
+                        <input type="number" class="DH_Input" id="DH_Delay_Input" placeholder="500" min="0" max="10000">
                     </div>
                     <button class="DH_Input_Btn DH_NoSel" id="DH_Delay_Btn">
                         <span class="DH_Btn_Label" id="DH_Delay_Lbl" style="color:#fff;">SAVE</span>
@@ -1925,7 +2680,7 @@
                 <p class="DH_T1" id="DH_Shop_Back_Txt">Back</p>
             </div>
 
-            <input type="text" class="DH_Search DH_NoSel" id="DH_Shop_Search" placeholder="Search items...">
+            <input type="text" class="DH_Search" id="DH_Shop_Search" placeholder="Search items...">
 
             <!-- Shop scrollable container -->
             <div class="DH_Scroll_Inner" id="DH_Shop_Container" style="max-height:300px;">
@@ -1981,6 +2736,7 @@
             </div>
 
             <div class="DH_Divider"></div>
+            <div class="DH_Prog_Wrap" id="DH_MQ_Prog" style="align-self:stretch;"><div class="DH_Prog_Fill" id="DH_MQ_Fill"></div></div>
 
             <div id="DH_MQ_Container" class="DH_Scroll_Inner" style="max-height:300px;width:100%;">
                 <p class="DH_T2 DH_NoSel" style="text-align:center;padding:8px 0;">Loading quests...</p>
@@ -1989,6 +2745,33 @@
 
         <!-- PAGE V1: V1 Mode — simple farm with live counters, no extra features -->
         <div class="DH_Page" id="DH_Page_V1">
+
+            <!-- Row 1: Connection btn + Settings icon -->
+            <div class="DH_HStack_8">
+                <div class="DH_Btn DH_Btn_Eel DH_NoSel" id="DH_V1_Conn_Btn" style="padding:10px 0 10px 10px; transition:background 0.8s cubic-bezier(0.16,1,0.32,1), outline 0.8s cubic-bezier(0.16,1,0.32,1), filter 0.4s cubic-bezier(0.16,1,0.32,1), transform 0.4s cubic-bezier(0.16,1,0.32,1);">
+                    <span id="DH_V1_Conn_Ico" style="display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span class="DH_Spin_Ico" style="font-size:18px;line-height:1;">􀓞</span></span>
+                    <p class="DH_T1 DH_NoSel" id="DH_V1_Conn_Txt" style="color:rgb(var(--color-eel,117,117,117),0.70);">Connecting</p>
+                </div>
+                <div class="DH_Btn DH_Btn_Icon DH_NoSel" id="DH_V1_TopSettings_Btn" style="outline:2px solid rgba(var(--DH-blue),0.20);outline-offset:-2px;background:linear-gradient(0deg,rgba(var(--DH-blue),0.10),rgba(var(--DH-blue),0.10)),rgb(var(--color-snow),0.80);backdrop-filter:blur(16px);" title="Settings">
+                    <svg width="18" height="18" viewBox="0 0 36 36" fill="none"><path d="M18.1,11c-3.9,0-7,3.1-7,7s3.1,7,7,7c3.9,0,7-3.1,7-7S22,11,18.1,11z M18.1,23c-2.8,0-5-2.2-5-5s2.2-5,5-5c2.8,0,5,2.2,5,5S20.9,23,18.1,23z" fill="rgb(var(--DH-blue))" stroke="rgb(var(--DH-blue))" stroke-width="1.2" stroke-linejoin="round" paint-order="stroke fill"/><path d="M32.8,14.7L30,13.8l-0.6-1.5l1.4-2.6c0.3-0.6,0.2-1.4-0.3-1.9l-2.4-2.4c-0.5-0.5-1.3-0.6-1.9-0.3l-2.6,1.4l-1.5-0.6l-0.9-2.8C21,2.5,20.4,2,19.7,2h-3.4c-0.7,0-1.3,0.5-1.4,1.2L14,6c-0.6,0.1-1.1,0.3-1.6,0.6L9.8,5.2C9.2,4.9,8.4,5,7.9,5.5L5.5,7.9C5,8.4,4.9,9.2,5.2,9.8l1.3,2.5c-0.2,0.5-0.4,1.1-0.6,1.6l-2.8,0.9C2.5,15,2,15.6,2,16.3v3.4c0,0.7,0.5,1.3,1.2,1.5L6,22.1l0.6,1.5l-1.4,2.6c-0.3,0.6-0.2,1.4,0.3,1.9l2.4,2.4c0.5,0.5,1.3,0.6,1.9,0.3l2.6-1.4l1.5,0.6l0.9,2.9c0.2,0.6,0.8,1.1,1.5,1.1h3.4c0.7,0,1.3-0.5,1.5-1.1l0.9-2.9l1.5-0.6l2.6,1.4c0.6,0.3,1.4,0.2,1.9-0.3l2.4-2.4c0.5-0.5,0.6-1.3,0.3-1.9l-1.4-2.6l0.6-1.5l2.9-0.9c0.6-0.2,1.1-0.8,1.1-1.5v-3.4C34,15.6,33.5,14.9,32.8,14.7z M32,19.4l-3.6,1.1L28.3,21c-0.3,0.7-0.6,1.4-0.9,2.1l-0.3,0.5l1.8,3.3l-2,2l-3.3-1.8l-0.5,0.3c-0.7,0.4-1.4,0.7-2.1,0.9l-0.5,0.1L19.4,32h-2.8l-1.1-3.6L15,28.3c-0.7-0.3-1.4-0.6-2.1-0.9l-0.5-0.3l-3.3,1.8l-2-2l1.8-3.3l-0.3-0.5c-0.4-0.7-0.7-1.4-0.9-2.1l-0.1-0.5L4,19.4v-2.8l3.4-1l0.2-0.5c0.2-0.8,0.5-1.5,0.9-2.2l0.3-0.5L7.1,9.1l2-2l3.2,1.8l0.5-0.3c0.7-0.4,1.4-0.7,2.2-0.9l0.5-0.2L16.6,4h2.8l1.1,3.5L21,7.7c0.7,0.2,1.4,0.5,2.1,0.9l0.5,0.3l3.3-1.8l2,2l-1.8,3.3l0.3,0.5c0.4,0.7,0.7,1.4,0.9,2.1l0.1,0.5l3.6,1.1V19.4z" fill="rgb(var(--DH-blue))" stroke="rgb(var(--DH-blue))" stroke-width="1.2" stroke-linejoin="round" paint-order="stroke fill"/></svg>
+                </div>
+            </div>
+            <!-- Row 2: Donate + YouTube + Discord + GitHub -->
+            <div class="DH_HStack_8">
+                <div class="DH_Btn DH_NoSel" id="DH_V1_Donate_Btn" style="padding:10px 0 10px 10px;outline:2px solid rgba(0,0,0,0.20);outline-offset:-2px;background:url(https://duohacker.io.vn/wallpaper.png) lightgray 50% / cover no-repeat;">
+                    <svg width="19" height="17" viewBox="0 0 24 22" fill="#FFF"><path d="M12 21.593c-.425-.394-8.993-7.755-8.993-12.419C3.007 4.984 6.077 2 9.535 2c1.997 0 3.714.862 4.465 2.099C14.75 2.862 16.467 2 18.465 2 21.922 2 25 4.984 25 9.174c0 4.664-8.571 12.025-8.993 12.419L12 21.593z" transform="translate(-1 -1)"/></svg>
+                    <p class="DH_T1 DH_NoSel" style="color:#FFF;font-size:15px;font-weight:700;">Donate</p>
+                </div>
+                <div class="DH_Btn DH_Btn_Icon DH_NoSel" id="DH_V1_YouTube_Btn" style="background:#FF0000;outline:2px solid rgba(0,0,0,.18);outline-offset:-2px;">
+                    <svg width="18" height="13" viewBox="0 0 22 16" fill="#FFF"><path fill-rule="evenodd" clip-rule="evenodd" d="M19.2043 1.0885C20.1084 1.33051 20.8189 2.041 21.0609 2.9451C21.4982 4.58216 21.5 7.99976 21.5 7.99976C21.5 7.99976 21.5 11.4174 21.0609 13.0544C20.8189 13.9585 20.1084 14.669 19.2043 14.911C17.5673 15.3501 11 15.3501 11 15.3501C11 15.3501 4.43274 15.3501 2.79568 14.911C1.89159 14.669 1.1811 13.9585 0.939084 13.0544C0.5 11.4174 0.5 7.99976 0.5 7.99976C0.5 7.99976 0.5 4.58216 0.939084 2.9451C1.1811 2.041 1.89159 1.33051 2.79568 1.0885C4.43274 0.649414 11 0.649414 11 0.649414C11 0.649414 17.5673 0.649414 19.2043 1.0885ZM14.3541 8.00005L8.89834 11.1497V4.85038L14.3541 8.00005Z"/></svg>
+                </div>
+                <div class="DH_Btn DH_Btn_Icon DH_NoSel" id="DH_V1_Discord_Btn" style="background:rgb(88,101,242);outline:2px solid rgba(0,0,0,.18);outline-offset:-2px;">
+                    <svg width="18" height="14" viewBox="0 0 22 16" fill="#FFF"><path d="M18.289 1.34C16.9296.714 15.4761.259 13.9565 0c-.1866.332-.4046.779-.5549 1.134-1.6154-.239-3.2159-.239-4.8016 0C8.4497.779 8.2267.332 8.0384 0 6.5172.259 5.062.716 3.7027 1.343.9608 5.421.2175 9.398.5892 13.318c1.8185 1.337 3.5809 2.149 5.3136 2.68.4278-.579.8093-1.195 1.138-1.845-.6259-.234-1.2255-.523-1.7921-.858.1503-.11.2973-.225.4393-.307 3.4554 1.591 7.2098 1.591 10.624 0 .1437.118.2907.233.4393.342-.6262.337-1.2274.626-1.8534.86.3287.648.7086 1.265 1.138 1.845 1.7343-.531 3.4983-1.343 5.3168-2.681.4361-4.545-.7449-8.484-3.121-11.978ZM7.5115 10.908c-1.0373 0-1.8879-.954-1.8879-2.114 0-1.161.8325-2.115 1.8879-2.115 1.0555 0 1.9061.954 1.8879 2.115.0016 1.16-.8325 2.114-1.8879 2.114Zm6.9769 0c-1.0373 0-1.8879-.954-1.8879-2.114 0-1.161.8324-2.115 1.8879-2.115 1.0554 0 1.9061.954 1.8879 2.115 0 1.16-.8325 2.114-1.8879 2.114Z"/></svg>
+                </div>
+                <div class="DH_Btn DH_Btn_Icon DH_NoSel" id="DH_V1_GitHub_Btn" style="background:#24292e;outline:2px solid rgba(255,255,255,.18);outline-offset:-2px;">
+                    <svg width="18" height="18" viewBox="0 0 22 22" fill="#FFF"><path fill-rule="evenodd" clip-rule="evenodd" d="M11.009.5C5.198.5.5 5.313.5 11.266c0 4.759 3.01 8.788 7.186 10.214.522.107.713-.232.713-.517 0-.25-.017-1.105-.017-1.997-2.923.642-3.532-1.283-3.532-1.283-.47-1.248-1.166-1.568-1.166-1.568-.957-.659.07-.659.07-.659 1.062.071 1.619 1.105 1.619 1.105.94 1.64 2.453 1.176 3.062.891.087-.695.366-1.176.661-1.444-2.332-.25-4.785-1.176-4.785-5.312 0-1.176.418-2.139 1.08-2.887-.106-.267-.461-1.373.105-2.852 0 0 .888-.285 2.899 1.09a9.847 9.847 0 0 1 2.636-.356c.888 0 1.793.125 2.628.356 2.01-1.375 2.898-1.09 2.898-1.09.566 1.479.21 2.585.105 2.852.662.748 1.08 1.711 1.08 2.887 0 4.136-2.453 5.045-4.803 5.312.383.338.714.98.714 2.004 0 1.444-.018 2.606-.018 2.963 0 .285.192.624.714.48C18.49 20.054 21.5 16.025 21.5 11.266 21.517 5.313 16.802.5 11.009.5Z"/></svg>
+                </div>
+            </div>
 
             <div class="DH_Divider"></div>
 
@@ -2016,75 +2799,25 @@
 
             <div class="DH_Divider" id="DH_V1_User_Divider" style="display:none;"></div>
 
-            <!-- XP Farm -->
+            <!-- Farm Practice -->
             <div class="DH_VStack_8" style="align-self:stretch;">
-                <p class="DH_T1 DH_NoSel" id="DH_V1_XP_Title" style="align-self:stretch;">XP Farming</p>
+                <p class="DH_T1 DH_NoSel" id="DH_Practice_Question" style="align-self:stretch;font-weight:700;">How many practice lesson you would like to solve?</p>
                 <div class="DH_HStack_8">
-                    <div class="DH_Input_Wrap">
-                        <img class="DH_Stat_Ico" src="https://d35aaqx5ub95lt.cloudfront.net/images/profile/01ce3a817dd01842581c3d18debcbc46.svg" style="flex-shrink:0;">
-                        <input type="number" class="DH_Input DH_NoSel" id="DH_V1_XP_Input" placeholder="0" readonly style="pointer-events:none;">
+                    <div class="DH_Input_Wrap" id="DH_Practice_Input_Wrap">
+                        <input type="number" class="DH_Input" id="DH_Practice_Input" placeholder="0" min="0" max="9999">
                     </div>
-                    <button class="DH_Input_Btn DH_NoSel" id="DH_V1_XP_Btn" disabled>
-                        <span class="DH_Btn_Label" id="DH_V1_XP_Lbl" style="color:#fff;">RUN</span>
+                    <button class="DH_Input_Btn DH_NoSel" id="DH_Practice_Btn" disabled>
+                        <span class="DH_Btn_Label" id="DH_Practice_Lbl" style="color:#fff;">RUN</span>
                     </button>
                 </div>
-                <div class="DH_Prog_Wrap" id="DH_V1_XP_Prog"><div class="DH_Prog_Fill" id="DH_V1_XP_Fill"></div></div>
-            </div>
 
-            <!-- Gems Farm -->
-            <div class="DH_VStack_8" id="DH_V1_Gem_Section" style="align-self:stretch;">
-                <p class="DH_T1 DH_NoSel" id="DH_V1_Gem_Title" style="align-self:stretch;">Farm Gems</p>
-                <div class="DH_HStack_8">
-                    <div class="DH_Input_Wrap">
-                        <img class="DH_Stat_Ico" src="https://d35aaqx5ub95lt.cloudfront.net/images/gems/45c14e05be9c1af1d7d0b54c6eed7eee.svg" style="flex-shrink:0;">
-                        <input type="number" class="DH_Input DH_NoSel" id="DH_V1_Gem_Input" placeholder="0" readonly style="pointer-events:none;">
-                    </div>
-                    <button class="DH_Input_Btn DH_NoSel" id="DH_V1_Gem_Btn" disabled>
-                        <span class="DH_Btn_Label" id="DH_V1_Gem_Lbl" style="color:#fff;">RUN</span>
-                    </button>
-                </div>
-                <div class="DH_Prog_Wrap" id="DH_V1_Gem_Prog"><div class="DH_Prog_Fill" id="DH_V1_Gem_Fill"></div></div>
-            </div>
-
-            <!-- Streak Farm -->
-            <div class="DH_VStack_8" style="align-self:stretch;">
-                <p class="DH_T1 DH_NoSel" id="DH_V1_Streak_Title" style="align-self:stretch;">Streak Farming</p>
-                <div class="DH_HStack_8">
-                    <div class="DH_Input_Wrap">
-                        <img class="DH_Stat_Ico" src="https://d35aaqx5ub95lt.cloudfront.net/images/icons/398e4298a3b39ce566050e5c041949ef.svg" style="flex-shrink:0;">
-                        <input type="number" class="DH_Input DH_NoSel" id="DH_V1_Streak_Input" placeholder="0" readonly style="pointer-events:none;">
-                    </div>
-                    <button class="DH_Input_Btn DH_NoSel" id="DH_V1_Streak_Btn" disabled>
-                        <span class="DH_Btn_Label" id="DH_V1_Streak_Lbl" style="color:#fff;">RUN</span>
-                    </button>
-                </div>
-                <div class="DH_Prog_Wrap" id="DH_V1_Streak_Prog"><div class="DH_Prog_Fill" id="DH_V1_Streak_Fill"></div></div>
-            </div>
-
-            <!-- Activate Free Super Duolingo V1 -->
-            <div class="DH_VStack_8" style="align-self:stretch;">
-                <p class="DH_T1 DH_NoSel" id="DH_V1_Super_Q" style="align-self:stretch;">Would you like to activate Free Super Duolingo?</p>
-                <div class="DH_HStack_8">
-                    <button class="DH_Input_Btn DH_NoSel" id="DH_V1_Super_Activate_Btn" style="flex:1 0 0;" disabled>
-                        <span class="DH_Btn_Label" id="DH_V1_Super_Activate_Lbl" style="color:#fff;">ACTIVATE</span>
-                    </button>
-                </div>
-                <div class="DH_Prog_Wrap" id="DH_V1_Super_Prog"><div class="DH_Prog_Fill" id="DH_V1_Super_Fill"></div></div>
             </div>
 
             <div class="DH_Divider"></div>
 
-            <!-- Settings (same as V2 settings page) -->
+            <!-- Extra Features nav (solver page) -->
             <div class="DH_Btn DH_Btn_Blue_Ghost DH_NoSel" id="DH_V1_Settings_Btn" style="align-self:stretch; justify-content:space-between; padding:10px 12px;">
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <div class="DH_Btn_Ico">
-                        <svg width="16" height="16" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M18.1,11c-3.9,0-7,3.1-7,7s3.1,7,7,7c3.9,0,7-3.1,7-7S22,11,18.1,11z M18.1,23c-2.8,0-5-2.2-5-5s2.2-5,5-5c2.8,0,5,2.2,5,5S20.9,23,18.1,23z" fill="rgb(var(--DH-blue))" stroke="rgb(var(--DH-blue))" stroke-width="1.2" stroke-linejoin="round" paint-order="stroke fill"/>
-                            <path d="M32.8,14.7L30,13.8l-0.6-1.5l1.4-2.6c0.3-0.6,0.2-1.4-0.3-1.9l-2.4-2.4c-0.5-0.5-1.3-0.6-1.9-0.3l-2.6,1.4l-1.5-0.6l-0.9-2.8C21,2.5,20.4,2,19.7,2h-3.4c-0.7,0-1.3,0.5-1.4,1.2L14,6c-0.6,0.1-1.1,0.3-1.6,0.6L9.8,5.2C9.2,4.9,8.4,5,7.9,5.5L5.5,7.9C5,8.4,4.9,9.2,5.2,9.8l1.3,2.5c-0.2,0.5-0.4,1.1-0.6,1.6l-2.8,0.9C2.5,15,2,15.6,2,16.3v3.4c0,0.7,0.5,1.3,1.2,1.5L6,22.1l0.6,1.5l-1.4,2.6c-0.3,0.6-0.2,1.4,0.3,1.9l2.4,2.4c0.5,0.5,1.3,0.6,1.9,0.3l2.6-1.4l1.5,0.6l0.9,2.9c0.2,0.6,0.8,1.1,1.5,1.1h3.4c0.7,0,1.3-0.5,1.5-1.1l0.9-2.9l1.5-0.6l2.6,1.4c0.6,0.3,1.4,0.2,1.9-0.3l2.4-2.4c0.5-0.5,0.6-1.3,0.3-1.9l-1.4-2.6l0.6-1.5l2.9-0.9c0.6-0.2,1.1-0.8,1.1-1.5v-3.4C34,15.6,33.5,14.9,32.8,14.7z M32,19.4l-3.6,1.1L28.3,21c-0.3,0.7-0.6,1.4-0.9,2.1l-0.3,0.5l1.8,3.3l-2,2l-3.3-1.8l-0.5,0.3c-0.7,0.4-1.4,0.7-2.1,0.9l-0.5,0.1L19.4,32h-2.8l-1.1-3.6L15,28.3c-0.7-0.3-1.4-0.6-2.1-0.9l-0.5-0.3l-3.3,1.8l-2-2l1.8-3.3l-0.3-0.5c-0.4-0.7-0.7-1.4-0.9-2.1l-0.1-0.5L4,19.4v-2.8l3.4-1l0.2-0.5c0.2-0.8,0.5-1.5,0.9-2.2l0.3-0.5L7.1,9.1l2-2l3.2,1.8l0.5-0.3c0.7-0.4,1.4-0.7,2.2-0.9l0.5-0.2L16.6,4h2.8l1.1,3.5L21,7.7c0.7,0.2,1.4,0.5,2.1,0.9l0.5,0.3l3.3-1.8l2,2l-1.8,3.3l0.3,0.5c0.4,0.7,0.7,1.4,0.9,2.1l0.1,0.5l3.6,1.1V19.4z" fill="rgb(var(--DH-blue))" stroke="rgb(var(--DH-blue))" stroke-width="1.2" stroke-linejoin="round" paint-order="stroke fill"/>
-                        </svg>
-                    </div>
-                    <p class="DH_T1 DH_NoSel" id="DH_V1_Settings_Lbl" style="color:rgb(var(--DH-blue));">Settings</p>
-                </div>
+                <p class="DH_T1 DH_NoSel" id="DH_V1_Settings_Lbl" style="color:rgb(var(--DH-blue));">Extra Features</p>
                 <svg width="8" height="13" viewBox="0 0 8 13" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M1 1l6 5.5L1 12" stroke="rgb(var(--DH-blue))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
@@ -2092,7 +2825,7 @@
 
             <div class="DH_HStack_Auto">
                 <p class="DH_T2 DH_NoSel" style="color:rgba(var(--DH-blue),0.45);">duohacker.io.vn</p>
-                <p class="DH_T2 DH_NoSel" style="color:rgba(var(--DH-blue),0.45);">V1 Mode</p>
+                <p class="DH_T2 DH_NoSel" style="color:rgba(var(--DH-blue),0.45);">Solver</p>
             </div>
         </div>
 
@@ -2107,6 +2840,34 @@
             </div>
         </div>
 
+        <!-- PAGE 11: Leaderboard -->
+        <div class="DH_Page" id="DH_Page_11">
+            <div class="DH_HStack_4 DH_NoSel" id="DH_LB_Back_Btn" style="align-self:flex-start;cursor:pointer;opacity:0.55;">
+                <svg width="8" height="14" viewBox="0 0 9 16" fill="none"><path d="M8 1L2 8l6 7" stroke="rgb(var(--color-wolf,60,60,67))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <p class="DH_T1" id="DH_LB_Back_Txt">Back</p>
+            </div>
+
+            <!-- League header card -->
+            <div class="DH_LB_Header">
+                <img id="DH_LB_LeagueImg" class="DH_LB_LeagueImg" src="" alt="" onerror="this.style.display='none'">
+                <p class="DH_LB_LeagueName DH_NoSel" id="DH_LB_LeagueName">—</p>
+            </div>
+
+            <!-- Rankings list -->
+            <div class="DH_Scroll_Inner" id="DH_LB_List" style="max-height:408px;display:flex;flex-direction:column;gap:3px;align-self:stretch;">
+                <p class="DH_T2 DH_NoSel" id="DH_LB_Loading_Txt" style="text-align:center;padding:16px 0;">Loading leaderboard...</p>
+            </div>
+        </div>
+
+        <!-- PAGE 12: Reaction Picker -->
+        <div class="DH_Page" id="DH_Page_12">
+            <div class="DH_HStack_4 DH_NoSel" id="DH_React_Back_Btn" style="align-self:flex-start;cursor:pointer;opacity:0.55;">
+                <svg width="8" height="14" viewBox="0 0 9 16" fill="none"><path d="M8 1L2 8l6 7" stroke="rgb(var(--color-wolf,60,60,67))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <p class="DH_T1" id="DH_React_Back_Txt">Back</p>
+            </div>
+            <p class="DH_T1 DH_NoSel" id="DH_React_Title" style="font-weight:700;">Choose Reaction</p>
+            <div class="DH_Scroll_Inner" id="DH_React_Container" style="max-height:300px;"></div>
+        </div>
     </div>
 </div>
 `;
@@ -2124,7 +2885,7 @@
                 event.stopPropagation();
 
                 const lang = option.dataset.lang;
-                if (lang !== 'vi' && lang !== 'en') return;
+                if (lang !== 'vi' && lang !== 'en' && lang !== 'es' && lang !== 'fr') return;
 
                 _setLang(lang);
                 _langSelector.classList.remove('open');
@@ -2143,6 +2904,9 @@
 
         let _jwt = null,
             _sub = null,
+            _lbCache = null,
+            _lbPrefetching = false,
+            _lbCohortId = null,
             _hdrs = null,
             _user = null,
             _privacy = null;
@@ -2176,24 +2940,45 @@
             document.getElementById('DH_V1_UXP').textContent = (_user.totalXp || 0).toLocaleString();
             document.getElementById('DH_V1_UGems').textContent = (_user.gems || 0).toLocaleString();
             document.getElementById('DH_V1_UStreak').textContent = (_user.streak || 0).toLocaleString();
-            if (_user.picture) {
-                let hq = _user.picture.replace(/\/(medium|large|small)$/, '/xlarge');
-                if (!hq.endsWith('/xlarge') && hq.includes('duolingo.com/ssr-avatars')) hq += '/xlarge';
-                const av = document.getElementById('DH_V1_Avatar');
-                const img = document.createElement('img');
-                img.src = hq;
-                img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;';
-                img.onerror = function() {
-                    av.innerHTML = '👤';
-                };
-                av.innerHTML = '';
-                av.appendChild(img);
+            const av = document.getElementById('DH_V1_Avatar');
+            // Skip re-render if avatar already loaded (img present and not broken)
+            const v1ExistingImg = av && av.querySelector('img');
+            const v1AvatarAlreadyLoaded = v1ExistingImg && v1ExistingImg.complete && v1ExistingImg.naturalWidth > 0;
+            if (!v1AvatarAlreadyLoaded) {
+                // If blob avatar already loaded from leaderboard, mirror it instead of overwriting with lower-quality picture
+                if (_panelAvatarLoaded) {
+                    const v2Img = document.getElementById('DH_Avatar') && document.getElementById('DH_Avatar').querySelector('img');
+                    if (v2Img && av) {
+                        av.innerHTML = '';
+                        const img = document.createElement('img');
+                        img.src = v2Img.src;
+                        img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;';
+                        img.draggable = false;
+                        av.appendChild(img);
+                    }
+                } else {
+                    // Use _bestAvatarUrl for consistent // protocol fix + default fallback
+                    const hq = _bestAvatarUrl(_user.picture, _sub);
+                    const img = document.createElement('img');
+                    img.src = hq;
+                    img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;';
+                    img.draggable = false;
+                    img.addEventListener('error', function() {
+                        const def = document.createElement('img');
+                        def.src = _AVATAR_DEFAULT_URL;
+                        def.style.cssText = img.style.cssText;
+                        def.draggable = false;
+                        if (av) av.replaceChildren(def);
+                    });
+                    if (av) av.replaceChildren(img);
+                }
             }
         }
         let _remoteVersion = '';
         let _running = false,
             _task = null,
             _hidden = false;
+        let _dhLeagueTarget = 1;
         let _delay = parseInt(localStorage.getItem('dh2_delay') || '500', 10);
         let _shopItems = [];
         const _sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -2202,6 +2987,423 @@
         // to look more human and reduce risk of desync (e.g. RESULT_CODE_HUNG).
         const _safeWait = (baseMs) => _SAFE_MODE ? Math.round(baseMs * 2.5 + Math.random() * 500) : baseMs;
         const GOALS_API = 'https://goals-api.duolingo.com';
+
+        // ── Leaderboard ──────────────────────────────────────────────────────
+        const _LB_ID = '7d9f5dd1-8423-491a-91f2-2532052038ce';
+        const _LB_IMG = 'https://d35aaqx5ub95lt.cloudfront.net/images/leagues/';
+        const _LEAGUE_TIERS = [
+            { name: 'Bronze',   emoji: '🥉', img: _LB_IMG + '192181672ada150becd83a74a4266ae9.svg' },
+            { name: 'Silver',   emoji: '🥈', img: _LB_IMG + '8148b17e32d8706a82c02688f559e9ef.svg'  },
+            { name: 'Gold',     emoji: '🏅', img: _LB_IMG + '0e249b5f869b806da7406b815f4d60c6.svg' },
+            { name: 'Sapphire', emoji: '💎', img: _LB_IMG + '3ced84eb1f0274ec0f02b24ae6e3d29b.svg' },
+            { name: 'Ruby',     emoji: '❤️‍🔥', img: _LB_IMG + '74d6ab6e5b6f92e7d16a4a6664d1fafd.svg' },
+            { name: 'Emerald',  emoji: '💚', img: _LB_IMG + 'f480e032c5222395e73dac88ce3592bb.svg' },
+            { name: 'Amethyst', emoji: '💜', img: _LB_IMG + '7f895707cd44583692d20481dcd9e0d0.svg' },
+            { name: 'Pearl',    emoji: '🤍', img: _LB_IMG + 'f902954eeaa88fd2cb12f9168b4f68cb.svg'  },
+            { name: 'Obsidian', emoji: '🖤', img: _LB_IMG + '57f0c6b260d33493a0cddc4ab38d6833.svg' },
+            { name: 'Diamond',  emoji: '💠', img: _LB_IMG + 'afe5c7067cd5fb7de936d3928ea7add6.svg'  },
+        ];
+
+        async function _fetchLeaderboard() {
+            if (!_jwt || !_sub) return null;
+            try {
+                const r = await _gm('GET',
+                    `https://duolingo-leaderboards-prod.duolingo.com/leaderboards/${_LB_ID}/users/${_sub}?client_unlocked=true&get_reactions=true&_=${Date.now()}`,
+                    null, _hdrs);
+                if (r.status !== 200) return null;
+                const data = JSON.parse(r.responseText);
+                const raw = Array.isArray(data) ? data[0] : data;
+                // Validate structure like DuoXPy — banned/unjoined accounts
+                // return status 200 but with missing active/cohort/rankings.
+                if (!raw?.active?.cohort?.rankings?.length) return null;
+                if (!raw?.active?.contest?.ruleset) return null;
+                // user_id / is_demoted / is_promoted live at TOP LEVEL of the
+                // response, NOT inside `active`. Merge both so _renderLeaderboard
+                // can destructure cleanly.
+                const merged = Object.assign({}, raw.active);
+                if (raw.user_id    != null) merged.user_id    = raw.user_id;
+                if (raw.is_demoted != null) merged.is_demoted = raw.is_demoted;
+                if (raw.is_promoted!= null) merged.is_promoted= raw.is_promoted;
+                if (raw.score      != null) merged.score      = raw.score;
+                if (raw.tier       != null) merged.tier       = raw.tier;
+                // Store cohort_id for reaction PATCH
+                if (merged.cohort?.cohort_id) _lbCohortId = merged.cohort.cohort_id;
+                return merged;
+            } catch { return null; }
+        }
+
+        const _LB_MEDAL = [
+            'https://d35aaqx5ub95lt.cloudfront.net/images/leagues/9e4f18c0bc42c7508d5fa5b18346af11.svg',
+            'https://d35aaqx5ub95lt.cloudfront.net/images/leagues/cc7b8f8582e9cfb88408ab851ec2e9bd.svg',
+            'https://d35aaqx5ub95lt.cloudfront.net/images/leagues/eef523c872b71178ef5acb2442d453a2.svg',
+        ];
+        const _LB_REACT_BASE = 'https://d35aaqx5ub95lt.cloudfront.net/images/leagues/';
+        const _LB_VENDOR_BASE = 'https://d35aaqx5ub95lt.cloudfront.net/vendor/';
+        const _REACTION_ICONS = {
+            'TROPHY':         _LB_REACT_BASE + '22df4cb957e6cf2d7198b6e5449a342e.svg',
+            'TROPHY,winner':  _LB_REACT_BASE + '1795aa8b3b10d243e5d138a79bde360a.svg',
+            'POPPER':         _LB_REACT_BASE + '2ceb401cae52712705b66a77df83ce40.svg',
+            'SUNGLASSES':     _LB_REACT_BASE + '2439bac00452e99ba7bf6a7ed0b04196.svg',
+            'ONE_HUNDRED':    _LB_REACT_BASE + '5642e1e72813a88e8973b551a2004c7f.svg',
+            'CAT':            _LB_REACT_BASE + '535fc27de224cc7d311dbb5de4f33be6.svg',
+            'POOP':           _LB_REACT_BASE + 'beb0df263d0f696bc7095d56b448ca78.svg',
+            'POPCORN':        _LB_REACT_BASE + '573de2bc90b2499eeb2b3738cff90133.svg',
+            'EYES':           _LB_REACT_BASE + 'a8e5c18e80054228b2c61168846ff643.svg',
+            'ANGRY':          _LB_REACT_BASE + 'f12703218fc80de76a63e650726f742e.svg',
+            'DUMPSTER_FIRE':  _LB_REACT_BASE + '9fadb349c2ece257386a0e576359c867.svg',
+            'FLEX':           _LB_REACT_BASE + '6b8a8db5ac7f847e7e87efe97c8b451a.svg',
+            'FLAG,chess':     _LB_VENDOR_BASE + 'c8bad7c09aaf7bc29ddddc50808adb54.svg',
+            'FLAG,math':      _LB_VENDOR_BASE + '395c8a6ee9783610b578b02fda405e85.svg',
+            'FLAG,music':     _LB_VENDOR_BASE + '7fee27d21187165ccb88aef0234b6101.svg',
+            'NONE':           _LB_REACT_BASE + 'a35f1db4398fd29e66f1abc33a0d11a2.svg',
+        };
+        // Reaction icon names for picker display
+        const _REACTION_NAMES = {
+            'TROPHY': 'Trophy', 'TROPHY,winner': 'Diamond Trophy',
+            'POPPER': 'Popper', 'SUNGLASSES': 'Sunglasses',
+            'ONE_HUNDRED': '100', 'CAT': 'Cat', 'POOP': 'Poop', 'POPCORN': 'Popcorn',
+            'EYES': 'Eyes', 'ANGRY': 'Angry', 'DUMPSTER_FIRE': 'Fire', 'FLEX': 'Flex',
+            'FLAG,chess': 'Chess', 'FLAG,math': 'Math', 'FLAG,music': 'Music',
+            'NONE': 'None',
+        };
+
+        // Get best avatar URL: prefer custom picture, fallback to lb avatar_url, then default
+        const _AVATAR_DEFAULT_URL = 'https://simg-ssl.duolingo.com/avatar/default_2/xlarge';
+        function _bestAvatarUrl(picture, userId) {
+            const isDefault = !picture || picture.includes('/avatar/default');
+            if (!isDefault) {
+                let hq = picture;
+                if (hq.startsWith('//')) hq = 'https:' + hq; // fix protocol-relative URLs
+                hq = hq.replace(/\/(medium|large|small|xlarge)$/, '/xlarge'); // Remove existing size suffix first
+                if (!hq.endsWith('/xlarge')) {
+                    if (!hq.endsWith('/')) hq += '/';
+                    hq += 'xlarge';
+                }
+                return hq;
+            }
+            // Try leaderboard cache for league-assigned avatar
+            const rankings = _lbCache?.cohort?.rankings || [];
+            const lbUser = rankings.find(u => String(u.user_id) === String(userId));
+            if (lbUser?.avatar_url && !lbUser.avatar_url.includes('/avatar/default')) {
+                return lbUser.avatar_url + '/large';
+            }
+            return _AVATAR_DEFAULT_URL; // always return a usable URL
+        }
+        function _reactionIconUrl(r) {
+            if (!r || r === 'NONE') return _REACTION_ICONS['NONE'];
+            return _REACTION_ICONS[r] || _REACTION_ICONS['NONE'];
+        }
+                const _LB_PROM_ICON = 'https://d35aaqx5ub95lt.cloudfront.net/images/leagues/577cf633b59ce72791f725d0cb973061.svg';
+        const _LB_DEM_ICON  = 'https://d35aaqx5ub95lt.cloudfront.net/images/leagues/248453c5e2d9de19fba7a2f4fef7f016.svg';
+
+
+        async function _renderReactionPicker() {
+            const container = document.getElementById('DH_React_Container');
+            if (!container) return;
+            container.innerHTML = '';
+            const myRank = (_lbCache?.cohort?.rankings || []).find(u => String(u.user_id) === String(_sub));
+            const curReact = myRank?.reaction || 'NONE';
+
+            const GROUPS = [
+                {
+                    label: 'League Emojis',
+                    keys: ['TROPHY','TROPHY,winner','POPPER','SUNGLASSES','ONE_HUNDRED',
+                           'CAT','POOP','POPCORN','EYES','ANGRY','DUMPSTER_FIRE','FLEX','NONE']
+                },
+                {
+                    label: 'Course Emojis',
+                    keys: ['FLAG,chess','FLAG,math','FLAG,music']
+                }
+            ];
+
+            GROUPS.forEach(group => {
+                const header = document.createElement('div');
+                header.className = 'DH_Cat_Header DH_NoSel';
+                header.textContent = group.label;
+                container.appendChild(header);
+
+                const grid = document.createElement('div');
+                grid.className = 'DH_Shop_Grid';
+
+                group.keys.forEach(key => {
+                    const isActive = key === curReact;
+                    const card = document.createElement('div');
+                    card.className = 'DH_Shop_Card';
+
+                    const ico = document.createElement('img');
+                    ico.className = 'DH_Shop_Ico';
+                    ico.src = _REACTION_ICONS[key];
+                    ico.alt = key;
+
+                    const lbl = document.createElement('div');
+                    lbl.className = 'DH_Shop_Name DH_NoSel';
+                    lbl.textContent = _REACTION_NAMES[key] || key;
+
+                    const btn = document.createElement('button');
+                    btn.className = 'DH_React_Btn' + (isActive ? ' active' : '');
+                    btn.textContent = isActive ? 'ACTIVE' : 'EQUIP';
+
+                    btn.addEventListener('click', async () => {
+                        if (btn.classList.contains('loading') || btn.classList.contains('active')) return;
+                        btn.className = 'DH_React_Btn loading';
+                        btn.textContent = '...';
+                        try {
+                            const cohortId = _lbCohortId || _lbCache?.cohort?.cohort_id;
+                            if (!cohortId) throw new Error('no cohort');
+                            const url = `https://duolingo-leaderboards-prod.duolingo.com/reactions/${cohortId}/users/${_sub}`;
+                            const patchHdrs = Object.assign({}, _hdrs, {'Content-Type':'application/json'});
+                            const r = await _gm('PATCH', url, { reaction: key }, patchHdrs);
+                            if (r.status === 200) {
+                                if (_lbCache?.cohort?.rankings) {
+                                    const me = _lbCache.cohort.rankings.find(u => String(u.user_id) === String(_sub));
+                                    if (me) me.reaction = key;
+                                }
+                                btn.className = 'DH_React_Btn success';
+                                btn.textContent = 'ACTIVE';
+                                setTimeout(() => _goBack(), 700);
+                            } else {
+                                btn.className = 'DH_React_Btn';
+                                btn.textContent = 'EQUIP';
+                            }
+                        } catch(e) {
+                            btn.className = 'DH_React_Btn';
+                            btn.textContent = 'EQUIP';
+                        }
+                    });
+
+                    card.appendChild(ico);
+                    card.appendChild(lbl);
+                    card.appendChild(btn);
+                    grid.appendChild(card);
+                });
+
+                container.appendChild(grid);
+            });
+        }
+
+        // Preload reaction SVG icons so they're cached before picker opens
+        (function _preloadReactionIcons() {
+            Object.values(_REACTION_ICONS).forEach(url => {
+                const img = new Image();
+                img.src = url;
+            });
+        })();
+        // Update #DH_Avatar and #DH_V1_Avatar from leaderboard data.
+        // Called right after pre-fetch so the avatar appears without opening the LB tab.
+        let _panelAvatarLoaded = false;
+        function _updatePanelAvatar(lb) {
+            if (_panelAvatarLoaded) return;
+            const rankings = lb?.cohort?.rankings || [];
+            const me = rankings.find(u => String(u.user_id) === String(_sub));
+            if (!me || !me.avatar_url || me.avatar_url.includes('/avatar/default')) return;
+            _dhFetchBlob(me.avatar_url + '/large').then(function(blob) {
+                if (!blob) return;
+                var blobUrl = URL.createObjectURL(blob);
+                _panelAvatarLoaded = true;
+                ['DH_Avatar', 'DH_V1_Avatar'].forEach(function(elId) {
+                    var el = document.getElementById(elId);
+                    if (!el) return;
+                    el.innerHTML = '';
+                    var img = document.createElement('img');
+                    img.src = blobUrl;
+                    img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;';
+                    img.draggable = false;
+                    el.appendChild(img);
+                });
+            });
+        }
+
+        function _renderLeaderboard(lb) {
+            const list    = document.getElementById('DH_LB_List');
+            const nameEl  = document.getElementById('DH_LB_LeagueName');
+            const imgEl   = document.getElementById('DH_LB_LeagueImg');
+            if (!list) return;
+
+            if (!lb) {
+                list.innerHTML = `<p class="DH_T2 DH_NoSel" style="text-align:center;padding:16px 0;">${_t('lb_failed')}</p>`;
+                return;
+            }
+
+            try {
+            const { cohort, contest, user_id: myUserId, is_demoted: myDemoted, is_promoted: myPromoted } = lb;
+            const { rankings, tier } = cohort;
+            const { num_promoted, num_demoted } = contest.ruleset;
+
+            const tierInfo = _LEAGUE_TIERS[tier] || { name: `League ${tier}`, emoji: '🏆', img: null };
+            const nProm    = (num_promoted || [])[tier] || 0;
+            const nDem     = (num_demoted  || [])[tier] || 0;
+            const total    = rankings.length;
+            // _sub is the authenticated user's Duolingo ID always prefer it
+            const myId     = String(_sub ?? myUserId ?? '');
+
+            // League header
+            if (nameEl) nameEl.textContent = tierInfo.name + ' League';
+            if (imgEl) {
+                if (tierInfo.img) { imgEl.src = tierInfo.img; imgEl.style.display = ''; }
+                else imgEl.style.display = 'none';
+            }
+
+            // Update panel avatar (no-op if already done)
+            _updatePanelAvatar(lb);
+
+            // Rank rows
+            const _avatarQueue = [];
+            list.innerHTML = '';
+            rankings.forEach((u, i) => {
+                const rank  = i + 1;
+                const isMe  = String(u.user_id) === myId;
+                // Only show promoted zone; demoted zone removed (too buggy)
+                const inP   = isMe ? !!myPromoted : (rank <= nProm);
+                const inD   = false;
+
+                const row = document.createElement('div');
+                row.className = 'DH_LB_Row DH_NoSel' + (isMe ? ' me' : '');
+
+                // ── Rank wrap (medal img or number) ──
+                const rw = document.createElement('div');
+                rw.className = 'DH_LB_RankWrap';
+                if (rank <= 3 && _LB_MEDAL[rank - 1]) {
+                    const mi = document.createElement('img');
+                    mi.className = 'DH_LB_RankMedal';
+                    mi.src = _LB_MEDAL[rank - 1];
+                    mi.alt = String(rank);
+                    rw.appendChild(mi);
+                } else {
+                    const rn = document.createElement('span');
+                    rn.className = 'DH_LB_RankNum';
+                    rn.textContent = String(rank);
+                    rw.appendChild(rn);
+                }
+                row.appendChild(rw);
+
+                // ── Avatar wrap ──
+                const aw = document.createElement('div');
+                aw.className = 'DH_LB_AvatarWrap' + (inP ? ' prom' : inD ? ' dem' : '');
+                // Reaction icon overlay (top-right of avatar)
+                // Show for isMe always (clickable to change), for others only if they have a reaction
+                const hasReact = u.reaction && u.reaction !== 'NONE' && !!_REACTION_ICONS[u.reaction];
+                if (isMe || hasReact) {
+                    const ri = document.createElement('img');
+                    ri.className = 'DH_LB_Reaction' + (isMe ? ' me' : '');
+                    ri.src = _reactionIconUrl(hasReact ? u.reaction : 'NONE');
+                    ri.alt = '';
+                    if (isMe) ri.addEventListener('click', () => _goPage(12));
+                    aw.appendChild(ri);
+                }
+                const avUrl = u.avatar_url || '';
+                // Show initial letter as placeholder while avatar loads via GM blob
+                const _makeInitialFb = (name) => {
+                    const fb = document.createElement('div');
+                    fb.className = 'DH_LB_AvatarFallback';
+                    fb.textContent = (name || '?')[0].toUpperCase();
+                    return fb;
+                };
+                aw.appendChild(_makeInitialFb(u.display_name));
+                // Queue for batch load (12 at a time)
+                if (avUrl) _avatarQueue.push({ url: avUrl + '/large', awEl: aw, inP, inD,
+                    reaction: (isMe || hasReact) ? (hasReact ? u.reaction : 'NONE') : null,
+                    isMe: isMe });
+                // Zone icon overlay (↑↓)
+                if (inP || inD) _appendZoneIcon(aw, inP);
+                row.appendChild(aw);
+
+                // ── Name (wrapped in flex:1 container so score stays right) ──
+                const ni = document.createElement('div');
+                ni.className = 'DH_LB_Info';
+                const nm = document.createElement('p');
+                nm.className = 'DH_LB_Name';
+                nm.textContent = u.display_name;
+                ni.appendChild(nm);
+                row.appendChild(ni);
+
+                // ── Score ──
+                const sw = document.createElement('div');
+                sw.className = 'DH_LB_ScoreWrap';
+
+                const sc = document.createElement('p');
+                sc.className = 'DH_LB_Score';
+                sc.textContent = u.score.toLocaleString();
+                sw.appendChild(sc);
+
+                const su = document.createElement('p');
+                su.className = 'DH_LB_ScoreUnit';
+                su.textContent = 'XP';
+                sw.appendChild(su);
+
+                row.appendChild(sw);
+                list.appendChild(row);
+
+                // ── Zone separators ──
+                if (rank === nProm && rank < total) {
+                    list.appendChild(_makeSep('prom'));
+                }
+                // Rank Down separator removed
+            });
+
+            // Batch-load avatars 12 at a time
+            (function _batchAvatars(queue, offset) {
+                var CHUNK = 12;
+                if (offset >= queue.length) return;
+                var slice = queue.slice(offset, offset + CHUNK);
+                var done = 0;
+                function onDone() { if (++done === slice.length) _batchAvatars(queue, offset + CHUNK); }
+                slice.forEach(function(item) {
+                    _dhFetchBlob(item.url).then(function(blob) {
+                        if (blob) {
+                            var bUrl = URL.createObjectURL(blob);
+                            item.awEl.innerHTML = '';
+                            var ai = document.createElement('img');
+                            ai.className = 'DH_LB_AvatarImg'; ai.src = bUrl; ai.alt = '';
+                            item.awEl.appendChild(ai);
+                            if (item.inP || item.inD) _appendZoneIcon(item.awEl, item.inP);
+                            // Re-add reaction icon (was cleared by innerHTML='')
+                            if (item.reaction !== null && item.reaction !== undefined) {
+                                var ri2 = document.createElement('img');
+                                ri2.className = 'DH_LB_Reaction' + (item.isMe ? ' me' : '');
+                                ri2.src = _reactionIconUrl(item.reaction);
+                                ri2.alt = '';
+                                if (item.isMe) ri2.addEventListener('click', function() { _goPage(12); });
+                                item.awEl.appendChild(ri2);
+                            }
+                        }
+                        onDone();
+                    }).catch(onDone);
+                });
+            })(_avatarQueue, 0);
+            } catch(e) {
+                // Any crash (e.g. missing cohort/contest) → show failed instead of stuck spinner
+                if (list) list.innerHTML = `<p class="DH_T2 DH_NoSel" style="text-align:center;padding:16px 0;">${_t('lb_failed')}</p>`;
+            }
+        }
+
+        function _appendZoneIcon(wrap, isPromo) {
+            const zi = document.createElement('img');
+            zi.className = 'DH_LB_ZoneIcon';
+            zi.src = isPromo ? _LB_PROM_ICON : _LB_DEM_ICON;
+            zi.alt = '';
+            wrap.appendChild(zi);
+        }
+
+        function _makeSep(type) {
+            const sep = document.createElement('div');
+            sep.className = 'DH_LB_Sep';
+            const l1 = document.createElement('div');
+            l1.className = 'DH_LB_SepLine ' + type;
+            const ic = document.createElement('img');
+            ic.className = 'DH_LB_SepIcon';
+            ic.src = type === 'prom' ? _LB_PROM_ICON : _LB_DEM_ICON;
+            ic.alt = '';
+            const tx = document.createElement('span');
+            tx.className = 'DH_LB_SepTxt ' + type;
+            tx.textContent = type === 'prom' ? _t('lb_rank_up') : _t('lb_rank_down');
+            const l2 = document.createElement('div');
+            l2.className = 'DH_LB_SepLine ' + type;
+            sep.appendChild(l1);
+            sep.appendChild(ic);
+            sep.appendChild(tx);
+            sep.appendChild(l2);
+            return sep;
+        }
 
         let _pageHistory = [1];
 
@@ -3233,17 +4435,67 @@
             };
         }
 
+        // ── Mobile-safe fetch layer ─────────────────────────────────────────────
+        const _isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+            || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        const _FORBIDDEN_HDRS = { cookie:1, origin:1, 'user-agent':1, host:1, referer:1, 'content-length':1 };
+
+        function _dhFetch(method, url, data, hdrs, timeoutMs) {
+            const rawHdrs = hdrs || _hdrs || {};
+            const body = (data == null) ? null : (typeof data === 'string' ? data : JSON.stringify(data));
+            const ms = timeoutMs || 15000;
+
+            const gmReq = () => new Promise(r => {
+                GM_xmlhttpRequest({
+                    method, url, headers: rawHdrs, data: body,
+                    onload: r,
+                    onerror: () => r({ status: 0, responseText: '' }),
+                    timeout: ms, ontimeout: () => r({ status: 0, responseText: '' })
+                });
+            });
+
+            const useFetch = _isMobile || typeof GM_xmlhttpRequest === 'undefined';
+            if (useFetch) {
+                const safeHdrs = {};
+                for (const k in rawHdrs) if (!_FORBIDDEN_HDRS[k.toLowerCase()]) safeHdrs[k] = rawHdrs[k];
+                return fetch(url, {
+                    method,
+                    headers: safeHdrs,
+                    body: (method === 'GET' || method === 'HEAD') ? undefined : body,
+                    credentials: 'include',
+                    mode: 'cors'
+                })
+                .then(res => res.text().then(text => ({ status: res.status, responseText: text })))
+                .catch(() => typeof GM_xmlhttpRequest !== 'undefined'
+                    ? gmReq()
+                    : { status: 0, responseText: '' }
+                );
+            }
+            return gmReq();
+        }
+
+        function _dhFetchBlob(url) {
+            const useFetch = _isMobile || typeof GM_xmlhttpRequest === 'undefined';
+            if (useFetch) {
+                return fetch(url, { credentials: 'include', mode: 'cors' })
+                    .then(res => res.ok ? res.blob() : null)
+                    .catch(() => null);
+            }
+            return new Promise(r => {
+                GM_xmlhttpRequest({
+                    method: 'GET', url, responseType: 'blob', timeout: 8000,
+                    onload: resp => r(resp.status === 200 && resp.response ? resp.response : null),
+                    onerror: () => r(null), ontimeout: () => r(null)
+                });
+            });
+        }
+        // ── End mobile-safe fetch layer ─────────────────────────────────────────
+
         function _gm(method, url, data, hdrs) {
-            return new Promise((res, rej) => GM_xmlhttpRequest({
-                method,
-                url,
-                headers: hdrs || _hdrs,
-                data: data ? JSON.stringify(data) : null,
-                onload: r => res(r),
-                onerror: () => rej(new Error('Network')),
-                timeout: 15000,
-                ontimeout: () => rej(new Error('Timeout'))
-            }));
+            return _dhFetch(method, url, data, hdrs).then(r => {
+                if (r.status === 0) throw new Error('Network');
+                return r;
+            });
         }
 
         function _setBtnState(btnId, cfg, labelText) {
@@ -3313,10 +4565,6 @@
         }
 
         function _setBtnProgress(btnId, pct) {
-            const btn = document.getElementById(btnId);
-            if (!btn) return;
-            const lbl = btn.querySelector('.DH_Btn_Label') || btn.querySelector('.DH_Sm_Btn_Label');
-            if (lbl) lbl.textContent = pct + '%';
             const fill = document.getElementById(btnId.replace('_Btn', '_Fill'));
             if (fill) fill.style.width = pct + '%';
         }
@@ -3325,7 +4573,7 @@
             const btn = document.getElementById(btnId);
             if (!btn) return;
             btn.disabled = false;
-            _setBtnState(btnId, _C_RED, '0%');
+            _setBtnState(btnId, _C_RED, _t('btn_stop'));
             const prog = document.getElementById(btnId.replace('_Btn', '_Prog'));
             if (prog) prog.classList.add('on');
         }
@@ -3339,15 +4587,13 @@
         }
 
         const _GF_SCRIPT_URL = 'https://greasyfork.org/en/scripts/561041-duolingo-duohacker';
-        const _CURRENT_VER = '2026.06.21';
+        const _CURRENT_VER = '2026.08.28';
 
-        /* ── Changelog Popup ── */
+        /* ── Changelog Popup -*/
         const _CHANGELOG = [{
-            version: '2026.06.21',
+            version: '2026.08.28',
             changes: [
-                'Added Story Challenges support for Auto Solver',
-                'Added Safe Mode',
-                'Improved Auto Solver',
+                'Added Duolingo domain to //@connect',
             ]
         }, ];
 
@@ -3395,12 +4641,23 @@
                 nb.title = label;
                 nb.onclick = () => window.open(_GF_SCRIPT_URL, '_blank');
                 document.getElementById('DH_User_Row').style.display = 'flex';
+                // Mirror outdated state to Solver page conn button
+                const _v1b = document.getElementById('DH_V1_Conn_Btn');
+                const _v1i = document.getElementById('DH_V1_Conn_Ico');
+                const _v1t = document.getElementById('DH_V1_Conn_Txt');
+                if (_v1b) {
+                    _v1b.style.background = `linear-gradient(0deg,rgba(var(--DH-orange),0.10),rgba(var(--DH-orange),0.10)),rgb(var(--color-snow),0.90)`;
+                    _v1b.style.outline = `2px solid rgba(var(--DH-orange),0.30)`;
+                    _v1b.style.outlineOffset = '-2px';
+                }
+                if (_v1i) { _v1i.innerHTML = ni.innerHTML; _v1i.style.color = `rgb(var(--DH-orange))`; _v1i.style.display = 'flex'; _v1i.style.alignItems = 'center'; _v1i.style.justifyContent = 'center'; }
+                if (_v1t) { _v1t.textContent = _t('outdated'); _v1t.style.color = `rgb(var(--DH-orange))`; }
                 return;
             }
 
-            const _SVG_CONNECTING = `<svg class="DH_Spin_Ico" width="16" height="16" viewBox="0 0 297 297" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M294.853 178.121c-1.814-1.671-4.404-2.203-6.729-1.382l-25.97 9.168c17.558-70.878-24.569-143.07-94.69-161.569-34.475-9.094-70.423-4.215-101.225 13.737C35.438 56.028 13.475 84.901 4.397 119.377c-8.083 30.698-4.951 63.329 8.819 91.883 13.616 28.234 36.767 50.846 65.186 63.669 3.256 1.47 6.737 2.203 10.214 2.203 3.647 0 7.293-.807 10.672-2.418 6.59-3.141 11.435-8.99 13.293-16.047 3.086-11.721-2.756-23.89-13.893-28.937-37.335-16.923-56.844-58.027-46.387-97.737 5.7-21.65 19.508-39.794 38.878-51.089 19.372-11.295 41.963-14.378 63.611-8.675 44.273 11.659 70.99 56.813 60.113 101.108l-17.584-20.48c-1.612-1.878-4.135-2.705-6.544-2.152-2.412.555-4.318 2.401-4.948 4.794l-11.478 43.588c-.566 2.153-.02 4.447 1.457 6.112l40.428 45.603c1.785 2.012 4.604 2.752 7.144 1.882l57.644-19.78c2.106-.723 3.711-2.45 4.279-4.603l11.479-43.587c.635-2.412-.106-4.949-1.92-6.62z" fill="currentColor"/></svg>`;
-            const _SVG_CONNECTED = `<svg width="16" height="16" viewBox="0 0 921 921" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M648.5 794.6c-23.5 44.5-51.2 79.5-82.1 104.2-6.8 5.5-13.7 10.3-20.8 14.7 98.5-18.4 186-68.1 251.7-138.4-6.1-3.7-12.5-7.3-19.1-10.8-29.8-15.8-63.1-29.1-99.1-39.6-8.9 24.8-19.1 48.2-30.6 69.9zm-170.5-134.6c62.4 1.2 122.7 8.8 178.3 22.3C674.9 620.5 685.4 550.8 686.8 478H478V660zm0 242.5c22.8-3.5 45.1-13.9 66.6-31 27.2-21.7 51.7-53.1 73-93.3 10.3-19.4 19.5-40.4 27.6-62.6C593.1 703.2 536.6 696.2 478 695v207.5zM231 229.6c-37.8-11.2-73-25.2-104.5-41.9-9-4.8-17.7-9.7-26-14.9C40.8 247.4 3.8 340.9 0 443h199.2C200.7 367.2 211.6 294.5 231 229.6zm589.5-56.8c-8.3 5.1-16.9 10.1-26 14.9-31.5 16.7-66.7 30.7-104.5 41.9 19.4 64.9 30.3 137.6 31.8 213.4H921C917.2 340.9 880.2 247.4 820.5 172.8zM376.4 871.5c21.4 17.1 43.8 27.5 66.6 31V695c-58.6 1.2-115.1 8.2-167.2 20.6 8.1 22.2 17.3 43.1 27.6 62.6 21.3 40.2 45.9 71.6 73 93.3zM443 660V478H234.2c1.5 72.8 12 142.5 30.5 204.3C320.3 668.9 380.6 661.2 443 660zm-208.8-217H443V261c-62.4-1.2-122.7-8.8-178.3-22.3C246.2 300.5 235.6 370.2 234.2 443zm487.6 35c-1.5 75.8-12.4 148.5-31.8 213.4 37.8 11.2 73 25.2 104.5 41.9 9 4.8 17.7 9.7 26 14.9C880.2 673.6 917.2 580 921 478H721.8zM478 443h208.8c-1.5-72.8-12-142.5-30.5-204.3C600.7 252.2 540.4 259.8 478 261v182zm0-424.5V226c58.6-1.2 115.1-8.2 167.2-20.6-8.1-22.2-17.3-43.1-27.6-62.6-21.3-40.2-45.8-71.6-73-93.3C523.1 32.4 500.8 22 478 18.5zM123.7 145.9c6.1 3.7 12.5 7.3 19.1 10.8 29.8 15.8 63.1 29.1 99.1 39.6 8.9-24.8 19.1-48.2 30.6-69.9 23.5-44.5 51.2-79.5 82.1-104.2 6.8-5.5 13.7-10.3 20.8-14.7C276.9 25.9 189.4 75.6 123.7 145.9zM443 18.5c-22.8 3.5-45.1 13.9-66.6 31-27.2 21.7-51.7 53.1-73 93.3-10.3 19.4-19.5 40.4-27.6 62.6C327.9 217.8 384.4 224.8 443 226V18.5zm-316.6 714.8c31.5-16.7 66.7-30.7 104.5-41.9C211.5 626.5 200.6 553.8 199.1 478H0c3.8 102.1 40.8 195.6 100.5 270.2 8.2-5.1 16.8-10.1 25.9-14.9zm-2.7 41.8C189.4 845.1 276.9 894.8 375.4 913.2c-7-4.3-13.9-9.2-20.8-14.7C323.7 874.1 296 839 272.5 794.6c-11.5-21.7-21.7-45.1-30.6-69.9-35.9 10.6-69.2 23.9-99.1 39.6-6.6 3.5-13 7.1-19.1 10.8zm525.1-651.7c11.5 21.7 21.7 45.1 30.6 69.9 35.9-10.6 69.2-23.9 99.1-39.6 6.6-3.5 13-7.1 19.1-10.8C731.6 75.6 644.1 25.9 545.6 7.5c7 4.3 13.9 9.2 20.8 14.7 30.9 24.7 58.6 59.7 82.1 104.2z"/></svg>`;
-            const _SVG_ERROR = `<svg width="16" height="16" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M21.171 15.398l-5.912-9.854c-.776-1.293-1.963-2.033-3.259-2.033s-2.483.74-3.259 2.031l-5.912 9.856c-.786 1.309-.872 2.705-.235 3.83.636 1.126 1.878 1.772 3.406 1.772h12c1.528 0 2.77-.646 3.406-1.771.637-1.125.551-2.521-.235-3.831zm-9.171 2.151c-.854 0-1.55-.695-1.55-1.549 0-.855.695-1.551 1.55-1.551s1.55.696 1.55 1.551c0 .854-.696 1.549-1.55 1.549zm1.633-7.424c-.011.031-1.401 3.468-1.401 3.468-.038.094-.13.156-.231.156s-.193-.062-.231-.156l-1.391-3.438c-.09-.233-.129-.443-.129-.655 0-.965.785-1.75 1.75-1.75s1.75.785 1.75 1.75c0 .212-.039.422-.117.625z"/></svg>`;
+            const _SVG_CONNECTING = `<span class="DH_Spin_Ico" style="font-size:18px;line-height:1;">􀓞</span>`;
+            const _SVG_CONNECTED = `<span style="font-size:18px;line-height:1;">􀤆</span>`;
+            const _SVG_ERROR = `<span style="font-size:18px;line-height:1;">􀇿</span>`;
             const S = {
                 connecting: {
                     bg: `rgb(var(--color-eel,117,117,117),0.10)`,
@@ -3434,21 +4691,30 @@
             ico.style.display = 'flex';
             ico.style.alignItems = 'center';
             ico.style.justifyContent = 'center';
-            if (state === 'connected') document.getElementById('DH_User_Row').style.display = 'flex';
+            // Mirror to Solver page conn button
+            const _v1b = document.getElementById('DH_V1_Conn_Btn');
+            const _v1i = document.getElementById('DH_V1_Conn_Ico');
+            const _v1t = document.getElementById('DH_V1_Conn_Txt');
+            if (_v1b) { _v1b.style.background = S.bg; _v1b.style.outline = `2px solid ${S.outline}`; _v1b.style.outlineOffset = '-2px'; }
+            if (_v1i) { _v1i.innerHTML = S.svg; _v1i.style.color = S.tc; _v1i.style.display = 'flex'; _v1i.style.alignItems = 'center'; _v1i.style.justifyContent = 'center'; }
+            if (_v1t) { _v1t.textContent = S.t; _v1t.style.color = S.tc; }
+            if (state === 'connected') {
+                document.getElementById('DH_User_Row').style.display = 'flex';
+                // Pre-fetch leaderboard in background → instant open + early avatar update
+                if (!_lbCache && !_lbPrefetching) {
+                    _lbPrefetching = true;
+                    _fetchLeaderboard().then(lb => {
+                        _lbCache = lb; _lbPrefetching = false;
+                        if (lb) _updatePanelAvatar(lb);
+                    });
+                }
+            }
         }
 
         async function _checkVersionOnLoad() {
             try {
-                const r = await new Promise((res, rej) => GM_xmlhttpRequest({
-                    method: 'GET',
-                    url: `https://greasyfork.org/scripts/561041.json`,
-                    headers: {
-                        'Accept': 'application/json'
-                    },
-                    onload: r => res(r),
-                    onerror: () => rej(),
-                    timeout: 5000
-                }));
+                const r = await _dhFetch('GET', 'https://greasyfork.org/scripts/561041.json',
+                    null, { 'Accept': 'application/json' }, 5000);
                 if (r.status !== 200) return;
                 const data = JSON.parse(r.responseText);
                 const remoteVer = (data.version || '').trim();
@@ -3482,47 +4748,71 @@
             const main = document.getElementById('DH_Main');
             const box = document.getElementById('DH_Main_Box');
             const h = box.offsetHeight;
-            const icoVisible = document.getElementById('DH_Ico_Visible');
-            const icoHidden = document.getElementById('DH_Ico_Hidden');
+            const hideIco = document.getElementById('DH_Hide_Ico');
             const hideTxt = document.getElementById('DH_Hide_Txt');
             const hideBtn = document.getElementById('DH_Hide_Btn');
-            main.style.transition = '0.8s cubic-bezier(0.16,1,0.32,1)';
-            box.style.transition = '0.8s cubic-bezier(0.16,1,0.32,1)';
             const switchV1Btn = document.getElementById('DH_SwitchV1_Btn');
             const switchV2Btn = document.getElementById('DH_SwitchV2_Btn');
+            const EASE = '0.8s cubic-bezier(0.16,1,0.32,1)';
+            main.style.transition = EASE;
+            box.style.transition = `opacity ${EASE}, filter ${EASE}, transform ${EASE}`;
             if (val) {
-                if (switchV1Btn) switchV1Btn.style.display = 'none';
-                if (switchV2Btn) switchV2Btn.style.display = 'none';
+                if (switchV1Btn) {
+                    switchV1Btn.style.transition = `opacity 0.4s cubic-bezier(0.16,1,0.32,1), filter 0.4s cubic-bezier(0.16,1,0.32,1)`;
+                    switchV1Btn.style.opacity = '0';
+                    switchV1Btn.style.filter = 'blur(8px)';
+                    setTimeout(() => { switchV1Btn.style.display = 'none'; switchV1Btn.style.opacity = ''; switchV1Btn.style.filter = ''; switchV1Btn.style.transition = ''; }, 400);
+                }
+                if (switchV2Btn) {
+                    switchV2Btn.style.transition = `opacity 0.4s cubic-bezier(0.16,1,0.32,1), filter 0.4s cubic-bezier(0.16,1,0.32,1)`;
+                    switchV2Btn.style.opacity = '0';
+                    switchV2Btn.style.filter = 'blur(8px)';
+                    setTimeout(() => { switchV2Btn.style.display = 'none'; switchV2Btn.style.opacity = ''; switchV2Btn.style.filter = ''; switchV2Btn.style.transition = ''; }, 400);
+                }
                 hideBtn.style.background = `linear-gradient(0deg,rgba(var(--DH-blue),0.10),rgba(var(--DH-blue),0.10)),rgb(var(--color-snow),0.80)`;
                 hideBtn.style.outline = `2px solid rgba(var(--DH-blue),0.20)`;
-                if (icoVisible) icoVisible.style.display = 'none';
-                if (icoHidden) {
-                    icoHidden.style.display = '';
-                    icoHidden.querySelector('path').setAttribute('fill', 'rgb(var(--DH-blue))');
-                }
+                if (hideIco) { hideIco.textContent = '􀋮'; hideIco.style.color = 'rgb(var(--DH-blue))'; }
                 hideTxt.textContent = _t('show');
                 hideTxt.style.color = 'rgb(var(--DH-blue))';
                 main.style.bottom = `-${h-8}px`;
                 box.style.filter = 'blur(8px)';
                 box.style.opacity = '0';
+                box.style.transform = 'scale(0.96)';
             } else {
-                if (switchV1Btn) switchV1Btn.style.display = (!_v1Mode) ? '' : 'none';
-                if (switchV2Btn) switchV2Btn.style.display = (_v1Mode) ? '' : 'none';
+                if (switchV1Btn && !_v1Mode) {
+                    switchV1Btn.style.display = '';
+                    switchV1Btn.style.opacity = '0';
+                    switchV1Btn.style.filter = 'blur(8px)';
+                    switchV1Btn.style.transition = `opacity 0.5s cubic-bezier(0.16,1,0.32,1), filter 0.5s cubic-bezier(0.16,1,0.32,1)`;
+                    void switchV1Btn.offsetWidth;
+                    switchV1Btn.style.opacity = '';
+                    switchV1Btn.style.filter = '';
+                    setTimeout(() => { switchV1Btn.style.transition = ''; }, 500);
+                }
+                if (switchV2Btn && _v1Mode) {
+                    switchV2Btn.style.display = '';
+                    switchV2Btn.style.opacity = '0';
+                    switchV2Btn.style.filter = 'blur(8px)';
+                    switchV2Btn.style.transition = `opacity 0.5s cubic-bezier(0.16,1,0.32,1), filter 0.5s cubic-bezier(0.16,1,0.32,1)`;
+                    void switchV2Btn.offsetWidth;
+                    switchV2Btn.style.opacity = '';
+                    switchV2Btn.style.filter = '';
+                    setTimeout(() => { switchV2Btn.style.transition = ''; }, 500);
+                }
                 hideBtn.style.background = `rgb(var(--DH-blue))`;
                 hideBtn.style.outline = `2px solid rgba(0,0,0,0.20)`;
-                if (icoHidden) icoHidden.style.display = 'none';
-                if (icoVisible) {
-                    icoVisible.style.display = '';
-                }
+                if (hideIco) { hideIco.textContent = '􀋰'; hideIco.style.color = '#fff'; }
                 hideTxt.textContent = _t('hide');
                 hideTxt.style.color = '#fff';
                 main.style.bottom = '16px';
                 box.style.filter = '';
                 box.style.opacity = '';
+                box.style.transform = 'scale(1)';
             }
             setTimeout(() => {
                 main.style.transition = '';
                 box.style.transition = '';
+                box.style.transform = '';
                 _animBusy = false;
             }, 800);
         }
@@ -3541,13 +4831,32 @@
                 return;
             }
             const oldH = box.offsetHeight;
+            const oldW = box.offsetWidth;
             fromEl.style.display = 'none';
             toEl.classList.add('active');
             toEl.style.opacity = '0';
+            // Pre-render content BEFORE measuring height so animation uses correct size
+            if (to === 11) {
+                box.style.width = '357px';
+                if (_lbCache) _renderLeaderboard(_lbCache);
+                else {
+                    const lbList = document.getElementById('DH_LB_List');
+                    if (lbList) lbList.innerHTML = `<p class="DH_T2 DH_NoSel" style="text-align:center;padding:16px 0;">${_t('lb_loading')}</p>`;
+                }
+            } else if (to === 12) {
+                box.style.width = '357px';
+                _renderReactionPicker();
+            } else if (to === 4) {
+                box.style.width = '340px';
+            } else {
+                box.style.width = '';
+            }
             const newH = box.offsetHeight;
+            const newW = box.offsetWidth;
             toEl.classList.remove('active');
             toEl.style.opacity = '';
             fromEl.style.display = '';
+            box.style.width = oldW + 'px';
             box.style.height = oldH + 'px';
             box.style.transition = 'height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
             fromEl.style.transition = 'opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), filter 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)';
@@ -3556,6 +4865,7 @@
             fromEl.style.transform = 'scale(0.96)';
             requestAnimationFrame(() => {
                 box.style.height = newH + 'px';
+                box.style.width = newW + 'px';
             });
             setTimeout(() => {
                 fromEl.classList.remove('active');
@@ -3572,22 +4882,20 @@
                 _pageHistory.push(to);
                 _curPage = to;
                 if (to === 2) {
-
                     const lgB = document.getElementById('DH_League_Btn');
                     const qB = document.getElementById('DH_Quest_Btn');
                     if (_user && lgB) lgB.disabled = false;
                     if (_user && qB) qB.disabled = false;
                 }
-                if (to === 4) {
+                if (to === 11) {
+                    _fetchLeaderboard().then(lb => { _lbCache = lb; _renderLeaderboard(lb); });
+                } else if (to === 4) {
                     const delI = document.getElementById('DH_Delay_Input');
                     if (delI) delI.value = _delay;
-                    box.style.width = '340px';
-                } else {
-                    box.style.width = '';
                 }
-                // Đã preload rồi nên không cần load lại khi chuyển page
                 setTimeout(() => {
                     box.style.height = '';
+                    box.style.width = '';
                     box.style.transition = '';
                     toEl.style.cssText = '';
                     _pageBusy = false;
@@ -3603,34 +4911,204 @@
             _goPage(prev);
         }
 
-        let _nTimer;
+        let _notifCount = 0;
+        let _currentNotif = [];
+        let _notifsHovered = false;
+
+        const _notifMain = document.querySelector('.DH_Notif_Main');
+        _notifMain.addEventListener('mouseenter', () => { _notifsHovered = true; });
+        _notifMain.addEventListener('mouseleave', () => { _notifsHovered = false; });
+
+        const _notifHTML = `<div class="DH_Notif_Box">
+    <div class="DH_HStack_4" style="align-items: center;">
+        <p class="DH_T1 DH_NoSel DH_Notif_Icon_1"></p>
+        <p class="DH_T1 DH_NoSel DH_Notif_Text_1" style="flex: 1 0 0;"></p>
+        <p class="DH_T1 DH_NoSel DH_Notif_Close" style="align-self: stretch; cursor: pointer; transition: filter 0.4s cubic-bezier(0.16, 1, 0.32, 1), transform 0.4s cubic-bezier(0.16, 1, 0.32, 1);">􀆄</p>
+    </div>
+    <p class="DH_T2 DH_NoSel DH_Notif_Text_2" style="color: rgb(var(--color-wolf), 0.4); align-self: stretch; overflow-wrap: break-word;"></p>
+</div>`;
 
         function _notif(icon, title, body, dur = 5) {
-            const box = document.getElementById('DH_Notif_Box');
-            document.getElementById('DH_Notif_Icon').textContent = icon;
-            document.getElementById('DH_Notif_Title').textContent = title;
-            document.getElementById('DH_Notif_Body').textContent = body;
-            box.classList.add('show');
-            clearTimeout(_nTimer);
-            _nTimer = setTimeout(() => box.classList.remove('show'), dur * 1000);
+            _notifCount++;
+            let notifID = _notifCount;
+            _currentNotif.push(notifID);
+
+            let element = new DOMParser().parseFromString(_notifHTML, 'text/html').body.firstChild;
+            element.id = 'DH_Notif_Box_' + notifID;
+            _notifMain.appendChild(element);
+
+            let iconEl = element.querySelector('.DH_Notif_Icon_1');
+            if (icon === '') {
+                iconEl.style.display = 'none';
+            } else if (icon === 'checkmark') {
+                iconEl.style.color = 'rgb(var(--DLP-green))';
+                iconEl.textContent = '􀁣';
+            } else if (icon === 'warning') {
+                iconEl.style.color = 'rgb(var(--DLP-orange))';
+                iconEl.textContent = '􀁟';
+            } else if (icon === 'error') {
+                iconEl.style.color = 'rgb(var(--DLP-pink))';
+                iconEl.textContent = '􀇿';
+            } else if (typeof icon === 'object') {
+                iconEl.style.color = icon.color;
+                iconEl.textContent = icon.icon;
+            } else {
+                iconEl.textContent = icon;
+            }
+
+            element.querySelector('.DH_Notif_Text_1').innerHTML = title;
+            let bodyEl = element.querySelector('.DH_Notif_Text_2');
+            if (body && body !== '') {
+                bodyEl.innerHTML = body;
+            } else {
+                bodyEl.style.display = 'none';
+            }
+
+            let notification = document.querySelector('#DH_Notif_Box_' + notifID);
+            let notificationHeight = notification.offsetHeight;
+            notification.style.bottom = '-' + notificationHeight + 'px';
+
+            setTimeout(() => {
+                requestAnimationFrame(() => {
+                    notification.style.bottom = '16px';
+                    notification.style.filter = 'blur(0px)';
+                    notification.style.opacity = '1';
+                });
+            }, 50);
+
+            let isBusyDisappearing = false;
+
+            let timerData = null;
+            if (dur !== 0) {
+                timerData = {
+                    remaining: dur * 1000,
+                    lastTimestamp: Date.now(),
+                    timeoutHandle: null,
+                    paused: false,
+                };
+                timerData.timeoutHandle = setTimeout(internalDisappear, timerData.remaining);
+            }
+
+            let repeatInterval = setInterval(() => {
+                if (document.body.offsetWidth <= 963) {
+                    requestAnimationFrame(() => {
+                        _notifMain.style.width = '300px';
+                        _notifMain.style.position = 'fixed';
+                        _notifMain.style.left = '16px';
+                    });
+                } else {
+                    requestAnimationFrame(() => {
+                        _notifMain.style.width = '';
+                        _notifMain.style.position = '';
+                        _notifMain.style.left = '';
+                    });
+                }
+
+                if (isBusyDisappearing) return;
+
+                if (timerData) {
+                    if (_notifsHovered && !timerData.paused) {
+                        clearTimeout(timerData.timeoutHandle);
+                        let elapsed = Date.now() - timerData.lastTimestamp;
+                        timerData.remaining -= elapsed;
+                        timerData.paused = true;
+                    }
+                    if (!_notifsHovered && timerData.paused) {
+                        timerData.paused = false;
+                        timerData.lastTimestamp = Date.now();
+                        timerData.timeoutHandle = setTimeout(internalDisappear, timerData.remaining);
+                    }
+                }
+
+                if (_notifsHovered) {
+                    let allIDs = _currentNotif.slice();
+                    let bottoms = {};
+                    let currentBottom = 16;
+                    for (let i = allIDs.length - 1; i >= 0; i--) {
+                        let notifEl = document.querySelector('#DH_Notif_Box_' + allIDs[i]);
+                        if (!notifEl) continue;
+                        notifEl.style.width = '';
+                        notifEl.style.height = '';
+                        notifEl.style.transform = '';
+                        bottoms[allIDs[i]] = currentBottom;
+                        currentBottom += notifEl.offsetHeight + 8;
+                    }
+                    notification.style.bottom = bottoms[notifID] + 'px';
+
+                    let totalHeight = 0;
+                    for (let i = 0; i < allIDs.length; i++) {
+                        let notifEl = document.querySelector('#DH_Notif_Box_' + allIDs[i]);
+                        if (notifEl) totalHeight += notifEl.offsetHeight;
+                    }
+                    if (allIDs.length > 1) totalHeight += (allIDs.length - 1) * 8;
+                    _notifMain.style.height = totalHeight + 'px';
+                } else {
+                    _notifMain.style.height = '';
+                    notification.style.bottom = '16px';
+                    if (_currentNotif[_currentNotif.length - 1] !== notifID) {
+                        notification.style.height = notificationHeight + 'px';
+                        requestAnimationFrame(() => {
+                            let latestNotif = document.querySelector(
+                                '#DH_Notif_Box_' + String(_currentNotif[_currentNotif.length - 1])
+                            );
+                            if (latestNotif) {
+                                notification.style.height = latestNotif.offsetHeight + 'px';
+                            }
+                            notification.style.width = '284px';
+                            notification.style.transform = 'translateY(-8px)';
+                        });
+                    } else {
+                        requestAnimationFrame(() => {
+                            notification.style.height = notificationHeight + 'px';
+                            notification.style.width = '';
+                            notification.style.transform = '';
+                        });
+                    }
+                }
+            }, 20);
+
+            function internalDisappear() {
+                if (timerData && timerData.timeoutHandle) clearTimeout(timerData.timeoutHandle);
+                if (isBusyDisappearing) return;
+                isBusyDisappearing = true;
+                _currentNotif.splice(_currentNotif.indexOf(notifID), 1);
+
+                requestAnimationFrame(() => {
+                    notification.style.bottom = '-' + notificationHeight + 'px';
+                    notification.style.filter = 'blur(16px)';
+                    notification.style.opacity = '0';
+                });
+                clearInterval(repeatInterval);
+                setTimeout(() => {
+                    notification.remove();
+                    if (_currentNotif.length === 0) {
+                        _notifMain.style.height = '';
+                    }
+                }, 800);
+            }
+
+            notification.querySelector('.DH_Notif_Close').addEventListener('click', internalDisappear);
+
+            return { close: internalDisappear };
         }
 
         async function _connect() {
+            _panelAvatarLoaded = false;
             _setConn('connecting');
             _jwt = _getJwt();
             if (!_jwt) {
-                _setConn('error', 'Not logged in');
+                _setConn('error', _t('conn_not_logged_in'));
                 return;
             }
             const dec = _decodeJwt(_jwt);
             if (!dec) {
-                _setConn('error', 'Invalid token');
+                _setConn('error', _t('conn_invalid_token'));
                 return;
             }
             _sub = dec.sub;
             _hdrs = _buildHdrs(_jwt);
             try {
-                const r = await _gm('GET', `https://www.duolingo.com/2017-06-30/users/${_sub}?fields=id,username,fromLanguage,learningLanguage,streak,totalXp,gems,picture,streakData`);
+                const r = await _gm('GET', `https://www.duolingo.com/2017-06-30/users/${_sub}?fields=id,username,fromLanguage,learningLanguage,streak,totalXp,gems,picture,streakData,timezone`);
                 if (r.status !== 200) throw new Error(r.status);
                 _user = JSON.parse(r.responseText);
                 unsafeWindow._dhUser = _user;
@@ -3641,7 +5119,7 @@
                     _applyHideProfileToggle();
                 });
                 _v1FetchSkillId();
-                ['DH_XP_Btn', 'DH_Gem_Btn', 'DH_Streak_Btn', 'DH_League_Btn', 'DH_Quest_Btn', 'DH_Practice_Btn', 'DH_V1_XP_Btn', 'DH_V1_Gem_Btn', 'DH_V1_Streak_Btn', 'DH_Super_Activate_Btn', 'DH_V1_Super_Activate_Btn'].forEach(id => {
+                ['DH_XP_Btn', 'DH_Gem_Btn', 'DH_Streak_Btn', 'DH_League_Btn', 'DH_Quest_Btn', 'DH_Practice_Btn'].forEach(id => {
                     const b = document.getElementById(id);
                     if (b) b.disabled = false;
                 });
@@ -3657,9 +5135,11 @@
                     _renderAccounts(); // Load account manager
                     _loadMonthlyQuests(); // Load monthly quests
                     _loadLicense(); // Load license
+                    // Prefetch leaderboard so page 11 opens instantly
+                    _fetchLeaderboard().then(lb => { _lbCache = lb; }).catch(() => {});
                 }, 500);
             } catch (e) {
-                _setConn('error', 'Failed — retrying');
+                _setConn('error', _t('conn_failed_retry'));
                 setTimeout(_connect, 8000);
             }
         }
@@ -3671,58 +5151,172 @@
             document.getElementById('DH_UXP').textContent = (u.totalXp || 0).toLocaleString();
             document.getElementById('DH_UGems').textContent = (u.gems || 0).toLocaleString();
             document.getElementById('DH_UStreak').textContent = (u.streak || 0).toLocaleString();
-            if (u.picture) {
-                let hq = u.picture.replace(/\/(medium|large|small)$/, '/xlarge');
-                if (!hq.endsWith('/xlarge') && hq.includes('duolingo.com/ssr-avatars')) hq += '/xlarge';
-                const av = document.getElementById('DH_Avatar');
+            const av = document.getElementById('DH_Avatar');
+            const bestUrl = _bestAvatarUrl(u.picture, _sub); // always returns a valid URL now
+            // Skip re-render if avatar already loaded (img present and not broken)
+            const existingImg = av && av.querySelector('img');
+if (av && (!existingImg || existingImg.src !== bestUrl)) {
                 const avImg = document.createElement('img');
-                avImg.src = hq;
+                avImg.src = bestUrl;
                 avImg.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;';
                 avImg.draggable = false;
-                avImg.onerror = function() {
-                    av.innerHTML = '👤';
-                };
-                av.innerHTML = '';
-                av.appendChild(avImg);
+                avImg.addEventListener('error', function() {
+                    // primary URL failed — try leaderboard blob, then hard default
+                    const lbUrl = _bestAvatarUrl('', _sub);
+                    if (lbUrl && lbUrl !== bestUrl) {
+                        const fb = document.createElement('img');
+                        fb.src = lbUrl;
+                        fb.style.cssText = avImg.style.cssText;
+                        fb.draggable = false;
+                        fb.addEventListener('error', function() {
+                            const def = document.createElement('img');
+                            def.src = _AVATAR_DEFAULT_URL;
+                            def.style.cssText = avImg.style.cssText;
+                            def.draggable = false;
+                            av.replaceChildren(def);
+                        });
+                        av.replaceChildren(fb);
+                    } else {
+                        const def = document.createElement('img');
+                        def.src = _AVATAR_DEFAULT_URL;
+                        def.style.cssText = avImg.style.cssText;
+                        def.draggable = false;
+                        av.replaceChildren(def);
+                    }
+                });
+                av.replaceChildren(avImg);
             }
         }
 
         async function _farmXP(txp) {
-            const MIN = 30,
-                MAX = 499;
-            let loops = Math.floor(txp / MAX),
-                rem = txp % MAX;
-            if (rem > 0 && rem < MIN && loops > 0) {
-                loops--;
-                rem += MAX;
-            }
-            const total = loops + (rem >= MIN ? 1 : 0);
-            let cur = 0,
-                earned = 0;
+            const MIN = 30, MAX = 499;
+            const _isInfXP = txp >= 99999;
+            let cur = 0, earned = 0, consecutiveFailures = 0;
+            const xpBefore = _user?.totalXp || 0;
             _setBtnRunning('DH_XP_Btn');
-            for (let i = 0; i < loops; i++) {
-                if (!_running) break;
-                const ok = await _storyXP(469);
-                if (ok) {
-                    earned += MAX;
-                    cur++;
+            function _xpLive() {
+                const inp = document.getElementById('DH_XP_Input');
+                const wrap = document.getElementById('DH_XP_Input_Wrap');
+                if (inp) {
+                    inp.type = 'text';
+                    inp.readOnly = true;
+                    inp.style.pointerEvents = 'none';
+                    inp.value = earned > 0 ? '+' + earned.toLocaleString() + ' XP' : '...';
                 }
-                _setBtnProgress('DH_XP_Btn', Math.floor((cur / total) * 100));
-                await _sleep(_delay);
+                if (wrap) wrap.style.opacity = '1';
             }
-            if (rem >= MIN && _running) {
-                const ok = await _storyXP(Math.min(rem - MIN, 469));
-                if (ok) {
-                    earned += rem;
-                    cur++;
+            function _xpLiveReset() {
+                const inp = document.getElementById('DH_XP_Input');
+                const wrap = document.getElementById('DH_XP_Input_Wrap');
+                if (inp) { inp.type = 'number'; inp.readOnly = false; inp.style.pointerEvents = ''; inp.value = ''; }
+                if (wrap) wrap.style.opacity = '';
+            }
+
+            // Outer loop: after inner loop finishes, server-verify actual XP.
+            // If server confirmed < target (server sometimes awards less than awardedXp field suggests),
+            // update earned to server value and re-enter inner loop to farm the remaining gap.
+            outer:
+            while (_running) {
+                // Inner loop: farm based on local earned estimate
+                while (_running) {
+                    if (!_isInfXP && earned >= txp) break;
+
+                    const remaining = _isInfXP ? Infinity : txp - earned;
+                    if (!_isInfXP && remaining < MIN) break;
+
+                    let nextAmount;
+                    if (_isInfXP || remaining >= MAX) {
+                        nextAmount = MAX;
+                        if (!_isInfXP) {
+                            const r = remaining % MAX;
+                            if (r > 0 && r < MIN) nextAmount = MAX - (MIN - r);
+                        }
+                    } else {
+                        nextAmount = remaining;
+                    }
+                    if (nextAmount < MIN) nextAmount = MIN;
+
+                    const bonus = Math.max(0, nextAmount - MIN);
+                    const awarded = await _storyXP(bonus);
+
+                    if (!_running) break outer;
+
+                    if (awarded > 0) {
+                        consecutiveFailures = 0;
+                        earned += awarded;
+                        cur++;
+                        if (_user) { _user.totalXp = (_user.totalXp || 0) + awarded; _renderUser(_user); }
+                        if (!_isInfXP && earned >= txp) break;
+                    } else {
+                        consecutiveFailures++;
+                        if (consecutiveFailures >= 5) {
+                            _notif('❌', _t('notif_xp_done_title'), 'Rate-limited. Stopping.');
+                            _running = false;
+                            break outer;
+                        }
+                        await _sleep(2000);
+                        continue;
+                    }
+
+                    if (_isInfXP) { _xpLive(); }
+                    else { _setBtnProgress('DH_XP_Btn', Math.floor(Math.min(100, (earned / txp) * 100))); }
+
+                    await _sleep(_delay);
                 }
-                _setBtnProgress('DH_XP_Btn', 100);
+
+                // Infinite mode or stopped — skip verify, exit
+                if (!_running || _isInfXP) break;
+
+                // Server verify: check actual XP applied vs local estimate.
+                // Server can apply less XP than awardedXp response field → gap.
+                if (_sub && _jwt) {
+                    try {
+                        const vr = await _gm('GET', `https://www.duolingo.com/2017-06-30/users/${_sub}?fields=totalXp,gems`);
+                        if (vr.status === 200) {
+                            const vd = JSON.parse(vr.responseText);
+                            const serverGained = Math.max(0, (vd.totalXp || 0) - xpBefore);
+                            if (_user) { _user.totalXp = vd.totalXp || _user.totalXp; _user.gems = vd.gems ?? _user.gems; _renderUser(_user); }
+
+                            if (serverGained >= txp) { earned = serverGained; break outer; }
+
+                            const gap = txp - serverGained;
+                            if (gap < MIN) { earned = serverGained; break outer; }
+
+                            // Server confirmed less — reset earned to actual, re-enter inner loop
+                            earned = serverGained;
+                            continue outer;
+                        }
+                    } catch {}
+                }
+                break outer; // verify failed, accept local count
+            }
+
+            // Final server sync for accurate notification
+            if (earned > 0 && _sub && _jwt) {
+                try {
+                    const vr = await _gm('GET', `https://www.duolingo.com/2017-06-30/users/${_sub}?fields=totalXp,gems`);
+                    if (vr.status === 200) {
+                        const vd = JSON.parse(vr.responseText);
+                        const serverGained = Math.max(0, (vd.totalXp || 0) - xpBefore);
+                        if (serverGained > 0) earned = serverGained;
+                        if (_user) { _user.totalXp = vd.totalXp || _user.totalXp; _user.gems = vd.gems ?? _user.gems; _renderUser(_user); }
+                    }
+                } catch {}
             }
             if (_running) {
+                _xpLiveReset();
                 _setBtnDone('DH_XP_Btn', _t('btn_done'));
-                _notif('✅', 'XP Farm Done!', `Farmed ${earned} XP in ${cur} loops.`);
+                _notif('✅', _t('notif_xp_done_title'), _t('notif_xp_done_body', earned.toLocaleString(), cur));
                 setTimeout(_connect, 1500);
                 setTimeout(() => _resetBtn('DH_XP_Btn', _t('btn_get')), 3000);
+            } else {
+                _xpLiveReset();
+                if (_isInfXP) {
+                    if (earned > 0) _notif('✅', _t('notif_xp_done_title'), _t('notif_xp_done_inf_body', earned.toLocaleString()));
+                } else {
+                    if (earned > 0) _notif('⏹️', _t('notif_xp_stopped_title'), _t('notif_xp_stopped_body', earned.toLocaleString()));
+                }
+                _resetBtn('DH_XP_Btn', _t('btn_get'));
             }
         }
 
@@ -3748,9 +5342,11 @@
                     startTime: now,
                     endTime: now + dur
                 });
-                return r.status === 200;
+                if (r.status !== 200) return 0;
+                const d = JSON.parse(r.responseText);
+                return typeof d.awardedXp === 'number' ? d.awardedXp : 0;
             } catch {
-                return false;
+                return 0;
             }
         }
 
@@ -3823,14 +5419,14 @@
         // ── Gem Farm Helpers (ported from GemHelper) ──────────────────────────────
         async function _fetchGemRewards() {
             try {
-                const response = await fetch(`https://www.duolingo.com/2023-05-23/users/${_sub}?fields=rewardBundles`, {
+                const response = await fetch(`https://www.duolingo.com/2023-05-23/users/${_sub}?fields=rewardBundles{rewards}`, {
                     headers: {
                         'authorization': `Bearer ${_jwt}`,
                         'content-type': 'application/json'
                     }
                 });
 
-                if (!response.ok) return [];
+                if (!response.ok) return null;
 
                 const data = await response.json();
                 const bundles = data.rewardBundles || [];
@@ -3838,7 +5434,10 @@
                 const gemRewards = [];
                 for (const bundle of bundles) {
                     for (const reward of bundle.rewards || []) {
-                        if (!reward.consumed && (reward.id.includes('GEMS') || reward.currency === 'GEMS')) {
+                        if (!reward.consumed && (
+                            (reward.id || '').startsWith('SKILL_COMPLETION-') ||
+                            (reward.id || '').startsWith('SKILL_COMPLETION_BALANCED-')
+                        )) {
                             gemRewards.push({
                                 id: reward.id,
                                 amount: reward.amount || 0
@@ -3849,7 +5448,7 @@
 
                 return gemRewards;
             } catch (e) {
-                return [];
+                return null;
             }
         }
 
@@ -3857,26 +5456,14 @@
             const body = {
                 consumed: true,
                 fromLanguage: _user.fromLanguage,
-                learningLanguage: _user.learningLanguage,
-                pathLevelSpecifics: {
-                    anchorSkillId: 'f22fd38157eea63965dc39eeac3c40c1',
-                    indexSinceAnchorSkill: 0,
-                    treeId: '14b1a2672c1bb3b250ebaa31b86c343e',
-                    nodeState: 'active'
-                }
+                learningLanguage: _user.learningLanguage
             };
             try {
-                // Use native fetch like Gem Helper instead of _gm wrapper
                 const response = await fetch(`https://www.duolingo.com/2023-05-23/users/${_sub}/rewards/${rewardId}`, {
                     method: 'PATCH',
                     headers: {
                         'authorization': `Bearer ${_jwt}`,
-                        'content-type': 'application/json',
-                        'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36',
-                        'x-amzn-trace-id': `User=${_sub}`,
-                        'x-requested-with': 'XMLHttpRequest',
-                        'referer': 'https://www.duolingo.com/learn',
-                        'origin': 'https://www.duolingo.com'
+                        'content-type': 'application/json'
                     },
                     body: JSON.stringify(body)
                 });
@@ -3916,119 +5503,241 @@
             if (gemInput) gemInput.value = '';
 
             let totalGained = 0;
+            let consecutiveFailures = 0;
+
+            // Fetch baseline once — used as "gemsBefore" for first batch
+            let prevGems = await _getGemCount();
+
+            // Pre-fetch first rewards batch so loop starts immediately
+            let nextRewardsPromise = _fetchGemRewards();
 
             outer:
                 while (_running && _task === 'gem') {
-                    const rewards = await _fetchGemRewards();
+                    const rewards = await nextRewardsPromise;
+
+                    if (rewards === null) {
+                        consecutiveFailures++;
+                        if (consecutiveFailures >= 5) {
+                            _notif('❌', _t('notif_gem_farm_title'), 'Rate-limited. Stopping.');
+                            break;
+                        }
+                        await _sleep(3000);
+                        nextRewardsPromise = _fetchGemRewards();
+                        continue;
+                    }
+                    consecutiveFailures = 0;
 
                     if (rewards.length === 0) {
                         await _sleep(Math.max(200, _delay));
+                        nextRewardsPromise = _fetchGemRewards();
                         continue;
                     }
 
-                    const gemsBefore = await _getGemCount() ?? (_user?.gems ?? 0);
+                    // Claim all rewards in parallel
+                    const results = await Promise.all(rewards.map(r => _exploitGemReward(r.id)));
+                    if (!_running || _task !== 'gem') break outer;
 
-                    // Fire all rewards in parallel batches — no inter-batch delay
-                    for (let i = 0; i < rewards.length; i += THREADS) {
-                        if (!_running || _task !== 'gem') break outer;
-                        const batch = rewards.slice(i, i + THREADS);
-                        await Promise.all(batch.map(r => _exploitGemReward(r.id)));
+                    // Pipeline: fetch next rewards + verify gem delta simultaneously
+                    const [gemsAfter] = await Promise.all([
+                        _getGemCount(),
+                        // Kick off next rewards fetch in background (result assigned below)
+                        (nextRewardsPromise = _fetchGemRewards(), Promise.resolve())
+                    ]);
+
+                    let batchGained = 0;
+                    if (prevGems !== null && gemsAfter !== null) {
+                        // Ground truth: delta from API (prevGems = gemsAfter of last batch)
+                        batchGained = Math.max(0, gemsAfter - prevGems);
+                    } else {
+                        // Fallback: use reward.amount if API unavailable
+                        results.forEach((ok, i) => { if (ok) batchGained += rewards[i].amount || 0; });
                     }
 
-                    // Single gem count check after full pass — avoids extra API calls
-                    const now = await _getGemCount();
-                    if (now !== null) {
-                        const gained = Math.max(0, now - gemsBefore);
-                        totalGained += gained;
+                    if (gemsAfter !== null) prevGems = gemsAfter;
+
+                    if (batchGained > 0) {
+                        totalGained += batchGained;
                         if (gemInput) gemInput.value = String(totalGained);
                         if (_user) {
-                            _user.gems = now;
+                            _user.gems = gemsAfter !== null ? gemsAfter : (_user.gems || 0) + batchGained;
                             _renderUser(_user);
                         }
                     }
 
-                    // Short cooldown before next pass
-                    await _sleep(Math.max(200, _delay / 2));
+                    // Minimal cooldown — next rewards already in-flight
+                    if (_delay > 80) await _sleep(_delay / 4);
                 }
 
             // Always reset button after farm ends (stopped or done)
             _setBtnState('DH_Gem_Btn', _C_BLUE, _t('btn_run'));
             if (btn) btn.disabled = !_user;
             if (totalGained > 0) {
-                _notif('✅', 'Gem Farm Done!', `+${totalGained} gems gained.`);
+                _notif('✅', _t('notif_gem_done_title'), _t('notif_gem_done_body', totalGained.toLocaleString()));
                 setTimeout(_connect, 1500);
             }
         }
 
 
+
+        // ── Timezone helpers ───────────────────────────────────────────────────────
+        function _accountTimezone() {
+            return (_user && _user.timezone) ? _user.timezone : 'America/New_York';
+        }
+
+        function _tzParts(timeZone, date) {
+            const dtf = new Intl.DateTimeFormat('en-US', {
+                timeZone, hourCycle: 'h23',
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
+            });
+            const out = {};
+            dtf.formatToParts(date).forEach(p => { if (p.type !== 'literal') out[p.type] = p.value; });
+            return out;
+        }
+
+        function _wallClockToSeconds(timeZone, year, month, day, hour, minute, second) {
+            const guess = Date.UTC(year, month - 1, day, hour, minute, second);
+            const parts = _tzParts(timeZone, new Date(guess));
+            const localAsUtc = Date.UTC(+parts.year, +parts.month - 1, +parts.day,
+                                        +parts.hour, +parts.minute, +parts.second);
+            return Math.floor((guess - (localAsUtc - guess)) / 1000);
+        }
+
+        function _accountToday(timeZone) {
+            const p = _tzParts(timeZone, new Date());
+            return { year: +p.year, month: +p.month, day: +p.day };
+        }
+        // ────────────────────────────────────────────────────────────────────────
+
+
         async function _farmStreak(days) {
-            const CH = ["assist", "characterIntro", "characterMatch", "characterPuzzle", "characterSelect", "characterTrace", "characterWrite", "completeReverseTranslation", "definition", "dialogue", "extendedMatch", "extendedListenMatch", "form", "freeResponse", "gapFill", "judge", "listen", "listenComplete", "listenMatch", "match", "name", "listenComprehension", "listenIsolation", "listenSpeak", "listenTap", "orderTapComplete", "partialListen", "partialReverseTranslate", "patternTapComplete", "radioBinary", "radioImageSelect", "radioListenMatch", "radioListenRecognize", "radioSelect", "readComprehension", "reverseAssist", "sameDifferent", "select", "selectPronunciation", "selectTranscription", "svgPuzzle", "syllableTap", "syllableListenTap", "speak", "tapCloze", "tapClozeTable", "tapComplete", "tapCompleteTable", "tapDescribe", "translate", "transliterate", "transliterationAssist", "typeCloze", "typeClozeTable", "typeComplete", "typeCompleteTable", "writeComprehension"];
-            let farmStart;
-            try {
-                const s = new Date(_user.streakData?.currentStreak?.startDate || Date.now());
-                s.setDate(s.getDate() - 1);
-                farmStart = s;
-            } catch {
-                const n = new Date();
-                n.setDate(n.getDate() - 1);
-                farmStart = n;
+            const CH = ["assist","characterIntro","characterMatch","characterPuzzle","characterSelect","characterTrace","characterWrite","completeReverseTranslation","definition","dialogue","extendedMatch","extendedListenMatch","form","freeResponse","gapFill","judge","listen","listenComplete","listenMatch","match","name","listenComprehension","listenIsolation","listenSpeak","listenTap","orderTapComplete","partialListen","partialReverseTranslate","patternTapComplete","radioBinary","radioImageSelect","radioListenMatch","radioListenRecognize","radioSelect","readComprehension","reverseAssist","sameDifferent","select","selectPronunciation","selectTranscription","svgPuzzle","syllableTap","syllableListenTap","speak","tapCloze","tapClozeTable","tapComplete","tapCompleteTable","tapDescribe","translate","transliterate","transliterationAssist","typeCloze","typeClozeTable","typeComplete","typeCompleteTable","writeComprehension"];
+
+            // Timezone-aware base date
+            const tz = _accountTimezone();
+            let base;
+            const dateStr = _user?.streakData?.currentStreak?.startDate;
+            if (dateStr && /^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+                const [y, m, d] = dateStr.split('-').map(Number);
+                base = { year: y, month: m, day: d };
+            } else {
+                base = _accountToday(tz);
+            }
+
+            let doneLoops = 0, savedDays = 0;
+            const _isInfSt = days >= 9999;
+            function _stLive() {
+                const inp = document.getElementById('DH_Streak_Input');
+                const wrap = document.getElementById('DH_Streak_Input_Wrap');
+                if (inp) {
+                    inp.type = 'text';
+                    inp.readOnly = true;
+                    inp.style.pointerEvents = 'none';
+                    inp.value = savedDays > 0 ? '+' + savedDays + ' ' + _t(savedDays === 1 ? 'streak_day' : 'streak_days') : '...';
+                }
+                if (wrap) wrap.style.opacity = '1';
+            }
+            function _stLiveReset() {
+                const inp = document.getElementById('DH_Streak_Input');
+                const wrap = document.getElementById('DH_Streak_Input_Wrap');
+                if (inp) { inp.type = 'number'; inp.readOnly = false; inp.style.pointerEvents = ''; inp.value = ''; }
+                if (wrap) wrap.style.opacity = '';
             }
             _setBtnRunning('DH_Streak_Btn');
-            for (let i = 0; i < days; i++) {
-                if (!_running) break;
-                _setBtnProgress('DH_Streak_Btn', Math.floor((i / days) * 100));
-                const simDay = new Date(farmStart);
-                simDay.setDate(simDay.getDate() - i);
-                const end = Math.floor(simDay.getTime() / 1000);
+
+            let streakFailures = 0;
+            while (_running && doneLoops < days) {
+                if (_isInfSt) { _stLive(); }
+                else { _setBtnProgress('DH_Streak_Btn', Math.floor((doneLoops / days) * 100)); }
+
+                // endTime = 12:00:00 of (base - 1 - doneLoops) theo timezone tài khoản
+                const endSecs = _wallClockToSeconds(
+                    tz, base.year, base.month, base.day - 1 - doneLoops, 12, 0, 0
+                );
+
                 let sess = null;
-                await new Promise(r => GM_xmlhttpRequest({
-                    method: 'POST',
-                    url: 'https://www.duolingo.com/2017-06-30/sessions',
-                    headers: _hdrs,
-                    data: JSON.stringify({
+                {
+                    const _sr = await _dhFetch('POST', 'https://www.duolingo.com/2017-06-30/sessions', {
                         challengeTypes: CH,
                         fromLanguage: _user.fromLanguage,
-                        isFinalLevel: false,
-                        isV2: true,
-                        juicy: true,
+                        isFinalLevel: false, isV2: true, juicy: true,
                         learningLanguage: _user.learningLanguage,
-                        smartTipsVersion: 2,
-                        type: 'GLOBAL_PRACTICE'
-                    }),
-                    onload: res => { if (res.status === 200) sess = JSON.parse(res.responseText); r(); },
-                    onerror: () => r(),
-                    timeout: 15000,
-                    ontimeout: () => r()
-                }));
-                if (sess?.id) {
-                    await new Promise(r => GM_xmlhttpRequest({
-                        method: 'PUT',
-                        url: `https://www.duolingo.com/2017-06-30/sessions/${sess.id}`,
-                        headers: _hdrs,
-                        data: JSON.stringify({
-                            ...sess,
-                            heartsLeft: 5,
-                            startTime: end - 1,
-                            endTime: end,
-                            enableBonusPoints: false,
-                            failed: false,
-                            maxInLessonStreak: 9,
-                            shouldLearnThings: true
-                        }),
-                        onload: () => r(),
-                        onerror: () => r(),
-                        timeout: 15000,
-                        ontimeout: () => r()
-                    }));
+                        smartTipsVersion: 2, type: 'GLOBAL_PRACTICE'
+                    });
+                    if (_sr.status === 200) { try { sess = JSON.parse(_sr.responseText); } catch {} }
+                }
+
+                if (!_running) break;
+
+                // POST failed — retry this day without advancing doneLoops
+                if (!sess?.id) {
+                    streakFailures++;
+                    if (streakFailures >= 5) {
+                        _notif('❌', _t('notif_streak_farm_title'), 'Rate-limited. Stopping.');
+                        _running = false;
+                        break;
+                    }
+                    await _sleep(2000);
+                    continue;
+                }
+
+                let ok = false;
+                {
+                    const _pr = await _dhFetch('PUT', `https://www.duolingo.com/2017-06-30/sessions/${sess.id}`, {
+                        ...sess,
+                        heartsLeft: 5,
+                        startTime: endSecs - 1, endTime: endSecs,
+                        enableBonusPoints: false, failed: false,
+                        maxInLessonStreak: 9, shouldLearnThings: true
+                    });
+                    ok = _pr.status === 200;
+                }
+
+                if (!_running) break;
+
+                if (ok) {
+                    streakFailures = 0;
+                    savedDays++;
+                    doneLoops++;   // only advance when day actually saved
+                    if (_user) {
+                        _user.streak = (_user.streak || 0) + 1;
+                        _renderUser(_user);
+                    }
+                    if (_isInfSt) { _stLive(); }
+                    await _sleep(_delay);
+                } else {
+                    // PUT failed — retry this day
+                    streakFailures++;
+                    if (streakFailures >= 5) {
+                        _notif('❌', _t('notif_streak_farm_title'), 'Rate-limited. Stopping.');
+                        _running = false;
+                        break;
+                    }
+                    await _sleep(2000);
                 }
             }
+
             if (_running) {
+                _stLiveReset();
                 _setBtnProgress('DH_Streak_Btn', 100);
                 _setBtnDone('DH_Streak_Btn', _t('btn_done'));
-                _notif('🔥', 'Streak Farm Done!', `Restored ${days} streak days.`);
+                if (savedDays > 0) {
+                    _notif('🔥', _t('notif_streak_done_title'), _t('notif_streak_done_body', savedDays));
+                } else {
+                    _notif('⚠️', _t('notif_streak_farm_title'), _t('notif_streak_no_days'));
+                }
                 setTimeout(_connect, 1500);
                 setTimeout(() => _resetBtn('DH_Streak_Btn', _t('btn_run')), 3000);
+            } else {
+                _stLiveReset();
+                if (_isInfSt) {
+                    if (savedDays > 0) _notif('🔥', _t('notif_streak_done_title'), _t('notif_streak_done_inf_body', savedDays, _t(savedDays === 1 ? 'streak_day' : 'streak_days')));
+                } else {
+                    if (savedDays > 0) _notif('⏹', _t('notif_streak_stopped_title'), _t('notif_streak_stopped_body', savedDays));
+                }
+                _resetBtn('DH_Streak_Btn', _t('btn_run'));
             }
+            _running = false;
         }
 
         async function _farmPractice(count) {
@@ -4036,13 +5745,13 @@
             _lessonsToSolve = count;
             _currentLessonCount = 0;
             if (_lessonSolving) {
-                _notif('⚠️', 'Busy', 'Practice farm already running.');
+                _notif('⚠️', _t('notif_busy_title'), _t('notif_practice_busy'));
                 return;
             }
             _lessonSolving = true;
             const btn = document.getElementById('DH_Practice_Btn');
             _setBtnState('DH_Practice_Btn', _C_RED, _t('btn_stop'));
-            _notif('📚', 'Farm Practice', 'Navigating to practice...', 3);
+            _notif('📚', _t('notif_practice_title'), _t('notif_practice_nav'), 3);
 
             if (!window.location.pathname.startsWith('/practice')) {
                 window.location.assign('/practice');
@@ -4060,109 +5769,34 @@
             }
             if (!_lessonSolving) return;
 
-            await new Promise(resolve => {
-                let lastId = null,
-                    solving = false,
-                    ticks = 0;
-                const MAX = 240;
-                const clickNext = () => {
-                    const inStory = location.hostname.includes('stories.duolingo.com') ||
-                        location.pathname.includes('/stories') ||
-                        !!document.querySelector('[data-test="stories-choice"]') ||
-                        !!document.querySelector('[data-test="stories-player-continue"]') ||
-                        !!document.querySelector('[data-test="stories-player-done"]');
-                    if (inStory) {
-                        const continueStory = _autoSolver.findStoryContinue();
-                        if (continueStory) {
-                            continueStory();
-                            return;
-                        }
-                    }
-                    const nb = document.querySelector('[data-test="player-next"]') || document.querySelector('[data-test="stories-player-continue"]') || document.querySelector('[data-test="stories-player-done"]');
-                    if (!nb || nb.getAttribute('aria-disabled') === 'true' || nb.disabled) return;
-                    nb.click();
-                    setTimeout(() => {
-                        if (!nb.disabled) nb.click();
-                    }, 5);
-                };
-                const iv = setInterval(async () => {
+            const deadline = Date.now() + 180000;
+            while (_lessonSolving && Date.now() < deadline) {
+                const done = document.querySelector('[data-test="session-over"]') ||
+                    document.querySelector('[data-test="session-complete-slide"]') ||
+                    document.querySelector('[data-test="session-complete"]');
+                if (done) {
+                    _currentLessonCount++;
                     try {
-                        if (!_lessonSolving) {
-                            clearInterval(iv);
-                            resolve();
-                            return;
-                        }
-                        if (++ticks > MAX) {
-                            clearInterval(iv);
-                            resolve();
-                            return;
-                        }
-                        const done = document.querySelector('[data-test="session-over"]') || document.querySelector('[data-test="session-complete-slide"]') || document.querySelector('[data-test="session-complete"]');
-                        if (done) {
-                            clearInterval(iv);
-                            _currentLessonCount++;
-
-                            try {
-                                const s = JSON.parse(sessionStorage.getItem('dh2_practice') || '{}');
-                                s.done = _currentLessonCount;
-                                sessionStorage.setItem('dh2_practice', JSON.stringify(s));
-                            } catch {}
-                            await _sleep(_safeWait(500));
-                            resolve();
-                            return;
-                        }
-                        if (solving) return;
-                        let el = document.querySelector('._3yE3H') || document.querySelector('[data-test="challenge"]') || document.querySelector('[class*="challenge"]');
-                        // Stories elements
-                        if (!el) el = document.querySelector('[data-test="stories-choice"]')?.closest('[class]') || document.querySelector('[data-test="challenge-tap-token-text"]')?.closest('[class]') || document.querySelector('.FmlUF');
-                        if (!el) {
-                            clickNext();
-                            return;
-                        }
-                        const ri = _autoSolver.findReact(el);
-                        window.sol = ri?.props?.currentChallenge;
-                        if (!window.sol) {
-                            clickNext();
-                            return;
-                        }
-                        const cid = `${window.sol.type}:${window.sol.id||JSON.stringify(window.sol.correctIndex??window.sol.correctTokens??window.sol.correctSolutions?.[0]??'')}`;
-                        if (cid === lastId) {
-                            clickNext();
-                            return;
-                        }
-                        const type = _autoSolver.determineChallengeType();
-                        if (!type) {
-                            clickNext();
-                            return;
-                        }
-                        solving = true;
-                        lastId = cid;
-                        try {
-                            await _autoSolver.handleChallenge(type);
-                        } catch {}
-                        if (_SAFE_MODE) await _sleep(_safeWait(350));
-                        clickNext();
-                        if (_SAFE_MODE) await _sleep(_safeWait(600));
-                        solving = false;
-                    } catch {
-                        solving = false;
-                    }
-                }, _safeWait(500));
-                setTimeout(() => {
-                    clearInterval(iv);
-                    resolve();
-                }, 180000);
-            });
+                        const s = JSON.parse(sessionStorage.getItem('dh2_practice') || '{}');
+                        s.done = _currentLessonCount;
+                        sessionStorage.setItem('dh2_practice', JSON.stringify(s));
+                    } catch {}
+                    await _sleep(_safeWait(500));
+                    break;
+                }
+                await _autoSolver.solve();
+                await _sleep(_safeWait(400));
+            }
 
             if (!_lessonSolving) return;
 
             if (_lessonsToSolve > 0 && _currentLessonCount >= _lessonsToSolve) {
-                _notif('✅', 'Farm Practice Done!', `Completed ${_currentLessonCount} practice(s).`);
+                _notif('✅', _t('notif_practice_done_title'), _t('notif_practice_done_body', _currentLessonCount));
                 _stopPractice();
                 return;
             }
 
-            _notif('📚', 'Farm Practice', `Done ${_currentLessonCount}${_lessonsToSolve>0?' / '+_lessonsToSolve:''} — loading next...`, 2);
+            _notif('📚', _t('notif_practice_title'), _t('notif_practice_next_body', _currentLessonCount, _lessonsToSolve), 2);
             await _sleep(800);
             if (_lessonSolving) window.location.assign('/practice');
         }
@@ -4211,38 +5845,88 @@
             } catch {}
         }
 
-        async function _farmLeague() {
+        async function _joinLeague() {
+            let wasPrivate = false;
+            try {
+                const pr = await _gm('GET', `https://www.duolingo.com/2023-05-23/users/${_sub}/privacy-settings?fields=privacySettings`);
+                if (pr.status === 200) {
+                    const pd = JSON.parse(pr.responseText);
+                    const soc = (pd.privacySettings || []).find(s => s.id === 'disable_social');
+                    wasPrivate = soc ? soc.enabled : false;
+                }
+            } catch {}
+            if (wasPrivate) {
+                try {
+                    await _gm('PATCH', `https://www.duolingo.com/2023-05-23/users/${_sub}/privacy-settings?fields=privacySettings`, { DISABLE_SOCIAL: false });
+                    await _sleep(2000);
+                } catch {}
+            }
+            try { await _storyXP(0); } catch {}
+            if (wasPrivate) {
+                try {
+                    await _gm('PATCH', `https://www.duolingo.com/2023-05-23/users/${_sub}/privacy-settings?fields=privacySettings`, { DISABLE_SOCIAL: true });
+                } catch {}
+            }
+        }
+
+        async function _farmLeague(targetRank) {
             const LB = 'https://duolingo-leaderboards-prod.duolingo.com/leaderboards/7d9f5dd1-8423-491a-91f2-2532052038ce';
             const prog = document.getElementById('DH_League_Prog');
             const fill = document.getElementById('DH_League_Fill');
             if (prog) prog.classList.add('on');
             _setBtnState('DH_League_Btn', _C_RED, _t('btn_stop'));
+            let joinAttemptCount = 0;
+            let consecutiveFailures = 0;
             while (_running) {
                 try {
-                    const r = await _gm('GET', `${LB}/users/${_sub}?client_unlocked=true&_=${Date.now()}`);
+                    const r = await _gm('GET', `${LB}/users/${_sub}?client_unlocked=true&get_reactions=true&_=${Date.now()}`);
                     if (r.status !== 200) {
+                        consecutiveFailures++;
+                        if (consecutiveFailures >= 5) {
+                            _notif('❌', 'League', 'Rate-limited. Stopping.');
+                            break;
+                        }
                         await _sleep(3000);
                         continue;
                     }
+                    consecutiveFailures = 0;
                     const data = JSON.parse(r.responseText);
                     const ranks = data?.active?.cohort?.rankings || [];
                     const me = ranks.find(u => u.user_id == _sub);
                     if (!me) {
-                        _notif('⚠️', 'Not in league!', 'Join a league first.');
+                        if (joinAttemptCount === 0) {
+                            joinAttemptCount = 1;
+                            _notif('ℹ️', 'League', 'Not in a league. Joining now…');
+                            await _joinLeague();
+                            await _sleep(3000);
+                            continue;
+                        } else if (joinAttemptCount < 5) {
+                            joinAttemptCount++;
+                            await _storyXP(0);
+                            await _sleep(3000);
+                            continue;
+                        }
+                        _notif('⚠️', 'League', 'Could not join a league after several attempts.');
                         break;
                     }
-                    const rank = ranks.indexOf(me) + 1;
-                    const top1 = ranks[0];
-                    const gap = top1.score - me.score;
-                    if (rank === 1 && gap <= 0) {
-                        _notif('🏆', 'League #1!', 'You reached Rank #1!');
+                    joinAttemptCount = 0;
+                    const myRank = ranks.indexOf(me) + 1;
+                    // Person just above target rank (targetRank - 1 index)
+                    const aboveIdx = targetRank - 2; // 0-based index of person at rank targetRank-1
+                    const abovePerson = aboveIdx >= 0 ? ranks[aboveIdx] : null;
+                    // Target score: score of person above + 50 (or just 50 if targeting rank 1 with no one above)
+                    const targetScore = abovePerson ? abovePerson.score + 50 : 50;
+                    const refScore = abovePerson ? abovePerson.score : 0;
+                    // Progress bar: how close we are to targetScore
+                    if (fill) fill.style.width = Math.min(95, Math.floor((me.score / Math.max(targetScore, 1)) * 100)) + '%';
+                    // Check if already reached target
+                    if (me.score >= targetScore || myRank <= targetRank) {
+                        _notif('🏆', `League #${targetRank}!`, `You reached Rank #${targetRank}!`);
                         break;
                     }
-                    if (fill) fill.style.width = Math.min(95, Math.floor((me.score / Math.max(top1.score, 1)) * 100)) + '%';
-                    if (gap + 100 > 0) {
-                        const ok = await _storyXP(469);
-                        if (!ok) await _sleep(3000);
-                    }
+                    // Farm 50 XP per loop until we surpass target
+                    const awarded = await _storyXP(0);
+                    if (!awarded) await _sleep(3000);
                     await _sleep(_delay);
                 } catch {
                     await _sleep(5000);
@@ -4259,23 +5943,17 @@
             return new Date().toISOString();
         }
         async function _getGoals() {
-            return new Promise(r => GM_xmlhttpRequest({
-                method: 'GET',
-                url: `${GOALS_API}/schema?ui_language=en&_=${Date.now()}`,
-                headers: _goalHdrs(_jwt),
-                onload: res => r(res.status === 200 ? JSON.parse(res.responseText) : null),
-                onerror: () => r(null)
-            }));
+            try {
+                const res = await _dhFetch('GET', `${GOALS_API}/schema?ui_language=en&_=${Date.now()}`, null, _goalHdrs(_jwt));
+                return res.status === 200 ? JSON.parse(res.responseText) : null;
+            } catch { return null; }
         }
         async function _getProgress() {
             const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-            return new Promise(r => GM_xmlhttpRequest({
-                method: 'GET',
-                url: `${GOALS_API}/users/${_sub}/progress?timezone=${encodeURIComponent(tz)}&ui_language=en`,
-                headers: _goalHdrs(_jwt),
-                onload: res => r(res.status === 200 ? JSON.parse(res.responseText) : null),
-                onerror: () => r(null)
-            }));
+            try {
+                const res = await _dhFetch('GET', `${GOALS_API}/users/${_sub}/progress?timezone=${encodeURIComponent(tz)}&ui_language=en`, null, _goalHdrs(_jwt));
+                return res.status === 200 ? JSON.parse(res.responseText) : null;
+            } catch { return null; }
         }
         async function _bruteForceGoals(metrics) {
             const updates = metrics.map(m => ({
@@ -4286,42 +5964,34 @@
                 metric: 'QUESTS',
                 quantity: 1
             });
-            return new Promise(r => GM_xmlhttpRequest({
-                method: 'POST',
-                url: `${GOALS_API}/users/${_sub}/progress/batch`,
-                headers: _goalHdrs(_jwt),
-                data: JSON.stringify({
+            try {
+                const res = await _dhFetch('POST', `${GOALS_API}/users/${_sub}/progress/batch`, {
                     metric_updates: updates,
                     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                     timestamp: new Date().toISOString()
-                }),
-                onload: res => r(res.status === 200),
-                onerror: () => r(false)
-            }));
+                }, _goalHdrs(_jwt));
+                return res.status === 200;
+            } catch { return false; }
         }
         async function _updateGoal(metric, amount, goalId) {
-            return new Promise(r => GM_xmlhttpRequest({
-                method: 'POST',
-                url: `${GOALS_API}/users/${_sub}/progress/batch`,
-                headers: _goalHdrs(_jwt),
-                data: JSON.stringify({
+            try {
+                const res = await _dhFetch('POST', `${GOALS_API}/users/${_sub}/progress/batch`, {
                     metric_updates: [{
                         metric,
                         quantity: amount
                     }],
                     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                     timestamp: _getQuestTimestamp(goalId)
-                }),
-                onload: res => r(res.status === 200),
-                onerror: () => r(false)
-            }));
+                }, _goalHdrs(_jwt));
+                return res.status === 200;
+            } catch { return false; }
         }
 
         async function _farmDailyQuest() {
             _setBtnState('DH_Quest_Btn', _C_GRAY, _t('btn_loading'));
             const [schema, progress] = await Promise.all([_getGoals(), _getProgress()]);
             if (!schema || !progress) {
-                _notif('❌', 'Error', 'Could not load quest data.');
+                _notif('❌', _t('notif_error_title'), _t('notif_daily_error'));
                 _resetBtn('DH_Quest_Btn', _t('btn_run'));
                 return;
             }
@@ -4329,7 +5999,7 @@
             const daily = (schema.goals || []).filter(g => g.category && g.category.includes('DAILY'));
             const metrics = new Set(daily.filter(g => !earned.has(g.badgeId) && !earned.has(g.goalId) && g.metric).map(g => g.metric));
             if (!metrics.size) {
-                _notif('✅', 'All Done!', 'All daily quests completed.');
+                _notif('✅', _t('notif_all_done_title'), _t('notif_all_done_body'));
                 _setBtnDone('DH_Quest_Btn', _t('btn_done'));
                 setTimeout(() => _resetBtn('DH_Quest_Btn', _t('btn_run')), 3000);
                 return;
@@ -4337,11 +6007,11 @@
             _setBtnState('DH_Quest_Btn', _C_RED, _t('btn_running'));
             const ok = await _bruteForceGoals(Array.from(metrics));
             if (ok) {
-                _notif('✅', 'Daily Quests Done!', `Completed ${metrics.size} metric(s).`);
+                _notif('✅', _t('notif_daily_done_title'), _t('notif_daily_done_body', metrics.size));
                 _setBtnDone('DH_Quest_Btn', _t('btn_done'));
                 setTimeout(() => _resetBtn('DH_Quest_Btn', _t('btn_run')), 3000);
             } else {
-                _notif('❌', 'Error', 'Quest completion failed.');
+                _notif('❌', _t('notif_error_title'), _t('notif_daily_fail'));
                 _resetBtn('DH_Quest_Btn', _t('btn_run'));
             }
         }
@@ -4383,20 +6053,11 @@
         }
 
         async function _getShopItems() {
-            return new Promise(r => GM_xmlhttpRequest({
-                method: 'GET',
-                url: 'https://www.duolingo.com/2023-05-23/shop-items',
-                headers: _hdrs,
-                onload: res => {
-                    try {
-                        if (res.status === 200) r(JSON.parse(res.responseText).shopItems || []);
-                        else r([]);
-                    } catch {
-                        r([]);
-                    }
-                },
-                onerror: () => r([])
-            }));
+            try {
+                const res = await _gm('GET', 'https://www.duolingo.com/2023-05-23/shop-items');
+                if (res.status !== 200) return [];
+                return JSON.parse(res.responseText).shopItems || [];
+            } catch { return []; }
         }
 
         async function _buyShopItem(itemId) {
@@ -4407,14 +6068,10 @@
                 fromLanguage: _user.fromLanguage,
                 learningLanguage: _user.learningLanguage
             };
-            return new Promise(r => GM_xmlhttpRequest({
-                method: 'POST',
-                url: `https://www.duolingo.com/2017-06-30/users/${_sub}/shop-items`,
-                headers: _hdrs,
-                data: JSON.stringify(payload),
-                onload: res => r(res.status === 200),
-                onerror: () => r(false)
-            }));
+            try {
+                const res = await _gm('POST', `https://www.duolingo.com/2017-06-30/users/${_sub}/shop-items`, payload);
+                return res.status === 200;
+            } catch { return false; }
         }
 
         let _allShopItems = [];
@@ -4422,6 +6079,51 @@
         function _renderShop(items, filter = '') {
             const container = document.getElementById('DH_Shop_Container');
             container.innerHTML = '';
+
+            // ── Pinned: Super 3 Days ──
+            const _sSec = document.createElement('div');
+            _sSec.className = 'DH_Cat_Header DH_NoSel';
+            _sSec.textContent = 'Super';
+            container.appendChild(_sSec);
+            const _sGrid = document.createElement('div');
+            _sGrid.className = 'DH_Shop_Grid';
+            const _sCard = document.createElement('div');
+            _sCard.className = 'DH_Shop_Card';
+            _sCard.innerHTML = `<img src="https://d35aaqx5ub95lt.cloudfront.net/images/legendary/158dbe277bf83116d04692b969a27aa3.svg" class="DH_Shop_Ico"><div class="DH_Shop_Name DH_NoSel">Super 3 Days</div><button class="DH_Shop_Btn">GET</button>`;
+            const _sBtn = _sCard.querySelector('.DH_Shop_Btn');
+            _sBtn.onclick = async () => {
+                _sBtn.className = 'DH_Shop_Btn loading';
+                _sBtn.textContent = '...';
+                try {
+                    const payload = {
+                        itemName: 'immersive_subscription',
+                        isFree: true,
+                        consumed: true,
+                        fromLanguage: _user.fromLanguage,
+                        learningLanguage: _user.learningLanguage,
+                        productId: 'com.duolingo.immersive_free_trial_subscription'
+                    };
+                    const r = await _gm('POST', `https://www.duolingo.com/2017-06-30/users/${_sub}/shop-items`, payload);
+                    if (r.status === 200 || r.status === 201) {
+                        _sBtn.className = 'DH_Shop_Btn got';
+                        _sBtn.textContent = _t('btn_got');
+                        _notif('✅', _t('notif_super_title'), _t('notif_super_body'), 7);
+                        setTimeout(() => { _sBtn.className = 'DH_Shop_Btn'; _sBtn.textContent = _t('btn_get'); }, 3000);
+                    } else {
+                        _sBtn.className = 'DH_Shop_Btn fail';
+                        _sBtn.textContent = _t('btn_failed');
+                        _notif('❌', _t('notif_failed_title'), _t('notif_super_fail'), 5);
+                        setTimeout(() => { _sBtn.className = 'DH_Shop_Btn'; _sBtn.textContent = _t('btn_get'); }, 2000);
+                    }
+                } catch {
+                    _sBtn.className = 'DH_Shop_Btn fail';
+                    _sBtn.textContent = _t('btn_failed');
+                    setTimeout(() => { _sBtn.className = 'DH_Shop_Btn'; _sBtn.textContent = _t('btn_get'); }, 2000);
+                }
+            };
+            _sGrid.appendChild(_sCard);
+            container.appendChild(_sGrid);
+
             const valid = items.filter(i => i.currencyType === 'XGM' && !i.id.includes('gift'));
             const f = filter.trim().toLowerCase();
             const filtered = f ? valid.filter(i => (i.name || _formatItem(i.id)).toLowerCase().includes(f)) : valid;
@@ -4488,7 +6190,7 @@
                             if (ok) {
                                 btn.className = 'DH_Shop_Btn got';
                                 btn.textContent = _t('btn_got');
-                                _notif('🛒', 'Shop', 'Got ' + item.displayName + '!');
+                                _notif('🎁', 'Shop', 'Got ' + item.displayName + '!');
                                 setTimeout(() => {
                                     btn.className = 'DH_Shop_Btn';
                                     btn.textContent = _t('btn_get');
@@ -4702,6 +6404,7 @@
             while (_v1Running && _v1Task === 'xp') {
                 if (use499) {
                     let status = 0;
+                    let awarded499 = 0;
                     try {
                         const now = Math.floor(Date.now() / 1000);
                         const dur = Math.floor(Math.random() * 121 + 300);
@@ -4724,13 +6427,18 @@
                             endTime: now + dur
                         });
                         status = r.status;
+                        if (status === 200) {
+                            const d = JSON.parse(r.responseText);
+                            awarded499 = typeof d.awardedXp === 'number' ? d.awardedXp : 499;
+                        }
                     } catch {}
 
                     if (status === 200) {
                         cons429 = 0;
                         fallbackErrors = 0;
-                        _v1Earned.xp += 499;
+                        _v1Earned.xp += awarded499;
                         _v1UpdateDisplayNow();
+                        if (_user) { _user.totalXp = (_user.totalXp || 0) + awarded499; _v1SyncUser(); }
                         loopPct = (loopPct + 2) % 99 + 1;
                         _v1SetProg('DH_V1_XP', loopPct);
                     } else if (status === 429) {
@@ -4776,7 +6484,7 @@
 
             _v1ClearProg('DH_V1_XP');
             _v1SetBtnState('DH_V1_XP_Btn', _C_BLUE, _t('btn_run'));
-            document.getElementById('DH_V1_XP_Btn').disabled = !_user;
+            const _v1xb = document.getElementById('DH_V1_XP_Btn'); if (_v1xb) _v1xb.disabled = !_user;
             _v1Running = false;
             _v1Task = null;
             if (_v1Earned.xp > 0) {
@@ -4792,47 +6500,74 @@
             _v1SetProg('DH_V1_Gem', 1);
 
             let loopPct = 0;
+            let consecutiveFailures = 0;
+
+            // Baseline for delta verification
+            let v1PrevGems = await _getGemCount();
+
+            // Pre-fetch first rewards batch
+            let v1NextRewardsPromise = _fetchGemRewards();
 
             outer:
                 while (_v1Running && _v1Task === 'gems') {
-                    const rewards = await _fetchGemRewards();
+                    const rewards = await v1NextRewardsPromise;
+
+                    if (rewards === null) {
+                        consecutiveFailures++;
+                        if (consecutiveFailures >= 5) {
+                            _notif('❌', 'Gem Farm', 'Rate-limited. Stopping.');
+                            break;
+                        }
+                        await _sleep(3000);
+                        v1NextRewardsPromise = _fetchGemRewards();
+                        continue;
+                    }
+                    consecutiveFailures = 0;
 
                     if (rewards.length === 0) {
-                        _notif('⚠️', 'Gem Farm', 'No rewards available. Retrying…', 3);
+                        _notif('⚠️', 'Gem Farm', _t('notif_gem_no_rewards'), 3);
                         await _sleep(_delay * 2);
+                        v1NextRewardsPromise = _fetchGemRewards();
                         continue;
                     }
 
-                    const gemsBefore = await _getGemCount() ?? (_user?.gems ?? 0);
+                    // Claim all rewards in parallel
+                    const results = await Promise.all(rewards.map(r => _exploitGemReward(r.id)));
+                    if (!_v1Running || _v1Task !== 'gems') break outer;
 
-                    // Fire all rewards in parallel batches — no inter-batch delay
-                    for (let i = 0; i < rewards.length; i += THREADS) {
-                        if (!_v1Running || _v1Task !== 'gems') break outer;
-                        const batch = rewards.slice(i, i + THREADS);
-                        await Promise.all(batch.map(r => _exploitGemReward(r.id)));
+                    // Pipeline: verify gem delta + pre-fetch next rewards simultaneously
+                    const [v1GemsAfter] = await Promise.all([
+                        _getGemCount(),
+                        (v1NextRewardsPromise = _fetchGemRewards(), Promise.resolve())
+                    ]);
+
+                    let batchGained = 0;
+                    if (v1PrevGems !== null && v1GemsAfter !== null) {
+                        batchGained = Math.max(0, v1GemsAfter - v1PrevGems);
+                    } else {
+                        results.forEach((ok, i) => { if (ok) batchGained += rewards[i].amount || 0; });
                     }
 
-                    // Single gem count check after full pass
-                    const now = await _getGemCount();
-                    if (now !== null) {
-                        const cycle = Math.max(0, now - gemsBefore);
-                        _v1Earned.gems += cycle;
+                    if (v1GemsAfter !== null) v1PrevGems = v1GemsAfter;
+
+                    if (batchGained > 0) {
+                        _v1Earned.gems += batchGained;
                         _v1UpdateDisplayNow();
                         loopPct = (loopPct + 1) % 99 + 1;
                         _v1SetProg('DH_V1_Gem', loopPct);
                         if (_user) {
-                            _user.gems = now;
+                            _user.gems = v1GemsAfter !== null ? v1GemsAfter : (_user.gems || 0) + batchGained;
                             _v1SyncUser();
                         }
                     }
 
-                    // Short cooldown before next pass
-                    await _sleep(Math.max(200, _delay / 2));
+                    // Minimal cooldown — next rewards already in-flight
+                    if (_delay > 80) await _sleep(_delay / 4);
                 }
 
             _v1ClearProg('DH_V1_Gem');
             _v1SetBtnState('DH_V1_Gem_Btn', _C_BLUE, _t('btn_run'));
-            document.getElementById('DH_V1_Gem_Btn').disabled = !_user;
+            const _v1gb = document.getElementById('DH_V1_Gem_Btn'); if (_v1gb) _v1gb.disabled = !_user;
             _v1Running = false;
             _v1Task = null;
             if (_v1Earned.gems > 0) {
@@ -4842,72 +6577,65 @@
         }
 
 
+
         async function _v1FarmStreak() {
+            const CH = ["assist","characterIntro","characterMatch","characterPuzzle","characterSelect","characterTrace","characterWrite","completeReverseTranslation","definition","dialogue","extendedMatch","extendedListenMatch","form","freeResponse","gapFill","judge","listen","listenComplete","listenMatch","match","name","listenComprehension","listenIsolation","listenSpeak","listenTap","orderTapComplete","partialListen","partialReverseTranslate","patternTapComplete","radioBinary","radioImageSelect","radioListenMatch","radioListenRecognize","radioSelect","readComprehension","reverseAssist","sameDifferent","select","selectPronunciation","selectTranscription","svgPuzzle","syllableTap","syllableListenTap","speak","tapCloze","tapClozeTable","tapComplete","tapCompleteTable","tapDescribe","translate","transliterate","transliterationAssist","typeCloze","typeClozeTable","typeComplete","typeCompleteTable","writeComprehension"];
             _v1Earned.streak = 0;
             _v1UpdateDisplayNow();
             _v1SetBtnState('DH_V1_Streak_Btn', _C_RED, _t('btn_stop'));
             _v1SetProg('DH_V1_Streak', 1);
 
-            const CH = ["assist", "characterIntro", "characterMatch", "characterPuzzle", "characterSelect", "characterTrace", "characterWrite", "completeReverseTranslation", "definition", "dialogue", "extendedMatch", "extendedListenMatch", "form", "freeResponse", "gapFill", "judge", "listen", "listenComplete", "listenMatch", "match", "name", "listenComprehension", "listenIsolation", "listenSpeak", "listenTap", "orderTapComplete", "partialListen", "partialReverseTranslate", "patternTapComplete", "radioBinary", "radioImageSelect", "radioListenMatch", "radioListenRecognize", "radioSelect", "readComprehension", "reverseAssist", "sameDifferent", "select", "selectPronunciation", "selectTranscription", "svgPuzzle", "syllableTap", "syllableListenTap", "speak", "tapCloze", "tapClozeTable", "tapComplete", "tapCompleteTable", "tapDescribe", "translate", "transliterate", "transliterationAssist", "typeCloze", "typeClozeTable", "typeComplete", "typeCompleteTable", "writeComprehension"];
-            let farmStart;
-            try {
-                const s = new Date(_user.streakData?.currentStreak?.startDate || Date.now());
-                s.setDate(s.getDate() - 1);
-                farmStart = s;
-            } catch {
-                farmStart = new Date();
-                farmStart.setDate(farmStart.getDate() - 1);
+            // Timezone-aware base date
+            const tz = _accountTimezone();
+            let base;
+            const dateStr = _user?.streakData?.currentStreak?.startDate;
+            if (dateStr && /^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+                const [y, m, d] = dateStr.split('-').map(Number);
+                base = { year: y, month: m, day: d };
+            } else {
+                base = _accountToday(tz);
             }
+
             let dayIdx = 0;
 
             while (_v1Running && _v1Task === 'streak') {
-                const simDay = new Date(farmStart);
-                simDay.setDate(simDay.getDate() - dayIdx);
-                const end = Math.floor(simDay.getTime() / 1000);
+                const endSecs = _wallClockToSeconds(
+                    tz, base.year, base.month, base.day - 1 - dayIdx, 12, 0, 0
+                );
 
                 let sess = null;
-                await new Promise(r => GM_xmlhttpRequest({
-                    method: 'POST',
-                    url: 'https://www.duolingo.com/2017-06-30/sessions',
-                    headers: _hdrs,
-                    data: JSON.stringify({
+                {
+                    const _sr = await _dhFetch('POST', 'https://www.duolingo.com/2017-06-30/sessions', {
                         challengeTypes: CH,
                         fromLanguage: _user.fromLanguage,
-                        isFinalLevel: false,
-                        isV2: true,
-                        juicy: true,
+                        isFinalLevel: false, isV2: true, juicy: true,
                         learningLanguage: _user.learningLanguage,
-                        smartTipsVersion: 2,
-                        type: 'GLOBAL_PRACTICE'
-                    }),
-                    onload: res => { if (res.status === 200) sess = JSON.parse(res.responseText); r(); },
-                    onerror: () => r(),
-                    timeout: 15000,
-                    ontimeout: () => r()
-                }));
+                        smartTipsVersion: 2, type: 'GLOBAL_PRACTICE'
+                    });
+                    if (_sr.status === 200) { try { sess = JSON.parse(_sr.responseText); } catch {} }
+                }
 
                 if (sess?.id) {
-                    await new Promise(r => GM_xmlhttpRequest({
-                        method: 'PUT',
-                        url: `https://www.duolingo.com/2017-06-30/sessions/${sess.id}`,
-                        headers: _hdrs,
-                        data: JSON.stringify({
+                    let ok = false;
+                    {
+                        const _pr = await _dhFetch('PUT', `https://www.duolingo.com/2017-06-30/sessions/${sess.id}`, {
                             ...sess,
                             heartsLeft: 5,
-                            startTime: end - 1,
-                            endTime: end,
-                            enableBonusPoints: false,
-                            failed: false,
-                            maxInLessonStreak: 9,
-                            shouldLearnThings: true
-                        }),
-                        onload: () => r(),
-                        onerror: () => r(),
-                        timeout: 15000,
-                        ontimeout: () => r()
-                    }));
-                    _v1Earned.streak++;
-                    _v1UpdateDisplayNow();
+                            startTime: endSecs - 1, endTime: endSecs,
+                            enableBonusPoints: false, failed: false,
+                            maxInLessonStreak: 9, shouldLearnThings: true
+                        });
+                        ok = _pr.status === 200;
+                    }
+
+                    if (ok) {
+                        _v1Earned.streak++;
+                        if (_user) {
+                            _user.streak = (_user.streak || 0) + 1;
+                            _v1SyncUser();
+                        }
+                        _v1UpdateDisplayNow();
+                    }
                 }
 
                 const loopPct = (dayIdx % 9) * 11 + 1;
@@ -4917,16 +6645,18 @@
 
             _v1ClearProg('DH_V1_Streak');
             _v1SetBtnState('DH_V1_Streak_Btn', _C_BLUE, _t('btn_run'));
-            document.getElementById('DH_V1_Streak_Btn').disabled = !_user;
+            const _v1sb = document.getElementById('DH_V1_Streak_Btn'); if (_v1sb) _v1sb.disabled = !_user;
             _v1Running = false;
             _v1Task = null;
             if (_v1Earned.streak > 0) {
                 _notif('🔥', 'Streak Farm Done!', `Farmed ${_v1Earned.streak} streak days.`);
                 setTimeout(_connect, 1500);
+            } else {
+                _notif('⚠️', 'Streak Farm', 'No days could be saved. Please try again.');
             }
         }
 
-        function _v1RunToggle(task) {
+                function _v1RunToggle(task) {
             if (_v1Running && _v1Task === task) {
                 _v1Running = false;
                 _v1Task = null;
@@ -4964,7 +6694,7 @@
                 if (type === 'xp') await _farmXP(val);
                 if (type === 'gem') await _farmGems();
                 if (type === 'streak') await _farmStreak(val);
-                if (type === 'league') await _farmLeague();
+                if (type === 'league') await _farmLeague(_dhLeagueTarget || 1);
             } catch (e) {
                 _notif('❌', 'Error', e.message);
             }
@@ -4999,11 +6729,7 @@
                 _notif('ℹ️', 'Already saved', 'This account is already in the list.');
                 return;
             }
-            let pic = '';
-            if (_user.picture) {
-                pic = _user.picture.replace(/\/(medium|large|small)$/, '/xlarge');
-                if (!pic.endsWith('/xlarge') && pic.includes('duolingo.com/ssr-avatars')) pic += '/xlarge';
-            }
+            const pic = _bestAvatarUrl(_user.picture, _sub);
             all.push({
                 id: _sub,
                 username: _user.username || 'User',
@@ -5054,19 +6780,19 @@
                 card.className = 'DH_Acc_Card';
                 const isCurrentUser = _sub && acc.id == _sub;
                 const picHtml = acc.pic ?
-                    `<img src="${acc.pic}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.parentNode.innerHTML='👤'">` :
-                    '👤';
+                    `<img src="${acc.pic}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.src='https://raw.githubusercontent.com/DuoHacker/DuoHacker/refs/heads/main/images/avatar-default.jpg'">` :
+                    `<img src="https://raw.githubusercontent.com/DuoHacker/DuoHacker/refs/heads/main/images/avatar-default.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
                 card.innerHTML = `
             <div class="DH_Acc_Avatar">${picHtml}</div>
             <div class="DH_Acc_Info">
                 <p class="DH_Acc_Name DH_NoSel">${acc.username}</p>
                 ${isCurrentUser
-                    ? `<p class="DH_Acc_Sub active DH_NoSel"><svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="rgb(var(--DH-green))"><animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite"/></circle></svg>Active</p>`
-                    : `<p class="DH_Acc_Sub DH_NoSel">ID: ${String(acc.id).slice(0,8)}…</p>`
+                    ? `<p class="DH_Acc_Sub active DH_NoSel"><svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="rgb(var(--DH-green))"><animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite"/></circle></svg>${_t('acc_active')}</p>`
+                    : `<p class="DH_Acc_Sub DH_NoSel">ID: ${acc.id}</p>`
                 }
             </div>
             <div class="DH_Acc_Action_Row">
-                ${!isCurrentUser?`<button class="DH_Acc_Btn login" data-id="${acc.id}">LOG IN</button>`:''}
+                ${!isCurrentUser?`<button class="DH_Acc_Btn login" data-id="${acc.id}">${_t('acc_login_btn')}</button>`:''}
                 <button class="DH_Acc_Btn del" data-id="${acc.id}">✕</button>
             </div>
         `;
@@ -5099,21 +6825,17 @@
                     if (r.status !== 200) return;
                     const fresh = JSON.parse(r.responseText);
 
-                    let pic = '';
-                    if (fresh.picture) {
-                        pic = fresh.picture.replace(/\/(medium|large|small)$/, '/xlarge');
-                        if (!pic.endsWith('/xlarge') && pic.includes('duolingo.com/ssr-avatars')) pic += '/xlarge';
-                    }
+                    const pic = _bestAvatarUrl(fresh.picture, fresh.id || acc.id);
 
                     if (fresh.username && fresh.username !== acc.username) {
                         acc.username = fresh.username;
                         changed = true;
                     }
-                    if (pic && pic !== acc.pic) {
+                    if (pic !== undefined && pic !== acc.pic) {
                         acc.pic = pic;
                         changed = true;
                     }
-                } catch { /* token hết hạn hoặc lỗi mạng — bỏ qua */ }
+                } catch { /* token hết hạn hoac lỗi mạng — bỏ qua */ }
             }));
 
             if (changed) {
@@ -5125,23 +6847,20 @@
         function _goalHdrsLocal(jwt) {
             return {
                 'Content-Type': 'application/json',
-                'x-requested-with': 'XMLHttpRequest',
                 'accept': 'application/json; charset=UTF-8',
-                'Authorization': 'Bearer ' + jwt
+                'x-requested-with': 'XMLHttpRequest',
+                'Authorization': 'Bearer ' + jwt,
+                'cookie': 'jwt_token=' + jwt,
+                'origin': 'https://www.duolingo.com',
+                'x-amzn-trace-id': 'User=' + (_sub || ''),
             };
         }
 
         function _mqGm(method, url, data, hdrs) {
-            return new Promise((res, rej) => GM_xmlhttpRequest({
-                method,
-                url,
-                headers: hdrs,
-                data: data ? JSON.stringify(data) : null,
-                onload: r => res(r),
-                onerror: () => rej(new Error('Network')),
-                timeout: 15000,
-                ontimeout: () => rej(new Error('Timeout'))
-            }));
+            return _dhFetch(method, url, data, hdrs).then(r => {
+                if (r.status === 0) throw new Error('Network');
+                return r;
+            });
         }
 
         function _mqGetTimestamp(goalId) {
@@ -5184,8 +6903,25 @@
                     claimBtn.disabled = false;
                 }
             } catch (e) {
-                cont.innerHTML = `<p class="DH_T2 DH_NoSel" style="text-align:center;color:rgb(var(--DH-red));padding:8px 0;">${_t('quest_failed')}</p>`;
+                console.error('[DH] Monthly quest load error:', e, e?.message);
+                cont.innerHTML = `<p class="DH_T2 DH_NoSel" style="text-align:center;color:rgb(var(--DH-red));padding:8px 0;">${_t('quest_failed')}: ${e?.message||''}</p>`;
             }
+        }
+
+
+        // Build a map of goalId -> schema goal for quick lookup
+        function _buildSchemaMap(schema) {
+            const map = new Map();
+            (schema.goals || []).forEach(g => {
+                const m = g.goalId.match(/^(\d{4}_\d{2})_monthly/);
+                if (!m) return;
+                const key = m[1];
+                const ex = map.get(key);
+                if (!ex || (g.category?.includes('CHALLENGE') && !ex.category?.includes('CHALLENGE'))) {
+                    map.set(key, g);
+                }
+            });
+            return map;
         }
 
         function _renderMonthlyQuests(schema, progress, earned, gh) {
@@ -5193,85 +6929,113 @@
             if (!cont) return;
             cont.innerHTML = '';
             const now = new Date();
-            const yr = now.getFullYear().toString();
-            const mo = (now.getMonth() + 1).toString().padStart(2, '0');
-            const mReg = new RegExp(`^${yr}_${mo}_monthly`);
-            const map = new Map();
-            schema.goals.forEach(g => {
-                const m2 = g.goalId.match(/^(\d{4}_\d{2})_monthly/);
-                if (!m2) return;
-                const key = m2[1];
-                const existing = map.get(key);
-                if (!existing) {
-                    map.set(key, g);
-                } else {
-                    const existIsChallenge = existing.category?.includes('CHALLENGE');
-                    const newIsChallenge = g.category?.includes('CHALLENGE');
-                    if (!existIsChallenge && newIsChallenge) map.set(key, g);
+            const curYM = `${now.getFullYear()}_${String(now.getMonth()+1).padStart(2,'0')}`;
+
+            // Schema map: YYYY_MM -> best goal entry
+            const schemaMap = _buildSchemaMap(schema);
+
+            // All metrics from schema (for brute-force old quest claim)
+            const allMetrics = [];
+            const metricSeen = {};
+            (schema.goals || []).forEach(g => {
+                if (g.metric && !metricSeen[g.metric] && g.metric !== 'QUESTS') {
+                    metricSeen[g.metric] = true;
+                    allMetrics.push(g.metric);
                 }
             });
-            const goals = [...map.values()].filter(g => g.goalId.match(mReg) || true).reverse();
-            const monthly = goals.filter(g => g.category && g.category.includes('MONTHLY'));
-            if (monthly.length === 0) {
+
+            // Collect all monthly YYYY_MM keys from progress (sorted newest first)
+            const monthKeys = [];
+            Object.keys(progress).forEach(k => {
+                const m = k.match(/^(\d{4}_\d{2})_monthly/);
+                if (m) monthKeys.push(m[1]);
+            });
+            // Also add keys from schema not in progress
+            schemaMap.forEach((_, key) => { if (!monthKeys.includes(key)) monthKeys.push(key); });
+            // Dedupe and sort descending
+            const uniqMonths = [...new Set(monthKeys)].sort().reverse();
+
+            if (uniqMonths.length === 0) {
                 cont.innerHTML = `<p class="DH_T2 DH_NoSel" style="text-align:center;padding:8px 0;">${_t('no_monthly_quests')}</p>`;
                 return;
             }
-            monthly.forEach(g => {
-                const isEarned = earned.has(g.badgeId) || earned.has(g.goalId);
-                let cur = 0;
-                const raw = progress[g.goalId];
-                if (typeof raw === 'number') cur = raw;
-                else if (raw && typeof raw === 'object') cur = raw.progress || 0;
-                const tgt = g.threshold || 10;
-                let pct = Math.min(100, (cur / tgt) * 100);
-                if (isEarned) {
-                    pct = 100;
-                    cur = tgt;
-                }
+
+            uniqMonths.forEach(ym => {
+                const isCurrentMonth = ym === curYM;
+                const schemaGoal = schemaMap.get(ym);
+                const progressKey = Object.keys(progress).find(k => k.startsWith(ym + '_monthly'));
+                const rawProg = progressKey ? progress[progressKey] : undefined;
+                let cur = typeof rawProg === 'number' ? rawProg : (rawProg?.progress || 0);
+
+                const isEarned = schemaGoal
+                    ? (earned.has(schemaGoal.badgeId) || earned.has(schemaGoal.goalId))
+                    : (cur > 0 && cur >= (schemaGoal?.threshold || 1));
+                const tgt = schemaGoal?.threshold || 1;
+                let pct = isEarned ? 100 : Math.min(100, (cur / tgt) * 100);
+                if (isEarned) cur = tgt;
                 const remaining = Math.max(0, tgt - cur);
 
+                const [yr, mo] = ym.split('_');
+                const monthLabel = new Date(parseInt(yr), parseInt(mo)-1, 1)
+                    .toLocaleString('default', { month: 'long', year: 'numeric' });
+                const title = schemaGoal?.title?.uiString || `Monthly Quest – ${monthLabel}`;
+                const metric = schemaGoal?.metric || 'XP';
+
                 let icon = 'https://d35aaqx5ub95lt.cloudfront.net/images/achievement/aca5f82d97f5e67c1acb1ea05a0e6d1a.svg';
-                const badge = schema.badges?.find(x => x.badgeId === g.badgeId);
-                if (badge && badge.icon?.enabled?.lightMode) {
-                    icon = badge.icon.enabled.lightMode.svg || badge.icon.enabled.lightMode.url || icon;
+                if (schemaGoal) {
+                    const badge = schema.badges?.find(x => x.badgeId === schemaGoal.badgeId);
+                    if (badge?.icon?.enabled?.lightMode) {
+                        icon = badge.icon.enabled.lightMode.svg || badge.icon.enabled.lightMode.url || icon;
+                    }
                 }
 
                 const item = document.createElement('div');
-                item.className = `DH_Quest_Item${isEarned?' done':''}`;
+                item.className = `DH_Quest_Item${isEarned ? ' done' : ''}`;
                 item.innerHTML = `
             <img src="${icon}" class="DH_Quest_Icon" onerror="this.src='https://d35aaqx5ub95lt.cloudfront.net/images/achievement/aca5f82d97f5e67c1acb1ea05a0e6d1a.svg'">
             <div class="DH_Quest_Info">
-                <p class="DH_Quest_Title DH_NoSel">${g.title?.uiString||g.goalId}</p>
-                <p class="DH_Quest_Meta DH_NoSel">${isEarned?'COMPLETED':''+cur+' / '+tgt+' · '+g.metric}</p>
+                <p class="DH_Quest_Title DH_NoSel">${title}</p>
+                <p class="DH_Quest_Meta DH_NoSel">${isEarned ? _t('mq_completed') : cur + ' / ' + tgt + ' · ' + metric}</p>
                 <div class="DH_Quest_Bar_Bg"><div class="DH_Quest_Bar_Fill" style="width:${pct}%"></div></div>
             </div>
-            ${!isEarned&&remaining>0?`<button class="DH_Quest_Get_Btn" data-metric="${g.metric}" data-amount="${remaining}" data-id="${g.goalId}">GET +${remaining}</button>`:''}
-            ${isEarned?`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;"><circle cx="12" cy="12" r="10" fill="rgba(var(--DH-green),0.15)" stroke="rgb(var(--DH-green))" stroke-width="1.5"/><path d="M7.5 12.5l3 3 6-6" stroke="rgb(var(--DH-green))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`:''}
+            ${!isEarned && !isCurrentMonth ? `<button class="DH_Quest_Get_Btn" data-ym="${ym}" data-metric="${metric}" data-amount="${remaining}" data-id="${progressKey || ym + '_monthly_challenge'}">GET</button>` : ''}
+            ${!isEarned && isCurrentMonth && remaining > 0 ? `<button class="DH_Quest_Get_Btn" data-ym="${ym}" data-metric="${metric}" data-amount="${remaining}" data-id="${progressKey || ym + '_monthly_challenge'}">GET +${remaining}</button>` : ''}
+            ${isEarned ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;"><circle cx="12" cy="12" r="10" fill="rgba(var(--DH-green),0.15)" stroke="rgb(var(--DH-green))" stroke-width="1.5"/><path d="M7.5 12.5l3 3 6-6" stroke="rgb(var(--DH-green))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>` : ''}
         `;
+
                 const btn = item.querySelector('.DH_Quest_Get_Btn');
                 if (btn) btn.addEventListener('click', async () => {
                     btn.disabled = true;
                     btn.textContent = '…';
                     try {
+                        const [qYr, qMo] = btn.dataset.ym.split('_');
+                        const ts = new Date(Date.UTC(parseInt(qYr), parseInt(qMo)-1, 15, 12, 0, 0)).toISOString();
+                        // Send only the specific metric for this month
+                        const updates = [{ metric: btn.dataset.metric, quantity: parseInt(btn.dataset.amount) }];
                         const payload = {
-                            metric_updates: [{
-                                metric: btn.dataset.metric,
-                                quantity: parseInt(btn.dataset.amount)
-                            }],
-                            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                            timestamp: _mqGetTimestamp(btn.dataset.id)
+                            metric_updates: updates,
+                            timestamp: ts,
+                            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
                         };
-                        const r = await _mqGm('POST', `${GOALS_API}/users/${_sub}/progress/batch`, payload, gh);
-                        if (r.status === 200) {
+                        // Call twice: 1st updates progress, 2nd triggers badge award (Duolingo quirk)
+                        const r1 = await _mqGm('POST', `${GOALS_API}/users/${_sub}/progress/batch`, payload, gh);
+                        if (r1.status !== 200) {
+                            btn.textContent = 'ERR ' + r1.status;
+                            btn.disabled = false;
+                            return;
+                        }
+                        await new Promise(res => setTimeout(res, 800));
+                        const r2 = await _mqGm('POST', `${GOALS_API}/users/${_sub}/progress/batch`, payload, gh);
+                        if (r2.status === 200) {
                             btn.textContent = '✓';
                             btn.classList.add('done');
                             _notif('✅', 'Quest Done!', 'Progress injected successfully.');
                             setTimeout(() => _loadMonthlyQuests(), 900);
                         } else {
-                            btn.textContent = 'ERR';
+                            btn.textContent = 'ERR ' + r2.status;
                             btn.disabled = false;
                         }
-                    } catch {
+                    } catch(e) {
                         btn.textContent = 'ERR';
                         btn.disabled = false;
                     }
@@ -5285,54 +7049,81 @@
                 _notif('⚠️', 'Not loaded', 'Open Monthly Quests first.');
                 return;
             }
-            const claimBtn = document.getElementById('DH_MQ_ClaimAll_Btn');
-            if (claimBtn) {
-                claimBtn.disabled = true;
-                const lbl = claimBtn.querySelector('.DH_Sm_Btn_Label');
-                if (lbl) lbl.textContent = '…';
+            const cont = document.getElementById('DH_MQ_Container');
+            const buttons = cont ? [...cont.querySelectorAll('.DH_Quest_Get_Btn')] : [];
+            if (buttons.length === 0) {
+                _notif('ℹ️', 'Nothing to do', 'No unclaimed quests found.');
+                return;
             }
+
+            const claimBtn = document.getElementById('DH_MQ_ClaimAll_Btn');
+            const lbl = claimBtn?.querySelector('.DH_Sm_Btn_Label');
+            if (claimBtn) claimBtn.disabled = true;
+            if (lbl) lbl.textContent = '0%';
+
+            const progEl = document.getElementById('DH_MQ_Prog');
+            const fillEl = document.getElementById('DH_MQ_Fill');
+            if (progEl) progEl.classList.add('on');
+            if (fillEl) fillEl.style.width = '0%';
+
+            buttons.forEach(b => { b.disabled = true; b.textContent = '…'; });
+
             const gh = _goalHdrsLocal(_jwt);
-            const uniqueMetrics = new Set();
-            _questState.schema.goals.forEach(g => {
-                if (g.category && g.category.includes('MONTHLY') && g.metric) uniqueMetrics.add(g.metric);
-            });
-            if (uniqueMetrics.size > 0) {
-                const updates = [...uniqueMetrics].map(m => ({
-                    metric: m,
-                    quantity: 2000
-                }));
-                updates.push({
-                    metric: 'QUESTS',
-                    quantity: 1
-                });
+            const total = buttons.length;
+            let done = 0, ok = 0;
+
+            async function _claimOne(btn) {
+                const [qYr, qMo] = btn.dataset.ym.split('_');
+                const ts = new Date(Date.UTC(parseInt(qYr), parseInt(qMo) - 1, 15, 12, 0, 0)).toISOString();
                 const payload = {
-                    metric_updates: updates,
-                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                    timestamp: new Date().toISOString()
+                    metric_updates: [{ metric: btn.dataset.metric, quantity: parseInt(btn.dataset.amount) }],
+                    timestamp: ts,
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
                 };
                 try {
-                    await _mqGm('POST', `${GOALS_API}/users/${_sub}/progress/batch`, payload, gh);
-                    _notif('✅', 'Monthly Quests', 'All monthly quests claimed!');
-                    setTimeout(() => _loadMonthlyQuests(), 900);
-                } catch {
-                    _notif('❌', 'Error', 'Failed to claim quests.');
-                }
+                    const r1 = await _mqGm('POST', `${GOALS_API}/users/${_sub}/progress/batch`, payload, gh);
+                    if (r1.status !== 200) return false;
+                    await new Promise(res => setTimeout(res, 800));
+                    const r2 = await _mqGm('POST', `${GOALS_API}/users/${_sub}/progress/batch`, payload, gh);
+                    return r2.status === 200;
+                } catch { return false; }
+            }
+
+            const THREADS = 3;
+            for (let i = 0; i < buttons.length; i += THREADS) {
+                const chunk = buttons.slice(i, i + THREADS);
+                const results = await Promise.all(chunk.map(b => _claimOne(b)));
+                results.forEach((success, j) => {
+                    const b = chunk[j];
+                    b.textContent = success ? '✓' : 'ERR';
+                    if (success) { b.classList.add('done'); ok++; }
+                    done++;
+                });
+                const pct = Math.round((done / total) * 100);
+                if (fillEl) fillEl.style.width = pct + '%';
+                if (lbl) lbl.textContent = pct + '%';
+            }
+
+            if (progEl) progEl.classList.remove('on');
+            if (claimBtn) claimBtn.disabled = false;
+            if (lbl) lbl.textContent = _t('btn_claim');
+
+            if (ok === total) {
+                _notif('✅', 'Monthly Quests', `All ${total} quest(s) claimed!`);
+            } else if (ok > 0) {
+                _notif('⚠️', 'Partial', `${ok}/${total} quests claimed.`);
             } else {
-                _notif('ℹ️', 'Nothing to do', 'No monthly metrics found.');
+                _notif('❌', 'Failed', 'No quests could be claimed.');
             }
-            if (claimBtn) {
-                claimBtn.disabled = false;
-                const lbl = claimBtn.querySelector('.DH_Sm_Btn_Label');
-                if (lbl) lbl.textContent = _t('btn_claim');
-            }
+            setTimeout(() => _loadMonthlyQuests(), 900);
         }
 
         document.getElementById('DH_Hide_Btn').addEventListener('click', () => _doHide(!_hidden));
 
 
         document.getElementById('DH_SwitchV1_Btn').addEventListener('click', () => {
+            if (_pageBusy) return;
             _v1Mode = true;
-
             document.getElementById('DH_SwitchV1_Btn').style.display = 'none';
             document.getElementById('DH_SwitchV2_Btn').style.display = '';
             _v1SyncUser();
@@ -5341,30 +7132,21 @@
         });
 
         document.getElementById('DH_SwitchV2_Btn').addEventListener('click', () => {
+            if (_pageBusy) return;
             _v1Mode = false;
-
             if (_v1Running) {
                 _v1Running = false;
                 _v1Task = null;
             }
-
             document.getElementById('DH_SwitchV2_Btn').style.display = 'none';
             document.getElementById('DH_SwitchV1_Btn').style.display = '';
             _goPage(1);
         });
 
 
-        document.getElementById('DH_V1_XP_Btn').addEventListener('click', () => _v1RunToggle('xp'));
-        document.getElementById('DH_V1_Gem_Btn').addEventListener('click', () => _v1RunToggle('gems'));
-        document.getElementById('DH_V1_Streak_Btn').addEventListener('click', () => _v1RunToggle('streak'));
+        // V1 XP/Gem/Streak buttons removed from Solver page
 
-        // ── Free Super Duolingo ──
-        function _getSuperJWT() {
-            const match = document.cookie.split('; ').find(r => r.startsWith('jwt_token='));
-            return match ? match.split('=')[1] : null;
-        }
-
-        async function _activateFreeSuper(btnId, lblId, progId, fillId) {
+        async function _activateFreeSuper_REMOVED(btnId, lblId, progId, fillId) { return; // removed
             const jwt = _getSuperJWT();
             if (!jwt) {
                 _notif('⚠️', 'Not logged in', 'Could not find your Duolingo token. Please log in first.', 5);
@@ -5431,20 +7213,7 @@
             }
         }
 
-        // Enable Super buttons after user connects (jwt available from cookie)
-        // V2 Extra Features (page 2)
-        const superBtn = document.getElementById('DH_Super_Activate_Btn');
-        superBtn.disabled = false;
-        superBtn.addEventListener('click', () => _activateFreeSuper('DH_Super_Activate_Btn', 'DH_Super_Activate_Lbl', 'DH_Super_Prog', 'DH_Super_Fill'));
-
-        // V1
-        const superV1Btn = document.getElementById('DH_V1_Super_Activate_Btn');
-        superV1Btn.disabled = false;
-        superV1Btn.addEventListener('click', () => _activateFreeSuper('DH_V1_Super_Activate_Btn', 'DH_V1_Super_Activate_Lbl', 'DH_V1_Super_Prog', 'DH_V1_Super_Fill'));
-        document.getElementById('DH_V1_Settings_Btn').addEventListener('click', () => {
-            _goPage(4);
-            _initHideProfileToggle();
-        });
+        document.getElementById('DH_V1_Settings_Btn').addEventListener('click', () => _goPage(2));
         document.getElementById('DH_Discord_Btn').addEventListener('click', () => window.open('https://duohacker.io.vn/discord', '_blank'));
         document.getElementById('DH_GitHub_Btn').addEventListener('click', () => window.open('https://duohacker.io.vn/github', '_blank'));
         document.getElementById('DH_YouTube_Btn').addEventListener('click', () => window.open('https://duohacker.io.vn/youtube', '_blank'));
@@ -5455,6 +7224,12 @@
         document.getElementById('DH_Donate_Btn').addEventListener('click', () => {
             window.open('https://duohacker.io.vn/donation#choose', '_blank');
         });
+        // Solver page social/donate/settings buttons
+        document.getElementById('DH_V1_Discord_Btn').addEventListener('click', () => window.open('https://duohacker.io.vn/discord', '_blank'));
+        document.getElementById('DH_V1_GitHub_Btn').addEventListener('click', () => window.open('https://duohacker.io.vn/github', '_blank'));
+        document.getElementById('DH_V1_YouTube_Btn').addEventListener('click', () => window.open('https://duohacker.io.vn/youtube', '_blank'));
+        document.getElementById('DH_V1_Donate_Btn').addEventListener('click', () => window.open('https://duohacker.io.vn/donation#choose', '_blank'));
+        document.getElementById('DH_V1_TopSettings_Btn').addEventListener('click', () => { _goPage(4); _initHideProfileToggle(); });
 
         async function _getPrivacy() {
             if (!_sub || !_hdrs) return null;
@@ -5540,6 +7315,9 @@
         document.getElementById('DH_Back_Btn').addEventListener('click', () => _goBack());
         document.getElementById('DH_Shop_Btn').addEventListener('click', () => _goPage(3));
         document.getElementById('DH_Shop_Back_Btn').addEventListener('click', () => _goBack());
+        document.getElementById('DH_LB_Nav_Btn').addEventListener('click', () => _goPage(11));
+        document.getElementById('DH_LB_Back_Btn').addEventListener('click', () => _goBack());
+        document.getElementById('DH_React_Back_Btn').addEventListener('click', () => _goBack());
         document.getElementById('DH_Settings_Back_Btn').addEventListener('click', () => {
             _initHideProfileToggle();
             _goBack();
@@ -5666,6 +7444,221 @@
             if (e.key === 'Enter' && !stB.disabled) stB.click();
         });
 
+        // ── Mode Buttons (# / Time / Infinity) ──────────────────────────────────
+        (function _setupModeBtns() {
+            // SVG icons matching DuoHacker stroke style
+            const ICON_HASH = '􀆃'; // SF Symbol: number.sign (#)
+            const ICON_TIME = '􀐬'; // SF Symbol: timer
+            const ICON_INF  = '∞'; // SF Symbol: infinity
+
+            // Clone a button element to strip ALL existing event listeners
+            function cloneBtn(id) {
+                const old = document.getElementById(id);
+                if (!old) return null;
+                const fresh = old.cloneNode(true);
+                old.parentNode.replaceChild(fresh, old);
+                return fresh;
+            }
+
+            // ── XP: hash → time → infinity ──
+            let xpMode = 'hash';
+            const xpModeBtn  = document.getElementById('DH_XP_Mode_Btn');
+            const xpModeIcon = document.getElementById('DH_XP_Mode_Icon');
+            const xpInputWrap = document.getElementById('DH_XP_Input_Wrap');
+            // Clone xpB to remove old click listeners that would conflict
+            const xpBtn = cloneBtn('DH_XP_Btn');
+
+            function syncXPMode() {
+                const icon = document.getElementById('DH_XP_Mode_Icon');
+                if (xpMode === 'hash') {
+                    icon.textContent = ICON_HASH;
+                    xpModeBtn.title = 'Switch to Time Mode';
+                    xpInputWrap.style.opacity = '';
+                    xpI.style.pointerEvents = '';
+                    xpI.readOnly = false;
+                    xpI.placeholder = '0';
+                    xpBtn.disabled = !_user || !xpI.value || +xpI.value < 30;
+                } else if (xpMode === 'time') {
+                    icon.textContent = ICON_TIME;
+                    xpModeBtn.title = 'Switch to Infinite Mode';
+                    xpInputWrap.style.opacity = '';
+                    xpI.style.pointerEvents = '';
+                    xpI.readOnly = false;
+                    xpI.placeholder = 'min';
+                    xpBtn.disabled = !_user || !xpI.value || +xpI.value < 1;
+                } else {
+                    icon.textContent = ICON_INF;
+                    xpModeBtn.title = 'Switch to # Mode';
+                    xpInputWrap.style.opacity = '0.35';
+                    xpI.style.pointerEvents = 'none';
+                    xpBtn.disabled = !_user;
+                }
+            }
+            xpModeBtn.addEventListener('click', () => {
+                xpMode = xpMode === 'hash' ? 'time' : xpMode === 'time' ? 'infinity' : 'hash';
+                xpI.value = '';
+                syncXPMode();
+            });
+            xpI.addEventListener('input', () => { syncXPMode(); });
+            xpI.addEventListener('keydown', e => { if (e.key === 'Enter' && !xpBtn.disabled) xpBtn.click(); });
+            xpBtn.addEventListener('click', () => {
+                if (_running && _task === 'xp') {
+                    if (xpMode === 'hash') { _run('xp', 0); } else { _running = false; }
+                    return;
+                }
+                if (_running) { _notif('⚠️', 'Busy', 'Stop current farm first.'); return; }
+                if (xpMode === 'infinity') {
+                    _run('xp', 99999999);
+                    setTimeout(() => {
+                        const prog = document.getElementById('DH_XP_Prog');
+                        if (prog) { prog.classList.remove('on'); }
+                        const fill = document.getElementById('DH_XP_Fill');
+                        if (fill) fill.style.width = '0%';
+                    }, 80);
+                } else if (xpMode === 'time') {
+                    const mins = +xpI.value;
+                    if (mins < 1) { _notif('⚠️', 'Min 1 min', 'Enter at least 1 minute.'); return; }
+                    const startAt = Date.now();
+                    const endAt = startAt + mins * 60000;
+                    const totalMs = mins * 60000;
+                    _run('xp', 99999999);
+                    const progEl  = document.getElementById('DH_XP_Prog');
+                    if (progEl) progEl.classList.add('on');
+                    const stopTimer = setInterval(() => {
+                        if (!_running || _task !== 'xp') { clearInterval(stopTimer); return; }
+                        const now = Date.now();
+                        const elapsed = now - startAt;
+                        const pct = Math.min(100, Math.floor((elapsed / totalMs) * 100));
+                        const fill = document.getElementById('DH_XP_Fill');
+                        if (fill) fill.style.width = pct + '%';
+                        if (now >= endAt) { clearInterval(stopTimer); _running = false; }
+                    }, 500);
+                } else {
+                    const v = +xpI.value;
+                    if (v < 30) { _notif('⚠️', 'Min 30 XP', 'Enter at least 30 XP.'); return; }
+                    _run('xp', v);
+                }
+            });
+            syncXPMode();
+
+            // ── Streak: hash → time → infinity ──
+            let stMode = 'hash';
+            const stModeBtn  = document.getElementById('DH_Streak_Mode_Btn');
+            const stModeIcon = document.getElementById('DH_Streak_Mode_Icon');
+            const stInputWrap = document.getElementById('DH_Streak_Input_Wrap');
+            // Clone stB to remove old click listeners
+            const stBtn = cloneBtn('DH_Streak_Btn');
+
+            function syncStMode() {
+                const icon = document.getElementById('DH_Streak_Mode_Icon');
+                if (stMode === 'hash') {
+                    icon.textContent = ICON_HASH;
+                    stModeBtn.title = 'Switch to Time Mode';
+                    stInputWrap.style.opacity = '';
+                    stI.style.pointerEvents = '';
+                    stI.readOnly = false;
+                    stI.placeholder = '0';
+                    stBtn.disabled = !_user || !stI.value || +stI.value < 1;
+                } else if (stMode === 'time') {
+                    icon.textContent = ICON_TIME;
+                    stModeBtn.title = 'Switch to Infinite Mode';
+                    stInputWrap.style.opacity = '';
+                    stI.style.pointerEvents = '';
+                    stI.readOnly = false;
+                    stI.placeholder = 'min';
+                    stBtn.disabled = !_user || !stI.value || +stI.value < 1;
+                } else {
+                    icon.textContent = ICON_INF;
+                    stModeBtn.title = 'Switch to # Mode';
+                    stInputWrap.style.opacity = '0.35';
+                    stI.style.pointerEvents = 'none';
+                    stBtn.disabled = !_user;
+                }
+            }
+            stModeBtn.addEventListener('click', () => {
+                stMode = stMode === 'hash' ? 'time' : stMode === 'time' ? 'infinity' : 'hash';
+                stI.value = '';
+                syncStMode();
+            });
+            stI.addEventListener('input', () => { syncStMode(); });
+            stI.addEventListener('keydown', e => { if (e.key === 'Enter' && !stBtn.disabled) stBtn.click(); });
+            stBtn.addEventListener('click', () => {
+                if (_running && _task === 'streak') {
+                    if (stMode === 'hash') { _run('streak', 0); } else { _running = false; }
+                    return;
+                }
+                if (_running) { _notif('⚠️', 'Busy', 'Stop current farm first.'); return; }
+                if (stMode === 'infinity') {
+                    _run('streak', 9999);
+                    setTimeout(() => {
+                        const prog = document.getElementById('DH_Streak_Prog');
+                        if (prog) { prog.classList.remove('on'); }
+                        const fill = document.getElementById('DH_Streak_Fill');
+                        if (fill) fill.style.width = '0%';
+                    }, 80);
+                } else if (stMode === 'time') {
+                    const mins = +stI.value;
+                    if (mins < 1) { _notif('⚠️', 'Min 1 min', 'Enter at least 1 minute.'); return; }
+                    const startAt = Date.now();
+                    const endAt = startAt + mins * 60000;
+                    const totalMs = mins * 60000;
+                    _run('streak', 9999);
+                    const progEl  = document.getElementById('DH_Streak_Prog');
+                    if (progEl) progEl.classList.add('on');
+                    const stopTimer = setInterval(() => {
+                        if (!_running || _task !== 'streak') { clearInterval(stopTimer); return; }
+                        const now = Date.now();
+                        const elapsed = now - startAt;
+                        const pct = Math.min(100, Math.floor((elapsed / totalMs) * 100));
+                        const fill = document.getElementById('DH_Streak_Fill');
+                        if (fill) fill.style.width = pct + '%';
+                        if (now >= endAt) { clearInterval(stopTimer); _running = false; }
+                    }, 500);
+                } else {
+                    const v = +stI.value;
+                    if (v < 1) return;
+                    _run('streak', v);
+                }
+            });
+            syncStMode();
+
+            // ── Gem: hash → infinity ──
+            let gmMode = 'hash';
+            const gmModeBtn  = document.getElementById('DH_Gem_Mode_Btn');
+            const gmInputWrap = document.getElementById('DH_Gem_Input_Wrap');
+            const gmI = document.getElementById('DH_Gem_Input');
+            // Clone gmB to remove old click listeners
+            const gmBtn = cloneBtn('DH_Gem_Btn');
+
+            function syncGmMode() {
+                const icon = document.getElementById('DH_Gem_Mode_Icon');
+                if (gmMode === 'hash') {
+                    icon.textContent = ICON_HASH;
+                    gmModeBtn.title = 'Switch to Infinite Mode';
+                    gmInputWrap.style.opacity = '';
+                    gmI.style.pointerEvents = 'none';
+                    gmI.placeholder = '0';
+                } else {
+                    icon.textContent = ICON_INF;
+                    gmModeBtn.title = 'Switch to # Mode';
+                    gmInputWrap.style.opacity = '0.35';
+                    gmI.style.pointerEvents = 'none';
+                }
+                gmBtn.disabled = !_user;
+            }
+            gmModeBtn.addEventListener('click', () => {
+                gmMode = gmMode === 'hash' ? 'infinity' : 'hash';
+                syncGmMode();
+            });
+            gmBtn.addEventListener('click', () => {
+                if (_running && _task === 'gem') { _run('gem', 0); return; }
+                if (_running) { _notif('⚠️', 'Busy', 'Stop current farm first.'); return; }
+                _run('gem', 0);
+            });
+            syncGmMode();
+        })();
+        // ────────────────────────────────────────────────────────────────────────
+
         const prI = document.getElementById('DH_Practice_Input'),
             prB = document.getElementById('DH_Practice_Btn');
         prI.addEventListener('input', () => {
@@ -5697,7 +7690,7 @@
             _farmPractice(v);
         });
 
-        document.getElementById('DH_League_Btn').addEventListener('click', () => {
+        document.getElementById('DH_League_Btn').addEventListener('click', async () => {
             if (_running && _task === 'league') {
                 _run('league', 0);
                 return;
@@ -5706,7 +7699,35 @@
                 _notif('⚠️', 'Busy', 'Stop current farm first.');
                 return;
             }
-            if (!confirm('⚠️ Warning\n\nOverusing this feature may result in your account being permanently banned from the leaderboard.\n\nDo you wish to continue?')) return;
+            // Ask user for target rank
+            const rankInput = prompt('🏆 Target Rank\n\nEnter the rank you want to reach (e.g. 1 for #1, 3 for top 3):');
+            if (rankInput === null) return;
+            const targetRank = parseInt(rankInput);
+            if (isNaN(targetRank) || targetRank < 1) {
+                _notif('❌', 'League', 'Invalid rank. Please enter a number ≥ 1.');
+                return;
+            }
+            // Check current rank before starting
+            try {
+                const LB = 'https://duolingo-leaderboards-prod.duolingo.com/leaderboards/7d9f5dd1-8423-491a-91f2-2532052038ce';
+                const r = await _gm('GET', `${LB}/users/${_sub}?client_unlocked=true&get_reactions=true&_=${Date.now()}`);
+                if (r.status === 200) {
+                    const data = JSON.parse(r.responseText);
+                    const ranks = data?.active?.cohort?.rankings || [];
+                    const me = ranks.find(u => u.user_id == _sub);
+                    if (me) {
+                        const myRank = ranks.indexOf(me) + 1;
+                        const aboveIdx = targetRank - 2;
+                        const abovePerson = aboveIdx >= 0 ? ranks[aboveIdx] : null;
+                        const targetScore = abovePerson ? abovePerson.score + 50 : 50;
+                        if (me.score >= targetScore || myRank <= targetRank) {
+                            _notif('✅', 'League', `Your rank (#${myRank}) is already at or above #${targetRank}!`);
+                            return;
+                        }
+                    }
+                }
+            } catch {}
+            _dhLeagueTarget = targetRank;
             _run('league', 0);
         });
 
@@ -5843,25 +7864,18 @@ body * {
             if (_licenseLoaded) return;
             const txt = document.getElementById('DH_License_Text');
             if (!txt) return;
-            GM_xmlhttpRequest({
-                method: 'GET',
-                url: 'https://raw.githubusercontent.com/DuoHacker/DuoHacker/refs/heads/main/LICENSE',
-                onload: r => {
-                    if (!document.getElementById('DH_License_Text')) return;
-                    document.getElementById('DH_License_Text').textContent =
-                        r.status === 200 ? r.responseText : 'Could not load license. Please check your connection.';
-                    _licenseLoaded = true;
-                },
-                onerror: () => {
+            _dhFetch('GET', 'https://raw.githubusercontent.com/DuoHacker/DuoHacker/refs/heads/main/LICENSE', null, {})
+                .then(r => {
                     const t = document.getElementById('DH_License_Text');
-                    if (t) t.textContent = 'Could not load license. Please check your connection.';
-                }
-            });
+                    if (!t) return;
+                    t.textContent = r.status === 200 ? r.responseText : 'Could not load license. Please check your connection.';
+                    if (r.status === 200) _licenseLoaded = true;
+                });
         }
         document.getElementById('DH_License_Open_Btn').addEventListener('click', () => _goPage(9));
         document.getElementById('DH_License_Back_Btn').addEventListener('click', () => _goBack());
         document.getElementById('DH_Changelog_Back_Btn').addEventListener('click', () => _goBack());
-        document.getElementById('DH_Conn_Btn').addEventListener('click', () => {
+        document.getElementById('DH_Version_Txt').addEventListener('click', () => {
             _renderChangelog();
             _goPage(10);
         });
@@ -5879,7 +7893,7 @@ body * {
                 vRow.style.cssText = 'display:flex;align-items:center;gap:8px;';
                 vRow.innerHTML = `
             <p class="DH_T1 DH_NoSel" style="font-size:15px;font-weight:800;color:rgb(var(--color-eel,88,88,88));">v${entry.version}</p>
-            ${isLatest ? `<span style="background:rgb(var(--DH-blue));color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;">CURRENT</span>` : ''}
+            ${isLatest ? `<span style="background:rgb(var(--DH-blue));color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;">${_t('changelog_current')}</span>` : ''}
         `;
 
                 const changeList = document.createElement('div');
@@ -5944,6 +7958,55 @@ body * {
         }, 700);
 
         _resumePracticeIfNeeded();
+
+        // ── Magnetic hover (giống DLP) ──
+        function _initMagneticHover(el) {
+            let down = false, origZ = null;
+            el.addEventListener('pointermove', e => {
+                const r = el.getBoundingClientRect();
+                const x = e.clientX - r.left - r.width / 2;
+                const y = e.clientY - r.top - r.height / 2;
+                el.style.transform = `translate(${x * 0.1}px, ${y * 0.1}px) scale(${down ? 0.9 : 1.05})`;
+                if (origZ === null) origZ = parseInt(el.style.zIndex) || 0;
+                el.style.zIndex = origZ + 1;
+            });
+            el.addEventListener('pointerleave', () => {
+                el.style.transform = 'translate(0,0) scale(1)';
+                if (origZ !== null) el.style.zIndex = origZ;
+                down = false;
+            });
+            el.addEventListener('pointerdown', e => {
+                down = true;
+                const r = el.getBoundingClientRect();
+                const x = e.clientX - r.left - r.width / 2;
+                const y = e.clientY - r.top - r.height / 2;
+                el.style.transform = `translate(${x * 0.1}px, ${y * 0.1}px) scale(0.9)`;
+            });
+            el.addEventListener('pointerup', e => {
+                down = false;
+                const r = el.getBoundingClientRect();
+                const x = e.clientX - r.left - r.width / 2;
+                const y = e.clientY - r.top - r.height / 2;
+                el.style.transform = `translate(${x * 0.1}px, ${y * 0.1}px) scale(1.05)`;
+            });
+        }
+        function _initAllMagneticHovers() {
+            const MARK = 'data-dh-mag';
+            document.querySelectorAll('.DH_Btn').forEach(el => {
+                if (!el.hasAttribute(MARK)) {
+                    _initMagneticHover(el);
+                    el.setAttribute(MARK, '1');
+                }
+            });
+        }
+        _initAllMagneticHovers();
+        new MutationObserver(muts => {
+            muts.forEach(m => m.addedNodes.forEach(n => {
+                if (!(n instanceof Element)) return;
+                if (n.classList.contains('DH_Btn') && !n.hasAttribute('data-dh-mag')) { _initMagneticHover(n); n.setAttribute('data-dh-mag','1'); }
+                n.querySelectorAll?.('.DH_Btn').forEach(d => { if (!d.hasAttribute('data-dh-mag')) { _initMagneticHover(d); d.setAttribute('data-dh-mag','1'); } });
+            }));
+        }).observe(document.documentElement, { childList: true, subtree: true });
 
     }
     _dhMountUI();

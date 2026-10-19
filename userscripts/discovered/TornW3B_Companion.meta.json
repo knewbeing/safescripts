@@ -1,0 +1,42 @@
+{
+  "slug": "TornW3B_Companion",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/595465-tornw3b-companion",
+  "source_repo": "595465",
+  "raw_url": "https://update.greasyfork.org/scripts/595465/TornW3B%20Companion.user.js",
+  "filename": "TornW3B_Companion.user.js",
+  "name": "TornW3B Companion",
+  "version": "0.22.14",
+  "description": "TornW3B Companion: chat helpers, trading tools, bazaars, filler, vault, and item shortcuts.",
+  "match": [
+    "https://www.torn.com/*"
+  ],
+  "grant": [
+    "GM.deleteValue",
+    "GM.getValue",
+    "GM.listValues",
+    "GM.setValue",
+    "GM.xmlHttpRequest",
+    "GM_addStyle",
+    "GM_deleteValue",
+    "GM_getValue",
+    "GM_info",
+    "GM_listValues",
+    "GM_registerMenuCommand",
+    "GM_setClipboard",
+    "GM_setValue",
+    "GM_xmlhttpRequest",
+    "unsafeWindow"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  TornW3B Companion\n// @namespace  http://tampermonkey.net/\n// @version  0.22.14\n// @author  Weav3r [1853324]\n// @description  TornW3B Companion: chat helpers, trading tools, bazaars, filler, vault, and item shortcuts.\n// @license  MIT\n// @match  https://www.torn.com/*\n// @connect  weav3r.dev\n// @connect  api.torn.com\n// @grant  GM.deleteValue\n// @grant  GM.getValue\n// @grant  GM.listValues\n// @grant  GM.setValue\n// @grant  GM.xmlHttpRequest\n// @grant  GM_addStyle\n// @grant  GM_deleteValue\n// @grant  GM_getValue\n// @grant  GM_info\n// @grant  GM_listValues\n// @grant  GM_registerMenuCommand\n// @grant  GM_setClipboard\n// @grant  GM_setValue\n// @grant  GM_xmlhttpRequest\n// @grant  unsafeWindow\n// @run-at  document-start\n// @downloadURL  https://update.greasyfork.org/scripts/595465/TornW3B%20Companion.user.js\n// @updateURL  https://update.greasyfork.org/scripts/595465/TornW3B%20Companion.meta.js",
+  "sha256": "d5983a72dfdcbdf77df920feaf4a24de878dc6a40a8acb47d86ad41cd04591fe",
+  "discovered_at": "2026-10-19T07:07:35.181191+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 821,
+  "good_ratings": 0,
+  "bad_ratings": 0,
+  "summary": {}
+}

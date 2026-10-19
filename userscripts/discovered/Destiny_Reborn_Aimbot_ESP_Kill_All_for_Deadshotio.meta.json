@@ -1,0 +1,28 @@
+{
+  "slug": "Destiny_Reborn_Aimbot_ESP_Kill_All_for_Deadshotio",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/596418-destiny-reborn-aimbot-esp-kill-all-for-deadshot-io",
+  "source_repo": "596418",
+  "raw_url": "https://update.greasyfork.org/scripts/596418/Destiny%20Reborn%20%28Aimbot%2C%20ESP%2C%20Kill%20All%20for%20Deadshotio%29.user.js",
+  "filename": "Destiny_Reborn_Aimbot_ESP_Kill_All_for_Deadshotio.user.js",
+  "name": "Destiny Reborn (Aimbot, ESP, Kill All for Deadshot.io)",
+  "version": "5.4.0",
+  "description": "Destiny Reborn (Aimbot, ESP, Kill All)",
+  "match": [
+    "https://deadshot.io/"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Destiny Reborn (Aimbot, ESP, Kill All for Deadshot.io)\n// @namespace  http://tampermonkey.net/\n// @version  5.4.0\n// @description  Destiny Reborn (Aimbot, ESP, Kill All)\n// @match  https://deadshot.io/\n// @run-at  document-start\n// @sandbox  raw\n// @grant  none\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/596418/Destiny%20Reborn%20%28Aimbot%2C%20ESP%2C%20Kill%20All%20for%20Deadshotio%29.user.js\n// @updateURL  https://update.greasyfork.org/scripts/596418/Destiny%20Reborn%20%28Aimbot%2C%20ESP%2C%20Kill%20All%20for%20Deadshotio%29.meta.js",
+  "sha256": "2ae534dcc72ffe5a057e9aa3c97922127140d8b858748ebe67cd81d296abc2d2",
+  "discovered_at": "2026-10-19T07:07:33.206415+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 923,
+  "good_ratings": 0,
+  "bad_ratings": 1,
+  "summary": {}
+}

@@ -6,7 +6,7 @@
   "raw_url": "https://update.greasyfork.org/scripts/535292/FF%20Scouter%20V2.user.js",
   "filename": "FF_Scouter_V2.user.js",
   "name": "FF Scouter V2",
-  "version": "3.0.1",
+  "version": "3.3",
   "description": "Shows the expected Fair Fight score against targets and faction war status",
   "match": [
     "https://www.torn.com/*"
@@ -15,44 +15,17 @@
     "GM_xmlhttpRequest",
     "unsafeWindow"
   ],
-  "require": [],
-  "metadata_raw": "// @name  FF Scouter V2\n// @namespace  Violentmonkey Scripts\n// @version  3.0.1\n// @author  xentac [3354782], MAVRI [2402357], rDacted [2670953], Weav3r [1853324], Glasnost [1844049]\n// @description  Shows the expected Fair Fight score against targets and faction war status\n// @license  GPLv3\n// @copyright  2026, xentac\n// @match  https://www.torn.com/*\n// @connect  ffscouter.com\n// @grant  GM_xmlhttpRequest\n// @grant  unsafeWindow\n// @run-at  document-start\n// @downloadURL  https://update.greasyfork.org/scripts/535292/FF%20Scouter%20V2.user.js\n// @updateURL  https://update.greasyfork.org/scripts/535292/FF%20Scouter%20V2.meta.js",
-  "sha256": "5027f69c36dd60ebc0926477ed75de59dbe2ee8c480c9ab18381c24af8c92a67",
-  "discovered_at": "2026-07-06T06:22:10.666288+00:00",
+  "require": [
+    "https://www.torn.com/builds/react-umd/react-dom.19.2.0.93c06d8e.production.js"
+  ],
+  "metadata_raw": "// @name  FF Scouter V2\n// @namespace  Violentmonkey Scripts\n// @version  3.3\n// @author  xentac [3354782], MAVRI [2402357], rDacted [2670953], Weav3r [1853324], Glasnost [1844049]\n// @description  Shows the expected Fair Fight score against targets and faction war status\n// @license  GPLv3\n// @copyright  2026, xentac\n// @match  https://www.torn.com/*\n// @require  https://www.torn.com/builds/react-umd/react-dom.19.2.0.93c06d8e.production.js\n// @connect  ffscouter.com\n// @grant  GM_xmlhttpRequest\n// @grant  unsafeWindow\n// @run-at  document-start\n// @downloadURL  https://update.greasyfork.org/scripts/535292/FF%20Scouter%20V2.user.js\n// @updateURL  https://update.greasyfork.org/scripts/535292/FF%20Scouter%20V2.meta.js",
+  "sha256": "a9727e689c7e864a79b44f6a84b1eaf6262347e2c2110b79f4a78e5e13def1e9",
+  "discovered_at": "2026-10-19T07:07:23.391900+00:00",
   "ai_reason": "",
   "target_roles": "",
   "is_new": false,
-  "install_count": 18764,
-  "good_ratings": 3,
-  "bad_ratings": 5,
-  "summary": {
-    "applicable_sites": [
-      "Torn 城市游戏"
-    ],
-    "description": "此脚本在 Torn 游戏网站上显示目标玩家的预期 Fair Fight 分数和帮派战争状态，帮助玩家更好地评估攻击目标。信息会直接集成在页面相关位置，方便查看。",
-    "permissions": [
-      {
-        "explanation": "允许脚本通过网络请求获取外部数据（如 Fair Fight 分数）。",
-        "grant": "GM_xmlhttpRequest"
-      },
-      {
-        "explanation": "允许脚本访问和修改网页的全局变量，增强页面交互能力。",
-        "grant": "unsafeWindow"
-      }
-    ],
-    "tags": [
-      "游戏辅助",
-      "信息展示",
-      "Torn",
-      "帮派战争",
-      "玩家评分",
-      "网页增强"
-    ],
-    "usage": [
-      "安装脚本后，访问 Torn 游戏网站。",
-      "在玩家或帮派相关页面，会自动显示 Fair Fight 分数和战争状态。",
-      "无需额外操作，信息会集成在页面内。"
-    ],
-    "zh_name": "FF评分侦查器V2"
-  }
+  "install_count": 26489,
+  "good_ratings": 4,
+  "bad_ratings": 7,
+  "summary": {}
 }

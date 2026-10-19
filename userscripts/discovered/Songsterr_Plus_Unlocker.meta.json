@@ -1,0 +1,28 @@
+{
+  "slug": "Songsterr_Plus_Unlocker",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/574471-songsterr-plus-unlocker",
+  "source_repo": "574471",
+  "raw_url": "https://update.greasyfork.org/scripts/574471/Songsterr%20Plus%20Unlocker.user.js",
+  "filename": "Songsterr_Plus_Unlocker.user.js",
+  "name": "Songsterr Plus Unlocker",
+  "version": "1.0.0",
+  "description": "Unlocks Songsterr Plus features: print, export, metronome, pitch shift, solo, mute, speed control. Client-side bypass — no account needed.",
+  "match": [
+    "https://www.songsterr.com/*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Songsterr Plus Unlocker\n// @namespace  https://greasyfork.org/users/songsterr-plus-unlocker\n// @version  1.0.0\n// @description  Unlocks Songsterr Plus features: print, export, metronome, pitch shift, solo, mute, speed control. Client-side bypass — no account needed.\n// @description:tr  Songsterr Plus özelliklerini açar: yazdır, dışa aktar, metronom, perde kaydırma, solo, susturma, hız kontrolü. Hesap gerektirmez.\n// @author  juniowalley\n// @match  https://www.songsterr.com/*\n// @grant  none\n// @run-at  document-start\n// @license  MIT\n// @homepageURL  https://greasyfork.org/scripts/songsterr-plus-unlocker\n// @supportURL  https://greasyfork.org/scripts/songsterr-plus-unlocker/feedback\n// @compatible  chrome\n// @compatible  firefox\n// @compatible  edge\n// @compatible  opera\n// @contributionURL  https://greasyfork.org/scripts/songsterr-plus-unlocker\n// @downloadURL  https://update.greasyfork.org/scripts/574471/Songsterr%20Plus%20Unlocker.user.js\n// @updateURL  https://update.greasyfork.org/scripts/574471/Songsterr%20Plus%20Unlocker.meta.js",
+  "sha256": "e7b7bfe07aff1c26b150e791fbb6d04f4da80a0ef38cbbb2a1db8feb03838633",
+  "discovered_at": "2026-10-19T07:07:30.256451+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 3601,
+  "good_ratings": 0,
+  "bad_ratings": 0,
+  "summary": {}
+}

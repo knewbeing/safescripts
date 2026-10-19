@@ -20,7 +20,7 @@
 // @description:zh-CN    隐蔽式 GeoGuessr 辅助器｜按 Tab 打开设置菜单｜地图标点｜发送 Discord｜在 Google 地图中打开当前位置
 // @description:ja    検出されにくい GeoGuessr 支援ツール｜Tabキーで設定メニューを開く｜マップにピンを配置｜Discord送信｜Googleマップで現在地を開く
 // @namespace    https://greasyfork.org/en/users/1588266-woggieboost
-// @version    12.5
+// @version    13.2
 // @author    woggieboost
 // @license    MIT
 // @include    *://*.geoguessr.com/*
@@ -53,6 +53,7 @@
         sendToDiscord: 'q',
         notify: 'g',
         toggleMarker: 'x',
+        toggleCoverageLayer: 'u',
         toggleInfo: 'v',
         openInGoogle:'t',
     };
@@ -62,6 +63,7 @@
         sendToDiscord: true,
         notify: true,
         toggleMarker: true,
+        toggleCoverageLayer: true,
         toggleInfo: true,
         openInGoogle:true,
         autoSend: false,
@@ -79,20 +81,22 @@
         opponentMarker: null,
         currentAddress: null,
         isInfoDisplayed: false,
-        isChecked: false,
         lastCoord: null,
         originalNickname: null,
         originalFlag: null,
         nicknameEl: null,
         logoElement: null,
         panel:null,
+        coverageLayer : null,
         hotkeys: GM_getValue('hotkeys', DEFAULT_HOTKEYS),
         featureToggles: GM_getValue('featureToggles', DEFAULT_TOGGLES),
         panoCache: new Map()
     };
 
-    if (!state.featureToggles.showOpponentGuess) {
-        state.featureToggles.showOpponentGuess = true;
+    if (!state.featureToggles?.toggleCoverageLayer) {
+        state.hotkeys.toggleCoverageLayer = 'u';
+        state.featureToggles.toggleCoverageLayer = true;
+        GM_setValue('hotkeys', state.hotkeys);
         GM_setValue('featureToggles', state.featureToggles);
     }
 
@@ -268,11 +272,22 @@
     }
 
     else if (platform == PLATFORM.FREEGUESSR){
+        const originalEndsWith = String.prototype.endsWith;
+        String.prototype.endsWith = new Proxy(originalEndsWith, {
+            apply(target, thisArg, args) {
+                const appendix=args[0]
+                if(appendix == 'web.app') return true;
+                return Reflect.apply(target, thisArg, args);
+            }
+        });
+
         const origStartsWith = String.prototype.startsWith;
         String.prototype.startsWith = new Proxy(origStartsWith, {
             apply(target, thisArg, args) {
                 const prefix = args[0];
-                if (prefix === "pSTx63EYu") return true;
+                if (prefix == "pSTx63EYu" || prefix == 'paBoTFkzGWSM') {
+                    return true;
+                }
                 return Reflect.apply(target, thisArg, args);
             }
         });
@@ -448,6 +463,41 @@
         return `https://mapsresources-pa.googleapis.com/v1/tiles?map_id=61449c20e7fc278b&version=sdk-15797339025669136861&pb=!1m5!1m4!1i${zoom}!2i${tileX}!3i${tileY}!4i256!2m3!1e0!2sm!3i773537392!3m13!2sen!3sUS!5e18!12m5!1e68!2m2!1sset!2sRoadmap!4e2!12m3!1e37!2m1!1ssmartmaps!4e0!5m2!1e3!5f2!23i46991212!23i47054750!23i47083502!23i56565656!26m2!1e2!1e3`;
     }
 
+    function toggleCoverageLayer() {
+        if(!state.coverageLayer && state.gameMap){
+            const TILES_URL = 'https://www.google.com/maps/vt?pb=!1m7!8m6!1m3!1i{z}!2i{x}!3i{y}!2i9!3x1!2m8!1e2!2ssvv!4m2!1scc!2s*211m3*211e2*212b1*213e2*212b1*214b1!4m2!1ssvl!2s*211b0*212b1!3m7!2sen!3sus!5e1105!12m1!1e68!12m1!1e2!4e0!5m5!1e0!8m2!1e1!1e1!8i47083502!6m6!1e12!2i2!11e0!39b0!44e0!50e0';
+
+            if((platform == PLATFORM.GEOGUESSR || platform == PLATFORM.GEOTASTIC)){
+                state.coverageLayer = new google.maps.ImageMapType({
+                    getTileUrl: function(coord, zoom) {
+                        return TILES_URL.replace('{z}', zoom)
+                            .replace('{x}', coord.x)
+                            .replace('{y}', coord.y);
+                    },
+                    tileSize: new google.maps.Size(256, 256),
+                    name: 'StreetView',
+                    maxZoom: 20,
+                    minZoom: 0
+                });
+                state.gameMap.overlayMapTypes.insertAt(0, state.coverageLayer);
+            }
+            else {
+                state.coverageLayer = L.tileLayer(TILES_URL, {
+                    tileSize: 256,
+                    maxZoom: 20,
+                    minZoom: 0,
+                    attribution: 'StreetView'
+                });
+                state.coverageLayer.addTo(state.gameMap);
+            }
+        }
+        else {
+            if ((platform == PLATFORM.GEOGUESSR || platform == PLATFORM.GEOTASTIC)) state.gameMap.overlayMapTypes.removeAt(0);
+            else state.gameMap.removeLayer(state.coverageLayer);
+            state.coverageLayer = null;
+        }
+    }
+
     // ========== Discord Integration ==========
     async function createEmbed() {
         const { lat, lng } = await getCoordinates();
@@ -459,7 +509,7 @@
             description: `### [${formattedAddr}](https://maps.google.com/?q=${query}&ll=${query}&z=5)`,
             color: 516235,
             image: {
-                url: buildTileUrl(lat, lng)
+                url: `https://maps.google.com/maps/api/staticmap?center=${query}&zoom=6&size=512x512&language=en&markers=${query}&key=AIzaSyBoYjeRtfVI0Jd8Q_9mnflo9i4sOYpShB0`
             }
         };
     }
@@ -539,7 +589,7 @@
     // Coordinate getter
     async function getCoordinates() {
         try {
-            if (platform === PLATFORM.GEOGUESSR || platform ===PLATFORM.GEOTASTIC) {
+            if ([PLATFORM.GEOGUESSR, PLATFORM.GEOTASTIC, PLATFORM.GEOCOACH].includes(platform)) {
                 return {
                     lat: state.streetView?.location?.latLng.lat?.(),
                     lng: state.streetView?.location?.latLng.lng?.()
@@ -582,6 +632,13 @@
                         return {lat:metadata?.[1]?.[0]?.[5]?.[0]?.[1]?.[0]?.[2], lng:metadata?.[1]?.[0]?.[5]?.[0]?.[1]?.[0]?.[3] };
                     }
                 }
+                if (platform == PLATFORM.WORLDGUESSR && iframe && !iframe.src && !iframe.data){
+                    const fiberKey = Object.keys(iframe).find(k => k.startsWith('__reactFiber'));
+                    if (!fiberKey) return;
+                    const fiberNode = iframe[fiberKey];
+                    const {lat, long} = fiberNode?.return?.memoizedProps;
+                    return { lat, lng:long };
+                }
             }
         }
         catch (e) {
@@ -604,13 +661,8 @@
         }
 
         else if (platform === PLATFORM.GEODUELS){
-            if(window.location.href.includes('solo')){
-                if(!state.nicknameEl) state.nicknameEl = document.querySelector('p');
-                state.nicknameEl.className = '';
-            }
-            else {
-                if(!state.nicknameEl) state.nicknameEl = document.querySelectorAll('.truncate')[1];
-            }
+            if(!state.nicknameEl) state.nicknameEl = document.querySelector('p');
+            state.nicknameEl.className = '';
             state.nicknameEl.style.whiteSpace='normal';
         }
 
@@ -966,7 +1018,8 @@
                 .input {
                     width: 50px;
                     text-align: center;
-                    padding: 4px 6px;
+                    padding: 3px 6px !important;
+                    margin: 3px 6px !important;
                     border-radius: 6px;
                     border: 1px solid rgba(255,255,255,0.15);
                     background: rgba(255,255,255,0.08);
@@ -1149,6 +1202,9 @@
             state.streetView =
                 fiberNode.sibling?.memoizedProps?.children?.props?.panorama ||
                 fiberNode.return?.return?.return?.return?.return?.memoizedProps?.value?.panoramaRef?.current ||
+                fiberNode.return?.return?.return?.sibling?.memoizedProps?.panorama||
+                fiberNode.return?.return?.return?.return?.memoizedProps?.children?.[4]?.props?.children?.props?.panorama ||
+                fiberNode.alternate?.return?.updateQueue?.lastEffect?.next?.next?.next?.next?.next?.next?.next?.next?.next?.next?.next?.deps?.[0]||
                 fiberNode.child?.memoizedProps?.panorama||
                 fiberNode.return?.memoizedProps?.panorama||
                 fiberNode.return?.return?.updateQueue?.lastEffect?.deps?.[0]||
@@ -1196,7 +1252,8 @@
               key === state.hotkeys.toggleInfo ||
               key === state.hotkeys.notify ||
               key === state.hotkeys.openPanel ||
-              key === state.hotkeys.openInGoogle;
+              key === state.hotkeys.openInGoogle ||
+              key === state.hotkeys.toggleCoverageLayer;
 
 
         const isDevToolsShortcut = e.code === "F12" || (e.ctrlKey && e.shiftKey && ["i","j","c","k","u"].includes(key)) || (e.metaKey && e.altKey && ["i","c"].includes(key));
@@ -1218,6 +1275,11 @@
         if (key === state.hotkeys.toggleMarker && state.featureToggles.toggleMarker) {
             if(!state.gameMap) extractMapInstance();
             await toggleMapMarker();
+        }
+
+        if (key === state.hotkeys.toggleCoverageLayer && state.featureToggles.toggleCoverageLayer){
+            if(!state.gameMap) extractMapInstance();
+            toggleCoverageLayer();
         }
 
         if (key === state.hotkeys.toggleInfo && state.featureToggles.toggleInfo) {
@@ -1448,8 +1510,8 @@
     // ========== Styles ==========
     const style = document.createElement('style');
     style.innerHTML = `
-        .gameplayAdArea, .venatus-ad, .adsbygoogle, .zone-container,
-        .zone-placement, .bottom-space, .gameplay-ad-area,
+        .gameplayAdArea, .venatus-ad, .adsbygoogle, .zone-container, .playwire-ad-slot,
+        .zone-placement, .bottom-space, .gameplay-ad-area, .home_ad,
         #worldguessr_gameui_ad, #worldguessr_home_ad {
             display: none !important;
             visibility: hidden !important;

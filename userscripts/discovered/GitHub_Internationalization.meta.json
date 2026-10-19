@@ -1,0 +1,33 @@
+{
+  "slug": "GitHub_Internationalization",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/407485-github-internationalization",
+  "source_repo": "407485",
+  "raw_url": "https://update.greasyfork.org/scripts/407485/GitHub%20Internationalization.user.js",
+  "filename": "GitHub_Internationalization.user.js",
+  "name": "GitHub Internationalization",
+  "version": "0.32",
+  "description": "Translate GitHub.com",
+  "match": [
+    "https://github.com/*",
+    "https://gist.github.com/*"
+  ],
+  "grant": [
+    "GM_xmlhttpRequest",
+    "GM_getResourceText"
+  ],
+  "require": [
+    "https://cdnjs.cloudflare.com/ajax/libs/timeago.js/4.0.2/timeago.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"
+  ],
+  "metadata_raw": "// @name  GitHub Internationalization\n// @name:zh-CN  GitHub汉化插件\n// @name:ja  GitHub日本語\n// @namespace  https://github.com/k1995/github-i18n-plugin/\n// @version  0.32\n// @description  Translate GitHub.com\n// @description:zh  GitHub汉化插件，包含人机翻译\n// @description:zh-CN  GitHub汉化插件，包含人机翻译\n// @description:ja  GitHub日本語プラグイン\n// @author  k1995\n// @match  https://github.com/*\n// @match  https://gist.github.com/*\n// @grant  GM_xmlhttpRequest\n// @grant  GM_getResourceText\n// @resource  zh-CN https://cdn.jsdelivr.net/gh/k1995/github-i18n-plugin@refs/heads/master/locales/zh-CN.json\n// @resource  ja https://cdn.jsdelivr.net/gh/k1995/github-i18n-plugin@refs/heads/master/locales/ja.json\n// @require  https://cdnjs.cloudflare.com/ajax/libs/timeago.js/4.0.2/timeago.min.js\n// @require  https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/407485/GitHub%20Internationalization.user.js\n// @updateURL  https://update.greasyfork.org/scripts/407485/GitHub%20Internationalization.meta.js",
+  "sha256": "337166458657a2b064a61f2d6f6d4507f15d6b8f5a552fb2cb293331350dd0f1",
+  "discovered_at": "2026-10-19T07:07:24.851914+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 147503,
+  "good_ratings": 382,
+  "bad_ratings": 5,
+  "summary": {}
+}

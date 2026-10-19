@@ -1,0 +1,28 @@
+{
+  "slug": "Not_Another_Torn_Tool_-_Halloween",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/599364-not-another-torn-tool-halloween",
+  "source_repo": "599364",
+  "raw_url": "https://update.greasyfork.org/scripts/599364/Not%20Another%20Torn%20Tool%20-%20Halloween.user.js",
+  "filename": "Not_Another_Torn_Tool_-_Halloween.user.js",
+  "name": "Not Another Torn Tool - Halloween",
+  "version": "0.7.6",
+  "description": "Trick or Treat companion. Event clock, energy coach (FHC, Xanax, refills, regen), attack pace, treat and basket tracker, upgrade planner, gear check and Ma'ol watch. Display only: it never clicks or acts for you.",
+  "match": [
+    "https://www.torn.com/*"
+  ],
+  "grant": [
+    "GM_xmlhttpRequest"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Not Another Torn Tool - Halloween\n// @namespace  https://greasyfork.org/users/1633044-tornpat\n// @version  0.7.6\n// @description  Trick or Treat companion. Event clock, energy coach (FHC, Xanax, refills, regen), attack pace, treat and basket tracker, upgrade planner, gear check and Ma'ol watch. Display only: it never clicks or acts for you.\n// @author  TornPat\n// @license  MIT\n// @match  https://www.torn.com/*\n// @grant  GM_xmlhttpRequest\n// @connect  ffscouter.com\n// @run-at  document-end\n// @downloadURL  https://update.greasyfork.org/scripts/599364/Not%20Another%20Torn%20Tool%20-%20Halloween.user.js\n// @updateURL  https://update.greasyfork.org/scripts/599364/Not%20Another%20Torn%20Tool%20-%20Halloween.meta.js",
+  "sha256": "70417ce16b0f1bad4c9f4d26048b5781d95196da26754389c65e7b8c5bd27f25",
+  "discovered_at": "2026-10-19T07:07:22.563002+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 297,
+  "good_ratings": 1,
+  "bad_ratings": 0,
+  "summary": {}
+}

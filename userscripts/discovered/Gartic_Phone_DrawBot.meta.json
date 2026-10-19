@@ -1,0 +1,28 @@
+{
+  "slug": "Gartic_Phone_DrawBot",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/579958-gartic-phone-drawbot",
+  "source_repo": "579958",
+  "raw_url": "https://update.greasyfork.org/scripts/579958/Gartic%20Phone%20DrawBot.user.js",
+  "filename": "Gartic_Phone_DrawBot.user.js",
+  "name": "Gartic Phone DrawBot",
+  "version": "2.0",
+  "description": "Automated drawing bot with WebSocket interception, image loading, color quantization, preview and progress indicator",
+  "match": [
+    "https://garticphone.com/*"
+  ],
+  "grant": [
+    "none"
+  ],
+  "require": [],
+  "metadata_raw": "// @name  Gartic Phone DrawBot\n// @namespace  http://tampermonkey.net/\n// @version  2.0\n// @description  Automated drawing bot with WebSocket interception, image loading, color quantization, preview and progress indicator\n// @author  NotLun1x\n// @match  https://garticphone.com/*\n// @grant  none\n// @run-at  document-start\n// @downloadURL  https://update.greasyfork.org/scripts/579958/Gartic%20Phone%20DrawBot.user.js\n// @updateURL  https://update.greasyfork.org/scripts/579958/Gartic%20Phone%20DrawBot.meta.js",
+  "sha256": "70f2333ac1c057f45b5a02512f72088e4c9a8331fa55f44e42aaa448d42f9279",
+  "discovered_at": "2026-10-19T07:07:28.388417+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 3176,
+  "good_ratings": 2,
+  "bad_ratings": 1,
+  "summary": {}
+}

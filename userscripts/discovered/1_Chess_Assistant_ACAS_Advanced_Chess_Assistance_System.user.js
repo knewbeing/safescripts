@@ -78,8 +78,9 @@
 // @require     https://update.greasyfork.org/scripts/534637/LegacyGMjs.js?acasv=2
 // @require     https://update.greasyfork.org/scripts/470418/CommLinkjs.js?acasv=2
 // @require     https://update.greasyfork.org/scripts/470417/UniversalBoardDrawerjs.js?acasv=2
+// @require     https://update.greasyfork.org/scripts/591079/1919285/AutomaticMove.js
 // @icon        https://raw.githubusercontent.com/Psyyke/A.C.A.S/main/assets/images/logo-192.png
-// @version     2.4.4
+// @version     2.5.2
 // @namespace   HKR
 // @author      HKR
 // @license     GPL-3.0
@@ -108,6 +109,248 @@ DANGER ZONE - DO NOT PROCEED IF YOU DON'T KNOW WHAT YOU'RE DOING*\
 \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 //////////////////////////////////////////////////////////////////
 DANGER ZONE - DO NOT PROCEED IF YOU DON'T KNOW WHAT YOU'RE DOING*/
+
+const DynamicSettingsCore = (() => {
+    const variables = Object.freeze({
+        __proto__: null,
+        pieceCount: Object.freeze({
+            label: 'Piece Count',
+            min: 0,
+            max: 32,
+            getValue: safeMethod(context => context?.pieceCount, () => null)
+        }),
+        moveNumber: Object.freeze({ label: 'Move Number', min: 1, max: 1000,
+            getValue: safeMethod(context => context?.moveNumber, () => null) }),
+        evaluation: Object.freeze({ label: 'Evaluation (your advantage, cp)', min: -10000, max: 10000,
+            getValue: safeMethod(context => context?.evaluation, () => null) })
+    });
+
+    // Accept data, not objects with custom coercion or values such as Symbols.
+    function finiteNumber(value, fallback = null) {
+        const type = typeof value;
+        if(type !== 'number' && type !== 'string' && type !== 'boolean') return fallback;
+        if(type === 'string' && !value.trim()) return fallback;
+        const number = Number(value);
+        return Number.isFinite(number) ? number : fallback;
+    }
+
+    function contextKey(instanceID) {
+        return typeof instanceID === 'string' || typeof instanceID === 'number' && Number.isFinite(instanceID)
+            ? String(instanceID) : null;
+    }
+
+    function baseFallback(baseValue) {
+        return typeof baseValue === 'number' && Number.isFinite(baseValue) ? Math.round(baseValue) : baseValue;
+    }
+
+    // One boundary protects every public method, including hostile getters/proxies.
+    // Fallbacks only inspect primitive types or create fresh, safe return values.
+    function safeMethod(method, fallback) {
+        return (...args) => {
+            try { return method(...args); }
+            catch(e) { return fallback(...args); }
+        };
+    }
+
+    function getVariableValue(variable, context) {
+        if(typeof variable !== 'string' || !Object.hasOwn(variables, variable)) return null;
+        const definition = variables[variable];
+        const value = finiteNumber(definition.getValue(context));
+        if(value === null) return null;
+        return variable === 'pieceCount' ? Math.max(definition.min, Math.min(definition.max, Math.round(value))) : Math.round(value);
+    }
+
+    function formatVariableValue(variable, value) {
+        if(variable !== 'evaluation') {
+            return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' ? String(value) : '';
+        }
+        value = finiteNumber(value);
+        if(value === null) return '';
+        return value === 0 ? 'Equal (0 cp)' : `${value > 0 ? 'Winning' : 'Losing'} (${value > 0 ? '+' : ''}${value} cp)`;
+    }
+
+    function normalizePoints(points) {
+        if(!Array.isArray(points)) return [];
+        const byX = new Map();
+        points.forEach(point => {
+            if(!point || typeof point !== 'object') return;
+            const x = finiteNumber(point.x);
+            const y = finiteNumber(point.y);
+            if(x !== null && y !== null) byX.set(Math.round(x), Math.round(y));
+        });
+        return [...byX].map(([x, y]) => ({ x, y })).sort((a, b) => a.x - b.x);
+    }
+
+    function normalizeCurve(curve, baseValue) {
+        if(!curve || typeof curve !== 'object' || Array.isArray(curve)) return { points: [] };
+        const boolean = typeof baseValue === 'boolean' || curve.boolean === true;
+        const normalized = { ...curve, points: normalizePoints(curve.points) };
+        if(curve.variable === 'pieceCount') {
+            normalized.points = normalizePoints(normalized.points.map(point => ({ ...point,
+                x: Math.max(variables.pieceCount.min, Math.min(variables.pieceCount.max, point.x)) })));
+        }
+        if(boolean) Object.assign(normalized, { boolean: true, interpolation: 'step', minY: 0, maxY: 1 });
+        if(Array.isArray(curve.values)) {
+            normalized.values = [...curve.values];
+            Object.assign(normalized, { interpolation: 'step', minY: 0, maxY: Math.max(0, curve.values.length - 1) });
+        }
+        const minY = Math.ceil(finiteNumber(normalized.minY, -Infinity));
+        const maxY = Math.floor(finiteNumber(normalized.maxY, Infinity));
+        if(minY > maxY) return { ...normalized, points: [] };
+        normalized.points.forEach(point => {
+            point.y = Math.max(minY, Math.min(maxY, point.y));
+        });
+        return normalized;
+    }
+
+    function evaluateCurve(curve, variableValue) {
+        if(!curve || typeof curve !== 'object' || Array.isArray(curve) || !curve.enabled) return null;
+        const x = finiteNumber(variableValue);
+        if(x === null) return null;
+        curve = normalizeCurve(curve);
+        const points = curve.points;
+        if(!points.length) return null;
+        const last = points[points.length - 1];
+        if(curve.outsideRange === 'default' && (x < points[0].x || x > last.x)) return null;
+        if(x <= points[0].x) return points[0].y;
+        if(x >= last.x) return last.y;
+
+        const rightIndex = points.findIndex(point => point.x >= x);
+        const left = points[rightIndex - 1];
+        const right = points[rightIndex];
+        if(!left || !right) return null;
+        // A step changes at the point itself, not just after its X coordinate.
+        if(x === right.x) return right.y;
+        const width = right.x - left.x;
+        if(width <= 0 || curve.interpolation === 'step') return left.y;
+
+        const t = (x - left.x) / width;
+        if(curve.interpolation === 'smooth') {
+            const slopes = points.slice(0, -1).map((point, index) =>
+                (points[index + 1].y - point.y) / (points[index + 1].x - point.x)
+            );
+            const tangent = index => {
+                if(index === 0 || index === points.length - 1) return 0;
+                const before = slopes[index - 1];
+                const after = slopes[index];
+                if(before === 0 || after === 0 || Math.sign(before) !== Math.sign(after)) return 0;
+                const beforeWidth = points[index].x - points[index - 1].x;
+                const afterWidth = points[index + 1].x - points[index].x;
+                const w1 = 2 * afterWidth + beforeWidth;
+                const w2 = afterWidth + 2 * beforeWidth;
+                return (w1 + w2) / (w1 / before + w2 / after);
+            };
+            const m0 = tangent(rightIndex - 1) * width;
+            const m1 = tangent(rightIndex) * width;
+            const t2 = t * t;
+            const t3 = t2 * t;
+            return finiteNumber((2 * t3 - 3 * t2 + 1) * left.y
+                + (t3 - 2 * t2 + t) * m0
+                + (-2 * t3 + 3 * t2) * right.y
+                + (t3 - t2) * m1);
+        }
+
+        return finiteNumber(left.y + (right.y - left.y) * t);
+    }
+
+    function coerceSettingValue(value, baseValue, curve) {
+        if(Array.isArray(curve.values)) {
+            const choice = curve.values[Math.round(value)];
+            return typeof choice === typeof baseValue && (typeof choice === 'string' || typeof choice === 'boolean'
+                || typeof choice === 'number' && Number.isFinite(choice)) ? choice : baseValue;
+        }
+        if(typeof baseValue === 'boolean') return Number(value) >= 0.5;
+        if(typeof baseValue === 'number') {
+            const numericValue = finiteNumber(value);
+            if(numericValue === null) return baseValue;
+            const bounded = Math.max(
+                finiteNumber(curve.minY, -Infinity),
+                Math.min(finiteNumber(curve.maxY, Infinity), numericValue)
+            );
+            const rounded = Math.round(bounded);
+            return Number.isFinite(rounded) ? rounded : baseValue;
+        }
+        return baseValue;
+    }
+
+    function resolveValue(baseValue, curve, context) {
+        // Ordinary settings without a graph keep their existing value/type semantics.
+        if(!curve || typeof curve !== 'object' || Array.isArray(curve)) return baseValue;
+        const fallback = baseFallback(baseValue);
+        if(baseValue === undefined || !curve.enabled) return fallback;
+        if(curve.resetAtStart && (finiteNumber(context?.gameStart, 0) !== 0 || finiteNumber(context?.moveNumber) === 1)) return fallback;
+        curve = normalizeCurve(curve, baseValue);
+        const variableValue = getVariableValue(curve.variable, context);
+        const result = evaluateCurve(curve, variableValue);
+        if(result === null) return fallback;
+        return coerceSettingValue(result, fallback, curve);
+    }
+
+    function getContextFromFen(fen) {
+        if(typeof fen !== 'string' || !fen.trim()) return {};
+        const fields = fen.trim().split(/\s+/);
+        return {
+            pieceCount: (fields[0].match(/[rnbqkpRNBQKP]/g) ?? []).length,
+            moveNumber: Math.max(1, Math.round(finiteNumber(fields[5], 1))),
+            gameStart: 0
+        };
+    }
+
+    const contexts = new Map();
+    const defaultContext = Object.create(null);
+
+    function setContext(instanceID, context) {
+        if(!context || typeof context !== 'object' || Array.isArray(context)) return;
+        const instanceKey = contextKey(instanceID);
+        if(instanceID != null && instanceKey === null) return;
+        // Validate the entire update before committing it, so a getter failure
+        // cannot leave a previously valid instance context partially changed.
+        const target = Object.assign(Object.create(null), instanceID == null ? defaultContext : contexts.get(instanceKey));
+        Object.entries(context ?? {}).forEach(([key, value]) => {
+            if(!Object.hasOwn(variables, key) && key !== 'gameStart') return;
+            if(value === undefined) return;
+            const number = finiteNumber(value);
+            if(number === null) {
+                delete target[key];
+                return;
+            }
+            target[key] = number;
+        });
+        if(instanceID != null) contexts.set(instanceKey, target);
+        else {
+            Object.keys(defaultContext).forEach(key => delete defaultContext[key]);
+            Object.assign(defaultContext, target);
+        }
+    }
+
+    function getContext(instanceID) {
+        return { ...defaultContext, ...(instanceID == null ? {} : contexts.get(contextKey(instanceID))) };
+    }
+
+    function removeContext(instanceID) {
+        const instanceKey = contextKey(instanceID);
+        if(instanceKey !== null) contexts.delete(instanceKey);
+    }
+
+    function getContexts() {
+        return [...contexts].map(([instanceID, context]) => ({ instanceID, context: { ...defaultContext, ...context } }));
+    }
+
+    return Object.freeze({
+        variables,
+        getVariableValue: safeMethod(getVariableValue, () => null),
+        formatVariableValue: safeMethod(formatVariableValue, () => ''),
+        normalizePoints: safeMethod(normalizePoints, () => []),
+        normalizeCurve: safeMethod(normalizeCurve, () => ({ points: [] })),
+        evaluateCurve: safeMethod(evaluateCurve, () => null),
+        resolveValue: safeMethod(resolveValue, baseFallback),
+        getContextFromFen: safeMethod(getContextFromFen, () => ({})),
+        setContext: safeMethod(setContext, () => undefined),
+        getContext: safeMethod(getContext, () => ({})),
+        getContexts: safeMethod(getContexts, () => []),
+        removeContext: safeMethod(removeContext, () => undefined)
+    });
+})();
 
 (async () => { try { await LOAD_LEGACY_GM_SUPPORT();
 /*
@@ -212,15 +455,19 @@ const tempValueIndicator = '-temp-value-';
 const dbValues = {
     AcasConfig: 'AcasConfig',
     playerColor: instanceID => 'playerColor' + tempValueIndicator + instanceID,
+    boardOrientation: instanceID => 'boardOrientation' + tempValueIndicator + instanceID,
     turn: instanceID => 'turn' + tempValueIndicator + instanceID,
-    fen: instanceID => 'fen' + tempValueIndicator + instanceID
+    fen: instanceID => 'fen' + tempValueIndicator + instanceID,
+    gameStateHistory: instanceID => 'gameStateHistory' + tempValueIndicator + instanceID,
 };
-// Add them to /js/misc/userscriptBridge.js as well if you,
-// decide to add more variables here
+// Add them to /js/misc/userscriptBridge.js as well if you decide to add more variables here
+// Also make sure dbValues (above) have these instanceVars
 const instanceVars = {
     playerColor: createInstanceVariable('playerColor'),
+    boardOrientation: createInstanceVariable('boardOrientation'),
     turn: createInstanceVariable('turn'),
-    fen: createInstanceVariable('fen')
+    fen: createInstanceVariable('fen'),
+    gameStateHistory: createInstanceVariable('gameStateHistory')
 };
 
 function exposeViaMessages() {
@@ -317,6 +564,56 @@ function getUniqueID() {
     )
 }
 
+function getBoardChangesObjTemplate() {
+    return {
+            changedSquaresAmount: 0,
+            movedPieces: [],
+            removed: [],
+            added: [],
+            pieceAmountChange: 0,
+
+            from: null,
+            to: null,
+            movedPiece: null,
+            movedPieceColor: null,
+
+            capturedPiece: null,
+            capturedSquare: null,
+
+            isPromotion: false,
+            promotionPiece: null,
+            isEnPassant: false,
+
+            missedFen: null
+    };
+}
+
+function getGameStateObjTemplate() {
+    return {
+        fen: { 'full': null, 'basic': null },
+        turn: null,
+
+        pieceAmountChange: 0,
+
+        boardChanges: getBoardChangesObjTemplate(),
+
+        movedPiece: null,
+
+        enPassantTarget: '-',
+        castlingRights: 'KQkq',
+        lostCastlingRights: [],
+
+        isCapture: false,
+        isPawnMove: false,
+        isCastling: false,
+        castlingSide: null,
+
+        halfmoveClock: -1,
+        plyCount: -1,
+        fullmoveNumber: 1
+    };
+}
+
 const commLinkInstanceID = getUniqueID();
 
 const blacklistedURLs = [
@@ -339,9 +636,9 @@ const configKeys = Object.freeze([
     'chessVariant', 'chessEngine', 'lc0Weight',
     'engineNodes', 'chessFont', 'useChess960',
     'onlyCalculateOwnTurn', 'ttsVoiceEnabled', 'ttsVoiceName',
-    'ttsVoiceSpeed', 'chessEngineProfile', 'primaryArrowColorHex',
-    'secondaryArrowColorHex', 'opponentArrowColorHex', 'reverseSide',
-    'engineEnabled', 'autoMove', 'autoMoveLegit',
+    'ttsVoiceSpeed', 'ttsTranslateAudio', 'ttsAnnounceEnemyMoves', 'ttsAnnounceEvaluation', 'chessEngineProfile', 'primaryArrowColorHex',
+    'secondaryArrowColorHex', 'opponentArrowColorHex', 'bookMoveColorHex',
+    'bookMoveOpacity', 'reverseSide', 'engineEnabled', 'autoMove', 'autoMoveLegit',
     'autoMoveRandom', 'autoMoveAfterUser', 'legitModeType',
     'moveDisplayDelay', 'renderSquarePlayer', 'renderSquareEnemy',
     'renderSquareContested', 'renderSquareSafe', 'renderPiecePlayerCapture',
@@ -361,29 +658,38 @@ const pieceNameToFen = {
     'queen': 'q',
     'king': 'k'
 };
+const defaultPosBasicFens = [
+    'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR',
+];
+
+const gameStateHistory = {
+    set: (val) => instanceVars.gameStateHistory.set(commLinkInstanceID, val || []),
+    get: () => instanceVars.gameStateHistory.get(commLinkInstanceID) || []
+};
 
 let BoardDrawer = null;
 let chessBoardElem = null;
 let chesscomVariantPlayerColorsTable = null;
-let activeGuiMoveMarkings = [];
-let activeMetricRenders = [];
-let activeFeedback = [];
+let activeVisuals = [];
 let boardObserver = null;
 let dumbBoardObservingInterval = null;
+
 let lastMutationObservationDate = 0;
-let lastCalculatedFullFen = null;
 let lastBoardRanks = null;
 let lastBoardFiles = null;
 let lastBoardSize = null;
 let lastPieceSize = null;
-let lastTurn = null;
 let lastBoardMatrix = null;
 let lastBoardOrientation = null;
-let matchFirstSuggestionGiven = false;
 let lastMoveRequestTime = 0;
-let lastMutationObsProcessedTurn = null;
+let lastAllowedFen = '';
+let lastRejectedFen = '';
+
+let gameState = getGameStateObjTemplate();
+
+let backendTabOpenedOnceAlready = false;
+let matchFirstSuggestionGiven = false;
 let isUserMouseDown = false;
-let activeAutomoves = [];
 let modListeners = [];
 let modDrawerListeners = [];
 let modLastEnteredSquare = { 'squareIndex': null, 'squareFen': null, 'pieceFen': null };
@@ -396,42 +702,97 @@ Object.values(configKeys).forEach(key => {
     };
 });
 
-function getGmConfigValue(key, instanceID, profileID) {
-    if(typeof profileID === 'object') {
-        profileID = profileID.name;
-    }
+// Dynamic settings are optional: missing/older @require files or malformed
+// stored data must never interrupt normal userscript board processing.
+function withDynamicSettings(callback, fallback = () => undefined) {
+    try { return callback(); }
+    catch(e) { return fallback(); }
+}
 
-    const config = GM_getValue(dbValues.AcasConfig);
+function getDynamicSettingsCore() {
+    return withDynamicSettings(() => typeof DynamicSettingsCore !== 'undefined' ? DynamicSettingsCore : null, () => null);
+}
 
-    const instanceValue = config?.instance?.[instanceID]?.[key];
-    const globalValue = config?.global?.[key];
+function resolveDynamicSetting(baseValue, curve, instanceID) {
+    return withDynamicSettings(() => {
+        const core = getDynamicSettingsCore();
+        if(!curve || typeof curve !== 'object' || Array.isArray(curve)
+            || typeof core?.resolveValue !== 'function' || typeof core?.getContext !== 'function') return baseValue;
+        const resolved = core.resolveValue(baseValue, curve, core.getContext(instanceID));
+        return typeof resolved === typeof baseValue && (typeof resolved === 'boolean' || typeof resolved === 'string'
+            || typeof resolved === 'number' && Number.isFinite(resolved)) ? resolved : baseValue;
+    }, () => baseValue);
+}
 
-    if(instanceValue !== undefined) {
-        return instanceValue;
-    }
-
-    if(globalValue !== undefined) {
-        return globalValue;
-    }
-
-    if(profileID) {
-        const globalProfileValue = config?.global?.['profiles']?.[profileID]?.[key];
-        const instanceProfileValue = config?.instance?.[instanceID]?.['profiles']?.[profileID]?.[key];
-
-        if(instanceProfileValue !== undefined) {
-            return instanceProfileValue;
+function updateUserscriptDynamicContext(context, fen) {
+    return withDynamicSettings(() => {
+        const core = getDynamicSettingsCore();
+        let updated = false;
+        if(typeof core?.setContext === 'function') {
+            const fenContext = typeof fen === 'string' && typeof core.getContextFromFen === 'function'
+                ? core.getContextFromFen(fen) : {};
+            const state = context && typeof context === 'object' && !Array.isArray(context) ? context : {};
+            core.setContext(commLinkInstanceID, { ...fenContext, ...state });
+            updated = true;
         }
+        refreshSettings();
+        return updated;
+    }, () => false);
+}
 
-        if(globalProfileValue !== undefined) {
-            return globalProfileValue;
-        }
-    }
+function getGmConfigValue(key, instanceID, profileID, baseOnly = false) {
+    let baseValue;
+    return withDynamicSettings(() => {
+        if(typeof profileID === 'object') profileID = profileID?.name;
+        if(typeof key !== 'string' || (profileID != null && typeof profileID !== 'string')) return null;
+        const config = GM_getValue(dbValues.AcasConfig);
+        const profileKey = profileID ? getProfileStorageKey(profileID) : null;
+        const globalProfile = profileKey ? config?.global?.profiles?.[profileKey] : null;
+        const instanceProfile = profileKey ? config?.instance?.[instanceID]?.profiles?.[profileKey] : null;
 
-    return null;
+        if(instanceProfile?.[key] !== undefined) baseValue = instanceProfile[key];
+        else if(globalProfile?.[key] !== undefined) baseValue = globalProfile[key];
+        else if(config?.instance?.[instanceID]?.[key] !== undefined) baseValue = config.instance[instanceID][key];
+        else baseValue = config?.global?.[key];
+
+        if(baseValue === undefined || baseOnly) return baseValue ?? null;
+        const curve = instanceProfile?.dynamicSettings?.[key] ?? globalProfile?.dynamicSettings?.[key];
+        return resolveDynamicSetting(baseValue, curve, instanceID);
+    }, () => baseValue ?? null);
+}
+
+function getProfileStorageKey(profileName) {
+    if(profileName === 'default') return 'default';
+    if(typeof profileName !== 'string' || profileName.startsWith('__B64__')) return profileName;
+    const encoded = btoa(unescape(encodeURIComponent(profileName)));
+    return `__B64__${encoded}`;
+}
+
+function getProfileStorageName(profileKey) {
+    if(typeof profileKey !== 'string' || !profileKey.startsWith('__B64__')) return profileKey;
+    try { return decodeURIComponent(escape(atob(profileKey.slice(7)))); }
+    catch(e) { return profileKey; }
+}
+
+function resolveProfileConfig(profile) {
+    return withDynamicSettings(() => {
+        const config = profile?.config;
+        if(!config || typeof config !== 'object' || Array.isArray(config)) return profile;
+        const curves = config.dynamicSettings;
+        if(!curves || typeof curves !== 'object' || Array.isArray(curves)) return profile;
+        Object.entries(curves).forEach(([key, curve]) => {
+            if(key === '__proto__' || key === 'constructor' || key === 'prototype' || !Object.hasOwn(config, key)) return;
+            const baseValue = config[key];
+            if(baseValue === undefined) return;
+            const resolved = resolveDynamicSetting(baseValue, curve, commLinkInstanceID);
+            if(!Object.is(resolved, baseValue)) config[key] = resolved;
+        });
+        return profile;
+    }, () => profile);
 }
 
 function getConfigValue(key, profile) {
-    return config[key]?.get(profile);
+    return getGmConfigValue(key, commLinkInstanceID, profile);
 }
 
 function setConfigValue(key, val) {
@@ -451,7 +812,7 @@ CommLink.commands['createInstance'] = async () => {
         'domain': domain,
         'instanceID': commLinkInstanceID,
         'chessVariant': getChessVariant(),
-        'playerColor': getBoardOrientation()
+        'playerColor': getPlayerColor()
     });
 }
 
@@ -473,49 +834,24 @@ CommLink.registerListener(`backend_${commLinkInstanceID}`, packet => {
                 return `pong (took ${Date.now() - packet.date}ms)`;
             case 'getFen':
                 return getFen();
-            case 'removeSiteMoveMarkings':
-                boardUtils.removeMarkings();
-                return true;
-            case 'markMoveToSite':
-                const profile = packet.data?.[0]?.profile;
-
-                boardUtils.removeMarkings(profile);
-                boardUtils.markMoves(packet.data);
-
-                const isAutoMove = getConfigValue(configKeys.autoMove, profile);
-                const isAutoMoveAfterUser = getConfigValue(configKeys.autoMoveAfterUser, profile);
-
-                if(isAutoMove && (!isAutoMoveAfterUser || matchFirstSuggestionGiven)) {
-                    const existingAutomoves = activeAutomoves.filter(x => x.move.active);
-
-                    // Stop all existing automoves
-                    for(const x of existingAutomoves) {
-                        x.move.stop();
-                    }
-
-                    const isLegit = getConfigValue(configKeys.autoMoveLegit, profile);
-                    const isRandom = getConfigValue(configKeys.autoMoveRandom, profile);
-
-                    const move = isRandom
-                        ? packet.data[Math.floor(Math.random() * Math.random() * packet.data.length)]?.player
-                        : packet.data[0]?.player;
-
-                    makeMove(profile, move, isLegit);
+            case 'updateDynamicContext':
+                if(!packet.data || typeof packet.data !== 'object' || Array.isArray(packet.data)) return false;
+                if(packet.data.fen && packet.data.fen !== gameState?.fen?.full) return false;
+                return updateUserscriptDynamicContext({ ...packet.data, gameStart: 0 });
+            case 'renderVisualsToSite':
+                if(Array.isArray(packet.data) && packet.data[0]?.category === 'feedback') {
+                    if(packet.data[0].feedbackFen && packet.data[0].feedbackFen !== gameState?.fen?.full) return false;
+                    renderStuffToBoard(packet.data);
+                    return true;
                 }
+                renderStuffToBoard(packet.data);
+                handleAutoMove(packet.data);
 
                 matchFirstSuggestionGiven = true;
 
                 return true;
-            case 'renderMetricsToSite':
-                renderMetrics(packet.data);
-                return true;
-            case 'feedbackToSite':
-                displayFeedback(packet.data);
-                return true;
             case 'updateRestartListener':
-                createInputListener('instanceRestart', packet.data, () => {
-                    CommLink.commands.forceInstanceRestart();
-                });
+                createInputListener('instanceRestart', packet.data, restartInstanceWithCurrentFen);
                 return true;
             case 'updateConcealAssistanceListener':
                 createInputListener('concealAssistance', packet.data, toggleConcealAssistance);
@@ -531,35 +867,43 @@ CommLink.registerListener(`backend_${commLinkInstanceID}`, packet => {
 
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-function getArrowStyle(type, fill, opacity) {
-    const getBaseStyleModification = (f, o) => [
-        'stroke: rgb(0 0 0 / 50%);',
-        'stroke-width: 2px;',
-        'stroke-linejoin: round;',
-        `fill: ${fill || f};`,
-        `opacity: ${opacity || o};`
-    ].join('\n');
+function getChessgroundCoordsFromPiece(pieceElem) {
+    const key = pieceElem?.cgKey;
 
-    switch(type) {
-        case 'best':
-            return getBaseStyleModification('limegreen', 0.9);
-        case 'secondary':
-            return getBaseStyleModification('dodgerblue', 0.7);
-        case 'opponent':
-            return getBaseStyleModification('crimson', 0.3);
-    }
-};
+    if(key) return chessCoordinatesToIndex(key);
+
+    if(!pieceElem || !chessBoardElem || !lastBoardOrientation) return;
+
+    const [x, y] = extractElemTransformData(pieceElem) || [];
+    const squareSize = chessBoardElem.clientWidth / 8;
+
+    if(x == null || y == null || !squareSize) return;
+
+    const file = Math.round(x / squareSize);
+    const rank = Math.round(y / squareSize);
+
+    if(
+        file < 0 || file > 7 ||
+        rank < 0 || rank > 7 ||
+        Math.abs(x - file * squareSize) > 1 ||
+        Math.abs(y - rank * squareSize) > 1
+    ) return;
+
+    return lastBoardOrientation === 'w'
+        ? [file, 7 - rank]
+        : [7 - file, rank];
+}
 
 function createInputListener(listenerType, targetValue, callback) {
     if(typeof listenerType !== 'string' || typeof targetValue !== 'string' || !callback) return;
-    
+
     const existingIndex = activeInputListeners
         .findIndex(l => l.listenerType === listenerType);
 
     if(existingIndex !== -1) {
         const existing = activeInputListeners[existingIndex];
         if(existing.targetValue === targetValue) return;
-        
+
         existing.listeners.forEach(({ type, fn }) => document.removeEventListener(type, fn));
         activeInputListeners.splice(existingIndex, 1);
     }
@@ -618,327 +962,219 @@ function createInputListener(listenerType, targetValue, callback) {
     });
 }
 
-function clearMetricRenders() {
-    activeMetricRenders.forEach(elem => {
-        if(elem) elem?.remove();
-    });
-}
-
-function renderMetrics(addedMetrics) {
-    if(!BoardDrawer) return;
-
-    clearMetricRenders();
-
-    function processMetric(metric) {
-        const data = metric?.data;
-
-        if(!data) return;
-
-        const shapeType = data?.shapeType;
-        const shapeSquare = data?.shapeSquare;
-        const shapeConfig = data?.shapeConfig;
-
-        if(shapeType && shapeSquare && shapeConfig) {
-            const shape = BoardDrawer.createShape(shapeType, shapeSquare, shapeConfig);
-
-            activeMetricRenders.push(shape);
-        }
-    }
-
-    function findMetricByType(type) {
-        return addedMetrics.filter(metric => metric?.data?.shapeType === type) || [];
-    }
-
-    findMetricByType('text')
-        .forEach(processMetric);
-
-    findMetricByType('rectangle')
-        .forEach(processMetric);
-}
-
-function clearFeedback() {
-    activeFeedback.forEach(elem => {
-        if(elem) elem?.remove();
-    });
-}
-
-function displayFeedback(addedFeedback) {
-    if(!BoardDrawer) return;
-
-    clearFeedback();
-
-    function processFeedback(feedback) {
-        const data = feedback?.data;
-
-        if(!data) return;
-
-        const shapeType = data?.shapeType;
-        const shapeSquare = data?.shapeSquare;
-        const shapeConfig = data?.shapeConfig;
-
-        if(shapeType && shapeSquare && shapeConfig) {
-            const shape = BoardDrawer.createShape(shapeType, shapeSquare, shapeConfig);
-
-            activeFeedback.push(shape);
-        }
-    }
-
-    addedFeedback.forEach(processFeedback);
-}
-
-function maybeAnnounceMarkingsToPage(moveMarkings) {
+function maybeAnnounceMarkingsToPage() {
     if(!runningOnDevPage || typeof unsafeWindow === 'undefined') return;
 
-    const markings = activeGuiMoveMarkings || [];
+    const markings = activeVisuals
+        .map(({ marking }) => marking)
+        .filter(marking =>
+            marking?.category === 'move' &&
+            !marking.isOpponent &&
+            !marking.isFuture
+        );
 
     let selectedMarking = null;
 
-    if(markings.length === 1) {
-        selectedMarking = markings[0].player;
-    } else if (markings.length > 1) {
-        const randomIndex = Math.floor(Math.random() * markings.length);
-        selectedMarking = markings[randomIndex].player;
+    if(markings.length > 0) {
+        const marking = markings.length === 1
+            ? markings[0]
+            : markings[Math.floor(Math.random() * markings.length)];
+
+        selectedMarking = [marking.from, marking.to];
     }
 
-    unsafeWindow.postMessage({ name: 'bestMoveArr', value: selectedMarking });
+    unsafeWindow.postMessage({
+        name: 'bestMoveArr',
+        value: selectedMarking
+    });
 }
 
-const boardUtils = {
-    markMoves: moveObjArr => { // needs refactoring but too lazy for now
-        if(!BoardDrawer) return;
+async function makeMove(profile, fenMoveArr, isLegit) {
+    const move = new AutomaticMove({
+        profile,
+        fenMoveArr,
+        isLegit,
+        pieceAmount: getPieceAmount(),
+        moveDomCoords: fenCoordArrToDomCoord(fenMoveArr),
+        isPromotion: isPawnPromotion(fenMoveArr),
+        legitModeType: getConfigValue(configKeys.legitModeType, profile),
+        debugModeActivated: debugModeActivated,
+        getRandomOwnPieceDomCoord: getRandomOwnPieceDomCoord,
+        lastPieceSize: lastPieceSize,
+        lastMoveRequestTime: lastMoveRequestTime,
+        boardMatrix: getBoardMatrix(),
+        domain: domain
+    }, e => {
+        // This is ran when the move finished
 
-        const maxScale = 1;
-        const minScale = 0.5;
-        const totalRanks = moveObjArr.length;
-
-        function fillSquare(square, style) {
-            const shapeType = 'rectangle';
-            const shapeConfig = { style };
-
-            const rect = BoardDrawer.createShape(shapeType, square, shapeConfig);
-
-            return rect;
+        if(debugModeActivated) {
+            console.warn('Move', fenMoveArr, move.id, 'finished', 'for profile:', profile);
         }
+    });
+}
 
-        const markedSquares = { 0: [], 1: [] };
-
-        moveObjArr.forEach((markingObj, idx) => {
-            const profile = markingObj.profile;
-
-            const [from, to] = markingObj.player;
-            const [oppFrom, oppTo] = markingObj.opponent;
-            const oppMovesExist = oppFrom && oppTo;
-            const rank = idx + 1;
-            const cp = markingObj?.cp;
-
-            const showOpponentMoveGuess = getConfigValue(configKeys.showOpponentMoveGuess, profile);
-            const showOpponentMoveGuessConstantly = getConfigValue(configKeys.showOpponentMoveGuessConstantly, profile);
-            const arrowOpacity = getConfigValue(configKeys.arrowOpacity, profile) / 100;
-            const primaryArrowColorHex = getConfigValue(configKeys.primaryArrowColorHex, profile);
-            const secondaryArrowColorHex = getConfigValue(configKeys.secondaryArrowColorHex, profile);
-            const opponentArrowColorHex = getConfigValue(configKeys.opponentArrowColorHex, profile);
-            const moveAsFilledSquares = getConfigValue(configKeys.moveAsFilledSquares, profile);
-            const onlySuggestPieces = getConfigValue(configKeys.onlySuggestPieces, profile);
-            const movesOnDemand = getConfigValue(configKeys.movesOnDemand, profile);
-
-            if(onlySuggestPieces && !movesOnDemand) {
-                const fillType = idx === 0 ? 1 : 0,
-                      fillColor = fillType ? primaryArrowColorHex : secondaryArrowColorHex;
-
-                const fromSquareMarking = fillSquare(from, `opacity: ${arrowOpacity}; stroke-width: 5; stroke: black; rx: 2; ry: 2; fill: ${fillColor};`);
-                let markedSquareElems = [fromSquareMarking];
-
-                if(oppFrom) {
-                    const oppFromSquareMarking = fillSquare(oppFrom, `opacity: ${arrowOpacity}; stroke-width: 5; stroke: black; rx: 2; ry: 2; display: none; fill: ${opponentArrowColorHex};`);
-
-                    const squareListener = BoardDrawer.addSquareListener(from, type => {
-                        if(!oppFromSquareMarking) squareListener.remove();
-
-                        switch(type) {
-                            case 'enter':
-                                oppFromSquareMarking.style.display = 'inherit';
-                                break;
-                            case 'leave':
-                                oppFromSquareMarking.style.display = 'none';
-                                break;
-                        }
-                    });
-
-                    markedSquareElems.push(oppFromSquareMarking);
-                }
-
-                activeGuiMoveMarkings.push(
-                    { 'otherElems': markedSquareElems }, profile
-                );
-
-            } else if(moveAsFilledSquares) {
-                const fillType = idx === 0 ? 1 : 0,
-                      fillColor = fillType ? primaryArrowColorHex : secondaryArrowColorHex,
-                      styling = `opacity: ${arrowOpacity}; stroke-width: 5; stroke: black; rx: 2; ry: 2; fill: ${fillColor};`,
-                      skipFromSquare = markedSquares[fillType].find(x => x === from) ? 'opacity: 0;' : '',
-                      skipToSquare = markedSquares[fillType].find(x => x === to) ? 'opacity: 0;' : '';
-
-                const fromSquareStyle = `${styling} ${skipFromSquare}`;
-                const toSquareStyle = `filter: brightness(1.5); stroke-dasharray: 4 4; ${styling} ${skipToSquare}`;
-
-                const fromSquareFill = fillSquare(from, fromSquareStyle);
-                const toSquareFill = fillSquare(to, toSquareStyle);
-
-                const markedSquareFens = [from, to];
-                const markedSquareElems = [fromSquareFill, toSquareFill];
-
-                if(oppMovesExist && showOpponentMoveGuess) {
-                    const oppFromSquareFill = fillSquare(oppFrom, fromSquareStyle + ` fill: ${opponentArrowColorHex};`);
-                    const oppToSquareFill = fillSquare(oppTo, toSquareStyle + ` fill: ${opponentArrowColorHex};`);
-
-                    markedSquareElems.push(oppFromSquareFill, oppToSquareFill);
-
-                    if(showOpponentMoveGuessConstantly) {
-                        oppFromSquareFill.style.display = 'block';
-                        oppToSquareFill.style.display = 'block';
-                    } else {
-                        oppFromSquareFill.style.display = 'none';
-                        oppToSquareFill.style.display = 'none';
-
-                        const squareListener = BoardDrawer.addSquareListener(from, type => {
-                            if(!oppFromSquareFill || !oppToSquareFill) {
-                                squareListener.remove();
-                            }
-
-                            switch(type) {
-                                case 'enter':
-                                    oppFromSquareFill.style.display = 'inherit';
-                                    oppToSquareFill.style.display = 'inherit';
-                                    break;
-                                case 'leave':
-                                    oppFromSquareFill.style.display = 'none';
-                                    oppToSquareFill.style.display = 'none';
-                                    break;
-                            }
-                        });
-                    }
-                }
-
-                markedSquares[fillType].push(...markedSquareFens);
-                activeGuiMoveMarkings.push(
-                    { 'otherElems': markedSquareElems }, profile
-                );
-
-            } else {
-                let playerArrowElem = null;
-                let oppArrowElem = null;
-                let arrowStyle = getArrowStyle('best', primaryArrowColorHex, arrowOpacity);
-                let lineWidth = 30;
-                let arrowheadWidth = 80;
-                let arrowheadHeight = 60;
-                let startOffset = 30;
-
-                if(idx !== 0) {
-                    arrowStyle = getArrowStyle('secondary', secondaryArrowColorHex, arrowOpacity);
-
-                    const arrowScale = totalRanks === 2
-                        ? 0.75
-                        : maxScale - (maxScale - minScale) * ((rank - 1) / (totalRanks - 1));
-
-                    lineWidth = lineWidth * arrowScale;
-                    arrowheadWidth = arrowheadWidth * arrowScale;
-                    arrowheadHeight = arrowheadHeight * arrowScale;
-                    startOffset = startOffset;
-                }
-
-                playerArrowElem = BoardDrawer.createShape('arrow', [from, to],
-                    {
-                        style: arrowStyle,
-                        lineWidth, arrowheadWidth, arrowheadHeight, startOffset
-                    }
-                );
-
-                if(oppMovesExist && showOpponentMoveGuess) {
-                    oppArrowElem = BoardDrawer.createShape('arrow', [oppFrom, oppTo],
-                        {
-                            style: getArrowStyle('opponent', opponentArrowColorHex, arrowOpacity),
-                            lineWidth, arrowheadWidth, arrowheadHeight, startOffset
-                        }
-                    );
-
-                    if(showOpponentMoveGuessConstantly) {
-                        oppArrowElem.style.display = 'block';
-                    } else {
-                        oppArrowElem.style.display = 'none';
-
-                        const squareListener = BoardDrawer.addSquareListener(from, type => {
-                            if(!oppArrowElem) {
-                                squareListener.remove();
-                            }
-
-                            switch(type) {
-                                case 'enter':
-                                    oppArrowElem.style.display = 'inherit';
-                                    break;
-                                case 'leave':
-                                    oppArrowElem.style.display = 'none';
-                                    break;
-                            }
-                        });
-                    }
-                }
-
-                if(idx === 0 && playerArrowElem) {
-                    const parentElem = playerArrowElem.parentElement;
-
-                    // move best arrow element on top (multiple same moves can hide the best move)
-                    parentElem.appendChild(playerArrowElem);
-
-                    if(oppArrowElem) {
-                        parentElem.appendChild(oppArrowElem);
-                    }
-                }
-
-                activeGuiMoveMarkings.push(
-                    { ...markingObj, playerArrowElem, oppArrowElem, profile }
-                );
-            }
-        });
-
-        maybeAnnounceMarkingsToPage(activeGuiMoveMarkings);
-    },
-    removeMarkings: profile => {
-        let removalArr = activeGuiMoveMarkings;
-
-        if(profile) {
-            removalArr = removalArr.filter(obj => obj.profile === profile);
-
-            activeGuiMoveMarkings =  activeGuiMoveMarkings.filter(obj => obj.profile !== profile);
-        } else {
-            activeGuiMoveMarkings = [];
-        }
-
-        removalArr.forEach(markingObj => {
-            markingObj.oppArrowElem?.remove();
-            markingObj.playerArrowElem?.remove();
-            markingObj?.otherElems?.forEach(x => x?.remove());
-        });
-    },
-    setBoardOrientation: orientation => {
-        if(BoardDrawer) {
-            if(debugModeActivated) console.warn('setBoardOrientation', orientation);
-
-            BoardDrawer.setOrientation(orientation);
-        }
-    },
-    setBoardDimensions: dimensionArr => {
-        if(BoardDrawer) {
-            if(debugModeActivated) console.warn('setBoardDimensions', dimensionArr);
-
-            BoardDrawer.setBoardDimensions(dimensionArr);
-        }
+function handleAutoMove(markings) {
+    if(!Array.isArray(markings) || !markings.length) {
+        return;
     }
-};
 
-function clearVisuals(noMetricsRemoval = false) {
-    if(!noMetricsRemoval) clearMetricRenders();
-    clearFeedback();
-    boardUtils.removeMarkings();
+    const filteredMarkings = markings.filter(marking =>
+        marking?.category === 'move' &&
+        !marking.isOpponent &&
+        !marking.isFuture
+    );
+
+    if(!filteredMarkings.length) {
+        return;
+    }
+
+    const profileID = filteredMarkings[0]?.profileID;
+    const isAutoMove = getConfigValue(configKeys.autoMove, profileID);
+
+    const isAutoMoveAfterUser = getConfigValue(configKeys.autoMoveAfterUser, profileID);
+
+    if(isAutoMove && (!isAutoMoveAfterUser || matchFirstSuggestionGiven)) {
+        AutomaticMove.stopAll();
+
+        const isLegit = getConfigValue(configKeys.autoMoveLegit, profileID);
+        const isRandom = getConfigValue(configKeys.autoMoveRandom, profileID);
+
+        const marking = isRandom
+            ? filteredMarkings[
+                Math.floor(
+                    Math.random() * Math.random() * filteredMarkings.length
+                )
+            ]
+            : filteredMarkings[0];
+
+        const move = [marking.from, marking.to];
+
+        makeMove(profileID, move, isLegit);
+    }
+}
+
+const feedbackVisualRevisions = new Map();
+
+function renderStuffToBoard(markings) {
+    if(!BoardDrawer || !Array.isArray(markings) || !markings.length) {
+        return;
+    }
+
+    const profileID = markings[0]?.profileID;
+    const category = markings[0]?.category;
+
+    // A rating can cross the CommLink after another move has already reached
+    // the DOM. Never draw it (or clear newer feedback) on that newer position.
+    if(category === 'feedback' && markings[0]?.feedbackFen
+        && markings[0].feedbackFen !== gameState?.fen?.full) return;
+    if(category === 'feedback' && markings[0]?.feedbackFen
+        && markings[0].feedbackFen.split(' ')[0] !== getFen(true)) return;
+    if(category === 'feedback' && Number.isFinite(markings[0]?.feedbackRevision)) {
+        const revision = markings[0].feedbackRevision;
+        // Settings can produce a replacement/clear on the SAME board. A late
+        // packet must not undo a newer toggle or resurrect its old rating.
+        if(revision <= (feedbackVisualRevisions.get(profileID) || 0)) return;
+        feedbackVisualRevisions.set(profileID, revision);
+    }
+
+    clearVisuals({
+        profileID,
+        category
+    });
+
+    markings.forEach(marking => {
+        const {
+            shapeType,
+            shapeSquare,
+            shapeConfig,
+            forceHoverOnly,
+            bringToFront,
+            from
+        } = marking || {};
+
+        if(!shapeType || !shapeSquare || !shapeConfig) {
+            return;
+        }
+
+        const shape = BoardDrawer.createShape(
+            shapeType,
+            shapeSquare,
+            shapeConfig
+        );
+
+        if(!shape) {
+            return;
+        }
+
+        if(marking.feedbackDescription) {
+            shape.setAttribute('aria-label', marking.feedbackDescription);
+            const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+            title.textContent = marking.feedbackDescription;
+            shape.appendChild(title);
+        }
+
+        let hoverListener = null;
+
+        if(forceHoverOnly && from) {
+            hoverListener = BoardDrawer.addSquareListener(
+                from,
+                type => {
+                    if(type === 'enter') {
+                        shape.style.display = 'inherit';
+                    } else if(type === 'leave') {
+                        shape.style.display = 'none';
+                    }
+                }
+            );
+        }
+
+        if(bringToFront) {
+            shape.parentElement?.appendChild(shape);
+        }
+
+        activeVisuals.push({
+            marking,
+            shape,
+            hoverListener
+        });
+    });
+
+    maybeAnnounceMarkingsToPage();
+}
+
+function clearVisuals({
+    noMetricsRemoval = false,
+    profileID = null,
+    category = null
+} = {}) {
+    const shouldRemove = marking => {
+        if(profileID && marking?.profileID !== profileID) {
+            return false;
+        }
+
+        if(category && marking?.category !== category) {
+            return false;
+        }
+
+        if(noMetricsRemoval && marking?.category === 'metric') {
+            return false;
+        }
+
+        return true;
+    };
+
+    const removalArr = activeVisuals.filter(
+        item => shouldRemove(item.marking)
+    );
+
+    activeVisuals = activeVisuals.filter(
+        item => !shouldRemove(item.marking)
+    );
+
+    removalArr.forEach(({ shape, hoverListener }) => {
+        hoverListener?.remove();
+        shape?.remove();
+    });
 }
 
 function displayImportantNotification(title, text) {
@@ -995,20 +1231,18 @@ function getElemCoordinatesFromTransform(elem, config) {
 
     lastBoardSize = getElementSize(chessBoardElem);
 
-    const [files, ranks] = getBoardDimensions();
-
-    lastBoardRanks = ranks;
-    lastBoardFiles = files;
+    getBoardDimensions(); // getBoardDimensions() keeps lastBoardRanks/lastBoardFiles in sync.
 
     const boardOrientation = getBoardOrientation();
 
     let [x, y] = extractElemTransformData(elem);
 
     const boardDimensions = lastBoardSize;
-    let squareDimensions = boardDimensions.width / lastBoardRanks;
+    const squareWidth = boardDimensions.width / lastBoardRanks;
+    const squareHeight = boardDimensions.height / lastBoardFiles;
 
-    const normalizedX = Math.round(x / squareDimensions);
-    const normalizedY = Math.round(y / squareDimensions);
+    const normalizedX = Math.round(x / squareWidth);
+    const normalizedY = Math.round(y / squareHeight);
 
     if(onlyFlipY || boardOrientation === 'w') {
         const flippedY = lastBoardFiles - normalizedY - 1;
@@ -1022,12 +1256,7 @@ function getElemCoordinatesFromTransform(elem, config) {
 }
 
 function getElemCoordinatesFromLeftBottomPercentages(elem) {
-    if(!lastBoardRanks || !lastBoardFiles) {
-        const [files, ranks] = getBoardDimensions();
-
-        lastBoardRanks = ranks;
-        lastBoardFiles = files;
-    }
+    if(!lastBoardRanks || !lastBoardFiles) getBoardDimensions();
 
     const boardOrientation = getBoardOrientation();
 
@@ -1052,11 +1281,13 @@ function getElemCoordinatesFromLeftTopPixels(elem) {
 
     lastPieceSize = pieceSize;
 
+    if(!lastBoardRanks || !lastBoardFiles) getBoardDimensions();
+
     const leftPixels = parseFloat(elem.style.left?.replace('px', ''));
     const topPixels = parseFloat(elem.style.top?.replace('px', ''));
 
     const x = Math.max(Math.round(leftPixels / pieceSize.width), 0);
-    const y = Math.max(Math.round(topPixels / pieceSize.width), 0);
+    const y = Math.max(Math.round(topPixels / pieceSize.height), 0);
 
     const boardOrientation = getBoardOrientation();
 
@@ -1171,18 +1402,11 @@ function chessCoordinatesToDomIndex(coord) {
 
 function indexToChessCoordinates(coord) {
     const [boardRanks, boardFiles] = getBoardDimensions();
-    const boardOrientation = getBoardOrientation();
 
     const [x, y] = coord;
     const file = String.fromCharCode('a'.charCodeAt(0) + x);
 
-    let rank;
-
-    if (boardOrientation === 'w') {
-        rank = boardRanks - y;
-    } else {
-        rank = boardRanks - y;
-    }
+    const rank = boardFiles - y;
 
     return `${file}${rank}`;
 }
@@ -1194,8 +1418,7 @@ function isPawnPromotion(bestMove) {
     if(typeof piece !== 'string' || piece.toLowerCase() !== 'p')
         return false;
 
-    // Determine the row from the ending coordinate (assumes standard algebraic notation, e.g., 'e8')
-    const endingRow = parseInt(fenCoordTo[1], 10);
+    const endingRow = chessCoordinatesToIndex(fenCoordTo)[1] + 1;
 
     // Check if the pawn reaches the promotion row
     if ((piece === 'P' && endingRow === (lastBoardFiles ?? 8)) || (piece === 'p' && endingRow === 1)) {
@@ -1205,6 +1428,16 @@ function isPawnPromotion(bestMove) {
     return false;
 }
 
+function isPawnOnPromotionSquareFen(fenStr) {
+    if(!fenStr || typeof fenStr !== 'string') return false;
+
+    const board = fenStr.split(' ')[0];
+    if(!board) return false;
+
+    const ranks = board.split('/');
+
+    return ranks[0]?.includes('P') || ranks[ranks.length - 1]?.includes('p');
+}
 
 function fenCoordArrToDomCoord(fenCoordArr) {
     // fenCoordArr e.g. ["e6", "e5"]
@@ -1368,7 +1601,7 @@ function addMovesOnDemandListeners() {
 
             const pieceFen = modLastEnteredSquare.pieceFen;
             const isPieceWhite = pieceFen >= 'A' && pieceFen <= 'Z';
-            const isPlayerPiece = (lastBoardOrientation === 'w') === isPieceWhite;
+            const isPlayerPiece = (getPlayerColor() === 'w') === isPieceWhite;
 
             if(!pieceFen) return;
 
@@ -1455,7 +1688,7 @@ function getRandomOwnPieceDomCoord(fenCoord, boardMatrix) {
         }
     }
 
-    if (candidatePieces.length > 0) {
+    if(candidatePieces.length > 0) {
         // Choose a random piece from the candidates
         const randomIndex = Math.floor(Math.random() * candidatePieces.length);
         const chosenPiece = candidatePieces[randomIndex];
@@ -1470,446 +1703,40 @@ function getPieceAmount() {
     return getPieceElem(true)?.length ?? 0;
 }
 
-class AutomaticMove {
-    constructor(profile, fenMoveArr, isLegit, callback) {
-        this.id = getUniqueID();
-
-        // activeAutomoves is an external variable, not a child of AutomaticMove
-        activeAutomoves.push({ 'id': this.id, 'move': this });
-
-        this.profile = profile;
-        this.fenMoveArr = fenMoveArr;
-        this.isLegit = isLegit;
-
-        this.active = true;
-        this.isPromotingPawn = false;
-
-        this.onFinished = function(...args) {
-            activeAutomoves.filter(x => x.id !== this.id); // remove the move from the active automove list
-
-            this.active = false;
-
-            callback(...args);
-        };
-
-        this.moveDomCoords = fenCoordArrToDomCoord(fenMoveArr);
-        this.isPromotion = isPawnPromotion(fenMoveArr);
-
-        if(this.isLegit) {
-            const legitModeType = getConfigValue(configKeys.legitModeType, this.profile) ?? 'casual';
-
-            const pieceRanges = [
-                { minPieces: 30, maxPieces: Infinity }, // Opening (60+ pieces)
-                { minPieces: 23, maxPieces: 29 },       // Early Middlegame (48 to 64 pieces)
-                { minPieces: 16, maxPieces: 22 },       // Mid Middlegame (32 to 48 pieces)
-                { minPieces: 10, maxPieces: 15 },       // Late Middlegame (16 to 32 pieces)
-                { minPieces: 6, maxPieces: 9 },         // Endgame (8 to 16 pieces)
-                { minPieces: 3, maxPieces: 5 },         // Very Endgame (2 to 8 pieces)
-                { minPieces: 1, maxPieces: 2 },         // Extremely Few Pieces (1 piece)
-            ];
-
-            const timeRanges = {
-                beginner: [
-                    [2000, 4000],
-                    [3000, 15000],
-                    [5000, 25000],
-                    [4000, 30000],
-                    [3000, 15000],
-                    [2000, 10000],
-                    [1000, 4000],
-                ],
-                casual: [
-                    [900, 3000],    // Opening
-                    [1000, 15000],  // Early Middlegame
-                    [3000, 20000],  // Mid Middlegame
-                    [2000, 13000],  // Late Middlegame
-                    [1500, 10000],  // Endgame
-                    [1000, 9000],   // Very Endgame
-                    [500, 3000],    // Extremely Few Pieces
-                ],
-                intermediate: [
-                    [750, 2000],
-                    [1000, 10000],
-                    [2000, 15000],
-                    [1500, 12000],
-                    [1000, 8000],
-                    [750, 7000],
-                    [500, 2000],
-                ],
-                advanced: [
-                    [500, 1500],
-                    [1000, 8000],
-                    [750, 8000],
-                    [750, 12000],
-                    [750, 5000],
-                    [750, 3000],
-                    [500, 1200],
-                ],
-                master: [
-                    [333, 999],
-                    [400, 2000],
-                    [400, 3000],
-                    [400, 2500],
-                    [400, 2000],
-                    [400, 1500],
-                    [333, 750],
-                ],
-                professional: [
-                    [333, 666],
-                    [333, 666],
-                    [333, 1000],
-                    [333, 1500],
-                    [333, 1000],
-                    [333, 666],
-                    [333, 666],
-                ],
-                god: [
-                    [50, 333],
-                    [50, 233],
-                    [50, 300],
-                    [50, 250],
-                    [50, 200],
-                    [50, 150],
-                    [50, 100],
-                ]
-            };
-
-            this.timeRanges = pieceRanges.map((range, index) => ({
-                ...range,
-                timeRange: timeRanges[legitModeType][index],
-            }));
-
-            this.shouldHesitate = this.isLegit && Math.random() < 0.15;
-            this.shouldHesitateTwice = this.isLegit && Math.random() < 0.25;
-            this.hesitationTypeOne = this.isLegit && Math.random() < 0.35;
-
-            const legitTotalMoveTime = this.calculateMoveTime(getPieceAmount());
-            const elapsedMoveTime = (Date.now() - lastMoveRequestTime); // How long did it take for the engine to calculate the move
-            const remainingTime = Math.max(legitTotalMoveTime - elapsedMoveTime, 500);
-
-            const delays = this.generateDelaysForDesiredTime(remainingTime);
-
-            for(const key of Object.keys(delays)) {
-                this[key] = delays[key];
-            }
-        }
-
-        this.start();
-    }
-
-    generateDelaysForDesiredTime(desiredTotalTime) {
-        // Fixed minimum values
-        const PROMOTION_DELAY = this.getRandomIntegerBetween(1000, 1111); // just can't be done very fast for some reason at least on Chess.com
-
-        if(desiredTotalTime > 6000) {
-            const timelines = [
-                { move: .4, to: .2, hesitation: .15, hesitationResolve: .15, secondHesitationResolve: .15 },
-                { move: .1, to: .3, hesitation: .25, hesitationResolve: .15, secondHesitationResolve: .2 },
-                { move: .2, to: .25, hesitation: .2, hesitationResolve: .2, secondHesitationResolve: .15 }
-            ];
-
-            const timeline = timelines[Math.floor(Math.random() * timelines.length)];
-
-            return {
-                promotionDelay: PROMOTION_DELAY,
-                moveDelay: desiredTotalTime * timeline.move,
-                toSquareSelectDelay: desiredTotalTime * timeline.to,
-                hesitationDelay: desiredTotalTime * timeline.hesitation,
-                hesitationResolveDelay: desiredTotalTime * timeline.hesitationResolve,
-                secondHesitationResolveDelay: desiredTotalTime * timeline.secondHesitationResolve
-            };
-        }
-        // There is time for one hesitation
-        if(desiredTotalTime > 3000) {
-            const timelines = [
-                { move: .3, to: .2, hesitation: .25, hesitationResolve: .25 },
-                { move: .1, to: .3, hesitation: .45, hesitationResolve: .15 },
-                { move: .2, to: .25, hesitation: .2, hesitationResolve: .35 }
-            ];
-
-            const timeline = timelines[Math.floor(Math.random() * timelines.length)];
-
-            return {
-                promotionDelay: PROMOTION_DELAY,
-                moveDelay: desiredTotalTime * timeline.move,
-                toSquareSelectDelay: desiredTotalTime * timeline.to,
-                hesitationDelay: desiredTotalTime * timeline.hesitation,
-                hesitationResolveDelay: desiredTotalTime * timeline.hesitationResolve,
-                secondHesitationResolveDelay: -1
-            };
-        }
-        // There is not enough time to hesitate
-        else {
-            const timelines = [
-                { move: .9, to: .1 },
-                { move: .45, to: .55 },
-                { move: .6, to: .4 },
-                { move: .4, to: .6 },
-                { move: .1, to: .9 }
-            ];
-
-            const timeline = timelines[Math.floor(Math.random() * timelines.length)];
-
-            return {
-                promotionDelay: PROMOTION_DELAY,
-                moveDelay: desiredTotalTime * timeline.move,
-                toSquareSelectDelay: desiredTotalTime * timeline.to,
-                hesitationDelay: -1, hesitationResolveDelay: -1, secondHesitationResolveDelay: -1
-            };
-        }
-    }
-
-    calculateMoveTime(pieceCount) {
-        for(let range of this.timeRanges) {
-            if(pieceCount >= range.minPieces && pieceCount <= range.maxPieces) {
-                return this.getRandomIntegerBetween(range.timeRange[0], range.timeRange[1]);
-            }
-        }
-
-        return 500;
-    }
-
-    getRandomIntegerBetween(min, max) {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
-
-    getRandomIntegerNearAverage(min, max) {
-        const mid = (min + max) / 2;
-        const range = (max - min) / 2;
-
-        let value = Math.floor(mid + (Math.random() - 0.5) * range * 1.5);
-
-        return Math.max(min, Math.min(max, value));
-    }
-
-    delay(ms) {
-        return this.active ? new Promise(resolve => setTimeout(resolve, ms)) : true;
-    }
-
-    async triggerPieceClick(input) {
-        const parentExists = activeAutomoves.find(x => x.move === this) ? true : false;
-
-        if(!parentExists) {
-            return;
-        }
-
-        let clientX, clientY;
-
-        if(input instanceof Element) {
-            const rect = input.getBoundingClientRect();
-            clientX = rect.left + rect.width / 2;
-            clientY = rect.top + rect.height / 2;
-        } else if (typeof input === 'object') {
-            clientX = input[0];
-            clientY = input[1];
-        } else {
-            return;
-        }
-
-        const xDivider = Math.random() < 0.85 ? 4 : Math.random() < 0.15 ? 3 : 2;
-        const yDivider = Math.random() < 0.65 ? 3 : Math.random() < 0.35 ? 2 : 4;
-
-        const randomVariationX = (lastPieceSize?.width - 4) / xDivider;
-        const randomVariationY = (lastPieceSize?.height - 4) / yDivider;
-
-        const randomOffsetX = (Math.random() - 0.5) * 2 * randomVariationX;
-        const randomOffsetY = (Math.pow(Math.random(), 0.5) - 0.5) * 2 * randomVariationY;
-
-        const randomizedX = clientX + randomOffsetX;
-        const randomizedY = clientY + randomOffsetY;
-
-        const pointerEventOptions = {
-            bubbles: true,
-            cancelable: true,
-            clientX: randomizedX,
-            clientY: randomizedY,
-        };
-
-        const elementToTrigger = (input instanceof Element) ? input : document.elementFromPoint(clientX, clientY);
-
-        if(elementToTrigger) {
-            switch(domain) {
-                case 'chess.com':
-                    elementToTrigger.dispatchEvent(new PointerEvent('pointerdown', pointerEventOptions));
-
-                    if(this.isLegit) await this.delay(this.getRandomIntegerNearAverage(35, 125));
-
-                    elementToTrigger.dispatchEvent(new PointerEvent('pointerup', pointerEventOptions));
-
-                    break;
-                case 'lichess.org':
-                    elementToTrigger.dispatchEvent(new MouseEvent('mousedown', pointerEventOptions));
-
-                    if(this.isLegit) await this.delay(this.getRandomIntegerNearAverage(35, 125));
-
-                    elementToTrigger.dispatchEvent(new MouseEvent('mouseup', pointerEventOptions));
-
-                    break;
-                case 'worldchess.com':
-                    elementToTrigger.dispatchEvent(new MouseEvent('mousedown', pointerEventOptions));
-
-                    if(this.isLegit) await this.delay(this.getRandomIntegerNearAverage(35, 125));
-
-                    elementToTrigger.dispatchEvent(new MouseEvent('mouseup', pointerEventOptions));
-
-                    break;
-            }
-        }
-
-        if(debugModeActivated) {
-            const dot = document.createElement('div');
-                    dot.style.position = 'absolute';
-                    dot.style.width = '7px';
-                    dot.style.height = '7px';
-                    dot.style.borderRadius = '50%';
-                    dot.style.backgroundColor = 'lime';
-                    dot.style.left = `${randomizedX - 2.5}px`;
-                    dot.style.top = `${randomizedY - 2.5}px`;
-
-            const container = document.createElement('div');
-                    container.style.position = 'absolute';
-                    container.style.width = `${Math.round(randomVariationX * 2)}px`;
-                    container.style.height = `${Math.round(randomVariationY * 2)}px`;
-                    container.style.border = '2px dashed green';
-                    container.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
-                    container.style.left = `${clientX - randomVariationX}px`;
-                    container.style.top = `${clientY - randomVariationY}px`;
-
-            document.body.appendChild(container);
-            document.body.appendChild(dot);
-
-            setTimeout(() => {
-                dot.remove();
-                container.remove();
-            }, 1000);
-        }
-    }
-
-    click(domCoord) {
-        if(this.active)
-            this.triggerPieceClick(domCoord);
-    }
-
-    async hesitate() {
-        const hesitationPieceDomCoord = getRandomOwnPieceDomCoord(this.fenMoveArr[0], getBoardMatrix());
-
-        if(hesitationPieceDomCoord) {
-            if(this.hesitationTypeOne) {
-                this.click(this.moveDomCoords[0]);
-                await this.delay(this.hesitationDelay);
-            }
-
-            this.click(hesitationPieceDomCoord);
-
-            await this.delay(this.hesitationResolveDelay);
-
-            if(this.shouldHesitateTwice && this.secondHesitationResolveDelay !== -1) {
-                const secondHesitationPieceDomCoord = getRandomOwnPieceDomCoord(this.fenMoveArr[0], getBoardMatrix());
-                this.click(secondHesitationPieceDomCoord);
-                await this.delay(this.secondHesitationResolveDelay);
-            }
-        }
-
-        this.finishMove(this.toSquareSelectDelay, this.promotionDelay);
-    }
-
-
-    async finishMove(delay01, delay02) {
-        this.click(this.moveDomCoords[0]);
-
-        await this.delay(delay01);
-
-        this.click(this.moveDomCoords[1]);
-
-        // Handle promotion click if necessary
-        if(this.isPromotion) {
-            this.isPromotingPawn = true;
-
-            await this.delay(delay02);
-
-            this.click(this.moveDomCoords[1]);
-
-            this.isPromotingPawn = false;
-        }
-
-        this.onFinished(true);
-    }
-
-    async playLegit() {
-        await this.delay(this.moveDelay);
-
-        if(this.shouldHesitate && this.hesitationDelay !== -1)
-            this.hesitate();
-        else
-            this.finishMove(this.toSquareSelectDelay, this.promotionDelay);
-    }
-
-    async start() {
-        if(this.isLegit) {
-            this.playLegit();
-        } else {
-            this.finishMove(5, 1111);
-        }
-    }
-
-    async stop() {
-        if(this.isPromotingPawn) {
-            // Attempt to promote the pawn before closing
-            this.click(this.moveDomCoords[1]);
-        }
-
-        this.onFinished(false);
-    }
-}
-
-async function makeMove(profile, fenMoveArr, isLegit) {
-    const move = new AutomaticMove(profile, fenMoveArr, isLegit, e => {
-        // This is ran when the move finished
-
-        if(debugModeActivated) console.warn('Move', fenMoveArr, move.id, 'finished', 'for profile:', profile);
-    });
-}
-
 function isBoardDrawerNeeded() {
-    const config = GM_getValue(dbValues.AcasConfig);
+    return withDynamicSettings(() => {
+        const config = GM_getValue(dbValues.AcasConfig);
+        const gP = config?.global?.['profiles'];
+        const iP = config?.instance?.[commLinkInstanceID]?.['profiles'];
+        if(config?.global?.[configKeys.isUserscriptGhost]) return false;
 
-    const gP = config?.global?.['profiles'];
-    const iP = config?.instance?.[commLinkInstanceID]?.['profiles'];
+        function check(cfg) {
+            if(!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) return false;
+            for(const profile of Object.values(cfg)) {
+                if(!profile || typeof profile !== 'object' || Array.isArray(profile)) continue;
+                const externalMoves = profile[configKeys.displayMovesOnExternalSite];
+                const renderingNeeded = profile[configKeys.renderOnExternalSite];
+                const feedbackNeeded = profile[configKeys.feedbackOnExternalSite];
+                const movesOnDemand = profile[configKeys.movesOnDemand];
+                const curves = profile.dynamicSettings;
+                const mayEnableDynamically = curves && typeof curves === 'object' && !Array.isArray(curves)
+                    && [configKeys.displayMovesOnExternalSite, configKeys.renderOnExternalSite,
+                        configKeys.feedbackOnExternalSite, configKeys.movesOnDemand].some(key => {
+                        const curve = curves[key];
+                        return curve && typeof curve === 'object' && !Array.isArray(curve) && curve.enabled;
+                    });
 
-    const isGhost = config?.global?.[configKeys.isUserscriptGhost];
-    if(isGhost) return false;
-
-    function check(cfg) {
-        const profiles = Object.keys(cfg);
-
-        for(const profileName of profiles) {
-            const profile = cfg[profileName];
-
-            const externalMoves = profile[configKeys.displayMovesOnExternalSite];
-            const renderingNeeded = profile[configKeys.renderOnExternalSite];
-            const feedbackNeeded = profile[configKeys.feedbackOnExternalSite];
-            const movesOnDemand = profile[configKeys.movesOnDemand];
-
-            if(externalMoves || renderingNeeded || feedbackNeeded || movesOnDemand) {
-                return true;
+                if(externalMoves || renderingNeeded || feedbackNeeded || movesOnDemand || mayEnableDynamically) return true;
             }
+            return false;
         }
-    }
 
-    if(gP && check(gP)) return true;
-    if(iP && check(iP)) return true;
-
-    return false;
+        return check(gP) || check(iP);
+    }, () => false);
 }
 
 function squeezeEmptySquares(fenStr) {
     return fenStr.replace(/1+/g, match => match.length);
-}
-
-function getBoardOrientation() {
-    const playerColor = instanceVars.playerColor.get(commLinkInstanceID);
-
-    return playerColor;
 }
 
 function getFenPieceColor(pieceFenStr) {
@@ -1961,8 +1788,6 @@ function getCanvasPixelColor(canvas, [xPercentage, yPercentage], debug) {
         clonedCtx.fill();
 
         const dataURL = clonedCanvas.toDataURL();
-
-        //console.log(canvas, pixel, dataURL);
     }
 
     return brightness < 128 ? 'b' : 'w';
@@ -1993,8 +1818,6 @@ function canvasHasPixelAt(canvas, [xPercentage, yPercentage], debug) {
         clonedCtx.fill();
 
         const dataURL = clonedCanvas.toDataURL();
-
-        //console.log(canvas, pixel, dataURL);
     }
 
     return pixel[3] !== 0;
@@ -2068,6 +1891,15 @@ function getBoardOrientation() {
     return boardOrientation || null;
 }
 
+// The player's side and the board's visual orientation are independent.
+function getPlayerColor() {
+    const playerColor = getSiteData('playerColor');
+
+    return playerColor === 'w' || playerColor === 'b'
+        ? playerColor
+        : getBoardOrientation();
+}
+
 function getPieceElemFen(pieceElem) {
     const pieceFen = getSiteData('pieceElemFen', { pieceElem });
 
@@ -2098,15 +1930,7 @@ function getBoardDimensions() {
 }
 
 function isMutationNewMove(mutationArr) {
-    const isNewMoveArr = getSiteData('isMutationNewMove', { mutationArr }); // [isNewMove, turn]
-
-    return isNewMoveArr || false;
-}
-
-function getMutationTurn(mutationArr) {
-    const turn = getSiteData('getMutationTurn', { mutationArr });
-
-    return turn || null;
+    return getSiteData('isMutationNewMove', { mutationArr }) || false;
 }
 
 function getBoardMatrix() {
@@ -2118,10 +1942,12 @@ function getBoardMatrix() {
 
     if(isValidPieceElemsArray) {
         pieceElems.forEach(pieceElem => {
-            const pieceFenCode = getPieceElemFen(pieceElem);
-            const pieceCoordsArr = getPieceElemCoords(pieceElem);
-
             try {
+                const pieceFenCode = getPieceElemFen(pieceElem);
+                const pieceCoordsArr = getPieceElemCoords(pieceElem);
+
+                if(typeof pieceFenCode !== 'string' || !pieceFenCode) return;
+
                 const [xIdx, yIdx] = pieceCoordsArr;
 
                 board[boardFiles - (yIdx + 1)][xIdx] = pieceFenCode;
@@ -2136,186 +1962,1159 @@ function getBoardMatrix() {
     return board;
 }
 
-function getBoardPiece(fenCoord) {
+function getBoardPiece(fenCoord, boardMatrix) {
     const [boardRanks, boardFiles] = getBoardDimensions();
     const indexArr = chessCoordinatesToIndex(fenCoord);
 
-    return getBoardMatrix()?.[boardFiles - (indexArr[1] + 1)]?.[indexArr[0]];
+    const matrix = boardMatrix ?? getBoardMatrix();
+
+    return matrix?.[boardFiles - (indexArr[1] + 1)]?.[indexArr[0]];
 }
 
-// Works on 8x8 boards only
-function getRights() {
-    let rights = '';
+function getBasicFen(boardMatrix) {
+    const matrix = boardMatrix ?? getBoardMatrix();
 
-    // check for white
-    const e1 = getBoardPiece('e1'),
-            h1 = getBoardPiece('h1'),
-            a1 = getBoardPiece('a1');
-
-    if(e1 == 'K' && h1 == 'R') rights += 'K';
-    if(e1 == 'K' && a1 == 'R') rights += 'Q';
-
-    //check for black
-    const e8 = getBoardPiece('e8'),
-            h8 = getBoardPiece('h8'),
-            a8 = getBoardPiece('a8');
-
-    if(e8 == 'k' && h8 == 'r') rights += 'k';
-    if(e8 == 'k' && a8 == 'r') rights += 'q';
-
-    return rights ? rights : '-';
+    return squeezeEmptySquares(matrix.map(x => x.join('')).join('/'));
 }
 
-function getBasicFen() {
+function getFen(onlyBasic, turn, basicFenToUse, state = gameState) {
     const boardMatrix = getBoardMatrix();
+    const basicFen = typeof basicFenToUse === 'string'
+        ? basicFenToUse
+        : getBasicFen(boardMatrix);
 
-    return squeezeEmptySquares(boardMatrix.map(x => x.join('')).join('/'));
-}
+    if(onlyBasic) return basicFen;
 
-function getFen(onlyBasic) {
-    const basicFen = getBasicFen();
-
-    if(onlyBasic) {
-        return basicFen;
-    }
+    const sideToMove = turn || getSiteData('turn') || state.turn || 'w'; // not the player's color
 
     // FEN structure: [fen] [player color] [castling rights] [en passant targets] [halfmove clock] [fullmove clock]
-    const fullFen = `${basicFen} ${getBoardOrientation()} ${getRights()} - 0 1`;
-
-    return fullFen;
+    return `${basicFen} ${sideToMove} ${state.castlingRights} ${state.enPassantTarget} ${state.halfmoveClock} ${state.fullmoveNumber}`;
 }
 
-function resetCachedValues() {
+function resetStoredMatchVariables() {
     chesscomVariantPlayerColorsTable = null;
+    gameStateHistory.set(); // reset
+
+    gameState = getGameStateObjTemplate();
+    forceUpdateGameState();
 }
 
-function countTotalPieces(fen) {
-    let pieceCount = 0;
-    const position = fen.split(' ')[0];
+function fenToBoard(basicFen) {
+    const board = [];
 
-    for(let char of position) {
-        if(/[rnbqkpRNBQKP]/.test(char)) {
-            pieceCount += (pieceCount[char] || 0) + 1;
+    for(const row of basicFen.split('/')) {
+        const boardRow = [];
+
+        for(const char of row) {
+            if(isNaN(char)) {
+                boardRow.push(char);
+            } else {
+                boardRow.push(...Array(Number(char)).fill(''));
+            }
+        }
+
+        board.push(boardRow);
+    }
+
+    return board;
+}
+
+function boardToFen(board) {
+    return board.map(row => {
+        let fenRow = '';
+        let emptyCount = 0;
+
+        for(const piece of row) {
+            if(piece === '') {
+                emptyCount++;
+                continue;
+            }
+
+            if(emptyCount) {
+                fenRow += emptyCount;
+                emptyCount = 0;
+            }
+
+            fenRow += piece;
+        }
+
+        if(emptyCount) {
+            fenRow += emptyCount;
+        }
+
+        return fenRow;
+    }).join('/');
+}
+
+function getBoardChanges(lastBasicFen, newBasicFen, turn) {
+    const changes = getBoardChangesObjTemplate();
+
+    if(!lastBasicFen || !newBasicFen) {
+        return changes;
+    }
+
+    const lastBoard = fenToBoard(lastBasicFen);
+    const newBoard = fenToBoard(newBasicFen);
+
+    const rows = newBoard.length;
+    const cols = newBoard[0]?.length ?? 0;
+
+    for(let i = 0; i < rows; i++) {
+        for(let j = 0; j < cols; j++) {
+            const before = lastBoard[i]?.[j] ?? '';
+            const after = newBoard[i]?.[j] ?? '';
+
+            if(before === after) continue;
+
+            changes.changedSquaresAmount++;
+
+            const square =
+                `${String.fromCharCode(97 + j)}${rows - i}`;
+
+            if(before !== '') {
+                changes.movedPieces.push(before);
+
+                changes.removed.push({
+                    square,
+                    piece: before,
+                    row: i,
+                    col: j
+                });
+            }
+
+            if(after !== '') {
+                changes.added.push({
+                    square,
+                    piece: after,
+                    row: i,
+                    col: j
+                });
+            }
         }
     }
 
-    return pieceCount;
-}
+    changes.pieceAmountChange =
+        changes.added.length - changes.removed.length;
 
-function getPieceChangeAmount(lastFen, newFen) {
-    if(!lastFen || !newFen) return 0;
+    if(turn && changes.changedSquaresAmount !== 2) {
+        changes.missedFen = getMissedFen(
+            lastBoard,
+            newBoard,
+            changes,
+            turn
+        );
+    }
 
-    const lastPieceCount = countTotalPieces(lastFen);
-    const newPieceCount = countTotalPieces(newFen);
-
-    // (need to implement fix for variants which may add pieces legally)
-    const countChange = newPieceCount - lastPieceCount;
-
-    /* Possible "countChange" value explanations,
-        (countChange < -1) -> multiple pieces have disappeared (atomic chess variant or a faulty newFen?)
-        (countChange = -1) -> piece has been eaten
-        (countChange = 0)  -> piece moved
-        (countChange = 1)  -> piece has spawned
-        (countChange > 1)  -> multiple pieces have spawned (possibly a new game?)
+    /*
+        Castling:
+        two pieces disappear and two pieces appear.
     */
+    if(
+        changes.removed.length === 2 &&
+        changes.added.length === 2
+    ) {
+        const kingFrom = changes.removed.find(({ piece }) =>
+            piece.toLowerCase() === 'k'
+        );
 
-    return countChange;
-}
+        const kingTo = changes.added.find(({ piece }) =>
+            piece.toLowerCase() === 'k'
+        );
 
-function getBoardSquareChangeAmount(lastFen, newFen) {
-    if(!lastFen || !newFen) return 0;
-
-    let board1 = lastFen.split(' ')[0].replace(/\d/g, d => ' '.repeat(d)).split('/').join('');
-    let board2 = newFen.split(' ')[0].replace(/\d/g, d => ' '.repeat(d)).split('/').join('');
-
-    let changedFrom = [];
-    let diff = 0;
-
-    for(let i = 0; i < board1.length; i++) {
-        if(board1[i] !== board2[i]) {
-            if(board1[i]?.trim()?.length > 0) changedFrom.push(board1[i]?.toLowerCase());
-
-            diff += 1;
+        if(kingFrom && kingTo) {
+            changes.from = kingFrom.square;
+            changes.to = kingTo.square;
+            changes.movedPiece = kingFrom.piece;
         }
     }
 
-    /* Possible "diff" value explanations,
-        (diff = 0) -> no changes, same board layout
-        (diff = 1) -> only one tile abruptly changed, shouldn't be possible
-        (diff = 2) -> a piece moved, maybe it ate another piece
-        (diff = 3) -> three tiles had changes, shouldn't be possible (NOTE: it's possible if the fen has skipped one turn...)
-        (diff > 3) -> a lot of tiles had changes, maybe a new game started, the change is significant so allowing it
-        (diff = 4) -> takeback or castling
+    /*
+        Normal move, capture, en passant, or promotion:
+        exactly one piece appears.
     */
+    if(!changes.to && changes.added.length === 1) {
+        const destination = changes.added[0];
 
-    return diff;
-}
+        changes.to = destination.square;
 
-async function processBoardPosition(currentFullFen = getFen(), squareChangeAmount = 0) {
-    lastCalculatedFullFen = currentFullFen;
-    lastMoveRequestTime = Date.now();
+        const source = changes.removed.find(({ piece, square }) =>
+            piece === destination.piece &&
+            square !== changes.to
+        );
 
-    clearVisuals(true);
+        if(source) {
+            changes.from = source.square;
+            changes.movedPiece = source.piece;
+        }
 
-    boardUtils.setBoardDimensions(getBoardDimensions());
-    modLastEnteredSquare.squareFen = null;
+        /*
+            Promotion:
+            a pawn disappears and a non-pawn appears.
+        */
+        if(
+            !changes.from &&
+            destination.piece.toLowerCase() !== 'p'
+        ) {
+            const pawnSource = changes.removed.find(({ piece }) =>
+                piece.toLowerCase() === 'p'
+            );
 
-    if(!modListeners.length)
-        addMovesOnDemandListeners();
-
-    const didBoardOrientationChange = await checkBoardOrientationChange();
-
-    // Most likely a new match started
-    if(didBoardOrientationChange || squareChangeAmount > 5) {
-        resetCachedValues();
-
-        matchFirstSuggestionGiven = false;
-        lastTurn = getBoardOrientation();
-        instanceVars.turn.set(commLinkInstanceID, lastTurn);
-
-        CommLink.commands.newMatchStarted();
+            if(pawnSource) {
+                changes.from = pawnSource.square;
+                changes.movedPiece = pawnSource.piece;
+                changes.isPromotion = true;
+                changes.promotionPiece = destination.piece;
+            }
+        }
     }
 
-    CommLink.commands.updateBoardFen(currentFullFen);
+    /*
+        Normal capture:
+        captured piece disappears from the destination square.
+    */
+    if(changes.to) {
+        const capture = changes.removed.find(({ square }) =>
+            square === changes.to
+        );
+
+        if(capture) {
+            changes.capturedPiece = capture.piece;
+            changes.capturedSquare = capture.square;
+        }
+    }
+
+    /*
+        En passant.
+    */
+    if (
+        changes.movedPiece?.toLowerCase() === 'p' &&
+        changes.removed.length === 2 &&
+        changes.added.length === 1 &&
+        !changes.capturedPiece
+    ) {
+        const capturedPawn = changes.removed.find(({ piece, square }) =>
+            piece.toLowerCase() === 'p' &&
+            square !== changes.from
+        );
+
+        if (capturedPawn) {
+            changes.capturedPiece = capturedPawn.piece;
+            changes.capturedSquare = capturedPawn.square;
+            changes.isEnPassant = true;
+        }
+    }
+
+    if(changes.movedPiece) {
+        changes.movedPieceColor =
+            changes.movedPiece === changes.movedPiece.toUpperCase()
+                ? 'w'
+                : 'b';
+    }
+
+    return changes;
+}
+
+// This function is enourmously large, I know. It's still in development.
+function getMissedFen(lastBoard, newBoard, changes, turn) {
+    const opponent = turn === 'w' ? 'b' : 'w';
+
+    const turnRemoved = changes.removed.filter(({ piece }) =>
+        getFenPieceColor(piece) === turn
+    );
+
+    const turnAdded = changes.added.filter(({ piece }) =>
+        getFenPieceColor(piece) === turn
+    );
+
+    const opponentChanged = [
+        ...changes.removed,
+        ...changes.added
+    ].some(({ piece }) =>
+        getFenPieceColor(piece) === opponent
+    );
+
+    if(!turnRemoved.length || !opponentChanged) {
+        return null;
+    }
+
+    /*
+        ---------------------------------------------------------
+        Same-square recapture
+        ---------------------------------------------------------
+
+        One of the opponent's removed pieces is the piece that
+        was captured by the turn piece. It must be on the same
+        square where the opponent's remaining piece ends up.
+
+        The other opponent removal is the source of the
+        recapturing piece.
+    */
+    if(
+        turnRemoved.length === 1 &&
+        turnAdded.length === 0
+    ) {
+        const opponentRemoved = changes.removed.filter(({ piece }) =>
+            getFenPieceColor(piece) === opponent
+        );
+
+        const opponentAdded = changes.added.filter(({ piece }) =>
+            getFenPieceColor(piece) === opponent
+        );
+
+        if(
+            opponentRemoved.length === 2 &&
+            opponentAdded.length === 1
+        ) {
+            const firstMover = turnRemoved[0];
+            const opponentTo = opponentAdded[0];
+
+            /*
+                The captured opponent piece must have been on
+                the destination square.
+            */
+            const captured = opponentRemoved.find(({ row, col }) =>
+                row === opponentTo.row &&
+                col === opponentTo.col
+            );
+
+            /*
+                The other removed opponent piece is the piece
+                that made the recapture.
+            */
+            const opponentFrom = opponentRemoved.find(({ row, col }) =>
+                row !== opponentTo.row ||
+                col !== opponentTo.col
+            );
+
+            if(captured && opponentFrom) {
+                /*
+                    The opponent must actually move its piece from
+                    opponentFrom to opponentTo. This also prevents
+                    accidentally treating two unrelated removals
+                    as a recapture.
+                */
+                if(opponentFrom.piece === opponentTo.piece) {
+                    const board = lastBoard.map(row => [...row]);
+
+                    board[firstMover.row][firstMover.col] = '';
+                    board[opponentTo.row][opponentTo.col] =
+                        firstMover.piece;
+
+                    let valid = true;
+                    let opponentChanges = 0;
+                    const checked = new Set();
+
+                    for(const change of [
+                        ...changes.removed,
+                        ...changes.added
+                    ]) {
+                        const key = `${change.row}:${change.col}`;
+
+                        if(checked.has(key)) {
+                            continue;
+                        }
+
+                        checked.add(key);
+
+                        const candidatePiece =
+                            board[change.row]?.[change.col] ?? '';
+
+                        const actualPiece =
+                            newBoard[change.row]?.[change.col] ?? '';
+
+                        if(candidatePiece === actualPiece) {
+                            continue;
+                        }
+
+                        const candidateColor = candidatePiece
+                            ? getFenPieceColor(candidatePiece)
+                            : null;
+
+                        const actualColor = actualPiece
+                            ? getFenPieceColor(actualPiece)
+                            : null;
+
+                        /*
+                            Opponent captures the turn piece on the
+                            destination square.
+                        */
+                        if(
+                            candidateColor === turn &&
+                            actualColor === opponent
+                        ) {
+                            opponentChanges++;
+                            continue;
+                        }
+
+                        /*
+                            Opponent's original piece disappears
+                            from its source square.
+                        */
+                        if(
+                            candidateColor === opponent &&
+                            !actualPiece
+                        ) {
+                            opponentChanges++;
+                            continue;
+                        }
+
+                        /*
+                            Generic opponent removal case.
+                        */
+                        if(
+                            !candidatePiece &&
+                            actualColor === opponent
+                        ) {
+                            opponentChanges++;
+                            continue;
+                        }
+
+                        valid = false;
+                        break;
+                    }
+
+                    if(valid && opponentChanges) {
+                        return boardToFen(board);
+                    }
+                }
+            }
+        }
+    }
+
+    /*
+        ---------------------------------------------------------
+        Normal move / capture
+        ---------------------------------------------------------
+    */
+    for(const from of turnRemoved) {
+        for(const to of turnAdded) {
+            if(from.piece !== to.piece) {
+                continue;
+            }
+
+            if(from.row === to.row && from.col === to.col) {
+                continue;
+            }
+
+            const board = lastBoard.map(row => [...row]);
+
+            board[from.row][from.col] = '';
+            board[to.row][to.col] = from.piece;
+
+            let valid = true;
+            let opponentChanges = 0;
+            const checked = new Set();
+
+            for(const change of [
+                ...changes.removed,
+                ...changes.added
+            ]) {
+                const key = `${change.row}:${change.col}`;
+
+                if(checked.has(key)) {
+                    continue;
+                }
+
+                checked.add(key);
+
+                const candidatePiece =
+                    board[change.row]?.[change.col] ?? '';
+
+                const actualPiece =
+                    newBoard[change.row]?.[change.col] ?? '';
+
+                if(candidatePiece === actualPiece) {
+                    continue;
+                }
+
+                const candidateColor = candidatePiece
+                    ? getFenPieceColor(candidatePiece)
+                    : null;
+
+                const actualColor = actualPiece
+                    ? getFenPieceColor(actualPiece)
+                    : null;
+
+                /*
+                    Remaining difference must belong to opponent.
+                */
+                if(
+                    candidateColor === turn &&
+                    actualColor === opponent
+                ) {
+                    opponentChanges++;
+                    continue;
+                }
+
+                if(
+                    candidateColor === opponent &&
+                    !actualPiece
+                ) {
+                    opponentChanges++;
+                    continue;
+                }
+
+                if(
+                    !candidatePiece &&
+                    actualColor === opponent
+                ) {
+                    opponentChanges++;
+                    continue;
+                }
+
+                valid = false;
+                break;
+            }
+
+            if(valid && opponentChanges) {
+                return boardToFen(board);
+            }
+        }
+    }
+
+    /*
+        ---------------------------------------------------------
+        Promotion
+        ---------------------------------------------------------
+    */
+    for(const from of turnRemoved) {
+        if(from.piece.toLowerCase() !== 'p') {
+            continue;
+        }
+
+        for(const to of turnAdded) {
+            if(to.piece.toLowerCase() === 'p') {
+                continue;
+            }
+
+            const board = lastBoard.map(row => [...row]);
+
+            board[from.row][from.col] = '';
+            board[to.row][to.col] = to.piece;
+
+            let valid = true;
+            let opponentChanges = 0;
+            const checked = new Set();
+
+            for(const change of [
+                ...changes.removed,
+                ...changes.added
+            ]) {
+                const key = `${change.row}:${change.col}`;
+
+                if(checked.has(key)) {
+                    continue;
+                }
+
+                checked.add(key);
+
+                const candidatePiece =
+                    board[change.row]?.[change.col] ?? '';
+
+                const actualPiece =
+                    newBoard[change.row]?.[change.col] ?? '';
+
+                if(candidatePiece === actualPiece) {
+                    continue;
+                }
+
+                const candidateColor = candidatePiece
+                    ? getFenPieceColor(candidatePiece)
+                    : null;
+
+                const actualColor = actualPiece
+                    ? getFenPieceColor(actualPiece)
+                    : null;
+
+                if(
+                    candidateColor === turn &&
+                    actualColor === opponent
+                ) {
+                    opponentChanges++;
+                    continue;
+                }
+
+                if(
+                    candidateColor === opponent &&
+                    !actualPiece
+                ) {
+                    opponentChanges++;
+                    continue;
+                }
+
+                if(
+                    !candidatePiece &&
+                    actualColor === opponent
+                ) {
+                    opponentChanges++;
+                    continue;
+                }
+
+                valid = false;
+                break;
+            }
+
+            if(valid && opponentChanges) {
+                return boardToFen(board);
+            }
+        }
+    }
+
+    /*
+        ---------------------------------------------------------
+        En passant
+        ---------------------------------------------------------
+    */
+    if(
+        turnRemoved.length === 1 &&
+        turnAdded.length === 0 &&
+        turnRemoved[0].piece.toLowerCase() === 'p'
+    ) {
+        const from = turnRemoved[0];
+
+        const direction = turn === 'w' ? -1 : 1;
+        const startRow = turn === 'w' ? 6 : 1;
+
+        if(from.row === startRow) {
+            const toRow = from.row + direction * 2;
+            const middleRow = from.row + direction;
+
+            /*
+                The intermediate square must be empty in the
+                current position because the pawn was captured.
+            */
+            if(
+                lastBoard[middleRow][from.col] === '' &&
+                newBoard[toRow][from.col] === ''
+            ) {
+                const board = lastBoard.map(row => [...row]);
+
+                board[from.row][from.col] = '';
+                board[toRow][from.col] = from.piece;
+
+                let valid = true;
+                let opponentChanges = 0;
+                const checked = new Set();
+
+                for(const change of [
+                    ...changes.removed,
+                    ...changes.added
+                ]) {
+                    const key = `${change.row}:${change.col}`;
+
+                    if(checked.has(key)) {
+                        continue;
+                    }
+
+                    checked.add(key);
+
+                    const candidatePiece =
+                        board[change.row]?.[change.col] ?? '';
+
+                    const actualPiece =
+                        newBoard[change.row]?.[change.col] ?? '';
+
+                    if(candidatePiece === actualPiece) {
+                        continue;
+                    }
+
+                    const candidateColor = candidatePiece
+                        ? getFenPieceColor(candidatePiece)
+                        : null;
+
+                    const actualColor = actualPiece
+                        ? getFenPieceColor(actualPiece)
+                        : null;
+
+                    if(
+                        candidateColor === turn &&
+                        actualColor === opponent
+                    ) {
+                        opponentChanges++;
+                        continue;
+                    }
+
+                    if(
+                        candidateColor === opponent &&
+                        !actualPiece
+                    ) {
+                        opponentChanges++;
+                        continue;
+                    }
+
+                    if(
+                        !candidatePiece &&
+                        actualColor === opponent
+                    ) {
+                        opponentChanges++;
+                        continue;
+                    }
+
+                    valid = false;
+                    break;
+                }
+
+                if(valid && opponentChanges) {
+                    return boardToFen(board);
+                }
+            }
+        }
+    }
+
+    /*
+        ---------------------------------------------------------
+        Castling
+        ---------------------------------------------------------
+    */
+    if(
+        turnRemoved.length === 2 &&
+        turnAdded.length === 2
+    ) {
+        const kingFrom = turnRemoved.find(({ piece }) =>
+            piece.toLowerCase() === 'k'
+        );
+
+        const rookFrom = turnRemoved.find(({ piece }) =>
+            piece.toLowerCase() === 'r'
+        );
+
+        const kingTo = turnAdded.find(({ piece }) =>
+            piece.toLowerCase() === 'k'
+        );
+
+        const rookTo = turnAdded.find(({ piece }) =>
+            piece.toLowerCase() === 'r'
+        );
+
+        if(
+            kingFrom &&
+            rookFrom &&
+            kingTo &&
+            rookTo
+        ) {
+            const board = lastBoard.map(row => [...row]);
+
+            board[kingFrom.row][kingFrom.col] = '';
+            board[rookFrom.row][rookFrom.col] = '';
+
+            board[kingTo.row][kingTo.col] = kingFrom.piece;
+            board[rookTo.row][rookTo.col] = rookFrom.piece;
+
+            let valid = true;
+            let opponentChanges = 0;
+            const checked = new Set();
+
+            for(const change of [
+                ...changes.removed,
+                ...changes.added
+            ]) {
+                const key = `${change.row}:${change.col}`;
+
+                if(checked.has(key)) {
+                    continue;
+                }
+
+                checked.add(key);
+
+                const candidatePiece =
+                    board[change.row]?.[change.col] ?? '';
+
+                const actualPiece =
+                    newBoard[change.row]?.[change.col] ?? '';
+
+                if(candidatePiece === actualPiece) {
+                    continue;
+                }
+
+                const candidateColor = candidatePiece
+                    ? getFenPieceColor(candidatePiece)
+                    : null;
+
+                const actualColor = actualPiece
+                    ? getFenPieceColor(actualPiece)
+                    : null;
+
+                if(
+                    candidateColor === turn &&
+                    actualColor === opponent
+                ) {
+                    opponentChanges++;
+                    continue;
+                }
+
+                if(
+                    candidateColor === opponent &&
+                    !actualPiece
+                ) {
+                    opponentChanges++;
+                    continue;
+                }
+
+                if(
+                    !candidatePiece &&
+                    actualColor === opponent
+                ) {
+                    opponentChanges++;
+                    continue;
+                }
+
+                valid = false;
+                break;
+            }
+
+            if(valid && opponentChanges) {
+                return boardToFen(board);
+            }
+        }
+    }
+
+    return null;
+}
+
+// Which castling rights can still exist, judged from piece placement alone
+function inferCastlingRightsFromFen(fen) {
+    try {
+        const ranks = String(fen).trim().split(/\s+/)[0].split('/');
+        if(ranks.length !== 8) return '-';
+
+        const expand = rank => rank.replace(/[1-8]/g, d => '1'.repeat(d));
+        const rank8 = expand(ranks[0]); // black back rank
+        const rank1 = expand(ranks[7]); // white back rank
+
+        if(rank8.length !== 8 || rank1.length !== 8) return '-';
+
+        let rights = '';
+        if(rank1[4] === 'K') {
+            if(rank1[7] === 'R') rights += 'K';
+            if(rank1[0] === 'R') rights += 'Q';
+        }
+        if(rank8[4] === 'k') {
+            if(rank8[7] === 'r') rights += 'k';
+            if(rank8[0] === 'r') rights += 'q';
+        }
+
+        return rights || '-';
+    } catch(e) {
+        return '-';
+    }
+}
+
+function seedLostCastlingRights(basicFen) {
+    const possible = inferCastlingRightsFromFen(basicFen);
+
+    for(const right of ['K', 'Q', 'k', 'q']) {
+        if(!possible.includes(right) && !gameState.lostCastlingRights.includes(right)) {
+            gameState.lostCastlingRights.push(right);
+        }
+    }
 }
 
 // This is called by observeNewMoves()
-async function determineBoardPositionValidity(turn) {
-    const currentFullFen = await getFen();
-    const fenChanged = currentFullFen?.split(' ', 1)?.[0] !== lastCalculatedFullFen?.split(' ', 1)?.[0]; // only compare the first part of the FENs to detect change
-
-    const pieceAmountChange = getPieceChangeAmount(lastCalculatedFullFen, currentFullFen);
-    const squareChangeAmount = getBoardSquareChangeAmount(lastCalculatedFullFen, currentFullFen);
+// Note: gameStateHistory.get()[0].fen.full / gameStateHistory.get()[0].fen.basic is the last FEN, from the previous board position.
+async function determineBoardPositionValidity() {
     const pieceAmount = getPieceAmount(); // this depends on the current DOM, not from FEN.
 
     // A new board just appeared and is still loading, most likely a new match!
     if(pieceAmount === 0) {
-        lastCalculatedFullFen = null;
+        gameStateHistory.set(); // reset
 
         await wait(100);
 
-        return determineBoardPositionValidity(getBoardOrientation());
+        return determineBoardPositionValidity();
+    }
+
+    // A flip changes coordinate mapping, even when the actual position is unchanged.
+    await checkBoardOrientationChange();
+
+    const history = gameStateHistory.get();
+    const currentBasicFen = getFen(true);
+    const lastTurn = history[0]?.turn;
+
+    // Promotion positions are not valid to process or store.
+    if(isPawnOnPromotionSquareFen(currentBasicFen)) {
+        lastRejectedFen = currentBasicFen;
+        return;
     }
 
     // Do not continue if FEN did not change!
-    if(!fenChanged) return;
+    if(currentBasicFen === lastAllowedFen || lastRejectedFen === currentBasicFen) return;
 
-    if(turn) {
-        if(lastTurn === turn) turn = getBoardOrientation();
-        lastTurn = turn;
+    const boardChanges = getBoardChanges(lastAllowedFen, currentBasicFen, lastTurn);
 
-        instanceVars.turn.set(commLinkInstanceID, turn);
+    /* Possible "pieceAmountChange" value explanations,
+        (change < -1) -> multiple pieces have disappeared (atomic chess variant or a faulty newFen?)
+        (change = -1) -> piece has been eaten
+        (change = 0)  -> piece moved
+        (change = 1)  -> piece has spawned
+        (change > 1)  -> multiple pieces have spawned (possibly a new game?)
+    */
+
+    // Do not continue if a piece just disappeared, this is not possible legally!
+    // (This happens sometimes because the mutationObserver detects DOM changes so fast)
+    if(boardChanges.pieceAmountChange === -1 && boardChanges.changedSquaresAmount === 1) {
+        lastRejectedFen = currentBasicFen;
+
+        return;
     }
 
-    if(pieceAmountChange === -1) {
-        // Do not continue if a piece just disappeared, this is not possible legally!
-        // (This happens sometimes because the mutationObserver detects DOM changes so fast)
-        if(squareChangeAmount === 1) {
-            return;
+    // When moves are done very quickly, two moves can happen at once on the DOM.
+    // If that happens, we generate the missing move and its fen ourselves.
+    if(boardChanges.missedFen) {
+        const missedFen = boardChanges.missedFen;
+        const turnAfterMissedMove = lastTurn === 'w' ? 'b' : 'w';
+
+        const missedChanges = getBoardChanges(lastAllowedFen, missedFen);
+        updateGameState(missedFen, missedChanges, true, turnAfterMissedMove);
+
+        const actualChanges = getBoardChanges(missedFen, currentBasicFen);
+        updateGameState(currentBasicFen, actualChanges, true);
+
+        await processBoardPosition();
+    } else {
+        updateGameState(currentBasicFen, boardChanges);
+
+        await processBoardPosition();
+    }
+
+    // IMPORTANT: lastAllowedFen must remain the previous FEN while processing
+    // so that we get this path (lastAllowedFen → missedFen → currentBasicFen)
+    // (Keep this declaration at the bottom of this function, will ya'?)
+    lastAllowedFen = currentBasicFen;
+    lastRejectedFen = '';
+}
+
+async function restartInstanceWithCurrentFen() {
+    try {
+        await determineBoardPositionValidity();
+        await instanceVars.fen.set(commLinkInstanceID, gameState.fen.full);
+        if(gameState.turn) await instanceVars.turn.set(commLinkInstanceID, gameState.turn);
+        await CommLink.commands.forceInstanceRestart();
+    } catch(error) { }
+}
+
+function forceUpdateGameState() {
+    const currentBasicFen = getFen(true);
+    const boardChanges = getBoardChanges(currentBasicFen, currentBasicFen);
+
+    updateGameState(currentBasicFen, boardChanges);
+}
+
+function removeTakeback(history) {
+    // Todo
+    return history;
+}
+
+function updateGameState(basicFenToProcess, boardChanges, forceFen, forcedTurn) {
+    const stateHistory = gameStateHistory.get();
+    const previousBasicFen = stateHistory[0]?.fen?.basic;
+    const isTurnForced = typeof forcedTurn === 'string';
+
+    const movedPieceColor = boardChanges?.movedPieceColor;
+    const turn = forcedTurn || (movedPieceColor === 'w' ? 'b' : movedPieceColor === 'b' ? 'w' :
+        getSiteData('turn') || stateHistory[0]?.turn || 'w');
+
+    const isStandardChessBoard =
+        lastBoardRanks === 8 &&
+        lastBoardFiles === 8;
+
+    const movedPiece =
+        boardChanges?.movedPiece;
+
+    const isCapture =
+        boardChanges.pieceAmountChange === -1;
+
+    const isPawnMove =
+        movedPiece?.toLowerCase() === 'p';
+
+    const isCastling =
+        isStandardChessBoard &&
+        boardChanges?.changedSquaresAmount === 4 &&
+        movedPiece?.toLowerCase() === 'k' &&
+        boardChanges.movedPieces.some(piece =>
+            piece.toLowerCase() === 'r'
+        );
+
+    const castlingSide =
+        isCastling
+            ? movedPiece === 'K'
+                ? 'white'
+                : 'black'
+            : null;
+
+    const isDoublePawnPush =
+        isPawnMove &&
+        boardChanges.from &&
+        boardChanges.to &&
+        Math.abs(
+            Number(boardChanges.from[1]) -
+            Number(boardChanges.to[1])
+        ) === 2;
+
+    const enPassantTarget =
+        isDoublePawnPush
+            ? `${boardChanges.from[0]}${
+                (
+                    Number(boardChanges.from[1]) +
+                    Number(boardChanges.to[1])
+                ) / 2
+            }`
+            : '-';
+
+    const isWhiteKingMove =
+        movedPiece === 'K';
+
+    const isBlackKingMove =
+        movedPiece === 'k';
+
+    const isWhiteKingsideRookMove =
+        movedPiece === 'R' &&
+        boardChanges.from === 'h1';
+
+    const isWhiteQueensideRookMove =
+        movedPiece === 'R' &&
+        boardChanges.from === 'a1';
+
+    const isBlackKingsideRookMove =
+        movedPiece === 'r' &&
+        boardChanges.from === 'h8';
+
+    const isBlackQueensideRookMove =
+        movedPiece === 'r' &&
+        boardChanges.from === 'a8';
+
+    const isWhiteKingsideRookCapture =
+        boardChanges.capturedPiece === 'R' &&
+        boardChanges.capturedSquare === 'h1';
+
+    const isWhiteQueensideRookCapture =
+        boardChanges.capturedPiece === 'R' &&
+        boardChanges.capturedSquare === 'a1';
+
+    const isBlackKingsideRookCapture =
+        boardChanges.capturedPiece === 'r' &&
+        boardChanges.capturedSquare === 'h8';
+
+    const isBlackQueensideRookCapture =
+        boardChanges.capturedPiece === 'r' &&
+        boardChanges.capturedSquare === 'a8';
+
+    const halfmoveClock =
+        isCapture || isPawnMove
+            ? 0
+            : gameState.halfmoveClock + 1;
+
+    const plyCount =
+        gameState.plyCount + 1;
+
+    const fullmoveNumber =
+        Math.floor((plyCount / 2) + 1);
+
+    const loseCastlingRights = (...rights) => {
+        for(const right of rights) {
+            if(!gameState.lostCastlingRights.includes(right)) {
+                gameState.lostCastlingRights.push(right);
+            }
         }
+    };
+
+    // First state of this match (e.g. page loaded mid-game)
+    // Derive the impossible castling rights from the board itself.
+    if(!stateHistory.length) seedLostCastlingRights(basicFenToProcess);
+    
+    if(isWhiteKingMove) loseCastlingRights('K', 'Q');
+    if(isBlackKingMove) loseCastlingRights('k', 'q');
+
+    if(isWhiteKingsideRookMove || isWhiteKingsideRookCapture) loseCastlingRights('K');
+    if(isWhiteQueensideRookMove || isWhiteQueensideRookCapture) loseCastlingRights('Q');
+    if(isBlackKingsideRookMove || isBlackKingsideRookCapture) loseCastlingRights('k');
+    if(isBlackQueensideRookMove || isBlackQueensideRookCapture) loseCastlingRights('q');
+
+    const castlingRights =
+        isStandardChessBoard
+            ? ['K', 'Q', 'k', 'q']
+                .filter(right => !gameState.lostCastlingRights.includes(right))
+                .join('') || '-'
+            : '-';
+
+    const stateObj = {
+        turn,
+        movedPiece,
+        enPassantTarget,
+        castlingRights,
+        isCapture,
+        isPawnMove,
+        isCastling,
+        castlingSide,
+        halfmoveClock,
+        plyCount,
+        fullmoveNumber,
+        boardChanges,
+        'pieceAmountChange': boardChanges.pieceAmountChange
+    };
+
+    const currentFullFen = getFen(
+        false,
+        turn,
+        forceFen ? basicFenToProcess : false,
+        stateObj
+    );
+
+    const currentBasicFen = currentFullFen?.split(' ', 1)?.[0];
+
+    stateObj.fen = {
+        'full': currentFullFen,
+        'basic': currentBasicFen
+    };
+
+    const tempStateHistory = [
+        structuredClone(stateObj),
+        ...stateHistory
+    ];
+
+    const filteredStateHistory = removeTakeback(tempStateHistory);
+    const currentStateObj = filteredStateHistory?.[0];
+
+    Object.assign(gameState, currentStateObj);
+    gameStateHistory.set(filteredStateHistory);
+}
+
+async function processBoardPosition() {
+    clearVisuals({ noMetricsRemoval: true });
+
+    const stateHistory = gameStateHistory.get();
+    const latestState = stateHistory[0];
+    const squareChangeAmount = latestState?.boardChanges?.changedSquaresAmount || 0;
+
+    updateUserscriptDynamicContext({ gameStart: 0 }, gameState?.fen?.full);
+
+    await checkBoardOrientationChange();
+
+    lastMoveRequestTime = Date.now();
+    modLastEnteredSquare.squareFen = null;
+
+    if(BoardDrawer)
+        BoardDrawer.setBoardDimensions(getBoardDimensions());
+
+    if(!modListeners.length)
+        addMovesOnDemandListeners();
+
+    const isNewMatch = squareChangeAmount > 6 ||
+        (defaultPosBasicFens.includes(gameState.fen.basic) && squareChangeAmount > 1);
+
+    if(isNewMatch) {
+        resetStoredMatchVariables();
+        updateUserscriptDynamicContext({ evaluation: null, gameStart: 1 });
+
+        matchFirstSuggestionGiven = false;
     }
 
-    processBoardPosition(currentFullFen, squareChangeAmount);
+    // Publish the same state after any reset; never derive the turn from orientation.
+    instanceVars.fen.set(commLinkInstanceID, gameState.fen.full);
+    if(gameState.turn) instanceVars.turn.set(commLinkInstanceID, gameState.turn);
+    if(isNewMatch) CommLink.commands.newMatchStarted();
+
+    // The GUI loads the current board state from instanceVars.gameStateHistory
+    CommLink.commands.updateBoardFen();
 }
 
 // This also updates the turn instanceVariable that the GUI uses to determine the turn!
@@ -2325,24 +3124,19 @@ function observeNewMoves() {
 
     dumbBoardObservingInterval = setInterval(() => {
         if(isUserMouseDown) return;
-        determineBoardPositionValidity(lastMutationObsProcessedTurn || getBoardOrientation());
+
+        determineBoardPositionValidity();
     }, 250);
 
     boardObserver = new MutationObserver(mutationArr => {
         try {
             lastMutationObservationDate = Date.now();
 
-            const mutationMoveArr = isMutationNewMove(mutationArr); // returns [isNewMove, turn]
-            const isNewMove = mutationMoveArr?.[0];
-            let turn = mutationMoveArr?.[1];
-
-            if(turn) lastMutationObsProcessedTurn = turn;
-
             // Do not continue if mutation was not detected as a possible new move! (Different for each chess site)
             // We later compare FENs to detect if it was actually a new valid move!
-            if(!isNewMove) return;
+            if(!isMutationNewMove(mutationArr)) return;
 
-            determineBoardPositionValidity(turn);
+            determineBoardPositionValidity();
         } catch(e) {
             if(debugModeActivated) console.error(e);
         }
@@ -2351,18 +3145,23 @@ function observeNewMoves() {
     boardObserver.observe(chessBoardElem, { childList: true, subtree: true, attributes: true });
 }
 
-async function checkBoardOrientationChange() {
+async function checkBoardOrientationChange(forceUpdate = false) {
     const boardOrientation = getBoardOrientation();
+    const playerColor = getPlayerColor();
+
+    // Identity can become available after the board, without an orientation change.
+    if(instanceVars.playerColor.get(commLinkInstanceID) !== playerColor)
+        instanceVars.playerColor.set(commLinkInstanceID, playerColor);
 
     const boardOrientationChanged = lastBoardOrientation !== boardOrientation;
     const boardOrientationDiffers = BoardDrawer && BoardDrawer?.orientation !== boardOrientation;
 
-    if(boardOrientationChanged || boardOrientationDiffers) {
+    if(forceUpdate || boardOrientationChanged || boardOrientationDiffers) {
         lastBoardOrientation = boardOrientation;
 
-        instanceVars.playerColor.set(commLinkInstanceID, boardOrientation);
+        instanceVars.boardOrientation.set(commLinkInstanceID, boardOrientation);
 
-        boardUtils.setBoardOrientation(boardOrientation);
+        if(BoardDrawer) BoardDrawer.setOrientation(boardOrientation);
 
         await CommLink.commands.updateBoardOrientation(boardOrientation);
     }
@@ -2528,54 +3327,20 @@ addSupportedChessSite('chess.com', {
         }
     },
 
-    'getMutationTurn': obj => {
-        const mutationArr = obj.mutationArr;
-
-        let blacks = 0;
-        let whites = 0;
-
-        mutationArr.forEach(mutation => {
-            const target = mutation?.target;
-            if(!target || !target.getBoundingClientRect) return;
-
-            const rect = target.getBoundingClientRect();
-            if(rect.width === 0 || rect.height === 0) return;
-
-            const classList = target.classList;
-            if(!classList) return;
-
-            for(let i = 0; i < classList.length; i++) {
-                const cls = classList[i];
-
-                if(cls && cls.length === 2) {
-                    const prefix = cls[0];
-
-                    if (prefix === 'b') blacks++;
-                    else if (prefix === 'w') whites++;
-                }
-            }
-        });
-
-        if(blacks === 0 && whites === 0) return null;
-
-        const turn = blacks > whites ? 'w' : 'b';
-        return turn || null;
-    },
-
     'isMutationNewMove': obj => {
         const pathname = obj.pathname;
         const mutationArr = obj.mutationArr;
 
         // Process variant boards...
         if(pathname?.includes('/variants')) {
-            if(isUserMouseDown) return [false, null];
-            return [true, getBoardOrientation()]; // allow everything, always make own turn
+            if(isUserMouseDown) return false;
+            return true; // allow everything
         }
 
         // Not a variant board, processing differently...
 
         if(mutationArr.length === 1)
-            return [false, null];
+            return false;
 
         const isPremove = mutationArr.filter(m => m?.target?.classList?.contains('highlight'))
             .map(x => x?.target?.style?.['background-color'])
@@ -2583,14 +3348,14 @@ addSupportedChessSite('chess.com', {
 
         const isNewMove = mutationArr.length >= 3 && !isPremove;
 
-        if(isNewMove) return [isNewMove, getMutationTurn(mutationArr)];
-        return [isNewMove, null];
+        return isNewMove;
     }
 });
 
 addSupportedChessSite('lichess.org', {
     'boardElem': obj => {
-        return document.querySelector('cg-board');
+        return document.querySelector('.main-board cg-board')
+            || document.querySelector('cg-board');
     },
 
     'pieceElem': obj => {
@@ -2614,9 +3379,52 @@ addSupportedChessSite('lichess.org', {
     },
 
     'boardOrientation': obj => {
-        const filesElem = document.querySelector('coords.files');
+        const boardWrap = getBoardElem()?.closest('.cg-wrap');
+
+        // Chessground sets these even when coordinates are hidden or inside squares.
+        if(boardWrap?.classList.contains('orientation-black')) return 'b';
+        if(boardWrap?.classList.contains('orientation-white')) return 'w';
+
+        // Keep the legacy fallback on this board, not an unrelated preview board.
+        const filesElem = boardWrap?.querySelector('coords.files');
 
         return filesElem?.classList?.contains('black') ? 'b' : 'w';
+    },
+
+    'playerColor': obj => {
+        const round = getBoardElem()?.closest('main.round');
+        const userId = document.body?.dataset?.user?.toLowerCase();
+        if(!round || !userId) return null;
+
+        // The sidebar labels each player by actual color, independent of flips.
+        for(const player of round.querySelectorAll('.game__meta__players .player')) {
+            const href = player.querySelector('a[href]')?.getAttribute('href');
+            const playerId = href?.match(/^\/@\/([^/?#]+)/)?.[1]?.toLowerCase();
+            if(playerId !== userId) continue;
+            if(player.classList.contains('white')) return 'w';
+            if(player.classList.contains('black')) return 'b';
+        }
+        return null;
+    },
+
+    'turn': obj => {
+        const round = getBoardElem()?.closest('.round__app');
+        if(!round) return null;
+
+        // Prefer the selected move when replaying. Lichess changes its custom tag
+        // names, so use the active marker and numeric move-number sibling instead.
+        const activeMove = round.querySelector('.a1t');
+        const previous = activeMove?.previousElementSibling;
+        const isMoveNumber = elem => /^\d+\.?$/.test(elem?.textContent?.trim() || '');
+        if(isMoveNumber(previous)) return 'b';
+        if(previous && isMoveNumber(previous.previousElementSibling)) return 'w';
+
+        // Live games also expose the active side on the clock, including reloads.
+        const clocks = round.querySelectorAll('.rclock.running');
+        if(clocks.length !== 1) return null;
+        if(clocks[0].classList.contains('rclock-white')) return 'w';
+        if(clocks[0].classList.contains('rclock-black')) return 'b';
+        return null;
     },
 
     'pieceElemFen': obj => {
@@ -2635,33 +3443,11 @@ addSupportedChessSite('lichess.org', {
     'pieceElemCoords': obj => {
         const pieceElem = obj.pieceElem;
 
-        const key = pieceElem?.cgKey;
-
-        if(key) {
-            return chessCoordinatesToIndex(key);
-        }
+        return getChessgroundCoordsFromPiece(pieceElem);
     },
 
     'boardDimensions': obj => {
         return [8, 8];
-    },
-
-    'getMutationTurn': obj => {
-        const mutationArr = obj.mutationArr;
-
-        let blacks = 0;
-        let whites = 0;
-
-        mutationArr.forEach(mutation => {
-            const classList = mutation.target?.classList;
-
-            if(classList?.contains('black')) blacks += 1;
-            if(classList?.contains('white')) whites += 1;
-        });
-
-        const turn = blacks > whites ? 'w' : 'b';
-
-        return turn || null;
     },
 
     'isMutationNewMove': obj => {
@@ -2669,8 +3455,7 @@ addSupportedChessSite('lichess.org', {
 
         const isNewMove = mutationArr.length >= 3;
 
-        if(isNewMove) return [isNewMove, getMutationTurn(mutationArr)];
-        return [isNewMove, null];
+        return isNewMove;
     }
 });
 
@@ -2735,38 +3520,11 @@ addSupportedChessSite('playstrategy.org', {
     'pieceElemCoords': obj => {
         const pieceElem = obj.pieceElem;
 
-        const key = pieceElem?.cgKey;
-
-        if(key) {
-            return chessCoordinatesToIndex(key);
-        }
+        return getChessgroundCoordsFromPiece(pieceElem);
     },
 
     'boardDimensions': obj => {
         return getBoardDimensionsFromSize();
-    },
-
-    'getMutationTurn': obj => {
-        const mutationArr = obj.mutationArr;
-
-        let ally = 0;
-        let enemy = 0;
-
-        const boardOrientation = getBoardOrientation();
-        const isPlayerWhite = boardOrientation === 'w';
-
-        mutationArr.forEach(mutation => {
-            const classList = mutation.target?.classList;
-
-            if(classList?.contains('ally')) ally += 1;
-            if(classList?.contains('enemy')) enemy += 1;
-        });
-
-        const turn = isPlayerWhite
-          ? ally > enemy ? 'b' : 'w'
-          : ally > enemy ? 'w' : 'b';
-
-        return turn || null;
     },
 
     'isMutationNewMove': obj => {
@@ -2776,8 +3534,7 @@ addSupportedChessSite('playstrategy.org', {
             || mutationArr.find(m => m.type === 'childList') ? true : false
             || mutationArr.find(m => m?.target?.classList?.contains('last-move')) ? true : false;
 
-        if(isNewMove) return [isNewMove, getMutationTurn(mutationArr)];
-        return [isNewMove, null];
+        return isNewMove;
     }
 });
 
@@ -2843,40 +3600,13 @@ addSupportedChessSite('pychess.org', {
     'pieceElemCoords': obj => {
         const pieceElem = obj.pieceElem;
 
-        const key = pieceElem?.cgKey;
-
-        if(key) {
-            return chessCoordinatesToIndex(key);
-        }
+        return getChessgroundCoordsFromPiece(pieceElem);
     },
 
     'boardDimensions': obj => {
         return getBoardDimensionsFromSize();
     },
 
-
-    'getMutationTurn': obj => {
-        const mutationArr = obj.mutationArr;
-
-        let ally = 0;
-        let enemy = 0;
-
-        const boardOrientation = getBoardOrientation();
-        const isPlayerWhite = boardOrientation === 'w';
-
-        mutationArr.forEach(mutation => {
-            const classList = mutation.target?.classList;
-
-            if(classList?.contains('ally')) ally += 1;
-            if(classList?.contains('enemy')) enemy += 1;
-        });
-
-        const turn = isPlayerWhite
-          ? ally > enemy ? 'b' : 'w'
-          : ally > enemy ? 'w' : 'b';
-
-        return turn || null;
-    },
 
     'isMutationNewMove': obj => {
         const mutationArr = obj.mutationArr;
@@ -2885,8 +3615,7 @@ addSupportedChessSite('pychess.org', {
             || mutationArr.find(m => m.type === 'childList') ? true : false
             || mutationArr.find(m => m?.target?.classList?.contains('last-move')) ? true : false;
 
-        if(isNewMove) return [isNewMove, getMutationTurn(mutationArr)];
-        return [isNewMove, null];
+        return isNewMove;
     }
 });
 
@@ -2932,24 +3661,6 @@ addSupportedChessSite('chess.org', {
         return [8, 8];
     },
 
-    'getMutationTurn': obj => {
-        const mutationArr = obj.mutationArr;
-
-        let blacks = 0;
-        let whites = 0;
-
-        mutationArr.forEach(mutation => {
-            const classList = mutation.target?.classList;
-
-            if(classList?.contains('black')) blacks += 1;
-            if(classList?.contains('white')) whites += 1;
-        });
-
-        const turn = blacks > whites ? 'w' : 'b';
-
-        return turn || null;
-    },
-
     'isMutationNewMove': obj => {
         const mutationArr = obj.mutationArr;
 
@@ -2959,8 +3670,7 @@ addSupportedChessSite('chess.org', {
 
         const isNewMove = true; // laggy but this is a non-popular site
 
-        if(isNewMove) return [isNewMove, getMutationTurn(mutationArr)];
-        return [isNewMove, null];
+        return isNewMove;
     }
 });
 
@@ -2999,33 +3709,11 @@ addSupportedChessSite('chess.coolmathgames.com', {
     'pieceElemCoords': obj => {
         const pieceElem = obj.pieceElem;
 
-        const key = pieceElem?.cgKey;
-
-        if(key) {
-            return chessCoordinatesToIndex(key);
-        }
+        return getChessgroundCoordsFromPiece(pieceElem);
     },
 
     'boardDimensions': obj => {
         return [8, 8];
-    },
-
-    'getMutationTurn': obj => {
-        const mutationArr = obj.mutationArr;
-
-        let blacks = 0;
-        let whites = 0;
-
-        mutationArr.forEach(mutation => {
-            const classList = mutation.target?.classList;
-
-            if(classList?.contains('black')) blacks += 1;
-            if(classList?.contains('white')) whites += 1;
-        });
-
-        const turn = blacks > whites ? 'w' : 'b';
-
-        return turn || null;
     },
 
     'isMutationNewMove': obj => {
@@ -3041,8 +3729,7 @@ addSupportedChessSite('chess.coolmathgames.com', {
         // AND THE USERSCRIPT TRIGGERING A WHOLE NEW MATCH STARTING. THIS IS A NON-POPULAR SITE
         // SO FIX HAS NOT BEEN MADE...
 
-        if(isNewMove) return [isNewMove, getMutationTurn(mutationArr)];
-        return [isNewMove, null];
+        return isNewMove;
     }
 });
 
@@ -3089,21 +3776,12 @@ addSupportedChessSite('papergames.io', {
         return [8, 8];
     },
 
-    'getMutationTurn': obj => {
-        const mutationArr = obj.mutationArr;
-
-        const playerColor = getBoardOrientation();
-
-        return playerColor || null;
-    },
-
     'isMutationNewMove': obj => {
         const mutationArr = obj.mutationArr;
 
         const isNewMove = mutationArr.length >= 12;
 
-        if(isNewMove) return [isNewMove, getMutationTurn(mutationArr)];
-        return [isNewMove, null];
+        return isNewMove;
     }
 });
 
@@ -3152,14 +3830,6 @@ addSupportedChessSite('immortal.game', {
         return [8, 8];
     },
 
-    'getMutationTurn': obj => {
-        const mutationArr = obj.mutationArr;
-
-        const playerColor = getBoardOrientation();
-
-        return playerColor || null;
-    },
-
     'isMutationNewMove': obj => {
         const mutationArr = obj.mutationArr;
 
@@ -3169,8 +3839,7 @@ addSupportedChessSite('immortal.game', {
 
         const isNewMove = mutationArr.length >= 5;
 
-        if(isNewMove) return [isNewMove, getMutationTurn(mutationArr)];
-        return [isNewMove, null];
+        return isNewMove;
     }
 });
 
@@ -3216,32 +3885,6 @@ addSupportedChessSite('worldchess.com', {
         return [8, 8];
     },
 
-    'getMutationTurn': obj => {
-        const mutationArr = obj.mutationArr;
-
-        let blacks = 0;
-        let whites = 0;
-
-        mutationArr.forEach(mutation => {
-            const classList = mutation?.target?.classList;
-
-            for(let i = 0; i < classList.length; i++) {
-                const cls = classList[i];
-
-                if(cls.length === 2) {
-                    const prefix = cls[0];
-
-                    if(prefix === 'b') blacks++;
-                    else if(prefix === 'w') whites++;
-                }
-            }
-        });
-
-        const turn = blacks > whites ? 'w' : 'b';
-
-        return turn || null;
-    },
-
     'isMutationNewMove': obj => {
         const mutationArr = obj.mutationArr;
 
@@ -3251,8 +3894,7 @@ addSupportedChessSite('worldchess.com', {
 
         const isNewMove = mutationArr.find(m => m?.attributeName === 'style') ? true : false;
 
-        if(isNewMove) return [isNewMove, getMutationTurn(mutationArr)];
-        return [isNewMove, null];
+        return isNewMove;
     }
 });
 
@@ -3303,33 +3945,11 @@ addSupportedChessSite('chess.net', {
     'pieceElemCoords': obj => {
         const pieceElem = obj.pieceElem;
 
-        const key = pieceElem?.cgKey;
-
-        if(key) {
-            return chessCoordinatesToIndex(key);
-        }
+        return getChessgroundCoordsFromPiece(pieceElem);
     },
 
     'boardDimensions': obj => {
         return [8, 8];
-    },
-
-    'getMutationTurn': obj => {
-        const mutationArr = obj.mutationArr;
-
-        let blacks = 0;
-        let whites = 0;
-
-        mutationArr.forEach(mutation => {
-            const classList = mutation.target?.classList;
-
-            if(classList?.contains('black')) blacks += 1;
-            if(classList?.contains('white')) whites += 1;
-        });
-
-        const turn = blacks > whites ? 'w' : 'b';
-
-        return turn || null;
     },
 
     'isMutationNewMove': obj => {
@@ -3337,8 +3957,7 @@ addSupportedChessSite('chess.net', {
 
         const isNewMove = mutationArr.length >= 3;
 
-        if(isNewMove) return [isNewMove, getMutationTurn(mutationArr)];
-        return [isNewMove, null];
+        return isNewMove;
     }
 });
 
@@ -3377,33 +3996,11 @@ addSupportedChessSite('freechess.club', {
     'pieceElemCoords': obj => {
         const pieceElem = obj.pieceElem;
 
-        const key = pieceElem?.cgKey;
-
-        if(key) {
-            return chessCoordinatesToIndex(key);
-        }
+        return getChessgroundCoordsFromPiece(pieceElem);
     },
 
     'boardDimensions': obj => {
         return [8, 8];
-    },
-
-    'getMutationTurn': obj => {
-        const mutationArr = obj.mutationArr;
-
-        let blacks = 0;
-        let whites = 0;
-
-        mutationArr.forEach(mutation => {
-            const classList = mutation.target?.classList;
-
-            if(classList?.contains('black')) blacks += 1;
-            if(classList?.contains('white')) whites += 1;
-        });
-
-        const turn = blacks > whites ? 'w' : 'b';
-
-        return turn || null;
     },
 
     'isMutationNewMove': obj => {
@@ -3411,8 +4008,7 @@ addSupportedChessSite('freechess.club', {
 
         const isNewMove = mutationArr.length >= 3;
 
-        if(isNewMove) return [isNewMove, getMutationTurn(mutationArr)];
-        return [isNewMove, null];
+        return isNewMove;
     }
 });
 
@@ -3457,20 +4053,13 @@ addSupportedChessSite('play.chessclub.com', {
         return [8, 8];
     },
 
-    'getMutationTurn': obj => {
-        const mutationArr = obj.mutationArr;
-
-        return getBoardOrientation() || null;
-    },
-
     'isMutationNewMove': obj => {
         const mutationArr = obj.mutationArr;
 
         const isNewMove = mutationArr.find(mutation => mutation?.type === 'childList')
             ? true : false;
 
-        if(isNewMove) return [isNewMove, getMutationTurn(mutationArr)];
-        return [isNewMove, null];
+        return isNewMove;
     }
 });
 
@@ -3513,20 +4102,13 @@ addSupportedChessSite('gameknot.com', {
         return [8, 8];
     },
 
-    'getMutationTurn': obj => {
-        const mutationArr = obj.mutationArr;
-
-        return getBoardOrientation() || null;
-    },
-
     'isMutationNewMove': obj => {
         const mutationArr = obj.mutationArr;
 
         const isNewMove = mutationArr.find(m => m.type === 'childList') ? true : false
             || mutationArr.find(m => m?.target?.classList?.contains('last-move')) ? true : false;
 
-        if(isNewMove) return [isNewMove, getMutationTurn(mutationArr)];
-        return [isNewMove, null];
+        return isNewMove;
     }
 });
 
@@ -3564,19 +4146,12 @@ addSupportedChessSite('app.edchess.io', {
         return [8, 8];
     },
 
-    'getMutationTurn': obj => {
-        const mutationArr = obj.mutationArr;
-
-        return getBoardOrientation() || null;
-    },
-
     'isMutationNewMove': obj => {
         const mutationArr = obj.mutationArr;
 
         const isNewMove = mutationArr.length >= 2;
 
-        if(isNewMove) return [isNewMove, getMutationTurn(mutationArr)];
-        return [isNewMove, null];
+        return isNewMove;
     }
 });
 
@@ -3619,34 +4194,18 @@ addSupportedChessSite([
     'pieceElemCoords': obj => {
         const pieceElem = obj.pieceElem;
 
-        const key = pieceElem?.cgKey;
-
-        if(key) {
-            return chessCoordinatesToIndex(key);
-        }
+        return getChessgroundCoordsFromPiece(pieceElem);
     },
 
     'boardDimensions': obj => {
         return [8, 8];
     },
 
-    'getMutationTurn': obj => {
-        const mutationArr = obj.mutationArr;
-
-        const mutationContainsBlack = mutationArr
-            .find(mutation => mutation.target?.classList?.contains('black'));
-
-        const turn = mutationContainsBlack ? 'w' : 'b';
-
-        return turn || null;
-    },
-
     'isMutationNewMove': obj => {
         const mutationArr = obj.mutationArr;
         const isNewMove = mutationArr.length >= 2;
 
-        if(isNewMove) return [isNewMove, getMutationTurn(mutationArr)];
-        return [isNewMove, null];
+        return isNewMove;
     }
 });
 
@@ -3668,24 +4227,36 @@ async function isAcasBackendReady() {
     return res ? true : false;
 }
 
-async function refreshSettings() {
+function refreshSettings() {
+    // This work is synchronous; do not create an unobserved rejected promise
+    // when invoked by a timer or a board-context update.
+    return withDynamicSettings(() => {
         const config = GM_getValue(dbValues.AcasConfig);
-        const profiles = config?.global?.profiles;
-
-        if(typeof profiles != 'object') return;
-
-        isMovesOnDemandActive = Object.keys(profiles).some(profileName =>
-            profiles[profileName]?.movesOnDemand === true);
+        const globalProfiles = config?.global?.profiles;
+        const instanceProfiles = config?.instance?.[commLinkInstanceID]?.profiles;
+        const names = new Set([
+            ...Object.keys(globalProfiles && typeof globalProfiles === 'object' && !Array.isArray(globalProfiles) ? globalProfiles : {}),
+            ...Object.keys(instanceProfiles && typeof instanceProfiles === 'object' && !Array.isArray(instanceProfiles) ? instanceProfiles : {})
+        ]);
+        isMovesOnDemandActive = [...names].some(profileName =>
+            getGmConfigValue(configKeys.movesOnDemand, commLinkInstanceID, profileName) === true);
+        return true;
+    }, () => false);
 }
 
 async function start() {
-    await CommLink.commands.createInstance(commLinkInstanceID);
-
     const pathname = window.location.pathname;
     const boardOrientation = getBoardOrientation();
 
-    instanceVars.playerColor.set(commLinkInstanceID, boardOrientation);
-    instanceVars.fen.set(commLinkInstanceID, getFen());
+    // Seed identity, coordinate mapping and turn before the backend reads them.
+    lastBoardOrientation = boardOrientation;
+    instanceVars.boardOrientation.set(commLinkInstanceID, boardOrientation);
+    instanceVars.playerColor.set(commLinkInstanceID, getPlayerColor());
+    const initialFen = getFen();
+    instanceVars.fen.set(commLinkInstanceID, initialFen);
+    instanceVars.turn.set(commLinkInstanceID, initialFen.split(' ')[1]);
+
+    await CommLink.commands.createInstance(commLinkInstanceID);
 
     if(isBoardDrawerNeeded()) {
         if(BoardDrawer) BoardDrawer?.terminate();
@@ -3694,7 +4265,7 @@ async function start() {
             'window': window,
             'boardDimensions': getBoardDimensions(),
             'playerColor': getBoardOrientation(),
-            'zIndex': Math.floor(Math.random() * (99 - 10 + 1)) + 10,
+            'zIndex': Math.floor(Math.random() * 90) + 10,
             'prepend': true,
             'debugMode': debugModeActivated,
             'adjustSizeByDimensions': domain === 'chess.com' && pathname?.includes('/variants'),
@@ -3713,12 +4284,13 @@ async function start() {
         }, 50);
     }
 
-    await checkBoardOrientationChange();
+    await checkBoardOrientationChange(true);
 
     refreshSettings();
     observeNewMoves();
 
     CommLink.setIntervalAsync(async () => {
+        refreshSettings();
         await CommLink.commands.createInstance(commLinkInstanceID);
     }, 1000);
 
@@ -3731,7 +4303,7 @@ async function start() {
     createInputListener(
         'instanceRestart',
         await getGmConfigValue('instanceRestartTriggerCode'),
-        () => { CommLink.commands.forceInstanceRestart() }
+        restartInstanceWithCurrentFen
     );
 }
 
@@ -3748,18 +4320,13 @@ function toggleConcealAssistance() {
 }
 
 function startWhenBackendReady() {
-    let timesUrlForceOpened = 0;
-    let i = 0;
-
     const interval = CommLink.setIntervalAsync(async () => {
-        i++;
-
         if(await isAcasBackendReady()) {
             start();
 
             interval.stop();
-        } else if(timesUrlForceOpened === 0 && (i % 10 === 0)) {
-            timesUrlForceOpened++;
+        } else if(!backendTabOpenedOnceAlready) {
+            backendTabOpenedOnceAlready = true;
 
             const config = GM_getValue(dbValues.AcasConfig);
             const isGhost = config?.global?.[configKeys.isUserscriptGhost];

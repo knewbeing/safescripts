@@ -1,0 +1,33 @@
+{
+  "slug": "Quillbot_Premium_Unlocker_TechFusion_Elite",
+  "platform": "greasyfork",
+  "source_url": "https://greasyfork.org/scripts/572686-quillbot-premium-unlocker-techfusion-elite",
+  "source_repo": "572686",
+  "raw_url": "https://update.greasyfork.org/scripts/572686/Quillbot%20Premium%20Unlocker%20%28TechFusion%20Elite%29.user.js",
+  "filename": "Quillbot_Premium_Unlocker_TechFusion_Elite.user.js",
+  "name": "Quillbot Premium Unlocker (TechFusion Elite)",
+  "version": "1.0.0",
+  "description": "Industrial-grade Quillbot Premium injection. Unlocks modes, limits, and full feature access.",
+  "match": [
+    "https://quillbot.com/*"
+  ],
+  "grant": [
+    "GM_addStyle",
+    "GM_setValue",
+    "GM_getValue",
+    "GM_registerMenuCommand"
+  ],
+  "require": [
+    "https://greasyfork.org/scripts/455943-ajaxhooker/code/ajaxHooker.js?version=1124435"
+  ],
+  "metadata_raw": "// @name  Quillbot Premium Unlocker (TechFusion Elite)\n// @namespace  TechFusion.Quillbot.V1\n// @version  1.0.0\n// @description  Industrial-grade Quillbot Premium injection. Unlocks modes, limits, and full feature access.\n// @author  Created by techfusionsolutions1@gmail.com\n// @match  https://quillbot.com/*\n// @icon  https://quillbot.com/favicon.png\n// @require  https://greasyfork.org/scripts/455943-ajaxhooker/code/ajaxHooker.js?version=1124435\n// @run-at  document-start\n// @grant  GM_addStyle\n// @grant  GM_setValue\n// @grant  GM_getValue\n// @grant  GM_registerMenuCommand\n// @license  MIT\n// @downloadURL  https://update.greasyfork.org/scripts/572686/Quillbot%20Premium%20Unlocker%20%28TechFusion%20Elite%29.user.js\n// @updateURL  https://update.greasyfork.org/scripts/572686/Quillbot%20Premium%20Unlocker%20%28TechFusion%20Elite%29.meta.js",
+  "sha256": "1330929419c0d27f2f2f275124d6c8e218438f0a72e1576cea2b83995c27a1cc",
+  "discovered_at": "2026-10-19T07:07:20.539702+00:00",
+  "ai_reason": "",
+  "target_roles": "",
+  "is_new": true,
+  "install_count": 7878,
+  "good_ratings": 0,
+  "bad_ratings": 2,
+  "summary": {}
+}

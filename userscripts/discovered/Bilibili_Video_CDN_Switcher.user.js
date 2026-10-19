@@ -7,7 +7,7 @@
 // @namespace    mailto:1332019995@qq.com
 // @copyright    Free For Personal Use
 // @license      No License
-// @version      0.1.2
+// @version      0.1.5
 // @description       修改哔哩哔哩播放时的所用CDN 加快视频加载 番剧加速 视频加速
 // @description:zh-CN 修改哔哩哔哩播放时的所用CDN 加快视频加载 番剧加速 视频加速
 // @description:en    Modify Bilibili's CDN during playback to speed up video loading, supporting Animes & Videos
@@ -31,6 +31,9 @@
 // @match        https://www.bilibili.com/anime/*
 // @match        https://www.bilibili.com/match/*
 // @match        https://www.bilibili.com/cheese/*
+// @match        https://www.bilibili.com/list/watchlater/?*
+// @match        https://www.bilibili.com/list/watchlater?*
+// @match        https://www.bilibili.com/list/ml*
 // @match        https://music.bilibili.com/pc/music-center/*
 // @match        https://search.bilibili.com/*
 // @match        https://m.bilibili.com/video/*
@@ -40,16 +43,18 @@
 // @icon         https://i0.hdslb.com/bfs/static/jinkela/long/images/512.png
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        GM_registerMenuCommand
 // @grant        unsafeWindow
 // @downloadURL https://update.greasyfork.org/scripts/500213/Bilibili%20Video%20CDN%20Switcher.user.js
 // @updateURL https://update.greasyfork.org/scripts/500213/Bilibili%20Video%20CDN%20Switcher.meta.js
 // ==/UserScript==
 
-// 在这里的引号内输入自定义的CDN网址，设置为null可以禁用此配置 (Enter your custom CDN URL in quotes here. Setting this to null will disable this configuration)
+// ''：优先读取 GM 存储，未保存时使用默认 CDN
+// null：清除 GM 存储中的自定义 CDN，并使用默认 CDN
+// 'example.com'：使用该 CDN 并保存到 GM 存储
 var CustomCDN = ''
-// 例如将上一行修改为如下，可以将CDN强制设置为 'upos-sz-mirrorali.bilivideo.com' (e.g. Modify the previous line as follows to force CDN to be set to 'upos-sz-mirrorali.bilivideo.com')
+// 例如将上一行修改为如下，可以将CDN强制设置为 'upos-sz-mirrorali.bilivideo.com'
 // var CustomCDN = 'upos-sz-mirrorali.bilivideo.com'
-
 
 const PluginName = 'BiliCDNSwitcher'
 const log = console.log.bind(console, `[${PluginName}]:`)
@@ -80,7 +85,7 @@ const Replacement = (() => {
 
     // Default Servers
     if (!domain) {domain = {
-        'zh': 'cn-jxnc-cmcc-bcache-06.bilivideo.com',
+        'zh': 'upos-sz-mirrorali.bilivideo.com',
         'en': 'upos-sz-mirroraliov.bilivideo.com',
         'ja': 'upos-sz-mirroralib.bilivideo.com'
     }[Language]}
@@ -94,14 +99,37 @@ const SettingsBarTitle = {
     'ja': 'CDNスイッチャー'
 }[Language]
 
+let ReplaceBackupURLs = GM_getValue('ReplaceBackupURLs', false);
+let menuId;
+function registerMenu() {
+    const MenuText = {
+        zh: `替换备用播放地址：${ReplaceBackupURLs ? '已开启' : '已关闭'}（下次加载播放地址时生效）`,
+        en: `Replace backup playback URLs: ${ReplaceBackupURLs ? 'ON' : 'OFF'} (applies when playback URLs are next loaded)`,
+        ja: `予備の再生URLを置換：${ReplaceBackupURLs ? 'オン' : 'オフ'}（次回の再生URL取得時に反映）`
+    }[Language];
+    menuId = GM_registerMenuCommand(
+        MenuText,
+        () => {
+            ReplaceBackupURLs = !ReplaceBackupURLs;
+            GM_setValue('ReplaceBackupURLs', ReplaceBackupURLs);
+            registerMenu();
+        },
+        {id: menuId, autoClose: false}
+    )
+}
+registerMenu();
 
 const playInfoTransformer = playInfo => {
     const urlTransformer = i => {
-        const newUrl = i.base_url.replace(
+        const newUrl = (i.baseUrl || i.base_url).replace(
             /https:\/\/.*?\//,
             Replacement
         )
         i.baseUrl = newUrl; i.base_url = newUrl
+        if (ReplaceBackupURLs) {
+            if (Array.isArray(i.backupUrl)) i.backupUrl = i.backupUrl.map(u => u.replace(/https:\/\/.*?\//, Replacement))
+            if (Array.isArray(i.backup_url)) i.backup_url = i.backup_url.map(u => u.replace(/https:\/\/.*?\//, Replacement))
+        }
     };
     const durlTransformer = i => { i.url = i.url.replace(/https:\/\/.*?\//, Replacement) };
 
@@ -114,7 +142,7 @@ const playInfoTransformer = playInfo => {
     if (playInfo.result) { // bangumi pages'
         video_info = playInfo.result.dash === (void 0) ? playInfo.result.video_info : playInfo.result
         if (!video_info?.dash) {
-            if (playInfo.result.durl && playInfo.result.durls) {
+            if (playInfo.result.durl || playInfo.result.durls) {
                 video_info = playInfo.result // documentary trail viewing, m.bilibili.com/bangumi/play/* trail or non-trail viewing
             } else {
                 log('Failed to get video_info, limit_play_reason:', playInfo.result.play_check?.limit_play_reason)
@@ -129,8 +157,8 @@ const playInfoTransformer = playInfo => {
         video_info = playInfo.data
     }
     try {
-        video_info.dash.video.forEach(urlTransformer)
-        video_info.dash.audio.forEach(urlTransformer)
+        video_info?.dash?.video?.forEach(urlTransformer)
+        video_info?.dash?.audio?.forEach(urlTransformer)
     } catch (err) {
         if (video_info.durl) { // 充电专属视频、m.bilibili.com/video/*
             log('accept_description:', video_info.accept_description?.join(', '))
@@ -150,58 +178,87 @@ const interceptNetResponse = (theWindow => {
     // when response === null && url is String, it's checking if the url is handleable
     const handleInterceptedResponse = (response, url) => interceptors.reduce((modified, handler) => {
         const ret = handler(modified, url)
-        return ret ? ret : modified
+        return ret === void 0 ? modified : ret
     }, response)
+    const canHandle = url => handleInterceptedResponse(null, url) === true
     const OriginalXMLHttpRequest = theWindow.XMLHttpRequest
 
     class XMLHttpRequest extends OriginalXMLHttpRequest {
         get responseText() {
-            if (this.readyState !== this.DONE) return super.responseText
+            if (this.readyState !== this.DONE || !canHandle(this.responseURL)) {
+                return super.responseText
+            }
             return handleInterceptedResponse(super.responseText, this.responseURL)
         }
         get response() {
-            if (this.readyState !== this.DONE) return super.response
+            if (this.readyState !== this.DONE || !canHandle(this.responseURL)) return super.response
             return handleInterceptedResponse(super.response, this.responseURL)
         }
     }
 
+    function getRequestURL(input) {
+        if (typeof input === 'string') return input
+        if (input && typeof input.href === 'string') return input.href
+        if (input && typeof input.url === 'string') return input.url
+        return String(input)
+    }
+
     theWindow.XMLHttpRequest = XMLHttpRequest
 
-    const OriginalFetch = fetch
-    theWindow.fetch = (input, init) => (!handleInterceptedResponse(null, input) ? OriginalFetch(input, init) :
-        OriginalFetch(input, init).then(response =>
-            new Promise((resolve) => response.text()
-                .then(text => resolve(new Response(handleInterceptedResponse(text, input), {
-                    status: response.status,
-                    statusText: response.statusText,
-                    headers: response.headers
-                })))
-            )
-        )
-    );
-
+    const OriginalFetch = theWindow.fetch.bind(theWindow)
+    theWindow.fetch = async function (input, init) {
+        const url = getRequestURL(input)
+        const response = await OriginalFetch(input, init)
+        if (!canHandle(url)) return response
+        try {
+            const originalText = await response.clone().text()
+            const modifiedText = handleInterceptedResponse(originalText, url)
+            if (modifiedText === originalText) return response
+            
+            const headers = new theWindow.Headers(response.headers)
+            headers.delete('content-length')
+            headers.delete('content-encoding')
+            return new theWindow.Response(modifiedText, {
+                status: response.status,
+                statusText: response.statusText,
+                headers
+            })
+        } catch (error) {
+            log('Failed to transform fetch response:', error)
+            return response
+        }
+    }
     return interceptNetResponse
 })(unsafeWindow)
 
-const waitForElm = (selector) => new Promise(resolve => {
-    let ele = document.querySelector(selector)
-    if (ele) return resolve(ele)
-
-    const observer = new MutationObserver(mutations => {
-        let ele = document.querySelector(selector)
-        if (ele) {
-            observer.disconnect()
-            resolve(ele)
+function waitForElm(selector, timeout = 15000) {
+    return new Promise((resolve, reject) => {
+        const existing = document.querySelector(selector)
+        if (existing) {
+            resolve(existing)
+            return
         }
-    })
 
-    observer.observe(document.documentElement, {
-        childList: true,
-        subtree: true
-    })
+        const observer = new MutationObserver(() => {
+            const element = document.querySelector(selector)
+            if (!element) return
 
-    log('waitForElm, MutationObserver started.')
-})
+            clearTimeout(timer)
+            observer.disconnect()
+            resolve(element)
+        })
+
+        observer.observe(document.documentElement, {
+            childList: true,
+            subtree: true
+        })
+
+        const timer = setTimeout(() => {
+            observer.disconnect()
+            reject(new Error(`Element not found: ${selector}`))
+        }, timeout)
+    })
+}
 
 // Parse HTML string to DOM Element
 function fromHTML(html) {
@@ -226,25 +283,39 @@ function fromHTML(html) {
             url.startsWith('https://api.bilibili.com/pugv/player/web/playurl') // at /cheese/
         ) {
             if (response === null) return true // the url is handleable
+            try {
+                log('(Intercepted) playurl api response.')
+                const isString = typeof response === 'string'
+                const playInfo = isString ? JSON.parse(response) : response
 
-            log('(Intercepted) playurl api response.')
-            const responseText = response
-            const playInfo = JSON.parse(responseText)
-            playInfoTransformer(playInfo)
-            return JSON.stringify(playInfo)
+                if (!playInfo || typeof playInfo !== 'object') {
+                    return response
+                }
+
+                playInfoTransformer(playInfo)
+                return isString ? JSON.stringify(playInfo) : playInfo
+            } catch (error) {
+                log('Failed to parse or transform playInfo:', url, error)
+                return response
+            }
         }
     });
 
     // Modify Pages playinfo
     if (location.host === 'm.bilibili.com') {
-        const optionsTransformer = (opts) => (opts.readyVideoUrl = opts.readyVideoUrl?.replace(/https:\/\/.*?\//, Replacement))
-
+        const optionsTransformer = opts => {
+            if (!opts || typeof opts !== 'object') return opts
+            if (typeof opts.readyVideoUrl === 'string') opts.readyVideoUrl = opts.readyVideoUrl.replace(/https:\/\/.*?\//, Replacement)
+            return opts
+        }
         if (!disabled && unsafeWindow.options) { // Modify unsafeWindow.options
             log('Directly modify the window.options')
             optionsTransformer(unsafeWindow.options)
         } else {
             let internalOptions = unsafeWindow.options
             Object.defineProperty(unsafeWindow, 'options', {
+                configurable: true,
+                enumerable: true,
                 get: () => internalOptions,
                 set: v => {
                     if (!disabled) optionsTransformer(v);
@@ -259,6 +330,8 @@ function fromHTML(html) {
         } else {
             let internalPlayInfo = unsafeWindow.__playinfo__
             Object.defineProperty(unsafeWindow, '__playinfo__', {
+                configurable: true,
+                enumerable: true,
                 get: () => internalPlayInfo,
                 set: v => {
                     if (!disabled) playInfoTransformer(v);
@@ -270,7 +343,7 @@ function fromHTML(html) {
 
     // Add setting checkbox
     if (location.href.startsWith('https://www.bilibili.com/video/') || location.href.startsWith('https://www.bilibili.com/bangumi/play/')) {
-        waitForElm('#bilibili-player > div > div > div.bpx-player-primary-area > div.bpx-player-video-area > div.bpx-player-control-wrap > div.bpx-player-control-entity > div.bpx-player-control-bottom > div.bpx-player-control-bottom-right > div.bpx-player-ctrl-btn.bpx-player-ctrl-setting > div.bpx-player-ctrl-setting-box > div > div > div > div > div > div > div.bpx-player-ctrl-setting-others')
+        waitForElm('#bilibili-player .bpx-player-ctrl-setting-others')
             .then(settingsBar => {
                 settingsBar.appendChild(fromHTML(`<div class="bpx-player-ctrl-setting-others-title">${SettingsBarTitle}</div>`))
                 const checkBoxWrapper = fromHTML(`<div class="bpx-player-ctrl-setting-checkbox bpx-player-ctrl-setting-blackgap bui bui-checkbox bui-dark"><div class="bui-area"><input class="bui-checkbox-input" type="checkbox" checked="" aria-label="自定义视频CDN">
@@ -281,21 +354,18 @@ function fromHTML(html) {
     </label></div></div>`)
                 const checkBox = checkBoxWrapper.getElementsByTagName('input')[0]
                 checkBox.checked = !disabled
-
-                checkBoxWrapper.onclick = () => {
-                    if (checkBox.checked) {
-                        disabled = false
-                        GM_setValue('disabled', false)
-                        log(`已启用 ${SettingsBarTitle}`)
-                    } else {
-                        disabled = true
-                        GM_setValue('disabled', true)
-                        log(`已禁用 ${SettingsBarTitle}`)
-                    }
-                }
+                checkBox.addEventListener('change', () => {
+                    disabled = !checkBox.checked
+                    GM_setValue('disabled', disabled)
+                    log(disabled
+                        ? `已禁用 ${SettingsBarTitle}`
+                        : `已启用 ${SettingsBarTitle}`
+                    )
+                })
 
                 settingsBar.appendChild(checkBoxWrapper)
                 log('checkbox added, MutationObserver disconnected.')
-            });
+            })
+            .catch(error => log(error.message));
     }
 })();

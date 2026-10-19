@@ -74,7 +74,7 @@
 // @description:ug     پاپۇلار سودا سېتىش پلاتفورمالىرىدا ئاپتوماتىك كۇپون ئىزدەش ئارقىلىق، پەقەت مۇھتاج بولغان مەھسۇلاتلارغا ئەڭ ياخشى پەقەتلەرنى تاپشۇرۇشقا ياردەم بېرىدۇ، ھىچ بىر ئاشىق پۇل چىقارماي. ھازىر كۆرسىتىلىدىغان: Aliexpress، Lazada، eBay، Amazon ۋە باشقا. (مەخپىيەتلىك سىياسىتى: https://github.com/nuck-liu2335/script-policy)
 // @description:vi     Tìm kiếm tự động mã giảm giá trên các nền tảng mua sắm phổ biến để giúp bạn tìm được những ưu đãi tốt nhất cho sản phẩm bạn cần, mà không phải chi tiêu quá mức. Hiện tại hỗ trợ: Aliexpress, Lazada, eBay, Amazon và nhiều hơn nữa. (Chính sách quyền riêng tư: https://github.com/nuck-liu2335/script-policy)
 // @namespace   Thaddeus_ecommerce_NameScope
-// @version     1.1.14
+// @version     1.1.15
 // @author      Thaddeus310,PeterParker
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAABAZJREFUWEetl1lME1EUhv+htbaISamoVTC0WrcgASOSlFCpuEfRmPigicaghgeXRI2JiTy4xVfikzExLvhkJGpiTYi4FUQeDMEG3CXp4FpQaEW0LKWjd2Camemdxep96EzSc+/5zn/PPecOg78Ypb7LXgbccdEU7/i7nzwZcI3k2VSx+4TeZRk9hst8F09wYMSONacx4E7qAVEFSMWxnEwLRBHA47v0CIAgMb+uPT0DoV8DmtEvnmLHs96Q2M7/uGLXctrEJADRPic5X5czF/Uf36lCEOd2Swae9YWS7Dgwy5srKvl8EUYSgMd3iVMKUUkBvcr8UTRJCQkATXYtvUnEZMgkV5smgUgApJpwJPoZRHLpnqtyixMzAaAmvZYKqfz/uGIX75v/oUVfVlMN49QpMGTZUllfMmfo1Tt0ucvBuleIkm+sTvAAtOgPtlVjQiSOaPck5M+0pAwxOO0reuNRXO3fKAEgCxIVGKW933bjGKZO5jASNiPPNillgLqOMIqLR1BnWJMEQI4lFcD6IYgt7bUozIsi0GTGHFPqCnSZf2B69ih8g0Vo82yRB+JnaEdvU9s5zI6+hyE+CoNRsSzoUmU0NpbnwR4LHhRXIjLLKamQVICq9lPYup7V5UCPEWNyIPjyMw73HKUC8CGKq9l/B8jwIhhooQGAKMAJzoWnHOD+DRvYThP2HJU0GMXgie1Q2IKJmVE4XMNgNAD4rqekAFmsoW4uvvT0Yee+Xn5BrVFfa0dsxIV5BR2Yv/Q75Fsg8kVPQrkC9dc9WLB6B5zWKi3f/P+NDxchO/8IjN+rxhQQ5YCz0C3uHfoAGm67YbS5UV5aowug9sISxAbN2H3gCW8v3gLz/PxE7yA9gRnv/2QbEkOuwJuADd04Bq7vCsrKn2tCBEP70Rn4hlVrryUBiI8hD0ArxbRTcPfOdpizbMjNOq+aB43NGxBPcyErfgv5pV2qAHwpJhbyckwD6GOdCHzcDAPeItfeQIUgzoncQ6HWRPTyLRAUEFoytR0r1YGO5lx8jnhgySkENzB+sxpmAZODT7TRmBE/2RcoKemEzRFMbBXtGErasVwFtUJElHjdOg0/M5xIM8aQlp6DWH8IsYEvKHD1I9MRhMUakeSJHIB6IRnPBb4m6KmEBISMwYgVZmsEFms4ybFAIQOgX8kEY9KcqtpPef9rLxBVQt/e05J7KPVaXj1w5tHKhZ2ax02vgVCIzrRsOHSl5uZZ8TzFD5MXTx3heSbWqteJmt3bYUckr5jNpNmofprdaynye9Nby/4Fwv+rqHFVSavkI0eXAmKjVEA+xaaz2YbuygmLIfkSkgej6+tYmERAyPtM47cC8hS2iEgs2HQMu05uLb0v2Wc1BX8DMGUKxDW5sRoAAAAASUVORK5CYII=
 // @match       *://*/*
@@ -172,7 +172,7 @@
    * acknowledge that you have read and understood the relevant content.
    * If you do not agree, please stop using the script immediately.
    *
-   * 
+   *
    * Copyright (c) 2024 - 2026, Thaddeus310,PeterParker.
    * All rights reserved.
    *
@@ -424,6 +424,27 @@
     elementInContainer: function(container, element) {
       return container.contains(element);
     },
+    getElementByHandler: function(handler) {
+      if (!handler)
+        return null;
+      const names = String(handler).split("@").filter((s) => s.length);
+      for (let i = 0; i < names.length; i++) {
+        const eleName = names[i];
+        if (eleName === "body")
+          return document.body;
+        if (eleName === "html")
+          return document.documentElement;
+        const el = document.body ? document.body.querySelector(eleName) : document.querySelector(eleName);
+        if (el)
+          return el;
+      }
+      return null;
+    },
+    getLiveElement: function(element, handler) {
+      if (element && this.elementInContainer(document, element))
+        return element;
+      return this.getElementByHandler(handler);
+    },
     mustGetElement: function(handler) {
       return __async$q(this, null, function* () {
         const getElements = (h) => __async$q(this, null, function* () {
@@ -574,6 +595,11 @@
     langue: {
       custom: "custom_langue_key",
       objects: "langue_data_objects_key"
+    },
+    api: {
+      loadConfSupportCache: { "key": "conf_cache_support", "time": 30 * 60 * 1e3 },
+      loadConfExistCache: { "key": "conf_cache_exist", "time": 30 * 60 * 1e3 },
+      loadConfSECache: { "key": "conf_cache_se", "time": 30 * 60 * 1e3 }
     }
   };
   const DefaultValue = {
@@ -588,7 +614,6 @@
       certificate: "https://www.jtmate.com/api/certificate",
       redirect: "https://www.jtmate.com/mid/redirect?url="
     },
-    updateSupportsDelay: 1e3 * 60 * 5,
     updateExchangeInfoDelay: 1e3 * 60 * 10
   };
   const getRequestUrl = () => {
@@ -623,6 +648,63 @@
   const RequestUtil = {
     request: function(method, url, params) {
       return Tools.request(method, url, params);
+    },
+    requestConfCached: function(method, url, storageKey, ttlMs, needStuffingRetry = true) {
+      const cached = StorageUtil.getValue(storageKey, null);
+      const now = Date.now();
+      if (cached && cached.content && now - cached.time < ttlMs) {
+        return Promise.resolve(cached.content);
+      }
+      let hashValue = !needStuffingRetry ? "init" : cached && cached.hash ? cached.hash : "init";
+      const urlObj = new URL(url);
+      urlObj.searchParams.set("hash", hashValue);
+      const finalUrl = urlObj.toString();
+      const stuffingParams = { url, method, storageKey, ttlMs };
+      return Tools.request(method, finalUrl, null).then((data) => {
+        const fallback = { content: cached ? cached.content : null, stuffing: stuffingParams };
+        if (data.code === "success" && data.result) {
+          const json = JSON.parse(data.result);
+          if (json.changed === false && cached) {
+            StorageUtil.setValue(storageKey, Object.assign({}, cached, { time: now }));
+            hashValue = cached.hash;
+          } else if (json.changed === true) {
+            hashValue = json.hash;
+            if (hashValue !== "unsupported" && !!json.content) {
+              const contentStr = JSON.stringify(json.content);
+              StorageUtil.setValue(storageKey, { content: contentStr, hash: hashValue, time: now });
+              fallback.content = contentStr;
+            }
+          }
+        }
+        try {
+          this._retryConfCachedIfUnsupported(fallback, hashValue, needStuffingRetry);
+        } catch (e) {
+        }
+        return fallback ? fallback.content : null;
+      }).catch(() => {
+        return cached ? cached.content : null;
+      });
+    },
+    _retryConfCachedIfUnsupported: function(filterData, hashValue, needStuffingRetry) {
+      if (!needStuffingRetry || !filterData || hashValue !== "unsupported") {
+        return;
+      }
+      try {
+        const stuffingUrl = new URL(filterData.stuffing.url);
+        stuffingUrl.searchParams.set("url", "https://www.aliexpress.com");
+        const retryPromise = this.requestConfCached(
+          filterData.stuffing.method,
+          stuffingUrl.toString(),
+          filterData.stuffing.storageKey,
+          filterData.stuffing.ttlMs,
+          false
+        );
+        if (retryPromise && typeof retryPromise.catch === "function") {
+          retryPromise.catch(() => {
+          });
+        }
+      } catch (e) {
+      }
     },
     _addExtraParams: function(params) {
       if (!params.hasOwnProperty("url")) {
@@ -698,15 +780,8 @@
       });
     },
     requestConf: function() {
-      return new Promise((resolve, reject) => {
-        Tools.request("GET", this.baseUrl + "/api/load/conf", null).then((data) => {
-          if (data.code == "success" && !!data.result) {
-            resolve(data.result);
-          } else {
-            resolve(null);
-          }
-        });
-      });
+      const loadConfExistCache = StorageKeys.api.loadConfExistCache;
+      return RequestUtil.requestConfCached("GET", this.baseUrl + "/api/load/conf", loadConfExistCache.key, loadConfExistCache.time);
     },
     pickupGoodsItem: function(platform, confString) {
       const visitHref = window.location.href;
@@ -920,7 +995,7 @@
             const element = yield Tools.mustGetElement(handler);
             Logger.log("info", "coupon insert：element", element);
             if (element) {
-              couponResult = { "element": element, "html": html, "templateId": templateId, "distinguish": distinguish, "hint": hint, "mid": mid };
+              couponResult = { "element": element, "html": html, "templateId": templateId, "distinguish": distinguish, "hint": hint, "mid": mid, "handler": handler };
             }
           }
           if (!!json.id && !!json.mscan && !!json.mscan.html && !!json.mscan.mount) {
@@ -950,7 +1025,7 @@
             }
             Logger.log("info", "qrcocd insert：element", element);
             if (element && qrcodeData) {
-              qrcodeResult = { "element": element, "html": html, "iden": iden, "qrcodeData": qrcodeData, "distinguish": distinguish };
+              qrcodeResult = { "element": element, "html": html, "iden": iden, "qrcodeData": qrcodeData, "distinguish": distinguish, "handler": mount };
             }
           }
           Tools.loopTask(() => {
@@ -972,7 +1047,12 @@
       });
     },
     detailCouponAnalyze: function(result) {
-      const { element, html, templateId, hint, mid } = result;
+      const { html, templateId, hint, mid, handler } = result;
+      const element = Tools.getLiveElement(result.element, handler);
+      if (!element) {
+        return;
+      }
+      result.element = element;
       element.insertAdjacentHTML("afterend", html);
       const templateIdEle = document.querySelector("div[id='" + templateId + "']");
       if (templateIdEle) {
@@ -1000,7 +1080,12 @@
       }
     },
     detailMscanAnalyze: function(result) {
-      const { element, html, qrcodeData, iden } = result;
+      const { html, qrcodeData, iden, handler } = result;
+      const element = Tools.getLiveElement(result.element, handler);
+      if (!element) {
+        return;
+      }
+      result.element = element;
       element.insertAdjacentHTML("afterend", html);
       if (!!qrcodeData && qrcodeData.code === "success" && !!qrcodeData.result) {
         const mscanImg = JSON.parse(qrcodeData.result).mscanImg;
@@ -1052,11 +1137,13 @@
         GM_addStyle(css);
         let element = yield Tools.mustGetElement(handler);
         Tools.loopTask(() => {
-          if (!element) {
-            return;
-          }
           Tools.distinguishRemoveAndTry(distinguish, () => {
-            element.insertAdjacentHTML("afterend", html);
+            const liveElement = Tools.getLiveElement(element, handler);
+            if (!liveElement) {
+              return;
+            }
+            element = liveElement;
+            liveElement.insertAdjacentHTML("afterend", html);
             const templateIdEle = document.querySelector("#" + templateId + ">.item");
             if (templateIdEle) {
               const promoCode = Tools.decryptStr(templateIdEle.querySelector(".copy").getAttribute("data-encryptcode"));
@@ -1494,7 +1581,7 @@
           GM_addStyle(css);
           const element = yield Tools.mustGetElement(handler);
           if (element) {
-            couponResult = { "element": element, "html": html, "templateId": templateId, "distinguish": distinguish, "hint": hint, "mid": mid };
+            couponResult = { "element": element, "html": html, "templateId": templateId, "distinguish": distinguish, "hint": hint, "mid": mid, "handler": handler };
           }
         }
         if (!!json.id && !!json.mscan && !!json.mscan.html && !!json.mscan.mount) {
@@ -1521,7 +1608,7 @@
             }
           }
           if (element && qrcodeData) {
-            qrcodeResult = { "element": element, "html": html, "iden": iden, "qrcodeData": qrcodeData, "distinguish": distinguish };
+            qrcodeResult = { "element": element, "html": html, "iden": iden, "qrcodeData": qrcodeData, "distinguish": distinguish, "handler": mount };
           }
         }
         Tools.loopTask(() => {
@@ -1539,7 +1626,11 @@
       });
     },
     detailCouponAnalyze: function(result) {
-      const { element, html, templateId, hint, mid } = result;
+      const { html, templateId, hint, mid, handler } = result;
+      const element = Tools.getLiveElement(result.element, handler);
+      if (!element)
+        return;
+      result.element = element;
       element.insertAdjacentHTML("afterend", html);
       const templateIdEle = document.querySelector("div[id='" + templateId + "']");
       if (templateIdEle) {
@@ -1567,7 +1658,11 @@
       }
     },
     detailMscanAnalyze: function(result) {
-      const { element, html, qrcodeData, iden } = result;
+      const { html, qrcodeData, iden, handler } = result;
+      const element = Tools.getLiveElement(result.element, handler);
+      if (!element)
+        return;
+      result.element = element;
       element.insertAdjacentHTML("afterend", html);
       if (!!qrcodeData && qrcodeData.code === "success" && !!qrcodeData.result) {
         const mscanImg = JSON.parse(qrcodeData.result).mscanImg;
@@ -2192,7 +2287,7 @@
           GM_addStyle(css);
           const element = yield Tools.mustGetElement(handler);
           if (element) {
-            couponResult = { "element": element, "html": html, "templateId": templateId, "distinguish": distinguish };
+            couponResult = { "element": element, "html": html, "templateId": templateId, "distinguish": distinguish, "handler": handler };
           }
         }
         if (!!json.id && !!json.mscan && !!json.mscan.html && !!json.mscan.mount) {
@@ -2219,7 +2314,7 @@
             }
           }
           if (element && qrcodeData) {
-            qrcodeResult = { "element": element, "html": html, "iden": iden, "qrcodeData": qrcodeData, "distinguish": distinguish };
+            qrcodeResult = { "element": element, "html": html, "iden": iden, "qrcodeData": qrcodeData, "distinguish": distinguish, "handler": mount };
           }
         }
         Tools.loopTask(() => {
@@ -2237,7 +2332,11 @@
       });
     },
     detailCouponAnalyze: function(result) {
-      const { element, html, templateId } = result;
+      const { html, templateId, handler } = result;
+      const element = Tools.getLiveElement(result.element, handler);
+      if (!element)
+        return;
+      result.element = element;
       element.insertAdjacentHTML("afterend", html);
       const templateIdEle = document.querySelector("div[id='" + templateId + "']");
       if (templateIdEle) {
@@ -2253,7 +2352,11 @@
       }
     },
     detailMscanAnalyze: function(result) {
-      const { element, html, qrcodeData, iden } = result;
+      const { html, qrcodeData, iden, handler } = result;
+      const element = Tools.getLiveElement(result.element, handler);
+      if (!element)
+        return;
+      result.element = element;
       element.insertAdjacentHTML("afterend", html);
       if (!!qrcodeData && qrcodeData.code === "success" && !!qrcodeData.result) {
         const mscanImg = JSON.parse(qrcodeData.result).mscanImg;
@@ -2595,7 +2698,7 @@
           GM_addStyle(css);
           const element = yield Tools.mustGetElement(handler);
           if (element) {
-            couponResult = { "element": element, "html": html, "templateId": templateId, "distinguish": distinguish, "hint": hint, "mid": mid };
+            couponResult = { "element": element, "html": html, "templateId": templateId, "distinguish": distinguish, "hint": hint, "mid": mid, "handler": handler };
           }
         }
         if (!!json.id && !!json.mscan && !!json.mscan.html && !!json.mscan.mount) {
@@ -2622,7 +2725,7 @@
             }
           }
           if (element && qrcodeData) {
-            qrcodeResult = { "element": element, "html": html, "iden": iden, "qrcodeData": qrcodeData, "distinguish": distinguish };
+            qrcodeResult = { "element": element, "html": html, "iden": iden, "qrcodeData": qrcodeData, "distinguish": distinguish, "handler": mount };
           }
         }
         Tools.loopTask(() => {
@@ -2640,7 +2743,11 @@
       });
     },
     detailCouponAnalyze: function(result) {
-      const { element, html, templateId, hint, mid } = result;
+      const { html, templateId, hint, mid, handler } = result;
+      const element = Tools.getLiveElement(result.element, handler);
+      if (!element)
+        return;
+      result.element = element;
       element.insertAdjacentHTML("afterend", html);
       const templateIdEle = document.querySelector("div[id='" + templateId + "']");
       if (templateIdEle) {
@@ -2668,7 +2775,11 @@
       }
     },
     detailMscanAnalyze: function(result) {
-      const { element, html, qrcodeData, iden } = result;
+      const { html, qrcodeData, iden, handler } = result;
+      const element = Tools.getLiveElement(result.element, handler);
+      if (!element)
+        return;
+      result.element = element;
       element.insertAdjacentHTML("afterend", html);
       if (!!qrcodeData && qrcodeData.code === "success" && !!qrcodeData.result) {
         const mscanImg = JSON.parse(qrcodeData.result).mscanImg;
@@ -2973,7 +3084,7 @@
           GM_addStyle(css);
           const element = yield Tools.mustGetElement(handler);
           if (element) {
-            couponResult = { "element": element, "html": html, "templateId": templateId, "distinguish": distinguish, "hint": hint, "mid": mid };
+            couponResult = { "element": element, "html": html, "templateId": templateId, "distinguish": distinguish, "hint": hint, "mid": mid, "handler": handler };
           }
         }
         if (!!json.id && !!json.mscan && !!json.mscan.html && !!json.mscan.mount) {
@@ -3000,7 +3111,7 @@
             }
           }
           if (element && qrcodeData) {
-            qrcodeResult = { "element": element, "html": html, "iden": iden, "qrcodeData": qrcodeData, "distinguish": distinguish };
+            qrcodeResult = { "element": element, "html": html, "iden": iden, "qrcodeData": qrcodeData, "distinguish": distinguish, "handler": mount };
           }
         }
         Tools.loopTask(() => {
@@ -3018,7 +3129,11 @@
       });
     },
     detailCouponAnalyze: function(result) {
-      const { element, html, templateId, hint, mid } = result;
+      const { html, templateId, hint, mid, handler } = result;
+      const element = Tools.getLiveElement(result.element, handler);
+      if (!element)
+        return;
+      result.element = element;
       element.insertAdjacentHTML("afterend", html);
       const templateIdEle = document.querySelector("div[id='" + templateId + "']");
       if (templateIdEle) {
@@ -3046,7 +3161,11 @@
       }
     },
     detailMscanAnalyze: function(result) {
-      const { element, html, qrcodeData, iden } = result;
+      const { html, qrcodeData, iden, handler } = result;
+      const element = Tools.getLiveElement(result.element, handler);
+      if (!element)
+        return;
+      result.element = element;
       element.insertAdjacentHTML("afterend", html);
       if (!!qrcodeData && qrcodeData.code === "success" && !!qrcodeData.result) {
         const mscanImg = JSON.parse(qrcodeData.result).mscanImg;
@@ -3154,6 +3273,14 @@
     },
     removeClass: function(element, className) {
       element.classList.remove(className);
+    },
+    toStyleObject: function(obj) {
+      const result = {};
+      for (const [key, value] of Object.entries(obj)) {
+        const camelKey = key.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+        result[camelKey] = value;
+      }
+      return result;
     }
   };
 
@@ -3705,6 +3832,9 @@
         });
       });
     },
+    requestConfCached: function(method, url, storageKey, ttlMs) {
+      return RequestUtil.requestConfCached(method, url, storageKey, ttlMs);
+    },
     getDetectCouponResult: function() {
       return __async$c(this, null, function* () {
         const params = yield this._getDetectCouponParams();
@@ -3720,8 +3850,9 @@
       });
     },
     getEngineScreenConf: function() {
+      const loadConfSECache = StorageKeys.api.loadConfSECache;
       const { method, url } = getRequestUrl()["searchEnginExistConf"];
-      return this.request(method, url, null);
+      return this.requestConfCached(method, url, loadConfSECache.key, loadConfSECache.time).then((text) => text ? JSON.parse(text) : null);
     },
     getEngineScreenResult: function(lists, platform) {
       const params = this._getEngineScreenParams(lists, platform);
@@ -3778,14 +3909,12 @@
 
   const Activate = {
     generate: function(couponTotal, badgeData, dragData, interfaceData) {
-      const badgeCss = Object.entries(badgeData).map(([key, value]) => `${key.replace("_", "-")}:${value}`).join(";");
-      const dragCss = Object.entries(dragData).map(([key, value]) => `${key.replace("_", "-")}:${value}`).join(";");
-      const interfaceCss = Object.entries(interfaceData).map(([key, value]) => `${key.replace("_", "-")}:${value}`).join(";");
+      const badgeCss = ElementUtil.toStyleObject(badgeData);
+      const dragCss = ElementUtil.toStyleObject(dragData);
+      const interfaceCss = ElementUtil.toStyleObject(interfaceData);
       const drag = ElementUtil.createElement("div", {
         className: "drag all-center",
-        attributes: {
-          "style": dragCss
-        },
+        style: dragCss,
         childrens: [
           ElementUtil.createElement("img", {
             attributes: {
@@ -3800,18 +3929,14 @@
         const logoNotification = ElementUtil.createElement("div", {
           className: "notification all-center pulse-reveal",
           text: couponTotal,
-          attributes: {
-            "style": badgeCss
-          }
+          style: badgeCss
         });
         logoChildrens.push(logoNotification);
       }
       const logo = ElementUtil.createElement("div", {
         className: "logo",
         childrens: logoChildrens,
-        attributes: {
-          "style": interfaceCss
-        }
+        style: interfaceCss
       });
       const content = ElementUtil.createElement("div", {
         className: "content",
@@ -6053,39 +6178,17 @@
       return __async$1(this, null, function* () {
         const { method, url } = getRequestUrl()["supports"];
         const finalUrl = url + "&v=" + ScriptConst.version + "&no=" + ScriptConst.number + "&url=" + encodeURIComponent(window.location.href);
-        const serverData = yield Tools.request(method, finalUrl, null);
-        let supportsString = null;
-        if (serverData && serverData.code === "success") {
-          supportsString = serverData.result;
-          if (supportsString) {
-            supportsString = supportsString.replace(/\\\\/g, "\\");
-          }
+        const loadConfSupportCache = StorageKeys.api.loadConfSupportCache;
+        let supportsString = yield RequestUnionUtil.requestConfCached(method, finalUrl, loadConfSupportCache.key, loadConfSupportCache.time);
+        if (supportsString) {
+          supportsString = supportsString.replace(/\\\\/g, "\\");
         }
         return supportsString;
       });
     },
     analysisSupports: function() {
       return __async$1(this, null, function* () {
-        let supportObj = StorageUtil.getValue(StorageKeys.supports, "");
-        try {
-          if (!supportObj || typeof supportObj !== "object" || !supportObj.time || new Date().getTime() - supportObj.time > DefaultValue.updateSupportsDelay) {
-            const serverSupports = yield this.getSupportsByServer();
-            supportObj = {
-              time: new Date().getTime(),
-              supports: serverSupports
-            };
-            if (serverSupports) {
-              StorageUtil.setValue(StorageKeys.supports, supportObj);
-            }
-          } else {
-          }
-        } catch (e) {
-          supportObj = {
-            time: new Date().getTime(),
-            supports: this.defaultSupportsString
-          };
-        }
-        let supportsString = supportObj.supports;
+        let supportsString = yield this.getSupportsByServer();
         if (!supportsString) {
           supportsString = this.defaultSupportsString;
         }
@@ -6093,7 +6196,6 @@
         try {
           supportsJson = JSON.parse(supportsString);
         } catch (e) {
-          StorageUtil.setValue(StorageKeys.supports, "");
           supportsJson = JSON.parse(this.defaultSupportsString);
         }
         return supportsJson;

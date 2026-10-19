@@ -17,7 +17,7 @@
 // @name:zh-CN         IG小助手
 // @name:zh-TW         IG小精靈
 // @namespace          https://github.snkms.com/
-// @version            4.0.3
+// @version            4.2.2
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
 // @description:ar     نزّل صورًا ومقاطع فيديو من منشورات Instagram بنقرة واحدة، بما في ذلك القصص وReels وصور الملف الشخصي.
 // @description:de     Lade Fotos und Videos aus Instagram-Beiträgen mit einem Klick herunter, einschließlich Stories, Reels und Profilbildern.
@@ -38,6 +38,7 @@
 // @author             SN-Koarashi (5026)
 // @match              https://*.instagram.com/*
 // @grant              GM_addStyle
+// @grant              GM_download
 // @grant              GM_getResourceText
 // @grant              GM_getValue
 // @grant              GM_info
@@ -95,7 +96,8 @@
         'RENAME_PUBLISH_DATE': true,
         'SCROLL_BUTTON': true,
         'SKIP_VIEW_STORY_CONFIRM': false,
-        'SKIP_SHARED_WITH_YOU_DIALOG': false
+        'SKIP_SHARED_WITH_YOU_DIALOG': false,
+        'USE_EXTERNAL_DOWNLOAD_MODE': false
     };
 
     const PARENT_CHILD_MAPPING = {
@@ -210,8 +212,8 @@
         // page loading or unnecessary route
         if ($('div#splash-screen').length > 0 && !$('div#splash-screen').is(':hidden') ||
             location.pathname.match(/^\/(explore(\/.*)?|challenge\/?.*|direct\/?.*|qr\/?|accounts\/.*|emails\/.*|language\/?.*?|your_activity\/?.*|settings\/help(\/.*)?$)$/ig) ||
-            !location.hostname.startsWith('www.') || location.pathname.startsWith('/auth_platform/codeentry/') || location.pathname.startsWith('/challenge/') ||
-            location.pathname.startsWith('/consent/') || location.pathname.startsWith('/accounts/') ||
+            !location.hostname.startsWith('www.') || location.pathname.startsWith('/auth_platform/codeentry/') || location.pathname.startsWith('/auth_platform/recaptcha/') ||
+            location.pathname.startsWith('/challenge/') || location.pathname.startsWith('/consent/') || location.pathname.startsWith('/accounts/') ||
             ((location.pathname.endsWith('/followers/') || location.pathname.endsWith('/following/')) && ($(`body > div[class]:not([id^="mount"]) div div[role="dialog"]`).length > 0))
         ) {
             state.pageLoaded = false;
@@ -741,23 +743,48 @@
                     //}
 
                     // Make sure to first remove thumbnail button if still exists and highlight is a picture
-                    $element.find('img[referrerpolicy]').each(function () {
-                        $(this).on('load', function () {
-                            // OPTIMIZATION: cache $(this) (called 4 times in this handler)
-                            const $img = $(this);
-                            if (!$img.data('remove-thumbnail')) {
+                    if ($element.find('img[referrerpolicy]').length) {
+                        $element.find('img[referrerpolicy]').each(function () {
+                            $(this).one('load', function () {
+                                const $img = $(this);
+                                if ($img.data('remove-thumbnail')) {
+                                    return;
+                                }
+                                $img.data('remove-thumbnail', true);
                                 if ($element.find('.IG_DWHISTORY_THUMBNAIL').length === 0) {
-                                    $img.data('remove-thumbnail', true);
                                     $('.IG_DWHISTORY_THUMBNAIL').remove();
                                     logger('(highlight) Manually removing thumbnail button');
                                 }
                                 else {
-                                    $img.data('remove-thumbnail', true);
                                     logger('(highlight) Thumbnail button is not present for this picture');
+                                }
+                            });
+                        });
+                    }
+                    // If the highlight's <video> (blob src) is already present in the DOM by the time
+                    // onHighlightsStory runs (e.g. script initialized late, after 'timeupdate' already
+                    // fired once), insert the thumbnail button immediately instead of relying on a
+                    // future 'timeupdate' event that may never come. The MutationObserver-based
+                    // listener elsewhere only attaches to <video> nodes that are added *after* it
+                    // was created, so a late init otherwise misses the button entirely.
+                    // Create separate late-thumbnail-insert flag to avoid conflict with
+                    // insert-thumbnail, which may be misset prematurely to true.
+    				// We also check for IG_DWHISTORY_THUMBNAIL so the button is only added if necessary.
+                    else if ($element.find('video[src^="blob:"]').length) {
+                        $element.find('video[src^="blob:"]').each(function () {
+                            const $video = $(this);
+                            if (!$video.data('late-thumbnail-insert')) {
+                                $video.data('late-thumbnail-insert', true);
+                                if ($element.find('.IG_DWHISTORY_THUMBNAIL').length === 0) {
+                                    onHighlightsStoryThumbnail(false);
+                                    logger('(highlight) Manually inserting thumbnail button (late init)');
+                                }
+                                else {
+                                    logger('(highlight) Thumbnail button already inserted');
                                 }
                             }
                         });
-                    });
+                    }
 
                     // Try to use event listener 'timeupdate' in order to detect if highlight is a video
                     //$element.find('video').each(function(){
@@ -999,12 +1026,8 @@
         if (USER_SETTING.DISABLE_VIDEO_LOOPING) {
             $videos.each(function () {
                 $(this).on('ended', function () {
-                    const $vid = $(this);
-                    if (!$vid.data('loop')) {
-                        $vid.data('loop', true);
-                        this.pause();
-                        logger('(post) Added video event listener #loop');
-                    }
+                    this.pause();
+                    logger('(post) Stop video playing #loop');
                 });
             });
         }
@@ -1314,7 +1337,7 @@
                                     $targetNode.get(0).tagName === "IMG" &&
                                     $targetNode.attr('alt')?.length == 0
                                 ) {
-                                        return;
+                                    return;
                                 }
 
                                 $triggeredTarget = $targetNode;
@@ -1632,7 +1655,7 @@
                                     blob = true;
                                 }
                                 if (element_images && imgLink) {
-                                    $popupBody.append(`<a datetime="${publish_time}" data-needed="direct" data-path="${state.GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
+                                    $popupBody.append(`<a datetime="${publish_time}" data-needed="direct" data-path="${state.GL_postPath}" data-name="photo" data-type="jpg" data-username="${state.GL_username || ''}" data-globalIndex="${s}" href="javascript:;" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
                                 }
                             });
 
@@ -1667,7 +1690,7 @@
                                 );
                             }
                             if (element_images && imgLink) {
-                                $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY').append(`<a datetime="${publish_time}" data-needed="direct" data-path="${state.GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" href="" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
+                                $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY').append(`<a datetime="${publish_time}" data-needed="direct" data-path="${state.GL_postPath}" data-name="photo" data-type="jpg" data-username="${state.GL_username || ''}" data-globalIndex="${s}" href="javascript:;" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
                             }
                         }
                     }
@@ -2372,20 +2395,18 @@
                 $videos.each(function () {
                     $(this).on('ended', function () {
                         const $this = $(this);
-                        if (!$this.data('loop')) {
-                            let $element_play_button = $this.next().find('div[role="presentation"] > div svg > path[d^="M5.888"]').parents('button[role="button"], div[role="button"]');
-                            if ($element_play_button.length > 0) {
-                                $this.data('loop', true);
-                                $element_play_button.trigger("click");
-                                logger('Adding video event listener #loop, then paused click()');
-                            }
-                            else {
-                                $this.data('loop', true);
-                                $this.parent().find('.xpgaw4o').removeAttr('style');
-                                this.pause();
-                                logger('Adding video event listener #loop, then paused pause()');
-                            }
+
+                        let $element_play_button = $this.next().find('div[role="presentation"] > div svg > path[d^="M5.888"]').parents('button[role="button"], div[role="button"]');
+                        if ($element_play_button.length > 0) {
+                            $element_play_button.trigger("click");
+                            logger('(reel) Stop video playing #loop, then paused click()');
                         }
+                        else {
+                            $this.parent().find('.xpgaw4o').removeAttr('style');
+                            this.pause();
+                            logger('(reel) Stop video playing #loop, then paused pause()');
+                        }
+
                     });
                 });
             }
@@ -3072,22 +3093,48 @@
                     //}
 
                     // Make sure to first remove thumbnail button if still exists and story is a picture
-                    $element.find('img[referrerpolicy]').each(function () {
-                        $(this).on('load', function () {
-                            const $img = $(this);
-                            if (!$img.data('remove-thumbnail')) {
+                    if ($element.find('img[referrerpolicy]').length) {
+                        $element.find('img[referrerpolicy]').each(function () {
+                            $(this).one('load', function () {
+                                const $img = $(this);
+                                if ($img.data('remove-thumbnail')) {
+                                    return;
+                                }
+                                $img.data('remove-thumbnail', true);
                                 if ($element.find('.IG_DWSTORY_THUMBNAIL').length === 0) {
-                                    $img.data('remove-thumbnail', true);
-                                    $('.IG_DWSTORY_THUMBNAIL').remove();
+    								$('.IG_DWSTORY_THUMBNAIL').remove();
                                     logger('(story) Manually removing thumbnail button');
                                 }
                                 else {
-                                    $img.data('remove-thumbnail', true);
                                     logger('(story) Thumbnail button is not present for this picture');
+                                }
+                            });
+                        });
+                    }
+                    // If the story's <video> (blob src) is already present in the DOM by the time
+                    // onStory runs (e.g. script initialized late, after 'timeupdate' already fired
+                    // once), insert the thumbnail button immediately instead of relying on a
+                    // future 'timeupdate' event that may never come. The MutationObserver-based
+                    // listener elsewhere only attaches to <video> nodes that are added *after* it
+                    // was created, so a late init otherwise misses the button entirely.
+                    // Create separate late-thumbnail-insert flag to avoid conflict with
+                    // insert-thumbnail, which may be misset prematurely to true.
+    				// We also check for IG_DWSTORY_THUMBNAIL so the button is only added if necessary.
+                    else if ($element.find('video[src^="blob:"]').length) {
+                        $element.find('video[src^="blob:"]').each(function () {
+                            const $video = $(this);
+                            if (!$video.data('late-thumbnail-insert')) {
+                                $video.data('late-thumbnail-insert', true);
+                                if ($element.find('.IG_DWSTORY_THUMBNAIL').length === 0) {
+                                    onStoryThumbnail(false);
+                                    logger('(story) Manually inserting thumbnail button (late init)');
+                                }
+                                else {
+                                    logger('(story) Thumbnail button already inserted');
                                 }
                             }
                         });
-                    });
+                    }
 
                     // Try to use event listener 'timeupdate' in order to detect if story is a video
                     //$element.find('video').each(function(){
@@ -3374,6 +3421,105 @@
 
     /* utils */
 
+    const DB_NAME = 'IG_HELPER';
+    const DB_VERSION = 1;
+    const STORE_NAME = 'DATA_CACHE';
+
+    /**
+     * openDB
+     */
+    function openDB() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+            request.onupgradeneeded = (event) => {
+                const db = event.target.result;
+                if (!db.objectStoreNames.contains(STORE_NAME)) {
+                    db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                }
+            };
+
+            request.onsuccess = (event) => resolve(event.target.result);
+            request.onerror = (event) => reject(`Database open failed: ${event.target.error}`);
+        });
+    }
+
+    /**
+     * @param {Object} data
+     */
+    async function addData(data) {
+        const db = await openDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(STORE_NAME, 'readwrite');
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.add(data);
+
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = (event) => reject(`Insert failed: ${event.target.error}`);
+        });
+    }
+
+    /**
+     * @param {number} id
+     */
+    async function getData(id) {
+        const db = await openDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(STORE_NAME, 'readonly');
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.get(id);
+
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = (event) => reject(`Read failed: ${event.target.error}`);
+        });
+    }
+
+    /**
+     * @returns {Promise<Array>}
+     */
+    async function getAllData() {
+        const db = await openDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(STORE_NAME, 'readonly');
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.getAll();
+
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = (event) => reject(`Read all failed: ${event.target.error}`);
+        });
+    }
+
+    /**
+     * @param {Object} data
+     */
+    async function updateData(data) {
+        const db = await openDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(STORE_NAME, 'readwrite');
+            const store = transaction.objectStore(STORE_NAME);
+
+            const request = store.put(data);
+
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = (event) => reject(`Update failed: ${event.target.error}`);
+        });
+    }
+
+    /**
+     * @param {number} id
+     */
+    async function deleteData(id) {
+        const db = await openDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(STORE_NAME, 'readwrite');
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.delete(id);
+
+            request.onsuccess = () => resolve(true);
+            request.onerror = (event) => reject(`Delete failed: ${event.target.error}`);
+        });
+    }
+
     /**
      * getHighlightStories
      * @description Get a list of all stories in highlight Id.
@@ -3439,6 +3585,30 @@
         });
     }
 
+    async function getUserIdViaProfileHtml(username) {
+        const res = await fetch(`https://www.instagram.com/${encodeURIComponent(username)}/`, {
+            credentials: 'include',
+            headers: { 'Accept': 'text/html' }
+        });
+        if (!res.ok) throw new Error('profile html HTTP ' + res.status);
+        const html = await res.text();
+
+        const patterns = [
+            /"profile_id":"(\d+)"/,
+            /"page_id":"profilePage_(\d+)"/,
+            /instapp:owner_user_id"\s+content="(\d+)"/
+        ];
+        let id = null;
+        for (const re of patterns) {
+            const m = html.match(re);
+            if (m) { id = m[1]; break; }
+        }
+        if (!id) throw new Error('profile html: no id found');
+
+        const og = html.match(/property="og:image"\s+content="([^"]+)"/)?.[1]?.replace(/&amp;/g, '&') || null;
+        return { user: { pk: id, id, username, profile_pic_url: og } };
+    }
+
     /**
      * getUserId
      * @description Get user's id with username.
@@ -3460,80 +3630,50 @@
                 method: "GET",
                 url: getURL,
                 onload: function (response) {
-                    // Fix search issue by Discord: sno_w_
-                    let obj = JSON.parse(response.response);
-                    let result = null;
-                    obj.users.forEach(pos => {
-                        if (pos.user.username?.toLowerCase() === username?.toLowerCase()) {
-                            result = pos;
-                        }
-                    });
+                    try {
+                        // Fix search issue by Discord: sno_w_
+                        let obj = JSON.parse(response.response);
+                        let result = null;
+                        (obj.users ?? []).forEach(pos => {
+                            if (pos.user.username?.toLowerCase() === username?.toLowerCase()) {
+                                result = pos;
+                            }
+                        });
 
-                    if (result != null) {
-                        logger('getUserId()', result);
-                        userIdCache.set(username, result);
-                        resolve(result);
-                    }
-                    else {
-                        getUserIdWithAgent(username).then((result) => {
+                        if (result != null) {
+                            logger('getUserId()', result);
+                            userIdCache.set(username, result);
+                            resolve(result);
+                        }
+                        else {
+                            getUserIdViaProfileHtml(username).then((result) => {
+                                userIdCache.set(username, result);
+                                resolve(result);
+                                // eslint-disable-next-line no-unused-vars
+                            }).catch((err) => {
+                                userIdCache.delete(username);
+                                logger('getUserId()', 'fallback reject', err);
+                                alert("Cannot find user info from getUserId()\nDetails may be in the console.");
+                                reject(err);
+                            });
+                        }
+                        // eslint-disable-next-line no-unused-vars
+                    } catch (err) {
+                        getUserIdViaProfileHtml(username).then((result) => {
                             userIdCache.set(username, result);
                             resolve(result);
                             // eslint-disable-next-line no-unused-vars
                         }).catch((err) => {
                             userIdCache.delete(username);
-                            alert("Cannot find user info from getUserId()");
+                            logger('getUserId()', 'fallback reject', err);
+                            alert("Cannot find user info from getUserId()\nDetails may be in the console.");
+                            reject(err);
                         });
                     }
                 },
                 onerror: function (err) {
                     logger('getUserId()', 'reject', err);
                     userIdCache.delete(username);
-                    reject(err);
-                }
-            });
-        });
-    }
-
-    /**
-     * getUserIdWithAgent
-     * @description Get user's id with username.
-     *
-     * @param  {String}  username
-     * @return {Integer}
-     */
-    function getUserIdWithAgent(username) {
-        return new Promise((resolve, reject) => {
-            const getURL = `https://i.instagram.com/api/v1/users/web_profile_info/?username=${username}`;
-
-            GM_xmlhttpRequest({
-                method: "GET",
-                url: getURL,
-                headers: {
-                    'X-IG-App-ID': getAppID()
-                },
-                onload: function (response) {
-                    try {
-                        let obj = JSON.parse(response.response);
-                        let hasUser = obj?.data?.user;
-
-                        if (hasUser != null) {
-                            let userInfo = obj?.data;
-                            userInfo.user.pk = userInfo.user.id;
-                            logger('getUserIdWithAgent()', obj);
-                            resolve(userInfo);
-                        }
-                        else {
-                            logger('getUserIdWithAgent()', 'reject', 'undefined');
-                            reject('undefined');
-                        }
-                    }
-                    catch (err) {
-                        logger('getUserIdWithAgent()', 'reject', err.message);
-                        reject(err);
-                    }
-                },
-                onerror: function (err) {
-                    logger('getUserIdWithAgent()', 'reject', err);
                     reject(err);
                 }
             });
@@ -3555,7 +3695,7 @@
                 method: "GET",
                 url: getURL,
                 headers: {
-                    'User-Agent': 'Mozilla/5.0 (Linux; Android 10; Pixel 7 XL)Build/RP1A.20845.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/5.0 Chrome/117.0.5938.60 Mobile Safari/537.36 Instagram 307.0.0.34.111'
+                    'User-Agent': window.navigator.userAgent
                 },
                 onload: function (response) {
                     try {
@@ -4152,21 +4292,63 @@
      * @return {Promise}
      */
     function saveFiles(downloadLink, metadata) {
-        return new Promise((resolve) => {
+        return new Promise(resolve => {
             setTimeout(() => {
                 updateLoadingBar(true);
-                fetch(downloadLink)
-                    .then(res => res.blob())
-                    .then(dwel => {
-                        updateLoadingBar(false);
-                        return createSaveFileElement(downloadLink, dwel, metadata);
-                    })
-                    .then(() => resolve(true))
-                    .catch(err => {
-                        updateLoadingBar(false);
-                        console.error('saveFiles failed:', err);
-                        resolve(false);
-                    });
+
+                const downloadName = getSaveFileName(downloadLink, metadata);
+                const { filetype, shortcode, sourceType } = metadata;
+
+                if (
+                    USER_SETTING.MODIFY_RESOURCE_EXIF &&
+                    filetype === 'jpg' &&
+                    shortcode &&
+                    sourceType === 'photo'
+                ) {
+                    fetch(downloadLink)
+                        .then(res => res.blob())
+                        .then(dwel => {
+                            updateLoadingBar(false);
+                            return createSaveFileElement(downloadLink, dwel, metadata);
+                        })
+                        .then(() => resolve(true))
+                        .catch(err => {
+                            updateLoadingBar(false);
+                            console.error('saveFiles failed', err);
+                            resolve(false);
+                        });
+                } else {
+                    if (USER_SETTING.USE_EXTERNAL_DOWNLOAD_MODE) {
+                        GM_download({
+                            url: downloadLink,
+                            name: downloadName,
+                            onload: () => {
+                                updateLoadingBar(false);
+                                resolve(true);
+                            },
+                            // eslint-disable-next-line no-unused-vars
+                            onerror: (err) => {
+                                updateLoadingBar(false);
+                                resolve(true);
+                            },
+                        });
+                    }
+                    else {
+                        updateLoadingBar(true);
+                        fetch(downloadLink)
+                            .then(res => res.blob())
+                            .then(dwel => {
+                                updateLoadingBar(false);
+                                return createSaveFileElement(downloadLink, dwel, metadata);
+                            })
+                            .then(() => resolve(true))
+                            .catch(err => {
+                                updateLoadingBar(false);
+                                console.error('saveFiles failed:', err);
+                                resolve(false);
+                            });
+                    }
+                }
             }, 50);
         });
     }
@@ -4449,21 +4631,38 @@
      * @param {string} filename
      */
     function triggerDownload(blob, filename) {
-        return new Promise((resolve) => {
+        return new Promise(resolve => {
             const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = filename;
-            link.rel = "noopener";
-            link.style.display = "none";
-            document.body.appendChild(link);
-            link.click();
-            setTimeout(() => {
-                // eslint-disable-next-line no-unused-vars
-                try { document.body.removeChild(link); } catch (e) { /* noop */ }
-                URL.revokeObjectURL(url);
-                resolve();
-            }, 250);
+
+            if (USER_SETTING.USE_EXTERNAL_DOWNLOAD_MODE) {
+                GM_download({
+                    url: url,
+                    name: filename,
+                    onload: () => {
+                        URL.revokeObjectURL(url);
+                        resolve();
+                    },
+                    onerror: () => {
+                        URL.revokeObjectURL(url);
+                        resolve();
+                    },
+                });
+            }
+            else {
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = filename;
+                link.rel = "noopener";
+                link.style.display = "none";
+                document.body.appendChild(link);
+                link.click();
+                setTimeout(() => {
+                    // eslint-disable-next-line no-unused-vars
+                    try { document.body.removeChild(link); } catch (e) { /* noop */ }
+                    URL.revokeObjectURL(url);
+                    resolve();
+                }, 250);
+            }
         });
     }
 
@@ -4553,14 +4752,14 @@
     async function createSaveFileElement(downloadLink, object, metadata) {
         let { username, sourceType, filetype, shortcode } = metadata;
 
-        if (metadata.uid == null && username) {
+        if (metadata.uid == null) {
+            username = metadata.username;
             if (!userIdCache.has(username)) {
                 userIdCache.set(username, getUserId(username));
             }
-
             try {
                 const userInfo = await userIdCache.get(username);
-                metadata.uid = userInfo?.user?.id || null;
+                metadata.uid = userInfo?.user?.id ?? null;
                 // eslint-disable-next-line no-unused-vars
             } catch (err) {
                 userIdCache.delete(username);
@@ -4584,7 +4783,9 @@
                 console.error('Failed to strip EXIF and/or attach post URL to EXIF.', err);
                 await triggerDownload(object, downloadName);
             }
-        } else {
+            return;
+        }
+        else {
             await triggerDownload(object, downloadName);
         }
     }
@@ -4805,7 +5006,7 @@
 
             let date = new Date().getTime();
             let timestamp = Math.floor(date / 1000);
-            let username = $el.data('username') ? $el.data('username') : state.GLusername;
+            let username = $el.data('username') ? $el.data('username') : state.GL_username;
             let index = parseInt($el.attr('data-globalindex') || 0, 10) || 0;
 
             if (!username && $el.data('path')) {
@@ -5089,6 +5290,9 @@
         state.currentURL = location.href;
         state.GL_observer?.disconnect();
 
+        // Re-register delegated click handlers
+        registerPostClickHandlers();
+
         logger('main timer re-register completed');
     }
 
@@ -5192,7 +5396,9 @@
     }
 
     /**
+     * triggerReactClickHandler
      * @description Trigger React onClick event handler for the given element.
+     *
      * @param {HTMLElement} el 
      */
     function triggerReactClickHandler(el) {
@@ -5215,7 +5421,9 @@
     };
 
     // /**
+    //  * getPointerElement
     //  * @description Get the element at the pointer position and check if it is the target element or if it is covered by another element.
+    //  *
     //  * @param {JQuery<HTMLElement>} $target 
     //  * @param {number} clientX
     //  * @param {number} clientY
@@ -6062,7 +6270,9 @@
                 "HOTKEY_KEY_SETTINGS_KEY": "Hotkey Settings",
                 "HOTKEY_DOWNLOAD_STORY_KEY": "Download Story",
                 "HOTKEY_CONFLICT_WARNING": "This hotkey may conflict with other settings.",
-                "HOTKEY_RESET": "Reset"
+                "HOTKEY_RESET": "Reset",
+                "USE_EXTERNAL_DOWNLOAD_MODE": "Use External Download Mode",
+                "USE_EXTERNAL_DOWNLOAD_MODE_INTRO": "Enabling this feature will cause the script to use extended download functions (such as GM_download) to download files, resolving the issue of missing files when download multiple files.\n\nPlease note: Enabling this feature may cause the file renaming function to malfunction. Please ensure that the download mode in your extended feature settings is set to Native."
             }
         };
 
@@ -6605,7 +6815,7 @@
                             // Modify video volume
                             if (USER_SETTING.MODIFY_VIDEO_VOLUME) {
                                 $videos.each(function () {
-                                    $(this).on('play playing', function () {
+                                    $(this).one('play playing', function () {
                                         const $this = $(this);
                                         if (!$this.data('modify')) {
                                             $this.data('modify', true);
@@ -6621,30 +6831,30 @@
                                 const storyType = isHighlight ? 'highlight' : 'story';
 
                                 $videos.each(function () {
-                                    $(this).on('timeupdate', function () {
+                                    $(this).one('timeupdate', function () {
                                         const $this = $(this);
-                                        if (!$this.data('modify-thumbnail')) {
-                                                let $video = $this;
-                                                if ($video.parents('div[style][class]').filter(function () {
-                                                    return $(this).width() == $video.width();
-                                                }).find('.IG_DWSTORY_THUMBNAIL, .IG_DWHISTORY_THUMBNAIL').length === 0) {
-                                                    $this.data('modify-thumbnail', true);
+                                        if (!$this.data('insert-thumbnail')) {
+                                            let $video = $this;
+                                            if ($video.parents('div[style][class]').filter(function () {
+                                                return $(this).width() == $video.width();
+                                            }).find(isHighlight ? '.IG_DWHISTORY_THUMBNAIL' : '.IG_DWSTORY_THUMBNAIL').length === 0) {
+                                                $this.data('insert-thumbnail', true);
 
-                                                    if (isHighlight) {
-                                                        onHighlightsStoryThumbnail(false);
-                                                    }
-                                                    else {
-                                                        onStoryThumbnail(false);
-                                                    }
-
-                                                    logger(`(${storyType})`, 'Manually inserting thumbnail button');
+                                                if (isHighlight) {
+                                                    onHighlightsStoryThumbnail(false);
                                                 }
                                                 else {
-                                                    $this.data('modify-thumbnail', true);
-                                                    logger(`(${storyType})`, 'Thumbnail button already inserted');
+                                                    onStoryThumbnail(false);
                                                 }
+
+                                                logger(`(${storyType})`, 'Manually inserting thumbnail button');
                                             }
-                                        });
+                                            else {
+                                                $this.data('insert-thumbnail', true);
+                                                logger(`(${storyType})`, 'Thumbnail button already inserted');
+                                            }
+                                        }
+                                    });
 
                                     var $video = $(this);
 

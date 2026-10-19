@@ -1,0 +1,3431 @@
+// ==UserScript==
+// @name         Gartic Phone DrawBot
+// @namespace    http://tampermonkey.net/
+// @version      2.0
+// @description  Automated drawing bot with WebSocket interception, image loading, color quantization, preview and progress indicator
+// @author       NotLun1x
+// @match        https://garticphone.com/*
+// @grant        none
+// @run-at       document-start
+// @downloadURL https://update.greasyfork.org/scripts/579958/Gartic%20Phone%20DrawBot.user.js
+// @updateURL https://update.greasyfork.org/scripts/579958/Gartic%20Phone%20DrawBot.meta.js
+// ==/UserScript==
+
+(function () {
+    'use strict';
+    // Verbose per-packet logging; switch on when debugging protocol issues
+    const DEBUG = false;
+    function debugLog(...args) {
+        if (DEBUG) console.log(...args);
+    }
+
+    // --- Event & Error Logging Helpers ---
+    const LOG_MAX_LINES = 50;
+    function formatLogArg(arg) {
+        if (arg instanceof Error) return arg.message;
+        if (typeof arg === 'object' && arg !== null) {
+            try { return JSON.stringify(arg); } catch (e) { return String(arg); }
+        }
+        return String(arg);
+    }
+    function logToPanel(msg, isError = false) {
+        try {
+            const container = document.getElementById('db-log-container');
+            const content = document.getElementById('db-log-content');
+            if (!container || !content) return;
+            container.style.display = 'block';
+            const line = document.createElement('div');
+            line.style.color = isError ? '#ef4444' : '#cbd5e1';
+            // textContent: messages may contain markup from URLs or game data
+            line.textContent = msg;
+            content.appendChild(line);
+            while (content.childElementCount > LOG_MAX_LINES) content.firstElementChild.remove();
+            container.scrollTop = container.scrollHeight;
+        } catch (e) {
+            console.warn('[DrawBot] Log output error:', e);
+        }
+    }
+    // The panel shows only this script's errors, not the game's own ones.
+    // Userscript managers put the script name into its URL, so it shows up in filename/stack.
+    function isOwnError(filename, stack) {
+        return /drawbot/i.test(String(filename || '')) || /drawbot/i.test(String(stack || ''));
+    }
+    if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+        window.addEventListener('error', (e) => {
+            if (!isOwnError(e.filename, e.error && e.error.stack)) return;
+            logToPanel(`Error: ${e.message} (line ${e.lineno})`, true);
+        });
+        window.addEventListener('unhandledrejection', (e) => {
+            if (!isOwnError('', e.reason && e.reason.stack)) return;
+            logToPanel(`Promise Rejection: ${formatLogArg(e.reason)}`, true);
+        });
+
+        const originalConsoleError = console.error;
+        console.error = function (...args) {
+            originalConsoleError.apply(console, args);
+            if (typeof args[0] === 'string' && args[0].startsWith('[DrawBot]')) {
+                logToPanel(args.map(formatLogArg).join(' '), true);
+            }
+        };
+    }
+
+    const SETTINGS_KEY = 'drawbot_settings_v1';
+    // Runtime values shared by the socket hooks and the packet senders.
+    // Everything else is read from the panel by readDrawOptions().
+    function loadInitialCFG() {
+        const cfg = { packetDelay: 127, currentTurnId: 0 };
+        try {
+            const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || 'null');
+            const delay = saved ? parseInt(saved.delay, 10) : NaN;
+            if (!isNaN(delay) && delay >= 0) cfg.packetDelay = delay;
+        } catch (e) { }
+        return cfg;
+    }
+    const CFG = loadInitialCFG();
+    // Safety cap on one frame; a 24 000-rect packet (~440 KB) was accepted in a live game
+    const FAST_FILL_MAX_FRAME_CHARS = 700000;
+    const HEX_COLOR_RE = /^#[0-9A-F]{6}$/i;
+
+    let wsInstance = null;
+    let wsPrefix = '42[2,7,';
+    let isDrawing = false;
+    let cancelFlag = false;
+    let isPaused = false;
+    let currentImageSrc = '';
+    // Bot stroke IDs live far above the game's own small IDs, so manual strokes never collide with them
+    const SAFE_ID_FLOOR = 100000;
+    function randomSafeStrokeStart() {
+        return SAFE_ID_FLOOR + Math.floor(Math.random() * 100000);
+    }
+    let strokeIdCounter = randomSafeStrokeStart();
+
+    // --- Layout and Custom Scale State ---
+    let layoutMode = 'stretch'; // 'stretch', 'center', 'custom'
+    let customX = 0;   // 0 to 768
+    let customY = 0;   // 0 to 448
+    let customW = 384; // default width
+    let customH = 224; // default height
+    let draftImg = null;
+    let isDraggingImage = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let imgStartX = 0;
+    let imgStartY = 0;
+    let imgStartW = 0;
+    let imgStartH = 0;
+    let activeDragAction = null; // 'move', 'resize-TL', 'resize-TR', 'resize-BL', 'resize-BR'
+    let isApplied = false;
+
+    const GARTIC_PALETTE = [
+        { r: 0, g: 0, b: 0 },         // Black
+        { r: 102, g: 102, b: 102 },   // Dark Grey
+        { r: 0, g: 80, b: 205 },      // Dark Blue
+        { r: 255, g: 255, b: 255 },   // White
+        { r: 170, g: 170, b: 170 },   // Light Grey
+        { r: 38, g: 201, b: 255 },    // Light Blue
+        { r: 1, g: 116, b: 32 },      // Dark Green
+        { r: 153, g: 0, b: 0 },       // Dark Red
+        { r: 150, g: 65, b: 18 },     // Brown
+        { r: 17, g: 176, b: 60 },     // Light Green
+        { r: 255, g: 0, b: 19 },      // Red
+        { r: 255, g: 120, b: 41 },    // Orange
+        { r: 176, g: 112, b: 28 },    // Dark Yellow
+        { r: 153, g: 0, b: 78 },      // Dark Pink
+        { r: 203, g: 90, b: 87 },     // Muted Red
+        { r: 255, g: 193, b: 38 },    // Yellow
+        { r: 255, g: 0, b: 143 },     // Pink
+        { r: 254, g: 175, b: 168 }    // Light Pink
+    ];
+
+    // --- Turn (round) ID ---
+    // Sent as "t" in every drawing packet. Auto-captured from socket traffic
+    // unless "Auto" is switched off in the panel and the value is set by hand.
+    let turnIdAuto = true;
+    function setCapturedTurnId(value, source) {
+        if (!turnIdAuto) return;
+        debugLog(`[DrawBot] Captured turnId (${source}):`, value);
+        applyTurnId(value);
+        const input = document.getElementById('db-turn-id');
+        // Do not overwrite the field while the user is typing in it
+        if (input && document.activeElement !== input) input.value = turnIdToRound(value);
+    }
+
+    // Stroke IDs only have to be unique within a round, so a new round starts a fresh sequence.
+    // Other socket events (chat, timers, state updates) no longer reset it mid-round.
+    function applyTurnId(value) {
+        if (value === CFG.currentTurnId) return;
+        CFG.currentTurnId = value;
+        strokeIdCounter = randomSafeStrokeStart();
+        console.log(`[DrawBot] Round ${turnIdToRound(value)}: stroke IDs restart at ${strokeIdCounter}.`);
+    }
+
+    // turnId is 0-based in packets, while the game counts rounds from 1
+    function turnIdToRound(turnId) {
+        return turnId + 1;
+    }
+    function roundToTurnId(round) {
+        return round - 1;
+    }
+
+    // --- WebSocket Interceptor ---
+    function handleIncomingSocketData(data) {
+        if (typeof data !== 'string') return;
+        try {
+            const jsonStart = data.indexOf('{');
+            if (jsonStart !== -1) {
+                const jsonStr = data.substring(jsonStart, data.lastIndexOf('}') + 1);
+                const packet = JSON.parse(jsonStr);
+                if (packet) {
+                    if (typeof packet.turnNum === 'number') {
+                        setCapturedTurnId(packet.turnNum, 'incoming');
+                    }
+                    if (packet.data && typeof packet.data.turnNum === 'number') {
+                        setCapturedTurnId(packet.data.turnNum, 'incoming data');
+                    }
+                }
+            }
+        } catch (e) { }
+    }
+
+    // Sockets that already have the incoming-message listener attached
+    const hookedSockets = new WeakSet();
+    function hookIncomingMessages(ws) {
+        if (!ws || hookedSockets.has(ws)) return;
+        hookedSockets.add(ws);
+        try {
+            // addEventListener does not interfere with the game's own onmessage handler
+            ws.addEventListener('message', function (event) {
+                handleIncomingSocketData(event.data);
+            });
+        } catch (err) {
+            console.error('[DrawBot] Error listening to incoming messages:', err);
+        }
+    }
+
+    const originalSend = WebSocket.prototype.send;
+    WebSocket.prototype.send = function (data) {
+        if (typeof data === 'string' && data.startsWith('42[')) {
+            // Fallback: socket created before the constructor wrapper was installed
+            hookIncomingMessages(this);
+            if (wsInstance !== this || !this.__drawbotLinked) {
+                this.__drawbotLinked = true;
+                wsInstance = this;
+                console.log('[DrawBot] WebSocket linked successfully!');
+                updateStatus('Socket ready. Select a file and click Start.', '#10b981');
+            }
+
+            // Dynamically capture the socket message prefix
+            const prefixMatch = data.match(/^(42\[\d+,\d+,)\{"t":/);
+            if (prefixMatch) {
+                if (wsPrefix !== prefixMatch[1]) {
+                    wsPrefix = prefixMatch[1];
+                    console.log('[DrawBot] Captured socket prefix:', wsPrefix);
+                }
+            } else {
+                const genericMatch = data.match(/^42\[(\d+),/);
+                if (genericMatch) {
+                    const channelId = genericMatch[1];
+                    const newPrefix = `42[${channelId},7,`;
+                    if (wsPrefix !== newPrefix) {
+                        wsPrefix = newPrefix;
+                        console.log('[DrawBot] Dynamically updated socket prefix to:', wsPrefix);
+                    }
+                }
+            }
+
+            // Capture the last stroke ID and turn ID sent by the user
+            try {
+                const jsonStart = data.indexOf('{');
+                if (jsonStart !== -1) {
+                    const jsonStr = data.substring(jsonStart, data.lastIndexOf('}') + 1);
+                    const packet = JSON.parse(jsonStr);
+                    if (packet) {
+                        if (typeof packet.t === 'number') {
+                            setCapturedTurnId(packet.t, 'outgoing');
+                        }
+                        if (packet.v && Array.isArray(packet.v)) {
+                            const strokeId = packet.v[1];
+                            if (typeof strokeId === 'number') {
+                                // Never move the counter backwards within a turn: the game's own IDs are small,
+                                // so lowering it would make the next bot run reuse IDs it already sent.
+                                // A new turn is handled by applyTurnId().
+                                strokeIdCounter = Math.max(strokeIdCounter, strokeId + 1, SAFE_ID_FLOOR);
+                                debugLog('[DrawBot] Captured strokeId. Next:', strokeIdCounter);
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                // Ignore parsing errors
+            }
+        }
+        return originalSend.apply(this, arguments);
+    };
+
+    const originalWebSocket = window.WebSocket;
+    window.WebSocket = function (...args) {
+        const ws = new originalWebSocket(...args);
+        wsInstance = ws;
+        hookIncomingMessages(ws);
+        return ws;
+    };
+    window.WebSocket.prototype = originalWebSocket.prototype;
+
+    // --- Helpers ---
+    let timerWorker = null;
+    const pendingSleeps = new Map();
+    let sleepId = 0;
+
+    try {
+        const workerCode = `
+            self.onmessage = function(e) {
+                if (e.data.action === 'start') {
+                    setTimeout(() => {
+                        self.postMessage({ id: e.data.id });
+                    }, e.data.ms);
+                }
+            };
+        `;
+        const blob = new Blob([workerCode], { type: 'application/javascript' });
+        timerWorker = new Worker(URL.createObjectURL(blob));
+        timerWorker.onmessage = function (e) {
+            const resolve = pendingSleeps.get(e.data.id);
+            if (resolve) {
+                pendingSleeps.delete(e.data.id);
+                resolve();
+            }
+        };
+    } catch (err) {
+        console.error('[DrawBot] Failed to create Web Worker for timers:', err);
+    }
+
+    const sleep = ms => new Promise(resolve => {
+        if (timerWorker) {
+            const id = sleepId++;
+            pendingSleeps.set(id, resolve);
+            timerWorker.postMessage({ action: 'start', id, ms });
+        } else {
+            setTimeout(resolve, ms);
+        }
+    });
+
+    function clampCustomBounds() {
+        customW = Math.max(10, Math.min(768, customW));
+        customH = Math.max(10, Math.min(448, customH));
+        customX = Math.max(0, Math.min(768 - customW, customX));
+        customY = Math.max(0, Math.min(448 - customH, customY));
+    }
+
+    function updateSliders() {
+        const wSlider = document.getElementById('db-custom-w');
+        const hSlider = document.getElementById('db-custom-h');
+        const xSlider = document.getElementById('db-custom-x');
+        const ySlider = document.getElementById('db-custom-y');
+        
+        if (wSlider) {
+            wSlider.value = customW;
+            document.getElementById('db-val-w').textContent = Math.round(customW);
+        }
+        if (hSlider) {
+            hSlider.value = customH;
+            document.getElementById('db-val-h').textContent = Math.round(customH);
+        }
+        if (xSlider) {
+            xSlider.max = 768 - customW;
+            xSlider.value = customX;
+            document.getElementById('db-val-x').textContent = Math.round(customX);
+        }
+        if (ySlider) {
+            ySlider.max = 448 - customH;
+            ySlider.value = customY;
+            document.getElementById('db-val-y').textContent = Math.round(customY);
+        }
+    }
+
+    function drawDraftPreview() {
+        const pCanvas = document.getElementById('db-preview-canvas');
+        if (!pCanvas || !currentImageSrc) return;
+        const pContainer = document.getElementById('db-preview-container');
+        if (pContainer) {
+            pContainer.style.display = 'flex';
+        }
+        const step = parseInt(document.getElementById('db-scale').value, 10);
+        const w = Math.round(768 / step);
+        const h = Math.round(448 / step);
+        pCanvas.width = w;
+        pCanvas.height = h;
+        const ctx = pCanvas.getContext('2d');
+        ctx.clearRect(0, 0, w, h);
+        
+        // Draw faint outline of the Gartic Phone drawing boundaries
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(0, 0, w, h);
+        
+        if (draftImg && draftImg.complete) {
+            const cx = customX / step;
+            const cy = customY / step;
+            const cw = customW / step;
+            const ch = customH / step;
+            ctx.drawImage(draftImg, cx, cy, cw, ch);
+            
+            // Bounding box border
+            ctx.strokeStyle = '#8b5cf6';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(cx, cy, cw, ch);
+            
+            // Corner handles (constant visual size of 12px on screen, so half-size is 6px on screen)
+            ctx.fillStyle = '#8b5cf6';
+            const rect = pCanvas.getBoundingClientRect();
+            const hs = (6 * w) / rect.width;
+            
+            ctx.fillRect(cx - hs, cy - hs, hs * 2, hs * 2); // TL
+            ctx.fillRect(cx + cw - hs, cy - hs, hs * 2, hs * 2); // TR
+            ctx.fillRect(cx - hs, cy + ch - hs, hs * 2, hs * 2); // BL
+            ctx.fillRect(cx + cw - hs, cy + ch - hs, hs * 2, hs * 2); // BR
+        }
+        
+        const infoEl = document.getElementById('db-preview-info');
+        if (infoEl) {
+            infoEl.innerHTML = `<span style="color: #fbbf24; font-weight: bold;">[Draft Mode] Drag corners to resize or body to move.<br>Click "Apply & Render Preview" to verify drawing.</span>`;
+        }
+    }
+
+    function handleCanvasMouseDown(e) {
+        if (layoutMode !== 'custom' || !draftImg) return;
+        const pCanvas = document.getElementById('db-preview-canvas');
+        if (!pCanvas) return;
+        const rect = pCanvas.getBoundingClientRect();
+        
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        const workX = (mouseX / rect.width) * 768;
+        const workY = (mouseY / rect.height) * 448;
+        
+        // Grab threshold of 24 screen pixels (extremely easy to grab corners):
+        const handleThreshold = 24 * (768 / rect.width);
+        
+        const distTL = Math.hypot(workX - customX, workY - customY);
+        const distTR = Math.hypot(workX - (customX + customW), workY - customY);
+        const distBL = Math.hypot(workX - customX, workY - (customY + customH));
+        const distBR = Math.hypot(workX - (customX + customW), workY - (customY + customH));
+        
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        imgStartX = customX;
+        imgStartY = customY;
+        imgStartW = customW;
+        imgStartH = customH;
+        
+        if (distTL < handleThreshold) {
+            activeDragAction = 'resize-TL';
+        } else if (distTR < handleThreshold) {
+            activeDragAction = 'resize-TR';
+        } else if (distBL < handleThreshold) {
+            activeDragAction = 'resize-BL';
+        } else if (distBR < handleThreshold) {
+            activeDragAction = 'resize-BR';
+        } else if (workX >= customX && workX <= customX + customW &&
+                   workY >= customY && workY <= customY + customH) {
+            activeDragAction = 'move';
+        } else {
+            activeDragAction = null;
+            return;
+        }
+        
+        isDraggingImage = true;
+        document.addEventListener('mousemove', handleCanvasMouseMove);
+        document.addEventListener('mouseup', handleCanvasMouseUp);
+    }
+
+    function handleCanvasMouseMove(e) {
+        if (!isDraggingImage || !activeDragAction) return;
+        const pCanvas = document.getElementById('db-preview-canvas');
+        if (!pCanvas) return;
+        const rect = pCanvas.getBoundingClientRect();
+        
+        const deltaPageX = e.clientX - dragStartX;
+        const deltaPageY = e.clientY - dragStartY;
+        
+        const deltaX = (deltaPageX / rect.width) * 768;
+        const deltaY = (deltaPageY / rect.height) * 448;
+        
+        if (activeDragAction === 'move') {
+            customX = Math.max(0, Math.min(768 - customW, imgStartX + deltaX));
+            customY = Math.max(0, Math.min(448 - customH, imgStartY + deltaY));
+        } else if (activeDragAction === 'resize-BR') {
+            customW = Math.max(10, Math.min(768 - customX, imgStartW + deltaX));
+            customH = Math.max(10, Math.min(448 - customY, imgStartH + deltaY));
+        } else if (activeDragAction === 'resize-BL') {
+            customX = Math.max(0, Math.min(imgStartX + imgStartW - 10, imgStartX + deltaX));
+            customW = imgStartX + imgStartW - customX;
+            customH = Math.max(10, Math.min(448 - customY, imgStartH + deltaY));
+        } else if (activeDragAction === 'resize-TR') {
+            customY = Math.max(0, Math.min(imgStartY + imgStartH - 10, imgStartY + deltaY));
+            customH = imgStartY + imgStartH - customY;
+            customW = Math.max(10, Math.min(768 - customX, imgStartW + deltaX));
+        } else if (activeDragAction === 'resize-TL') {
+            customX = Math.max(0, Math.min(imgStartX + imgStartW - 10, imgStartX + deltaX));
+            customY = Math.max(0, Math.min(imgStartY + imgStartH - 10, imgStartY + deltaY));
+            customW = imgStartX + imgStartW - customX;
+            customH = imgStartY + imgStartH - customY;
+        }
+        
+        clampCustomBounds();
+        updateSliders();
+        drawDraftPreview();
+        isApplied = false;
+    }
+
+    function handleCanvasMouseUp() {
+        isDraggingImage = false;
+        activeDragAction = null;
+        document.removeEventListener('mousemove', handleCanvasMouseMove);
+        document.removeEventListener('mouseup', handleCanvasMouseUp);
+    }
+
+    function handleCanvasMouseMoveNoDrag(e) {
+        if (layoutMode !== 'custom' || isDraggingImage || !draftImg) return;
+        const pCanvas = document.getElementById('db-preview-canvas');
+        if (!pCanvas) return;
+        const rect = pCanvas.getBoundingClientRect();
+        
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        const workX = (mouseX / rect.width) * 768;
+        const workY = (mouseY / rect.height) * 448;
+        
+        // Match hover cursor detection threshold (24 screen pixels):
+        const handleThreshold = 24 * (768 / rect.width);
+        
+        const distTL = Math.hypot(workX - customX, workY - customY);
+        const distTR = Math.hypot(workX - (customX + customW), workY - customY);
+        const distBL = Math.hypot(workX - customX, workY - (customY + customH));
+        const distBR = Math.hypot(workX - (customX + customW), workY - (customY + customH));
+        
+        if (distTL < handleThreshold || distBR < handleThreshold) {
+            pCanvas.style.cursor = 'nwse-resize';
+        } else if (distTR < handleThreshold || distBL < handleThreshold) {
+            pCanvas.style.cursor = 'nesw-resize';
+        } else if (workX >= customX && workX <= customX + customW &&
+                   workY >= customY && workY <= customY + customH) {
+            pCanvas.style.cursor = 'move';
+        } else {
+            pCanvas.style.cursor = 'default';
+        }
+    }
+
+    function rgbToHex(r, g, b) {
+        return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
+    }
+
+    function hexToRgb(hex) {
+        const bigint = parseInt(hex.slice(1), 16);
+        return {
+            r: (bigint >> 16) & 255,
+            g: (bigint >> 8) & 255,
+            b: bigint & 255
+        };
+    }
+
+    function getDistance(c1, c2) {
+        const rMean = (c1.r + c2.r) / 2;
+        const r = c1.r - c2.r;
+        const g = c1.g - c2.g;
+        const b = c1.b - c2.b;
+        return (2 + rMean / 256) * r * r + 4 * g * g + (2 + (255 - rMean) / 256) * b * b;
+    }
+
+    // Above this many distinct colors, near-identical shades are merged before clustering
+    const QUANTIZE_BIN_THRESHOLD = 4096;
+
+    function quantize(pixels, maxColors) {
+        if (pixels.length <= maxColors) {
+            return pixels.map(p => ({ r: p.r, g: p.g, b: p.b }));
+        }
+
+        // Photos at 1x have 100k+ distinct colors and every clustering pass runs over all of
+        // them. Shades within 8 levels per channel are merged into their weighted average
+        // (at most 32 768 entries); cluster centers are weighted averages anyway.
+        if (pixels.length > QUANTIZE_BIN_THRESHOLD) {
+            const bins = new Map();
+            for (const p of pixels) {
+                const key = ((p.r >> 3) << 10) | ((p.g >> 3) << 5) | (p.b >> 3);
+                const bin = bins.get(key);
+                if (bin) {
+                    bin.sumR += p.r * p.count;
+                    bin.sumG += p.g * p.count;
+                    bin.sumB += p.b * p.count;
+                    bin.count += p.count;
+                } else {
+                    bins.set(key, { sumR: p.r * p.count, sumG: p.g * p.count, sumB: p.b * p.count, count: p.count });
+                }
+            }
+            pixels = Array.from(bins.values(), b => ({
+                r: Math.round(b.sumR / b.count),
+                g: Math.round(b.sumG / b.count),
+                b: Math.round(b.sumB / b.count),
+                count: b.count
+            }));
+            if (pixels.length <= maxColors) {
+                return pixels.map(p => ({ r: p.r, g: p.g, b: p.b }));
+            }
+        }
+
+        pixels.sort((a, b) => b.count - a.count);
+
+        let clusters = [];
+        let threshold = 35 * 35 * 3; // Adjusted for redmean perceptual distance scale
+
+        for (let p of pixels) {
+            let added = false;
+            for (let c of clusters) {
+                if (getDistance(p, c.center) < threshold) {
+                    c.sumR += p.r * p.count;
+                    c.sumG += p.g * p.count;
+                    c.sumB += p.b * p.count;
+                    c.totalCount += p.count;
+                    c.center.r = Math.round(c.sumR / c.totalCount);
+                    c.center.g = Math.round(c.sumG / c.totalCount);
+                    c.center.b = Math.round(c.sumB / c.totalCount);
+                    added = true;
+                    break;
+                }
+            }
+
+            if (!added) {
+                if (clusters.length < maxColors) {
+                    clusters.push({
+                        center: { r: p.r, g: p.g, b: p.b },
+                        sumR: p.r * p.count,
+                        sumG: p.g * p.count,
+                        sumB: p.b * p.count,
+                        totalCount: p.count
+                    });
+                } else {
+                    let closest = null;
+                    let minDist = Infinity;
+                    for (let c of clusters) {
+                        let dist = getDistance(p, c.center);
+                        if (dist < minDist) {
+                            minDist = dist;
+                            closest = c;
+                        }
+                    }
+                    closest.sumR += p.r * p.count;
+                    closest.sumG += p.g * p.count;
+                    closest.sumB += p.b * p.count;
+                    closest.totalCount += p.count;
+                    closest.center.r = Math.round(closest.sumR / closest.totalCount);
+                    closest.center.g = Math.round(closest.sumG / closest.totalCount);
+                    closest.center.b = Math.round(closest.sumB / closest.totalCount);
+                }
+            }
+        }
+
+        // The pass above only opens a cluster for a color far from every existing one, so on real
+        // images it stops well short of large palettes (about 70-90 colors for 128/256). Fill the
+        // remaining slots where the error is largest: the color with the biggest distance to its
+        // nearest center, weighted by how often it occurs, becomes the next center.
+        if (clusters.length < maxColors) {
+            const minDist = new Float64Array(pixels.length);
+            for (let i = 0; i < pixels.length; i++) {
+                let best = Infinity;
+                for (const c of clusters) {
+                    const d = getDistance(pixels[i], c.center);
+                    if (d < best) best = d;
+                }
+                minDist[i] = best;
+            }
+            while (clusters.length < maxColors) {
+                let pick = -1;
+                let pickScore = 0;
+                for (let i = 0; i < pixels.length; i++) {
+                    const score = minDist[i] * pixels[i].count;
+                    if (score > pickScore) {
+                        pickScore = score;
+                        pick = i;
+                    }
+                }
+                if (pick === -1) break; // every color is a center already
+                const center = { r: pixels[pick].r, g: pixels[pick].g, b: pixels[pick].b };
+                clusters.push({ center });
+                for (let i = 0; i < pixels.length; i++) {
+                    const d = getDistance(pixels[i], center);
+                    if (d < minDist[i]) minDist[i] = d;
+                }
+            }
+        }
+
+        // K-Means refinement passes (3 iterations)
+        let centers = clusters.map(c => ({ r: c.center.r, g: c.center.g, b: c.center.b }));
+        for (let iter = 0; iter < 3; iter++) {
+            const nextSums = Array.from({ length: centers.length }, () => ({ sumR: 0, sumG: 0, sumB: 0, totalCount: 0 }));
+
+            for (const p of pixels) {
+                let closestIdx = 0;
+                let minDist = Infinity;
+                for (let i = 0; i < centers.length; i++) {
+                    const dist = getDistance(p, centers[i]);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        closestIdx = i;
+                    }
+                }
+                const s = nextSums[closestIdx];
+                s.sumR += p.r * p.count;
+                s.sumG += p.g * p.count;
+                s.sumB += p.b * p.count;
+                s.totalCount += p.count;
+            }
+
+            for (let i = 0; i < centers.length; i++) {
+                const s = nextSums[i];
+                if (s.totalCount > 0) {
+                    centers[i].r = Math.round(s.sumR / s.totalCount);
+                    centers[i].g = Math.round(s.sumG / s.totalCount);
+                    centers[i].b = Math.round(s.sumB / s.totalCount);
+                }
+            }
+        }
+
+        return centers;
+    }
+
+    function loadImage(url) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => resolve(img);
+            img.onerror = () => reject(new Error('Image loading error.'));
+            img.src = url;
+        });
+    }
+
+    function getGameCanvas() {
+        // The panel's own preview canvas is 768×448 at 1x and must not pass for the game's
+        const all = [...document.querySelectorAll('canvas')].filter(c => !c.closest('#db-panel'));
+        if (!all.length) return null;
+        const largest = all.reduce((a, b) => (a.width * a.height >= b.width * b.height ? a : b));
+        if (largest.width >= 400) return largest;
+        return null;
+    }
+
+    // Canvas size to plan for. Plans depend on it (rect rounding, where invisible bridges fit),
+    // and the game canvas only exists during the drawing round, so the last size seen is kept
+    const CANVAS_SIZE_KEY = 'drawbot_canvas_size_v1';
+    const DEFAULT_GAME_CANVAS = { width: 1516, height: 848 }; // what the game used on desktop in tests
+    function rememberCanvasSize(canvas) {
+        try {
+            localStorage.setItem(CANVAS_SIZE_KEY, JSON.stringify({ width: canvas.width, height: canvas.height }));
+        } catch (e) { }
+    }
+    function planningCanvas() {
+        const canvas = getGameCanvas();
+        if (canvas) {
+            rememberCanvasSize(canvas);
+            return canvas;
+        }
+        try {
+            const saved = JSON.parse(localStorage.getItem(CANVAS_SIZE_KEY) || 'null');
+            if (saved && saved.width >= 400 && saved.height > 0) return saved;
+        } catch (e) { }
+        return DEFAULT_GAME_CANVAS;
+    }
+
+    function clampInt(n, min, max) {
+        return Math.min(max, Math.max(min, n));
+    }
+
+    function buildFillBatchFrame(strokeId, hexColor, rects) {
+        if (!Number.isInteger(strokeId) || strokeId < 0) return null;
+        if (!HEX_COLOR_RE.test(hexColor)) return null;
+        if (!Array.isArray(rects) || rects.length === 0) return null;
+
+        const v = [8, strokeId, [hexColor.toUpperCase(), 10]];
+
+        for (let i = 0; i < rects.length; i++) {
+            const rect = rects[i];
+            if (
+                !rect ||
+                !Number.isInteger(rect.x) ||
+                !Number.isInteger(rect.y) ||
+                !Number.isInteger(rect.w) ||
+                !Number.isInteger(rect.h) ||
+                (rect.parentIndex !== undefined && !Number.isInteger(rect.parentIndex)) ||
+                // Invisible bridges are zero-size by design; everything else must paint something
+                rect.w < (rect.bridge ? 0 : 1) ||
+                rect.h < (rect.bridge ? 0 : 1)
+            ) {
+                return null;
+            }
+            // For backward compatibility with old-style rects, calculate parentIndex
+            const parentIndex = (rect.parentIndex !== undefined) ? rect.parentIndex : (i === 0 ? 0 : (i - 1) * 5);
+            v.push(rect.x, rect.y, rect.w, rect.h, parentIndex);
+        }
+
+        if ((v.length - 3) % 5 !== 0) return null;
+
+        const packet = {
+            t: CFG.currentTurnId,
+            d: 1,
+            v
+        };
+        const frame = `${wsPrefix}${JSON.stringify(packet)}]`;
+        if (!frame.startsWith('42[')) return null;
+
+        return { frame };
+    }
+
+    // --- Optimized Fill Geometry Engine (Numeric Keys + DFS + Area-Maximizing Rects) ---
+
+    function findMaximalRectangleOpt(startX, startY, pixelSet, gridWidth, height) {
+        const startKey = startY * gridWidth + startX;
+        if (pixelSet[startKey] !== 1) return null;
+
+        // Strategy 1: expand RIGHT first, then DOWN (allowing width to narrow for max area)
+        let w1 = 0;
+        while (startX + w1 < gridWidth && pixelSet[startY * gridWidth + startX + w1] === 1) w1++;
+        let bestW1 = w1, bestH1 = 1, bestArea1 = w1;
+        let currW = w1;
+        for (let dy = 1; startY + dy < height; dy++) {
+            const rowBase = (startY + dy) * gridWidth + startX;
+            let rowW = 0;
+            while (rowW < currW && pixelSet[rowBase + rowW] === 1) rowW++;
+            if (rowW < 1) break;
+            currW = rowW;
+            const area = currW * (dy + 1);
+            if (area > bestArea1) { bestArea1 = area; bestW1 = currW; bestH1 = dy + 1; }
+        }
+
+        // Strategy 2: expand DOWN first, then RIGHT (allowing height to narrow for max area)
+        let h2 = 0;
+        while (startY + h2 < height && pixelSet[(startY + h2) * gridWidth + startX] === 1) h2++;
+        let bestW2 = 1, bestH2 = h2, bestArea2 = h2;
+        let currH = h2;
+        for (let dx = 1; startX + dx < gridWidth; dx++) {
+            let colH = 0;
+            while (colH < currH && pixelSet[(startY + colH) * gridWidth + startX + dx] === 1) colH++;
+            if (colH < 1) break;
+            currH = colH;
+            const area = (dx + 1) * currH;
+            if (area > bestArea2) { bestArea2 = area; bestW2 = dx + 1; bestH2 = currH; }
+        }
+
+        // Pick the strategy with larger area
+        const bestW = bestArea1 >= bestArea2 ? bestW1 : bestW2;
+        const bestH = bestArea1 >= bestArea2 ? bestH1 : bestH2;
+
+        // Remove consumed pixels from set
+        let removed = 0;
+        for (let dy = 0; dy < bestH; dy++) {
+            const rowBase = (startY + dy) * gridWidth + startX;
+            for (let dx = 0; dx < bestW; dx++) {
+                if (pixelSet[rowBase + dx] === 1) {
+                    pixelSet[rowBase + dx] = 0;
+                    removed++;
+                }
+            }
+        }
+
+        return { x: startX, y: startY, w: bestW, h: bestH, removed };
+    }
+
+    function buildRectangleTreeDFS(pixelSet, initialPixelCount, gridWidth, height) {
+        const rects = [];
+        const stack = []; // DFS stack
+        let pixelCount = initialPixelCount;
+        let lastSearchIdx = 0;
+
+        while (pixelCount > 0) {
+            // Find next active pixel index
+            while (lastSearchIdx < pixelSet.length && pixelSet[lastSearchIdx] !== 1) {
+                lastSearchIdx++;
+            }
+            if (lastSearchIdx >= pixelSet.length) break;
+
+            const startX = lastSearchIdx % gridWidth;
+            const startY = Math.floor(lastSearchIdx / gridWidth);
+
+            const rect = findMaximalRectangleOpt(startX, startY, pixelSet, gridWidth, height);
+            if (!rect) break;
+            pixelCount -= rect.removed;
+
+            rect.parentRef = null; // Root of a new island
+            rects.push(rect);
+            stack.push(rect);
+
+            // DFS traversal
+            while (stack.length > 0) {
+                const currentRect = stack.pop();
+                const candidates = [];
+
+                // Top border: y - 1
+                if (currentRect.y > 0) {
+                    const rowBase = (currentRect.y - 1) * gridWidth;
+                    for (let px = currentRect.x; px < currentRect.x + currentRect.w; px++) {
+                        if (pixelSet[rowBase + px] === 1) {
+                            candidates.push(px, currentRect.y - 1);
+                        }
+                    }
+                }
+
+                // Bottom border: y + h
+                if (currentRect.y + currentRect.h < height) {
+                    const rowBase = (currentRect.y + currentRect.h) * gridWidth;
+                    for (let px = currentRect.x; px < currentRect.x + currentRect.w; px++) {
+                        if (pixelSet[rowBase + px] === 1) {
+                            candidates.push(px, currentRect.y + currentRect.h);
+                        }
+                    }
+                }
+
+                // Left border: x - 1
+                if (currentRect.x > 0) {
+                    const checkX = currentRect.x - 1;
+                    for (let py = currentRect.y; py < currentRect.y + currentRect.h; py++) {
+                        if (pixelSet[py * gridWidth + checkX] === 1) {
+                            candidates.push(checkX, py);
+                        }
+                    }
+                }
+
+                // Right border: x + w
+                if (currentRect.x + currentRect.w < gridWidth) {
+                    const checkX = currentRect.x + currentRect.w;
+                    for (let py = currentRect.y; py < currentRect.y + currentRect.h; py++) {
+                        if (pixelSet[py * gridWidth + checkX] === 1) {
+                            candidates.push(checkX, py);
+                        }
+                    }
+                }
+
+                // Process candidates (stored as flat x,y pairs)
+                for (let ci = 0; ci < candidates.length; ci += 2) {
+                    const cx = candidates[ci];
+                    const cy = candidates[ci + 1];
+                    if (pixelSet[cy * gridWidth + cx] !== 1) continue; // Already consumed
+
+                    const newRect = findMaximalRectangleOpt(cx, cy, pixelSet, gridWidth, height);
+                    if (!newRect) continue;
+                    pixelCount -= newRect.removed;
+
+                    newRect.parentRef = currentRect;
+                    rects.push(newRect);
+                    stack.push(newRect);
+                }
+            }
+        }
+
+        return rects;
+    }
+
+    function countIslands(colorGrid, width, height) {
+        const visited = new Uint8Array(width * height);
+        let count = 0;
+        const queue = new Int32Array(width * height);
+
+        for (let y = 0; y < height; y++) {
+            const rowBase = y * width;
+            for (let x = 0; x < width; x++) {
+                const key = rowBase + x;
+                if (colorGrid[key] && !visited[key]) {
+                    count++;
+                    let head = 0;
+                    let tail = 0;
+                    queue[tail++] = key;
+                    visited[key] = 1;
+
+                    while (head < tail) {
+                        const currKey = queue[head++];
+                        const cx = currKey % width;
+                        const cy = Math.floor(currKey / width);
+
+                        const dirs = [0, 1, 0, -1, 1, 0, -1, 0];
+                        for (let d = 0; d < 8; d += 2) {
+                            const nx = cx + dirs[d];
+                            const ny = cy + dirs[d + 1];
+                            if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                                const nKey = ny * width + nx;
+                                if (colorGrid[nKey] && !visited[nKey]) {
+                                    visited[nKey] = 1;
+                                    queue[tail++] = nKey;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return count;
+    }
+
+    // Grid-sized scratch arrays for Smart Bridges, shared by all colors of a plan
+    let bridgeScratch = null;
+    function getBridgeScratch(size) {
+        if (!bridgeScratch || bridgeScratch.size !== size) {
+            bridgeScratch = {
+                size,
+                comp: new Int32Array(size),
+                queue: new Int32Array(size),
+                dist: new Int32Array(size),
+                origin: new Int32Array(size),
+                prev: new Int32Array(size)
+            };
+        }
+        return bridgeScratch;
+    }
+
+    // Connects the islands of one color with bridges over pixels of colors drawn after it
+    // (they get painted over anyway). Bridges have no length limit: a long bridge only costs
+    // rectangles, while every island it removes saves a whole packet. The search stays inside
+    // the color's bounding box (a bridge rarely needs to leave it, and Invisible bridges link
+    // whatever is left), so small colors cost little even at 1x.
+    // `indexC` is the color's position in the draw order, `box` its bounding box
+    // ({ minX, minY, maxX, maxY }, inclusive)
+    function applyBridging(colorGrid, colorIndexGrid, width, height, indexC, box) {
+        const { minX, minY, maxX, maxY } = box;
+
+        const { comp, queue, dist, origin, prev } = getBridgeScratch(width * height);
+        for (let y = minY; y <= maxY; y++) {
+            comp.fill(-1, y * width + minX, y * width + maxX + 1);
+            dist.fill(-1, y * width + minX, y * width + maxX + 1);
+        }
+
+        // 1. Islands of this color
+        let islands = 0;
+        for (let y = minY; y <= maxY; y++) {
+            for (let x = minX; x <= maxX; x++) {
+                const start = y * width + x;
+                if (!colorGrid[start] || comp[start] !== -1) continue;
+                let head = 0;
+                let tail = 0;
+                queue[tail++] = start;
+                comp[start] = islands;
+                while (head < tail) {
+                    const key = queue[head++];
+                    const kx = key % width;
+                    const ky = (key - kx) / width;
+                    if (kx > minX && colorGrid[key - 1] && comp[key - 1] === -1) { comp[key - 1] = islands; queue[tail++] = key - 1; }
+                    if (kx < maxX && colorGrid[key + 1] && comp[key + 1] === -1) { comp[key + 1] = islands; queue[tail++] = key + 1; }
+                    if (ky > minY && colorGrid[key - width] && comp[key - width] === -1) { comp[key - width] = islands; queue[tail++] = key - width; }
+                    if (ky < maxY && colorGrid[key + width] && comp[key + width] === -1) { comp[key + width] = islands; queue[tail++] = key + width; }
+                }
+                islands++;
+            }
+        }
+        if (islands <= 1) return;
+
+        const parent = new Int32Array(islands);
+        for (let i = 0; i < islands; i++) parent[i] = i;
+        let separate = islands; // the search stops once every island is joined
+        const find = (i) => {
+            while (parent[i] !== i) {
+                parent[i] = parent[parent[i]];
+                i = parent[i];
+            }
+            return i;
+        };
+
+        // 2. Multi-source BFS from the island borders through cells of this and later colors
+        let tail = 0;
+        for (let y = minY; y <= maxY; y++) {
+            for (let x = minX; x <= maxX; x++) {
+                const key = y * width + x;
+                if (comp[key] === -1) continue;
+                const border = x === 0 || x === width - 1 || y === 0 || y === height - 1 ||
+                    !colorGrid[key - 1] || !colorGrid[key + 1] || !colorGrid[key - width] || !colorGrid[key + width];
+                if (!border) continue;
+                queue[tail++] = key;
+                dist[key] = 0;
+                origin[key] = comp[key];
+            }
+        }
+
+        const markPath = (key) => {
+            while (key !== -1 && dist[key] > 0) {
+                colorGrid[key] = 1;
+                key = prev[key];
+            }
+        };
+        const visit = (from, to) => {
+            if (colorIndexGrid[to] < indexC) return; // earlier colors, background and transparency stay as they are
+            if (dist[to] === -1) {
+                dist[to] = dist[from] + 1;
+                origin[to] = origin[from];
+                prev[to] = from;
+                queue[tail++] = to;
+                return;
+            }
+            const a = find(origin[from]);
+            const b = find(origin[to]);
+            if (a === b) return;
+            parent[a] = b;
+            separate--;
+            markPath(from);
+            markPath(to);
+        };
+
+        let head = 0;
+        while (head < tail && separate > 1) {
+            const key = queue[head++];
+            const kx = key % width;
+            const ky = (key - kx) / width;
+            if (kx > minX) visit(key, key - 1);
+            if (kx < maxX) visit(key, key + 1);
+            if (ky > minY) visit(key, key - width);
+            if (ky < maxY) visit(key, key + width);
+        }
+    }
+
+    // Packs one color's rectangles into packets. A packet must be one connected tree: every rect
+    // after the first names an earlier rect it touches as its parent. A tree larger than the limit
+    // is cut into connected pieces bottom-up: a rect whose subtree grows past the limit hands its
+    // largest child subtrees off to packets of their own. This greedy gives the fewest pieces
+    // for a size bound, and cut-off pieces stay whole subtrees instead of single stray rects.
+    function splitIntoChunks(rects, hexColor, startStrokeId, maxRectsPerChunk) {
+        // Longest possible rect entry: four coordinates of up to 4 digits, a 6-digit parent offset, commas
+        const maxRectChars = 4 * 4 + 6 + 5;
+        const baseLength = wsPrefix.length + 50 + hexColor.length;
+        const charLimit = Math.max(1, Math.floor((FAST_FILL_MAX_FRAME_CHARS - baseLength) / maxRectChars));
+        const countLimit = (Number.isInteger(maxRectsPerChunk) && maxRectsPerChunk > 0) ? maxRectsPerChunk : Infinity;
+        const limit = Math.min(charLimit, countLimit);
+
+        // Rects come in discovery order, so a parent always has a lower index than its children
+        const n = rects.length;
+        const indexOfOriginal = new Map();
+        rects.forEach((rect, i) => indexOfOriginal.set(rect.originalRect || rect, i));
+        const parent = new Int32Array(n).fill(-1);
+        const children = Array.from({ length: n }, () => []);
+        for (let i = 0; i < n; i++) {
+            const parentOrig = (rects[i].originalRect || rects[i]).parentRef;
+            const p = parentOrig ? indexOfOriginal.get(parentOrig) : undefined;
+            if (p !== undefined && p < i) {
+                parent[i] = p;
+                children[p].push(i);
+            }
+        }
+
+        // Bottom-up pass: size[i] = rects that stay in i's packet; cut[i] = i starts a packet
+        const size = new Int32Array(n);
+        const cut = new Uint8Array(n);
+        for (let i = n - 1; i >= 0; i--) {
+            let total = 1;
+            for (const k of children[i]) total += size[k];
+            if (total > limit) {
+                const bySize = children[i].slice().sort((a, b) => size[b] - size[a]);
+                for (const k of bySize) {
+                    if (total <= limit) break;
+                    cut[k] = 1;
+                    total -= size[k];
+                }
+            }
+            size[i] = total;
+            if (parent[i] === -1) cut[i] = 1;
+        }
+
+        // A packet has to start with a real rect: an invisible bridge left at the top of a piece
+        // is dropped, and the rect behind it starts the packet instead
+        const skip = new Uint8Array(n);
+        for (let i = 0; i < n; i++) {
+            if (!cut[i] || !rects[i].bridge) continue;
+            skip[i] = 1;
+            cut[i] = 0;
+            for (const k of children[i]) cut[k] = 1;
+        }
+
+        // Emit every packet in preorder, so each parent precedes its children
+        const chunks = [];
+        const localIndex = new Int32Array(n);
+        let strokeId = startStrokeId;
+        for (let root = 0; root < n; root++) {
+            if (!cut[root]) continue;
+            const chunkRects = [];
+            const stack = [root];
+            while (stack.length > 0) {
+                const i = stack.pop();
+                localIndex[i] = chunkRects.length;
+                const rect = rects[i];
+                chunkRects.push({
+                    x: rect.x,
+                    y: rect.y,
+                    w: rect.w,
+                    h: rect.h,
+                    parentIndex: i === root ? 0 : localIndex[parent[i]] * 5,
+                    bridge: !!rect.bridge
+                });
+                for (const k of children[i]) {
+                    if (!cut[k] && !skip[k]) stack.push(k);
+                }
+            }
+            const res = buildFillBatchFrame(strokeId, hexColor, chunkRects);
+            chunks.push({ frame: res ? res.frame : null, strokeId, rectCount: chunkRects.length, rects: chunkRects });
+            strokeId++;
+        }
+
+        return chunks;
+    }
+
+    // Islands that reach the trunk only through islands linked in the same pass wait for the next one
+    const TURN_PASSES = 4;
+
+    // Grid cells crossed by bridges, one map shared by all colors of a plan (it may be larger than
+    // asked: every color works in its own bounding box); cleared on every use
+    let bridgeCellMap = null;
+    function getBridgeCellMap(size) {
+        if (!bridgeCellMap || bridgeCellMap.length < size) bridgeCellMap = new Uint8Array(size);
+        return bridgeCellMap.fill(0, 0, size);
+    }
+
+    // Joins the separate islands (rect trees) of one color into one tree with invisible bridges:
+    // zero-height or zero-width segments that paint nothing. The game accepts a packet as long as
+    // every element touches its parent end-on, strictly inside the touched side, and nothing
+    // overlaps (all checked in a live game; a contact exactly on a corner is rejected), so one packet
+    // can carry many islands.
+    //   1. Straight bridges between neighbouring rects in the same grid row or column.
+    //   2. Γ-shaped bridges for islands that share no line with the rest (see linkWithTurn).
+    // Islands left without any path stay separate trees. Returns all nodes, parents before
+    // children; bridge nodes carry canvas coordinates. toCanvasX/Y map grid lines to canvas
+    // pixels exactly like the rect edges are mapped.
+    //
+    // Works in the color's bounding box: every bridge it builds (straight or Γ-shaped) lies inside
+    // it, and with 256 colors most colors cover a small part of the grid. Rect coordinates are
+    // shifted into the box for the call and shifted back afterwards; canvas mapping stays global.
+    function linkIslandsWithInvisibleBridges(rects, width, height, toCanvasX, toCanvasY) {
+        let minX = width;
+        let minY = height;
+        let maxX = 0;
+        let maxY = 0;
+        for (const r of rects) {
+            if (r.x < minX) minX = r.x;
+            if (r.y < minY) minY = r.y;
+            if (r.x + r.w > maxX) maxX = r.x + r.w;
+            if (r.y + r.h > maxY) maxY = r.y + r.h;
+        }
+        for (const r of rects) {
+            r.x -= minX;
+            r.y -= minY;
+        }
+        try {
+            return linkIslandsInBox(rects, maxX - minX, maxY - minY,
+                gx => toCanvasX(gx + minX), gy => toCanvasY(gy + minY));
+        } finally {
+            for (const r of rects) {
+                r.x += minX;
+                r.y += minY;
+            }
+        }
+    }
+
+    function linkIslandsInBox(rects, width, height, toCanvasX, toCanvasY) {
+        const n = rects.length;
+        const indexOf = new Map();
+        rects.forEach((r, i) => indexOf.set(r, i));
+        const uf = new Int32Array(n);
+        for (let i = 0; i < n; i++) uf[i] = i;
+        const find = (i) => {
+            while (uf[i] !== i) {
+                uf[i] = uf[uf[i]];
+                i = uf[i];
+            }
+            return i;
+        };
+
+        // Node graph: rects first, bridges appended; island trees give the initial edges
+        const nodes = rects.slice();
+        const adjacency = Array.from({ length: n }, () => []);
+        let components = n;
+        for (let i = 0; i < n; i++) {
+            const p = rects[i].parentRef ? indexOf.get(rects[i].parentRef) : undefined;
+            if (p === undefined) continue;
+            adjacency[i].push(p);
+            adjacency[p].push(i);
+            const a = find(i);
+            const b = find(p);
+            if (a !== b) {
+                uf[a] = b;
+                components--;
+            }
+        }
+
+        // Grid cells some bridge already runs through: a Γ-bridge keeps out of them, so bridges
+        // never run along or across each other (not something the game was tested with)
+        const bridgeCells = getBridgeCellMap(width * height);
+        const markRun = (fromX, fromY, toX, toY) => {
+            for (let y = Math.min(fromY, toY); y <= Math.max(fromY, toY); y++) {
+                for (let x = Math.min(fromX, toX); x <= Math.max(fromX, toX); x++) bridgeCells[y * width + x] = 1;
+            }
+        };
+
+        // Connects rect a to rect b through a chain of bridge segments (canvas coordinates)
+        const addChain = (a, segments, b) => {
+            let prev = a;
+            for (const seg of segments) {
+                const idx = nodes.length;
+                nodes.push({ x: seg.x, y: seg.y, w: seg.w, h: seg.h, bridge: true, parentRef: null });
+                adjacency.push([prev]);
+                adjacency[prev].push(idx);
+                prev = idx;
+            }
+            adjacency[prev].push(b);
+            adjacency[b].push(prev);
+            uf[find(a)] = find(b);
+            components--;
+        };
+
+        // A bridge runs strictly inside the pixel span of its grid line. Every rect edge sits on a
+        // line boundary, so there it touches nothing but the rects it connects. On a boundary it
+        // would run along the edge of a rect of the neighbouring line, which the game is not known
+        // to accept (parts went missing at 1x). Lines only 1 px wide get no bridge (null).
+        const interior = (toCanvas, line) => {
+            const start = toCanvas(line);
+            return toCanvas(line + 1) - start >= 2 ? start + 1 : null;
+        };
+
+        // 1. Neighbouring rects along one grid line are never separated by another rect of this
+        // color on that line, so a bridge between them crosses nothing of this packet
+        const linkAlong = (lines, isRow) => {
+            for (let line = 0; line < lines.length && components > 1; line++) {
+                const list = lines[line];
+                if (list.length < 2) continue;
+                list.sort(isRow ? (a, b) => rects[a].x - rects[b].x : (a, b) => rects[a].y - rects[b].y);
+                for (let k = 1; k < list.length; k++) {
+                    const a = list[k - 1];
+                    const b = list[k];
+                    if (find(a) === find(b)) continue;
+                    const at = interior(isRow ? toCanvasY : toCanvasX, line);
+                    if (at === null) continue;
+                    const first = rects[a];
+                    const second = rects[b];
+                    // Column bridges must not cross the row bridges laid before them
+                    if (!isRow) {
+                        let crossed = false;
+                        for (let y = first.y + first.h; y < second.y && !crossed; y++) crossed = bridgeCells[y * width + line] === 1;
+                        if (crossed) continue;
+                    }
+                    if (isRow) {
+                        const x1 = toCanvasX(first.x + first.w);
+                        addChain(a, [{ x: x1, y: at, w: toCanvasX(second.x) - x1, h: 0 }], b);
+                        markRun(first.x + first.w, line, second.x - 1, line);
+                    } else {
+                        const y1 = toCanvasY(first.y + first.h);
+                        addChain(a, [{ x: at, y: y1, w: 0, h: toCanvasY(second.y) - y1 }], b);
+                        markRun(line, first.y + first.h, line, second.y - 1);
+                    }
+                }
+            }
+        };
+
+        let rows = null;
+        let cols = null;
+        if (components > 1) {
+            rows = Array.from({ length: height }, () => []);
+            for (let i = 0; i < n; i++) {
+                const r = rects[i];
+                for (let y = r.y; y < r.y + r.h; y++) rows[y].push(i);
+            }
+            linkAlong(rows, true);
+        }
+        if (components > 1) {
+            cols = Array.from({ length: width }, () => []);
+            for (let i = 0; i < n; i++) {
+                const r = rects[i];
+                for (let x = r.x; x < r.x + r.w; x++) cols[x].push(i);
+            }
+            linkAlong(cols, false);
+        }
+
+        // The largest part is the trunk: everything else gets attached to it
+        let trunk = 0;
+        if (components > 1) {
+            const sizes = new Map();
+            let best = 0;
+            for (let i = 0; i < n; i++) {
+                const r = find(i);
+                const s = (sizes.get(r) || 0) + 1;
+                sizes.set(r, s);
+                if (s > best) {
+                    best = s;
+                    trunk = i;
+                }
+            }
+        }
+
+        // 2. Γ-shaped bridges. From island rect a the path runs along one of a's grid lines through
+        // empty cells to a turn, then across through empty cells to the first rect there; it is
+        // used when that rect b belongs to the trunk. In the tree the order is
+        // b → second leg → first leg → a (a's island has no other way in), and every child must
+        // touch its parent end-on: the second leg runs on past the turn, the first leg ends on it.
+        // The path is tried along a row first, then (for lines 1 px tall) along a column.
+        if (components > 1) {
+            // rows[y] / cols[x] hold the rects on each grid line, sorted along it (both complete
+            // here: they were built and sorted above, or components would already be 1). The first
+            // leg runs between two neighbours on a line and the second ends at the nearest rect on
+            // a crossing line, found by binary search, so no rect lies on either leg; only earlier
+            // bridges are checked cell by cell. No grid-sized tables per color.
+            const bridgeFree = (x, y) => x >= 0 && x < width && y >= 0 && y < height && bridgeCells[y * width + x] === 0;
+
+            // Written for "along a row, then down/up a column"; `transposed` swaps x and y
+            // throughout, which turns it into "along a column, then along a row"
+            const linkWithTurn = (members, transposed) => {
+                const T = transposed;
+                const rectOf = i => (T ? { x: rects[i].y, y: rects[i].x, w: rects[i].h, h: rects[i].w } : rects[i]);
+                const lineRects = T ? cols : rows;    // rects on each first-leg line, sorted by x
+                const crossRects = T ? rows : cols;   // rects on each second-leg line, sorted by y
+                const isFree = T ? (x, y) => bridgeFree(y, x) : bridgeFree;
+                const canvasX = T ? toCanvasY : toCanvasX;
+                const canvasY = T ? toCanvasX : toCanvasY;
+                const lineCount = T ? width : height;
+                const lineLength = T ? height : width;
+                const flip = s => (T ? { x: s.y, y: s.x, w: s.h, h: s.w } : s);
+                const mark = (x1, y1, x2, y2) => (T ? markRun(y1, x1, y2, x2) : markRun(x1, y1, x2, y2));
+                // Position in `list` of the first rect starting after line `pos`
+                const firstAfter = (list, pos) => {
+                    let lo = 0;
+                    let hi = list.length;
+                    while (lo < hi) {
+                        const mid = (lo + hi) >> 1;
+                        if (rectOf(list[mid]).y > pos) hi = mid;
+                        else lo = mid + 1;
+                    }
+                    return lo;
+                };
+
+                for (const a of members) {
+                    const A = rectOf(a);
+                    for (let r = A.y; r < A.y + A.h; r++) {
+                        const rowStart = canvasY(r);
+                        const rowSpan = canvasY(r + 1) - rowStart;
+                        if (rowSpan < 2) continue;
+                        const line = lineRects[r];
+                        const at = line.indexOf(a);
+                        for (const dir of [1, -1]) {
+                            // The free run reaches up to the next rect on this line, or the grid edge
+                            const neighbour = line[at + dir];
+                            const N = neighbour === undefined ? null : rectOf(neighbour);
+                            const runEnd = dir > 0 ? (N ? N.x - 1 : lineLength - 1) : (N ? N.x + N.w : 0);
+                            for (let c = dir > 0 ? A.x + A.w : A.x - 1; dir > 0 ? c <= runEnd : c >= runEnd; c += dir) {
+                                if (!isFree(c, r)) break;
+                                const xc = interior(canvasX, c);
+                                if (xc === null) continue;
+                                const cross = crossRects[c];
+                                const after = firstAfter(cross, r);
+                                for (const vdir of [1, -1]) {
+                                    // Nearest rect on line c past the turn: b covers line c from
+                                    // line k on (vdir > 0) or up to line k (vdir < 0)
+                                    const b = vdir > 0 ? cross[after] : cross[after - 1];
+                                    if (b === undefined || find(b) !== find(trunk)) continue;
+                                    const B = rectOf(b);
+                                    const k = vdir > 0 ? B.y : B.y + B.h - 1;
+                                    // The second leg must not cross earlier bridges on its way
+                                    let blocked = false;
+                                    for (let m = r + vdir; m !== k && !blocked; m += vdir) blocked = !isFree(c, m);
+                                    if (blocked) continue;
+                                    // The first leg runs at y; the second goes on to `beyond`, past
+                                    // the turn on the side away from b. In a 2 px line that end lands
+                                    // on the line boundary, so the cell there must be empty.
+                                    let y;
+                                    let beyond;
+                                    if (rowSpan >= 3) {
+                                        y = vdir > 0 ? rowStart + 2 : rowStart + 1;
+                                        beyond = vdir > 0 ? rowStart + 1 : rowStart + 2;
+                                    } else {
+                                        const side = r - vdir;
+                                        if (side >= 0 && side < lineCount) {
+                                            const before = vdir > 0 ? cross[after - 1] : cross[after];
+                                            const sideTaken = before !== undefined &&
+                                                (vdir > 0 ? rectOf(before).y + rectOf(before).h - 1 === side : rectOf(before).y === side);
+                                            if (sideTaken || !isFree(c, side)) continue;
+                                        }
+                                        y = rowStart + 1;
+                                        beyond = vdir > 0 ? rowStart : rowStart + 2;
+                                    }
+                                    const second = vdir > 0
+                                        ? { x: xc, y: beyond, w: 0, h: canvasY(k) - beyond }
+                                        : { x: xc, y: canvasY(k + 1), w: 0, h: beyond - canvasY(k + 1) };
+                                    const aSide = dir > 0 ? canvasX(A.x + A.w) : canvasX(A.x);
+                                    const first = dir > 0
+                                        ? { x: aSide, y, w: xc - aSide, h: 0 }
+                                        : { x: xc, y, w: aSide - xc, h: 0 };
+                                    mark(dir > 0 ? A.x + A.w : A.x - 1, r, c, r);
+                                    mark(c, r - vdir, c, k - vdir);
+                                    return { a, b, segments: [flip(second), flip(first)] };
+                                }
+                            }
+                        }
+                    }
+                }
+                return null;
+            };
+
+            // Islands that reach the trunk only through another island get their turn in a later
+            // pass; a few passes catch nearly all of them
+            for (let pass = 0; pass < TURN_PASSES && components > 1; pass++) {
+                const groups = new Map();
+                for (let i = 0; i < n; i++) {
+                    const r = find(i);
+                    if (r === find(trunk)) continue;
+                    if (!groups.has(r)) groups.set(r, []);
+                    groups.get(r).push(i);
+                }
+                let linked = 0;
+                for (const members of groups.values()) {
+                    if (find(members[0]) === find(trunk)) continue;
+                    const link = linkWithTurn(members, false) || linkWithTurn(members, true);
+                    if (!link) continue;
+                    addChain(link.b, link.segments, link.a);
+                    linked++;
+                }
+                if (!linked) break;
+            }
+        }
+
+        // Re-root everything as BFS trees from real rects, the trunk first, so parents always
+        // come first and every Γ-bridge is entered from its trunk side
+        const visited = new Uint8Array(nodes.length);
+        const ordered = [];
+        const queue = new Int32Array(nodes.length);
+        const starts = [trunk];
+        for (let i = 0; i < n; i++) starts.push(i);
+        for (const start of starts) {
+            if (visited[start]) continue;
+            visited[start] = 1;
+            nodes[start].parentRef = null;
+            let head = 0;
+            let tail = 0;
+            queue[tail++] = start;
+            while (head < tail) {
+                const cur = queue[head++];
+                ordered.push(nodes[cur]);
+                for (const nb of adjacency[cur]) {
+                    if (visited[nb]) continue;
+                    visited[nb] = 1;
+                    nodes[nb].parentRef = nodes[cur];
+                    queue[tail++] = nb;
+                }
+            }
+        }
+        return ordered;
+    }
+
+    // Grid-based version: optimized with numeric keys + DFS + area-maximizing rects
+    // cellX/cellY: canvas pixels per grid cell
+    function generateFillBatchesFromGrid(colorGrid, width, height, hexColor, startStrokeId, cellX, cellY, canvas, maxRectsPerChunk, invisibleBridges) {
+        const t0 = performance.now();
+
+        // colorGrid is already a flat Uint8Array, so just duplicate it
+        const pixelSet = new Uint8Array(colorGrid);
+        let pixelCount = 0;
+        for (let i = 0; i < pixelSet.length; i++) {
+            if (pixelSet[i] === 1) pixelCount++;
+        }
+
+        if (pixelCount === 0) return { frames: [], nextStrokeId: startStrokeId };
+
+        // Generate rectangles with parent tree (DFS, flat array keys, optimized rect finding)
+        const islandRects = buildRectangleTreeDFS(pixelSet, pixelCount, width, height);
+        if (islandRects.length === 0) return { frames: [], nextStrokeId: startStrokeId };
+        const toCanvasX = gx => Math.round(gx * cellX);
+        const toCanvasY = gy => Math.round(gy * cellY);
+        const rects = invisibleBridges
+            ? linkIslandsWithInvisibleBridges(islandRects, width, height, toCanvasX, toCanvasY)
+            : islandRects;
+
+        const t1 = performance.now();
+        debugLog(`[DrawBot] Optimization: ${pixelCount} px → ${rects.length} rects in ${(t1 - t0).toFixed(1)}ms`);
+
+        // Map rects to canvas coordinates, keeping the order: parents come before children
+        const canvasRects = [];
+        for (const rect of rects) {
+            if (rect.bridge) {
+                // Bridges are already in canvas coordinates, built with the same rounding as rect edges
+                canvasRects.push({ x: rect.x, y: rect.y, w: rect.w, h: rect.h, bridge: true, originalRect: rect });
+                continue;
+            }
+            const sx1 = toCanvasX(rect.x);
+            const sy1 = toCanvasY(rect.y);
+            const sx2 = toCanvasX(rect.x + rect.w);
+            const sy2 = toCanvasY(rect.y + rect.h);
+
+            const clampedRect = {
+                x: Math.max(0, Math.min(sx1, canvas.width - 1)),
+                y: Math.max(0, Math.min(sy1, canvas.height - 1)),
+                w: Math.max(1, sx2 - sx1),
+                h: Math.max(1, sy2 - sy1),
+                originalRect: rect
+            };
+
+            if (clampedRect.x + clampedRect.w <= 0 ||
+                clampedRect.y + clampedRect.h <= 0 ||
+                clampedRect.x >= canvas.width ||
+                clampedRect.y >= canvas.height) {
+                continue;
+            }
+
+            canvasRects.push(clampedRect);
+        }
+
+        if (canvasRects.length === 0) return { frames: [], nextStrokeId: startStrokeId };
+
+        const chunks = splitIntoChunks(canvasRects, hexColor, startStrokeId, maxRectsPerChunk);
+        const frames = chunks.map(chunk => ({
+            frame: chunk.frame,
+            strokeId: chunk.strokeId,
+            rectCount: chunk.rectCount,
+            hexColor: hexColor,
+            rects: chunk.rects
+        }));
+
+        const t2 = performance.now();
+        debugLog(`[DrawBot] Batching: ${canvasRects.length} rects → ${chunks.length} packets in ${(t2 - t1).toFixed(1)}ms`);
+
+        return {
+            frames: frames,
+            nextStrokeId: startStrokeId + chunks.length,
+            // Separate trees left after linking; more than one means the color is still in pieces
+            trees: rects.reduce((n, r) => n + (r.parentRef ? 0 : 1), 0)
+        };
+    }
+
+    // --- Geometry Optimization ---
+    function findMaxRectangles(grid, width, height, minW, minH) {
+        const rects = [];
+        const avail = new Uint8Array(grid); // copy flat grid
+
+        for (let y = 0; y < height; y++) {
+            const rowBase = y * width;
+            for (let x = 0; x < width; x++) {
+                if (!avail[rowBase + x]) continue;
+
+                let maxW = 0;
+                while (x + maxW < width && avail[rowBase + x + maxW]) maxW++;
+
+                let bestW = maxW, bestH = 1, bestArea = maxW;
+                let currW = maxW;
+
+                for (let h = 2; y + h <= height; h++) {
+                    const nextRowBase = (y + h - 1) * width;
+                    let rowW = 0;
+                    while (rowW < currW && x + rowW < width && avail[nextRowBase + x + rowW]) rowW++;
+                    currW = rowW;
+                    if (currW < minW) break;
+
+                    let area = currW * h;
+                    if (area > bestArea) {
+                        bestArea = area;
+                        bestW = currW;
+                        bestH = h;
+                    }
+                }
+
+                if (bestW >= minW && bestH >= minH) {
+                    rects.push({ x, y, width: bestW, height: bestH });
+                    for (let dy = 0; dy < bestH; dy++) {
+                        const targetRowBase = (y + dy) * width;
+                        for (let dx = 0; dx < bestW; dx++) {
+                            avail[targetRowBase + x + dx] = 0;
+                        }
+                    }
+                }
+            }
+        }
+        return { rects, remainingGrid: avail };
+    }
+
+    function findPaths(avail, width, height) {
+        const paths = [];
+        for (let y = 0; y < height; y++) {
+            const rowBase = y * width;
+            for (let x = 0; x < width; x++) {
+                const key = rowBase + x;
+                if (!avail[key]) continue;
+
+                const path = [];
+                let cx = x, cy = y;
+                path.push({ x: cx, y: cy });
+                avail[cy * width + cx] = 0;
+
+                let lastDx = 0, lastDy = 0;
+
+                while (true) {
+                    let nextDx = 0, nextDy = 0, found = false;
+
+                    if (lastDx !== 0 || lastDy !== 0) {
+                        let nx = cx + lastDx, ny = cy + lastDy;
+                        if (nx >= 0 && nx < width && ny >= 0 && ny < height && avail[ny * width + nx]) {
+                            nextDx = lastDx; nextDy = lastDy; found = true;
+                        }
+                    }
+
+                    if (!found) {
+                        const dxs = [1, -1, 0, 0, 1, -1, 1, -1];
+                        const dys = [0, 0, 1, -1, 1, 1, -1, -1];
+                        for (let i = 0; i < 8; i++) {
+                            let nx = cx + dxs[i], ny = cy + dys[i];
+                            if (nx >= 0 && nx < width && ny >= 0 && ny < height && avail[ny * width + nx]) {
+                                nextDx = dxs[i]; nextDy = dys[i]; found = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!found) break;
+
+                    cx += nextDx; cy += nextDy;
+                    path.push({ x: cx, y: cy });
+                    avail[cy * width + cx] = 0;
+                    lastDx = nextDx; lastDy = nextDy;
+                }
+                paths.push(path);
+            }
+        }
+        return paths;
+    }
+
+    function simplifyPath(path) {
+        if (path.length <= 2) return path;
+        const simplified = [path[0]];
+        for (let i = 1; i < path.length - 1; i++) {
+            const prev = path[i - 1], curr = path[i], next = path[i + 1];
+            const isCollinear = (curr.x - prev.x) * (next.y - curr.y) === (next.x - prev.x) * (curr.y - prev.y);
+            if (!isCollinear) simplified.push(curr);
+        }
+        simplified.push(path[path.length - 1]);
+        return simplified;
+    }
+
+    // --- Packet Sending Functions ---
+    // Every send function resolves to true only if the frame actually left through the socket.
+    async function safeSendWithRetry(frame) {
+        if (!wsInstance || !frame || cancelFlag) return false;
+        const attempts = 3;
+        for (let i = 0; i < attempts; i++) {
+            try {
+                if (wsInstance.readyState !== 1) {
+                    throw new Error(`WebSocket is not in OPEN state (readyState: ${wsInstance.readyState})`);
+                }
+                originalSend.call(wsInstance, frame);
+                return true;
+            } catch (e) {
+                console.warn(`[DrawBot] Packet send failed (attempt ${i + 1}/${attempts}):`, e);
+                if (i === attempts - 1 || cancelFlag) {
+                    return false;
+                }
+                await sleep(150);
+            }
+        }
+        return false;
+    }
+
+    function isSocketClosed() {
+        return !wsInstance || wsInstance.readyState === 2 || wsInstance.readyState === 3;
+    }
+
+    async function sendRectPacket(strokeId, hexColor, thickness, x1, y1, x2, y2) {
+        if (!wsInstance || cancelFlag) return false;
+        const rectPacket = {
+            t: CFG.currentTurnId,
+            d: 1,
+            v: [6, strokeId, [hexColor, thickness, 10], x1, y1, x2, y2]
+        };
+        const frame = `${wsPrefix}${JSON.stringify(rectPacket)}]`;
+        debugLog('[DrawBot] Sent rectangle packet (Tool 6):', frame);
+        const sent = await safeSendWithRetry(frame);
+        await sleep(CFG.packetDelay);
+        return sent;
+    }
+
+    async function sendFillPacket(strokeId, hexColor, width, height) {
+        if (!wsInstance || cancelFlag) return false;
+        const fillPacket = {
+            t: CFG.currentTurnId,
+            d: 1,
+            v: [8, strokeId, [hexColor, 10], 0, 0, width, height, 0]
+        };
+        const frame = `${wsPrefix}${JSON.stringify(fillPacket)}]`;
+        debugLog('[DrawBot] Sent background fill packet (Tool 8):', frame);
+        const sent = await safeSendWithRetry(frame);
+        await sleep(CFG.packetDelay);
+        return sent;
+    }
+
+    // Pacing is up to the caller, which waits out the interval before each send
+    async function sendFillBatchPacket(frame, rectCount) {
+        if (!wsInstance || !frame || cancelFlag) return false;
+        debugLog(`[DrawBot] Sent Tool 8 packet (rects: ${rectCount}, length: ${frame.length})`);
+        return safeSendWithRetry(frame);
+    }
+
+    async function sendStrokePackets(strokeId, hexColor, points, thickness) {
+        if (!wsInstance || points.length === 0 || cancelFlag) return false;
+
+        const start = points[0];
+        const startPacket = {
+            t: CFG.currentTurnId,
+            d: 1,
+            v: [1, strokeId, [hexColor, thickness, 10], start.x, start.y]
+        };
+        const startFrame = `${wsPrefix}${JSON.stringify(startPacket)}]`;
+        debugLog('[DrawBot] Sent line start packet (Tool 1):', startFrame);
+        const startSent = await safeSendWithRetry(startFrame);
+        await sleep(CFG.packetDelay);
+        if (!startSent) return false;
+
+        if (points.length > 1 && !cancelFlag) {
+            const vArray = [1, strokeId, [hexColor, thickness, 10], start.x, start.y];
+            for (let i = 1; i < points.length; i++) {
+                vArray.push(points[i].x - points[i - 1].x);
+                vArray.push(points[i].y - points[i - 1].y);
+            }
+            const movePacket = {
+                t: CFG.currentTurnId,
+                d: 3,
+                v: vArray
+            };
+            const moveFrame = `${wsPrefix}${JSON.stringify(movePacket)}]`;
+            debugLog('[DrawBot] Sent line move packet (Tool 1):', moveFrame);
+            const moveSent = await safeSendWithRetry(moveFrame);
+            await sleep(CFG.packetDelay);
+            return moveSent;
+        }
+        return true;
+    }
+
+    // --- Image Preprocessing & Analysis ---
+    // Grid the picture is drawn on, for a scale and the game canvas: its size in cells, the
+    // canvas pixels per cell (cellX/cellY) and the 768×448 layout units per cell (unitX/unitY).
+    // Normally the grid is 768/scale × 448/scale. At 1x on the game canvas (about 1516×848) that
+    // makes cells 1.9-2 px, and rounding turns every ~10th row and ~30th column into 1 px. An
+    // invisible bridge has to touch a side strictly inside it, which a 1 px side does not allow,
+    // so islands there stayed unlinked (about twice the packets). When cells would be under 2 px,
+    // the grid is half the canvas instead, with cells of exactly 2×2 px: 1-5% fewer cells, not
+    // visible, and every color fits in one packet again. `fineGrid` is false for the modes without
+    // invisible bridges, which keep the 768/scale grid.
+    function gridFor(step, canvas, fineGrid) {
+        const cellX = step * canvas.width / 768;
+        const cellY = step * canvas.height / 448;
+        if (!fineGrid || Math.min(cellX, cellY) >= 2) {
+            return { width: Math.round(768 / step), height: Math.round(448 / step), cellX, cellY, unitX: step, unitY: step };
+        }
+        return {
+            width: Math.floor(canvas.width / 2),
+            height: Math.floor(canvas.height / 2),
+            cellX: 2,
+            cellY: 2,
+            unitX: 1536 / canvas.width,
+            unitY: 896 / canvas.height
+        };
+    }
+
+    // Returns the image as a flat grid of color indices (-1 = transparent) plus the list of
+    // distinct hex colors those indices point to. Every color in the list occurs in the grid.
+    function processImage(img, grid, colorsMode, denoiseLevel) {
+        const w = grid.width;
+        const h = grid.height;
+        const { unitX, unitY } = grid;
+
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = w;
+        tempCanvas.height = h;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.clearRect(0, 0, w, h);
+
+        if (layoutMode === 'stretch') {
+            ctx.drawImage(img, 0, 0, w, h);
+        } else if (layoutMode === 'center') {
+            // Placed in 768×448 layout units, then converted to cells
+            const imgRatio = img.width / img.height;
+            const canvasRatio = 768 / 448;
+            let dw, dh;
+            if (imgRatio > canvasRatio) {
+                dw = 768;
+                dh = 768 / imgRatio;
+            } else {
+                dh = 448;
+                dw = 448 * imgRatio;
+            }
+            ctx.drawImage(img, (768 - dw) / 2 / unitX, (448 - dh) / 2 / unitY, dw / unitX, dh / unitY);
+        } else if (layoutMode === 'custom') {
+            ctx.drawImage(img, customX / unitX, customY / unitY, customW / unitX, customH / unitY);
+        }
+
+        const imgData = ctx.getImageData(0, 0, w, h);
+        const data = imgData.data;
+
+        // Use 24-bit integers instead of hex string conversions inside 344k loop
+        const colorCounts = new Map();
+        for (let i = 0; i < data.length; i += 4) {
+            const a = data[i + 3];
+            if (a < 150) {
+                continue; // Skip transparent/margins
+            }
+            const rgbInt = (data[i] << 16) | (data[i + 1] << 8) | data[i + 2];
+            colorCounts.set(rgbInt, (colorCounts.get(rgbInt) || 0) + 1);
+        }
+
+        let palette = [];
+        if (colorsMode === 'gartic') {
+            palette = GARTIC_PALETTE;
+        } else if (colorsMode === 'infinite') {
+            palette = Array.from(colorCounts.keys()).map(rgbInt => ({
+                r: (rgbInt >> 16) & 255,
+                g: (rgbInt >> 8) & 255,
+                b: rgbInt & 255
+            }));
+        } else {
+            const maxColors = parseInt(colorsMode, 10);
+            const uniqueColors = Array.from(colorCounts.entries()).map(([rgbInt, count]) => ({
+                r: (rgbInt >> 16) & 255,
+                g: (rgbInt >> 8) & 255,
+                b: rgbInt & 255,
+                count
+            }));
+            palette = quantize(uniqueColors, maxColors);
+        }
+
+        // Cache hex strings for colors in the palette (typically <= 64, or unique count if infinite)
+        const paletteHex = palette.map(c => rgbToHex(c.r, c.g, c.b));
+        const whiteIdx = paletteHex.indexOf('#FFFFFF');
+
+        // Nearest palette entry per distinct color, so the search runs once per color, not per pixel.
+        // "No limit" keeps every color as is, so there it is a plain lookup.
+        const nearestByColor = new Map();
+        if (colorsMode === 'infinite') {
+            palette.forEach((c, i) => nearestByColor.set((c.r << 16) | (c.g << 8) | c.b, i));
+        }
+
+        // Int32: "No limit" mode can have far more than 32767 palette entries
+        const pixelIndices = new Int32Array(w * h);
+        for (let y = 0; y < h; y++) {
+            const rowOffset = y * w;
+            for (let x = 0; x < w; x++) {
+                const idx = (rowOffset + x) * 4;
+                const a = data[idx + 3];
+                if (a < 150) {
+                    pixelIndices[rowOffset + x] = -1; // -1 represents transparent
+                } else {
+                    const r = data[idx]; const g = data[idx + 1]; const b = data[idx + 2];
+                    const rgbInt = (r << 16) | (g << 8) | b;
+                    let closestIdx = nearestByColor.get(rgbInt);
+                    if (closestIdx === undefined) {
+                        closestIdx = 0;
+                        let minDist = Infinity;
+                        const p = { r, g, b };
+                        for (let i = 0; i < palette.length; i++) {
+                            const dist = getDistance(p, palette[i]);
+                            if (dist < minDist) {
+                                minDist = dist;
+                                closestIdx = i;
+                            }
+                        }
+                        nearestByColor.set(rgbInt, closestIdx);
+                    }
+                    pixelIndices[rowOffset + x] = closestIdx;
+                }
+            }
+        }
+
+        if (denoiseLevel > 0) {
+            const tempIndices = new Int32Array(pixelIndices);
+            const counts = new Map();
+            for (let y = 0; y < h; y++) {
+                const rowOffset = y * w;
+                for (let x = 0; x < w; x++) {
+                    const idx = rowOffset + x;
+                    const colorIdx = pixelIndices[idx];
+                    if (colorIdx === -1 || colorIdx === whiteIdx) continue;
+
+                    let sameNeighbors = 0;
+                    for (let dx = -1; dx <= 1; dx++) {
+                        for (let dy = -1; dy <= 1; dy++) {
+                            if (dx === 0 && dy === 0) continue;
+                            const nx = x + dx;
+                            const ny = y + dy;
+                            if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
+                                if (pixelIndices[ny * w + nx] === colorIdx) sameNeighbors++;
+                            }
+                        }
+                    }
+
+                    if (sameNeighbors < denoiseLevel) {
+                        counts.clear();
+                        let maxCount = 0;
+                        let bestColorIdx = colorIdx;
+
+                        for (let dx = -1; dx <= 1; dx++) {
+                            for (let dy = -1; dy <= 1; dy++) {
+                                if (dx === 0 && dy === 0) continue;
+                                const nx = x + dx;
+                                const ny = y + dy;
+                                if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
+                                    const nIdx = pixelIndices[ny * w + nx];
+                                    if (nIdx === -1) continue; // Skip transparent neighbors/canvas margins
+                                    const c = (counts.get(nIdx) || 0) + 1;
+                                    counts.set(nIdx, c);
+                                    if (c > maxCount) {
+                                        maxCount = c;
+                                        bestColorIdx = nIdx;
+                                    } else if (c === maxCount) {
+                                        const c1 = palette[nIdx];
+                                        const c2 = palette[bestColorIdx];
+                                        const orig = palette[colorIdx];
+                                        const d1 = getDistance(c1, orig);
+                                        const d2 = getDistance(c2, orig);
+                                        if (d1 < d2) {
+                                            bestColorIdx = nIdx;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        tempIndices[idx] = bestColorIdx;
+                    }
+                }
+            }
+            pixelIndices.set(tempIndices);
+        }
+
+        // Re-index to distinct colors actually present: quantization can produce palette
+        // entries that round to the same hex, and many palette entries may stay unused
+        const colors = [];
+        const hexToColorIdx = new Map();
+        const paletteToColorIdx = new Int32Array(palette.length).fill(-1);
+        for (let i = 0; i < pixelIndices.length; i++) {
+            const p = pixelIndices[i];
+            if (p === -1) continue;
+            let c = paletteToColorIdx[p];
+            if (c === -1) {
+                const hex = paletteHex[p];
+                c = hexToColorIdx.get(hex);
+                if (c === undefined) {
+                    c = colors.length;
+                    colors.push(hex);
+                    hexToColorIdx.set(hex, c);
+                }
+                paletteToColorIdx[p] = c;
+            }
+            pixelIndices[i] = c;
+        }
+
+        return { indices: pixelIndices, colors, width: w, height: h, cellX: grid.cellX, cellY: grid.cellY };
+    }
+
+    // Preview and drawing need the same processed image; recomputing it is the slowest step
+    let processedCache = null;
+    function processImageCached(img, src, grid, colorsMode, denoiseLevel) {
+        const key = [grid.width, grid.height, grid.cellX, grid.cellY, colorsMode, denoiseLevel,
+            layoutMode, customX, customY, customW, customH].join('|');
+        if (processedCache && processedCache.src === src && processedCache.key === key) {
+            return processedCache.result;
+        }
+        const result = processImage(img, grid, colorsMode, denoiseLevel);
+        processedCache = { src, key, result };
+        return result;
+    }
+
+    // Most common color: drawn as one background fill instead of many rectangles
+    function findBackgroundColorIdx(indices, colorCount) {
+        const counts = new Int32Array(colorCount);
+        for (let i = 0; i < indices.length; i++) {
+            if (indices[i] >= 0) counts[indices[i]]++;
+        }
+        let best = -1;
+        let bestCount = 0;
+        for (let c = 0; c < colorCount; c++) {
+            if (counts[c] > bestCount) {
+                bestCount = counts[c];
+                best = c;
+            }
+        }
+        return best;
+    }
+
+    function buildColorMask(indices, colorIdx) {
+        const mask = new Uint8Array(indices.length);
+        for (let i = 0; i < indices.length; i++) {
+            if (indices[i] === colorIdx) mask[i] = 1;
+        }
+        return mask;
+    }
+
+    // Standard Lines mode: rectangles first, then the leftover pixels as straight lines or paths
+    function buildLineCommands(mask, width, height, cellX, cellY) {
+        const toCanvasRect = (x, y, w, h) => ({
+            kind: 'rect',
+            x1: Math.round(x * cellX),
+            y1: Math.round(y * cellY),
+            x2: Math.round((x + w) * cellX),
+            y2: Math.round((y + h) * cellY)
+        });
+
+        const commands = [];
+        const { rects, remainingGrid } = findMaxRectangles(mask, width, height, 2, 2);
+        for (const r of rects) {
+            commands.push(toCanvasRect(r.x, r.y, r.width, r.height));
+        }
+
+        const paths = findPaths(remainingGrid, width, height);
+        for (const path of paths) {
+            const first = path[0];
+            if (path.length === 1) {
+                commands.push(toCanvasRect(first.x, first.y, 1, 1));
+            } else if (path.every(p => p.y === first.y)) {
+                const xs = path.map(p => p.x);
+                const minX = Math.min(...xs);
+                commands.push(toCanvasRect(minX, first.y, Math.max(...xs) - minX + 1, 1));
+            } else if (path.every(p => p.x === first.x)) {
+                const ys = path.map(p => p.y);
+                const minY = Math.min(...ys);
+                commands.push(toCanvasRect(first.x, minY, 1, Math.max(...ys) - minY + 1));
+            } else {
+                const points = simplifyPath(path.map(p => ({
+                    x: Math.round((p.x + 0.5) * cellX),
+                    y: Math.round((p.y + 0.5) * cellY)
+                })));
+                commands.push({ kind: 'path', points });
+            }
+        }
+        return commands;
+    }
+
+    // --- Fill masks and draw order ---
+
+    // Most fragmented colors first: the fallback order when the order search is too expensive
+    function sortByIslands(processed, order) {
+        const { indices, width, height } = processed;
+        const islands = new Map();
+        for (const c of order) {
+            islands.set(c, countIslands(buildColorMask(indices, c), width, height));
+        }
+        return order.slice().sort((a, b) => islands.get(b) - islands.get(a));
+    }
+
+    // Returns countRegions(c, above): the number of regions of (pixels of color c) ∪ (pixels of
+    // colors with above[color] === 1) that contain c. Smart Bridges can join c's islands across any
+    // color drawn after it, so this is how many islands c still has when drawn before those colors.
+    function makeRegionCounter(indices, width) {
+        const total = indices.length;
+        const queue = new Int32Array(total);
+        const stamp = new Int32Array(total); // visited marker, no clearing between calls
+        let stampId = 0;
+
+        return function countRegions(c, above) {
+            stampId++;
+            let regions = 0;
+            for (let start = 0; start < total; start++) {
+                if (indices[start] !== c || stamp[start] === stampId) continue;
+                regions++;
+                let head = 0;
+                let tail = 0;
+                queue[tail++] = start;
+                stamp[start] = stampId;
+                while (head < tail) {
+                    const k = queue[head++];
+                    const x = k % width;
+                    for (let d = 0; d < 4; d++) {
+                        let nk;
+                        if (d === 0) { if (x === 0) continue; nk = k - 1; }
+                        else if (d === 1) { if (x === width - 1) continue; nk = k + 1; }
+                        else if (d === 2) { nk = k - width; if (nk < 0) continue; }
+                        else { nk = k + width; if (nk >= total) continue; }
+                        if (stamp[nk] === stampId) continue;
+                        const ci = indices[nk];
+                        if (ci === c || (ci >= 0 && above[ci] === 1)) {
+                            stamp[nk] = stampId;
+                            queue[tail++] = nk;
+                        }
+                    }
+                }
+            }
+            return regions;
+        };
+    }
+
+    // Pixel visits allowed for the draw order search (about a second); larger
+    // images with many colors fall back to the island-count order
+    const ORDER_SEARCH_BUDGET = 1.2e8;
+
+    // Picks the draw order top-down: the last color is the one that forms the fewest regions
+    // on its own, the one before it the fewest regions together with it, and so on.
+    // A color's packet count is roughly its region count, so this greedily minimizes packets.
+    function chooseDrawOrder(processed, order) {
+        const { indices, colors, width } = processed;
+        const n = order.length;
+        if (n * n / 2 * indices.length > ORDER_SEARCH_BUDGET) return null;
+
+        const pixelCounts = new Int32Array(colors.length);
+        for (let i = 0; i < indices.length; i++) {
+            if (indices[i] >= 0) pixelCounts[indices[i]]++;
+        }
+
+        const countRegions = makeRegionCounter(indices, width);
+        const above = new Uint8Array(colors.length);
+        const remaining = order.slice();
+        const topDown = [];
+        while (remaining.length > 0) {
+            let bestI = 0;
+            let bestCost = Infinity;
+            if (remaining.length > 1) {
+                for (let i = 0; i < remaining.length; i++) {
+                    const c = remaining[i];
+                    const cost = countRegions(c, above);
+                    // On a tie the larger color goes later: it gives the colors before it more area to bridge through
+                    if (cost < bestCost || (cost === bestCost && pixelCounts[c] > pixelCounts[remaining[bestI]])) {
+                        bestCost = cost;
+                        bestI = i;
+                    }
+                }
+            }
+            const chosen = remaining.splice(bestI, 1)[0];
+            topDown.push(chosen);
+            above[chosen] = 1;
+        }
+        // Greedy only: refining the order with a local search cost 0.5 s and saved at most one
+        // packet, since Smart Bridges only handle the colors Invisible bridges leave in pieces
+        return topDown.reverse();
+    }
+
+    // Pixel visits for one evaluation of a full draw order (colors × grid cells). Above it the order
+    // is searched on a coarser copy of the grid and then applied at full resolution: the order is a
+    // property of the picture as a whole, and this keeps the greedy search fast at 1x. Smaller
+    // grids are searched as is, where full detail gives a better order.
+    const ORDER_SEARCH_WORK = 2e6;
+    function downsampleForOrderSearch(processed, colorCount) {
+        const { indices, colors, width, height } = processed;
+        const factor = Math.ceil(Math.sqrt(colorCount * indices.length / ORDER_SEARCH_WORK));
+        if (factor <= 1) return processed;
+        const w = Math.ceil(width / factor);
+        const h = Math.ceil(height / factor);
+        const sampled = new Int32Array(w * h);
+        for (let y = 0; y < h; y++) {
+            for (let x = 0; x < w; x++) {
+                sampled[y * w + x] = indices[(y * factor) * width + x * factor];
+            }
+        }
+        // Colors missing from the sample form no regions there, so the search puts them on top
+        return { indices: sampled, colors, width: w, height: h };
+    }
+
+    // Preview and drawing build the same plan; the order search is the slow part, so keep it
+    const drawOrderCache = new WeakMap();
+
+    function getDrawOrder(processed, order, bgIdx) {
+        let byBackground = drawOrderCache.get(processed);
+        if (!byBackground) {
+            byBackground = new Map();
+            drawOrderCache.set(processed, byBackground);
+        }
+        let drawOrder = byBackground.get(bgIdx);
+        if (!drawOrder) {
+            const t0 = performance.now();
+            drawOrder = chooseDrawOrder(downsampleForOrderSearch(processed, order.length), order) || sortByIslands(processed, order);
+            debugLog(`[DrawBot] Draw order for ${order.length} colors in ${(performance.now() - t0).toFixed(1)}ms`);
+            byBackground.set(bgIdx, drawOrder);
+        }
+        return drawOrder;
+    }
+
+    // Bounding box of every color, in one pass over the grid
+    function colorBoxes(indices, width, colorCount) {
+        const boxes = Array.from({ length: colorCount }, () => ({ minX: Infinity, minY: Infinity, maxX: -1, maxY: -1 }));
+        for (let i = 0; i < indices.length; i++) {
+            const c = indices[i];
+            if (c < 0) continue;
+            const x = i % width;
+            const y = (i - x) / width;
+            const box = boxes[c];
+            if (x < box.minX) box.minX = x;
+            if (x > box.maxX) box.maxX = x;
+            if (y < box.minY) box.minY = y;
+            if (y > box.maxY) box.maxY = y;
+        }
+        return boxes;
+    }
+
+    // Fill steps (one per color, with its packets) in draw order.
+    // Every color is first linked on its own: Invisible bridges usually make it a single tree, and
+    // then neither Smart Bridges nor the draw order matter. Only colors still left in pieces get
+    // Smart Bridges: they join all islands of the color with paths over pixels of colors drawn
+    // later, which needs the searched draw order. (Joining only the leftover pieces to the main
+    // tree is faster but left ~30% more packets at 1x.) At 2x and coarser Invisible bridges link
+    // everything, so neither runs there and planning takes a fraction of the time.
+    function buildFillSteps(processed, order, bgIdx, opts) {
+        const { indices, colors, width, height } = processed;
+        const { batchSize, useBridge, invisibleBridges, canvas } = opts;
+        const generate = (c, mask) => generateFillBatchesFromGrid(mask, width, height, colors[c], 1,
+            processed.cellX, processed.cellY, canvas, batchSize, invisibleBridges);
+
+        const results = new Map();
+        const inPieces = [];
+        for (const c of order) {
+            const result = generate(c, buildColorMask(indices, c));
+            results.set(c, result);
+            if (useBridge && result.trees > 1) inPieces.push(c);
+        }
+
+        let drawOrder = order;
+        if (inPieces.length > 0) {
+            drawOrder = getDrawOrder(processed, order, bgIdx);
+            const colorToOrder = new Int32Array(colors.length).fill(-1);
+            drawOrder.forEach((c, i) => { colorToOrder[c] = i; });
+            const colorIndexGrid = new Int32Array(indices.length);
+            for (let i = 0; i < indices.length; i++) {
+                colorIndexGrid[i] = indices[i] >= 0 ? colorToOrder[indices[i]] : -1;
+            }
+            const boxes = colorBoxes(indices, width, colors.length);
+            for (const c of inPieces) {
+                const mask = buildColorMask(indices, c);
+                applyBridging(mask, colorIndexGrid, width, height, colorToOrder[c], boxes[c]);
+                const bridged = generate(c, mask);
+                // Bridges usually save packets; keep the plain version when they do not
+                if (bridged.frames.length <= results.get(c).frames.length) results.set(c, bridged);
+            }
+        }
+
+        return drawOrder
+            .map(c => ({ hex: colors[c], frames: results.get(c).frames }))
+            .filter(s => s.frames.length > 0);
+    }
+
+    // Progress units of one line-mode command: a path is a start packet plus a move packet
+    function lineCommandWeight(cmd) {
+        return cmd.kind === 'path' && cmd.points.length > 1 ? 2 : 1;
+    }
+
+    // Everything the bot will send, computed once. The preview uses it for its numbers,
+    // the drawing loop sends it as is. In fill mode the frames already carry their stroke IDs.
+    function buildDrawPlan(processed, opts) {
+        const { indices, colors, width, height } = processed;
+        const { fillBg, drawMode } = opts;
+        let strokeId = opts.startStrokeId;
+
+        const bgIdx = fillBg ? findBackgroundColorIdx(indices, colors.length) : -1;
+        let background = null;
+        if (bgIdx >= 0) {
+            // Sent twice, the first fill packet is sometimes dropped by the game
+            background = { hex: colors[bgIdx], strokeIds: [strokeId++, strokeId++] };
+        }
+
+        const order = [];
+        for (let c = 0; c < colors.length; c++) {
+            if (c !== bgIdx) order.push(c);
+        }
+
+        const steps = [];
+        let rectCount = 0;
+        let pathCount = 0;
+        let packetCount = 0;
+        let totalCommands = background ? background.strokeIds.length : 0;
+
+        if (isFillMode(drawMode)) {
+            // Packets are built before the draw order is known, so stroke IDs are assigned here
+            for (const fillStep of buildFillSteps(processed, order, bgIdx, opts)) {
+                const frames = fillStep.frames.map(f => {
+                    const id = strokeId++;
+                    const res = buildFillBatchFrame(id, fillStep.hex, f.rects);
+                    return Object.assign({}, f, { frame: res ? res.frame : null, strokeId: id });
+                });
+                steps.push({ hex: fillStep.hex, frames });
+                packetCount += frames.length;
+                rectCount += frames.reduce((acc, f) => acc + f.rectCount, 0);
+            }
+            totalCommands += packetCount;
+        } else {
+            for (const c of order) {
+                const commands = buildLineCommands(buildColorMask(indices, c), width, height, processed.cellX, processed.cellY);
+                if (commands.length === 0) continue;
+                steps.push({ hex: colors[c], commands });
+                for (const cmd of commands) {
+                    if (cmd.kind === 'rect') rectCount++;
+                    else pathCount++;
+                    totalCommands += lineCommandWeight(cmd);
+                }
+            }
+        }
+
+        // Lines mode assigns stroke IDs while sending, starting here
+        return { background, steps, rectCount, pathCount, packetCount, totalCommands, nextStrokeId: strokeId };
+    }
+
+    // --- Draw options from the panel ---
+    // Both sizes were accepted in a live game (12 000 rects ≈ 210 KB, 24 000 ≈ 440 KB)
+    const BATCH_SIZE_DEFAULT = 12000;
+    const BATCH_SIZE_MAX = 24000;
+    const PREVIEW_DEBOUNCE_MS = 300;
+    // Faster sending gets packets dropped by the game server
+    const FILL_PPS_MAX = 8;
+
+    function readDrawOptions() {
+        const el = id => document.getElementById(id);
+        const readInt = (id, fallback, min, max) => {
+            const v = parseInt(el(id) ? el(id).value : '', 10);
+            return isNaN(v) ? fallback : clampInt(v, min, max);
+        };
+        const drawMode = el('db-draw-mode') ? el('db-draw-mode').value : 'fill';
+        return {
+            step: readInt('db-scale', 2, 1, 15),
+            colorsMode: el('db-colors-mode') ? el('db-colors-mode').value : '32',
+            denoiseLevel: readInt('db-denoise-level', 0, 0, 3),
+            fillBg: el('db-fill-bg') ? el('db-fill-bg').checked : false,
+            drawMode,
+            batchSize: readInt('db-batch-size', BATCH_SIZE_DEFAULT, 1, BATCH_SIZE_MAX),
+            useBridge: el('db-use-bridge') ? el('db-use-bridge').checked : false,
+            packetDelay: readInt('db-delay', 127, 0, 1000),
+            fillPPS: readInt('db-fill-pps', FILL_PPS_MAX, 1, FILL_PPS_MAX),
+            // "Fast Fill" links each color's islands with invisible bridges; "Fast Fill (old)" sends
+            // every island as its own packet, as before them (a fallback if the game ever rejects them)
+            invisibleBridges: drawMode === 'fill'
+        };
+    }
+
+    function isFillMode(drawMode) {
+        return drawMode === 'fill' || drawMode === 'fill_old';
+    }
+
+    // Minimum gap between fill packets: the base interval plus a 10 ms safety margin
+    // (8 packets/s gives 135 ms between packets)
+    const FILL_INTERVAL_MARGIN_MS = 10;
+    function fillIntervalFor(pps) {
+        return Math.max(125, Math.ceil(1000 / pps)) + FILL_INTERVAL_MARGIN_MS;
+    }
+
+    // The preview's plan, reused by Start when nothing that shapes it has changed. Building it is
+    // the slow part (up to ~2 s at 1x); its frames only need fresh stroke IDs and the current round.
+    let cachedPlan = null;
+
+    function planKey(opts) {
+        return [opts.step, opts.colorsMode, opts.denoiseLevel, opts.fillBg, opts.drawMode,
+            opts.batchSize, opts.useBridge, opts.invisibleBridges].join('|');
+    }
+
+    function planFor(processed, opts, canvas, startStrokeId) {
+        const key = planKey(opts);
+        const reusable = cachedPlan && cachedPlan.processed === processed && cachedPlan.key === key &&
+            cachedPlan.width === canvas.width && cachedPlan.height === canvas.height;
+        if (!reusable) {
+            const plan = buildDrawPlan(processed, Object.assign({}, opts, { canvas, startStrokeId }));
+            cachedPlan = { processed, key, width: canvas.width, height: canvas.height, plan };
+            return plan;
+        }
+        return restampPlan(cachedPlan.plan, startStrokeId);
+    }
+
+    // Same plan with stroke IDs renumbered from startStrokeId, in the order buildDrawPlan assigns
+    // them, and fill frames re-serialized so they also carry the current round and socket prefix
+    function restampPlan(plan, startStrokeId) {
+        let strokeId = startStrokeId;
+        const background = plan.background
+            ? { hex: plan.background.hex, strokeIds: plan.background.strokeIds.map(() => strokeId++) }
+            : null;
+        const steps = plan.steps.map(step => {
+            if (!step.frames) return step;
+            const frames = step.frames.map(f => {
+                const id = strokeId++;
+                const res = buildFillBatchFrame(id, step.hex, f.rects);
+                return Object.assign({}, f, { frame: res ? res.frame : null, strokeId: id });
+            });
+            return Object.assign({}, step, { frames });
+        });
+        return Object.assign({}, plan, { background, steps, nextStrokeId: strokeId });
+    }
+
+    // Each call bumps the generation, so a slow older preview cannot overwrite a newer one
+    let previewGeneration = 0;
+    async function processAndPreviewImage(src) {
+        if (!src) return;
+        const generation = ++previewGeneration;
+        const infoEl = document.getElementById('db-preview-info');
+        infoEl.textContent = 'Processing...';
+
+        try {
+            const img = await loadImage(src);
+            if (generation !== previewGeneration) return;
+            draftImg = img;
+            const opts = readDrawOptions();
+
+            const planCanvas = planningCanvas();
+            const processed = processImageCached(img, src, gridFor(opts.step, planCanvas, opts.invisibleBridges), opts.colorsMode, opts.denoiseLevel);
+            const plan = planFor(processed, opts, planCanvas, 1);
+
+            // Render Preview Canvas
+            const pCanvas = document.getElementById('db-preview-canvas');
+            pCanvas.width = processed.width;
+            pCanvas.height = processed.height;
+            const pCtx = pCanvas.getContext('2d');
+            const pImgData = pCtx.createImageData(processed.width, processed.height);
+            const pData = pImgData.data;
+            const rgbColors = processed.colors.map(hexToRgb);
+
+            for (let i = 0; i < processed.indices.length; i++) {
+                const c = processed.indices[i];
+                if (c === -1) continue; // createImageData starts fully transparent
+                const rgb = rgbColors[c];
+                const idx = i * 4;
+                pData[idx] = rgb.r;
+                pData[idx + 1] = rgb.g;
+                pData[idx + 2] = rgb.b;
+                pData[idx + 3] = 255;
+            }
+            pCtx.putImageData(pImgData, 0, 0);
+            document.getElementById('db-preview-container').style.display = 'flex';
+
+            if (isFillMode(opts.drawMode)) {
+                const fillInterval = fillIntervalFor(opts.fillPPS);
+                const estSec = Math.round((plan.packetCount * fillInterval) / 1000) + (plan.background ? 1 : 0);
+                infoEl.innerHTML = `Rects: <b>${plan.rectCount}</b> | Packets: <b>${plan.packetCount}</b><br>Speed: <b>${opts.fillPPS} pkt/s</b> (${fillInterval}ms) | ~<b>${estSec}s</b>`;
+            } else {
+                const estSec = Math.round((plan.totalCommands * opts.packetDelay) / 1000);
+                infoEl.innerHTML = `Rects: <b>${plan.rectCount}</b> | Lines: <b>${plan.pathCount}</b><br>Draw time: <b>~${estSec}s</b>`;
+            }
+            isApplied = true;
+        } catch (e) {
+            if (generation !== previewGeneration) return;
+            console.error('[DrawBot] Preview error:', e);
+            infoEl.textContent = 'Loading/preview error';
+            isApplied = false;
+        }
+    }
+
+    async function checkPause() {
+        while (isPaused && !cancelFlag) {
+            await sleep(100);
+        }
+    }
+
+    function setDrawingControls(drawing) {
+        const startBtn = document.getElementById('db-start');
+        if (startBtn) startBtn.style.display = drawing ? 'none' : 'block';
+        const pauseBtn = document.getElementById('db-pause');
+        if (pauseBtn) {
+            pauseBtn.style.display = drawing ? 'block' : 'none';
+            pauseBtn.textContent = '⏸ Pause';
+            pauseBtn.style.background = '#d97706';
+        }
+        const cancelBtn = document.getElementById('db-cancel');
+        if (cancelBtn) cancelBtn.style.display = drawing ? 'block' : 'none';
+        const progressWrapper = document.getElementById('db-progress-wrapper');
+        if (progressWrapper) progressWrapper.style.display = drawing ? 'block' : 'none';
+    }
+
+    function resetDrawUI() {
+        isDrawing = false;
+        try {
+            setDrawingControls(false);
+        } catch (e) {
+            console.error('[DrawBot] Error during UI reset:', e);
+        }
+    }
+
+    function updateStatus(msg, color = '#9ca3af') {
+        const el = document.getElementById('db-status');
+        if (el) {
+            el.textContent = msg;
+            el.style.color = color;
+        }
+    }
+
+    function setProgress(pct, timeText) {
+        const bar = document.getElementById('db-progress-bar');
+        if (bar) bar.style.width = `${pct}%`;
+        const percent = document.getElementById('db-progress-percent');
+        if (percent) percent.textContent = `${pct}%`;
+        const time = document.getElementById('db-progress-time');
+        if (time) time.textContent = timeText;
+    }
+
+    // Local echo of what was sent, so the user sees the drawing appear
+    function renderLocally(canvas, draw) {
+        try {
+            draw(canvas.getContext('2d'));
+        } catch (e) {
+            console.error('[DrawBot] Error rendering on canvas:', e);
+        }
+    }
+
+    function strokeLocally(ctx, hex, thickness, points) {
+        ctx.strokeStyle = hex;
+        ctx.lineWidth = thickness;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < points.length; i++) {
+            ctx.lineTo(points[i].x, points[i].y);
+        }
+        ctx.stroke();
+    }
+
+    // --- Drawing Loop ---
+    async function runDraw() {
+        if (!wsInstance) {
+            alert('WebSocket not found! Try making one manual brush stroke on the canvas to initialize the socket.');
+            return;
+        }
+        if (isDrawing) return;
+
+        const canvas = getGameCanvas();
+        if (!canvas) {
+            alert('Enter the Gartic Phone drawing mode first!');
+            return;
+        }
+
+        const drawTurnId = CFG.currentTurnId;
+        let strokeId = strokeIdCounter;
+
+        try {
+            const opts = readDrawOptions();
+            CFG.packetDelay = opts.packetDelay;
+            const fillInterval = fillIntervalFor(opts.fillPPS);
+            const thickness = opts.step * 4 - 2;
+
+            isDrawing = true;
+            cancelFlag = false;
+            isPaused = false;
+            const drawStartTime = performance.now();
+
+            setDrawingControls(true);
+            setProgress(0, 'Remaining: ~0s');
+
+            updateStatus('Loading image...', '#fbbf24');
+
+            let img;
+            try {
+                img = await loadImage(currentImageSrc);
+            } catch (e) {
+                updateStatus('❌ Loading error', '#ef4444');
+                return;
+            }
+
+            if (!isApplied) {
+                updateStatus('Applying & Rendering Preview...', '#fbbf24');
+                await processAndPreviewImage(currentImageSrc);
+                if (!isApplied) {
+                    updateStatus('❌ Preview render failed', '#ef4444');
+                    return;
+                }
+                // Small delay to let user see preview and est draw time before drawing begins
+                await sleep(1500);
+            }
+
+            updateStatus('Processing...', '#fbbf24');
+            const processed = processImageCached(img, currentImageSrc, gridFor(opts.step, canvas, opts.invisibleBridges), opts.colorsMode, opts.denoiseLevel);
+            const plan = planFor(processed, opts, canvas, strokeId);
+            strokeId = plan.nextStrokeId;
+
+            const totalCommands = plan.totalCommands || 1;
+            const currentDelay = isFillMode(opts.drawMode) ? fillInterval : CFG.packetDelay;
+            let commandsSent = 0;
+            let packetsSent = 0;
+            let packetsFailed = 0;
+            let abortReason = '';
+
+            function updateProgress() {
+                const pct = Math.min(100, Math.round((commandsSent / totalCommands) * 100));
+                const estLeft = Math.max(0, Math.round(((totalCommands - commandsSent) * currentDelay) / 1000));
+                setProgress(pct, `Remaining: ~${estLeft}s`);
+            }
+
+            // Counts the outcome of one send; stops the run once the socket is gone,
+            // since every further packet would fail too
+            function trackSend(sent) {
+                if (sent) {
+                    packetsSent++;
+                    return;
+                }
+                if (cancelFlag) return;
+                packetsFailed++;
+                if (isSocketClosed()) {
+                    abortReason = 'Connection to the game was lost';
+                    cancelFlag = true;
+                }
+            }
+
+            // 1. Fill Background
+            if (plan.background) {
+                const { hex, strokeIds } = plan.background;
+                updateStatus('Filling background...', hex);
+                for (const id of strokeIds) {
+                    await sleep(150);
+                    trackSend(await sendFillPacket(id, hex, canvas.width, canvas.height));
+                }
+                if (packetsSent > 0) {
+                    renderLocally(canvas, ctx => {
+                        ctx.fillStyle = hex;
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    });
+                }
+                commandsSent += strokeIds.length;
+                updateProgress();
+            }
+
+            // 2. Colors
+            let lastSendTime = -Infinity;
+            // Timer wake-ups come 10-15 ms late, which made sending ~10% slower than the estimate.
+            // The learned lateness is subtracted from the next sleep, and the last few ms are waited
+            // out exactly, so packets keep the interval on average and never go out early.
+            let timerLateness = 0;
+            for (let i = 0; i < plan.steps.length; i++) {
+                if (cancelFlag) break;
+                const { hex, frames, commands } = plan.steps[i];
+
+                const colorLabel = `Color ${i + 1}/${plan.steps.length} (${hex})`;
+                updateStatus(colorLabel, hex);
+
+                if (isFillMode(opts.drawMode)) {
+                    // --- Fast Fill Mode (Tool 8) ---
+                    const fillSendStart = performance.now();
+                    let fillSendCount = 0;
+                    for (const frameObj of frames) {
+                        await checkPause();
+                        if (cancelFlag) break;
+
+                        // Wait out the rest of the interval since the previous packet, then send
+                        const target = lastSendTime + fillInterval;
+                        const wait = target - performance.now() - timerLateness;
+                        if (wait > 0) {
+                            const wakeAt = performance.now() + wait;
+                            await sleep(wait);
+                            timerLateness = timerLateness * 0.7 + Math.max(0, performance.now() - wakeAt) * 0.3;
+                        }
+                        while (performance.now() < target) { /* a few ms at most */ }
+                        if (cancelFlag) break;
+                        const sent = await sendFillBatchPacket(frameObj.frame, frameObj.rectCount);
+                        lastSendTime = performance.now();
+                        trackSend(sent);
+
+                        if (sent) {
+                            renderLocally(canvas, ctx => {
+                                ctx.fillStyle = hex;
+                                for (const r of frameObj.rects) {
+                                    ctx.fillRect(r.x, r.y, r.w, r.h);
+                                }
+                            });
+                        }
+
+                        commandsSent++;
+                        fillSendCount++;
+
+                        // Show real-time send speed
+                        const elapsed = (performance.now() - fillSendStart) / 1000;
+                        const realPPS = elapsed > 0 ? (fillSendCount / elapsed).toFixed(1) : '—';
+                        updateStatus(`${colorLabel} — ${realPPS} pkt/s`, hex);
+                        updateProgress();
+                    }
+                } else {
+                    // --- Standard Mode (Lines and Squares) ---
+                    for (const cmd of commands) {
+                        await checkPause();
+                        if (cancelFlag) break;
+
+                        if (cmd.kind === 'rect') {
+                            const sent = await sendRectPacket(strokeId++, hex, thickness, cmd.x1, cmd.y1, cmd.x2, cmd.y2);
+                            trackSend(sent);
+                            if (sent) {
+                                renderLocally(canvas, ctx => strokeLocally(ctx, hex, thickness, [
+                                    { x: cmd.x1, y: cmd.y1 },
+                                    { x: cmd.x2, y: cmd.y2 }
+                                ]));
+                            }
+                        } else {
+                            const sent = await sendStrokePackets(strokeId++, hex, cmd.points, thickness);
+                            trackSend(sent);
+                            if (sent) {
+                                renderLocally(canvas, ctx => strokeLocally(ctx, hex, thickness, cmd.points));
+                            }
+                        }
+
+                        commandsSent += lineCommandWeight(cmd);
+                        updateProgress();
+                    }
+                }
+            }
+
+            const elapsedSec = ((performance.now() - drawStartTime) / 1000).toFixed(1);
+            const attempted = packetsSent + packetsFailed;
+            if (abortReason) {
+                updateStatus(`❌ ${abortReason} (${packetsSent} packets sent)`, '#ef4444');
+            } else if (cancelFlag) {
+                updateStatus(`⏹ Cancelled (${elapsedSec}s elapsed)`, '#ef4444');
+            } else if (attempted === 0) {
+                updateStatus('Nothing to draw: the image has no visible pixels.', '#fbbf24');
+            } else if (packetsSent === 0) {
+                updateStatus('❌ No packets could be sent. Check the connection and try again.', '#ef4444');
+            } else {
+                setProgress(100, `Done in ${elapsedSec}s!`);
+                if (packetsFailed > 0) {
+                    updateStatus(`⚠ Finished in ${elapsedSec}s, but ${packetsFailed} of ${attempted} packets failed to send. Some parts may be missing.`, '#fbbf24');
+                } else {
+                    updateStatus(`✅ Drawing completed in ${elapsedSec}s! (When you click "Done" the art will temporarily disappear, but it is fully saved and will be visible at the end)`, '#10b981');
+                }
+            }
+        } catch (err) {
+            console.error('[DrawBot] Critical error during drawing:', err);
+            updateStatus('❌ Error during drawing', '#ef4444');
+        } finally {
+            // If the round changed mid-run, applyTurnId() already started a fresh sequence
+            if (CFG.currentTurnId === drawTurnId) {
+                strokeIdCounter = Math.max(strokeIdCounter, strokeId);
+            }
+            resetDrawUI();
+        }
+    }
+
+    // --- UI Settings Persistence ---
+    function saveSettings() {
+        try {
+            const settings = {
+                scale: document.getElementById('db-scale')?.value || '2',
+                colorsMode: document.getElementById('db-colors-mode')?.value || '32',
+                drawMode: document.getElementById('db-draw-mode')?.value || 'fill',
+                batchSize: document.getElementById('db-batch-size')?.value || String(BATCH_SIZE_DEFAULT),
+                delay: document.getElementById('db-delay')?.value || '127',
+                fillPPS: document.getElementById('db-fill-pps')?.value || '8',
+                denoise: document.getElementById('db-denoise-level')?.value || '0',
+                fillBg: document.getElementById('db-fill-bg')?.checked ?? false,
+                useBridge: document.getElementById('db-use-bridge')?.checked ?? true,
+                layoutMode: layoutMode,
+                customX: customX,
+                customY: customY,
+                customW: customW,
+                customH: customH
+            };
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+        } catch (e) {
+            console.warn('[DrawBot] Failed to save settings:', e);
+        }
+    }
+    function loadSettings() {
+        try {
+            const data = localStorage.getItem(SETTINGS_KEY);
+            if (!data) return null;
+            return JSON.parse(data);
+        } catch (e) {
+            console.warn('[DrawBot] Failed to load settings:', e);
+            return null;
+        }
+    }
+
+    // Applies a saved value only if the control can take it, so settings saved by older
+    // versions (missing keys, removed options, out-of-range numbers) keep the defaults
+    function applySavedValue(id, value) {
+        const el = document.getElementById(id);
+        if (!el || value === undefined || value === null) return;
+        if (el.type === 'checkbox') {
+            if (typeof value === 'boolean') el.checked = value;
+        } else if (el.tagName === 'SELECT') {
+            if (Array.from(el.options).some(o => o.value === String(value))) el.value = String(value);
+        } else if (el.type === 'number') {
+            const n = Number(value);
+            const min = el.min !== '' ? Number(el.min) : -Infinity;
+            const max = el.max !== '' ? Number(el.max) : Infinity;
+            if (Number.isFinite(n) && n >= min && n <= max) el.value = String(n);
+        }
+    }
+
+    // --- Build UI ---
+    function buildUI() {
+        // Remove duplicates before check
+        const existingPanels = document.querySelectorAll('#db-panel');
+        if (existingPanels.length > 0) {
+            for (let i = 1; i < existingPanels.length; i++) {
+                console.log('[DrawBot] Bot panel duplicate removed');
+                existingPanels[i].remove();
+            }
+            return;
+        }
+        if (document.getElementById('db-panel') || !document.head) return;
+
+        // Inject Styles
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+            #db-panel {
+                position: fixed; top: 20px; left: 20px; z-index: 2147483647;
+                width: 280px; background: rgba(15, 23, 42, 0.9);
+                backdrop-filter: blur(12px) saturate(180%);
+                -webkit-backdrop-filter: blur(12px) saturate(180%);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 16px; font-family: 'Outfit', 'Inter', sans-serif;
+                padding: 16px; color: #f1f5f9;
+                box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5), 0 10px 10px -5px rgba(0,0,0,0.4);
+                transition: box-shadow 0.3s, border-color 0.3s;
+                user-select: none;
+                cursor: move;
+            }
+            #db-panel.db-drop-active {
+                border-color: #a78bfa;
+                box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.6), 0 20px 25px -5px rgba(0,0,0,0.5);
+            }
+            #db-panel:hover {
+                border-color: rgba(255, 255, 255, 0.18);
+                box-shadow: 0 25px 30px -5px rgba(0,0,0,0.6), 0 15px 15px -5px rgba(0,0,0,0.5);
+            }
+            .pulse-dot {
+                display: inline-block; width: 8px; height: 8px;
+                background-color: #a78bfa; border-radius: 50%;
+                box-shadow: 0 0 0 0 rgba(167, 139, 250, 0.7);
+                animation: db-pulse 1.6s infinite cubic-bezier(0.66, 0, 0, 1);
+            }
+            @keyframes db-pulse {
+                to { box-shadow: 0 0 0 8px rgba(167, 139, 250, 0); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        const panel = document.createElement('div');
+        panel.id = 'db-panel';
+        panel.innerHTML = `
+            <div id="db-header" style="cursor: move; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 8px; margin-bottom: 12px;">
+                <div style="font-weight: 800; color: #a78bfa; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                    <span class="pulse-dot"></span>
+                    DrawBot 2.0
+                </div>
+                <button id="db-minimize-btn" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 12px; transition: color 0.2s;">➖</button>
+            </div>
+
+            <div id="db-content">
+                <div style="margin-bottom: 12px;">
+                    <div style="display: flex; gap: 6px; margin-bottom: 6px;">
+                        <input id="db-url" type="text" placeholder="Image URL, Ctrl+V or drop" style="flex: 1; padding: 8px; background: #1e293b; border: 1px solid #334155; color: white; border-radius: 8px; font-size: 12px; outline: none; transition: border-color 0.2s;">
+                        <button id="db-file-btn" style="background: #334155; border: 1px solid #475569; color: white; padding: 8px 12px; border-radius: 8px; font-size: 13px; cursor: pointer; transition: background 0.2s;">📁</button>
+                    </div>
+                    <input id="db-file" type="file" accept="image/*" style="display: none;">
+                </div>
+
+                <div id="db-preview-container" style="display: none; flex-direction: column; align-items: center; background: #0b0f19; border-radius: 10px; padding: 8px; margin-bottom: 12px; border: 1px solid #1e293b;">
+                    <canvas id="db-preview-canvas" style="width: 100%; max-height: 140px; border-radius: 6px; object-fit: contain; image-rendering: pixelated; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges;"></canvas>
+                    <div id="db-preview-info" style="font-size: 10px; color: #94a3b8; margin-top: 6px; text-align: center; line-height: 1.4;"></div>
+                </div>
+
+                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                    <div style="flex: 1; font-size: 11px;">
+                        <label style="display: block; margin-bottom: 4px; color: #94a3b8;">Scale:</label>
+                        <select id="db-scale" style="width: 100%; padding: 6px; background: #1e293b; color: white; border: 1px solid #334155; border-radius: 6px; font-size: 11px; outline: none; cursor: pointer;">
+                            <option value="1">1x (HD)</option>
+                            <option value="2" selected>2x (Detailed)</option>
+                            <option value="3">3x (Recommended)</option>
+                            <option value="4">4x (Sketch)</option>
+                            <option value="5">5x (Pixel Art)</option>
+                            <option value="6">6x (Large)</option>
+                            <option value="7">7x (Bold)</option>
+                            <option value="8">8x (Mosaic)</option>
+                            <option value="9">9x (Very Large)</option>
+                            <option value="10">10x (Max Speed)</option>
+                            <option value="11">11x</option>
+                            <option value="12">12x</option>
+                            <option value="13">13x</option>
+                            <option value="14">14x</option>
+                            <option value="15">15x</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1; font-size: 11px;">
+                        <label style="display: block; margin-bottom: 4px; color: #94a3b8;">Colors:</label>
+                        <select id="db-colors-mode" style="width: 100%; padding: 6px; background: #1e293b; color: white; border: 1px solid #334155; border-radius: 6px; font-size: 11px; outline: none; cursor: pointer;">
+                                <option value="gartic">Game palette (18)</option>
+                                <option value="8">True Color (8)</option>
+                            <option value="16">True Color (16)</option>
+                            <option value="24">True Color (24)</option>
+                            <option value="32" selected>True Color (32)</option>
+                            <option value="48">True Color (48)</option>
+                            <option value="64">True Color (64)</option>
+                            <option value="128">True Color (128)</option>
+                            <option value="256">True Color (256)</option>
+                            <option value="infinite">No limit</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                    <div style="flex: 1; font-size: 11px;">
+                        <label style="display: block; margin-bottom: 4px; color: #94a3b8;">Mode:</label>
+                        <select id="db-draw-mode" style="width: 100%; padding: 6px; background: #1e293b; color: white; border: 1px solid #334155; border-radius: 6px; font-size: 11px; outline: none; cursor: pointer;">
+                            <option value="fill" selected title="Links all spots of a color with invisible bridges: about one packet per color">Fast Fill</option>
+                            <option value="fill_old" title="Every separate spot is its own packet, as before invisible bridges. Slower; a fallback">Fast Fill (old)</option>
+                            <option value="lines">Standard Lines</option>
+                        </select>
+                    </div>
+                    <div id="db-batch-wrapper" style="flex: 1; font-size: 11px;">
+                        <label style="display: block; margin-bottom: 4px; color: #94a3b8;">Rects per packet:</label>
+                        <input type="number" id="db-batch-size" min="1" max="24000" value="12000" style="width: 100%; box-sizing: border-box; padding: 6px; background: #1e293b; color: white; border: 1px solid #334155; border-radius: 6px; font-size: 11px; outline: none; text-align: center; font-weight: 600;">
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                    <div style="flex: 1; font-size: 11px;">
+                        <label style="display: block; margin-bottom: 4px; color: #94a3b8;">Layout:</label>
+                        <select id="db-layout-mode" style="width: 100%; padding: 6px; background: #1e293b; color: white; border: 1px solid #334155; border-radius: 6px; font-size: 11px; outline: none; cursor: pointer;">
+                            <option value="stretch" selected>Stretch</option>
+                            <option value="center">Center</option>
+                            <option value="custom">Custom Scale</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1; font-size: 11px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <label for="db-turn-id" style="color: #94a3b8;">Round:</label>
+                            <label title="Detect the round from game traffic. Editing the number switches to manual." style="display: flex; align-items: center; gap: 4px; cursor: pointer; color: #94a3b8; font-size: 10px;">
+                                <input type="checkbox" id="db-turn-auto" checked style="accent-color: #a78bfa; margin: 0;"> Auto
+                            </label>
+                        </div>
+                        <input type="number" id="db-turn-id" min="1" step="1" value="1" title="Current round, counted from 1 as in the game" style="width: 100%; box-sizing: border-box; padding: 6px; background: #1e293b; color: white; border: 1px solid #334155; border-radius: 6px; font-size: 11px; outline: none; text-align: center; font-weight: 600;">
+                    </div>
+                </div>
+
+                <div id="db-custom-sliders" style="display: none; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 8px; margin-bottom: 10px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; font-size: 10px;">
+                        <span style="color: #94a3b8;">Width:</span>
+                        <input type="range" id="db-custom-w" min="10" max="768" value="384" style="width: 120px; accent-color: #a78bfa;">
+                        <span id="db-val-w" style="color: #a78bfa; font-weight: bold; width: 30px; text-align: right;">384</span>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; font-size: 10px;">
+                        <span style="color: #94a3b8;">Height:</span>
+                        <input type="range" id="db-custom-h" min="10" max="448" value="224" style="width: 120px; accent-color: #a78bfa;">
+                        <span id="db-val-h" style="color: #a78bfa; font-weight: bold; width: 30px; text-align: right;">224</span>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; font-size: 10px;">
+                        <span style="color: #94a3b8;">X Pos:</span>
+                        <input type="range" id="db-custom-x" min="0" max="768" value="0" style="width: 120px; accent-color: #a78bfa;">
+                        <span id="db-val-x" style="color: #a78bfa; font-weight: bold; width: 30px; text-align: right;">0</span>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 10px;">
+                        <span style="color: #94a3b8;">Y Pos:</span>
+                        <input type="range" id="db-custom-y" min="0" max="448" value="0" style="width: 120px; accent-color: #a78bfa;">
+                        <span id="db-val-y" style="color: #a78bfa; font-weight: bold; width: 30px; text-align: right;">0</span>
+                    </div>
+                    <button id="db-custom-apply" style="width: 100%; padding: 6px; background: #8b5cf6; border: none; color: white; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 11px; transition: background 0.2s;">Apply & Render Preview</button>
+                </div>
+
+                <div id="db-delay-wrapper" style="margin-bottom: 10px; font-size: 11px; display: flex; align-items: center; justify-content: space-between;">
+                    <span style="color: #94a3b8;">Packet delay (ms):</span>
+                    <input type="number" id="db-delay" min="0" max="1000" value="127" style="width: 70px; padding: 6px; background: #1e293b; color: white; border: 1px solid #334155; border-radius: 8px; font-size: 11px; outline: none; text-align: center; font-weight: 600;">
+                </div>
+
+                <div id="db-fill-pps-wrapper" style="margin-bottom: 10px; font-size: 11px; display: flex; align-items: center; justify-content: space-between; background: rgba(167, 139, 250, 0.06); border: 1px solid rgba(167, 139, 250, 0.15); border-radius: 8px; padding: 8px;">
+                    <span style="color: #c4b5fd; font-weight: 600;">⚡ Packets/s (fill, max 8):</span>
+                    <input type="number" id="db-fill-pps" min="1" max="8" value="8" style="width: 60px; padding: 6px; background: #1e293b; color: #c4b5fd; border: 1px solid #7c3aed; border-radius: 8px; font-size: 11px; outline: none; text-align: center; font-weight: 800;">
+                </div>
+
+                <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                    <div style="flex: 1; font-size: 11px;">
+                        <label style="display: block; margin-bottom: 4px; color: #94a3b8;">Denoise filter:</label>
+                        <select id="db-denoise-level" style="width: 100%; padding: 6px; background: #1e293b; color: white; border: 1px solid #334155; border-radius: 6px; font-size: 11px; outline: none; cursor: pointer;">
+                            <option value="0" selected>Off</option>
+                            <option value="1">Weak (1px)</option>
+                            <option value="2">Medium (2px)</option>
+                            <option value="3">Strong (3px)</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1; font-size: 11px; display: flex; flex-direction: column; justify-content: flex-end; gap: 6px; padding-bottom: 2px;">
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; color: #94a3b8;">
+                            <input type="checkbox" id="db-fill-bg" style="accent-color: #a78bfa;"> Fill background
+                        </label>
+                        <label id="db-bridge-wrapper" title="Joins islands of a color through areas painted over later and picks the best color order. Far fewer packets, same picture." style="display: flex; align-items: center; gap: 6px; cursor: pointer; color: #94a3b8;">
+                            <input type="checkbox" id="db-use-bridge" checked style="accent-color: #a78bfa;"> Smart Bridges
+                        </label>
+                    </div>
+                </div>
+
+                <div id="db-status-container" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 8px; margin-bottom: 12px; font-size: 11px; line-height: 1.4;">
+                    <div id="db-status" style="font-weight: 600; color: #94a3b8;">Waiting for image...</div>
+                    <div id="db-progress-wrapper" style="display: none; margin-top: 8px;">
+                        <div style="background: rgba(255,255,255,0.08); height: 6px; border-radius: 3px; overflow: hidden; margin-bottom: 4px; border: 1px solid rgba(255,255,255,0.05);">
+                            <div id="db-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #a78bfa, #818cf8); transition: width 0.1s;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 9px; color: #94a3b8; font-weight: 500;">
+                            <span id="db-progress-percent">0%</span>
+                            <span id="db-progress-time">Remaining: ~0s</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="db-log-container" style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px; padding: 8px; margin-bottom: 12px; font-size: 10px; line-height: 1.4; display: none; max-height: 80px; overflow-y: auto;">
+                    <div style="font-weight: bold; color: #ef4444; margin-bottom: 4px;">Error log:</div>
+                    <div id="db-log-content" style="color: #fca5a5; font-family: monospace; white-space: pre-wrap; font-size: 9px;"></div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <button id="db-start" style="width: 100%; padding: 10px; background: #4f46e5; border: none; color: white; font-weight: 600; border-radius: 8px; cursor: pointer; transition: background 0.2s, transform 0.1s; font-size: 12px; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);">▶ Start Drawing</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button id="db-pause" style="flex: 1; padding: 8px; background: #d97706; border: none; color: white; font-weight: 600; border-radius: 8px; cursor: pointer; transition: background 0.2s; font-size: 11px; display: none;">⏸ Pause</button>
+                        <button id="db-cancel" style="flex: 1; padding: 8px; background: #b91c1c; border: none; color: white; font-weight: 600; border-radius: 8px; cursor: pointer; transition: background 0.2s; font-size: 11px; display: none;">⏹ Cancel</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(panel);
+
+        // Load saved settings
+        const savedSetting = loadSettings();
+        if (savedSetting) {
+            applySavedValue('db-scale', savedSetting.scale);
+            applySavedValue('db-colors-mode', savedSetting.colorsMode);
+            applySavedValue('db-draw-mode', savedSetting.drawMode);
+            applySavedValue('db-batch-size', savedSetting.batchSize);
+            applySavedValue('db-delay', savedSetting.delay);
+            applySavedValue('db-fill-pps', savedSetting.fillPPS);
+            applySavedValue('db-denoise-level', savedSetting.denoise);
+            applySavedValue('db-fill-bg', savedSetting.fillBg);
+            applySavedValue('db-use-bridge', savedSetting.useBridge);
+            // The "Invisible bridges" checkbox became the "Fast Fill (old)" mode
+            if (savedSetting.drawMode === 'fill' && savedSetting.invisibleBridges === false) {
+                applySavedValue('db-draw-mode', 'fill_old');
+            }
+            if (['stretch', 'center', 'custom'].includes(savedSetting.layoutMode)) layoutMode = savedSetting.layoutMode;
+            if (Number.isFinite(savedSetting.customX)) customX = savedSetting.customX;
+            if (Number.isFinite(savedSetting.customY)) customY = savedSetting.customY;
+            if (Number.isFinite(savedSetting.customW)) customW = savedSetting.customW;
+            if (Number.isFinite(savedSetting.customH)) customH = savedSetting.customH;
+            clampCustomBounds();
+        }
+
+        if (document.getElementById('db-layout-mode')) {
+            document.getElementById('db-layout-mode').value = layoutMode;
+            if (layoutMode === 'custom') {
+                document.getElementById('db-custom-sliders').style.display = 'block';
+            }
+        }
+
+        // Make draggable
+        makeDraggable(panel, panel);
+
+        // Event Listeners
+        const minimizeBtn = document.getElementById('db-minimize-btn');
+        const contentDiv = document.getElementById('db-content');
+        let isMinimized = false;
+        minimizeBtn.addEventListener('click', () => {
+            isMinimized = !isMinimized;
+            if (isMinimized) {
+                contentDiv.style.display = 'none';
+                minimizeBtn.textContent = '➕';
+                panel.style.width = '180px';
+            } else {
+                contentDiv.style.display = 'block';
+                minimizeBtn.textContent = '➖';
+                panel.style.width = '280px';
+            }
+        });
+
+        const urlInput = document.getElementById('db-url');
+
+        // Debounced preview: rendering is heavy, so wait until the user stops typing or clicking
+        let previewTimer = null;
+        const schedulePreview = () => {
+            clearTimeout(previewTimer);
+            previewTimer = setTimeout(() => processAndPreviewImage(currentImageSrc), PREVIEW_DEBOUNCE_MS);
+        };
+
+        // Single entry point for every image source: file picker, URL, paste, drag & drop
+        const setImageSource = (src, label) => {
+            currentImageSrc = src;
+            isApplied = false;
+            if (label !== undefined) urlInput.value = label;
+            updateStatus('Loading image...', '#fbbf24');
+            loadImage(src).then(img => {
+                if (currentImageSrc !== src) return; // replaced by a newer image meanwhile
+                draftImg = img;
+                // Fit the custom box to the image proportions, centered
+                const imgRatio = img.width / img.height;
+                const canvasRatio = 768 / 448;
+                if (imgRatio > canvasRatio) {
+                    customW = 400;
+                    customH = Math.round(400 / imgRatio);
+                } else {
+                    customH = 250;
+                    customW = Math.round(250 * imgRatio);
+                }
+                customX = Math.round((768 - customW) / 2);
+                customY = Math.round((448 - customH) / 2);
+                clampCustomBounds();
+                updateSliders();
+
+                if (layoutMode === 'custom') {
+                    drawDraftPreview();
+                } else {
+                    processAndPreviewImage(src);
+                }
+                updateStatus('Image loaded. Click Start.', '#a78bfa');
+            }).catch(() => {
+                if (currentImageSrc !== src) return;
+                // warn, not error: half-typed URLs fail all the time and must not flood the log
+                console.warn('[DrawBot] Could not load image:', src.slice(0, 100));
+                updateStatus('❌ Could not load image. If it is a link, download it and use 📁 instead.', '#ef4444');
+            });
+        };
+
+        const loadImageFile = (file) => {
+            if (!file || !file.type.startsWith('image/')) {
+                updateStatus('❌ Not an image file', '#ef4444');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (event) => setImageSource(event.target.result, file.name);
+            reader.onerror = () => updateStatus('❌ Could not read the file', '#ef4444');
+            reader.readAsDataURL(file);
+        };
+
+        // File loading
+        const fileBtn = document.getElementById('db-file-btn');
+        const fileInput = document.getElementById('db-file');
+        fileBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => {
+            loadImageFile(e.target.files[0]);
+            fileInput.value = ''; // allow picking the same file again
+        });
+
+        // URL loading
+        let urlTimer = null;
+        urlInput.addEventListener('input', () => {
+            clearTimeout(urlTimer);
+            urlTimer = setTimeout(() => {
+                const val = urlInput.value.trim();
+                if (val && (val.startsWith('http') || val.startsWith('data:'))) {
+                    setImageSource(val);
+                }
+            }, PREVIEW_DEBOUNCE_MS);
+        });
+
+        // Paste an image (Ctrl+V) anywhere on the page
+        window.addEventListener('paste', (e) => {
+            const target = e.target;
+            const inGameTextField = target && target.closest && !target.closest('#db-panel') &&
+                (target.isContentEditable || /^(INPUT|TEXTAREA)$/.test(target.tagName));
+            if (inGameTextField) return; // leave pastes into the game's own fields alone
+            const items = e.clipboardData ? Array.from(e.clipboardData.items) : [];
+            const imageItem = items.find(item => item.kind === 'file' && item.type.startsWith('image/'));
+            if (!imageItem) return; // plain text goes to the focused field as usual
+            e.preventDefault();
+            loadImageFile(imageItem.getAsFile());
+        }, true);
+
+        // Drag & drop an image file, or an image dragged from another tab, onto the panel
+        panel.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            panel.classList.add('db-drop-active');
+        });
+        panel.addEventListener('dragleave', (e) => {
+            if (!panel.contains(e.relatedTarget)) panel.classList.remove('db-drop-active');
+        });
+        panel.addEventListener('drop', (e) => {
+            e.preventDefault();
+            panel.classList.remove('db-drop-active');
+            const dt = e.dataTransfer;
+            if (!dt) return;
+            const file = Array.from(dt.files || []).find(f => f.type.startsWith('image/'));
+            if (file) {
+                loadImageFile(file);
+                return;
+            }
+            const url = (dt.getData('text/uri-list') || dt.getData('text/plain') || '').split('\n')[0].trim();
+            if (url.startsWith('http') || url.startsWith('data:')) {
+                setImageSource(url, url);
+            } else {
+                updateStatus('❌ Drop an image file or an image link', '#ef4444');
+            }
+        });
+
+        // Preview updating triggers
+        const handleTriggerUpdate = () => {
+            saveSettings();
+            isApplied = false;
+            if (layoutMode === 'custom') {
+                drawDraftPreview();
+            } else {
+                schedulePreview();
+            }
+        };
+
+        ['db-scale', 'db-colors-mode', 'db-denoise-level', 'db-fill-bg', 'db-use-bridge', 'db-draw-mode'].forEach(id => {
+            document.getElementById(id).addEventListener('change', handleTriggerUpdate);
+        });
+        // Number fields: their values are read and clamped by readDrawOptions()
+        ['db-batch-size', 'db-delay', 'db-fill-pps'].forEach(id => {
+            document.getElementById(id).addEventListener('input', handleTriggerUpdate);
+        });
+
+        // Show/hide PPS and Delay depending on drawing mode
+        const drawModeSelect = document.getElementById('db-draw-mode');
+        const batchWrapper = document.getElementById('db-batch-wrapper');
+        const fillPPSWrapper = document.getElementById('db-fill-pps-wrapper');
+        const delayWrapper = document.getElementById('db-delay-wrapper');
+        const bridgeWrapper = document.getElementById('db-bridge-wrapper');
+        const updateFillPPSVisibility = () => {
+            const isFill = isFillMode(drawModeSelect.value);
+            if (fillPPSWrapper) fillPPSWrapper.style.display = isFill ? 'flex' : 'none';
+            if (delayWrapper) delayWrapper.style.display = isFill ? 'none' : 'flex';
+            if (bridgeWrapper) bridgeWrapper.style.display = isFill ? 'flex' : 'none';
+            if (batchWrapper) batchWrapper.style.display = isFill ? 'block' : 'none';
+        };
+        drawModeSelect.addEventListener('change', updateFillPPSVisibility);
+        updateFillPPSVisibility();
+
+        // Round (turn ID): auto-detected, can be overridden by hand
+        const turnInput = document.getElementById('db-turn-id');
+        const turnAutoCheckbox = document.getElementById('db-turn-auto');
+        if (turnInput && turnAutoCheckbox) {
+            turnInput.value = turnIdToRound(CFG.currentTurnId);
+            turnAutoCheckbox.checked = turnIdAuto;
+            turnInput.addEventListener('input', () => {
+                const round = parseInt(turnInput.value, 10);
+                if (isNaN(round) || round < 1) return;
+                // A hand-typed value must not be overwritten by the next captured packet
+                turnIdAuto = false;
+                turnAutoCheckbox.checked = false;
+                applyTurnId(roundToTurnId(round));
+                console.log('[DrawBot] Round set manually:', round, '(turnId', CFG.currentTurnId + ')');
+            });
+            turnAutoCheckbox.addEventListener('change', () => {
+                turnIdAuto = turnAutoCheckbox.checked;
+                console.log('[DrawBot] Round auto-detection:', turnIdAuto ? 'on' : 'off');
+            });
+        }
+
+        // Layout change handler
+        const layoutSelect = document.getElementById('db-layout-mode');
+        const customSliders = document.getElementById('db-custom-sliders');
+
+        if (layoutSelect) {
+            layoutSelect.addEventListener('change', () => {
+                layoutMode = layoutSelect.value;
+                saveSettings();
+                isApplied = false;
+                if (layoutMode === 'custom') {
+                    if (customSliders) customSliders.style.display = 'block';
+                    updateSliders();
+                    drawDraftPreview();
+                } else {
+                    if (customSliders) customSliders.style.display = 'none';
+                    processAndPreviewImage(currentImageSrc);
+                }
+            });
+        }
+
+        // Sliders input handlers
+        const wSlider = document.getElementById('db-custom-w');
+        const hSlider = document.getElementById('db-custom-h');
+        const xSlider = document.getElementById('db-custom-x');
+        const ySlider = document.getElementById('db-custom-y');
+
+        const onSliderInput = () => {
+            if (wSlider) customW = parseInt(wSlider.value, 10);
+            if (hSlider) customH = parseInt(hSlider.value, 10);
+            if (xSlider) customX = parseInt(xSlider.value, 10);
+            if (ySlider) customY = parseInt(ySlider.value, 10);
+
+            clampCustomBounds();
+            updateSliders();
+            drawDraftPreview();
+            isApplied = false;
+        };
+
+        [wSlider, hSlider, xSlider, ySlider].forEach(slider => {
+            if (slider) slider.addEventListener('input', onSliderInput);
+        });
+
+        const customApplyBtn = document.getElementById('db-custom-apply');
+        if (customApplyBtn) {
+            customApplyBtn.addEventListener('click', () => {
+                saveSettings();
+                processAndPreviewImage(currentImageSrc);
+            });
+        }
+
+        // Canvas dragging listener
+        const pCanvas = document.getElementById('db-preview-canvas');
+        if (pCanvas) {
+            pCanvas.addEventListener('mousedown', handleCanvasMouseDown);
+            pCanvas.addEventListener('mousemove', handleCanvasMouseMoveNoDrag);
+        }
+
+        // Drawing control triggers
+        document.getElementById('db-start').addEventListener('click', () => {
+            if (!currentImageSrc) {
+                alert('Please load an image first (file, URL, Ctrl+V or drag & drop)!');
+                return;
+            }
+            runDraw();
+        });
+
+        const pauseBtn = document.getElementById('db-pause');
+        pauseBtn.addEventListener('click', () => {
+            isPaused = !isPaused;
+            debugLog('[DrawBot] Pause toggled:', isPaused);
+            if (isPaused) {
+                pauseBtn.textContent = '▶ Resume';
+                pauseBtn.style.background = '#059669';
+                updateStatus('⏸ Pause', '#fbbf24');
+            } else {
+                pauseBtn.textContent = '⏸ Pause';
+                pauseBtn.style.background = '#d97706';
+                updateStatus('Drawing...', '#a78bfa');
+            }
+        });
+
+        document.getElementById('db-cancel').addEventListener('click', () => {
+            debugLog('[DrawBot] Cancel requested.');
+            cancelFlag = true;
+            isPaused = false;
+        });
+
+        // The game canvas appears only in the drawing round. When its size differs from what the
+        // preview planned for, redo the preview, so the estimate and the ready plan match what
+        // Start will send (otherwise Start rebuilds the plan, which takes up to ~2 s at 1x)
+        setInterval(() => {
+            const canvas = getGameCanvas();
+            if (!canvas || isDrawing || !currentImageSrc || layoutMode === 'custom') return;
+            if (cachedPlan && cachedPlan.width === canvas.width && cachedPlan.height === canvas.height) return;
+            rememberCanvasSize(canvas);
+            isApplied = false;
+            schedulePreview();
+        }, 1000);
+
+        // Hook initial websocket check
+        if (wsInstance) {
+            updateStatus('Socket ready. Select a file/URL and click Start.', '#10b981');
+        } else {
+            updateStatus('Waiting for game connection...', '#94a3b8');
+        }
+    }
+
+    function makeDraggable(el, header) {
+        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        header.onmousedown = dragMouseDown;
+
+        function dragMouseDown(e) {
+            e = e || window.event;
+            if (e.target.closest('button, input, select, canvas, label, a')) return;
+            e.preventDefault();
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            document.onmouseup = closeDragElement;
+            document.onmousemove = elementDrag;
+        }
+
+        function elementDrag(e) {
+            e = e || window.event;
+            e.preventDefault();
+            pos1 = pos3 - e.clientX;
+            pos2 = pos4 - e.clientY;
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            el.style.top = (el.offsetTop - pos2) + "px";
+            el.style.left = (el.offsetLeft - pos1) + "px";
+        }
+
+        function closeDragElement() {
+            document.onmouseup = null;
+            document.onmousemove = null;
+        }
+    }
+
+    // Initialize UI
+    function init() {
+        buildUI();
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();

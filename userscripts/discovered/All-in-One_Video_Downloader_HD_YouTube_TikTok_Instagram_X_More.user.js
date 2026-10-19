@@ -71,11 +71,12 @@
 // @description:zh-CN 一款多合一、快速且免费的在线视频下载器。支持从 YouTube、TikTok、抖音、Instagram、Facebook、Threads、TED、小红书、X（Twitter）等平台下载视频。享受无水印、高质量、流畅便捷的下载体验
 // @description:zh-TW 一款多合一、快速且免費的線上視頻下載器。支援從 YouTube、TikTok、抖音、Instagram、Facebook、Threads、TED、小紅書、X（Twitter）等平台下載視頻。享受無水印、高質量、流暢便捷的下載體驗
 // @namespace   AllInOneDownloader_Daniel
-// @version     1.0.15
+// @version     1.0.18
 // @author      Daniel
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADQAAAAwCAYAAABe6Vn9AAACZElEQVR4AeyZbVKDMBCGgYuJ/9WT2CNoqx6hnkT9T72YuA+WDg0M2SSblnFwWCfNfuR9EhqatiqM/+72bX3/3jZirccaYo2HL8yByrLYishazHfVx1hfXJDfHEhG18BIWHeFxHYJvn85gHxjZvWvQFmn16D4ukIGk5i1xLpCWafXoPi6QgaTmLXEukJZp9eg+LpCBpOYtYR6hTi7yPnGe84JVSs1feemlrG1ddVAx7OL+cd9jdDj2JpQ+wOeatTwIPVEqleobYuXcB3zGVqvjH2rjVUDfW3KQ3kFKGAY2xyIgh+bcndJqFAYNKpXiGDsUlAxMOgLBiIpN1QsDNqigEjMBZUCg65oIJKtoVJh0JQERAErKAsY9CQDUSQVygoGLSZAFIqFsoRBhxkQxUKheKaFPDQZw2emQAymhQKGWHIszRwIcQhFMO0pw0fMlC+1rwN62Lc7zblkLsY9syAY4a5A+vAN+8mdq63xwUDNikb795sOr6NNziyjH7AQDgAmhQ9sAPRJ+3QBQ+6pI7IBg4A/VzQia4zSEIbAoQMA7POxvHU3AGLJGcYntp+6Wy6xyFk6AhF61jnxghhiJ1xJXeZAqEEotzLtKcsFw1hZgCjMrQwUBkBvcp83ABOTw7IBIRYoDIDepF/9/YDEBl9qoODKV0pYIlC3vcuuWMqcHMTca9a/OCB5Zn3327s8t0bfNPn8iwP6KYrTqoi40ftt6C8m/iRnoveKXbJ5bPudUTaUG1fK0E/b9S8OSATWArIVsQ1tMfea9S8RyAUIel3Jm2z0xguqsKzgt4oPjv8BCgbZ6l9/AQAA//9HnEu0AAAABklEQVQDAI1HmgBXKvxdAAAAAElFTkSuQmCC
 // @include     https://www.ted.com/*
-// @include     https://*.youtube.com/*
+// @include     https://www.youtube.com/*
+// @include     https://music.youtube.com/*
 // @include     https://x.com/*
 // @include     https://twitter.com/*
 // @include     https://www.threads.com/*
@@ -107,6 +108,12 @@
 // @include     https://*.sc-cdn.net/*
 // @include     https://*.pinimg.com/*
 // @include     https://open.spotify.com/*
+// @include     https://*.ted.com/*
+// @include     https://*.tedcdn.com/*
+// @include     https://*.dmcdn.net/*
+// @include     https://*.tumblr.com/*
+// @include     https://*.rutube.ru/*
+// @include     https://*.uma.media/*
 // @connect     googlevideo.com
 // @connect     tiktokcdn.com
 // @connect     snssdk.com
@@ -128,6 +135,11 @@
 // @connect     licdn.com
 // @connect     sc-cdn.net
 // @connect     pinimg.com
+// @connect     tedcdn.com
+// @connect     dmcdn.net
+// @connect     tumblr.com
+// @connect     rutube.ru
+// @connect     uma.media
 // @noframes
 // @license     MIT
 // @run-at      document-start
@@ -246,8 +258,9 @@
 	    }
 	    return `${(size / kb).toFixed(decimals)} KB`;
 	  },
-	  downloaderEvent: function(url) {
-	    const durl = "https://www.tool77.com/" + CommonUtils.getSupportedLang() + "/v/downloader?url=" + encodeURIComponent(url);
+	  downloaderEvent: function(url = window.location.href) {
+	    const { version, namespace } = GM_info.script;
+	    const durl = "https://www.tool77.com/" + CommonUtils.getSupportedLang() + "/v/downloader?v=" + encodeURIComponent(version) + "&namespace=" + encodeURIComponent(namespace) + "&url=" + encodeURIComponent(url);
 	    CommonUtils.openInTab(durl);
 	  },
 	  findParentByClassContains: function(el, classPart, maxLevel = 5) {
@@ -695,10 +708,6 @@
 	};
 
 	const YouTubeDownloader = {
-	  downloadVideo: function() {
-	    const url = "https://www.tool77.com/" + CommonUtils.getSupportedLang() + "/v/downloader?url=" + encodeURIComponent(window.location.href);
-	    CommonUtils.openInTab(url);
-	  },
 	  genrate: function() {
 	    return new Promise((resolve) => {
 	      const buttonId = "all-in-one-downloader";
@@ -714,7 +723,7 @@
 	      boxInner.appendChild(boxActiveButton);
 	      boxActiveButton.appendChild(CommonUtils.genrateDownloadSvg("#FFF"));
 	      boxContainer.addEventListener("click", () => {
-	        this.downloadVideo();
+	        CommonUtils.downloaderEvent(window.location.href);
 	      });
 	      const genrateHtml = () => {
 	        const player = document.querySelector("#player-container-outer .html5-video-player");
@@ -757,7 +766,7 @@
 	    this.genrateShorts();
 	  },
 	  start: function() {
-	    const isRun = /youtube\.com/.test(window.location.host);
+	    const isRun = /www.youtube\.com/.test(window.location.host);
 	    if (isRun) {
 	      this.run();
 	    }
@@ -772,7 +781,7 @@
 	    return match ? match[1] : null;
 	  },
 	  getPlayUrl: function(target) {
-	    const container = CommonUtils.findParentByClassContains(target, "xgplayer-container", 5);
+	    const container = target?.closest?.('[class*="xgplayer-container"]') || CommonUtils.findParentByClassContains(target, "xgplayer-container", 8);
 	    if (container && container.getAttribute("id")) {
 	      const playId = this.extractLastDashNumber(container.getAttribute("id"));
 	      if (playId) {
@@ -783,6 +792,8 @@
 	  },
 	  run: function() {
 	    const downloadHud = DownloadHud.mountVideoHoverDownload({
+	      targetSelector: '[class*="xgplayer-container"]',
+	      extraTargetSelector: "video",
 	      getDownloadUrl: (target) => this.getPlayUrl(target)
 	    });
 	    const updateButtonPosition = () => {
@@ -813,10 +824,6 @@
 	};
 
 	const ThreadsDownloader = {
-	  downloadVideo: function(url) {
-	    const openUrl = "https://www.tool77.com/" + CommonUtils.getSupportedLang() + "/v/downloader?url=" + encodeURIComponent(url);
-	    CommonUtils.openInTab(openUrl);
-	  },
 	  run: function() {
 	    setInterval(() => {
 	      document.querySelectorAll("*[data-pressable-container='true']:not([detectvs='true'])").forEach((element) => {
@@ -850,9 +857,9 @@
 	            }
 	          }
 	          if (!!link) {
-	            this.downloadVideo(link);
+	            CommonUtils.downloaderEvent(link);
 	          } else {
-	            this.downloadVideo(window.location.href);
+	            CommonUtils.downloaderEvent(window.location.href);
 	          }
 	        });
 	      });
@@ -871,10 +878,6 @@
 	  showSensitive: true,
 	  isTweetdeck: () => window.location.host.includes("tweetdeck"),
 	  extractStatusId: (url) => url ? (url.match(/\/status\/(\d+)/) || [null, null])[1] : null,
-	  downloadVideo: function(statusIds) {
-	    const url = "https://www.tool77.com/" + CommonUtils.getSupportedLang() + "/v/downloader?url=https%3A%2F%2Fx.com/_/status/" + statusIds;
-	    CommonUtils.openInTab(url);
-	  },
 	  addButtonTo: function(article) {
 	    if (article.dataset.detected)
 	      return;
@@ -913,7 +916,7 @@
 	        }
 	        btnGroup.insertBefore(btnDownload, btnShare.nextSibling);
 	        btnDownload.onclick = () => {
-	          this.downloadVideo(statusIds);
+	          CommonUtils.downloaderEvent("https://x.com/_/status/" + statusIds);
 	        };
 	        if (this.showSensitive) {
 	          article.querySelector('div[aria-labelledby] div[role="button"][tabindex="0"]:not([data-testid]) > div[dir] > span > span')?.click();
@@ -937,7 +940,7 @@
 	      li.style.position = li.style.position || "relative";
 	      li.appendChild(btnDownload);
 	      btnDownload.onclick = () => {
-	        this.downloadVideo(statusId);
+	        CommonUtils.downloaderEvent("https://x.com/_/status/" + statusId);
 	      };
 	    });
 	  },
@@ -1022,9 +1025,6 @@
 	};
 
 	const DouyinDownloader = {
-	  downloadVideo: function() {
-	    CommonUtils.openInTab("https://www.tool77.com/zh-CN/v/downloader?url=" + encodeURIComponent(window.location.href));
-	  },
 	  genrate: function() {
 	    const controllers = document.querySelectorAll(".xg-inner-controls:not([downloaderx='true'])");
 	    if (controllers.length === 0)
@@ -1043,7 +1043,7 @@
 	          donwload.appendChild(CommonUtils.genrateDownloadSvg("#FFF", 20, 20));
 	          rightGrid.before(donwload);
 	          donwload.addEventListener("click", () => {
-	            this.downloadVideo();
+	            CommonUtils.downloaderEvent(window.location.href);
 	          });
 	        }
 	      }
@@ -1060,9 +1060,6 @@
 	};
 
 	const XiaoHongShuDownloader = {
-	  downloadVideo: function() {
-	    CommonUtils.openInTab("https://www.tool77.com/zh-CN/v/downloader?url=" + encodeURIComponent(window.location.href));
-	  },
 	  genrate: function() {
 	    if (!/www\.xiaohongshu\.com\/explore\//.test(window.location.href)) {
 	      return;
@@ -1126,7 +1123,7 @@
 	    downloadElement.style.cursor = "pointer";
 	    mediaContainer.appendChild(downloadElement);
 	    downloadElement.addEventListener("click", () => {
-	      this.downloadVideo();
+	      CommonUtils.downloaderEvent(window.location.href);
 	    });
 	  },
 	  start: function() {
@@ -1164,7 +1161,12 @@
 	      /ted\.com/,
 	      /licdn\.com/,
 	      /sc-cdn\.net/,
-	      /pinimg\.com/
+	      /pinimg\.com/,
+	      /tedcdn\.com/,
+	      /dmcdn\.net/,
+	      /tumblr\.com/,
+	      /rutube\.ru/,
+	      /uma\.media/
 	    ];
 	    const currentHost = window.location.host;
 	    return hosts.some((rule) => rule.test(currentHost)) && document.contentType !== "text/html";
@@ -1796,8 +1798,7 @@
 	    downloadElement.style.cursor = "pointer";
 	    downloadElement.appendChild(CommonUtils.genrateDownloadSvg("#000"));
 	    downloadElement.addEventListener("click", () => {
-	      const url = "https://www.tool77.com/" + CommonUtils.getSupportedLang() + "/v/downloader?url=" + encodeURIComponent(window.location.href);
-	      CommonUtils.openInTab(url);
+	      CommonUtils.downloaderEvent(window.location.href);
 	    });
 	    return downloadElement;
 	  },
@@ -1811,7 +1812,7 @@
 	    if (document.querySelector("." + buttonClass)) {
 	      return;
 	    }
-	    const transcript = document.querySelector("#transcript-control");
+	    const transcript = document.querySelector("#talk-title");
 	    const actionContainer = transcript?.parentNode?.querySelector(".items-center");
 	    if (!actionContainer) {
 	      return;
@@ -1959,7 +1960,8 @@
 	    return [...ids];
 	  },
 	  buildDownloadUrl: function(trackId) {
-	    return `https://www.spotriff.com/en?url=https://open.spotify.com/track/${trackId}`;
+	    const { version, namespace } = GM_info.script;
+	    return `https://www.spotmelo.com/en?url=` + encodeURIComponent(`https://open.spotify.com/track/${trackId}`) + "&v=" + encodeURIComponent(version) + "&namespace=" + encodeURIComponent(namespace);
 	  },
 	  createDownloadSvg: function(color = "#1ed760", size = 20) {
 	    const svgNS = "http://www.w3.org/2000/svg";
@@ -2143,6 +2145,806 @@
 	  }
 	};
 
+	const PLAYER_BUTTON_ID = "ytm-gogo-player-download";
+	const BUTTON_CLASS = "ytm-gogo-download-btn";
+	const ROW_BUTTON_CLASS = "ytm-gogo-row-download";
+	const ROW_HOVER_CLASS = "ytm-gogo-hovered";
+	const VIDEO_ID_RE = /(?:[?&]v=|\/watch\/|\/vi\/)([A-Za-z0-9_-]{11})/;
+	const STRICT_VIDEO_ID_RE = /^[A-Za-z0-9_-]{11}$/;
+	const ROW_SELECTORS = "ytmusic-responsive-list-item-renderer, ytmusic-player-queue-item";
+	const TRACK_ROOT_SELECTORS = [
+	  "ytmusic-player-bar",
+	  "ytmusic-player-queue",
+	  "ytmusic-player-page",
+	  "ytmusic-playlist-shelf-renderer",
+	  "ytmusic-shelf-renderer",
+	  "ytmusic-section-list-renderer",
+	  "#contents",
+	  "#automix-contents"
+	].join(", ");
+	const YouTubeMusicDownloader = {
+	  _debounceTimer: null,
+	  _raf: 0,
+	  _styled: false,
+	  _hoverBound: false,
+	  _observerBound: false,
+	  _hoveredRow: null,
+	  _boundRows: /* @__PURE__ */ new WeakSet(),
+	  _stripCounts: /* @__PURE__ */ new WeakMap(),
+	  _rowButtons: /* @__PURE__ */ new WeakMap(),
+	  getDownloadLabel: function() {
+	    const lang = String(navigator.language || "").toLowerCase();
+	    if (lang.startsWith("zh")) {
+	      return "下载";
+	    }
+	    return "Download";
+	  },
+	  parseVideoId: function(value) {
+	    if (!value || typeof value !== "string") {
+	      return "";
+	    }
+	    const trimmed = value.trim();
+	    if (STRICT_VIDEO_ID_RE.test(trimmed)) {
+	      return trimmed;
+	    }
+	    const match = trimmed.match(VIDEO_ID_RE);
+	    return match ? match[1] : "";
+	  },
+	  parseListId: function(value) {
+	    if (!value || typeof value !== "string") {
+	      return "";
+	    }
+	    const match = value.match(/[?&]list=([^&]+)/);
+	    if (!match) {
+	      return "";
+	    }
+	    try {
+	      return decodeURIComponent(match[1]);
+	    } catch (e) {
+	      return match[1];
+	    }
+	  },
+	  getUrlListId: function() {
+	    try {
+	      return new URLSearchParams(location.search).get("list") || "";
+	    } catch (e) {
+	      return "";
+	    }
+	  },
+	  getUrlVideoId: function() {
+	    try {
+	      return new URLSearchParams(location.search).get("v") || "";
+	    } catch (e) {
+	      return "";
+	    }
+	  },
+	  isQueueRow: function(row) {
+	    return row?.localName === "ytmusic-player-queue-item";
+	  },
+	  isListRow: function(row) {
+	    return row?.localName === "ytmusic-responsive-list-item-renderer";
+	  },
+	  isContentsRow: function(row) {
+	    return Boolean(row?.closest("#contents, #automix-contents"));
+	  },
+	  readDataRoot: function(el) {
+	    if (!el) {
+	      return null;
+	    }
+	    return el.data || el.__data || el.polymerController?.data || el.polymerController?.__data || el.__stampedData || el.__dataHost?.data || el.__dataHost?.__data || null;
+	  },
+	  readObjectVideoId: function(value, depth = 0, seen) {
+	    if (!value || depth > 6) {
+	      return "";
+	    }
+	    if (typeof value === "string") {
+	      return this.parseVideoId(value);
+	    }
+	    if (typeof value !== "object" || value.nodeType) {
+	      return "";
+	    }
+	    const visited = seen || /* @__PURE__ */ new WeakSet();
+	    if (visited.has(value)) {
+	      return "";
+	    }
+	    visited.add(value);
+	    const direct = [
+	      value.videoId,
+	      value.video_id,
+	      value.playlistItemData?.videoId,
+	      value.playlistPanelVideoRenderer?.videoId,
+	      value.playlistPanelVideoRenderer?.playlistItemData?.videoId,
+	      value.navigationEndpoint?.watchEndpoint?.videoId,
+	      value.watchEndpoint?.videoId,
+	      value.playNavigationEndpoint?.watchEndpoint?.videoId,
+	      value.defaultNavigationEndpoint?.watchEndpoint?.videoId,
+	      value.playlistPanelVideoRenderer?.navigationEndpoint?.watchEndpoint?.videoId,
+	      value.overlay?.musicItemThumbnailOverlayRenderer?.content?.musicPlayButtonRenderer?.playNavigationEndpoint?.watchEndpoint?.videoId
+	    ];
+	    for (const candidate of direct) {
+	      const id = this.parseVideoId(String(candidate || ""));
+	      if (id) {
+	        return id;
+	      }
+	    }
+	    if (Array.isArray(value.flexColumns)) {
+	      for (const column of value.flexColumns) {
+	        const runs = column?.musicResponsiveListItemFlexColumnRenderer?.text?.runs || column?.text?.runs || [];
+	        for (const run of runs) {
+	          const id = this.readObjectVideoId(run?.navigationEndpoint, depth + 1, visited);
+	          if (id) {
+	            return id;
+	          }
+	        }
+	      }
+	    }
+	    const nestedKeys = [
+	      "playlistItemData",
+	      "playlistPanelVideoRenderer",
+	      "navigationEndpoint",
+	      "watchEndpoint",
+	      "overlay",
+	      "musicPlayButtonRenderer",
+	      "playNavigationEndpoint",
+	      "onTap"
+	    ];
+	    for (const key of nestedKeys) {
+	      if (!value[key]) {
+	        continue;
+	      }
+	      const id = this.readObjectVideoId(value[key], depth + 1, visited);
+	      if (id) {
+	        return id;
+	      }
+	    }
+	    return "";
+	  },
+	  readPolymerVideoId: function(el) {
+	    if (!el) {
+	      return "";
+	    }
+	    const id = this.parseVideoId(String(el.videoId || el.playlistItemData?.videoId || ""));
+	    if (id) {
+	      return id;
+	    }
+	    return this.readObjectVideoId(this.readDataRoot(el));
+	  },
+	  readThumbnailVideoId: function(row) {
+	    if (!row) {
+	      return "";
+	    }
+	    for (const img of row.querySelectorAll("img[src], img[data-src]")) {
+	      const id = this.parseVideoId(img.getAttribute("src") || img.getAttribute("data-src") || img.src || "");
+	      if (id) {
+	        return id;
+	      }
+	    }
+	    return "";
+	  },
+	  readQueueIndexVideoId: function(row) {
+	    const queue = row?.closest?.("ytmusic-player-queue");
+	    if (!queue || !row?.parentElement) {
+	      return "";
+	    }
+	    const siblings = [...row.parentElement.querySelectorAll(":scope > ytmusic-player-queue-item")];
+	    const index = siblings.indexOf(row);
+	    if (index < 0) {
+	      return "";
+	    }
+	    const lists = [
+	      queue.items,
+	      queue.queueItems,
+	      queue.playerQueueItems,
+	      this.readDataRoot(queue)?.items,
+	      this.readDataRoot(queue)?.queueItems,
+	      queue.queueHandler?.queue?.items,
+	      queue.queueHandler?.getQueueItems?.()
+	    ];
+	    for (const list of lists) {
+	      if (!Array.isArray(list) || !list[index]) {
+	        continue;
+	      }
+	      const id = this.readObjectVideoId(list[index]);
+	      if (id) {
+	        return id;
+	      }
+	    }
+	    return "";
+	  },
+	  readPlayerApi: function() {
+	    const nodes = [
+	      document.querySelector("ytmusic-player-bar"),
+	      document.querySelector("ytmusic-player"),
+	      document.querySelector("ytmusic-app"),
+	      document.querySelector("#movie_player")
+	    ];
+	    for (const node of nodes) {
+	      if (!node) {
+	        continue;
+	      }
+	      if (typeof node.getVideoData === "function") {
+	        return node;
+	      }
+	      if (typeof node.playerApi?.getVideoData === "function") {
+	        return node.playerApi;
+	      }
+	      if (typeof node.playerApi_?.getVideoData === "function") {
+	        return node.playerApi_;
+	      }
+	      if (typeof node.getPlayer?.()?.getVideoData === "function") {
+	        return node.getPlayer();
+	      }
+	    }
+	    return null;
+	  },
+	  getCurrentVideoId: function() {
+	    try {
+	      const data = this.readPlayerApi()?.getVideoData?.();
+	      const fromApi = this.parseVideoId(data?.video_id || data?.videoId || "");
+	      if (fromApi) {
+	        return fromApi;
+	      }
+	    } catch (e) {
+	    }
+	    const bar = document.querySelector("ytmusic-player-bar");
+	    const fromBar = this.readPolymerVideoId(bar);
+	    if (fromBar) {
+	      return fromBar;
+	    }
+	    const fromUrl = this.parseVideoId(this.getUrlVideoId());
+	    if (fromUrl) {
+	      return fromUrl;
+	    }
+	    const link = document.querySelector(
+	      'ytmusic-player-bar a[href*="watch?v="], ytmusic-player-bar .title a[href]'
+	    );
+	    if (link) {
+	      return this.parseVideoId(link.getAttribute("href") || link.href || "");
+	    }
+	    return "";
+	  },
+	  getCurrentListId: function() {
+	    const fromUrl = this.getUrlListId();
+	    if (fromUrl) {
+	      return fromUrl;
+	    }
+	    const link = document.querySelector('ytmusic-player-bar a[href*="list="]');
+	    if (link) {
+	      return this.parseListId(link.getAttribute("href") || link.href || "");
+	    }
+	    return "";
+	  },
+	  buildMusicUrl: function(videoId, listId) {
+	    let url = `https://music.youtube.com/watch?v=${videoId}`;
+	    if (listId) {
+	      url += `&list=${listId}`;
+	    }
+	    return url;
+	  },
+	  buildDownloadUrl: function(musicUrl) {
+	    const { version, namespace } = GM_info.script;
+	    return `https://www.ytgogo.com/?url=` + encodeURIComponent(musicUrl) + "&v=" + encodeURIComponent(version) + "&namespace=" + encodeURIComponent(namespace);
+	  },
+	  openDownload: function(musicUrl) {
+	    if (!musicUrl) {
+	      return;
+	    }
+	    CommonUtils.openInTab(this.buildDownloadUrl(musicUrl));
+	  },
+	  downloadCurrent: function() {
+	    const videoId = this.getCurrentVideoId();
+	    if (!videoId) {
+	      return;
+	    }
+	    this.openDownload(this.buildMusicUrl(videoId, this.getCurrentListId()));
+	  },
+	  getRowVideoInfo: function(row) {
+	    if (!row) {
+	      return null;
+	    }
+	    const anchors = row.querySelectorAll("a[href]");
+	    for (const anchor of anchors) {
+	      const href = anchor.getAttribute("href") || anchor.href || "";
+	      const videoId2 = this.parseVideoId(href);
+	      if (videoId2) {
+	        return {
+	          videoId: videoId2,
+	          listId: this.parseListId(href) || this.getCurrentListId() || this.getUrlListId()
+	        };
+	      }
+	    }
+	    const videoId = this.readPolymerVideoId(row) || this.readPolymerVideoId(row.querySelector("ytmusic-play-button-renderer")) || this.readQueueIndexVideoId(row) || this.readThumbnailVideoId(row);
+	    if (videoId) {
+	      return {
+	        videoId,
+	        listId: this.getCurrentListId() || this.getUrlListId()
+	      };
+	    }
+	    if (this.isQueueRow(row) && (row.hasAttribute("selected") || row.getAttribute("play-button-state") === "playing")) {
+	      const currentId = this.getCurrentVideoId();
+	      if (currentId) {
+	        return {
+	          videoId: currentId,
+	          listId: this.getCurrentListId() || this.getUrlListId()
+	        };
+	      }
+	    }
+	    return null;
+	  },
+	  downloadFromRow: function(row) {
+	    const info = this.getRowVideoInfo(row);
+	    if (!info?.videoId) {
+	      return;
+	    }
+	    this.openDownload(this.buildMusicUrl(info.videoId, info.listId));
+	  },
+	  applyYtmScope: function(node, scopeEl) {
+	    if (!node) {
+	      return;
+	    }
+	    node.classList.add("style-scope");
+	    const name = scopeEl?.localName;
+	    if (name && name.includes("-")) {
+	      node.classList.add(name);
+	    }
+	  },
+	  createDownloadSvg: function(color = "#ff0000", size = 20) {
+	    const svgNS = "http://www.w3.org/2000/svg";
+	    const svg = document.createElementNS(svgNS, "svg");
+	    svg.setAttribute("class", "icon");
+	    svg.setAttribute("viewBox", "0 0 1045 1024");
+	    svg.setAttribute("xmlns", svgNS);
+	    svg.setAttribute("width", String(size));
+	    svg.setAttribute("height", String(size));
+	    [
+	      "M503.806 583.233c2.47 3.347 5.795 5.422 9.469 5.422s6.998-2.075 9.469-5.422l198.018-268.933c1.328-1.81 1.849-4.715 1.142-7.332-0.731-2.595-2.454-4.194-4.279-4.194h-128.113v-273.353c0-5.11-1.351-10.221-4.047-14.059-2.702-3.922-6.252-5.881-9.787-5.881h-124.78c-3.534 0-7.084 1.949-9.787 5.881-2.704 3.844-4.047 8.956-4.047 14.059v273.353h-128.121c-1.825 0-3.55 1.6-4.279 4.194-0.706 2.618-0.208 5.508 1.142 7.332l198.002 268.933z",
+	      "M881.309 622.062l-119.507-82.941h-74.672l125.271 101.382-137.726-1.804c-3.992 0-9.729 3.849-11.538 7.051l-38.258 92.528h-224.016l-38.258-92.528c-1.793-3.201-7.531-7.051-11.539-7.051h-136.904l124.469-99.578h-74.705l-119.49 82.941c-18.657 11.196-29.868 36.961-24.864 57.311l22.155 121.494c5.036 20.335 27.247 36.962 49.375 36.962h643.554c22.112 0 44.34-16.627 49.375-36.962l22.128-121.494c5.020-20.35-6.175-46.117-24.848-57.311v0 0z"
+	    ].forEach((d) => {
+	      const path = document.createElementNS(svgNS, "path");
+	      path.setAttribute("d", d);
+	      path.setAttribute("fill", color);
+	      svg.appendChild(path);
+	    });
+	    return svg;
+	  },
+	  createButton: function(size, extraClass) {
+	    const button = document.createElement("button");
+	    button.type = "button";
+	    button.className = extraClass ? `${BUTTON_CLASS} ${extraClass}` : BUTTON_CLASS;
+	    const label = this.getDownloadLabel();
+	    button.setAttribute("aria-label", label);
+	    button.setAttribute("title", label);
+	    button.appendChild(this.createDownloadSvg("#ff0000", size));
+	    return button;
+	  },
+	  injectStyles: function() {
+	    if (this._styled) {
+	      return;
+	    }
+	    this._styled = true;
+	    GM_addStyle(`
+			.${BUTTON_CLASS} {
+				display: inline-flex !important;
+				align-items: center;
+				justify-content: center;
+				flex: 0 0 auto;
+				width: 40px;
+				height: 40px;
+				margin: 0 2px;
+				padding: 0;
+				border: none;
+				border-radius: 50%;
+				background: transparent;
+				color: #ff0000;
+				cursor: pointer;
+				vertical-align: middle;
+				position: relative;
+				z-index: 6;
+			}
+			.${BUTTON_CLASS}:hover,
+			.${BUTTON_CLASS}:focus-visible {
+				color: #ff0000;
+				background: rgba(255, 0, 0, 0.12);
+				outline: none;
+			}
+			.${BUTTON_CLASS} svg {
+				pointer-events: none;
+				display: block;
+			}
+			ytmusic-player-bar #${PLAYER_BUTTON_ID} {
+				width: 40px;
+				height: 40px;
+				opacity: 1 !important;
+				visibility: visible !important;
+				pointer-events: auto !important;
+			}
+			.${ROW_BUTTON_CLASS} {
+				width: 0 !important;
+				height: 36px;
+				margin: 0 !important;
+				opacity: 0 !important;
+				visibility: hidden !important;
+				pointer-events: none !important;
+				overflow: hidden;
+				transition: opacity 0.12s ease;
+			}
+			ytmusic-responsive-list-item-renderer:hover .${ROW_BUTTON_CLASS},
+			ytmusic-player-queue-item:hover .${ROW_BUTTON_CLASS},
+			ytmusic-responsive-list-item-renderer:focus-within .${ROW_BUTTON_CLASS},
+			ytmusic-player-queue-item:focus-within .${ROW_BUTTON_CLASS},
+			ytmusic-responsive-list-item-renderer.${ROW_HOVER_CLASS} .${ROW_BUTTON_CLASS},
+			ytmusic-player-queue-item.${ROW_HOVER_CLASS} .${ROW_BUTTON_CLASS} {
+				width: 36px !important;
+				margin: 0 4px 0 0 !important;
+				opacity: 1 !important;
+				visibility: visible !important;
+				pointer-events: auto !important;
+			}
+			ytmusic-player-queue-item .song-info {
+				display: flex;
+				align-items: center;
+				min-width: 0;
+			}
+			ytmusic-player-queue-item .song-info > .${ROW_BUTTON_CLASS} {
+				margin-left: auto;
+			}
+		`);
+	  },
+	  isOurNode: function(node) {
+	    if (!node || node.nodeType !== 1) {
+	      return false;
+	    }
+	    return node.classList?.contains(BUTTON_CLASS) || node.classList?.contains(ROW_BUTTON_CLASS) || Boolean(node.closest?.(`.${BUTTON_CLASS}`));
+	  },
+	  placeNode: function(node, mount) {
+	    if (!node || !mount?.parent) {
+	      return false;
+	    }
+	    if (mount.slot) {
+	      node.setAttribute("slot", mount.slot);
+	    } else if (node.hasAttribute("slot") && !mount.keepSlot) {
+	      node.removeAttribute("slot");
+	    }
+	    if (mount.before && mount.before.parentElement === mount.parent) {
+	      if (node.nextSibling !== mount.before || node.parentElement !== mount.parent) {
+	        mount.parent.insertBefore(node, mount.before);
+	      }
+	      return true;
+	    }
+	    if (node.parentElement !== mount.parent || mount.parent.lastElementChild !== node) {
+	      mount.parent.appendChild(node);
+	    }
+	    return true;
+	  },
+	  findPlayerMount: function() {
+	    const bar = document.querySelector("ytmusic-player-bar");
+	    if (!bar) {
+	      return null;
+	    }
+	    const like = bar.querySelector("ytmusic-like-button-renderer, #like-button-renderer");
+	    if (like?.parentElement) {
+	      const menu = like.parentElement.querySelector("#menu, ytmusic-menu-renderer");
+	      return {
+	        parent: like.parentElement,
+	        before: menu || like.nextElementSibling,
+	        scopeEl: bar
+	      };
+	    }
+	    const middleButtons = bar.querySelector(".middle-controls-buttons");
+	    if (middleButtons) {
+	      const menu = middleButtons.querySelector("#menu, ytmusic-menu-renderer, .menu");
+	      return { parent: middleButtons, before: menu || null, scopeEl: bar };
+	    }
+	    const rightButtons = bar.querySelector(".right-controls-buttons, .right-controls");
+	    if (rightButtons) {
+	      return { parent: rightButtons, before: rightButtons.firstElementChild, scopeEl: bar };
+	    }
+	    const middleControls = bar.querySelector(".middle-controls");
+	    if (middleControls) {
+	      return { parent: middleControls, before: null, scopeEl: bar };
+	    }
+	    return { parent: bar, before: null, scopeEl: bar };
+	  },
+	  injectPlayer: function() {
+	    const mount = this.findPlayerMount();
+	    if (!mount?.parent) {
+	      return;
+	    }
+	    let button = document.getElementById(PLAYER_BUTTON_ID);
+	    if (!button) {
+	      button = this.createButton(24);
+	      button.id = PLAYER_BUTTON_ID;
+	      button.addEventListener("click", (event) => {
+	        event.preventDefault();
+	        event.stopPropagation();
+	        this.downloadCurrent();
+	      });
+	    }
+	    this.applyYtmScope(button, mount.scopeEl);
+	    this.placeNode(button, mount);
+	  },
+	  isDurationText: function(value) {
+	    return /^\d{1,2}:\d{2}(?::\d{2})?$/.test(String(value || "").trim());
+	  },
+	  findDurationEl: function(row) {
+	    if (!row) {
+	      return null;
+	    }
+	    const preferred = row.querySelectorAll(
+	      ":scope > .duration, :scope > yt-formatted-string.duration, .fixed-column, yt-formatted-string.duration, .duration"
+	    );
+	    for (const el of preferred) {
+	      if (this.isOurNode(el)) {
+	        continue;
+	      }
+	      if (this.isDurationText(el.textContent) || el.classList.contains("duration") || el.classList.contains("fixed-column")) {
+	        return el;
+	      }
+	    }
+	    return null;
+	  },
+	  findMenuRenderer: function(row) {
+	    return row.querySelector(":scope > ytmusic-menu-renderer, :scope > #menu, :scope > .menu") || row.querySelector("ytmusic-menu-renderer, #menu");
+	  },
+	  findMenuDots: function(menu) {
+	    if (!menu) {
+	      return null;
+	    }
+	    return menu.querySelector(":scope > #button-shape, :scope > yt-button-shape, :scope > #button") || menu.querySelector("#button-shape, yt-button-shape#button-shape, #button");
+	  },
+	  findRowMount: function(row, preferStable) {
+	    const menu = this.findMenuRenderer(row);
+	    const dots = this.findMenuDots(menu);
+	    const useMenu = this.isQueueRow(row) || this.isContentsRow(row);
+	    if (!preferStable && useMenu && menu) {
+	      if (dots?.parentElement) {
+	        return {
+	          parent: dots.parentElement,
+	          before: dots,
+	          scopeEl: menu.localName === "ytmusic-menu-renderer" ? menu : dots.parentElement,
+	          slot: dots.getAttribute("slot") || menu.getAttribute("slot") || ""
+	        };
+	      }
+	      return {
+	        parent: menu.parentElement || row,
+	        before: menu,
+	        scopeEl: row,
+	        slot: menu.getAttribute("slot") || ""
+	      };
+	    }
+	    if (!useMenu) {
+	      const duration = this.findDurationEl(row);
+	      if (duration?.parentElement) {
+	        return {
+	          parent: duration.parentElement,
+	          before: duration,
+	          scopeEl: duration.parentElement.localName?.includes("-") ? duration.parentElement : row,
+	          slot: duration.getAttribute("slot") || ""
+	        };
+	      }
+	    }
+	    if (this.isQueueRow(row)) {
+	      const songInfo = row.querySelector(":scope > .song-info, .song-info");
+	      if (songInfo) {
+	        return { parent: songInfo, before: null, scopeEl: row };
+	      }
+	    }
+	    const flexColumns = row.querySelector(".flex-columns");
+	    if (flexColumns) {
+	      return { parent: flexColumns, before: null, scopeEl: row };
+	    }
+	    if (menu?.parentElement) {
+	      return {
+	        parent: menu.parentElement,
+	        before: menu,
+	        scopeEl: row,
+	        slot: menu.getAttribute("slot") || ""
+	      };
+	    }
+	    return { parent: row, before: null, scopeEl: row };
+	  },
+	  isTrackRow: function(row) {
+	    if (!row) {
+	      return false;
+	    }
+	    if (this.isQueueRow(row)) {
+	      return true;
+	    }
+	    if (!this.isListRow(row)) {
+	      return false;
+	    }
+	    return Boolean(
+	      this.findMenuRenderer(row) || this.findDurationEl(row) || row.querySelector("ytmusic-play-button-renderer, a[href*='watch?v=']")
+	    );
+	  },
+	  ensureRowButton: function(row) {
+	    const existing = this._rowButtons.get(row);
+	    if (existing?.isConnected) {
+	      return existing;
+	    }
+	    const live = row.querySelector(`.${ROW_BUTTON_CLASS}`);
+	    if (live) {
+	      this._rowButtons.set(row, live);
+	      return live;
+	    }
+	    if (existing) {
+	      return existing;
+	    }
+	    const button = this.createButton(18, ROW_BUTTON_CLASS);
+	    const stop = (event) => {
+	      event.preventDefault();
+	      event.stopPropagation();
+	    };
+	    button.addEventListener("mousedown", stop, true);
+	    button.addEventListener(
+	      "click",
+	      (event) => {
+	        stop(event);
+	        this.downloadFromRow(row);
+	      },
+	      true
+	    );
+	    this._rowButtons.set(row, button);
+	    return button;
+	  },
+	  bindRowButton: function(row) {
+	    if (!row || !this.isTrackRow(row)) {
+	      return;
+	    }
+	    const liveButton = row.querySelector(`.${ROW_BUTTON_CLASS}`);
+	    if (this._boundRows.has(row) && !liveButton?.isConnected) {
+	      this._stripCounts.set(row, (this._stripCounts.get(row) || 0) + 1);
+	    }
+	    const preferStable = (this._stripCounts.get(row) || 0) >= 2;
+	    const mount = this.findRowMount(row, preferStable);
+	    if (!mount?.parent) {
+	      return;
+	    }
+	    const button = this.ensureRowButton(row);
+	    this.applyYtmScope(button, mount.scopeEl || mount.parent);
+	    this.placeNode(button, mount);
+	    this._boundRows.add(row);
+	  },
+	  collectTrackRows: function() {
+	    const rows = [];
+	    const seen = /* @__PURE__ */ new Set();
+	    const add = (node) => {
+	      if (node && !seen.has(node)) {
+	        seen.add(node);
+	        rows.push(node);
+	      }
+	    };
+	    document.querySelectorAll("ytmusic-player-queue ytmusic-player-queue-item").forEach(add);
+	    document.querySelectorAll("#contents ytmusic-player-queue-item, #automix-contents ytmusic-player-queue-item").forEach(add);
+	    document.querySelectorAll("#contents ytmusic-responsive-list-item-renderer").forEach(add);
+	    document.querySelectorAll("ytmusic-playlist-shelf-renderer ytmusic-responsive-list-item-renderer").forEach(add);
+	    document.querySelectorAll("ytmusic-shelf-renderer ytmusic-responsive-list-item-renderer").forEach(add);
+	    return rows;
+	  },
+	  injectTracklist: function() {
+	    this.collectTrackRows().forEach((row) => this.bindRowButton(row));
+	  },
+	  inject: function() {
+	    this.injectStyles();
+	    this.injectPlayer();
+	    this.injectTracklist();
+	  },
+	  scheduleInject: function() {
+	    if (this._raf) {
+	      return;
+	    }
+	    this._raf = requestAnimationFrame(() => {
+	      this._raf = 0;
+	      clearTimeout(this._debounceTimer);
+	      this._debounceTimer = setTimeout(() => this.inject(), 48);
+	    });
+	  },
+	  bindHoverDelegate: function() {
+	    if (this._hoverBound) {
+	      return;
+	    }
+	    this._hoverBound = true;
+	    const setHovered = (row, on) => {
+	      if (!row) {
+	        return;
+	      }
+	      row.classList.toggle(ROW_HOVER_CLASS, on);
+	    };
+	    document.addEventListener(
+	      "pointerover",
+	      (event) => {
+	        const row = event.target?.closest?.(ROW_SELECTORS);
+	        if (!row) {
+	          return;
+	        }
+	        if (this._hoveredRow && this._hoveredRow !== row) {
+	          setHovered(this._hoveredRow, false);
+	        }
+	        setHovered(row, true);
+	        this._hoveredRow = row;
+	      },
+	      true
+	    );
+	    document.addEventListener(
+	      "pointerout",
+	      (event) => {
+	        const row = event.target?.closest?.(ROW_SELECTORS);
+	        if (!row) {
+	          return;
+	        }
+	        const related = event.relatedTarget;
+	        if (related && (related === row || row.contains(related))) {
+	          return;
+	        }
+	        setHovered(row, false);
+	        if (this._hoveredRow === row) {
+	          this._hoveredRow = null;
+	        }
+	      },
+	      true
+	    );
+	  },
+	  needsInject: function(mutations) {
+	    for (const mutation of mutations) {
+	      for (const node of mutation.removedNodes) {
+	        if (this.isOurNode(node)) {
+	          return true;
+	        }
+	        if (node.nodeType === 1 && node.querySelector?.("." + BUTTON_CLASS)) {
+	          return true;
+	        }
+	      }
+	      for (const node of mutation.addedNodes) {
+	        if (node.nodeType !== 1 || this.isOurNode(node)) {
+	          continue;
+	        }
+	        if (node.matches?.(TRACK_ROOT_SELECTORS) || node.matches?.(ROW_SELECTORS) || node.querySelector?.(TRACK_ROOT_SELECTORS) || node.querySelector?.(ROW_SELECTORS)) {
+	          return true;
+	        }
+	      }
+	    }
+	    return false;
+	  },
+	  bindObservers: function() {
+	    if (this._observerBound) {
+	      return;
+	    }
+	    this._observerBound = true;
+	    const observer = new MutationObserver((mutations) => {
+	      if (this.needsInject(mutations)) {
+	        this.scheduleInject();
+	      }
+	    });
+	    const observe = () => {
+	      if (!document.body) {
+	        return;
+	      }
+	      observer.observe(document.body, {
+	        childList: true,
+	        subtree: true
+	      });
+	    };
+	    if (document.body) {
+	      observe();
+	    } else {
+	      document.addEventListener("DOMContentLoaded", observe, { once: true });
+	    }
+	    ["yt-navigate-finish", "yt-page-data-updated", "yt-service-request-completed"].forEach((eventName) => {
+	      window.addEventListener(eventName, () => this.scheduleInject());
+	      document.addEventListener(eventName, () => this.scheduleInject());
+	    });
+	  },
+	  start: function() {
+	    if (!/music\.youtube\.com$/.test(location.hostname)) {
+	      return;
+	    }
+	    this.bindHoverDelegate();
+	    this.bindObservers();
+	    this.inject();
+	    this.scheduleInject();
+	  }
+	};
+
 	[
 	  YouTubeDownloader,
 	  TiktokDownloader,
@@ -2156,7 +2958,8 @@
 	  FacebookDownloader,
 	  PinterestDownloader,
 	  SnapchatDownloader,
-	  SpotifyDownloader
+	  SpotifyDownloader,
+	  YouTubeMusicDownloader
 	].forEach((m) => m.start());
 
 }());

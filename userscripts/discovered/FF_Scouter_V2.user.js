@@ -1,12 +1,13 @@
 // ==UserScript==
 // @name         FF Scouter V2
 // @namespace    Violentmonkey Scripts
-// @version      3.0.1
+// @version      3.3
 // @author       xentac [3354782], MAVRI [2402357], rDacted [2670953], Weav3r [1853324], Glasnost [1844049]
 // @description  Shows the expected Fair Fight score against targets and faction war status
 // @license      GPLv3
 // @copyright    2026, xentac
 // @match        https://www.torn.com/*
+// @require      https://www.torn.com/builds/react-umd/react-dom.19.2.0.93c06d8e.production.js
 // @connect      ffscouter.com
 // @grant        GM_xmlhttpRequest
 // @grant        unsafeWindow
@@ -28,22 +29,6 @@
     StartTime2[StartTime2["DocumentEnd"] = 2] = "DocumentEnd";
     return StartTime2;
   })(StartTime || {});
-  let _react$1;
-  function getReact$1() {
-    return _react$1 ??= unsafeWindow.React;
-  }
-  const FRAGMENT_SENTINEL = Symbol("ReactFragment");
-  const Fragment = FRAGMENT_SENTINEL;
-  function jsx(type, { children, ...props }, key) {
-    const R = getReact$1();
-    const realType = type === FRAGMENT_SENTINEL ? R.Fragment : type;
-    if (key !== void 0) props.key = key;
-    if (children === void 0) {
-      return R.createElement(realType, props);
-    }
-    return Array.isArray(children) ? R.createElement(realType, props, ...children) : R.createElement(realType, props, children);
-  }
-  const jsxs = jsx;
   function isInPDA() {
     return typeof window !== "undefined" && typeof window.PDA_httpGet === "function";
   }
@@ -283,160 +268,6 @@ clearAll() {
       }
     }
   }
-  var TornApiError;
-  (function(TornApiError2) {
-    TornApiError2[TornApiError2["UNKNOWN_ERROR"] = 0] = "UNKNOWN_ERROR";
-    TornApiError2[TornApiError2["KEY_EMPTY"] = 1] = "KEY_EMPTY";
-    TornApiError2[TornApiError2["INCORRECT_KEY"] = 2] = "INCORRECT_KEY";
-    TornApiError2[TornApiError2["WRONG_TYPE"] = 3] = "WRONG_TYPE";
-    TornApiError2[TornApiError2["WRONG_FIELDS"] = 4] = "WRONG_FIELDS";
-    TornApiError2[TornApiError2["TOO_MANY_REQUESTS"] = 5] = "TOO_MANY_REQUESTS";
-    TornApiError2[TornApiError2["INCORRECT_ID"] = 6] = "INCORRECT_ID";
-    TornApiError2[TornApiError2["INCORRECT_RELATION"] = 7] = "INCORRECT_RELATION";
-    TornApiError2[TornApiError2["IP_BLOCK"] = 8] = "IP_BLOCK";
-    TornApiError2[TornApiError2["API_DISABLED"] = 9] = "API_DISABLED";
-    TornApiError2[TornApiError2["KEY_FEDERAL_JAIL"] = 10] = "KEY_FEDERAL_JAIL";
-    TornApiError2[TornApiError2["KEY_CHANGE_ERROR"] = 11] = "KEY_CHANGE_ERROR";
-    TornApiError2[TornApiError2["KEY_READ_ERROR"] = 12] = "KEY_READ_ERROR";
-    TornApiError2[TornApiError2["KEY_TEMPORARILY_DISABLED_TO_INACTIVITY"] = 13] = "KEY_TEMPORARILY_DISABLED_TO_INACTIVITY";
-    TornApiError2[TornApiError2["DAILY_READ_LIMIT_REACHED"] = 14] = "DAILY_READ_LIMIT_REACHED";
-    TornApiError2[TornApiError2["TEMPORARY_ERROR"] = 15] = "TEMPORARY_ERROR";
-    TornApiError2[TornApiError2["ACCESS_LEVEL_KEY_NOT_HIGH"] = 16] = "ACCESS_LEVEL_KEY_NOT_HIGH";
-    TornApiError2[TornApiError2["BACKEND_ERROR_OCCURRED"] = 17] = "BACKEND_ERROR_OCCURRED";
-    TornApiError2[TornApiError2["API_KEY_HAS_BEEN_PAUSED"] = 18] = "API_KEY_HAS_BEEN_PAUSED";
-    TornApiError2[TornApiError2["MUST_BE_MIGRATED_TO_CRIMES"] = 19] = "MUST_BE_MIGRATED_TO_CRIMES";
-    TornApiError2[TornApiError2["RACE_NOT_YET_FINISHED"] = 20] = "RACE_NOT_YET_FINISHED";
-    TornApiError2[TornApiError2["INCORRECT_CATEGORY"] = 21] = "INCORRECT_CATEGORY";
-    TornApiError2[TornApiError2["SELECTION_ONLY_AVAILABLE_API_V1"] = 22] = "SELECTION_ONLY_AVAILABLE_API_V1";
-    TornApiError2[TornApiError2["SELECTION_ONLY_AVAILABLE_API_V2"] = 23] = "SELECTION_ONLY_AVAILABLE_API_V2";
-    TornApiError2[TornApiError2["CLOSED_TEMPORARILY"] = 24] = "CLOSED_TEMPORARILY";
-    TornApiError2[TornApiError2["INVALID_STAT_REQUESTED"] = 25] = "INVALID_STAT_REQUESTED";
-    TornApiError2[TornApiError2["ONLY_CATEGORY_OR_STATS_CAN"] = 26] = "ONLY_CATEGORY_OR_STATS_CAN";
-    TornApiError2[TornApiError2["MUST_BE_MIGRATED_TO_ORGANIZED"] = 27] = "MUST_BE_MIGRATED_TO_ORGANIZED";
-    TornApiError2[TornApiError2["INCORRECT_LOG_ID"] = 28] = "INCORRECT_LOG_ID";
-    TornApiError2[TornApiError2["CATEGORY_SELECTION_NOT_AVAILABLE_FOR"] = 29] = "CATEGORY_SELECTION_NOT_AVAILABLE_FOR";
-  })(TornApiError || (TornApiError = {}));
-  class HTTPClient {
-    canAbort() {
-      return false;
-    }
-  }
-  class AbortableHTTPClient extends HTTPClient {
-    canAbort() {
-      return true;
-    }
-  }
-  class FetchHTTPClient extends AbortableHTTPClient {
-    async getJson(url, timeout = void 0) {
-      let response;
-      if (timeout !== void 0) {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), timeout);
-        response = await fetch(url, { signal: controller.signal });
-        clearTimeout(timeoutId);
-      } else {
-        response = await fetch(url);
-      }
-      return await response.json();
-    }
-  }
-  class TornApiClient {
-    httpClient;
-    defaultComment;
-    defaultTimeout;
-    constructor(options = {}) {
-      this.httpClient = options.httpClient ?? new FetchHTTPClient();
-      this.defaultComment = options.defaultComment;
-      this.defaultTimeout = options.defaultTimeout;
-    }
-    async getV1({ section, selections, id, params = {}, key, comment, cache, expiry, timeout }) {
-      const cached = await cache?.get({
-        section,
-        selections,
-        id,
-        params,
-        key
-      });
-      if (cached)
-        return cached;
-      let url = `https://api.torn.com/${section}/${id ?? ""}`;
-      url = this.populateUrl(url, key, selections ?? [], comment, params ?? {});
-      if (this.httpClient.canAbort() && typeof timeout === "number") {
-        return this.httpClient.getJson(url, timeout).then(addToCache).catch(this.handleError);
-      } else {
-        return this.httpClient.getJson(url).then(addToCache).catch(this.handleError);
-      }
-      function addToCache(response) {
-        if ("error" in response)
-          return response;
-        cache?.set({
-          section,
-          selections,
-          id,
-          params,
-          key
-        }, response, expiry ?? Date.now() + 3e4);
-        return response;
-      }
-    }
-    async getV2({ section, selections, id, params = {}, key, comment, cache, expiry, timeout }) {
-      const cached = await cache?.get({
-        section,
-        selections,
-        id,
-        params,
-        key
-      });
-      if (cached)
-        return cached;
-      let url = `https://api.torn.com/v2/${section}/${id ?? ""}`;
-      url = this.populateUrl(url, key, selections ?? [], comment, params ?? {});
-      if (this.httpClient.canAbort() && typeof timeout === "number") {
-        return this.httpClient.getJson(url, timeout).then(addToCache).catch(this.handleError);
-      } else {
-        return this.httpClient.getJson(url).then(addToCache).catch(this.handleError);
-      }
-      function addToCache(response) {
-        if ("error" in response)
-          return response;
-        cache?.set({
-          section,
-          selections,
-          id,
-          params,
-          key
-        }, response, expiry ?? Date.now() + 3e4);
-        return response;
-      }
-    }
-    handleError(error) {
-      console.error(error);
-      return { error: { code: -1, error: generateErrorString(error) } };
-      function generateErrorString(e) {
-        switch (typeof e) {
-          case "string":
-            return e;
-          case "object": {
-            if (e instanceof Error)
-              return e.message;
-            return JSON.stringify(e);
-          }
-          default:
-            return e.toString();
-        }
-      }
-    }
-    populateUrl(url, key, selections, comment, params) {
-      const allParams = {
-        key,
-        comment: comment ?? this.defaultComment,
-        selections: selections.length ? selections.join(",") : void 0,
-        ...params
-      };
-      const query = Object.entries(allParams).filter((entry) => !!entry[1]).map(([key2, value]) => `${key2}=${value}`).join("&");
-      return `${url}?${query}`;
-    }
-  }
   var FactionsColDisplay = ((FactionsColDisplay2) => {
     FactionsColDisplay2["FAIR_FIGHT"] = "fair_fight";
     FactionsColDisplay2["BATTLE_STATS"] = "battle_stats";
@@ -449,6 +280,12 @@ clearAll() {
     GaugeMarkerType2["BUBBLE_ESTIMATE"] = "bubble_estimate";
     return GaugeMarkerType2;
   })(GaugeMarkerType || {});
+  var GaugeMarkerJustify = ((GaugeMarkerJustify2) => {
+    GaugeMarkerJustify2["GAUGE"] = "gauge";
+    GaugeMarkerJustify2["LEFT"] = "left";
+    GaugeMarkerJustify2["RIGHT"] = "right";
+    return GaugeMarkerJustify2;
+  })(GaugeMarkerJustify || {});
   var ColorScheme = ((ColorScheme2) => {
     ColorScheme2["CLASSIC"] = "classic";
     ColorScheme2["COOL_DIVERGING"] = "cool_diverging";
@@ -483,12 +320,18 @@ clearAll() {
     gauge_marker_type: "arrow",
     gauge_marker_scale: 100,
     gauge_marker_border_width: 1,
+    gauge_marker_justify: "gauge",
     war_quick_attack_action: "new_tab",
     network_interception_enabled: false,
     status_attack_links_enabled: true,
     debug_disable_pda_http: false,
+    debug_force_react_fallback: false,
     color_scheme: "classic",
-    custom_colors: null
+    custom_colors: null,
+    settings_panel_own_profile_only: false,
+    faction_filter_enabled: true,
+    war_filter_enabled: true,
+    stat_distribution_badge_enabled: true
   };
   class FFConfig {
     constructor(name) {
@@ -694,6 +537,38 @@ clearAll() {
     set status_attack_links_enabled(val) {
       this.storage.set("status_attack_links_enabled", val);
     }
+    get settings_panel_own_profile_only() {
+      return this.storage.get(
+        "settings_panel_own_profile_only"
+) ?? CONFIG_DEFAULTS.settings_panel_own_profile_only;
+    }
+    set settings_panel_own_profile_only(val) {
+      this.storage.set("settings_panel_own_profile_only", val);
+    }
+    get faction_filter_enabled() {
+      return this.storage.get(
+        "faction_filter_enabled"
+) ?? CONFIG_DEFAULTS.faction_filter_enabled;
+    }
+    set faction_filter_enabled(val) {
+      this.storage.set("faction_filter_enabled", val);
+    }
+    get war_filter_enabled() {
+      return this.storage.get(
+        "war_filter_enabled"
+) ?? CONFIG_DEFAULTS.war_filter_enabled;
+    }
+    set war_filter_enabled(val) {
+      this.storage.set("war_filter_enabled", val);
+    }
+    get stat_distribution_badge_enabled() {
+      return this.storage.get(
+        "stat_distribution_badge_enabled"
+) ?? CONFIG_DEFAULTS.stat_distribution_badge_enabled;
+    }
+    set stat_distribution_badge_enabled(val) {
+      this.storage.set("stat_distribution_badge_enabled", val);
+    }
     get debug_disable_pda_http() {
       return this.storage.get(
         "debug_disable_pda_http"
@@ -701,6 +576,14 @@ clearAll() {
     }
     set debug_disable_pda_http(val) {
       this.storage.set("debug_disable_pda_http", val);
+    }
+    get debug_force_react_fallback() {
+      return this.storage.get(
+        "debug_force_react_fallback"
+) ?? CONFIG_DEFAULTS.debug_force_react_fallback;
+    }
+    set debug_force_react_fallback(val) {
+      this.storage.set("debug_force_react_fallback", val);
     }
     get gauge_marker_type() {
       return this.storage.get(
@@ -725,6 +608,14 @@ clearAll() {
     }
     set gauge_marker_border_width(val) {
       this.storage.set("gauge_marker_border_width", val);
+    }
+    get gauge_marker_justify() {
+      return this.storage.get(
+        "gauge_marker_justify"
+) ?? CONFIG_DEFAULTS.gauge_marker_justify;
+    }
+    set gauge_marker_justify(val) {
+      this.storage.set("gauge_marker_justify", val);
     }
     get color_scheme() {
       return this.storage.get(
@@ -888,6 +779,9 @@ clearAll() {
         "gauge_marker_border_width"
 );
       this.storage.remove(
+        "gauge_marker_justify"
+);
+      this.storage.remove(
         "war_quick_attack_action"
 );
       this.storage.remove(
@@ -897,17 +791,224 @@ clearAll() {
         "debug_disable_pda_http"
 );
       this.storage.remove(
+        "debug_force_react_fallback"
+);
+      this.storage.remove(
         "color_scheme"
 );
       this.storage.remove(
         "custom_colors"
 );
+      this.storage.remove(
+        "settings_panel_own_profile_only"
+);
+      this.storage.remove(
+        "faction_filter_enabled"
+);
+      this.storage.remove(
+        "war_filter_enabled"
+);
+      this.storage.remove(
+        "stat_distribution_badge_enabled"
+);
     }
   }
   const ffconfig = new FFConfig("ffsv3-config");
+  function unsafeWindowReact() {
+    return unsafeWindow;
+  }
+  function requiredReact() {
+    return globalThis;
+  }
+  function hasWorkingUnsafeWindowReact() {
+    if (typeof unsafeWindow === "undefined") {
+      return false;
+    }
+    const w = unsafeWindowReact();
+    return Boolean(w.React && w.ReactDOM);
+  }
+  function getReact() {
+    if (!ffconfig.debug_force_react_fallback && hasWorkingUnsafeWindowReact()) {
+      return unsafeWindowReact().React;
+    }
+    return requiredReact().React;
+  }
+  function getReactDOM() {
+    if (!ffconfig.debug_force_react_fallback && hasWorkingUnsafeWindowReact()) {
+      return unsafeWindowReact().ReactDOM;
+    }
+    return requiredReact().ReactDOM;
+  }
+  const FRAGMENT_SENTINEL = Symbol("ReactFragment");
+  const Fragment = FRAGMENT_SENTINEL;
+  function jsx(type, { children, ...props }, key) {
+    const R = getReact();
+    const createElement2 = R.createElement;
+    const realType = type === FRAGMENT_SENTINEL ? R.Fragment : type;
+    if (key !== void 0) props.key = key;
+    if (children === void 0) {
+      return createElement2(realType, props);
+    }
+    return Array.isArray(children) ? createElement2(realType, props, ...children) : createElement2(realType, props, children);
+  }
+  const jsxs = jsx;
+  var TornApiError;
+  (function(TornApiError2) {
+    TornApiError2[TornApiError2["UNKNOWN_ERROR"] = 0] = "UNKNOWN_ERROR";
+    TornApiError2[TornApiError2["KEY_EMPTY"] = 1] = "KEY_EMPTY";
+    TornApiError2[TornApiError2["INCORRECT_KEY"] = 2] = "INCORRECT_KEY";
+    TornApiError2[TornApiError2["WRONG_TYPE"] = 3] = "WRONG_TYPE";
+    TornApiError2[TornApiError2["WRONG_FIELDS"] = 4] = "WRONG_FIELDS";
+    TornApiError2[TornApiError2["TOO_MANY_REQUESTS"] = 5] = "TOO_MANY_REQUESTS";
+    TornApiError2[TornApiError2["INCORRECT_ID"] = 6] = "INCORRECT_ID";
+    TornApiError2[TornApiError2["INCORRECT_RELATION"] = 7] = "INCORRECT_RELATION";
+    TornApiError2[TornApiError2["IP_BLOCK"] = 8] = "IP_BLOCK";
+    TornApiError2[TornApiError2["API_DISABLED"] = 9] = "API_DISABLED";
+    TornApiError2[TornApiError2["KEY_FEDERAL_JAIL"] = 10] = "KEY_FEDERAL_JAIL";
+    TornApiError2[TornApiError2["KEY_CHANGE_ERROR"] = 11] = "KEY_CHANGE_ERROR";
+    TornApiError2[TornApiError2["KEY_READ_ERROR"] = 12] = "KEY_READ_ERROR";
+    TornApiError2[TornApiError2["KEY_TEMPORARILY_DISABLED_TO_INACTIVITY"] = 13] = "KEY_TEMPORARILY_DISABLED_TO_INACTIVITY";
+    TornApiError2[TornApiError2["DAILY_READ_LIMIT_REACHED"] = 14] = "DAILY_READ_LIMIT_REACHED";
+    TornApiError2[TornApiError2["TEMPORARY_ERROR"] = 15] = "TEMPORARY_ERROR";
+    TornApiError2[TornApiError2["ACCESS_LEVEL_KEY_NOT_HIGH"] = 16] = "ACCESS_LEVEL_KEY_NOT_HIGH";
+    TornApiError2[TornApiError2["BACKEND_ERROR_OCCURRED"] = 17] = "BACKEND_ERROR_OCCURRED";
+    TornApiError2[TornApiError2["API_KEY_HAS_BEEN_PAUSED"] = 18] = "API_KEY_HAS_BEEN_PAUSED";
+    TornApiError2[TornApiError2["MUST_BE_MIGRATED_TO_CRIMES"] = 19] = "MUST_BE_MIGRATED_TO_CRIMES";
+    TornApiError2[TornApiError2["RACE_NOT_YET_FINISHED"] = 20] = "RACE_NOT_YET_FINISHED";
+    TornApiError2[TornApiError2["INCORRECT_CATEGORY"] = 21] = "INCORRECT_CATEGORY";
+    TornApiError2[TornApiError2["SELECTION_ONLY_AVAILABLE_API_V1"] = 22] = "SELECTION_ONLY_AVAILABLE_API_V1";
+    TornApiError2[TornApiError2["SELECTION_ONLY_AVAILABLE_API_V2"] = 23] = "SELECTION_ONLY_AVAILABLE_API_V2";
+    TornApiError2[TornApiError2["CLOSED_TEMPORARILY"] = 24] = "CLOSED_TEMPORARILY";
+    TornApiError2[TornApiError2["INVALID_STAT_REQUESTED"] = 25] = "INVALID_STAT_REQUESTED";
+    TornApiError2[TornApiError2["ONLY_CATEGORY_OR_STATS_CAN"] = 26] = "ONLY_CATEGORY_OR_STATS_CAN";
+    TornApiError2[TornApiError2["MUST_BE_MIGRATED_TO_ORGANIZED"] = 27] = "MUST_BE_MIGRATED_TO_ORGANIZED";
+    TornApiError2[TornApiError2["INCORRECT_LOG_ID"] = 28] = "INCORRECT_LOG_ID";
+    TornApiError2[TornApiError2["CATEGORY_SELECTION_NOT_AVAILABLE_FOR"] = 29] = "CATEGORY_SELECTION_NOT_AVAILABLE_FOR";
+  })(TornApiError || (TornApiError = {}));
+  class HTTPClient {
+    canAbort() {
+      return false;
+    }
+  }
+  class AbortableHTTPClient extends HTTPClient {
+    canAbort() {
+      return true;
+    }
+  }
+  class FetchHTTPClient extends AbortableHTTPClient {
+    async getJson(url, timeout = void 0) {
+      let response;
+      if (timeout !== void 0) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
+        response = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+      } else {
+        response = await fetch(url);
+      }
+      return await response.json();
+    }
+  }
+  class TornApiClient {
+    httpClient;
+    defaultComment;
+    defaultTimeout;
+    constructor(options = {}) {
+      this.httpClient = options.httpClient ?? new FetchHTTPClient();
+      this.defaultComment = options.defaultComment;
+      this.defaultTimeout = options.defaultTimeout;
+    }
+    async getV1({ section, selections, id, params = {}, key, comment, cache, expiry, timeout }) {
+      const cached = await cache?.get({
+        section,
+        selections,
+        id,
+        params,
+        key
+      });
+      if (cached)
+        return cached;
+      let url = `https://api.torn.com/${section}/${id ?? ""}`;
+      url = this.populateUrl(url, key, selections ?? [], comment, params ?? {});
+      if (this.httpClient.canAbort() && typeof timeout === "number") {
+        return this.httpClient.getJson(url, timeout).then(addToCache).catch(this.handleError);
+      } else {
+        return this.httpClient.getJson(url).then(addToCache).catch(this.handleError);
+      }
+      function addToCache(response) {
+        if ("error" in response)
+          return response;
+        cache?.set({
+          section,
+          selections,
+          id,
+          params,
+          key
+        }, response, expiry ?? Date.now() + 3e4);
+        return response;
+      }
+    }
+    async getV2({ section, selections, id, params = {}, key, comment, cache, expiry, timeout }) {
+      const cached = await cache?.get({
+        section,
+        selections,
+        id,
+        params,
+        key
+      });
+      if (cached)
+        return cached;
+      let url = `https://api.torn.com/v2/${section}/${id ?? ""}`;
+      url = this.populateUrl(url, key, selections ?? [], comment, params ?? {});
+      if (this.httpClient.canAbort() && typeof timeout === "number") {
+        return this.httpClient.getJson(url, timeout).then(addToCache).catch(this.handleError);
+      } else {
+        return this.httpClient.getJson(url).then(addToCache).catch(this.handleError);
+      }
+      function addToCache(response) {
+        if ("error" in response)
+          return response;
+        cache?.set({
+          section,
+          selections,
+          id,
+          params,
+          key
+        }, response, expiry ?? Date.now() + 3e4);
+        return response;
+      }
+    }
+    handleError(error) {
+      console.error(error);
+      return { error: { code: -1, error: generateErrorString(error) } };
+      function generateErrorString(e) {
+        switch (typeof e) {
+          case "string":
+            return e;
+          case "object": {
+            if (e instanceof Error)
+              return e.message;
+            return JSON.stringify(e);
+          }
+          default:
+            return e.toString();
+        }
+      }
+    }
+    populateUrl(url, key, selections, comment, params) {
+      const allParams = {
+        key,
+        comment: comment ?? this.defaultComment,
+        selections: selections.length ? selections.join(",") : void 0,
+        ...params
+      };
+      const query = Object.entries(allParams).filter((entry) => !!entry[1]).map(([key2, value]) => `${key2}=${value}`).join("&");
+      return `${url}?${query}`;
+    }
+  }
   const FF_SCOUTER_BASE_URL = "https://ffscouter.com/api/v1";
   new TornApiClient({
-    defaultComment: `FFScouterV2-${"3.0.1"}`,
+    defaultComment: `FFScouterV2-${"3.3"}`,
     defaultTimeout: 30
 });
   async function gmRequest(options) {
@@ -933,6 +1034,11 @@ clearAll() {
       ["targets", player_ids.toString()]
     ]);
     return `${FF_SCOUTER_BASE_URL}/get-stats?${query.toString()}`;
+  };
+  const EMPTY_AVAILABLE_ESTIMATES = {
+    bss: null,
+    premium: null,
+    spies: null
   };
   function is_ff_success(resp) {
     return resp.code === void 0;
@@ -1026,6 +1132,8 @@ clearAll() {
             source: result.source ?? "bss",
             premium_insights_available: result.premium_insights_available ?? false,
             distribution,
+            available_estimates: result.available_estimates ?? EMPTY_AVAILABLE_ESTIMATES,
+            spies: result.spies ?? [],
             player_id: result.player_id
           });
         }
@@ -1269,6 +1377,16 @@ clearAll() {
           return null;
         }
       };
+      this.is_registered = async (force = false) => {
+        try {
+          const status = await this.check_key_status(force);
+          if (!status) return null;
+          return status.is_registered;
+        } catch (err) {
+          log$h.warn("Failed to check key registration status:", err);
+          return null;
+        }
+      };
       this.clear = () => {
         this.storage.remove(CHECK_KEY);
       };
@@ -1280,6 +1398,31 @@ clearAll() {
     ffconfig,
     new Storage("ffsv3-check")
   );
+  function resolve_estimate(data) {
+    const candidate = data.available_estimates?.[data.source];
+    return {
+      source: data.source,
+      bs_estimate: candidate?.bs_estimate ?? data.bs_estimate,
+      bs_estimate_human: candidate?.bs_estimate_human ?? data.bs_estimate_human,
+      last_updated: candidate?.last_updated ?? data.last_updated,
+      fair_fight: candidate?.fair_fight ?? data.fair_fight
+    };
+  }
+  function extract_ff(data) {
+    return resolve_estimate(data).fair_fight;
+  }
+  function extract_bs_estimate(data) {
+    return resolve_estimate(data).bs_estimate;
+  }
+  function extract_bs_estimate_human(data) {
+    return resolve_estimate(data).bs_estimate_human;
+  }
+  function extract_source(data) {
+    return resolve_estimate(data).source;
+  }
+  function extract_last_updated(data) {
+    return resolve_estimate(data).last_updated;
+  }
   const instanceOfAny = (object, constructors) => constructors.some((c) => object instanceof c);
   let idbProxyableTypes;
   let cursorAdvanceMethods;
@@ -2253,7 +2396,9 @@ queryString.charCodeAt(pos - 1) === 63) {
         }
       };
       this.clear_cache = () => {
-        this.cache.delete_db();
+        this.cache.delete_db().catch((err) => {
+          log$f.error("Failed to delete IndexedDB cache", err);
+        });
         check_key_status.clear();
       };
       this.enqueue_api = (player_id) => {
@@ -2333,7 +2478,11 @@ queryString.charCodeAt(pos - 1) === 63) {
           next_run = this.calculate_next_api_run(results.limits);
         }
         this.schedule_api(next_run);
-        await this.cache.clean_expired();
+        try {
+          await this.cache.clean_expired();
+        } catch (err) {
+          log$f.error("Failed to clean expired cache entries", err);
+        }
       };
       this.calculate_next_api_run = (limits) => {
         if (limits.remaining <= 0) {
@@ -2490,10 +2639,71 @@ queryString.charCodeAt(pos - 1) === 63) {
   const HOUR = 60 * 60;
   const DAY = HOUR * 24;
   const OLD_ESTIMATE_INTERVAL = 14 * DAY;
+  function get_source_marker(source) {
+    switch (source) {
+      case "spies":
+        return { icon: "spy", label: "Faction spy data" };
+      case "premium":
+        return { icon: "premium", label: "Premium data" };
+      case "bss":
+        return null;
+    }
+  }
+  const SOURCE_MARKER_VIEWBOX = "0 0 20 20";
+  const SPY_ICON_LENS = { cx: 8, cy: 8, r: 5 };
+  const SPY_ICON_HANDLE = { x1: 12, y1: 12, x2: 18, y2: 18 };
+  const SPY_ICON_COLOR = "#4a90d9";
+  const PREMIUM_ICON_PATH_D = "M10,1 L12.47,6.6 L18.56,7.22 L13.99,11.3 L15.29,17.28 L10,14.2 L4.71,17.28 L6.01,11.3 L1.44,7.22 L7.53,6.6 Z";
+  const PREMIUM_ICON_COLOR = "#d4af37";
+  const STAT_ICON_GEOMETRY = {
+    strength: {
+      d: "M721.018,226.5a1.506,1.506,0,1,0,1.506-1.5A1.5,1.5,0,0,0,721.018,226.5Zm-1.712,2.517a.838.838,0,0,1-.856-.989l.255-1.708a1.05,1.05,0,0,0-1.009-.743.618.618,0,0,0-.678.743l-.493,2.3a2.77,2.77,0,0,0,2.662,1.961h.827a.812.812,0,0,1,.831.985l-.36,2.48-1.689,4c-.168.531.194.962.808.962a1.111,1.111,0,0,0,.955-.643l1.761-3.685h.376l1.79,3.687a1.118,1.118,0,0,0,.959.641c.614,0,.975-.43.805-.961l-1.709-4.063-.342-2.413a.816.816,0,0,1,.834-.986h.828a2.77,2.77,0,0,0,2.663-1.961l-.495-2.288a.625.625,0,0,0-.685-.751,1.062,1.062,0,0,0-1.02.751l.257,1.7a.837.837,0,0,1-.855.989Z",
+      transform: "translate(-603.53, -215)",
+      viewBox: "112.5 9.5 13 15"
+    },
+    defense: {
+      d: "M916.08,233l-.886,3-.743,2.126a.63.63,0,0,0,.661.874,1.432,1.432,0,0,0,1.275-.874L917.13,236l.525-1.75,1.739.75-.381,3.1a.8.8,0,0,0,.841.9,1.08,1.08,0,0,0,1.063-.9l.381-3.1-1.838-3a1.244,1.244,0,0,1,1.05-1.234h.935a1.878,1.878,0,0,0,1.953-2l-.1-2.364a.9.9,0,0,0-.9-.693.6.6,0,0,0-.629.688L922,229h-3.79a1.4,1.4,0,0,0-1.3.97Zm1.05-6.5A1.577,1.577,0,1,0,918.7,225,1.539,1.539,0,0,0,917.13,226.5Z",
+      transform: "translate(-868.4, -215)",
+      viewBox: "45.5 9.5 10 15"
+    },
+    speed: {
+      d: "M1116,226.5a1.5,1.5,0,1,0,1.5-1.5A1.5,1.5,0,0,0,1116,226.5Zm4,6.188s1-.252,1-1.108-1-1-1-1-1.65.08-1.82-.143a8.8,8.8,0,0,0-2.18-1.716c-1.04-.571-1.85-1.119-2.7-.944-.86.159-2.54,2.14-3.15,2.7s.21,1.681,1.23.9a14.436,14.436,0,0,0,1.78-1.6s.53-.349.59-.175a5.245,5.245,0,0,1-.56,1.253,22.382,22.382,0,0,0-1.21,1.918c-.46.539-.83,1.506-1.05,1.57a20.377,20.377,0,0,1-2.55-.952.878.878,0,0,0-1.26.334,1,1,0,0,0,.45,1.332s3.6,1.522,4.09,1.427,1.64-2.109,1.95-2.109a3.4,3.4,0,0,1,1.54.792c.02.175,0,3.013,0,3.013s-.17.824.87.824.9-.824.9-.824.1-3.679.11-4.012-1.58-1.363-1.93-1.442c.39-.6,1.05-1.855,1.22-1.776.15.1.56,1.293,1.1,1.445C1117.92,232.531,1120,232.688,1120,232.688Z",
+      transform: "translate(-1097, -215)",
+      viewBox: "9.5 9.5 15 15"
+    },
+    dexterity: {
+      d: "M1315.748,233.172c0-1.188-1.713-2.818-1.713-2.818a5.12,5.12,0,0,0-2.3-1.785s-3.164-1.488-4.167-3.227a.679.679,0,0,0-.9-.262.611.611,0,0,0-.345.9,8.947,8.947,0,0,0,2.695,3.021c-1.661,1.051-2.308,4.288-2.308,4.288l-.167.758-1.755,4c-.178.531.2.962.835.962a1.154,1.154,0,0,0,.992-.643l1.838-3.685h.386l1.859,3.687a1.184,1.184,0,0,0,1,.641c.637,0,1.013-.43.836-.961L1310.755,234l-.178-.712a1.9,1.9,0,0,1,1.191-2.42,5.613,5.613,0,0,1,2.423,2.977l.073.155h1.149A2.038,2.038,0,0,0,1315.748,233.172Zm-3.426-6.672a1.568,1.568,0,1,0,1.567-1.5A1.533,1.533,0,0,0,1312.322,226.5Z",
+      transform: "translate(-1224.75, -215)",
+      viewBox: "79.5 9.5 12 15"
+    }
+  };
+  const STAT_ICON_LABELS = {
+    strength: "Strength",
+    speed: "Speed",
+    defense: "Defense",
+    dexterity: "Dexterity"
+  };
+  const CLOSE_SECOND_THRESHOLD = 10;
+  function get_stat_distribution_badges(dist) {
+    const entries = Object.entries(dist.stats_percentage);
+    const ranked = entries.filter((entry) => entry[1] !== void 0).sort((a, b) => b[1] - a[1]);
+    const top = ranked[0];
+    if (!top) {
+      return [];
+    }
+    const second = ranked[1];
+    if (second && top[1] - second[1] <= CLOSE_SECOND_THRESHOLD) {
+      return [
+        { stat: top[0], percent: top[1], position: "left" },
+        { stat: second[0], percent: second[1], position: "right" }
+      ];
+    }
+    return [{ stat: top[0], percent: top[1], position: "right" }];
+  }
   function format_ff_score(d2) {
-    const ff = d2.fair_fight.toFixed(2);
+    const ff = extract_ff(d2).toFixed(2);
     const now = Date.now() / 1e3;
-    const age = now - d2.last_updated;
+    const age = now - extract_last_updated(d2);
     var suffix = "";
     if (age > OLD_ESTIMATE_INTERVAL) {
       suffix = "?";
@@ -2501,13 +2711,14 @@ queryString.charCodeAt(pos - 1) === 63) {
     return `${ff}${suffix}`;
   }
   function format_difficulty_text(d2) {
-    if (d2.fair_fight <= 1) {
+    const ff = extract_ff(d2);
+    if (ff <= 1) {
       return "Extremely easy";
-    } else if (d2.fair_fight <= 2) {
+    } else if (ff <= 2) {
       return "Easy";
-    } else if (d2.fair_fight <= 3.5) {
+    } else if (ff <= 3.5) {
       return "Moderately difficult";
-    } else if (d2.fair_fight <= 4.5) {
+    } else if (ff <= 4.5) {
       return "Difficult";
     } else {
       return "May be impossible";
@@ -2681,7 +2892,7 @@ queryString.charCodeAt(pos - 1) === 63) {
     if (d2.no_data) {
       return NO_DATA_COLOR;
     }
-    let ff = d2.fair_fight;
+    let ff = extract_ff(d2);
     if (ff < 1) {
       ff = 1;
     } else if (ff > 5) {
@@ -2704,7 +2915,7 @@ queryString.charCodeAt(pos - 1) === 63) {
     const max_ff = ffconfig.max_ff_range;
     const low_mid_percent = 33;
     const mid_high_percent = 66;
-    const ff_lower = Math.min(d2.fair_fight, max_ff);
+    const ff_lower = Math.min(extract_ff(d2), max_ff);
     let percent;
     if (ff_lower < low_ff) {
       percent = (ff_lower - 1) / (low_ff - 1) * low_mid_percent;
@@ -2742,10 +2953,6 @@ queryString.charCodeAt(pos - 1) === 63) {
     const trimmed = valStr.trim();
     if (!trimmed) return null;
     return parse(trimmed, "s");
-  }
-  let _react;
-  function getReact() {
-    return _react ??= unsafeWindow.React;
   }
   new Proxy({}, {
     get(_, prop) {
@@ -2796,6 +3003,54 @@ queryString.charCodeAt(pos - 1) === 63) {
     "ffscouter-info-line__badge": "_ffscouter-info-line__badge_xi5zk_8",
     "ffscouter-info-line__premium-upgrade": "_ffscouter-info-line__premium-upgrade_xi5zk_15"
   };
+  function SourceMarkerIcon({ marker, className }) {
+    return jsxs(
+      "svg",
+      {
+        className: className ?? "ffscouter-inline-source-marker",
+        viewBox: SOURCE_MARKER_VIEWBOX,
+        role: "img",
+        "aria-label": marker.label,
+        children: [
+jsx("title", { children: marker.label }),
+          marker.icon === "spy" ? jsxs(Fragment, { children: [
+jsx(
+              "circle",
+              {
+                cx: SPY_ICON_LENS.cx,
+                cy: SPY_ICON_LENS.cy,
+                r: SPY_ICON_LENS.r,
+                fill: SPY_ICON_COLOR,
+                stroke: "#000000",
+                strokeWidth: 1.5
+              }
+            ),
+jsx(
+              "line",
+              {
+                x1: SPY_ICON_HANDLE.x1,
+                y1: SPY_ICON_HANDLE.y1,
+                x2: SPY_ICON_HANDLE.x2,
+                y2: SPY_ICON_HANDLE.y2,
+                stroke: "#000000",
+                strokeWidth: 2.5,
+                strokeLinecap: "round"
+              }
+            )
+          ] }) : jsx(
+            "path",
+            {
+              d: PREMIUM_ICON_PATH_D,
+              fill: PREMIUM_ICON_COLOR,
+              stroke: "#000000",
+              strokeWidth: 1.2,
+              strokeLinejoin: "round"
+            }
+          )
+        ]
+      }
+    );
+  }
   const log$e = logger.child("ui");
   const PREMIUM_UPGRADE_URL$1 = "https://ffscouter.com/premium";
   function FFHeaderLine({ playerId }) {
@@ -2849,9 +3104,10 @@ jsx(
     }
     const ffString = format_ff_score(data);
     const difficulty = format_difficulty_text(data);
-    const fresh = format_relative_time(data.last_updated);
+    const fresh = format_relative_time(extract_last_updated(data));
     const backgroundColor = get_ff_colour(data);
     const textColor = get_contrast_color(backgroundColor);
+    const sourceMarker = get_source_marker(extract_source(data));
     let extraDetailsLine = null;
     if (data.distribution?.distribution_human) {
       const ageStr = format_relative_time(data.distribution.last_updated);
@@ -2904,6 +3160,7 @@ jsxs(
           ]
         }
       ),
+      sourceMarker && jsx(SourceMarkerIcon, { marker: sourceMarker }),
 jsxs(
         "span",
         {
@@ -2916,7 +3173,7 @@ jsxs(
           },
           children: [
             "Est. Stats: ",
-jsx("span", { children: data.bs_estimate_human })
+jsx("span", { children: extract_bs_estimate_human(data) })
           ]
         }
       ),
@@ -2925,6 +3182,11 @@ jsx("span", { children: data.bs_estimate_human })
   }
   const log$d = logger.child("dom");
   const ID_PARAMS = ["XID", "user2ID"];
+  var GaugeAttachMode = ((GaugeAttachMode2) => {
+    GaugeAttachMode2["HONOR_BAR"] = "honor-bar";
+    GaugeAttachMode2["FALLBACK"] = "fallback";
+    return GaugeAttachMode2;
+  })(GaugeAttachMode || {});
   function extract_id_from_url(url) {
     const parsed = new URL(url);
     const search = new URLSearchParams(parsed.search);
@@ -2998,8 +3260,85 @@ jsx("span", { children: data.bs_estimate_human })
     svg.classList.add("ffscouter-arrow");
     return svg;
   }
+  function make_source_marker_svg(marker, className) {
+    const div = document.createElement("div");
+    const inner = marker.icon === "spy" ? `<circle cx="${SPY_ICON_LENS.cx}" cy="${SPY_ICON_LENS.cy}" r="${SPY_ICON_LENS.r}" fill="${SPY_ICON_COLOR}" stroke="#000000" stroke-width="1.5" />
+         <line x1="${SPY_ICON_HANDLE.x1}" y1="${SPY_ICON_HANDLE.y1}" x2="${SPY_ICON_HANDLE.x2}" y2="${SPY_ICON_HANDLE.y2}" stroke="#000000" stroke-width="2.5" stroke-linecap="round" />` : `<path d="${PREMIUM_ICON_PATH_D}" fill="${PREMIUM_ICON_COLOR}" stroke="#000000" stroke-width="1.2" stroke-linejoin="round" />`;
+    div.innerHTML = `<svg class="${className}" viewBox="${SOURCE_MARKER_VIEWBOX}" role="img" aria-label="${marker.label}">
+    <title>${marker.label}</title>
+    ${inner}
+  </svg>`;
+    if (!div.firstChild || !(div.firstChild instanceof SVGElement)) {
+      throw new Error(
+        "Wasn't able to extract source marker SVG out of div element"
+      );
+    }
+    return div.firstChild;
+  }
+  function make_source_marker_badge(d2) {
+    const marker = get_source_marker(extract_source(d2));
+    if (!marker) {
+      return null;
+    }
+    return make_source_marker_svg(marker, "ffscouter-source-marker");
+  }
+  function make_stat_icon_svg(stat, fill, className) {
+    const geo = STAT_ICON_GEOMETRY[stat];
+    const label = STAT_ICON_LABELS[stat];
+    const div = document.createElement("div");
+    div.innerHTML = `<svg class="${className}" viewBox="${geo.viewBox}" role="img" aria-label="${label}">
+    <title>${label}</title>
+    <g transform="${geo.transform}"><path d="${geo.d}" fill="${fill}" /></g>
+  </svg>`;
+    if (!div.firstChild || !(div.firstChild instanceof SVGElement)) {
+      throw new Error("Wasn't able to extract stat icon SVG out of div element");
+    }
+    return div.firstChild;
+  }
+  const BUBBLE_FONT_SIZE_PX = 8.5;
+  const BUBBLE_MIN_WIDTH_EM = 2.5882;
+  const BUBBLE_PADDING_EM = 0.4706;
+  const BUBBLE_FONT_FAMILY = "Geneva, Arial, sans-serif";
+  const BUBBLE_WIDTH_SAFETY_PX = 1;
+  let measure_canvas_ctx;
+  function get_measure_canvas_ctx() {
+    if (measure_canvas_ctx === void 0) {
+      measure_canvas_ctx = document.createElement("canvas").getContext("2d");
+    }
+    return measure_canvas_ctx;
+  }
+  const bubble_width_cache = new Map();
+  function measure_bubble_width(text) {
+    const scale = ffconfig.gauge_marker_scale / 100;
+    const border_width = ffconfig.gauge_marker_border_width * scale;
+    const cache_key = `${text}|${scale}|${border_width}`;
+    const cached = bubble_width_cache.get(cache_key);
+    if (cached !== void 0) {
+      return cached;
+    }
+    const font_size = BUBBLE_FONT_SIZE_PX * scale;
+    const ctx = get_measure_canvas_ctx();
+    let text_width = 0;
+    if (ctx) {
+      ctx.font = `bold ${font_size}px ${BUBBLE_FONT_FAMILY}`;
+      text_width = ctx.measureText(text).width;
+    }
+    const padding = BUBBLE_PADDING_EM * font_size;
+    const min_width = BUBBLE_MIN_WIDTH_EM * font_size;
+    const width = Math.max(min_width, text_width + padding * 2) + border_width * 2 + BUBBLE_WIDTH_SAFETY_PX;
+    bubble_width_cache.set(cache_key, width);
+    return width;
+  }
+  function measure_marker_width(marker) {
+    const bubble = marker.querySelector(".ffscouter-bubble");
+    if (!bubble) {
+      return null;
+    }
+    return measure_bubble_width(bubble.textContent ?? "");
+  }
   function make_marker(d2) {
     const markerType = ffconfig.gauge_marker_type;
+    let shape;
     if (markerType === GaugeMarkerType.BUBBLE_FF || markerType === GaugeMarkerType.BUBBLE_ESTIMATE) {
       const fill = get_ff_arrow_colour(d2);
       const contrastColor = get_contrast_color(fill);
@@ -3009,15 +3348,24 @@ jsx("span", { children: data.bs_estimate_human })
       bubble.style.color = contrastColor;
       bubble.style.borderWidth = `${ffconfig.gauge_marker_border_width * (ffconfig.gauge_marker_scale / 100)}px`;
       if (markerType === GaugeMarkerType.BUBBLE_FF) {
-        bubble.textContent = d2.fair_fight.toFixed(2);
+        bubble.textContent = extract_ff(d2).toFixed(2);
       } else {
-        bubble.textContent = d2.bs_estimate_human || "N/A";
+        bubble.textContent = extract_bs_estimate_human(d2) || "N/A";
       }
-      return bubble;
+      shape = bubble;
+    } else {
+      shape = make_arrow(d2);
     }
-    return make_arrow(d2);
+    const wrapper = document.createElement("div");
+    wrapper.classList.add("ffscouter-marker-wrapper");
+    wrapper.appendChild(shape);
+    const badge = make_source_marker_badge(d2);
+    if (badge) {
+      wrapper.appendChild(badge);
+    }
+    return wrapper;
   }
-  function add_ff_arrow(element, featureName = "Unknown") {
+  function add_ff_arrow(element, featureName, attachMode) {
     const player_id = get_player_id_in_element(element);
     if (!player_id) {
       return;
@@ -3034,19 +3382,41 @@ jsx("span", { children: data.bs_estimate_human })
         ffscouter.add_analytics_entry(featureName, player_id, "ignored");
         return;
       }
-      const percent = ff_to_percent(d2);
+      const isBubbleMarker = ffconfig.gauge_marker_type === GaugeMarkerType.BUBBLE_FF || ffconfig.gauge_marker_type === GaugeMarkerType.BUBBLE_ESTIMATE;
+      let percent = ff_to_percent(d2);
+      if (isBubbleMarker) {
+        if (ffconfig.gauge_marker_justify === GaugeMarkerJustify.LEFT) {
+          percent = 0;
+        } else if (ffconfig.gauge_marker_justify === GaugeMarkerJustify.RIGHT) {
+          percent = 100;
+        }
+      }
       element.classList.add("ffscouter-gauge");
       element.style.setProperty("--band-percent", `${percent}`);
+      element.setAttribute("data-ffscouter-attach-mode", attachMode);
+      element.setAttribute(
+        "data-ffscouter-band-side",
+        percent > 50 ? "right" : "left"
+      );
       document.body.style.setProperty(
         "--ffscouter-marker-scale",
         `${ffconfig.gauge_marker_scale / 100}`
       );
-      const a = element.querySelector(".ffscouter-arrow, .ffscouter-bubble");
-      if (a) {
-        a.remove();
+      const existing = element.querySelector(".ffscouter-marker-wrapper");
+      if (existing) {
+        existing.remove();
       }
-      element.appendChild(make_marker(d2));
+      const marker = element.appendChild(make_marker(d2));
+      const width = measure_marker_width(marker);
+      if (width !== null) {
+        element.style.setProperty(
+          "--ffscouter-marker-actual-width",
+          `${width}px`
+        );
+      }
       ffscouter.add_analytics_entry(featureName, player_id, "applied");
+    }).catch((err) => {
+      log$d.error(err);
     });
   }
   function has_href(el) {
@@ -3126,16 +3496,16 @@ jsx("span", { children: data.bs_estimate_human })
     }
     return status.toLowerCase();
   }
-  function apply_ff_gauge_selector(node_list, featureName = "Unknown") {
+  function apply_ff_gauge_selector(node_list, featureName, attachMode) {
     for (const node of node_list) {
-      add_ff_arrow(node, featureName);
+      add_ff_arrow(node, featureName, attachMode);
     }
   }
-  function apply_ff_gauge(element, featureName = "Unknown") {
+  function apply_ff_gauge(element, featureName, attachMode) {
     if (!(element instanceof HTMLElement)) {
       return;
     }
-    add_ff_arrow(element, featureName);
+    add_ff_arrow(element, featureName, attachMode);
   }
   async function wait_for_element(querySelector, timeout, root) {
     const existingElement = document.querySelector(querySelector);
@@ -3349,10 +3719,6 @@ jsx("span", { children: data.bs_estimate_human })
     ) ?? "";
     return { ...classes, tab };
   }
-  let _reactDOM;
-  function getReactDOM() {
-    return _reactDOM ??= unsafeWindow.ReactDOM;
-  }
   new Proxy({}, {
     get(_, prop) {
       return getReactDOM()[prop];
@@ -3504,6 +3870,7 @@ jsx("span", { children: data.bs_estimate_human })
     onFilterChange,
     ref,
     initialHasLastActionData = false,
+    filteringDisabled = false,
     onReady
   }) {
     const [filterState, setFilterState] = useState(
@@ -3526,6 +3893,8 @@ jsx("span", { children: data.bs_estimate_human })
     hasLastActionDataRef.current = hasLastActionData;
     const modeRef = useRef(mode);
     modeRef.current = mode;
+    const filteringDisabledRef = useRef(filteringDisabled);
+    filteringDisabledRef.current = filteringDisabled;
     const onFilterChangeRef = useRef(onFilterChange);
     onFilterChangeRef.current = onFilterChange;
     const debounceTimerRef = useRef(null);
@@ -3540,7 +3909,7 @@ jsx("span", { children: data.bs_estimate_human })
       const s2 = filterStateRef.current;
       return {
         sortBy: s2.sortBy,
-        filterEnabled: s2.filterEnabled,
+        filterEnabled: filteringDisabledRef.current ? false : s2.filterEnabled,
         activity: s2.activity,
 
 
@@ -3865,7 +4234,7 @@ status: modeRef.current === "war" ? { ...s2.status, fallen: false } : s2.status,
       };
       const factionId1 = ids[0];
       const factionId2 = ids[1];
-      const scouterUrl = `https://ffscouter.com/faction-activity-comparison?faction_id_1=${factionId1}&faction_id_2=${factionId2}&start_at=${encodeURIComponent(formatUTC(start))}&end_at=${encodeURIComponent(formatUTC(now))}&bucket_minutes=5`;
+      const scouterUrl = `https://ffscouter.com/faction-activity-comparison?faction_id_1=${factionId1}&faction_id_2=${factionId2}&start_at=${encodeURIComponent(formatUTC(start))}&end_at=${encodeURIComponent(formatUTC(now))}&bucket_minutes=60`;
       window.open(scouterUrl, "_blank");
     };
     const s = filterState;
@@ -4481,6 +4850,12 @@ player_id: Number.parseInt(match.groups["player_id"], 10),
         cell.onclick = (e) => {
           e.preventDefault();
           e.stopPropagation();
+          const freshPlayerId = get_player_id_in_element(rp.row);
+          log$b.info("FF/Est cell click: id-binding cross-check:", {
+            staleClosurePlayerId: rp.player_id,
+            freshPlayerId,
+            stale: freshPlayerId !== rp.player_id
+          });
           const forceNewTab = e.ctrlKey || e.metaKey || e.button === 1;
           open_attack_link(rp.player_id, {
             openInNewTab: forceNewTab ? true : void 0
@@ -4489,22 +4864,35 @@ player_id: Number.parseInt(match.groups["player_id"], 10),
       }
       const data = dataMap.get(rp.player_id);
       if (data && !data.no_data) {
-        rp.row.dataset["ffValue"] = String(data.fair_fight);
-        rp.row.dataset["estValue"] = String(data.bs_estimate);
+        rp.row.dataset["ffValue"] = String(extract_ff(data));
+        rp.row.dataset["estValue"] = String(extract_bs_estimate(data));
         if (cell) {
-          const text = isEst ? data.bs_estimate_human : format_ff_score(data);
+          const text = isEst ? extract_bs_estimate_human(data) : format_ff_score(data);
           const bg_color = get_ff_colour(data);
           const text_color = get_contrast_color(bg_color);
           cell.style.backgroundColor = bg_color;
           cell.style.color = text_color;
           cell.style.fontWeight = "bold";
           cell.textContent = text;
-          if (isEst && data.distribution) {
+          if (data.distribution) {
             const ageStr = format_relative_time(data.distribution.last_updated);
             const agePart = ageStr ? ` ${ageStr}` : "";
             cell.title = `Top Stats: ${data.distribution.distribution_human}${agePart}`;
           } else {
             cell.title = "";
+          }
+          if (ffconfig.stat_distribution_badge_enabled && data.distribution) {
+            for (const badge of get_stat_distribution_badges(data.distribution)) {
+              cell.appendChild(
+                make_stat_icon_svg(
+                  badge.stat,
+
+
+"currentColor",
+                  `ffscouter-stat-badge ffscouter-stat-badge--${badge.position}`
+                )
+              );
+            }
           }
         }
       } else {
@@ -4554,9 +4942,12 @@ player_id: Number.parseInt(match.groups["player_id"], 10),
     loadObserver.observe(root, { childList: true, subtree: true });
     cleanup_when_detached(root, () => loadObserver.disconnect());
   }
+  const filterBoxRoots = new Map();
   function mountFilterBox(mode, onFilterChange) {
+    filterBoxRoots.get(mode)?.unmount();
     const container = document.createElement("div");
-    container.style.display = "contents";
+    const filteringDisabled = mode === "war" ? !ffconfig.war_filter_enabled : !ffconfig.faction_filter_enabled;
+    container.style.display = filteringDisabled ? "none" : "contents";
     container.setAttribute("data-ff-filter-box", "true");
     container.setAttribute("data-mode", mode);
     const ref = { current: null };
@@ -4593,7 +4984,7 @@ player_id: Number.parseInt(match.groups["player_id"], 10),
       setSortBy: (val) => runOrBuffer((h2) => h2.setSortBy(val)),
       getFilterSnapshot: () => ready && ref.current ? ref.current.getFilterSnapshot() : {
         sortBy: "none",
-        filterEnabled: true,
+        filterEnabled: !filteringDisabled,
         activity: { online: true, idle: true, offline: true },
         status: {
           okay: true,
@@ -4621,12 +5012,15 @@ player_id: Number.parseInt(match.groups["player_id"], 10),
       dispatchChange: () => runOrBuffer((h2) => h2.dispatchChange())
     };
     container.__ffHandle = handle;
-    createRoot(container).render(
+    const root = createRoot(container);
+    filterBoxRoots.set(mode, root);
+    root.render(
       createElement(FFFactionFilterBox, {
         mode,
         onFilterChange,
         ref,
         initialHasLastActionData: hasLastActionDataProp,
+        filteringDisabled,
         onReady
       })
     );
@@ -4711,7 +5105,9 @@ player_id: Number.parseInt(match.groups["player_id"], 10),
     membersList.setAttribute("data-ffscouter-initialized", "true");
     inject_filter_box(membersList);
     setup_header_click(membersList, ".table-header", "[role='button']");
-    apply_ff_columns(membersList);
+    apply_ff_columns(membersList).catch((err) => {
+      log$a.error(err);
+    });
     const target = membersList.querySelector(".table-body") || membersList;
     setup_reapply_watcher(
       membersList,
@@ -4765,9 +5161,14 @@ player_id: Number.parseInt(match.groups["player_id"], 10),
     }
     apply_ff_gauge_selector(
       root.querySelectorAll(".honor-text-wrap"),
-      FEATURE_NAME$4
+      FEATURE_NAME$4,
+      GaugeAttachMode.HONOR_BAR
     );
-    apply_ff_gauge_selector(root.querySelectorAll(".member"), FEATURE_NAME$4);
+    apply_ff_gauge_selector(
+      root.querySelectorAll(".member"),
+      FEATURE_NAME$4,
+      GaugeAttachMode.FALLBACK
+    );
     for (const l of root.querySelectorAll(".members-list, .chain-attacks-list")) {
       if (l instanceof HTMLElement) {
         apply_ff_members_list(l);
@@ -4842,7 +5243,9 @@ player_id: Number.parseInt(match.groups["player_id"], 10),
   }
   function initialize_war_list(list) {
     setup_header_click(list, ".white-grad", "[class*='tab___']");
-    apply_ff_columns(list);
+    apply_ff_columns(list).catch((err) => {
+      log$a.error(err);
+    });
     setup_reapply_watcher(list, list, () => ffconfig.war_col_display);
   }
   const process_page = () => {
@@ -4851,12 +5254,16 @@ player_id: Number.parseInt(match.groups["player_id"], 10),
         log$a.debug("Found members-list!");
         monitor_member_list(node);
       }
+    }).catch((err) => {
+      log$a.error(err);
     });
     wait_for_element(".chain-attacks-list", 1e4).then((node) => {
       if (node instanceof HTMLElement) {
         log$a.debug("Found chain-attacks-list!");
         monitor_member_list(node, true);
       }
+    }).catch((err) => {
+      log$a.error(err);
     });
     wait_for_element("#faction_war_list_id", 1e4).then(async (node) => {
       if (!node) {
@@ -4864,19 +5271,26 @@ player_id: Number.parseInt(match.groups["player_id"], 10),
       }
       log$a.debug("Found faction_war_list_id");
       const descriptions_observer = new MutationObserver(async (mutations) => {
-        for (const mutation of mutations) {
-          for (const node2 of mutation.addedNodes) {
-            if (node2 instanceof HTMLElement && node2.classList.contains("descriptions")) {
-              log$a.debug(
-                "Observed mutation that included adding descriptions",
-                node2
-              );
-              const faction_war = await wait_for_element(".faction-war", 1e4);
-              if (faction_war instanceof HTMLElement) {
-                setup_war_features(faction_war);
+        try {
+          for (const mutation of mutations) {
+            for (const node2 of mutation.addedNodes) {
+              if (node2 instanceof HTMLElement && node2.classList.contains("descriptions")) {
+                log$a.debug(
+                  "Observed mutation that included adding descriptions",
+                  node2
+                );
+                const faction_war = await wait_for_element(
+                  ".faction-war",
+                  1e4
+                );
+                if (faction_war instanceof HTMLElement) {
+                  setup_war_features(faction_war);
+                }
               }
             }
           }
+        } catch (err) {
+          log$a.error(err);
         }
       });
       descriptions_observer.observe(node, { childList: true });
@@ -4894,6 +5308,8 @@ player_id: Number.parseInt(match.groups["player_id"], 10),
           setup_war_features(faction_war);
         }
       }
+    }).catch((err) => {
+      log$a.error(err);
     });
   };
   function should_run_faction() {
@@ -4907,6 +5323,107 @@ player_id: Number.parseInt(match.groups["player_id"], 10),
     }
     return false;
   }
+  const API_KEY_NOTICE_ID = "ffscouter-api-key-notice";
+  let apiKeyNoticeDismissed = false;
+  let apiKeyNoticeQueue = Promise.resolve();
+  function remove_api_key_notice() {
+    document.getElementById(API_KEY_NOTICE_ID)?.remove();
+  }
+  function build_api_key_notice(message) {
+    const banner = document.createElement("div");
+    banner.id = API_KEY_NOTICE_ID;
+    banner.style.cssText = [
+      "background: var(--ffscouter-glow-color, #4caf50)",
+      "color: #fff",
+      "padding: 10px 16px",
+      "font-size: 14px",
+      "display: flex",
+      "align-items: center",
+      "justify-content: space-between",
+      "gap: 12px",
+      "z-index: 9999",
+      "box-sizing: border-box",
+      "width: 100%"
+    ].join(";");
+    const msg = document.createElement("span");
+    const link = document.createElement("a");
+    link.textContent = "FF Scouter Settings";
+    link.style.cssText = "color: #fff; font-weight: bold; text-decoration: underline;";
+    msg.append(message, link, " on your profile page.");
+    getLocalUserId().then((id) => {
+      if (id) {
+        link.href = `https://www.torn.com/profiles.php?XID=${id}#ff-scouter-api-key`;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+      }
+    }).catch((err) => {
+      log$a.error(err);
+    });
+    const closeBtn = document.createElement("button");
+    closeBtn.textContent = "×";
+    closeBtn.setAttribute("aria-label", "Dismiss");
+    closeBtn.style.cssText = [
+      "background: none",
+      "border: none",
+      "color: #fff",
+      "font-size: 20px",
+      "font-weight: bold",
+      "cursor: pointer",
+      "padding: 0",
+      "line-height: 1",
+      "flex-shrink: 0"
+    ].join(";");
+    closeBtn.onclick = () => {
+      apiKeyNoticeDismissed = true;
+      banner.remove();
+    };
+    banner.appendChild(msg);
+    banner.appendChild(closeBtn);
+    return banner;
+  }
+  async function update_api_key_notice_impl() {
+    if (!should_run_faction() || apiKeyNoticeDismissed) {
+      remove_api_key_notice();
+      return;
+    }
+    if (document.getElementById(API_KEY_NOTICE_ID)) {
+      return;
+    }
+    let message;
+    if (!ffconfig.key) {
+      message = "FF Scouter needs your API key to show Fair Fight data here. Enter it in ";
+    } else {
+      const registered = await check_key_status.is_registered();
+      if (registered !== false) {
+        return;
+      }
+      message = "Your FF Scouter API key isn't registered. Check it in ";
+    }
+    if (!should_run_faction() || apiKeyNoticeDismissed) {
+      remove_api_key_notice();
+      return;
+    }
+    if (document.getElementById(API_KEY_NOTICE_ID)) {
+      return;
+    }
+    const wrapper = await wait_for_element(".content-wrapper", 1e4);
+    if (!wrapper) {
+      return;
+    }
+    if (!should_run_faction() || apiKeyNoticeDismissed) {
+      remove_api_key_notice();
+      return;
+    }
+    if (document.getElementById(API_KEY_NOTICE_ID)) {
+      return;
+    }
+    wrapper.prepend(build_api_key_notice(message));
+  }
+  function update_api_key_notice() {
+    apiKeyNoticeQueue = apiKeyNoticeQueue.then(update_api_key_notice_impl).catch((err) => {
+      log$a.error(err);
+    });
+  }
   const index$c = {
     name: "Faction page FF display",
     description: "Shows FF arrows on both your faction and other faction pages.",
@@ -4919,6 +5436,7 @@ player_id: Number.parseInt(match.groups["player_id"], 10),
         if (should_run_faction()) {
           process_page();
         }
+        update_api_key_notice();
       });
       window.addEventListener("ff-config-updated", () => {
         if (should_run_faction()) {
@@ -4927,14 +5445,18 @@ player_id: Number.parseInt(match.groups["player_id"], 10),
           );
           for (const list of lists) {
             if (list instanceof HTMLElement) {
-              apply_ff_columns(list);
+              apply_ff_columns(list).catch((err) => {
+                log$a.error(err);
+              });
             }
           }
         }
+        update_api_key_notice();
       });
       if (should_run_faction()) {
         process_page();
       }
+      update_api_key_notice();
     }
   };
   const __vite_glob_0_2 = Object.freeze( Object.defineProperty({
@@ -5056,11 +5578,13 @@ player_id: Number.parseInt(match.groups["player_id"], 10),
         let page_specific = [];
         if (href.startsWith("https://www.torn.com/companies.php")) {
           page_specific = [".employee", ".director"];
-        } else if (href.startsWith("https://www.torn.com/page.php?sid=competition#/team")) {
+        } else if (href.startsWith(
+          "https://www.torn.com/page.php?sid=competition#/team"
+        ) || href.startsWith("https://www.torn.com/page.php?sid=elimination#/team")) {
           page_specific = ['[class*="name__"]'];
         } else if (href.startsWith("https://www.torn.com/joblist.php")) {
           page_specific = [".employee", ".director"];
-        } else if (torn_page("messages") || torn_page("index") || torn_page("hospitalview") || torn_page("page", { sid: "UserList" })) {
+        } else if (torn_page("messages") || torn_page("index") || torn_page("page", { sid: "UserList" })) {
           page_specific = [".name"];
         } else if (href.startsWith("https://www.torn.com/bounties.php")) {
           page_specific = [".target, .listed"];
@@ -5088,7 +5612,7 @@ player_id: Number.parseInt(match.groups["player_id"], 10),
         return {
           has_page_specific: false,
           page_specific_selectors: [],
-          combined_selector: ".honor-text-wrap, .user.name"
+          combined_selector: ".honor-text-wrap, .user-wrap.user-name, .user.name"
         };
       };
       let current_config = get_page_selectors();
@@ -5104,20 +5628,40 @@ player_id: Number.parseInt(match.groups["player_id"], 10),
           ".honor-text-wrap"
         );
         if (honor_bars.length > 0) {
-          apply_ff_gauge_selector(honor_bars, FEATURE_NAME_HONOR_BAR);
+          apply_ff_gauge_selector(
+            honor_bars,
+            FEATURE_NAME_HONOR_BAR,
+            GaugeAttachMode.HONOR_BAR
+          );
         } else if (current_config.has_page_specific) {
           for (const selector of current_config.page_specific_selectors) {
             apply_ff_gauge_selector(
               node.querySelectorAll(selector),
-              FEATURE_NAME$3
+              FEATURE_NAME$3,
+              GaugeAttachMode.FALLBACK
             );
           }
         } else {
-          const name_elems = node.querySelectorAll(
+          const userwrap = node.querySelectorAll(
+            ".user-wrap.user-name"
+          );
+          if (userwrap.length > 0) {
+            apply_ff_gauge_selector(
+              userwrap,
+              FEATURE_NAME_USER_NAME,
+              GaugeAttachMode.FALLBACK
+            );
+            return;
+          }
+          const username = node.querySelectorAll(
             ".user.name"
           );
-          if (name_elems.length > 0) {
-            apply_ff_gauge_selector(name_elems, FEATURE_NAME_USER_NAME);
+          if (username.length > 0) {
+            apply_ff_gauge_selector(
+              username,
+              FEATURE_NAME_USER_NAME,
+              GaugeAttachMode.FALLBACK
+            );
           }
         }
         ffscouter.complete();
@@ -5489,23 +6033,28 @@ player_id: Number.parseInt(match.groups["player_id"], 10),
           root.querySelectorAll(
             "div.bazaar-listing-card div:first-child div:first-child > a"
           ),
-          FEATURE_NAME$2
+          FEATURE_NAME$2,
+          GaugeAttachMode.FALLBACK
         );
         apply_ff_gauge_selector(
           root.querySelectorAll(".bazaar-card a"),
-          FEATURE_NAME$2
+          FEATURE_NAME$2,
+          GaugeAttachMode.FALLBACK
         );
         apply_ff_gauge_selector(
           root.querySelectorAll(".bazaar-card .bazaar-card-name"),
-          FEATURE_NAME$2
+          FEATURE_NAME$2,
+          GaugeAttachMode.FALLBACK
         );
         apply_ff_gauge_selector(
           root.querySelectorAll(".honor-text-wrap"),
-          FEATURE_NAME$2
+          FEATURE_NAME$2,
+          GaugeAttachMode.HONOR_BAR
         );
         apply_ff_gauge_selector(
           root.querySelectorAll('[class*="userInfoWrapper__"]'),
-          FEATURE_NAME$2
+          FEATURE_NAME$2,
+          GaugeAttachMode.FALLBACK
         );
       };
       const observer = new MutationObserver(process);
@@ -5918,18 +6467,26 @@ jsx("br", {}),
         }
         log$3.debug(`Found mini profile update for ${player_id}, adding ff data`);
         for (const bar of miniroot.querySelectorAll(".honor-text-wrap")) {
-          apply_ff_gauge(bar, FEATURE_NAME$1);
+          apply_ff_gauge(bar, FEATURE_NAME$1, GaugeAttachMode.HONOR_BAR);
         }
         miniroot.querySelector(".ffscouter-mini-desc")?.remove();
         const ff_string = format_ff_score(d2);
-        const fresh = format_relative_time(d2.last_updated);
-        const message = `FF ${ff_string} ${fresh}`;
-        const lastaction = miniroot.querySelector(".last-action");
+        const fresh = format_relative_time(extract_last_updated(d2));
+        const marker = get_source_marker(extract_source(d2));
         const desc = document.createElement("span");
         desc.classList.add("ffscouter-mini-desc");
-        desc.innerText = message;
+        desc.append(`FF ${ff_string}`);
+        if (marker) {
+          desc.appendChild(
+            make_source_marker_svg(marker, "ffscouter-inline-source-marker")
+          );
+        }
+        desc.append(` ${fresh}`);
+        const lastaction = miniroot.querySelector(".last-action");
         lastaction?.appendChild(document.createElement("br"));
         lastaction?.appendChild(desc);
+      }).catch((err) => {
+        log$3.error(err);
       });
       ffscouter.complete();
     });
@@ -6155,14 +6712,18 @@ jsx("br", {}),
         }
         const honor_bar = options.added.querySelector(".honor-text-wrap");
         if (honor_bar) {
-          apply_ff_gauge(honor_bar, FEATURE_NAME);
+          apply_ff_gauge(honor_bar, FEATURE_NAME, GaugeAttachMode.HONOR_BAR);
           return;
         }
         const user_info_wrapper = options.added.querySelector(
           '[class*="userInfoBlock__"]'
         );
         if (user_info_wrapper) {
-          apply_ff_gauge(user_info_wrapper, FEATURE_NAME);
+          apply_ff_gauge(
+            user_info_wrapper,
+            FEATURE_NAME,
+            GaugeAttachMode.FALLBACK
+          );
           return;
         }
       };
@@ -6267,16 +6828,24 @@ jsx("br", {}),
     gaugeMarkerType: CONFIG_DEFAULTS.gauge_marker_type,
     gaugeMarkerScale: CONFIG_DEFAULTS.gauge_marker_scale,
     gaugeMarkerBorderWidth: CONFIG_DEFAULTS.gauge_marker_border_width,
+    gaugeMarkerJustify: CONFIG_DEFAULTS.gauge_marker_justify,
     colorScheme: CONFIG_DEFAULTS.color_scheme,
     warQuickAttackAction: CONFIG_DEFAULTS.war_quick_attack_action,
     statusAttackLinksEnabled: CONFIG_DEFAULTS.status_attack_links_enabled,
     debugDisablePdaHttp: CONFIG_DEFAULTS.debug_disable_pda_http,
-    isPremium: null
+    debugForceReactFallback: CONFIG_DEFAULTS.debug_force_react_fallback,
+    settingsPanelOwnProfileOnly: CONFIG_DEFAULTS.settings_panel_own_profile_only,
+    factionFilterEnabled: CONFIG_DEFAULTS.faction_filter_enabled,
+    warFilterEnabled: CONFIG_DEFAULTS.war_filter_enabled,
+    statDistributionBadgeEnabled: CONFIG_DEFAULTS.stat_distribution_badge_enabled,
+    isPremium: null,
+    isKeyRegistered: null
   };
   function SettingsPanelComponent({
     props,
     drafts,
     isPremium,
+    isKeyRegistered,
     rangeError,
     showSavedMessage,
     onChange,
@@ -6291,10 +6860,11 @@ jsx("br", {}),
       onRendered();
     });
     const previewColor = get_palette_for_scheme(drafts.colorScheme)[5] ?? "#888888";
+    const previewSourceMarker = get_source_marker("spies");
     return jsxs(
       "details",
       {
-        className: `${cls.accordion}${!props.apiKey ? ` ${cls.accordionGlow}` : ""} cont-gray border-round`,
+        className: `${cls.accordion}${!props.apiKey || isKeyRegistered === false ? ` ${cls.accordionGlow}` : ""} cont-gray border-round`,
         children: [
 jsx("summary", { children: "FF Scouter Settings" }),
 jsxs("div", { className: cls.body, children: [
@@ -6325,11 +6895,11 @@ jsx(
                 ] }),
 jsxs("div", { className: `${cls.span} ${cls.apiBlock}`, children: [
 jsxs("div", { className: cls.cell, children: [
-jsx("label", { htmlFor: "api-key", children: "API Key:" }),
+jsx("label", { htmlFor: "ff-scouter-api-key", children: "API Key:" }),
 jsx(
                       "input",
                       {
-                        id: "api-key",
+                        id: "ff-scouter-api-key",
                         type: "text",
                         className: props.apiKey ? cls.blur : "",
                         placeholder: "Paste your key here...",
@@ -6377,6 +6947,22 @@ jsxs(
 jsx("option", { value: "arrow", children: "Arrow (Default)" }),
 jsx("option", { value: "bubble_ff", children: "Bubble (FF Score)" }),
 jsx("option", { value: "bubble_estimate", children: "Bubble (BS Estimate)" })
+                      ]
+                    }
+                  )
+                ] }),
+                (drafts.gaugeMarkerType === "bubble_ff" || drafts.gaugeMarkerType === "bubble_estimate") && jsxs("div", { className: cls.cell, children: [
+jsx("label", { htmlFor: "gauge-marker-justify", children: "Bubble Position:" }),
+jsxs(
+                    "select",
+                    {
+                      id: "gauge-marker-justify",
+                      value: drafts.gaugeMarkerJustify,
+                      onChange,
+                      children: [
+jsx("option", { value: "gauge", children: "Gauge (Default)" }),
+jsx("option", { value: "left", children: "Always Left" }),
+jsx("option", { value: "right", children: "Always Right" })
                       ]
                     }
                   )
@@ -6449,38 +7035,56 @@ jsxs(
                           "--ffscouter-marker-scale": drafts.gaugeMarkerScale / 100
                         },
                         children: [
+jsxs("span", { className: "ffscouter-preview-marker-slot", children: [
 jsxs(
-                            "svg",
-                            {
-                              className: "ffscouter-preview-arrow",
-                              viewBox: FF_ARROW_VIEWBOX,
-                              children: [
+                              "svg",
+                              {
+                                className: "ffscouter-preview-arrow",
+                                viewBox: FF_ARROW_VIEWBOX,
+                                children: [
 jsx("title", { children: "Preview Gauge Marker" }),
 jsx(
-                                  "path",
-                                  {
-                                    fillRule: "evenodd",
-                                    fill: previewColor,
-                                    stroke: "#000000",
-                                    strokeWidth: drafts.gaugeMarkerBorderWidth,
-                                    d: FF_ARROW_PATH_D
-                                  }
-                                )
-                              ]
-                            }
-                          ),
+                                    "path",
+                                    {
+                                      fillRule: "evenodd",
+                                      fill: previewColor,
+                                      stroke: "#000000",
+                                      strokeWidth: drafts.gaugeMarkerBorderWidth,
+                                      d: FF_ARROW_PATH_D
+                                    }
+                                  )
+                                ]
+                              }
+                            ),
+                            previewSourceMarker && jsx(
+                              SourceMarkerIcon,
+                              {
+                                marker: previewSourceMarker,
+                                className: "ffscouter-source-marker"
+                              }
+                            )
+                          ] }),
+jsxs("span", { className: "ffscouter-preview-marker-slot", children: [
 jsx(
-                            "div",
-                            {
-                              className: "ffscouter-preview-bubble",
-                              style: {
-                                backgroundColor: previewColor,
-                                color: get_contrast_color(previewColor),
-                                borderWidth: `${drafts.gaugeMarkerBorderWidth * (drafts.gaugeMarkerScale / 100)}px`
-                              },
-                              children: "2.34"
-                            }
-                          )
+                              "div",
+                              {
+                                className: "ffscouter-preview-bubble",
+                                style: {
+                                  backgroundColor: previewColor,
+                                  color: get_contrast_color(previewColor),
+                                  borderWidth: `${drafts.gaugeMarkerBorderWidth * (drafts.gaugeMarkerScale / 100)}px`
+                                },
+                                children: "2.34"
+                              }
+                            ),
+                            previewSourceMarker && jsx(
+                              SourceMarkerIcon,
+                              {
+                                marker: previewSourceMarker,
+                                className: "ffscouter-source-marker"
+                              }
+                            )
+                          ] })
                         ]
                       }
                     )
@@ -6735,6 +7339,18 @@ jsx("option", { value: "none", children: "None (Hide Column)" })
                     }
                   )
                 ] }),
+jsxs("div", { className: `${cls.cell} ${cls.cellCheckbox}`, children: [
+jsx(
+                    "input",
+                    {
+                      id: "faction-filter-toggle",
+                      type: "checkbox",
+                      checked: drafts.factionFilterEnabled,
+                      onChange
+                    }
+                  ),
+jsx("label", { htmlFor: "faction-filter-toggle", children: "Show faction filter box" })
+                ] }),
 jsxs("div", { className: cls.cell, children: [
 jsx("label", { htmlFor: "war-col-display", children: "War Page Shows:" }),
 jsxs(
@@ -6750,6 +7366,18 @@ jsx("option", { value: "none", children: "None (Hide Column)" })
                       ]
                     }
                   )
+                ] }),
+jsxs("div", { className: `${cls.cell} ${cls.cellCheckbox}`, children: [
+jsx(
+                    "input",
+                    {
+                      id: "war-filter-toggle",
+                      type: "checkbox",
+                      checked: drafts.warFilterEnabled,
+                      onChange
+                    }
+                  ),
+jsx("label", { htmlFor: "war-filter-toggle", children: "Show war filter box" })
                 ] }),
 jsxs("div", { className: `${cls.cell} ${cls.cellCheckbox}`, children: [
 jsx(
@@ -6789,6 +7417,30 @@ jsx(
                     }
                   ),
 jsx("label", { htmlFor: "ff-history-toggle", children: "Enable FF History button on profile pages" })
+                ] }),
+jsxs("div", { className: `${cls.cell} ${cls.cellCheckbox}`, children: [
+jsx(
+                    "input",
+                    {
+                      id: "stat-distribution-badge-toggle",
+                      type: "checkbox",
+                      checked: drafts.statDistributionBadgeEnabled,
+                      onChange
+                    }
+                  ),
+jsx("label", { htmlFor: "stat-distribution-badge-toggle", children: "Show dominant stat badge on faction/war FF cells" })
+                ] }),
+jsxs("div", { className: `${cls.cell} ${cls.cellCheckbox}`, children: [
+jsx(
+                    "input",
+                    {
+                      id: "settings-panel-own-profile-only-toggle",
+                      type: "checkbox",
+                      checked: drafts.settingsPanelOwnProfileOnly,
+                      onChange
+                    }
+                  ),
+jsx("label", { htmlFor: "settings-panel-own-profile-only-toggle", children: "Only show FF Scouter Settings on my own profile" })
                 ] }),
 jsx("div", { className: `${cls.span} ff-deprecation-note`, children: jsxs("span", { children: [
                   "War Monitor is no longer supported. Use",
@@ -6857,6 +7509,18 @@ jsx(
                     }
                   ),
 jsx("label", { htmlFor: "debug-disable-pda-http", children: "Disable PDA native HTTP (use GM_xmlhttpRequest instead)" })
+                ] }),
+jsxs("div", { className: `${cls.cell} ${cls.cellCheckbox}`, children: [
+jsx(
+                    "input",
+                    {
+                      id: "debug-force-react-fallback",
+                      type: "checkbox",
+                      checked: drafts.debugForceReactFallback,
+                      onChange
+                    }
+                  ),
+jsx("label", { htmlFor: "debug-force-react-fallback", children: "Force React fallback (fetch/evaluate Torn's own react-dom bundle instead of using unsafeWindow.React/ReactDOM)" })
                 ] })
               ] })
             ] }),
@@ -6902,7 +7566,7 @@ jsx(
         if (!target) return;
         this._showSavedMessage = false;
         const id = target.id;
-        if (id === "api-key") {
+        if (id === "ff-scouter-api-key") {
           this._drafts.apiKey = target.value;
         } else if (id === "gauge-marker-scale" || id === "gauge-marker-scale-number") {
           const raw = Number(target.value);
@@ -6932,6 +7596,8 @@ jsx(
           this._drafts.chainFFTarget = num;
         } else if (id === "gauge-marker-type") {
           this._drafts.gaugeMarkerType = target.value;
+        } else if (id === "gauge-marker-justify") {
+          this._drafts.gaugeMarkerJustify = target.value;
         } else if (id === "color-scheme") {
           this._drafts.colorScheme = target.value;
         } else if (id === "chain-link-type") {
@@ -6962,6 +7628,16 @@ jsx(
           this._drafts.networkInterceptionEnabled = target.checked;
         } else if (id === "debug-disable-pda-http") {
           this._drafts.debugDisablePdaHttp = target.checked;
+        } else if (id === "debug-force-react-fallback") {
+          this._drafts.debugForceReactFallback = target.checked;
+        } else if (id === "settings-panel-own-profile-only-toggle") {
+          this._drafts.settingsPanelOwnProfileOnly = target.checked;
+        } else if (id === "faction-filter-toggle") {
+          this._drafts.factionFilterEnabled = target.checked;
+        } else if (id === "war-filter-toggle") {
+          this._drafts.warFilterEnabled = target.checked;
+        } else if (id === "stat-distribution-badge-toggle") {
+          this._drafts.statDistributionBadgeEnabled = target.checked;
         }
         this.render();
       };
@@ -7016,10 +7692,16 @@ jsx(
         gaugeMarkerType: this._props.gaugeMarkerType,
         gaugeMarkerScale: this._props.gaugeMarkerScale,
         gaugeMarkerBorderWidth: this._props.gaugeMarkerBorderWidth,
+        gaugeMarkerJustify: this._props.gaugeMarkerJustify,
         colorScheme: this._props.colorScheme,
         warQuickAttackAction: this._props.warQuickAttackAction,
         statusAttackLinksEnabled: this._props.statusAttackLinksEnabled,
-        debugDisablePdaHttp: this._props.debugDisablePdaHttp
+        debugDisablePdaHttp: this._props.debugDisablePdaHttp,
+        debugForceReactFallback: this._props.debugForceReactFallback,
+        settingsPanelOwnProfileOnly: this._props.settingsPanelOwnProfileOnly,
+        factionFilterEnabled: this._props.factionFilterEnabled,
+        warFilterEnabled: this._props.warFilterEnabled,
+        statDistributionBadgeEnabled: this._props.statDistributionBadgeEnabled
       };
     }
     render() {
@@ -7034,6 +7716,7 @@ jsx(
           props: this._props,
           drafts: this._drafts,
           isPremium: this._props.isPremium,
+          isKeyRegistered: this._props.isKeyRegistered,
           rangeError: this._rangeError,
           showSavedMessage: this._showSavedMessage,
           onChange: this.handleChange,
@@ -7131,10 +7814,16 @@ jsx(
             gaugeMarkerType: this._drafts.gaugeMarkerType,
             gaugeMarkerScale: this._drafts.gaugeMarkerScale,
             gaugeMarkerBorderWidth: this._drafts.gaugeMarkerBorderWidth,
+            gaugeMarkerJustify: this._drafts.gaugeMarkerJustify,
             colorScheme: this._drafts.colorScheme,
             warQuickAttackAction: this._drafts.warQuickAttackAction,
             statusAttackLinksEnabled: this._drafts.statusAttackLinksEnabled,
-            debugDisablePdaHttp: this._drafts.debugDisablePdaHttp
+            debugDisablePdaHttp: this._drafts.debugDisablePdaHttp,
+            debugForceReactFallback: this._drafts.debugForceReactFallback,
+            settingsPanelOwnProfileOnly: this._drafts.settingsPanelOwnProfileOnly,
+            factionFilterEnabled: this._drafts.factionFilterEnabled,
+            warFilterEnabled: this._drafts.warFilterEnabled,
+            statDistributionBadgeEnabled: this._drafts.statDistributionBadgeEnabled
           },
           bubbles: true,
           composed: true
@@ -7325,6 +8014,14 @@ get apiKey() {
       this._drafts.gaugeMarkerBorderWidth = val;
       this.render();
     }
+    get gaugeMarkerJustify() {
+      return this._props.gaugeMarkerJustify;
+    }
+    set gaugeMarkerJustify(val) {
+      this._props.gaugeMarkerJustify = val;
+      this._drafts.gaugeMarkerJustify = val;
+      this.render();
+    }
     get colorScheme() {
       return this._props.colorScheme;
     }
@@ -7349,6 +8046,38 @@ get apiKey() {
       this._drafts.statusAttackLinksEnabled = val;
       this.render();
     }
+    get settingsPanelOwnProfileOnly() {
+      return this._props.settingsPanelOwnProfileOnly;
+    }
+    set settingsPanelOwnProfileOnly(val) {
+      this._props.settingsPanelOwnProfileOnly = val;
+      this._drafts.settingsPanelOwnProfileOnly = val;
+      this.render();
+    }
+    get factionFilterEnabled() {
+      return this._props.factionFilterEnabled;
+    }
+    set factionFilterEnabled(val) {
+      this._props.factionFilterEnabled = val;
+      this._drafts.factionFilterEnabled = val;
+      this.render();
+    }
+    get warFilterEnabled() {
+      return this._props.warFilterEnabled;
+    }
+    set warFilterEnabled(val) {
+      this._props.warFilterEnabled = val;
+      this._drafts.warFilterEnabled = val;
+      this.render();
+    }
+    get statDistributionBadgeEnabled() {
+      return this._props.statDistributionBadgeEnabled;
+    }
+    set statDistributionBadgeEnabled(val) {
+      this._props.statDistributionBadgeEnabled = val;
+      this._drafts.statDistributionBadgeEnabled = val;
+      this.render();
+    }
     get debugDisablePdaHttp() {
       return this._props.debugDisablePdaHttp;
     }
@@ -7357,11 +8086,26 @@ get apiKey() {
       this._drafts.debugDisablePdaHttp = val;
       this.render();
     }
+    get debugForceReactFallback() {
+      return this._props.debugForceReactFallback;
+    }
+    set debugForceReactFallback(val) {
+      this._props.debugForceReactFallback = val;
+      this._drafts.debugForceReactFallback = val;
+      this.render();
+    }
     get isPremium() {
       return this._props.isPremium;
     }
     set isPremium(val) {
       this._props.isPremium = val;
+      this.render();
+    }
+    get isKeyRegistered() {
+      return this._props.isKeyRegistered;
+    }
+    set isKeyRegistered(val) {
+      this._props.isKeyRegistered = val;
       this.render();
     }
 get draftApiKey() {
@@ -7525,6 +8269,13 @@ get draftApiKey() {
       this._drafts.gaugeMarkerBorderWidth = val;
       this.render();
     }
+    get draftGaugeMarkerJustify() {
+      return this._drafts.gaugeMarkerJustify;
+    }
+    set draftGaugeMarkerJustify(val) {
+      this._drafts.gaugeMarkerJustify = val;
+      this.render();
+    }
     get draftColorScheme() {
       return this._drafts.colorScheme;
     }
@@ -7553,8 +8304,45 @@ get draftApiKey() {
       this._drafts.debugDisablePdaHttp = val;
       this.render();
     }
+    get draftDebugForceReactFallback() {
+      return this._drafts.debugForceReactFallback;
+    }
+    set draftDebugForceReactFallback(val) {
+      this._drafts.debugForceReactFallback = val;
+      this.render();
+    }
+    get draftSettingsPanelOwnProfileOnly() {
+      return this._drafts.settingsPanelOwnProfileOnly;
+    }
+    set draftSettingsPanelOwnProfileOnly(val) {
+      this._drafts.settingsPanelOwnProfileOnly = val;
+      this.render();
+    }
+    get draftFactionFilterEnabled() {
+      return this._drafts.factionFilterEnabled;
+    }
+    set draftFactionFilterEnabled(val) {
+      this._drafts.factionFilterEnabled = val;
+      this.render();
+    }
+    get draftWarFilterEnabled() {
+      return this._drafts.warFilterEnabled;
+    }
+    set draftWarFilterEnabled(val) {
+      this._drafts.warFilterEnabled = val;
+      this.render();
+    }
+    get draftStatDistributionBadgeEnabled() {
+      return this._drafts.statDistributionBadgeEnabled;
+    }
+    set draftStatDistributionBadgeEnabled(val) {
+      this._drafts.statDistributionBadgeEnabled = val;
+      this.render();
+    }
   }
-  customElements.define("ff-settings-panel", FFSettingsPanel);
+  if (!customElements.get("ff-settings-panel")) {
+    customElements.define("ff-settings-panel", FFSettingsPanel);
+  }
   const V2_PREFIX = "ffscouterv2-";
   const V3_PREFIX = "ffsv3-config";
   const V2_IDB_NAME = "ffscouter-cache";
@@ -7648,6 +8436,17 @@ get draftApiKey() {
       return torn_page("profiles");
     },
     async run() {
+      if (ffconfig.settings_panel_own_profile_only) {
+        const viewedId = extract_id_from_url(window.location.href);
+        if (viewedId === null) {
+          return;
+        }
+        const localIdStr = await getLocalUserId();
+        const localId = localIdStr !== null ? parseInt(localIdStr, 10) : null;
+        if (localId !== null && !Number.isNaN(localId) && viewedId !== localId) {
+          return;
+        }
+      }
       const panel = await create_ff_element("ff-settings-panel");
       if (!panel) {
         toast(
@@ -7679,10 +8478,16 @@ get draftApiKey() {
       panel.gaugeMarkerType = ffconfig.gauge_marker_type;
       panel.gaugeMarkerScale = ffconfig.gauge_marker_scale;
       panel.gaugeMarkerBorderWidth = ffconfig.gauge_marker_border_width;
+      panel.gaugeMarkerJustify = ffconfig.gauge_marker_justify;
       panel.colorScheme = ffconfig.color_scheme;
       panel.warQuickAttackAction = ffconfig.war_quick_attack_action;
       panel.statusAttackLinksEnabled = ffconfig.status_attack_links_enabled;
       panel.debugDisablePdaHttp = ffconfig.debug_disable_pda_http;
+      panel.debugForceReactFallback = ffconfig.debug_force_react_fallback;
+      panel.settingsPanelOwnProfileOnly = ffconfig.settings_panel_own_profile_only;
+      panel.factionFilterEnabled = ffconfig.faction_filter_enabled;
+      panel.warFilterEnabled = ffconfig.war_filter_enabled;
+      panel.statDistributionBadgeEnabled = ffconfig.stat_distribution_badge_enabled;
       panel.addEventListener("ff-save", async (e) => {
         const detail = e.detail;
         ffconfig.key = detail.apiKey;
@@ -7713,6 +8518,7 @@ get draftApiKey() {
         ffconfig.gauge_marker_type = detail.gaugeMarkerType;
         ffconfig.gauge_marker_scale = detail.gaugeMarkerScale;
         ffconfig.gauge_marker_border_width = detail.gaugeMarkerBorderWidth;
+        ffconfig.gauge_marker_justify = detail.gaugeMarkerJustify;
         document.body.style.setProperty(
           "--ffscouter-marker-scale",
           `${detail.gaugeMarkerScale / 100}`
@@ -7721,7 +8527,13 @@ get draftApiKey() {
         ffconfig.war_quick_attack_action = detail.warQuickAttackAction;
         ffconfig.status_attack_links_enabled = detail.statusAttackLinksEnabled;
         ffconfig.debug_disable_pda_http = detail.debugDisablePdaHttp;
+        ffconfig.debug_force_react_fallback = detail.debugForceReactFallback;
+        ffconfig.settings_panel_own_profile_only = detail.settingsPanelOwnProfileOnly;
+        ffconfig.faction_filter_enabled = detail.factionFilterEnabled;
+        ffconfig.war_filter_enabled = detail.warFilterEnabled;
+        ffconfig.stat_distribution_badge_enabled = detail.statDistributionBadgeEnabled;
         panel.isPremium = await check_key_status.is_premium(true);
+        panel.isKeyRegistered = await check_key_status.is_registered(false);
         toast("Settings saved successfully!");
         window.dispatchEvent(new CustomEvent("ff-config-updated"));
       });
@@ -7750,6 +8562,7 @@ get draftApiKey() {
         panel.gaugeMarkerType = ffconfig.gauge_marker_type;
         panel.gaugeMarkerScale = ffconfig.gauge_marker_scale;
         panel.gaugeMarkerBorderWidth = ffconfig.gauge_marker_border_width;
+        panel.gaugeMarkerJustify = ffconfig.gauge_marker_justify;
         document.body.style.setProperty(
           "--ffscouter-marker-scale",
           `${ffconfig.gauge_marker_scale / 100}`
@@ -7758,6 +8571,11 @@ get draftApiKey() {
         panel.warQuickAttackAction = ffconfig.war_quick_attack_action;
         panel.statusAttackLinksEnabled = ffconfig.status_attack_links_enabled;
         panel.debugDisablePdaHttp = ffconfig.debug_disable_pda_http;
+        panel.debugForceReactFallback = ffconfig.debug_force_react_fallback;
+        panel.settingsPanelOwnProfileOnly = ffconfig.settings_panel_own_profile_only;
+        panel.factionFilterEnabled = ffconfig.faction_filter_enabled;
+        panel.warFilterEnabled = ffconfig.war_filter_enabled;
+        panel.statDistributionBadgeEnabled = ffconfig.stat_distribution_badge_enabled;
         toast("Settings reset to defaults!");
         window.dispatchEvent(new CustomEvent("ff-config-updated"));
       });
@@ -7776,6 +8594,7 @@ get draftApiKey() {
         ffconfig.key = detail.apiKey;
         panel.apiKey = detail.apiKey;
         panel.isPremium = await check_key_status.is_premium(true);
+        panel.isKeyRegistered = await check_key_status.is_registered(false);
         toast("API key saved successfully!");
         window.dispatchEvent(new CustomEvent("ff-config-updated"));
       });
@@ -7786,16 +8605,19 @@ get draftApiKey() {
           return;
         }
         panel.isPremium = null;
+        panel.isKeyRegistered = null;
         let result = null;
         try {
           result = await check_key(detail.apiKey);
         } catch (err) {
           panel.isPremium = null;
+          panel.isKeyRegistered = null;
           toast(`${err}`, TOAST_LEVEL.ERROR);
           return;
         }
         if (result == null || result.blank) {
           panel.isPremium = null;
+          panel.isKeyRegistered = null;
           toast(
             "Problem querying ffscouter.com API. Please wait a few seconds and try again.",
             TOAST_LEVEL.WARNING
@@ -7810,9 +8632,11 @@ get draftApiKey() {
           ffconfig.key = detail.apiKey;
           panel.apiKey = detail.apiKey;
           panel.isPremium = result.result.is_premium;
+          panel.isKeyRegistered = true;
           check_key_status.clear();
         } else {
           panel.isPremium = false;
+          panel.isKeyRegistered = false;
         }
         toast(message, level);
       });
@@ -7822,8 +8646,16 @@ get draftApiKey() {
         return;
       }
       profileWrapper.parentNode?.insertBefore(panel, profileWrapper.nextSibling);
-      check_key_status.is_premium(true).then((result) => {
+      if (window.location.hash === "#ff-scouter-api-key") {
+        await panel.updateComplete;
+        const details = panel.querySelector("details");
+        if (details instanceof HTMLDetailsElement) {
+          details.open = true;
+        }
+      }
+      check_key_status.is_premium(true).then(async (result) => {
         panel.isPremium = result;
+        panel.isKeyRegistered = await check_key_status.is_registered(false);
       });
     },
     httpIntercept: {
@@ -7887,6 +8719,18 @@ get draftApiKey() {
     });
     log$2.debug("Forum status observer connected");
   }
+  function logExtractionCrossCheck(statusEl, resolvedId) {
+    const row = statusEl.closest("li[data-player_id], li.enemy, li.your");
+    const dataPlayerId = row?.getAttribute("data-player_id") ?? null;
+    const attackHref = row?.querySelector('a[href*="user2ID="]')?.getAttribute("href");
+    const attackMatch = attackHref?.match(/user2ID=(\d+)/);
+    const attackLinkUserId = attackMatch?.[1] ?? null;
+    log$2.info("Status click extraction cross-check:", {
+      resolvedId,
+      dataPlayerId,
+      attackLinkUserId
+    });
+  }
   let localUserId = null;
   async function fetchLocalUserId() {
     try {
@@ -7910,7 +8754,14 @@ get draftApiKey() {
     #profile-mini-root li[id^="icon"][id*="-mini-profile-"].user-status-16-Online,
     #profile-mini-root li[id^="icon"][id*="-mini-profile-"].user-status-16-Away,
     #profile-mini-root li[id^="icon"][id*="-mini-profile-"].user-status-16-Offline,
-    li[id^="icon"][id*="___"].iconShow.ffscouter-forum-status
+    li[id^="icon"][id*="___"].iconShow.ffscouter-forum-status,
+    .status > [class$="-status"],
+    .left-side ul.singleicon li[id^="icon"][id*="___"].iconShow,
+    .user-info-list-wrap ul.singleicon li[id^="icon"][id*="___"].iconShow,
+    [class*="dataGridRow__"] ul#iconTray li[id^="icon"][id*="___"].iconShow:has(> a[aria-label="Online"]),
+    [class*="dataGridRow__"] ul#iconTray li[id^="icon"][id*="___"].iconShow:has(> a[aria-label="Idle"]),
+    [class*="dataGridRow__"] ul#iconTray li[id^="icon"][id*="___"].iconShow:has(> a[aria-label="Offline"]),
+    [class*="dataGridRow__"] [class*="status__"] > span
   `);
     if (!statusEl) return;
     let playerId = null;
@@ -7958,9 +8809,35 @@ get draftApiKey() {
       }
     }
     if (!playerId) {
+      const container = statusEl.closest(".left-right-wrapper");
+      if (container) {
+        playerId = get_player_id_in_element(container);
+      }
+    }
+    if (!playerId) {
+      const container = statusEl.closest(".user-info-list-wrap .expander");
+      if (container) {
+        playerId = get_player_id_in_element(container);
+      }
+    }
+    if (!playerId) {
+      const row = statusEl.closest('[class*="dataGridRow__"]');
+      const nameCell = row?.querySelector('[class*="name__"]');
+      if (nameCell) {
+        playerId = get_player_id_in_element(nameCell);
+      }
+    }
+    if (!playerId) {
+      const container = statusEl.closest('[class*="userInfoBox__"]');
+      if (container) {
+        playerId = get_player_id_in_element(container);
+      }
+    }
+    if (!playerId) {
       log$2.debug("Failed to extract playerId from status icon click");
       return;
     }
+    logExtractionCrossCheck(statusEl, playerId);
     if (localUserId && playerId === localUserId) {
       log$2.debug("Bypassing click-to-attack: clicked own status icon.");
       return;
@@ -8062,7 +8939,7 @@ get draftApiKey() {
     httpInterceptors.push(interceptor);
     httpInterceptors.sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
   }
-  const stylesCss = ".ffscouter-gauge{position:relative;display:block;padding:0}.ffscouter-arrow,.ffscouter-preview-arrow{width:var(--ffscouter-arrow-width);object-fit:cover;pointer-events:none}.ffscouter-arrow{position:absolute;transform:translate(-50%,-30%);padding:0;top:0;left:calc(var(--ffscouter-arrow-width) / 2 + var(--band-percent) * (100% - var(--ffscouter-arrow-width)) / 100)}.ffscouter-preview-arrow{display:inline-block;vertical-align:middle}.ffscouter-bubble,.ffscouter-preview-bubble{min-width:2.5882em;height:1.6471em;line-height:1.4118;border:1px solid rgba(0,0,0,.4);border-radius:999px;font-size:var(--ffscouter-bubble-font-size);font-weight:700;font-family:Geneva,Arial,sans-serif;text-align:center;padding:0 .4706em;box-sizing:border-box;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;text-shadow:0 1px 1px rgba(0,0,0,.5);box-shadow:0 1px 2px #0000004d}.ffscouter-bubble{position:absolute;transform:translate(-50%,-30%);top:0;left:calc(var(--ffscouter-arrow-width) / 2 + var(--band-percent) * (100% - var(--ffscouter-arrow-width)) / 100);pointer-events:none;z-index:10}.ffscouter-preview-bubble{vertical-align:middle}.ffscouter-marker-preview{display:inline-flex;align-items:center;gap:10px;--ffscouter-arrow-width: calc(20px * var(--ffscouter-marker-scale));--ffscouter-bubble-font-size: calc(8.5px * var(--ffscouter-marker-scale))}.ffscouter-mini-desc{padding:0 5px}.ffscouter-swatch-row{display:inline-flex;gap:3px}.ffscouter-swatch{display:inline-block;width:20px;height:13px}body{--ffscouter-bg-color: #f0f0f0;--ffscouter-alt-bg-color: #fff;--ffscouter-border-color: #ccc;--ffscouter-input-color: #ccc;--ffscouter-text-color: #000;--ffscouter-hover-color: #ddd;--ffscouter-glow-color: #4caf50;--ffscouter-success-color: #4caf50;--ffscouter-marker-scale: 1;--ffscouter-arrow-width: calc(20px * var(--ffscouter-marker-scale));--ffscouter-bubble-font-size: calc(8.5px * var(--ffscouter-marker-scale))}body.dark-mode{--ffscouter-bg-color: #333;--ffscouter-alt-bg-color: #383838;--ffscouter-border-color: #444;--ffscouter-input-color: #504f4f;--ffscouter-text-color: #ccc;--ffscouter-hover-color: #555;--ffscouter-glow-color: #4caf50;--ffscouter-success-color: #4caf50}ff-settings-panel{display:block}.profile-status{position:relative}.ff-flight-element{position:absolute;right:10px;bottom:2px;z-index:2}.ff-scouter-profile-flight-info{display:inline-block;text-align:right;font-size:11px;line-height:1.25;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.85)}.profile-status .ff-scouter-profile-flight-info a{color:#fff;text-decoration:underline}.faction-war .ffscouter-cell{float:left!important;width:32px!important;height:20px!important;font-size:11px!important;font-weight:700!important;border-radius:3px!important;box-sizing:border-box!important;margin:7px 4px!important;padding:0!important;text-align:center!important;line-height:20px!important;z-index:10!important}.ffscouter-cell{cursor:pointer!important}.faction-war .ffscouter-header,.table-header .ffscouter-header{float:left!important;width:38px!important;font-size:12px!important;font-weight:700!important;padding:0!important;text-align:center!important;background-color:transparent!important;cursor:pointer!important}.faction-war:has(.ffscouter-header[data-ffscouter-sort]) [class*=sortIcon___]:not(.ffscouter-sort-icon),.members-list:has(.ffscouter-header[data-ffscouter-sort]) [class*=sortIcon___]:not(.ffscouter-sort-icon){visibility:hidden!important}[data-ffscouter-hidden]{display:none!important}.faction-war[data-ffscouter-hide-level=true] .level:not(.ffscouter-cell):not(.ffscouter-header){display:none!important}.faction-war[data-ffscouter-hide-status=true] .status,.faction-war[data-ffscouter-hide-score=true] .points{display:none!important}.faction-war[data-ffscouter-col-display=fair_fight]:not([data-ffscouter-hide-level=true]) .level:not(.ffscouter-cell):not(.ffscouter-header),.faction-war[data-ffscouter-col-display=battle_stats]:not([data-ffscouter-hide-level=true]) .level:not(.ffscouter-cell):not(.ffscouter-header){width:29px!important}.faction-war[data-ffscouter-col-display=fair_fight]:not([data-ffscouter-hide-level=true]) .status,.faction-war[data-ffscouter-col-display=battle_stats]:not([data-ffscouter-hide-level=true]) .status{width:50px!important}.faction-war[data-ffscouter-col-display=fair_fight]:not([data-ffscouter-hide-level=true]) .points,.faction-war[data-ffscouter-col-display=battle_stats]:not([data-ffscouter-hide-level=true]) .points{width:38px!important}.members-list li.enemy:has(>.tt-stats-estimate),.members-list li.your:has(>.tt-stats-estimate),.members-list li.enemy:has(>div.clear~*),.members-list li.your:has(>div.clear~*){padding-bottom:22px!important;position:relative!important}.members-list li.enemy>.tt-stats-estimate,.members-list li.your>.tt-stats-estimate,.members-list li.enemy>div.clear~*,.members-list li.your>div.clear~*{position:absolute!important;bottom:2px!important;left:10px!important;height:18px!important;line-height:18px!important;font-size:11px!important;width:calc(100% - 20px)!important;display:block!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}body[data-ff-status-attack-enabled=true] [class*=userStatusWrap__],body[data-ff-status-attack-enabled=true] li[id^=icon][id*=-profile-].user-status-16-Online,body[data-ff-status-attack-enabled=true] li[id^=icon][id*=-profile-].user-status-16-Away,body[data-ff-status-attack-enabled=true] li[id^=icon][id*=-profile-].user-status-16-Offline,body[data-ff-status-attack-enabled=true] #profile-mini-root li[id^=icon][id*=-mini-profile-].user-status-16-Online,body[data-ff-status-attack-enabled=true] #profile-mini-root li[id^=icon][id*=-mini-profile-].user-status-16-Away,body[data-ff-status-attack-enabled=true] #profile-mini-root li[id^=icon][id*=-mini-profile-].user-status-16-Offline,body[data-ff-status-attack-enabled=true] li[id^=icon][id*=___].iconShow.ffscouter-forum-status{cursor:crosshair!important}.d .job-lists-wrap .item>li.company,.d .job-lists-wrap .item>li.director,.d .job-lists-wrap .item>li.salary,.d .job-lists-wrap .item>li.ranks{margin-bottom:0!important;padding-bottom:0!important}";
+  const stylesCss = '.ffscouter-gauge{position:relative;display:block;padding:0}.ffscouter-arrow,.ffscouter-preview-arrow{width:var(--ffscouter-arrow-width);object-fit:cover;pointer-events:none}.ffscouter-arrow{display:block;padding:0}.ffscouter-preview-arrow{display:inline-block;vertical-align:middle}.ffscouter-marker-wrapper{position:absolute;display:inline-block;pointer-events:none;line-height:0;transform:translate(var(--ffscouter-marker-tx, -50%),var(--ffscouter-marker-ty, -30%));z-index:10}.ffscouter-gauge[data-ffscouter-band-side=left]>.ffscouter-marker-wrapper{left:calc(var(--ffscouter-marker-actual-width, var(--ffscouter-arrow-width)) / 2 + var(--band-percent) * (100% - var(--ffscouter-marker-actual-width, var(--ffscouter-arrow-width))) / 100);--ffscouter-marker-tx: -50%}.ffscouter-gauge[data-ffscouter-band-side=right]>.ffscouter-marker-wrapper{right:calc(var(--ffscouter-marker-actual-width, var(--ffscouter-arrow-width)) / 2 + (100 - var(--band-percent)) * (100% - var(--ffscouter-marker-actual-width, var(--ffscouter-arrow-width))) / 100 + .35 * var(--ffscouter-source-marker-size));--ffscouter-marker-tx: 50%}.ffscouter-gauge[data-ffscouter-attach-mode=honor-bar]>.ffscouter-marker-wrapper{top:0;--ffscouter-marker-ty: -30%}.ffscouter-gauge[data-ffscouter-attach-mode=fallback]>.ffscouter-marker-wrapper{top:0;bottom:0;margin:auto 0;--ffscouter-marker-ty: 0%}.ffscouter-bubble,.ffscouter-preview-bubble{min-width:2.5882em;height:1.6471em;line-height:1.4118;border:1px solid rgba(0,0,0,.4);border-radius:999px;font-size:var(--ffscouter-bubble-font-size);font-weight:700;font-family:Geneva,Arial,sans-serif;text-align:center;padding:0 .4706em;box-sizing:border-box;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;text-shadow:0 1px 1px rgba(0,0,0,.5);box-shadow:0 1px 2px #0000004d}.ffscouter-bubble{pointer-events:none}.ffscouter-preview-bubble{vertical-align:middle}.ffscouter-source-marker{position:absolute;top:calc(-.35 * var(--ffscouter-source-marker-size));right:calc(-.35 * var(--ffscouter-source-marker-size));width:var(--ffscouter-source-marker-size);height:var(--ffscouter-source-marker-size);pointer-events:auto;overflow:visible}.ffscouter-preview-marker-slot{position:relative;display:inline-block}.ffscouter-inline-source-marker{display:inline-block!important;float:none!important;position:static!important;width:16px!important;height:16px!important;vertical-align:middle!important;margin:0 0 0 4px!important}.ffscouter-marker-preview{display:inline-flex;align-items:center;gap:10px;--ffscouter-arrow-width: calc(20px * var(--ffscouter-marker-scale));--ffscouter-bubble-font-size: calc(8.5px * var(--ffscouter-marker-scale));--ffscouter-source-marker-size: calc(12px * var(--ffscouter-marker-scale))}.ffscouter-mini-desc{padding:0 5px}.ffscouter-swatch-row{display:inline-flex;gap:3px}.ffscouter-swatch{display:inline-block;width:20px;height:13px}body{--ffscouter-bg-color: #f0f0f0;--ffscouter-alt-bg-color: #fff;--ffscouter-border-color: #ccc;--ffscouter-input-color: #ccc;--ffscouter-text-color: #000;--ffscouter-hover-color: #ddd;--ffscouter-glow-color: #4caf50;--ffscouter-success-color: #4caf50;--ffscouter-marker-scale: 1;--ffscouter-arrow-width: calc(20px * var(--ffscouter-marker-scale));--ffscouter-bubble-font-size: calc(8.5px * var(--ffscouter-marker-scale));--ffscouter-source-marker-size: calc(12px * var(--ffscouter-marker-scale));--ffscouter-stat-badge-outline-color: #fff}body.dark-mode{--ffscouter-bg-color: #333;--ffscouter-alt-bg-color: #383838;--ffscouter-border-color: #444;--ffscouter-input-color: #504f4f;--ffscouter-text-color: #ccc;--ffscouter-hover-color: #555;--ffscouter-glow-color: #4caf50;--ffscouter-success-color: #4caf50;--ffscouter-stat-badge-outline-color: #000}ff-settings-panel{display:block}.profile-status{position:relative}.ff-flight-element{position:absolute;right:10px;bottom:2px;z-index:2}.ff-scouter-profile-flight-info{display:inline-block;text-align:right;font-size:11px;line-height:1.25;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.85)}.profile-status .ff-scouter-profile-flight-info a{color:#fff;text-decoration:underline}.faction-war .ffscouter-cell{float:left!important;width:32px!important;height:20px!important;font-size:11px!important;font-weight:700!important;border-radius:3px!important;box-sizing:border-box!important;margin:7px 4px!important;padding:0!important;text-align:center!important;line-height:20px!important;z-index:10!important}.ffscouter-cell{cursor:pointer!important;position:relative!important;overflow:visible!important}.ffscouter-stat-badge{position:absolute!important;top:6px!important;width:12px!important;height:12px!important;color:var(--ffscouter-text-color)!important;pointer-events:none!important;overflow:visible!important;z-index:11!important}.faction-war .ffscouter-stat-badge{top:0!important}.ffscouter-stat-badge path{stroke:var(--ffscouter-stat-badge-outline-color)!important;stroke-width:1px!important;stroke-linejoin:round!important;paint-order:stroke fill!important}.ffscouter-stat-badge--left{left:0!important;transform:translate(-50%,-50%)!important}.ffscouter-stat-badge--right{right:0!important;transform:translate(50%,-50%)!important}.faction-war .ffscouter-header,.table-header .ffscouter-header{float:left!important;width:38px!important;font-size:12px!important;font-weight:700!important;padding:0!important;text-align:center!important;background-color:transparent!important;cursor:pointer!important}.faction-war:has(.ffscouter-header[data-ffscouter-sort]) [class*=sortIcon___]:not(.ffscouter-sort-icon),.members-list:has(.ffscouter-header[data-ffscouter-sort]) [class*=sortIcon___]:not(.ffscouter-sort-icon){visibility:hidden!important}[data-ffscouter-hidden]{display:none!important}.faction-war[data-ffscouter-hide-level=true] .level:not(.ffscouter-cell):not(.ffscouter-header){display:none!important}.faction-war[data-ffscouter-hide-status=true] .status,.faction-war[data-ffscouter-hide-score=true] .points{display:none!important}.faction-war[data-ffscouter-col-display=fair_fight]:not([data-ffscouter-hide-level=true]) .level:not(.ffscouter-cell):not(.ffscouter-header),.faction-war[data-ffscouter-col-display=battle_stats]:not([data-ffscouter-hide-level=true]) .level:not(.ffscouter-cell):not(.ffscouter-header){width:29px!important}.faction-war[data-ffscouter-col-display=fair_fight]:not([data-ffscouter-hide-level=true]) .status,.faction-war[data-ffscouter-col-display=battle_stats]:not([data-ffscouter-hide-level=true]) .status{width:50px!important}.faction-war[data-ffscouter-col-display=fair_fight]:not([data-ffscouter-hide-level=true]) .points,.faction-war[data-ffscouter-col-display=battle_stats]:not([data-ffscouter-hide-level=true]) .points{width:38px!important}.members-list li.enemy:has(>.tt-stats-estimate),.members-list li.your:has(>.tt-stats-estimate),.members-list li.enemy:has(>div.clear~*),.members-list li.your:has(>div.clear~*){padding-bottom:22px!important;position:relative!important}.members-list li.enemy>.tt-stats-estimate,.members-list li.your>.tt-stats-estimate,.members-list li.enemy>div.clear~*,.members-list li.your>div.clear~*{position:absolute!important;bottom:2px!important;left:10px!important;height:18px!important;line-height:18px!important;font-size:11px!important;width:calc(100% - 20px)!important;display:block!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}body[data-ff-status-attack-enabled=true] [class*=userStatusWrap__],body[data-ff-status-attack-enabled=true] li[id^=icon][id*=-profile-].user-status-16-Online,body[data-ff-status-attack-enabled=true] li[id^=icon][id*=-profile-].user-status-16-Away,body[data-ff-status-attack-enabled=true] li[id^=icon][id*=-profile-].user-status-16-Offline,body[data-ff-status-attack-enabled=true] #profile-mini-root li[id^=icon][id*=-mini-profile-].user-status-16-Online,body[data-ff-status-attack-enabled=true] #profile-mini-root li[id^=icon][id*=-mini-profile-].user-status-16-Away,body[data-ff-status-attack-enabled=true] #profile-mini-root li[id^=icon][id*=-mini-profile-].user-status-16-Offline,body[data-ff-status-attack-enabled=true] li[id^=icon][id*=___].iconShow.ffscouter-forum-status,body[data-ff-status-attack-enabled=true] .status>[class$=-status],body[data-ff-status-attack-enabled=true] .left-side ul.singleicon li[id^=icon][id*=___].iconShow,body[data-ff-status-attack-enabled=true] .user-info-list-wrap ul.singleicon li[id^=icon][id*=___].iconShow{cursor:crosshair!important}body[data-ff-status-attack-enabled=true] [class*=dataGridRow__] ul#iconTray li[id^=icon][id*=___].iconShow:has(>a[aria-label=Online]),body[data-ff-status-attack-enabled=true] [class*=dataGridRow__] ul#iconTray li[id^=icon][id*=___].iconShow:has(>a[aria-label=Idle]),body[data-ff-status-attack-enabled=true] [class*=dataGridRow__] ul#iconTray li[id^=icon][id*=___].iconShow:has(>a[aria-label=Offline]),body[data-ff-status-attack-enabled=true] [class*=dataGridRow__] [class*=status__]>span{cursor:crosshair!important}body[data-ff-status-attack-enabled=true] [class*=userStatusWrap__]{position:relative}body[data-ff-status-attack-enabled=true] [class*=userStatusWrap__]:after{content:"";position:absolute;inset:-3px}.d .job-lists-wrap .item>li.company,.d .job-lists-wrap .item>li.director,.d .job-lists-wrap .item>li.salary,.d .job-lists-wrap .item>li.ranks{margin-bottom:0!important;padding-bottom:0!important}.d .users-list.links .user-wrap.ffscouter-gauge{margin-top:0!important;margin-bottom:0!important;padding-top:0!important;padding-bottom:0!important}';
   importCSS(stylesCss);
   const log = logger.child("boot");
   const INJECTION_KEY = "__FF_SCOUTER_V2_INJECTED__";
@@ -8085,7 +8962,7 @@ get draftApiKey() {
       return;
     }
     document.documentElement.setAttribute(INJECTION_KEY, "1");
-    log.info("Initializing", "3.0.1");
+    log.info("Initializing", "3.3");
     run_migration();
     if (ffscouter.analytics_enabled) {
       if (typeof unsafeWindow !== "undefined") {
