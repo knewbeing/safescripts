@@ -8,7 +8,7 @@ title: "CSDN优化"
 
 <a href="https://raw.githubusercontent.com/knewbeing/safescripts/main/userscripts/managed/CSDN_E4_BC_98_E5_8C_96.user.js" class="tm-install-btn">📥 安装到 Tampermonkey</a>
 
-> 版本：**2026.9.12**　　最后更新：**2026-09-14**
+> 版本：**2026.10.21.16**　　最后更新：**2026-10-26**
 
 ## 功能介绍
 
