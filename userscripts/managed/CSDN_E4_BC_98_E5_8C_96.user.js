@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CSDN优化
 // @namespace    https://github.com/WhiteSevs/TamperMonkeyScript
-// @version      2026.10.21.16
+// @version      2026.10.29
 // @author       WhiteSevs
 // @description  支持PC和手机端、屏蔽广告、优化浏览体验、重定向拦截的Url、自动展开全文、自动展开代码块、全文居中、允许复制内容、去除复制内容的小尾巴、自定义屏蔽元素等
 // @license      GPL-3.0-only
@@ -11,8 +11,8 @@
 // @require      https://fastly.jsdelivr.net/gh/WhiteSevs/TamperMonkeyScript@86be74b83fca4fa47521cded28377b35e1d7d2ac/lib/CoverUMD/index.js
 // @require      https://fastly.jsdelivr.net/npm/@whitesev/utils@2.15.2/dist/index.umd.js
 // @require      https://fastly.jsdelivr.net/npm/@whitesev/domutils@2.0.12/dist/index.umd.js
-// @require      https://fastly.jsdelivr.net/npm/@whitesev/pops@4.2.10/dist/index.umd.js
-// @require      https://fastly.jsdelivr.net/npm/qmsg@1.7.3/dist/index.umd.js
+// @require      https://fastly.jsdelivr.net/npm/@whitesev/pops@4.2.11/dist/index.umd.js
+// @require      https://fastly.jsdelivr.net/npm/qmsg@1.7.4/dist/index.umd.js
 // @connect      blog.csdn.net
 // @connect      mp-action.csdn.net
 // @grant        GM_addValueChangeListener
@@ -564,15 +564,21 @@
       __defaultBottomContentConfig: [],
     },
     addContentConfig(configList) {
-      if (!Array.isArray(configList)) configList = [configList];
-      let index = this.$data.contentConfig.keys().length;
-      this.$data.contentConfig.set(index, configList);
+      const __configList = typeof configList === "function" ? configList : () => configList;
+      const index = this.$data.contentConfig.keys().length;
+      this.$data.contentConfig.set(index, __configList);
     },
     getAllContentConfig() {
-      return this.$data.contentConfig.values().flat();
+      return this.$data.contentConfig
+        .values()
+        .map((it) => {
+          return typeof it === "function" ? it() : it;
+        })
+        .flat();
     },
     getConfig(index = 0) {
-      return this.$data.contentConfig.get(index) ?? [];
+      const __configList = (this.$data.contentConfig.get(index) ?? (() => []))();
+      return Array.isArray(__configList) ? __configList : [__configList];
     },
     getDefaultBottomContentConfig(config) {
       if (this.$data.__defaultBottomContentConfig.length) return this.$data.__defaultBottomContentConfig;
@@ -1843,9 +1849,11 @@
                       return typeof viewConfig === "object" && viewConfig != null && viewConfig.text === target.name;
                     }
                   );
-                }, 2500);
-                if ($findDeepMenu) $findDeepMenu.click();
-                else {
+                }, 5e3);
+                if ($findDeepMenu) {
+                  $findDeepMenu.click();
+                  await utils.sleep(500);
+                } else {
                   qmsg.default.error(translateCallback("未找到对应的二级菜单"));
                   return {
                     isFind: true,
@@ -1866,7 +1874,7 @@
                       );
                     }
                   );
-                }, 2500);
+                }, 5e3);
                 if ($findTargetMenu) {
                   scrollToElementAndListen($findTargetMenu);
                   const $fold = $findTargetMenu.closest(`.pops-panel-forms-fold[data-fold-enable]`);
@@ -2782,9 +2790,9 @@
     },
   };
   var CSDNBlog_default =
-    "/*.blog_container_aside,\n#nav {\n	margin-left: -45px;\n}\n.recommend-right.align-items-stretch.clearfix,\n.dl_right_fixed {\n	margin-left: 45px;\n}*/\n";
+    "/*.blog_container_aside,\n#nav {\n	margin-left: -45px;\n}\n.recommend-right.align-items-stretch.clearfix,\n.dl_right_fixed {\n	margin-left: 45px;\n}*/\n#article_content {\n  max-height: unset !important;\n}\n";
   var shield_default$3 =
-    '.ecommend-item-box.recommend-recommend-box,\n.login-mark,\n.opt-box.text-center,\n.leftPop,\n#csdn-shop-window,\n.toolbar-advert,\n.hide-article-box,\n.user-desc.user-desc-fix,\n.recommend-card-box,\n.more-article,\n.article-show-more,\n#csdn-toolbar-profile-nologin,\n.guide-rr-first,\n#recommend-item-box-tow,\n/* 发文章得原力分图片提示 */\ndiv.csdn-toolbar-creative-mp,\n/* 阅读终点，创作起航，您可以撰写心得或摘录文章要点写篇博文。 */\n#toolBarBox div.write-guide-buttom-box,\n/* 觉得还不错? 一键收藏 */\nul.toolbox-list div.tool-active-list,\n/* 右边按钮组的最上面的创作话题 */\ndiv.csdn-side-toolbar .activity-swiper-box,\n.sidetool-writeguide-box .tip-box,\n/* 右下角的登录提示 */\n.passport-login-tip-container,\n/* 全屏双十一红包 */\n.csdn-reapck-select,\n/* 侧栏的618会员开通 */\n.csdn-side-toolbar  .sidecolumn-vip,\n/* 右边推荐的推广广告 */\n#recommendAdBox,\n/* 顶部导航栏的vip推广 */\n#csdn-plugin-vip,\n/* 顶部导航栏的会员中心的右边的推广图片，如：春招 */\n#csdn-toolbar .toolbar-btn a[href*="mall.csdn.net/vip"]>img[src],\n/* 侧栏的【点击体验 DeepSeekR1满血版】 */\n#sidecolumn-deepseek,\n/* 侧栏的【下载APP、公众号、视频号】 */\n.csdn-side-toolbar .option-box[data-type="app"],\n/* 右偏下的悬浮的 本文章已经生成可运行项目 */\nbody > .ins-code-runner-btn ,\n/* 顶部工具栏最右边的 登录最高领取xx算力币 */\n#csdn-toolbar .csdn-new-user-gift-bubble-anchor,\n/* 会员积分下载推广 */\n#mainBox .simple-ad-slot,\n/* 文章右侧 */\n.simple-ad-slot {\n  display: none !important;\n}\n';
+    '.ecommend-item-box.recommend-recommend-box,\n.login-mark,\n.opt-box.text-center,\n.leftPop,\n#csdn-shop-window,\n.toolbar-advert,\n.hide-article-box,\n.user-desc.user-desc-fix,\n.recommend-card-box,\n.more-article,\n.article-show-more,\n#csdn-toolbar-profile-nologin,\n.guide-rr-first,\n#recommend-item-box-tow,\n/* 发文章得原力分图片提示 */\ndiv.csdn-toolbar-creative-mp,\n/* 阅读终点，创作起航，您可以撰写心得或摘录文章要点写篇博文。 */\n#toolBarBox div.write-guide-buttom-box,\n/* 觉得还不错? 一键收藏 */\nul.toolbox-list div.tool-active-list,\n/* 右边按钮组的最上面的创作话题 */\ndiv.csdn-side-toolbar .activity-swiper-box,\n.sidetool-writeguide-box .tip-box,\n/* 右下角的登录提示 */\n.passport-login-tip-container,\n/* 全屏双十一红包 */\n.csdn-reapck-select,\n/* 侧栏的618会员开通 */\n.csdn-side-toolbar  .sidecolumn-vip,\n/* 右边推荐的推广广告 */\n#recommendAdBox,\n/* 顶部导航栏的vip推广 */\n#csdn-plugin-vip,\n/* 顶部导航栏的会员中心的右边的推广图片，如：春招 */\n#csdn-toolbar .toolbar-btn a[href*="mall.csdn.net/vip"]>img[src],\n/* 侧栏的【点击体验 DeepSeekR1满血版】 */\n#sidecolumn-deepseek,\n/* 侧栏的【下载APP、公众号、视频号】 */\n.csdn-side-toolbar .option-box[data-type="app"],\n/* 右偏下的悬浮的 本文章已经生成可运行项目 */\nbody > .ins-code-runner-btn ,\n/* 顶部工具栏最右边的 登录最高领取xx算力币 */\n#csdn-toolbar .csdn-new-user-gift-bubble-anchor,\n/* 会员积分下载推广 */\n#mainBox .simple-ad-slot,\n/* 文章右侧 */\n#csdn-main-father-root #mainBox .simple-ad-slot,\n/* 免费解锁完整内容 */\n.article-lock-overlay {\n  display: none !important;\n}\n';
   var CSDNBlogBlock = {
     init() {
       Panel.onceExec("csdn-blog-blockCSS", () => {
@@ -2798,6 +2806,9 @@
       });
       Panel.execMenuOnce("csdn-blog-shieldLeftBlogContainerAside", () => {
         return this.shieldLeftBlogContainerAside();
+      });
+      Panel.execMenuOnce("csdn-blog-blockLeftNavBar", () => {
+        return this.blockLeftNavBar();
       });
       Panel.execMenuOnce("csdn-blog-shieldRightDirectoryInformation", () => {
         return this.shieldRightDirectoryInformation();
@@ -2828,13 +2839,17 @@
       log.info("【屏蔽】左侧博客信息");
       return CommonUtil$1.addBlockCSS(`aside.blog_container_aside`);
     },
+    blockLeftNavBar() {
+      log.info("【屏蔽】左侧导航栏");
+      return CommonUtil$1.addBlockCSS(`aside.layout-sidebar-aside`);
+    },
     shieldRightDirectoryInformation() {
       log.info("【屏蔽】右侧目录信息");
       return CommonUtil$1.addBlockCSS("#rightAsideConcision", "#rightAside");
     },
     shieldBottomFloatingToolbar() {
       log.info("屏蔽底部悬浮工具栏");
-      return CommonUtil$1.addBlockCSS(`#toolBarBox`);
+      return CommonUtil$1.addBlockCSS(`#toolBarBox`, "#simple-sticky-userbar");
     },
     blockBottomAskAIToolbar() {
       log.info(`【屏蔽】底部的AI伴读`);
@@ -4013,6 +4028,7 @@
       `)
       );
       result.push(CSDNBlogBlock.shieldLeftBlogContainerAside());
+      result.push(CSDNBlogBlock.blockLeftNavBar());
       result.push(
         addStyle(`
       #mainBox {
@@ -4762,6 +4778,7 @@
                   UISwitch("【屏蔽】登录弹窗", "csdn-blog-shieldLoginDialog", true),
                   UISwitch("【屏蔽】顶部工具栏", "csdn-blog-shieldTopToolbar", false),
                   UISwitch("【屏蔽】左侧博客信息", "csdn-blog-shieldLeftBlogContainerAside", false),
+                  UISwitch("【屏蔽】左侧导航栏", "csdn-blog-blockLeftNavBar", false),
                   UISwitch("【屏蔽】右侧目录信息", "csdn-blog-shieldRightDirectoryInformation", false),
                   UISwitch("【屏蔽】评论区", "csdn-blog-blockComment", false),
                   UISwitch("【屏蔽】底部文章", "csdn-blog-blockBottomRecommendArticle", false),
